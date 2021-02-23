@@ -10,7 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      run: git fetch --prune --unshallow --tags
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -29,7 +32,7 @@ jobs:
       run: make generate
     
     - name: Validate
-      run: make validate
+      run: make ui-validate fmt-check vet it
 
     - name: Build UI
       run: make ui-only
