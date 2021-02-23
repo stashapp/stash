@@ -13,7 +13,6 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Checkout
-      
       run: git fetch --prune --unshallow --tags
 
     - name: Set up Go
@@ -26,6 +25,19 @@ jobs:
       with:
         node-version: '12'
     
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node-modules
+      with:
+        # npm cache files are stored in `~/.npm` on Linux/macOS
+        path: ~/.npm
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
     - name: Pre-install
       run: make pre-ui
 
@@ -41,9 +53,22 @@ jobs:
     - name: Cross Compile
       run: |
         docker pull stashapp/compiler:4
-        sh ./scripts/cross-compile.sh
+        ./scripts/cross-compile.sh
     
-    # TODO - upload pull request build artifacts
+    - name: Generate checksums
+      run: |
+        git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
+        sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
+    
+    - name: Upload binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: binaries
+        path: |
+          dist/stash-osx
+          dist/stash-win
+          dist/stash-linux
+
     # TODO - set RELEASE_DATE and STASH_VERSION
     # TODO - make dev release
     # TODO - make master release
