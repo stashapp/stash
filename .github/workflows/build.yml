@@ -57,7 +57,7 @@ jobs:
     - name: Generate output file
       run: |
         mkdir dist
-        echo "test data" > dist/stash-linux
+        echo "test data2" > dist/stash-linux
     
     - name: Generate checksums
       run: |
@@ -98,17 +98,19 @@ jobs:
         prerelease: true
         release: latest_develop
         message: "${{ env.STASH_VERSION }}: Latest development build"
-        body: "**${RELEASE_DATE}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
+        body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
           dist/stash-linux
           CHECKSUMS_SHA1
 
-    #- name: Master release
-    #if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
-    #  uses: AButler/upload-release-assets@v2.0
-    #  with:
-    #    files: 'dist/stash-*'
-    #    repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Master release
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
+      uses: johnwbyrd/update-release@v1.0.0
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        files: |
+          dist/stash-linux
+          CHECKSUMS_SHA1
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
     
-    # TODO - make master release
     # TODO - push docker images
