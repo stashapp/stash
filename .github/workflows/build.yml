@@ -59,11 +59,11 @@ jobs:
       run: |
         git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
         sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
-        echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)"" >> $GITHUB_ENV
+        echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
     
     - name: Upload Windows binary
       # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'develop' && github.base_ref != 'master'}}
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-win.exe
@@ -71,7 +71,7 @@ jobs:
 
     - name: Upload OSX binary
       # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'develop' && github.base_ref != 'master'}}
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-osx
@@ -79,14 +79,14 @@ jobs:
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'develop' && github.base_ref != 'master'}}
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-linux
         path: dist/stash-linux
 
     - name: Development Release
-      #if: ${{ github.event_name == 'push' && github.ref == 'develop' }}      
+      #if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
       uses: "marvinpinto/action-automatic-releases@v1.1.0"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -97,5 +97,12 @@ jobs:
           dist/stash-*
           CHECKSUMS_SHA1
 
+    #- name: Master release
+    #if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
+    #  uses: AButler/upload-release-assets@v2.0
+    #  with:
+    #    files: 'dist/stash-*'
+    #    repo-token: ${{ secrets.GITHUB_TOKEN }}
+    
     # TODO - make master release
     # TODO - push docker images
