@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13
+
+    - name: Set up Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+    
+    - name: Pre-install
+      run: make pre-ui
+
+    - name: Generate
+      run: make generate
+    
+    - name: Validate
+      run: make validate
+
+    - name: Build UI
+      run: make ui-only
+
+    - name: Cross Compile
+      run: |
+        docker pull stashapp/compiler:4
+        sh ./scripts/cross-compile.sh
+    
+    # TODO - upload pull request build artifacts
+    # TODO - set RELEASE_DATE and STASH_VERSION
+    # TODO - make dev release
+    # TODO - make master release
+    # TODO - push docker images
