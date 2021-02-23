@@ -1050,6 +1050,8 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		return nil
 	}
 
+	generatedPath := config.GetGeneratedPath()
+
 	return utils.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.Warnf("error scanning %s: %s", path, err.Error())
@@ -1057,6 +1059,11 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		}
 
 		if info.IsDir() {
+			// #1102 - ignore files in generated path
+			if utils.IsPathInDir(generatedPath, path) {
+				return filepath.SkipDir
+			}
+
 			return nil
 		}
 
