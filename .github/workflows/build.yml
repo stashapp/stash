@@ -10,9 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
 
     - name: Checkout
-      uses: actions/checkout@v2
+      
       run: git fetch --prune --unshallow --tags
 
     - name: Set up Go
