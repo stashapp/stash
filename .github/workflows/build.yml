@@ -104,7 +104,7 @@ jobs:
           CHECKSUMS_SHA1
 
     - name: Master release
-    if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
       uses: johnwbyrd/update-release@v1.0.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
