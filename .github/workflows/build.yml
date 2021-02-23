@@ -28,7 +28,7 @@ jobs:
     - name: Cache node modules
       uses: actions/cache@v2
       env:
-        cache-name: cache-node-modules
+        cache-name: cache-node_modules
       with:
         path: ui/v2.5/node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
@@ -121,13 +121,30 @@ jobs:
         gzip: false
     
     - name: Development Docker
-      #if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
         docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64  
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
         docker buildx ls
+        bash ./docker/ci/x86_64/docker_push.sh development
+
+    - name: Release Docker
+      if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64  
+        docker info
+        docker buildx create --name builder --use
+        docker buildx inspect --bootstrap
+        docker buildx ls
+        bash ./docker/ci/x86_64/docker_push.sh latest
     # TODO - push docker images
