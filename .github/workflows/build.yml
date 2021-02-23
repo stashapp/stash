@@ -50,10 +50,16 @@ jobs:
     - name: Build UI
       run: make ui-only
 
-    - name: Cross Compile
+    # TODO - temporary quick build
+    - name: Build
       run: |
-        docker pull stashapp/compiler:4
-        ./scripts/cross-compile.sh
+        make build
+        cp stash dist/stash-linux
+
+    # - name: Cross Compile
+    #   run: |
+    #     docker pull stashapp/compiler:4
+    #     ./scripts/cross-compile.sh
     
     - name: Generate checksums
       run: |
@@ -61,21 +67,21 @@ jobs:
         sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
     
-    - name: Upload Windows binary
-      # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
-      with:
-        name: stash-win.exe
-        path: dist/stash-win.exe
+    # - name: Upload Windows binary
+    #   # only upload binaries for pull requests
+    #   #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: stash-win.exe
+    #     path: dist/stash-win.exe
 
-    - name: Upload OSX binary
-      # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-      uses: actions/upload-artifact@v2
-      with:
-        name: stash-osx
-        path: dist/stash-osx
+    # - name: Upload OSX binary
+    #   # only upload binaries for pull requests
+    #   #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: stash-osx
+    #     path: dist/stash-osx
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
@@ -87,12 +93,12 @@ jobs:
 
     - name: Development Release
       #if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
-      uses: "marvinpinto/action-automatic-releases@v1.1.0"
+      uses: johnwbyrd/update-release@v1
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
-        automatic_release_tag: latest_develop
-        title: "${{ env.STASH_VERSION }}: Latest development build"
+        release: latest_develop
+        message: "${{ env.STASH_VERSION }}: Latest development build"
         files: |
           dist/stash-*
           CHECKSUMS_SHA1
