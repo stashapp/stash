@@ -30,8 +30,7 @@ jobs:
       env:
         cache-name: cache-node-modules
       with:
-        # npm cache files are stored in `~/.npm` on Linux/macOS
-        path: ~/.npm
+        path: ui/v2.5/node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -41,31 +40,31 @@ jobs:
     - name: Pre-install
       run: make pre-ui
 
-    - name: Generate
-      run: make generate
+    # - name: Generate
+    #   run: make generate
     
-    - name: Validate
-      run: make ui-validate fmt-check vet it
+    # - name: Validate
+    #   run: make ui-validate fmt-check vet it
 
-    - name: Build UI
-      run: make ui-only
-
-    # TODO - temporary quick build
-    - name: Build
-      run: |
-        make build
-        cp stash dist/stash-linux
+    # - name: Build UI
+    #   run: make ui-only
 
     # - name: Cross Compile
     #   run: |
     #     docker pull stashapp/compiler:4
     #     ./scripts/cross-compile.sh
+
+    - name: Generate output file
+      run: |
+        mkdir dist
+        echo "test data" > dist/stash-linux
     
     - name: Generate checksums
       run: |
         git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
         sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
+        echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
     
     # - name: Upload Windows binary
     #   # only upload binaries for pull requests
@@ -99,6 +98,7 @@ jobs:
         prerelease: true
         release: latest_develop
         message: "${{ env.STASH_VERSION }}: Latest development build"
+        body: "**${RELEASE_DATE}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
           dist/stash-*
           CHECKSUMS_SHA1
