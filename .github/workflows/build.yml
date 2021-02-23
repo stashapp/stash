@@ -149,4 +149,3 @@ jobs:
         docker buildx inspect --bootstrap
         docker buildx ls
         bash ./docker/ci/x86_64/docker_push.sh latest
-    # TODO - push docker images
