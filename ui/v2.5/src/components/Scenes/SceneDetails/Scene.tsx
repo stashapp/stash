@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
+  mutateMetadataScan,
   useFindScene,
   useSceneIncrementO,
   useSceneDecrementO,
@@ -51,6 +52,7 @@ export const Scene: React.FC = () => {
     error: streamableError,
     loading: streamableLoading,
   } = useSceneStreams(id);
+
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
@@ -130,6 +132,18 @@ export const Scene: React.FC = () => {
     setTimestamp(marker.seconds);
   }
 
+  async function onRescan() {
+    if (!scene) {
+      return;
+    }
+
+    await mutateMetadataScan({
+      paths: [scene.path],
+    });
+
+    Toast.success({ content: "Rescanning scene" });
+  }
+
   async function onGenerateScreenshot(at?: number) {
     if (!scene) {
       return;
@@ -184,6 +198,13 @@ export const Scene: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            Rescan
+          </Dropdown.Item>
           <Dropdown.Item
             key="generate"
             className="bg-secondary text-white"
