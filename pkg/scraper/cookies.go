@@ -13,6 +13,7 @@ import (
 	"github.com/chromedp/chromedp"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // set cookies for the native http client
@@ -32,7 +33,7 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 				for _, cookie := range ckURL.Cookies {
 					httpCookie = &http.Cookie{
 						Name:   cookie.Name,
-						Value:  cookie.Value,
+						Value:  getCookieValue(cookie),
 						Path:   cookie.Path,
 						Domain: cookie.Domain,
 					}
@@ -51,6 +52,13 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 
 		}
 	}
+}
+
+func getCookieValue(cookie *scraperCookies) string {
+	if cookie.ValueRandom > 0 {
+		return utils.RandomSequence(cookie.ValueRandom)
+	}
+	return cookie.Value
 }
 
 // print all cookies from the jar of the native http client
@@ -92,7 +100,7 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 
 			for _, ckURL := range driverOptions.Cookies {
 				for _, cookie := range ckURL.Cookies {
-					success, err := network.SetCookie(cookie.Name, cookie.Value).
+					success, err := network.SetCookie(cookie.Name, getCookieValue(cookie)).
 						WithExpires(&expr).
 						WithDomain(cookie.Domain).
 						WithPath(cookie.Path).

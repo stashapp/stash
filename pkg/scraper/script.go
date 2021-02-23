@@ -1,10 +1,10 @@
 package scraper
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -59,23 +59,27 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		return errors.New("Error running scraper script")
 	}
 
+	scanner := bufio.NewScanner(stderr)
+	go func() { // log errors from stderr pipe
+		for scanner.Scan() {
+			logger.Errorf("scraper: %s", scanner.Text())
+		}
+	}()
+
+	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
+
 	// TODO - add a timeout here
 	decodeErr := json.NewDecoder(stdout).Decode(out)
-
-	stderrData, _ := ioutil.ReadAll(stderr)
-	stderrString := string(stderrData)
-
-	err = cmd.Wait()
-
-	if err != nil {
-		// error message should be in the stderr stream
-		logger.Errorf("scraper error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderrString)
-		return errors.New("Error running scraper script")
+	if decodeErr != nil {
+		logger.Error("could not unmarshal json: " + decodeErr.Error())
+		return errors.New("could not unmarshal json: " + decodeErr.Error())
 	}
 
-	if decodeErr != nil {
-		logger.Errorf("error decoding performer from scraper data: %s", err.Error())
-		return errors.New("Error decoding performer from scraper script")
+	err = cmd.Wait()
+	logger.Debugf("Scraper script finished")
+
+	if err != nil {
+		return errors.New("Error running scraper script")
 	}
 
 	return nil

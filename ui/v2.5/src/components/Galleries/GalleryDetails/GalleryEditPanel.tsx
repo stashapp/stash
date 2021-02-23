@@ -39,18 +39,29 @@ interface IExistingProps {
 
 export const GalleryEditPanel: React.FC<
   IProps & (INewProps | IExistingProps)
-> = (props) => {
+> = ({ gallery, isNew, isVisible, onDelete }) => {
   const Toast = useToast();
   const history = useHistory();
-  const [title, setTitle] = useState<string>();
-  const [details, setDetails] = useState<string>();
-  const [url, setUrl] = useState<string>();
-  const [date, setDate] = useState<string>();
-  const [rating, setRating] = useState<number>();
-  const [studioId, setStudioId] = useState<string>();
-  const [performerIds, setPerformerIds] = useState<string[]>();
-  const [tagIds, setTagIds] = useState<string[]>();
-  const [scenes, setScenes] = useState<{ id: string; title: string }[]>([]);
+  const [title, setTitle] = useState<string>(gallery?.title ?? "");
+  const [details, setDetails] = useState<string>(gallery?.details ?? "");
+  const [url, setUrl] = useState<string>(gallery?.url ?? "");
+  const [date, setDate] = useState<string>(gallery?.date ?? "");
+  const [rating, setRating] = useState<number>(gallery?.rating ?? NaN);
+  const [studioId, setStudioId] = useState<string | undefined>(
+    gallery?.studio?.id ?? undefined
+  );
+  const [performerIds, setPerformerIds] = useState<string[]>(
+    gallery?.performers.map((p) => p.id) ?? []
+  );
+  const [tagIds, setTagIds] = useState<string[]>(
+    gallery?.tags.map((t) => t.id) ?? []
+  );
+  const [scenes, setScenes] = useState<{ id: string; title: string }[]>(
+    gallery?.scenes.map((s) => ({
+      id: s.id,
+      title: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+    })) ?? []
+  );
 
   const Scrapers = useListGalleryScrapers();
 
@@ -60,18 +71,18 @@ export const GalleryEditPanel: React.FC<
   ] = useState<GQL.ScrapedGallery | null>();
 
   // Network state
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [createGallery] = useGalleryCreate();
   const [updateGallery] = useGalleryUpdate();
 
   useEffect(() => {
-    if (props.isVisible) {
+    if (isVisible) {
       Mousetrap.bind("s s", () => {
         onSave();
       });
       Mousetrap.bind("d d", () => {
-        props.onDelete();
+        onDelete();
       });
 
       // numeric keypresses get caught by jwplayer, so blur the element
@@ -107,34 +118,9 @@ export const GalleryEditPanel: React.FC<
     }
   });
 
-  function updateGalleryEditState(state?: GQL.GalleryDataFragment) {
-    const perfIds = state?.performers?.map((performer) => performer.id);
-    const tIds = state?.tags ? state?.tags.map((tag) => tag.id) : undefined;
-
-    setTitle(state?.title ?? undefined);
-    setDetails(state?.details ?? undefined);
-    setUrl(state?.url ?? undefined);
-    setDate(state?.date ?? undefined);
-    setRating(state?.rating === null ? NaN : state?.rating);
-    setStudioId(state?.studio?.id ?? undefined);
-    setPerformerIds(perfIds);
-    setTagIds(tIds);
-    setScenes(
-      (state?.scenes ?? []).map((s) => ({
-        id: s.id,
-        title: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
-      }))
-    );
-  }
-
-  useEffect(() => {
-    updateGalleryEditState(props.gallery);
-    setIsLoading(false);
-  }, [props.gallery]);
-
   function getGalleryInput() {
     return {
-      id: props.isNew ? undefined : props.gallery.id,
+      id: isNew ? undefined : gallery?.id ?? "",
       title: title ?? "",
       details,
       url,
@@ -150,7 +136,7 @@ export const GalleryEditPanel: React.FC<
   async function onSave() {
     setIsLoading(true);
     try {
-      if (props.isNew) {
+      if (isNew) {
         const result = await createGallery({
           variables: {
             input: getGalleryInput(),
@@ -176,9 +162,9 @@ export const GalleryEditPanel: React.FC<
     setIsLoading(false);
   }
 
-  function onScrapeDialogClosed(gallery?: GQL.ScrapedGalleryDataFragment) {
-    if (gallery) {
-      updateGalleryFromScrapedGallery(gallery);
+  function onScrapeDialogClosed(data?: GQL.ScrapedGalleryDataFragment) {
+    if (data) {
+      updateGalleryFromScrapedGallery(data);
     }
     setScrapedGallery(undefined);
   }
@@ -194,8 +180,8 @@ export const GalleryEditPanel: React.FC<
       <GalleryScrapeDialog
         gallery={currentGallery}
         scraped={scrapedGallery}
-        onClose={(gallery) => {
-          onScrapeDialogClosed(gallery);
+        onClose={(data) => {
+          onScrapeDialogClosed(data);
         }}
       />
     );
@@ -208,30 +194,30 @@ export const GalleryEditPanel: React.FC<
   }
 
   function updateGalleryFromScrapedGallery(
-    gallery: GQL.ScrapedGalleryDataFragment
+    galleryData: GQL.ScrapedGalleryDataFragment
   ) {
-    if (gallery.title) {
-      setTitle(gallery.title);
+    if (galleryData.title) {
+      setTitle(galleryData.title);
     }
 
-    if (gallery.details) {
-      setDetails(gallery.details);
+    if (galleryData.details) {
+      setDetails(galleryData.details);
     }
 
-    if (gallery.date) {
-      setDate(gallery.date);
+    if (galleryData.date) {
+      setDate(galleryData.date);
     }
 
-    if (gallery.url) {
-      setUrl(gallery.url);
+    if (galleryData.url) {
+      setUrl(galleryData.url);
     }
 
-    if (gallery.studio && gallery.studio.stored_id) {
-      setStudioId(gallery.studio.stored_id);
+    if (galleryData.studio?.stored_id) {
+      setStudioId(galleryData.studio.stored_id);
     }
 
-    if (gallery.performers && gallery.performers.length > 0) {
-      const idPerfs = gallery.performers.filter((p) => {
+    if (galleryData.performers?.length) {
+      const idPerfs = galleryData.performers.filter((p) => {
         return p.stored_id !== undefined && p.stored_id !== null;
       });
 
@@ -241,13 +227,13 @@ export const GalleryEditPanel: React.FC<
       }
     }
 
-    if (gallery?.tags?.length) {
-      const idTags = gallery.tags.filter((p) => {
-        return p.stored_id !== undefined && p.stored_id !== null;
+    if (galleryData?.tags?.length) {
+      const idTags = galleryData.tags.filter((t) => {
+        return t.stored_id !== undefined && t.stored_id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.stored_id);
+        const newIds = idTags.map((t) => t.stored_id);
         setTagIds(newIds as string[]);
       }
     }
@@ -299,7 +285,7 @@ export const GalleryEditPanel: React.FC<
           <Button
             className="edit-button"
             variant="danger"
-            onClick={() => props.onDelete()}
+            onClick={() => onDelete()}
           >
             Delete
           </Button>
@@ -343,7 +329,7 @@ export const GalleryEditPanel: React.FC<
             <Col xs={9}>
               <RatingStars
                 value={rating}
-                onSetRating={(value) => setRating(value)}
+                onSetRating={(value) => setRating(value ?? NaN)}
               />
             </Col>
           </Form.Group>
