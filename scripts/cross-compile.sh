@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # "stashapp/compiler:develop" "stashapp/compiler:4"
 COMPILER_CONTAINER="stashapp/compiler:4"
