@@ -489,6 +489,33 @@ driver:
           Domain: ".somewhere.com"
 ```
 
+For some sites, the value of the cookie itself doesn't actually matter. In these cases, we can use the `ValueRandom`
+property instead of `Value`. Unlike `Value`, `ValueRandom` requires an integer value greater than `0` where the value
+indicates how long the cookie string should be.
+
+In the following example, we will adapt the previous cookies to use `ValueRandom` instead. We set the `_test2` cookie
+to randomly generate a value with a length of 6 characters and the `_warn` cookie to a length of 3.
+
+```yaml
+driver:
+  cookies:
+    - CookieURL: "https://www.example.com"
+      Cookies:
+        - Name: "_warning"
+          Domain: ".example.com"
+          Value: "true"
+          Path: "/"
+        - Name: "_test2"
+          ValueRandom: 6
+          Domain: ".example.com"
+          Path: "/"
+    - CookieURL: "https://api.somewhere.com"
+      Cookies:
+        - Name: "_warn"
+          ValueRandom: 3
+          Domain: ".somewhere.com"
+```
+
 When developing a scraper you can have a look at the cookies set by a site by adding
 
 * a `CookieURL` if you use the direct xpath scraper

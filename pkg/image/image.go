@@ -59,6 +59,13 @@ func ZipFilename(zipFilename, filenameInZip string) string {
 	return zipFilename + zipSeparator + filenameInZip
 }
 
+// IsZipPath returns true if the path includes the zip separator byte,
+// indicating it is within a zip file.
+// TODO - this should be moved to utils
+func IsZipPath(p string) bool {
+	return strings.Contains(p, zipSeparator)
+}
+
 type imageReadCloser struct {
 	src io.ReadCloser
 	zrc *zip.ReadCloser

@@ -155,7 +155,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
             <Col xs={9}>
               <StudioSelect
                 onSelect={(items) =>
-                  setStudioId(items.length > 0 ? items[0]?.id : "")
+                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
                 }
                 ids={studioId ? [studioId] : []}
               />
