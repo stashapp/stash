@@ -86,6 +86,10 @@ jobs:
       with:
         name: stash-linux
         path: dist/stash-linux
+        
+    - name: Update latest_develop tag
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run : git tag -f latest_develop; git push -f --tags
 
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
@@ -95,7 +99,6 @@ jobs:
         prerelease: true
         allow_override: true
         tag: latest_develop
-        commitish: develop
         name: "${{ env.STASH_VERSION }}: Latest development build"
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
