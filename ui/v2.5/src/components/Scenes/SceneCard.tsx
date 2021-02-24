@@ -51,6 +51,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
       <img className="scene-card-preview-image" src={image} alt="" />
       <video
         disableRemotePlayback
+        playsInline
         className="scene-card-preview-video"
         loop
         preload="none"
