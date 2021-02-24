@@ -17,6 +17,13 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["oshash"] = scene.OSHash.String
 	ret["filename"] = filepath.Base(scene.Path)
 	ret["title"] = scene.Title.String
+	ret["url"] = scene.URL.String
+	return ret
+}
+
+func queryURLParameterFromURL(url string) queryURLParameters {
+	ret := make(queryURLParameters)
+	ret["url"] = url
 	return ret
 }
 
@@ -28,6 +35,7 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 		ret["filename"] = filepath.Base(gallery.Path.String)
 	}
 	ret["title"] = gallery.Title.String
+	ret["url"] = gallery.URL.String
 
 	return ret
 }

@@ -223,6 +223,7 @@ For `sceneByFragment`, the `queryURL` field must also be present. This field is 
 * `{oshash}` - the oshash of the scene
 * `{filename}` - the base filename of the scene
 * `{title}` - the title of the scene
+* `{url}` - the url of the scene
 
 These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below.
 
@@ -240,6 +241,24 @@ sceneByFragment:
 ```
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
+
+### scrapeJson use with `sceneByURL`
+
+For `sceneByURL`, the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
+* `{url}` - the url of the scene
+
+```yaml
+sceneByURL:
+  - action: scrapeJson
+    url:
+      - metartnetwork.com
+    scraper: sceneScraper
+    queryURL: "{url}"
+    queryURLReplace:
+      url:
+        - regex: '^(?:.+\.)?([^.]+)\.com/.+movie/(\d+)/(\w+)/?$'
+          with: https://www.$1.com/api/movie?name=$3&date=$2
+```
 
 ### Stash
 
