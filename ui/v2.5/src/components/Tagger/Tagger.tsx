@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
@@ -96,7 +96,7 @@ const parseDate = (input: string): string => {
   if (yyyymmdd !== -1)
     return (
       output.slice(0, yyyymmdd).replace(/-/g, " ") +
-      output.slice(yyyymmdd, yyyymmdd + 10) +
+      output.slice(yyyymmdd, yyyymmdd + 10).replace(/\./g, "-") +
       output.slice(yyyymmdd + 10).replace(/-/g, " ")
     );
   return output.replace(/-/g, " ");
@@ -156,7 +156,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 }) => {
   const [fingerprintError, setFingerprintError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [queryString, setQueryString] = useState<Record<string, string>>({});
+  const queryString = useRef<Record<string, string>>({});
+  const inputForm = useRef<HTMLFormElement>(null);
 
   const [searchResults, setSearchResults] = useState<
     Record<string, IStashBoxScene[]>
@@ -176,6 +177,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   >({});
   const fingerprintQueue =
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
+
+  useEffect(() => {
+    inputForm?.current?.reset();
+  }, [config.mode, config.blacklist]);
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
     stashBoxQuery(searchVal, selectedEndpoint.index)
@@ -303,7 +308,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         config.mode,
         config.blacklist
       );
-      const modifiedQuery = queryString[scene.id];
       const fingerprintMatch =
         fingerprints[scene.checksum ?? ""] ??
         fingerprints[scene.oshash ?? ""] ??
@@ -329,18 +333,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             </InputGroup.Prepend>
             <Form.Control
               className="text-input"
-              value={modifiedQuery || defaultQueryString}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setQueryString({
-                  ...queryString,
-                  [scene.id]: e.currentTarget.value,
-                })
-              }
+              defaultValue={queryString.current[scene.id] || defaultQueryString}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                queryString.current[scene.id] = e.currentTarget.value;
+              }}
               onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
                 e.key === "Enter" &&
                 doBoxSearch(
                   scene.id,
-                  queryString[scene.id] || defaultQueryString
+                  queryString.current[scene.id] || defaultQueryString
                 )
               }
             />
@@ -350,7 +351,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 onClick={() =>
                   doBoxSearch(
                     scene.id,
-                    queryString[scene.id] || defaultQueryString
+                    queryString.current[scene.id] || defaultQueryString
                   )
                 }
               >
@@ -460,7 +461,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       }
 
       return (
-        <div key={scene.id} className="my-2 search-item">
+        <div key={scene.id} className="mt-3 search-item">
           <div className="row">
             <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
               <div className="scene-card mr-3">
@@ -522,7 +523,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           {loadingFingerprints && <LoadingIndicator message="" inline small />}
         </Button>
       </div>
-      {renderScenes()}
+      <form ref={inputForm}>{renderScenes()}</form>
     </Card>
   );
 };

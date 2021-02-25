@@ -15,7 +15,6 @@ type Importer struct {
 	StudioWriter        models.StudioReaderWriter
 	PerformerWriter     models.PerformerReaderWriter
 	TagWriter           models.TagReaderWriter
-	JoinWriter          models.JoinReaderWriter
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -237,29 +236,22 @@ func (i *Importer) createTags(names []string) ([]*models.Tag, error) {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.performers) > 0 {
-		var performerJoins []models.PerformersGalleries
+		var performerIDs []int
 		for _, performer := range i.performers {
-			join := models.PerformersGalleries{
-				PerformerID: performer.ID,
-				GalleryID:   id,
-			}
-			performerJoins = append(performerJoins, join)
+			performerIDs = append(performerIDs, performer.ID)
 		}
-		if err := i.JoinWriter.UpdatePerformersGalleries(id, performerJoins); err != nil {
+
+		if err := i.ReaderWriter.UpdatePerformers(id, performerIDs); err != nil {
 			return fmt.Errorf("failed to associate performers: %s", err.Error())
 		}
 	}
 
 	if len(i.tags) > 0 {
-		var tagJoins []models.GalleriesTags
-		for _, tag := range i.tags {
-			join := models.GalleriesTags{
-				GalleryID: id,
-				TagID:     tag.ID,
-			}
-			tagJoins = append(tagJoins, join)
+		var tagIDs []int
+		for _, t := range i.tags {
+			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.JoinWriter.UpdateGalleriesTags(id, tagJoins); err != nil {
+		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %s", err.Error())
 		}
 	}

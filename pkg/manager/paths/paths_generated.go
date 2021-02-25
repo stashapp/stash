@@ -29,7 +29,7 @@ func newGeneratedPaths() *generatedPaths {
 	gp.Vtt = filepath.Join(config.GetGeneratedPath(), "vtt")
 	gp.Markers = filepath.Join(config.GetGeneratedPath(), "markers")
 	gp.Transcodes = filepath.Join(config.GetGeneratedPath(), "transcodes")
-	gp.Downloads = filepath.Join(config.GetGeneratedPath(), "downloads")
+	gp.Downloads = filepath.Join(config.GetGeneratedPath(), "download_stage")
 	gp.Tmp = filepath.Join(config.GetGeneratedPath(), "tmp")
 	return &gp
 }

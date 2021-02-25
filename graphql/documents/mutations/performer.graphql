@@ -55,3 +55,7 @@ mutation PerformerUpdate(
 mutation PerformerDestroy($id: ID!) {
   performerDestroy(input: { id: $id })
 }
+
+mutation PerformersDestroy($ids: [ID!]!) {
+  performersDestroy(ids: $ids)
+}

@@ -134,6 +134,10 @@ export const Studio: React.FC = () => {
             input: getStudioInput() as GQL.StudioUpdateInput,
           },
         });
+        if (result.data?.studioUpdate?.image_path)
+          await fetch(result.data?.studioUpdate?.image_path, {
+            cache: "reload",
+          });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
@@ -255,6 +259,7 @@ export const Studio: React.FC = () => {
           }
           ids={parentStudioId ? [parentStudioId] : []}
           isDisabled={!isEditing}
+          excludeIds={studio.id ? [studio.id] : []}
         />
       );
     }

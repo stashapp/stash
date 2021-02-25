@@ -178,8 +178,10 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindGallery = (id: string) =>
-  GQL.useFindGalleryQuery({ variables: { id } });
+export const useFindGallery = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindGalleryQuery({ variables: { id }, skip });
+};
 export const useFindScene = (id: string) =>
   GQL.useFindSceneQuery({ variables: { id } });
 export const useSceneStreams = (id: string) =>
@@ -262,10 +264,6 @@ export const useAllPerformersForFilter = () =>
   GQL.useAllPerformersForFilterQuery();
 export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
 export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
-export const useValidGalleriesForScene = (sceneId: string) =>
-  GQL.useValidGalleriesForSceneQuery({
-    variables: { scene_id: sceneId },
-  });
 export const useStats = () => GQL.useStatsQuery();
 export const useVersion = () => GQL.useVersionQuery();
 export const useLatestVersion = () =>
@@ -302,6 +300,18 @@ export const usePerformerUpdate = () =>
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
+    refetchQueries: getQueryNames([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
+    update: deleteCache(performerMutationImpactedQueries),
+  });
+
+export const usePerformersDestroy = (
+  variables: GQL.PerformersDestroyMutationVariables
+) =>
+  GQL.usePerformersDestroyMutation({
+    variables,
     refetchQueries: getQueryNames([
       GQL.FindPerformersDocument,
       GQL.AllPerformersForFilterDocument,
@@ -562,6 +572,12 @@ export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
     update: deleteCache(studioMutationImpactedQueries),
   });
 
+export const useStudiosDestroy = (input: GQL.StudiosDestroyMutationVariables) =>
+  GQL.useStudiosDestroyMutation({
+    variables: input,
+    update: deleteCache(studioMutationImpactedQueries),
+  });
+
 export const movieMutationImpactedQueries = [
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
@@ -585,6 +601,12 @@ export const useMovieUpdate = () =>
 
 export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
   GQL.useMovieDestroyMutation({
+    variables: input,
+    update: deleteCache(movieMutationImpactedQueries),
+  });
+
+export const useMoviesDestroy = (input: GQL.MoviesDestroyMutationVariables) =>
+  GQL.useMoviesDestroyMutation({
     variables: input,
     update: deleteCache(movieMutationImpactedQueries),
   });
@@ -618,6 +640,12 @@ export const useTagUpdate = () =>
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
+    variables: input,
+    update: deleteCache(tagMutationImpactedQueries),
+  });
+
+export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
+  GQL.useTagsDestroyMutation({
     variables: input,
     update: deleteCache(tagMutationImpactedQueries),
   });
@@ -794,9 +822,10 @@ export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
     variables: { input },
   });
 
-export const mutateMetadataClean = () =>
+export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
   client.mutate<GQL.MetadataCleanMutation>({
     mutation: GQL.MetadataCleanDocument,
+    variables: { input },
   });
 
 export const mutateMigrateHashNaming = () =>
@@ -823,6 +852,12 @@ export const mutateMetadataImport = () =>
 export const mutateImportObjects = (input: GQL.ImportObjectsInput) =>
   client.mutate<GQL.ImportObjectsMutation>({
     mutation: GQL.ImportObjectsDocument,
+    variables: { input },
+  });
+
+export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
+  client.mutate<GQL.BackupDatabaseMutation>({
+    mutation: GQL.BackupDatabaseDocument,
     variables: { input },
   });
 

@@ -2,17 +2,13 @@ import localForage from "localforage";
 import _ from "lodash";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 
-interface IInterfaceWallConfig {}
 interface IInterfaceQueryConfig {
   filter: string;
   itemsPerPage: number;
   currentPage: number;
 }
 
-export interface IInterfaceConfig {
-  wall?: IInterfaceWallConfig;
-  queries?: Record<string, IInterfaceQueryConfig>;
-}
+type IInterfaceConfig = Record<string, IInterfaceQueryConfig>;
 
 export interface IChangelogConfig {
   versions: Record<string, boolean>;
@@ -66,10 +62,10 @@ export function useLocalForage<T>(
 
   useEffect(() => {
     if (!_.isEqual(Cache[key], data)) {
-      Cache[key] = _.merge({
+      Cache[key] = {
         ...Cache[key],
         ...data,
-      });
+      };
       localForage.setItem(key, JSON.stringify(Cache[key]));
     }
   });

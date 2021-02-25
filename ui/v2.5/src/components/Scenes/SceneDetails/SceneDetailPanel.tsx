@@ -88,8 +88,14 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           ) : (
             ""
           )}
-          {props.scene.file.height && (
-            <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
+          {props.scene.file.width && props.scene.file.height && (
+            <h6>
+              Resolution:{" "}
+              {TextUtils.resolution(
+                props.scene.file.width,
+                props.scene.file.height
+              )}
+            </h6>
           )}
         </div>
         {props.scene.studio && (

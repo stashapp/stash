@@ -66,9 +66,9 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
   selecting?: boolean;
-  selected: boolean | undefined;
-  zoomIndex: number;
-  onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  selected?: boolean | undefined;
+  zoomIndex?: number;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 export const SceneCard: React.FC<ISceneCardProps> = (
@@ -102,10 +102,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderSceneSpecsOverlay() {
     return (
       <div className="scene-specs-overlay">
-        {props.scene.file.height ? (
+        {props.scene.file.width && props.scene.file.height ? (
           <span className="overlay-resolution">
             {" "}
-            {TextUtils.resolution(props.scene.file.height)}
+            {TextUtils.resolution(
+              props.scene.file.width,
+              props.scene.file.height
+            )}
           </span>
         ) : (
           ""
@@ -254,17 +257,20 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   }
 
   function maybeRenderGallery() {
-    if (props.scene.gallery) {
-      return (
-        <div>
-          <Link to={`/galleries/${props.scene.gallery.id}`}>
-            <Button className="minimal">
-              <Icon icon="image" />
-            </Button>
-          </Link>
-        </div>
-      );
-    }
+    if (props.scene.galleries.length <= 0) return;
+
+    const popoverContent = props.scene.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="image" />
+          <span>{props.scene.galleries.length}</span>
+        </Button>
+      </HoverPopover>
+    );
   }
 
   function maybeRenderOrganized() {
@@ -286,7 +292,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter ||
-      props.scene.gallery ||
+      props.scene.galleries.length > 0 ||
       props.scene.organized
     ) {
       return (
@@ -311,7 +317,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   ) {
     const { shiftKey } = event;
 
-    if (props.selecting) {
+    if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
     }
@@ -328,7 +334,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     const ev = event;
     const shiftKey = false;
 
-    if (props.selecting && !props.selected) {
+    if (props.selecting && props.onSelectedChanged && !props.selected) {
       props.onSelectedChanged(true, shiftKey);
     }
 
@@ -351,7 +357,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         type="checkbox"
         className="scene-card-check"
         checked={props.selected}
-        onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
+        onChange={() => props.onSelectedChanged?.(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
           // eslint-disable-next-line prefer-destructuring
           shiftKey = event.shiftKey;

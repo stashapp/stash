@@ -7,7 +7,6 @@ import * as GQL from "src/core/generated-graphql";
 import {
   useFindPerformer,
   usePerformerUpdate,
-  usePerformerCreate,
   usePerformerDestroy,
 } from "src/core/StashService";
 import {
@@ -62,7 +61,6 @@ export const Performer: React.FC = () => {
   const isLoading = performerLoading || loading;
 
   const [updatePerformer] = usePerformerUpdate();
-  const [createPerformer] = usePerformerCreate();
   const [deletePerformer] = usePerformerDestroy();
 
   const activeTabKey =
@@ -107,43 +105,6 @@ export const Performer: React.FC = () => {
   if (!performer.id && !isNew)
     return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
-  async function onSave(
-    performerInput:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) {
-    setIsLoading(true);
-    try {
-      if (!isNew) {
-        await updatePerformer({
-          variables: {
-            input: {
-              ...performerInput,
-              stash_ids: performerInput?.stash_ids?.map((s) => ({
-                endpoint: s.endpoint,
-                stash_id: s.stash_id,
-              })),
-            } as GQL.PerformerUpdateInput,
-          },
-        });
-        if (performerInput.image) {
-          // Refetch image to bust browser cache
-          await fetch(`/performer/${id}/image`, { cache: "reload" });
-        }
-      } else {
-        const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput,
-        });
-        if (result.data?.performerCreate) {
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-  }
-
   async function onDelete() {
     setIsLoading(true);
     try {
@@ -187,7 +148,6 @@ export const Performer: React.FC = () => {
           isVisible={activeTabKey === "edit"}
           isNew={isNew}
           onDelete={onDelete}
-          onSave={onSave}
           onImageChange={onImageChange}
           onImageEncoding={onImageEncoding}
         />
@@ -223,10 +183,16 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    onSave({
-      id: performer.id,
-      favorite: v,
-    });
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            favorite: v,
+          },
+        },
+      });
+    }
   }
 
   const renderIcons = () => (
@@ -306,7 +272,6 @@ export const Performer: React.FC = () => {
             isVisible
             isNew={isNew}
             onDelete={onDelete}
-            onSave={onSave}
             onImageChange={onImageChange}
             onImageEncoding={onImageEncoding}
           />

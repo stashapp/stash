@@ -37,3 +37,16 @@ func IntAppendUniques(vs []int, toAdd []int) []int {
 
 	return vs
 }
+
+// IntExclude removes all instances of any value in toExclude from the vs int
+// slice. It returns the new or unchanged int slice.
+func IntExclude(vs []int, toExclude []int) []int {
+	var ret []int
+	for _, v := range vs {
+		if !IntInclude(toExclude, v) {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}

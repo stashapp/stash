@@ -158,10 +158,11 @@ type scraperDebugOptions struct {
 }
 
 type scraperCookies struct {
-	Name   string `yaml:"Name"`
-	Value  string `yaml:"Value"`
-	Domain string `yaml:"Domain"`
-	Path   string `yaml:"Path"`
+	Name        string `yaml:"Name"`
+	Value       string `yaml:"Value"`
+	ValueRandom int    `yaml:"ValueRandom"`
+	Domain      string `yaml:"Domain"`
+	Path        string `yaml:"Path"`
 }
 
 type cookieOptions struct {
@@ -304,33 +305,33 @@ func (c config) matchesPerformerURL(url string) bool {
 	return false
 }
 
-func (c config) ScrapePerformerNames(name string, globalConfig GlobalConfig) ([]*models.ScrapedPerformer, error) {
+func (c config) ScrapePerformerNames(name string, txnManager models.TransactionManager, globalConfig GlobalConfig) ([]*models.ScrapedPerformer, error) {
 	if c.PerformerByName != nil {
-		s := getScraper(*c.PerformerByName, c, globalConfig)
+		s := getScraper(*c.PerformerByName, txnManager, c, globalConfig)
 		return s.scrapePerformersByName(name)
 	}
 
 	return nil, nil
 }
 
-func (c config) ScrapePerformer(scrapedPerformer models.ScrapedPerformerInput, globalConfig GlobalConfig) (*models.ScrapedPerformer, error) {
+func (c config) ScrapePerformer(scrapedPerformer models.ScrapedPerformerInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedPerformer, error) {
 	if c.PerformerByFragment != nil {
-		s := getScraper(*c.PerformerByFragment, c, globalConfig)
+		s := getScraper(*c.PerformerByFragment, txnManager, c, globalConfig)
 		return s.scrapePerformerByFragment(scrapedPerformer)
 	}
 
 	// try to match against URL if present
 	if scrapedPerformer.URL != nil && *scrapedPerformer.URL != "" {
-		return c.ScrapePerformerURL(*scrapedPerformer.URL, globalConfig)
+		return c.ScrapePerformerURL(*scrapedPerformer.URL, txnManager, globalConfig)
 	}
 
 	return nil, nil
 }
 
-func (c config) ScrapePerformerURL(url string, globalConfig GlobalConfig) (*models.ScrapedPerformer, error) {
+func (c config) ScrapePerformerURL(url string, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedPerformer, error) {
 	for _, scraper := range c.PerformerByURL {
 		if scraper.matchesURL(url) {
-			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
+			s := getScraper(scraper.scraperTypeConfig, txnManager, c, globalConfig)
 			ret, err := s.scrapePerformerByURL(url)
 			if err != nil {
 				return nil, err
@@ -386,19 +387,19 @@ func (c config) matchesMovieURL(url string) bool {
 	return false
 }
 
-func (c config) ScrapeScene(scene models.SceneUpdateInput, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
+func (c config) ScrapeScene(scene models.SceneUpdateInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
 	if c.SceneByFragment != nil {
-		s := getScraper(*c.SceneByFragment, c, globalConfig)
+		s := getScraper(*c.SceneByFragment, txnManager, c, globalConfig)
 		return s.scrapeSceneByFragment(scene)
 	}
 
 	return nil, nil
 }
 
-func (c config) ScrapeSceneURL(url string, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
+func (c config) ScrapeSceneURL(url string, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
 	for _, scraper := range c.SceneByURL {
 		if scraper.matchesURL(url) {
-			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
+			s := getScraper(scraper.scraperTypeConfig, txnManager, c, globalConfig)
 			ret, err := s.scrapeSceneByURL(url)
 			if err != nil {
 				return nil, err
@@ -413,19 +414,19 @@ func (c config) ScrapeSceneURL(url string, globalConfig GlobalConfig) (*models.S
 	return nil, nil
 }
 
-func (c config) ScrapeGallery(gallery models.GalleryUpdateInput, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
+func (c config) ScrapeGallery(gallery models.GalleryUpdateInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
 	if c.GalleryByFragment != nil {
-		s := getScraper(*c.GalleryByFragment, c, globalConfig)
+		s := getScraper(*c.GalleryByFragment, txnManager, c, globalConfig)
 		return s.scrapeGalleryByFragment(gallery)
 	}
 
 	return nil, nil
 }
 
-func (c config) ScrapeGalleryURL(url string, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
+func (c config) ScrapeGalleryURL(url string, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
 	for _, scraper := range c.GalleryByURL {
 		if scraper.matchesURL(url) {
-			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
+			s := getScraper(scraper.scraperTypeConfig, txnManager, c, globalConfig)
 			ret, err := s.scrapeGalleryByURL(url)
 			if err != nil {
 				return nil, err
@@ -440,10 +441,10 @@ func (c config) ScrapeGalleryURL(url string, globalConfig GlobalConfig) (*models
 	return nil, nil
 }
 
-func (c config) ScrapeMovieURL(url string, globalConfig GlobalConfig) (*models.ScrapedMovie, error) {
+func (c config) ScrapeMovieURL(url string, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedMovie, error) {
 	for _, scraper := range c.MovieByURL {
 		if scraper.matchesURL(url) {
-			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
+			s := getScraper(scraper.scraperTypeConfig, txnManager, c, globalConfig)
 			ret, err := s.scrapeMovieByURL(url)
 			if err != nil {
 				return nil, err

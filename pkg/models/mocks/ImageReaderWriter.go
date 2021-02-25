@@ -35,6 +35,48 @@ func (_m *ImageReaderWriter) All() ([]*models.Image, error) {
 	return r0, r1
 }
 
+// Count provides a mock function with given fields:
+func (_m *ImageReaderWriter) Count() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountByGalleryID provides a mock function with given fields: galleryID
+func (_m *ImageReaderWriter) CountByGalleryID(galleryID int) (int, error) {
+	ret := _m.Called(galleryID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(galleryID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(galleryID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: newImage
 func (_m *ImageReaderWriter) Create(newImage models.Image) (*models.Image, error) {
 	ret := _m.Called(newImage)
@@ -51,6 +93,64 @@ func (_m *ImageReaderWriter) Create(newImage models.Image) (*models.Image, error
 	var r1 error
 	if rf, ok := ret.Get(1).(func(models.Image) error); ok {
 		r1 = rf(newImage)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DecrementOCounter provides a mock function with given fields: id
+func (_m *ImageReaderWriter) DecrementOCounter(id int) (int, error) {
+	ret := _m.Called(id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Destroy provides a mock function with given fields: id
+func (_m *ImageReaderWriter) Destroy(id int) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Find provides a mock function with given fields: id
+func (_m *ImageReaderWriter) Find(id int) (*models.Image, error) {
+	ret := _m.Called(id)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(int) *models.Image); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -104,6 +204,29 @@ func (_m *ImageReaderWriter) FindByGalleryID(galleryID int) ([]*models.Image, er
 	return r0, r1
 }
 
+// FindByPath provides a mock function with given fields: path
+func (_m *ImageReaderWriter) FindByPath(path string) (*models.Image, error) {
+	ret := _m.Called(path)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(string) *models.Image); ok {
+		r0 = rf(path)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(path)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ids
 func (_m *ImageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	ret := _m.Called(ids)
@@ -120,6 +243,168 @@ func (_m *ImageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]int) error); ok {
 		r1 = rf(ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetGalleryIDs provides a mock function with given fields: imageID
+func (_m *ImageReaderWriter) GetGalleryIDs(imageID int) ([]int, error) {
+	ret := _m.Called(imageID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetPerformerIDs provides a mock function with given fields: imageID
+func (_m *ImageReaderWriter) GetPerformerIDs(imageID int) ([]int, error) {
+	ret := _m.Called(imageID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTagIDs provides a mock function with given fields: imageID
+func (_m *ImageReaderWriter) GetTagIDs(imageID int) ([]int, error) {
+	ret := _m.Called(imageID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// IncrementOCounter provides a mock function with given fields: id
+func (_m *ImageReaderWriter) IncrementOCounter(id int) (int, error) {
+	ret := _m.Called(id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Query provides a mock function with given fields: imageFilter, findFilter
+func (_m *ImageReaderWriter) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
+	ret := _m.Called(imageFilter, findFilter)
+
+	var r0 []*models.Image
+	if rf, ok := ret.Get(0).(func(*models.ImageFilterType, *models.FindFilterType) []*models.Image); ok {
+		r0 = rf(imageFilter, findFilter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Image)
+		}
+	}
+
+	var r1 int
+	if rf, ok := ret.Get(1).(func(*models.ImageFilterType, *models.FindFilterType) int); ok {
+		r1 = rf(imageFilter, findFilter)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*models.ImageFilterType, *models.FindFilterType) error); ok {
+		r2 = rf(imageFilter, findFilter)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// ResetOCounter provides a mock function with given fields: id
+func (_m *ImageReaderWriter) ResetOCounter(id int) (int, error) {
+	ret := _m.Called(id)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Size provides a mock function with given fields:
+func (_m *ImageReaderWriter) Size() (float64, error) {
+	ret := _m.Called()
+
+	var r0 float64
+	if rf, ok := ret.Get(0).(func() float64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -171,4 +456,46 @@ func (_m *ImageReaderWriter) UpdateFull(updatedImage models.Image) (*models.Imag
 	}
 
 	return r0, r1
+}
+
+// UpdateGalleries provides a mock function with given fields: imageID, galleryIDs
+func (_m *ImageReaderWriter) UpdateGalleries(imageID int, galleryIDs []int) error {
+	ret := _m.Called(imageID, galleryIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(imageID, galleryIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePerformers provides a mock function with given fields: imageID, performerIDs
+func (_m *ImageReaderWriter) UpdatePerformers(imageID int, performerIDs []int) error {
+	ret := _m.Called(imageID, performerIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(imageID, performerIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateTags provides a mock function with given fields: imageID, tagIDs
+func (_m *ImageReaderWriter) UpdateTags(imageID int, tagIDs []int) error {
+	ret := _m.Called(imageID, tagIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(imageID, tagIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

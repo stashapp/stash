@@ -112,9 +112,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [galleryExtensions, setGalleryExtensions] = useState<
     string | undefined
   >();
-  const [createGalleriesFromFolders, setCreateGalleriesFromFolders] = useState<
-    boolean
-  >(false);
+  const [
+    createGalleriesFromFolders,
+    setCreateGalleriesFromFolders,
+  ] = useState<boolean>(false);
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);

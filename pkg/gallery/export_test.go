@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -51,18 +50,18 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
 		ID:       id,
-		Path:     modelstest.NullString(path),
+		Path:     models.NullString(path),
 		Zip:      zip,
-		Title:    modelstest.NullString(title),
+		Title:    models.NullString(title),
 		Checksum: checksum,
 		Date: models.SQLiteDate{
 			String: date,
 			Valid:  true,
 		},
-		Details:   modelstest.NullString(details),
-		Rating:    modelstest.NullInt64(rating),
+		Details:   models.NullString(details),
+		Rating:    models.NullInt64(rating),
 		Organized: organized,
-		URL:       modelstest.NullString(url),
+		URL:       models.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -146,7 +145,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioGallery(studioID int) models.Gallery {
 	return models.Gallery{
-		StudioID: modelstest.NullInt64(int64(studioID)),
+		StudioID: models.NullInt64(int64(studioID)),
 	}
 }
 
@@ -180,7 +179,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", studioID).Return(&models.Studio{
-		Name: modelstest.NullString(studioName),
+		Name: models.NullString(studioName),
 	}, nil).Once()
 	mockStudioReader.On("Find", missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr).Once()

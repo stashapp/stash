@@ -7,21 +7,27 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
-	if obj == nil {
-		return nil, nil
+func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.Scene().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
 	}
-	count, err := qb.CountByTagID(obj.ID)
+
 	return &count, err
 }
 
-func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
-	if obj == nil {
-		return nil, nil
+func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.SceneMarker().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
 	}
-	count, err := qb.CountByTagID(obj.ID)
+
 	return &count, err
 }
 

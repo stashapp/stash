@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -52,7 +51,7 @@ var frontImageBytes = []byte("frontImageBytes")
 var backImageBytes = []byte("backImageBytes")
 
 var studio models.Studio = models.Studio{
-	Name: modelstest.NullString(studioName),
+	Name: models.NullString(studioName),
 }
 
 var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
@@ -61,8 +60,8 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 func createFullMovie(id int, studioID int) models.Movie {
 	return models.Movie{
 		ID:      id,
-		Name:    modelstest.NullString(movieName),
-		Aliases: modelstest.NullString(movieAliases),
+		Name:    models.NullString(movieName),
+		Aliases: models.NullString(movieAliases),
 		Date:    date,
 		Rating: sql.NullInt64{
 			Int64: rating,
@@ -72,9 +71,9 @@ func createFullMovie(id int, studioID int) models.Movie {
 			Int64: duration,
 			Valid: true,
 		},
-		Director: modelstest.NullString(director),
-		Synopsis: modelstest.NullString(synopsis),
-		URL:      modelstest.NullString(url),
+		Director: models.NullString(director),
+		Synopsis: models.NullString(synopsis),
+		URL:      models.NullString(url),
 		StudioID: sql.NullInt64{
 			Int64: int64(studioID),
 			Valid: true,

@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"path/filepath"
 	"strconv"
 
@@ -13,6 +14,7 @@ import (
 )
 
 type GenerateMarkersTask struct {
+	TxnManager          models.TransactionManager
 	Scene               *models.Scene
 	Marker              *models.SceneMarker
 	Overwrite           bool
@@ -27,14 +29,22 @@ func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	}
 
 	if t.Marker != nil {
-		qb := models.NewSceneQueryBuilder()
-		scene, err := qb.Find(int(t.Marker.SceneID.Int64))
-		if err != nil {
+		var scene *models.Scene
+		if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			var err error
+			scene, err = r.Scene().Find(int(t.Marker.SceneID.Int64))
+			return err
+		}); err != nil {
 			logger.Errorf("error finding scene for marker: %s", err.Error())
 			return
 		}
 
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+		if scene == nil {
+			logger.Errorf("scene not found for id %d", t.Marker.SceneID.Int64)
+			return
+		}
+
+		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -45,13 +55,21 @@ func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *GenerateMarkersTask) generateSceneMarkers() {
-	qb := models.NewSceneMarkerQueryBuilder()
-	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
+	var sceneMarkers []*models.SceneMarker
+	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		var err error
+		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
+		return err
+	}); err != nil {
+		logger.Errorf("error getting scene markers: %s", err.Error())
+		return
+	}
+
 	if len(sceneMarkers) == 0 {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return
@@ -117,8 +135,16 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 func (t *GenerateMarkersTask) isMarkerNeeded() int {
 	markers := 0
-	qb := models.NewSceneMarkerQueryBuilder()
-	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
+	var sceneMarkers []*models.SceneMarker
+	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		var err error
+		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
+		return err
+	}); err != nil {
+		logger.Errorf("errror finding scene markers: %s", err.Error())
+		return 0
+	}
+
 	if len(sceneMarkers) == 0 {
 		return 0
 	}

@@ -60,6 +60,10 @@ const messages = defineMessages({
     id: "sceneTagger",
     defaultMessage: "Scene Tagger",
   },
+  donate: {
+    id: "donate",
+    defaultMessage: "Donate",
+  },
 });
 
 const allMenuItems: IMenuItem[] = [
@@ -244,7 +248,7 @@ export const MainNavbar: React.FC = () => {
         variant="dark"
         bg="dark"
         className="top-nav"
-        expand="lg"
+        expand="xl"
         expanded={expanded}
         onToggle={setExpanded}
         ref={navbarRef}
@@ -282,6 +286,16 @@ export const MainNavbar: React.FC = () => {
         </Navbar.Collapse>
         <Nav className="order-2 flex-row">
           <div className="d-none d-sm-block">{newButton}</div>
+          <Nav.Link
+            href="https://opencollective.com/stashapp"
+            target="_blank"
+            onClick={() => setExpanded(false)}
+          >
+            <Button className="minimal donate" title="Donate">
+              <Icon icon="heart" />
+              <span>{intl.formatMessage(messages.donate)}</span>
+            </Button>
+          </Nav.Link>
           <NavLink exact to="/settings" onClick={() => setExpanded(false)}>
             <Button className="minimal settings-button" title="Settings">
               <Icon icon="cog" />

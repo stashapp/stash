@@ -6,17 +6,26 @@ enum SortDirectionEnum {
 input FindFilterType {
   q: String
   page: Int
+  """use per_page = 0 to indicate all results. Defaults to 25."""
   per_page: Int
   sort: String
   direction: SortDirectionEnum
 }
 
 enum ResolutionEnum {
+  "144p", VERY_LOW
   "240p", LOW
+  "360p", R360P
   "480p", STANDARD
+  "540p", WEB_HD
   "720p", STANDARD_HD
   "1080p", FULL_HD
+  "1440p", QUAD_HD
+  "1920p", VR_HD
   "4k", FOUR_K
+  "5k", FIVE_K
+  "6k", SIX_K
+  "8k", EIGHT_K
 }
 
 input PerformerFilterType {
@@ -184,6 +193,10 @@ enum CriterionModifier {
   INCLUDES_ALL,
   INCLUDES,
   EXCLUDES,
+  """MATCHES REGEX"""
+  MATCHES_REGEX,
+  """NOT MATCHES REGEX"""
+  NOT_MATCHES_REGEX,
 }
 
 input StringCriterionInput {

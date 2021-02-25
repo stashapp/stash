@@ -15,7 +15,7 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
     "details",
     "url",
     "date",
-    "gallery",
+    "galleries",
     "studio",
     "movie",
     "performers",
@@ -83,7 +83,7 @@ export class GalleryIsMissingCriterion extends IsMissingCriterion {
     "studio",
     "performers",
     "tags",
-    "scene",
+    "scenes",
   ];
 }
 

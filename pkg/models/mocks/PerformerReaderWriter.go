@@ -35,6 +35,50 @@ func (_m *PerformerReaderWriter) All() ([]*models.Performer, error) {
 	return r0, r1
 }
 
+// AllSlim provides a mock function with given fields:
+func (_m *PerformerReaderWriter) AllSlim() ([]*models.Performer, error) {
+	ret := _m.Called()
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func() []*models.Performer); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Count provides a mock function with given fields:
+func (_m *PerformerReaderWriter) Count() (int, error) {
+	ret := _m.Called()
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func() int); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: newPerformer
 func (_m *PerformerReaderWriter) Create(newPerformer models.Performer) (*models.Performer, error) {
 	ret := _m.Called(newPerformer)
@@ -51,6 +95,57 @@ func (_m *PerformerReaderWriter) Create(newPerformer models.Performer) (*models.
 	var r1 error
 	if rf, ok := ret.Get(1).(func(models.Performer) error); ok {
 		r1 = rf(newPerformer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Destroy provides a mock function with given fields: id
+func (_m *PerformerReaderWriter) Destroy(id int) error {
+	ret := _m.Called(id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int) error); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DestroyImage provides a mock function with given fields: performerID
+func (_m *PerformerReaderWriter) DestroyImage(performerID int) error {
+	ret := _m.Called(performerID)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int) error); ok {
+		r0 = rf(performerID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Find provides a mock function with given fields: id
+func (_m *PerformerReaderWriter) Find(id int) (*models.Performer, error) {
+	ret := _m.Called(id)
+
+	var r0 *models.Performer
+	if rf, ok := ret.Get(0).(func(int) *models.Performer); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -196,8 +291,8 @@ func (_m *PerformerReaderWriter) FindNamesBySceneID(sceneID int) ([]*models.Perf
 	return r0, r1
 }
 
-// GetPerformerImage provides a mock function with given fields: performerID
-func (_m *PerformerReaderWriter) GetPerformerImage(performerID int) ([]byte, error) {
+// GetImage provides a mock function with given fields: performerID
+func (_m *PerformerReaderWriter) GetImage(performerID int) ([]byte, error) {
 	ret := _m.Called(performerID)
 
 	var r0 []byte
@@ -217,6 +312,59 @@ func (_m *PerformerReaderWriter) GetPerformerImage(performerID int) ([]byte, err
 	}
 
 	return r0, r1
+}
+
+// GetStashIDs provides a mock function with given fields: performerID
+func (_m *PerformerReaderWriter) GetStashIDs(performerID int) ([]*models.StashID, error) {
+	ret := _m.Called(performerID)
+
+	var r0 []*models.StashID
+	if rf, ok := ret.Get(0).(func(int) []*models.StashID); ok {
+		r0 = rf(performerID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.StashID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Query provides a mock function with given fields: performerFilter, findFilter
+func (_m *PerformerReaderWriter) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
+	ret := _m.Called(performerFilter, findFilter)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func(*models.PerformerFilterType, *models.FindFilterType) []*models.Performer); ok {
+		r0 = rf(performerFilter, findFilter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 int
+	if rf, ok := ret.Get(1).(func(*models.PerformerFilterType, *models.FindFilterType) int); ok {
+		r1 = rf(performerFilter, findFilter)
+	} else {
+		r1 = ret.Get(1).(int)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(*models.PerformerFilterType, *models.FindFilterType) error); ok {
+		r2 = rf(performerFilter, findFilter)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Update provides a mock function with given fields: updatedPerformer
@@ -265,13 +413,27 @@ func (_m *PerformerReaderWriter) UpdateFull(updatedPerformer models.Performer) (
 	return r0, r1
 }
 
-// UpdatePerformerImage provides a mock function with given fields: performerID, image
-func (_m *PerformerReaderWriter) UpdatePerformerImage(performerID int, image []byte) error {
+// UpdateImage provides a mock function with given fields: performerID, image
+func (_m *PerformerReaderWriter) UpdateImage(performerID int, image []byte) error {
 	ret := _m.Called(performerID, image)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []byte) error); ok {
 		r0 = rf(performerID, image)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateStashIDs provides a mock function with given fields: performerID, stashIDs
+func (_m *PerformerReaderWriter) UpdateStashIDs(performerID int, stashIDs []models.StashID) error {
+	ret := _m.Called(performerID, stashIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []models.StashID) error); ok {
+		r0 = rf(performerID, stashIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

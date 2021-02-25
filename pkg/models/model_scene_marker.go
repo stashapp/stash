@@ -13,3 +13,13 @@ type SceneMarker struct {
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
+
+type SceneMarkers []*SceneMarker
+
+func (m *SceneMarkers) Append(o interface{}) {
+	*m = append(*m, o.(*SceneMarker))
+}
+
+func (m *SceneMarkers) New() interface{} {
+	return &SceneMarker{}
+}

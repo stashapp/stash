@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
+  mutateMetadataScan,
   useFindScene,
   useSceneIncrementO,
   useSceneDecrementO,
@@ -24,6 +25,7 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { SceneGalleriesPanel } from "./SceneGalleriesPanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
@@ -50,6 +52,7 @@ export const Scene: React.FC = () => {
     error: streamableError,
     loading: streamableLoading,
   } = useSceneStreams(id);
+
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
@@ -129,6 +132,18 @@ export const Scene: React.FC = () => {
     setTimestamp(marker.seconds);
   }
 
+  async function onRescan() {
+    if (!scene) {
+      return;
+    }
+
+    await mutateMetadataScan({
+      paths: [scene.path],
+    });
+
+    Toast.success({ content: "Rescanning scene" });
+  }
+
   async function onGenerateScreenshot(at?: number) {
     if (!scene) {
       return;
@@ -183,6 +198,13 @@ export const Scene: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            Rescan
+          </Dropdown.Item>
           <Dropdown.Item
             key="generate"
             className="bg-secondary text-white"
@@ -243,13 +265,16 @@ export const Scene: React.FC = () => {
             ) : (
               ""
             )}
-            {scene.gallery ? (
+            {scene.galleries.length === 1 ? (
               <Nav.Item>
                 <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
               </Nav.Item>
-            ) : (
-              ""
-            )}
+            ) : undefined}
+            {scene.galleries.length > 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
+              </Nav.Item>
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
             </Nav.Item>
@@ -295,12 +320,15 @@ export const Scene: React.FC = () => {
           <Tab.Pane eventKey="scene-movie-panel">
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
-          {scene.gallery ? (
+          {scene.galleries.length === 1 && (
             <Tab.Pane eventKey="scene-gallery-panel">
-              <GalleryViewer gallery={scene.gallery} />
+              <GalleryViewer galleryId={scene.galleries[0].id} />
             </Tab.Pane>
-          ) : (
-            ""
+          )}
+          {scene.galleries.length > 1 && (
+            <Tab.Pane eventKey="scene-galleries-panel">
+              <SceneGalleriesPanel galleries={scene.galleries} />
+            </Tab.Pane>
           )}
           <Tab.Pane eventKey="scene-video-filter-panel">
             <SceneVideoFilterPanel scene={scene} />

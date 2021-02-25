@@ -50,8 +50,6 @@ type Query {
 
   """Get marker strings"""
   markerStrings(q: String, sort: String): [MarkerStringsResultType]!
-  """Get the list of valid galleries for a given scene ID"""
-  validGalleriesForScene(scene_id: ID): [Gallery!]!
   """Get stats"""
   stats: StatsResultType!
   """Organize scene markers by tag for a given scene ID"""
@@ -175,18 +173,22 @@ type Mutation {
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
+  performersDestroy(ids: [ID!]!): Boolean!
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
+  studiosDestroy(ids: [ID!]!): Boolean!
 
   movieCreate(input: MovieCreateInput!): Movie
   movieUpdate(input: MovieUpdateInput!): Movie
   movieDestroy(input: MovieDestroyInput!): Boolean!
+  moviesDestroy(ids: [ID!]!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
+  tagsDestroy(ids: [ID!]!): Boolean!
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
@@ -209,7 +211,7 @@ type Mutation {
   """Start auto-tagging. Returns the job ID"""
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
-  metadataClean: String!
+  metadataClean(input: CleanMetadataInput!): String!
   """Migrate generated files for the current hash naming"""
   migrateHashNaming: String!
 
@@ -222,8 +224,11 @@ type Mutation {
 
   stopJob: Boolean!
 
-  """ Submit fingerprints to stash-box instance """
+  """Submit fingerprints to stash-box instance"""
   submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
+
+  """Backup the database. Optionally returns a link to download the database file"""
+  backupDatabase(input: BackupDatabaseInput!): String
 }
 
 type Subscription {

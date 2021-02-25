@@ -3,17 +3,13 @@ package manager
 import (
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func EnsureTagNameUnique(tag models.Tag, tx *sqlx.Tx) error {
-	qb := models.NewTagQueryBuilder()
-
+func EnsureTagNameUnique(tag models.Tag, qb models.TagReader) error {
 	// ensure name is unique
-	sameNameTag, err := qb.FindByName(tag.Name, tx, true)
+	sameNameTag, err := qb.FindByName(tag.Name, true)
 	if err != nil {
-		_ = tx.Rollback()
 		return err
 	}
 

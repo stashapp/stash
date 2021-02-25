@@ -24,9 +24,7 @@ fragment GalleryData on Gallery {
   performers {
     ...PerformerData
   }
-  scene {
-    id
-    title
-    path
+  scenes {
+    ...SceneData
   }
 }

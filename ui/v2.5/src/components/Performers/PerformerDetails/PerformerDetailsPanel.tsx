@@ -11,6 +11,8 @@ import {
   queryScrapePerformer,
   queryScrapePerformerURL,
   mutateReloadScrapers,
+  usePerformerUpdate,
+  usePerformerCreate,
 } from "src/core/StashService";
 import {
   Icon,
@@ -26,6 +28,7 @@ import {
   EditableTextUtils,
 } from "src/utils";
 import { useToast } from "src/hooks";
+import { useHistory } from "react-router-dom";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
 interface IPerformerDetails {
@@ -33,11 +36,6 @@ interface IPerformerDetails {
   isNew?: boolean;
   isEditing?: boolean;
   isVisible: boolean;
-  onSave?: (
-    performer:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) => void;
   onDelete?: () => void;
   onImageChange?: (image?: string | null) => void;
   onImageEncoding?: (loading?: boolean) => void;
@@ -48,47 +46,60 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   isNew,
   isEditing,
   isVisible,
-  onSave,
   onDelete,
   onImageChange,
   onImageEncoding,
 }) => {
   const Toast = useToast();
+  const history = useHistory();
 
   // Editing state
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<
-    GQL.Scraper
-  >();
-  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<
-    GQL.ScrapedPerformerDataFragment
-  >();
+  const [
+    isDisplayingScraperDialog,
+    setIsDisplayingScraperDialog,
+  ] = useState<GQL.Scraper>();
+  const [
+    scrapePerformerDetails,
+    setScrapePerformerDetails,
+  ] = useState<GQL.ScrapedPerformerDataFragment>();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing performer state
   const [image, setImage] = useState<string | null>();
-  const [name, setName] = useState<string>();
-  const [aliases, setAliases] = useState<string>();
-  const [favorite, setFavorite] = useState<boolean>();
-  const [birthdate, setBirthdate] = useState<string>();
-  const [ethnicity, setEthnicity] = useState<string>();
-  const [country, setCountry] = useState<string>();
-  const [eyeColor, setEyeColor] = useState<string>();
-  const [height, setHeight] = useState<string>();
-  const [measurements, setMeasurements] = useState<string>();
-  const [fakeTits, setFakeTits] = useState<string>();
-  const [careerLength, setCareerLength] = useState<string>();
-  const [tattoos, setTattoos] = useState<string>();
-  const [piercings, setPiercings] = useState<string>();
-  const [url, setUrl] = useState<string>();
-  const [twitter, setTwitter] = useState<string>();
-  const [instagram, setInstagram] = useState<string>();
-  const [gender, setGender] = useState<string | undefined>(undefined);
-  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
+  const [name, setName] = useState<string>(performer?.name ?? "");
+  const [aliases, setAliases] = useState<string>(performer.aliases ?? "");
+  const [birthdate, setBirthdate] = useState<string>(performer.birthdate ?? "");
+  const [ethnicity, setEthnicity] = useState<string>(performer.ethnicity ?? "");
+  const [country, setCountry] = useState<string>(performer.country ?? "");
+  const [eyeColor, setEyeColor] = useState<string>(performer.eye_color ?? "");
+  const [height, setHeight] = useState<string>(performer.height ?? "");
+  const [measurements, setMeasurements] = useState<string>(
+    performer.measurements ?? ""
+  );
+  const [fakeTits, setFakeTits] = useState<string>(performer.fake_tits ?? "");
+  const [careerLength, setCareerLength] = useState<string>(
+    performer.career_length ?? ""
+  );
+  const [tattoos, setTattoos] = useState<string>(performer.tattoos ?? "");
+  const [piercings, setPiercings] = useState<string>(performer.piercings ?? "");
+  const [url, setUrl] = useState<string>(performer.url ?? "");
+  const [twitter, setTwitter] = useState<string>(performer.twitter ?? "");
+  const [instagram, setInstagram] = useState<string>(performer.instagram ?? "");
+  const [gender, setGender] = useState<string | undefined>(
+    genderToString(performer.gender ?? undefined)
+  );
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>(
+    performer.stash_ids ?? []
+  );
+  const favorite = performer.favorite ?? false;
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
   const intl = useIntl();
+
+  const [updatePerformer] = usePerformerUpdate();
+  const [createPerformer] = usePerformerCreate();
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -98,35 +109,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   >();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  function updatePerformerEditState(
-    state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
-  ) {
-    if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
-      setFavorite((state as GQL.PerformerDataFragment).favorite);
-    }
-    setName(state.name ?? undefined);
-    setAliases(state.aliases ?? undefined);
-    setBirthdate(state.birthdate ?? undefined);
-    setEthnicity(state.ethnicity ?? undefined);
-    setCountry(state.country ?? undefined);
-    setEyeColor(state.eye_color ?? undefined);
-    setHeight(state.height ?? undefined);
-    setMeasurements(state.measurements ?? undefined);
-    setFakeTits(state.fake_tits ?? undefined);
-    setCareerLength(state.career_length ?? undefined);
-    setTattoos(state.tattoos ?? undefined);
-    setPiercings(state.piercings ?? undefined);
-    setUrl(state.url ?? undefined);
-    setTwitter(state.twitter ?? undefined);
-    setInstagram(state.instagram ?? undefined);
-    setGender(
-      genderToString((state as GQL.PerformerDataFragment).gender ?? undefined)
-    );
-    if ((state as GQL.PerformerDataFragment).stash_ids !== undefined) {
-      setStashIDs((state as GQL.PerformerDataFragment).stash_ids);
-    }
-  }
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -220,6 +202,43 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setImage(imageData);
   }
 
+  async function onSave(
+    performerInput:
+      | Partial<GQL.PerformerCreateInput>
+      | Partial<GQL.PerformerUpdateInput>
+  ) {
+    setIsLoading(true);
+    try {
+      if (!isNew) {
+        await updatePerformer({
+          variables: {
+            input: {
+              ...performerInput,
+              stash_ids: performerInput?.stash_ids?.map((s) => ({
+                endpoint: s.endpoint,
+                stash_id: s.stash_id,
+              })),
+            } as GQL.PerformerUpdateInput,
+          },
+        });
+        if (performerInput.image) {
+          // Refetch image to bust browser cache
+          await fetch(`/performer/${performer.id}/image`, { cache: "reload" });
+        }
+      } else {
+        const result = await createPerformer({
+          variables: performerInput as GQL.PerformerCreateInput,
+        });
+        if (result.data?.performerCreate) {
+          history.push(`/performers/${result.data.performerCreate.id}`);
+        }
+      }
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
+  }
+
   // set up hotkeys
   useEffect(() => {
     if (isEditing && isVisible) {
@@ -242,10 +261,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       };
     }
   });
-
-  useEffect(() => {
-    if (!isNew) updatePerformerEditState(performer);
-  }, [isNew, performer]);
 
   useEffect(() => {
     if (onImageChange) {
@@ -397,9 +412,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     const popover = (
-      <Popover id="scraper-popover">
+      <Popover id="performer-scraper-popover">
         <Popover.Content>
-          <div>
+          <>
             {queryableScrapers
               ? queryableScrapers.map((s) => (
                   <div key={s.name}>
@@ -421,7 +436,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
                 <span>Reload scrapers</span>
               </Button>
             </div>
-          </div>
+          </>
         </Popover.Content>
       </Popover>
     );

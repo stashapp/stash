@@ -4,35 +4,35 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type CleanTask struct {
+	TxnManager          models.TransactionManager
 	Scene               *models.Scene
 	Gallery             *models.Gallery
 	Image               *models.Image
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *CleanTask) Start(wg *sync.WaitGroup) {
+func (t *CleanTask) Start(wg *sync.WaitGroup, dryRun bool) {
 	defer wg.Done()
 
-	if t.Scene != nil && t.shouldCleanScene(t.Scene) {
+	if t.Scene != nil && t.shouldCleanScene(t.Scene) && !dryRun {
 		t.deleteScene(t.Scene.ID)
 	}
 
-	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) {
+	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) && !dryRun {
 		t.deleteGallery(t.Gallery.ID)
 	}
 
-	if t.Image != nil && t.shouldCleanImage(t.Image) {
+	if t.Image != nil && t.shouldCleanImage(t.Image) && !dryRun {
 		t.deleteImage(t.Image.ID)
 	}
 }
@@ -41,7 +41,9 @@ func (t *CleanTask) shouldClean(path string) bool {
 	// use image.FileExists for zip file checking
 	fileExists := image.FileExists(path)
 
-	if !fileExists || getStashFromPath(path) == nil {
+	// #1102 - clean anything in generated path
+	generatedPath := config.GetGeneratedPath()
+	if !fileExists || getStashFromPath(path) == nil || utils.IsPathInDir(generatedPath, path) {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
 		return true
 	}
@@ -133,60 +135,45 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 }
 
 func (t *CleanTask) deleteScene(sceneID int) {
-	ctx := context.TODO()
-	qb := models.NewSceneQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	var postCommitFunc func()
+	var scene *models.Scene
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Scene()
 
-	scene, err := qb.Find(sceneID)
-	err = DestroyScene(sceneID, tx)
-
-	if err != nil {
+		var err error
+		scene, err = qb.Find(sceneID)
+		if err != nil {
+			return err
+		}
+		postCommitFunc, err = DestroyScene(scene, repo)
+		return err
+	}); err != nil {
 		logger.Errorf("Error deleting scene from database: %s", err.Error())
-		tx.Rollback()
 		return
 	}
 
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("Error deleting scene from database: %s", err.Error())
-		return
-	}
+	postCommitFunc()
 
 	DeleteGeneratedSceneFiles(scene, t.fileNamingAlgorithm)
 }
 
 func (t *CleanTask) deleteGallery(galleryID int) {
-	ctx := context.TODO()
-	qb := models.NewGalleryQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	err := qb.Destroy(galleryID, tx)
-
-	if err != nil {
-		logger.Errorf("Error deleting gallery from database: %s", err.Error())
-		tx.Rollback()
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Gallery()
+		return qb.Destroy(galleryID)
+	}); err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
 }
 
 func (t *CleanTask) deleteImage(imageID int) {
-	ctx := context.TODO()
-	qb := models.NewImageQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
 
-	err := qb.Destroy(imageID, tx)
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Image()
 
-	if err != nil {
-		logger.Errorf("Error deleting image from database: %s", err.Error())
-		tx.Rollback()
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
+		return qb.Destroy(imageID)
+	}); err != nil {
 		logger.Errorf("Error deleting image from database: %s", err.Error())
 		return
 	}
@@ -213,28 +200,18 @@ func (t *CleanTask) fileExists(filename string) (bool, error) {
 
 func getStashFromPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetStashPaths() {
-		rel, error := filepath.Rel(s.Path, filepath.Dir(pathToCheck))
-
-		if error == nil {
-			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				return s
-			}
+		if utils.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
+			return s
 		}
-
 	}
 	return nil
 }
 
 func getStashFromDirPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetStashPaths() {
-		rel, error := filepath.Rel(s.Path, pathToCheck)
-
-		if error == nil {
-			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				return s
-			}
+		if utils.IsPathInDir(s.Path, pathToCheck) {
+			return s
 		}
-
 	}
 	return nil
 }

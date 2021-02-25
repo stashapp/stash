@@ -462,11 +462,20 @@ export class ListFilterModel {
         }
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {
+            case "144p":
+              result.resolution = ResolutionEnum.VeryLow;
+              break;
             case "240p":
               result.resolution = ResolutionEnum.Low;
               break;
+            case "360p":
+              result.resolution = ResolutionEnum.R360P;
+              break;
             case "480p":
               result.resolution = ResolutionEnum.Standard;
+              break;
+            case "540p":
+              result.resolution = ResolutionEnum.WebHd;
               break;
             case "720p":
               result.resolution = ResolutionEnum.StandardHd;
@@ -474,8 +483,23 @@ export class ListFilterModel {
             case "1080p":
               result.resolution = ResolutionEnum.FullHd;
               break;
+            case "1440p":
+              result.resolution = ResolutionEnum.QuadHd;
+              break;
+            case "1920p":
+              result.resolution = ResolutionEnum.VrHd;
+              break;
             case "4k":
               result.resolution = ResolutionEnum.FourK;
+              break;
+            case "5k":
+              result.resolution = ResolutionEnum.FiveK;
+              break;
+            case "6k":
+              result.resolution = ResolutionEnum.SixK;
+              break;
+            case "8k":
+              result.resolution = ResolutionEnum.EightK;
               break;
             // no default
           }
@@ -700,11 +724,20 @@ export class ListFilterModel {
         }
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {
+            case "144p":
+              result.resolution = ResolutionEnum.VeryLow;
+              break;
             case "240p":
               result.resolution = ResolutionEnum.Low;
               break;
+            case "360p":
+              result.resolution = ResolutionEnum.R360P;
+              break;
             case "480p":
               result.resolution = ResolutionEnum.Standard;
+              break;
+            case "540p":
+              result.resolution = ResolutionEnum.WebHd;
               break;
             case "720p":
               result.resolution = ResolutionEnum.StandardHd;
@@ -712,8 +745,23 @@ export class ListFilterModel {
             case "1080p":
               result.resolution = ResolutionEnum.FullHd;
               break;
+            case "1440p":
+              result.resolution = ResolutionEnum.QuadHd;
+              break;
+            case "1920p":
+              result.resolution = ResolutionEnum.VrHd;
+              break;
             case "4k":
               result.resolution = ResolutionEnum.FourK;
+              break;
+            case "5k":
+              result.resolution = ResolutionEnum.FiveK;
+              break;
+            case "6k":
+              result.resolution = ResolutionEnum.SixK;
+              break;
+            case "8k":
+              result.resolution = ResolutionEnum.EightK;
               break;
             // no default
           }
@@ -827,11 +875,20 @@ export class ListFilterModel {
         }
         case "average_resolution": {
           switch ((criterion as AverageResolutionCriterion).value) {
+            case "144p":
+              result.average_resolution = ResolutionEnum.VeryLow;
+              break;
             case "240p":
               result.average_resolution = ResolutionEnum.Low;
               break;
+            case "360p":
+              result.average_resolution = ResolutionEnum.R360P;
+              break;
             case "480p":
               result.average_resolution = ResolutionEnum.Standard;
+              break;
+            case "540p":
+              result.average_resolution = ResolutionEnum.WebHd;
               break;
             case "720p":
               result.average_resolution = ResolutionEnum.StandardHd;
@@ -839,8 +896,23 @@ export class ListFilterModel {
             case "1080p":
               result.average_resolution = ResolutionEnum.FullHd;
               break;
+            case "1440p":
+              result.average_resolution = ResolutionEnum.QuadHd;
+              break;
+            case "1920p":
+              result.average_resolution = ResolutionEnum.VrHd;
+              break;
             case "4k":
               result.average_resolution = ResolutionEnum.FourK;
+              break;
+            case "5k":
+              result.average_resolution = ResolutionEnum.FiveK;
+              break;
+            case "6k":
+              result.average_resolution = ResolutionEnum.SixK;
+              break;
+            case "8k":
+              result.average_resolution = ResolutionEnum.EightK;
               break;
             // no default
           }
