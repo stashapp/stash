@@ -1,0 +1,155 @@
+name: Build
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Checkout
+      run: git fetch --prune --unshallow --tags
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13
+
+    - name: Set up Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+    
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node_modules
+      with:
+        path: ui/v2.5/node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Pre-install
+      run: make pre-ui
+
+    - name: Generate
+      run: make generate
+    
+    - name: Validate
+      run: make ui-validate fmt-check vet it
+
+    - name: Build UI
+      run: make ui-only
+
+    - name: Cross Compile
+      run: |
+        docker pull stashapp/compiler:4
+        ./scripts/cross-compile.sh
+
+    - name: Generate checksums
+      run: |
+        git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
+        sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
+        echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
+        echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
+    
+    - name: Upload Windows binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-win.exe
+        path: dist/stash-win.exe
+
+    - name: Upload OSX binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-osx
+        path: dist/stash-osx
+
+    - name: Upload Linux binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-linux
+        path: dist/stash-linux
+        
+    - name: Update latest_develop tag
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run : git tag -f latest_develop; git push -f --tags
+
+    - name: Development Release
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
+      uses: meeDamian/github-release@2.0
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        allow_override: true
+        tag: latest_develop
+        name: "${{ env.STASH_VERSION }}: Latest development build"
+        body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
+        files: |
+          dist/stash-osx
+          dist/stash-win.exe
+          dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-pi
+          CHECKSUMS_SHA1
+        gzip: false
+
+    - name: Master release
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      uses: meeDamian/github-release@2.0
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        files: |
+          dist/stash-osx
+          dist/stash-win.exe
+          dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-pi
+          CHECKSUMS_SHA1
+        gzip: false
+    
+    - name: Development Docker
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64  
+        docker info
+        docker buildx create --name builder --use
+        docker buildx inspect --bootstrap
+        docker buildx ls
+        bash ./docker/ci/x86_64/docker_push.sh development
+
+    - name: Release Docker
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64  
+        docker info
+        docker buildx create --name builder --use
+        docker buildx inspect --bootstrap
+        docker buildx ls
+        bash ./docker/ci/x86_64/docker_push.sh latest
