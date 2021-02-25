@@ -86,6 +86,7 @@ const SessionStoreKey = "session_store_key"
 // scraping options
 const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
+const ScraperCertCheck = "scraper_cert_check"
 const ScraperCDPPath = "scraper_cdp_path"
 
 // stash-box options
@@ -272,6 +273,17 @@ func GetScraperUserAgent() string {
 // to an instance of Chrome.
 func GetScraperCDPPath() string {
 	return viper.GetString(ScraperCDPPath)
+}
+
+// GetScraperCertCheck returns true if the scraper should check for insecure
+// certificates when fetching an image or a page.
+func GetScraperCertCheck() bool {
+	ret := true
+	if viper.IsSet(ScraperCertCheck) {
+		ret = viper.GetBool(ScraperCertCheck)
+	}
+
+	return ret
 }
 
 func GetStashBoxes() []*models.StashBox {
