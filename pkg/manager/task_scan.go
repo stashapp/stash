@@ -315,14 +315,22 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 			scene, _ := sqb.FindByPath(scenePath)
 			// found related Scene
 			if scene != nil {
-				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
-
-				if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
-					return err
+				sceneGalleries, _ := sqb.FindByGalleryID(g.ID) // check if gallery is already associated to the scene
+				isAssoc := false
+				for _, sg := range sceneGalleries {
+					if scene.ID == sg.ID {
+						isAssoc = true
+						break
+					}
+				}
+				if !isAssoc {
+					logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+					if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
+						return err
+					}
 				}
 			}
 		}
-
 		return nil
 	}); err != nil {
 		logger.Error(err.Error())
