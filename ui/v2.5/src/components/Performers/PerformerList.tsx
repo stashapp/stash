@@ -17,6 +17,7 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
+import { EditPerformersDialog } from "./EditPerformersDialog";
 
 export const PerformerList: React.FC = () => {
   const history = useHistory();
@@ -82,6 +83,17 @@ export const PerformerList: React.FC = () => {
     }
   }
 
+  function renderEditPerformersDialog(
+    selectedPerformers: SlimPerformerDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return (
+      <>
+        <EditPerformersDialog selected={selectedPerformers} onClose={onClose} />
+      </>
+    );
+  }
+
   const renderDeleteDialog = (
     selectedPerformers: SlimPerformerDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -98,6 +110,7 @@ export const PerformerList: React.FC = () => {
   const listData = usePerformersList({
     otherOperations,
     renderContent,
+    renderEditDialog: renderEditPerformersDialog,
     addKeybinds,
     selectable: true,
     persistState: true,

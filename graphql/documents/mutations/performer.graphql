@@ -54,6 +54,14 @@ mutation PerformerUpdate(
   }
 }
 
+mutation BulkPerformerUpdate(
+  $input: BulkPerformerUpdateInput!) {
+
+  bulkPerformerUpdate(input: $input) {
+    ...PerformerData
+  }
+}
+
 mutation PerformerDestroy($id: ID!) {
   performerDestroy(input: { id: $id })
 }

@@ -226,6 +226,84 @@ func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, 
 	return qb.UpdateTags(performerID, ids)
 }
 
+func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models.BulkPerformerUpdateInput) ([]*models.Performer, error) {
+	performerIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, err
+	}
+
+	// Populate performer from the input
+	updatedTime := time.Now()
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	updatedPerformer := models.PerformerPartial{
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	}
+
+	updatedPerformer.URL = translator.nullString(input.URL, "url")
+	updatedPerformer.Birthdate = translator.sqliteDate(input.Birthdate, "birthdate")
+	updatedPerformer.Ethnicity = translator.nullString(input.Ethnicity, "ethnicity")
+	updatedPerformer.Country = translator.nullString(input.Country, "country")
+	updatedPerformer.EyeColor = translator.nullString(input.EyeColor, "eye_color")
+	updatedPerformer.Height = translator.nullString(input.Height, "height")
+	updatedPerformer.Measurements = translator.nullString(input.Measurements, "measurements")
+	updatedPerformer.FakeTits = translator.nullString(input.FakeTits, "fake_tits")
+	updatedPerformer.CareerLength = translator.nullString(input.CareerLength, "career_length")
+	updatedPerformer.Tattoos = translator.nullString(input.Tattoos, "tattoos")
+	updatedPerformer.Piercings = translator.nullString(input.Piercings, "piercings")
+	updatedPerformer.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
+	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
+	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+
+	if translator.hasField("gender") {
+		if input.Gender != nil {
+			updatedPerformer.Gender = &sql.NullString{String: input.Gender.String(), Valid: true}
+		} else {
+			updatedPerformer.Gender = &sql.NullString{String: "", Valid: false}
+		}
+	}
+
+	ret := []*models.Performer{}
+
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+
+		for _, performerID := range performerIDs {
+			updatedPerformer.ID = performerID
+
+			performer, err := qb.Update(updatedPerformer)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, performer)
+
+			// Save the tags
+			if translator.hasField("tag_ids") {
+				tagIDs, err := adjustTagIDs(qb, performerID, *input.TagIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateTags(performerID, tagIDs); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
