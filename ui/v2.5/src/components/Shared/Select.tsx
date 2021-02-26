@@ -44,6 +44,7 @@ interface IFilterProps {
   isMulti?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
+  menuPortalTarget?: HTMLElement | null;
 }
 interface ISelectProps<T extends boolean> {
   className?: string;
@@ -61,6 +62,7 @@ interface ISelectProps<T extends boolean> {
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
+  menuPortalTarget?: HTMLElement | null;
   closeMenuOnSelect?: boolean;
   noOptionsMessage?: string | null;
 }
@@ -110,6 +112,7 @@ const SelectComponent = <T extends boolean>({
   placeholder,
   showDropdown = true,
   groupHeader,
+  menuPortalTarget,
   closeMenuOnSelect = true,
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
@@ -159,6 +162,7 @@ const SelectComponent = <T extends boolean>({
     isLoading,
     styles,
     closeMenuOnSelect,
+    menuPortalTarget,
     components: {
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),

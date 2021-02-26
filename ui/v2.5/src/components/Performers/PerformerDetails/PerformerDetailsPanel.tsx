@@ -651,6 +651,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {isEditing ? (
             <>
               <TagSelect
+                menuPortalTarget={document.body}
                 isMulti
                 onSelect={(items) => setTagIds(items.map((item) => item.id))}
                 ids={tagIds}
