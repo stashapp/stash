@@ -19,7 +19,15 @@ import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 
-export const PerformerList: React.FC = () => {
+interface IPerformerList {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: boolean;
+}
+
+export const PerformerList: React.FC<IPerformerList> = ({
+  filterHook,
+  persistState,
+}) => {
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -111,9 +119,10 @@ export const PerformerList: React.FC = () => {
     otherOperations,
     renderContent,
     renderEditDialog: renderEditPerformersDialog,
+    filterHook,
     addKeybinds,
     selectable: true,
-    persistState: true,
+    persistState,
     renderDeleteDialog,
   });
 
