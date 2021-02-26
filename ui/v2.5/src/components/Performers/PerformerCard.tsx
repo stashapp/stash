@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedNumber, FormattedPlural, FormattedMessage } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
@@ -42,6 +42,19 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
+  function maybeRenderScenesPopoverButton() {
+    if (!performer.scene_count) return;
+
+    return (
+      <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+        <Button className="minimal">
+          <Icon icon="play-circle" />
+          <span>{performer.scene_count}</span>
+        </Button>
+      </Link>
+    );
+  }
+
   function maybeRenderTagPopoverButton() {
     if (performer.tags.length <= 0) return;
 
@@ -60,11 +73,12 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (performer.tags.length > 0) {
+    if (performer.scene_count || performer.tags.length > 0) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
+            {maybeRenderScenesPopoverButton()}
             {maybeRenderTagPopoverButton()}
           </ButtonGroup>
         </>
@@ -95,19 +109,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           <Link to={NavUtils.makePerformersCountryUrl(performer)}>
             <CountryFlag country={performer.country} />
           </Link>
-          <div className="text-muted">
-            Stars in&nbsp;
-            <FormattedNumber value={performer.scene_count ?? 0} />
-            &nbsp;
-            <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-              <FormattedPlural
-                value={performer.scene_count ?? 0}
-                one="scene"
-                other="scenes"
-              />
-            </Link>
-            .
-          </div>
           {maybeRenderPopoverButtonGroup()}
         </>
       }
