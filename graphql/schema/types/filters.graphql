@@ -155,6 +155,15 @@ input TagFilterType {
   """Filter by number of scenes with this tag"""
   scene_count: IntCriterionInput
 
+  """Filter by number of images with this tag"""
+  image_count: IntCriterionInput
+
+  """Filter by number of galleries with this tag"""
+  gallery_count: IntCriterionInput
+
+  """Filter by number of performers with this tag"""
+  performer_count: IntCriterionInput
+
   """Filter by number of markers with this tag"""
   marker_count: IntCriterionInput
 }

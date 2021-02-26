@@ -282,13 +282,20 @@ export class ListFilterModel {
         // issues
         this.sortByOptions = [
           "name",
-          "scenes_count" /* , "scene_markers_count"*/,
+          "scenes_count",
+          "images_count",
+          "galleries_count",
+          "performers_count",
+          /* "scene_markers_count" */
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new TagIsMissingCriterionOption(),
           ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
+          ListFilterModel.createCriterionOption("performer_count"),
           // marker count has been disabled for now due to performance issues
           // ListFilterModel.createCriterionOption("marker_count"),
         ];
@@ -1000,6 +1007,30 @@ export class ListFilterModel {
         case "scene_count": {
           const countCrit = criterion as NumberCriterion;
           result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "performer_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.performer_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
           };

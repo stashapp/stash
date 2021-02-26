@@ -43,6 +43,9 @@ export function makeCriteria(type: CriterionType = "none") {
     case "o_counter":
     case "scene_count":
     case "marker_count":
+    case "image_count":
+    case "gallery_count":
+    case "performer_count":
       return new NumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();

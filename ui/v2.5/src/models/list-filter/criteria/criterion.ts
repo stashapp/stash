@@ -44,7 +44,10 @@ export type CriterionType =
   | "gender"
   | "parent_studios"
   | "scene_count"
-  | "marker_count";
+  | "marker_count"
+  | "image_count"
+  | "gallery_count"
+  | "performer_count";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -126,6 +129,12 @@ export abstract class Criterion {
         return "Scene Count";
       case "marker_count":
         return "Marker Count";
+      case "image_count":
+        return "Image Count";
+      case "gallery_count":
+        return "Gallery Count";
+      case "performer_count":
+        return "Performer Count";
     }
   }
 

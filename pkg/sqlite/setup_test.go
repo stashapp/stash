@@ -84,6 +84,8 @@ const (
 	galleryIdxWithImage
 	galleryIdxWithPerformerTag
 	galleryIdxWithPerformerTwoTags
+	galleryIdxWithTag
+	galleryIdxWithTwoTags
 	// new indexes above
 	lastGalleryIdx
 
@@ -103,6 +105,9 @@ const (
 	tagIdxWithPerformer
 	tagIdx1WithPerformer
 	tagIdx2WithPerformer
+	tagIdxWithGallery
+	tagIdx1WithGallery
+	tagIdx2WithGallery
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -211,6 +216,12 @@ var (
 	galleryPerformerLinks = [][2]int{
 		{galleryIdxWithPerformerTag, performerIdxWithTag},
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+	}
+
+	galleryTagLinks = [][2]int{
+		{galleryIdxWithTag, tagIdxWithGallery},
+		{galleryIdxWithTwoTags, tagIdx1WithGallery},
+		{galleryIdxWithTwoTags, tagIdx2WithGallery},
 	}
 )
 
@@ -356,6 +367,10 @@ func populateDB() error {
 
 		if err := linkGalleryPerformers(r.Gallery()); err != nil {
 			return fmt.Errorf("error linking gallery performers: %s", err.Error())
+		}
+
+		if err := linkGalleryTags(r.Gallery()); err != nil {
+			return fmt.Errorf("error linking gallery tags: %s", err.Error())
 		}
 
 		if err := linkMovieStudios(r.Movie()); err != nil {
@@ -617,6 +632,30 @@ func getTagMarkerCount(id int) int {
 	return 0
 }
 
+func getTagImageCount(id int) int {
+	if id == tagIDs[tagIdx1WithImage] || id == tagIDs[tagIdx2WithImage] || id == tagIDs[tagIdxWithImage] {
+		return 1
+	}
+
+	return 0
+}
+
+func getTagGalleryCount(id int) int {
+	if id == tagIDs[tagIdx1WithGallery] || id == tagIDs[tagIdx2WithGallery] || id == tagIDs[tagIdxWithGallery] {
+		return 1
+	}
+
+	return 0
+}
+
+func getTagPerformerCount(id int) int {
+	if id == tagIDs[tagIdx1WithPerformer] || id == tagIDs[tagIdx2WithPerformer] || id == tagIDs[tagIdxWithPerformer] {
+		return 1
+	}
+
+	return 0
+}
+
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -860,6 +899,20 @@ func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
 		performers = append(performers, performerIDs[performerIndex])
 
 		return qb.UpdatePerformers(galleryID, performers)
+	})
+}
+
+func linkGalleryTags(iqb models.GalleryReaderWriter) error {
+	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
+		galleryID := imageIDs[galleryIndex]
+		tags, err := iqb.GetTagIDs(galleryID)
+		if err != nil {
+			return err
+		}
+
+		tags = append(tags, tagIDs[tagIndex])
+
+		return iqb.UpdateTags(galleryID, tags)
 	})
 }
 
