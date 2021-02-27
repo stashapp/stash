@@ -193,12 +193,10 @@ func (s *scriptScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, erro
 }
 
 func findPythonExecutable() (string, error) {
-	cmd := exec.Command("python3", "--version")
-	_, err := cmd.Output()
+	_, err := exec.LookPath("python3")
 
 	if err != nil {
-		cmd := exec.Command("python", "--version")
-		_, err := cmd.Output()
+		_, err = exec.LookPath("python")
 
 		if err != nil {
 			return "", err
