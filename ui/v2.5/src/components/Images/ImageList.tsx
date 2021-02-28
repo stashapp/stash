@@ -84,12 +84,14 @@ const ImageWall: React.FC<IImageWallProps> = ({
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
+  persistanceKey?: string;
   extraOperations?: IListHookOperation<FindImagesQueryResult>[];
 }
 
 export const ImageList: React.FC<IImageList> = ({
   filterHook,
   persistState,
+  persistanceKey,
   extraOperations,
 }) => {
   const history = useHistory();
@@ -135,6 +137,7 @@ export const ImageList: React.FC<IImageList> = ({
     filterHook,
     addKeybinds,
     persistState,
+    persistanceKey,
   });
 
   async function viewRandom(

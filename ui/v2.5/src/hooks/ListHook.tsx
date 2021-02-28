@@ -87,6 +87,7 @@ export enum PersistanceLevel {
 
 interface IListHookOptions<T, E> {
   persistState?: PersistanceLevel;
+  persistanceKey?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -427,6 +428,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
   // Store initial pathname to prevent hooks from operating outside this page
   const originalPathName = useRef(location.pathname);
+  const persistanceKey = options.persistanceKey ?? options.filterMode;
 
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(options.filterMode, queryString.parse(location.search))
@@ -437,19 +439,17 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       setInterfaceState((prevState) => {
         if (level === PersistanceLevel.VIEW) {
           return {
-            [options.filterMode]: {
-              ...prevState[options.filterMode],
+            [persistanceKey]: {
+              ...prevState[persistanceKey],
               filter: queryString.stringify({
-                ...queryString.parse(
-                  prevState[options.filterMode]?.filter ?? ""
-                ),
+                ...queryString.parse(prevState[persistanceKey]?.filter ?? ""),
                 disp: updatedFilter.displayMode,
               }),
             },
           };
         }
         return {
-          [options.filterMode]: {
+          [persistanceKey]: {
             filter: updatedFilter.makeQueryParameters(),
             itemsPerPage: updatedFilter.itemsPerPage,
             currentPage: updatedFilter.currentPage,
@@ -457,7 +457,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         };
       });
     },
-    [options.filterMode, setInterfaceState]
+    [persistanceKey, setInterfaceState]
   );
 
   useEffect(() => {
@@ -472,7 +472,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     if (!options.persistState) return;
 
-    const storedQuery = interfaceState.data?.[options.filterMode];
+    const storedQuery = interfaceState.data?.[persistanceKey];
     if (!storedQuery) return;
 
     const queryFilter = queryString.parse(history.location.search);
@@ -514,6 +514,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     history,
     location.search,
     options.filterMode,
+    persistanceKey,
     forageInitialised,
     updateInterfaceConfig,
     options.persistState,
