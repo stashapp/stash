@@ -9,7 +9,7 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
-  """ Returns any scene that are perceptual duplicates with the queried distance """
+  """ Returns any groups of scenes that are perceptual duplicates within the queried distance """
   findDuplicateScenes(distance: Int): [[Scene!]!]!
 
   """Return valid stream paths"""
