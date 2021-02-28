@@ -8,6 +8,7 @@ import V021 from "./versions/v021.md";
 import V030 from "./versions/v030.md";
 import V040 from "./versions/v040.md";
 import V050 from "./versions/v050.md";
+import V060 from "./versions/v060.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 const Changelog: React.FC = () => {
@@ -37,11 +38,19 @@ const Changelog: React.FC = () => {
     <>
       <h1 className="mb-4">Changelog:</h1>
       <Version
-        version={stashVersion || "v0.5.0"}
+        version={stashVersion || "v0.6.0"}
         date={buildDate}
         openState={openState}
         setOpenState={setVersionOpenState}
         defaultOpen
+      >
+        <MarkdownPage page={V060} />
+      </Version>
+      <Version
+        version="v0.5.0"
+        date="2021-02-23"
+        openState={openState}
+        setOpenState={setVersionOpenState}
       >
         <MarkdownPage page={V050} />
       </Version>

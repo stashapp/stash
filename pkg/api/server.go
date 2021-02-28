@@ -14,6 +14,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/go-chi/chi"
@@ -135,12 +136,14 @@ func Start() {
 		},
 	})
 	maxUploadSize := handler.UploadMaxSize(config.GetMaxUploadSize())
+	websocketKeepAliveDuration := handler.WebsocketKeepAliveDuration(10 * time.Second)
 
 	txnManager := manager.GetInstance().TxnManager
 	resolver := &Resolver{
 		txnManager: txnManager,
 	}
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, maxUploadSize)
+
+	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, websocketKeepAliveDuration, maxUploadSize)
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
