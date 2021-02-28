@@ -30,7 +30,7 @@ func newScriptScraper(scraper scraperTypeConfig, config config, globalConfig Glo
 func (s *scriptScraper) runScraperScript(inString string, out interface{}) error {
 	command := s.scraper.Script
 
-	if command[0] == "python" {
+	if command[0] == "python" || command[0] == "python3" {
 		executable, err := findPythonExecutable()
 		if err == nil {
 			command[0] = executable
