@@ -3,10 +3,13 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -786,4 +789,105 @@ func (qb *sceneQueryBuilder) GetStashIDs(sceneID int) ([]*models.StashID, error)
 
 func (qb *sceneQueryBuilder) UpdateStashIDs(sceneID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(sceneID, stashIDs)
+}
+
+var phashExact = `
+SELECT GROUP_CONCAT(id) as ids
+FROM scenes
+WHERE phash IS NOT NULL
+GROUP BY phash
+HAVING COUNT(*) > 1;
+`
+
+var phashInaccurate = `
+SELECT id, phash
+FROM scenes
+WHERE phash IS NOT NULL
+`
+
+type Phash struct {
+	SceneID   int   `db:"id"`
+	Hash      int64 `db:"phash"`
+	Neighbors []int
+	Bucket    int
+}
+
+func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, error) {
+	if distance == 0 {
+		var ids []string
+		if err := qb.tx.Select(&ids, phashExact); err != nil {
+			return nil, err
+		}
+
+		var duplicates [][]*models.Scene
+		for _, id := range ids {
+			strIds := strings.Split(id, ",")
+			var sceneIds []int
+			for _, strId := range strIds {
+				if intId, err := strconv.Atoi(strId); err == nil {
+					sceneIds = append(sceneIds, intId)
+				}
+			}
+			if scenes, err := qb.FindMany(sceneIds); err == nil {
+				duplicates = append(duplicates, scenes)
+			}
+		}
+
+		return duplicates, nil
+	} else {
+		var hashes []*Phash
+
+		if err := qb.queryFunc(phashInaccurate, nil, func(rows *sqlx.Rows) error {
+			phash := Phash{
+				Bucket: -1,
+			}
+			if err := rows.StructScan(&phash); err != nil {
+				return err
+			}
+
+			hashes = append(hashes, &phash)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
+		for i, scene := range hashes {
+			for j, neighbor := range hashes {
+				if i != j && utils.HammingDistance(uint64(scene.Hash), uint64(neighbor.Hash)) <= distance {
+					scene.Neighbors = append(scene.Neighbors, j)
+				}
+			}
+		}
+
+		var buckets [][]int
+		for _, scene := range hashes {
+			if len(scene.Neighbors) > 0 && scene.Bucket == -1 {
+				bucket := len(buckets)
+				scenes := []int{scene.SceneID}
+				scene.Bucket = bucket
+				findNeighbors(bucket, scene.Neighbors, hashes, &scenes)
+				buckets = append(buckets, scenes)
+			}
+		}
+
+		var duplicates [][]*models.Scene
+		for _, sceneIds := range buckets {
+			if scenes, err := qb.FindMany(sceneIds); err == nil {
+				duplicates = append(duplicates, scenes)
+			}
+		}
+
+		return duplicates, nil
+	}
+}
+
+func findNeighbors(bucket int, neighbors []int, hashes []*Phash, scenes *[]int) {
+	for _, id := range neighbors {
+		hash := hashes[id]
+		if hash.Bucket == -1 {
+			hash.Bucket = bucket
+			*scenes = append(*scenes, hash.SceneID)
+			findNeighbors(bucket, hash.Neighbors, hashes, scenes)
+		}
+	}
 }

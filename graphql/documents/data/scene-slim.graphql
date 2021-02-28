@@ -29,6 +29,7 @@ fragment SlimSceneData on Scene {
     webp
     vtt
     chapters_vtt
+    sprite
   }
 
   scene_markers {

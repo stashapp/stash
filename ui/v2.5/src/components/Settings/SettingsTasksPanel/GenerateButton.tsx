@@ -6,6 +6,7 @@ import { useToast } from "src/hooks";
 export const GenerateButton: React.FC = () => {
   const Toast = useToast();
   const [sprites, setSprites] = useState(true);
+  const [phashes, setPhashes] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
@@ -15,6 +16,7 @@ export const GenerateButton: React.FC = () => {
     try {
       await mutateMetadataGenerate({
         sprites,
+        phashes,
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
@@ -63,6 +65,12 @@ export const GenerateButton: React.FC = () => {
           checked={transcodes}
           label="Transcodes (MP4 conversions of unsupported video formats)"
           onChange={() => setTranscodes(!transcodes)}
+        />
+        <Form.Check
+          id="phash-task"
+          checked={phashes}
+          label="Phashes (for deduplication)"
+          onChange={() => setPhashes(!phashes)}
         />
       </Form.Group>
       <Form.Group>

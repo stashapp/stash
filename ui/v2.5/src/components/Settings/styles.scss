@@ -70,3 +70,11 @@
     list-style: none;
   }
 }
+
+.duplicate-group {
+  border-top: 50px solid #30404d;
+
+  &:first-child {
+    border-top: none;
+  }
+}

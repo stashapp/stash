@@ -83,6 +83,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	streamPath := builder.GetStreamURL()
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
+	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
@@ -91,6 +92,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Webp:        &webpPath,
 		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
+		Sprite:      &spritePath,
 	}, nil
 }
 

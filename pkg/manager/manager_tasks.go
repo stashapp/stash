@@ -427,7 +427,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			logger.Infof("Taking too long to count content. Skipping...")
 			logger.Infof("Generating content")
 		} else {
-			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
+			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
 		}
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
@@ -499,6 +499,16 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
+				go task.Start(&wg)
+			}
+
+			if input.Phashes {
+				task := GeneratePhashTask{
+					Scene:               *scene,
+					fileNamingAlgorithm: fileNamingAlgo,
+					txnManager:          s.TxnManager,
+				}
+				wg.Add()
 				go task.Start(&wg)
 			}
 		}
@@ -992,6 +1002,7 @@ type totalsGenerate struct {
 	imagePreviews int64
 	markers       int64
 	transcodes    int64
+	phashes       int64
 }
 
 func (s *singleton) neededGenerate(scenes []*models.Scene, input models.GenerateMetadataInput) *totalsGenerate {
@@ -1064,6 +1075,10 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				if task.isTranscodeNeeded() {
 					totals.transcodes++
 				}
+			}
+
+			if input.Phashes {
+				totals.phashes++
 			}
 		}
 		//check for timeout
