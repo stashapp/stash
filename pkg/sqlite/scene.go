@@ -413,7 +413,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 			case "SIX_K":
 				query.addWhere("(MIN(scenes.height, scenes.width) >= 3384 AND MIN(scenes.height, scenes.width) < 4320)")
 			case "EIGHT_K":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 4320")
+				query.addWhere("MIN(scenes.height, scenes.width) >= 4320")
 			}
 		}
 	}

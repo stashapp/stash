@@ -297,7 +297,7 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 			case "SIX_K":
 				query.addWhere("(MIN(images.height, images.width) >= 3384 AND MIN(images.height, images.width) < 4320)")
 			case "EIGHT_K":
-				query.addWhere("(MIN(images.height, images.width) >= 4320")
+				query.addWhere("MIN(images.height, images.width) >= 4320")
 			}
 		}
 	}
