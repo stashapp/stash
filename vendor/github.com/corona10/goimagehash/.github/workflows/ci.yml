@@ -1,0 +1,29 @@
+on: [push, pull_request]
+name: goimagehash workflow
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.6.x, 1.7.x, 1.8.x, 1.9.x, 1.10.x, 1.11.x, 1.12.x, 1.13.x, 1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Set GOPATH
+      run: |
+        echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+      id: gopath
+
+    - name: Checkout code
+      uses: actions/checkout@v1
+      with:
+        path: src/github.com/corona10/goimagehash
+
+    - name: Install
+      run: go get -t -v ./...
+
+    - name: Test
+      run: go test ./...
