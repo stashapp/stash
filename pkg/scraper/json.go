@@ -70,19 +70,8 @@ func (s *jsonScraper) loadURL(url string) (string, error) {
 	return docStr, err
 }
 
-// replaceURL does a partial URL Replace ( only url parameter is used)
-func (s *jsonScraper) replaceURL(url string) string {
-	u := url
-	queryURL := queryURLParameterFromURL(u)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
-		u = queryURL.constructURL(s.scraper.QueryURL)
-	}
-	return u
-}
-
 func (s *jsonScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
-	u := s.replaceURL(url) // allow a URL Replace for performer by URL queries
+	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
 	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
@@ -93,7 +82,7 @@ func (s *jsonScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer
 }
 
 func (s *jsonScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
-	u := s.replaceURL(url) // allow a URL Replace for scene by URL queries
+	u := replaceURL(url, s.scraper) // allow a URL Replace for scene by URL queries
 	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
@@ -104,7 +93,7 @@ func (s *jsonScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error)
 }
 
 func (s *jsonScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
-	u := s.replaceURL(url) // allow a URL Replace for gallery by URL queries
+	u := replaceURL(url, s.scraper) // allow a URL Replace for gallery by URL queries
 	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
@@ -115,7 +104,7 @@ func (s *jsonScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, er
 }
 
 func (s *jsonScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
-	u := s.replaceURL(url) // allow a URL Replace for movie by URL queries
+	u := replaceURL(url, s.scraper) // allow a URL Replace for movie by URL queries
 	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
