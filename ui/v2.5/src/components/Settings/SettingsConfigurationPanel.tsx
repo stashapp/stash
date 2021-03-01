@@ -125,6 +125,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
     undefined
   );
+  const [scraperCertCheck, setScraperCertCheck] = useState<boolean>(true);
   const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
@@ -164,6 +165,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     imageExcludes,
     scraperUserAgent,
     scraperCDPPath,
+    scraperCertCheck,
     stashBoxes: stashBoxes.map(
       (b) =>
         ({
@@ -212,6 +214,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setImageExcludes(conf.general.imageExcludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
+      setScraperCertCheck(conf.general.scraperCertCheck);
       setStashBoxes(
         conf.general.stashBoxes.map((box, i) => ({
           name: box?.name ?? undefined,
@@ -715,6 +718,20 @@ export const SettingsConfigurationPanel: React.FC = () => {
             File path to the Chrome executable, or a remote address (starting
             with http:// or https://, for example
             http://localhost:9222/json/version) to a Chrome instance.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Check
+            id="scaper-cert-check"
+            checked={scraperCertCheck}
+            label="Check for insecure certificates"
+            onChange={() => setScraperCertCheck(!scraperCertCheck)}
+          />
+          <Form.Text className="text-muted">
+            Some sites use insecure ssl certificates. When unticked the scraper
+            skips the insecure certificates check and allows scraping of those
+            sites. If you get a certificate error when scraping untick this.
           </Form.Text>
         </Form.Group>
       </Form.Group>
