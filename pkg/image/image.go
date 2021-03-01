@@ -246,7 +246,7 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 
 func IsCover(img *models.Image) bool {
 	_, fn := getFilePath(img.Path)
-	return filepath.Base(fn) == "cover.jpg"
+	return strings.HasSuffix(filepath.Base(fn), "cover.jpg")
 }
 
 func GetTitle(s *models.Image) string {

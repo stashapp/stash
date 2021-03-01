@@ -10,24 +10,25 @@ import (
 )
 
 func TestIsCover(t *testing.T) {
-	const cover = "cover.jpg"
-	const notCover = "notcover.jpg"
-	const capitalCover = "Cover.jpg"
-	subDirCover := fmt.Sprintf("subDir%scover.jpg", string(filepath.Separator))
+	type test struct {
+		fn      string
+		isCover bool
+	}
 
-	img := &models.Image{
-		Path: cover,
+	tests := []test{
+		{"cover.jpg", true},
+		{"covernot.jpg", false},
+		{"Cover.jpg", false},
+		{fmt.Sprintf("subDir%scover.jpg", string(filepath.Separator)), true},
+		{"endsWithcover.jpg", true},
+		{"cover.png", false},
 	}
 
 	assert := assert.New(t)
-	assert.True(IsCover(img))
-
-	img.Path = notCover
-	assert.False(IsCover(img))
-
-	img.Path = capitalCover
-	assert.False(IsCover(img))
-
-	img.Path = subDirCover
-	assert.True(IsCover(img))
+	for _, tc := range tests {
+		img := &models.Image{
+			Path: tc.fn,
+		}
+		assert.Equal(tc.isCover, IsCover(img), "expected: %t for %s", tc.isCover, tc.fn)
+	}
 }
