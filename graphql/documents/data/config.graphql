@@ -31,6 +31,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   excludes
   imageExcludes
   scraperUserAgent
+  scraperCertCheck
   scraperCDPPath
   stashBoxes {
     name

@@ -71,6 +71,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Excludes:                   config.GetExcludes(),
 		ImageExcludes:              config.GetImageExcludes(),
 		ScraperUserAgent:           &scraperUserAgent,
+		ScraperCertCheck:           config.GetScraperCertCheck(),
 		ScraperCDPPath:             &scraperCDPPath,
 		StashBoxes:                 config.GetStashBoxes(),
 	}

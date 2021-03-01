@@ -1,6 +1,12 @@
 import React from "react";
-import { Button, Spinner } from "react-bootstrap";
-import { Icon, HoverPopover, SweatDrops } from "src/components/Shared";
+import {
+  Button,
+  ButtonGroup,
+  Dropdown,
+  DropdownButton,
+  Spinner,
+} from "react-bootstrap";
+import { Icon, SweatDrops } from "src/components/Shared";
 
 export interface IOCounterButtonProps {
   loading: boolean;
@@ -19,7 +25,7 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
 
   const renderButton = () => (
     <Button
-      className="minimal"
+      className="minimal pr-1"
       onClick={props.onIncrement}
       variant="secondary"
       title="O-Counter"
@@ -29,41 +35,32 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
     </Button>
   );
 
-  if (props.value) {
-    return (
-      <HoverPopover
-        content={
-          <div>
-            <div>
-              <Button
-                className="minimal"
-                onClick={props.onDecrement}
-                variant="secondary"
-              >
-                <Icon icon="minus" />
-                <span>Decrement</span>
-              </Button>
-            </div>
-            <div>
-              <Button
-                className="minimal"
-                onClick={props.onReset}
-                variant="secondary"
-              >
-                <Icon icon="ban" />
-                <span>Reset</span>
-              </Button>
-            </div>
-          </div>
-        }
-        enterDelay={1000}
-        placement="bottom"
-        onOpen={props.onMenuOpened}
-        onClose={props.onMenuClosed}
-      >
-        {renderButton()}
-      </HoverPopover>
-    );
-  }
-  return renderButton();
+  const maybeRenderDropdown = () => {
+    if (props.value) {
+      return (
+        <DropdownButton
+          as={ButtonGroup}
+          title=" "
+          variant="secondary"
+          className="pl-0 show-carat"
+        >
+          <Dropdown.Item onClick={props.onDecrement}>
+            <Icon icon="minus" />
+            <span>Decrement</span>
+          </Dropdown.Item>
+          <Dropdown.Item onClick={props.onReset}>
+            <Icon icon="ban" />
+            <span>Reset</span>
+          </Dropdown.Item>
+        </DropdownButton>
+      );
+    }
+  };
+
+  return (
+    <ButtonGroup className="o-counter">
+      {renderButton()}
+      {maybeRenderDropdown()}
+    </ButtonGroup>
+  );
 };
