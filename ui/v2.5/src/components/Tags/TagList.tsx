@@ -4,7 +4,11 @@ import Mousetrap from "mousetrap";
 import { FindTagsQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected, useTagsList } from "src/hooks/ListHook";
+import {
+  showWhenSelected,
+  useTagsList,
+  PersistanceLevel,
+} from "src/hooks/ListHook";
 import { Button } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -144,7 +148,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     selectable: true,
     zoomable: true,
     defaultZoomIndex: 0,
-    persistState: true,
+    persistState: PersistanceLevel.ALL,
     renderDeleteDialog,
   });
 
