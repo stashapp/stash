@@ -29,17 +29,14 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   const videoEl = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.intersectionRatio > 0)
-            // Catch is necessary due to DOMException if user hovers before clicking on page
-            videoEl.current?.play().catch(() => {});
-          else videoEl.current?.pause();
-        });
-      },
-      { root: document.documentElement }
-    );
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio > 0)
+          // Catch is necessary due to DOMException if user hovers before clicking on page
+          videoEl.current?.play().catch(() => {});
+        else videoEl.current?.pause();
+      });
+    });
 
     if (videoEl.current) observer.observe(videoEl.current);
   });
@@ -53,6 +50,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
       <img className="scene-card-preview-image" src={image} alt="" />
       <video
+        disableRemotePlayback
+        playsInline
         className="scene-card-preview-video"
         loop
         preload="none"
