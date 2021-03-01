@@ -1,11 +1,13 @@
 package scraper
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	stashConfig "github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -83,6 +85,8 @@ func setMovieBackImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error 
 
 func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !stashConfig.GetScraperCertCheck()}},
 		Timeout: imageGetTimeout,
 	}
 

@@ -10,7 +10,7 @@ import { queryFindScenes } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
@@ -22,7 +22,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: boolean;
+  persistState?: PersistanceLevel.ALL;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
