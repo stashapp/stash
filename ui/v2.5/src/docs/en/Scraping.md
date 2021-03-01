@@ -242,7 +242,7 @@ sceneByFragment:
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
 
-### scrapeXPath and scrapeJson use with `<scene|performer|gallery>ByURL`
+### scrapeXPath and scrapeJson use with `<scene|performer|gallery|movie>ByURL`
 
 For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
 * `{url}` - the url of the scene/performer/gallery
