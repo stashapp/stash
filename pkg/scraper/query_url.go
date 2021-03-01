@@ -17,6 +17,13 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["oshash"] = scene.OSHash.String
 	ret["filename"] = filepath.Base(scene.Path)
 	ret["title"] = scene.Title.String
+	ret["url"] = scene.URL.String
+	return ret
+}
+
+func queryURLParameterFromURL(url string) queryURLParameters {
+	ret := make(queryURLParameters)
+	ret["url"] = url
 	return ret
 }
 
@@ -28,6 +35,7 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 		ret["filename"] = filepath.Base(gallery.Path.String)
 	}
 	ret["title"] = gallery.Title.String
+	ret["url"] = gallery.URL.String
 
 	return ret
 }
@@ -48,4 +56,15 @@ func (p queryURLParameters) constructURL(url string) string {
 	}
 
 	return ret
+}
+
+// replaceURL does a partial URL Replace ( only url parameter is used)
+func replaceURL(url string, scraperConfig scraperTypeConfig) string {
+	u := url
+	queryURL := queryURLParameterFromURL(u)
+	if scraperConfig.QueryURLReplacements != nil {
+		queryURL.applyReplacements(scraperConfig.QueryURLReplacements)
+		u = queryURL.constructURL(scraperConfig.QueryURL)
+	}
+	return u
 }
