@@ -11,7 +11,7 @@ import {
   usePerformersDestroy,
 } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
@@ -100,7 +100,7 @@ export const PerformerList: React.FC = () => {
     renderContent,
     addKeybinds,
     selectable: true,
-    persistState: true,
+    persistState: PersistanceLevel.ALL,
     renderDeleteDialog,
   });
 

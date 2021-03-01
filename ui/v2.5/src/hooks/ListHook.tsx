@@ -79,8 +79,15 @@ export interface IListHookOperation<T> {
   postRefetch?: boolean;
 }
 
+export enum PersistanceLevel {
+  NONE,
+  ALL,
+  VIEW,
+}
+
 interface IListHookOptions<T, E> {
-  persistState?: boolean;
+  persistState?: PersistanceLevel;
+  persistanceKey?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -421,22 +428,36 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
   // Store initial pathname to prevent hooks from operating outside this page
   const originalPathName = useRef(location.pathname);
+  const persistanceKey = options.persistanceKey ?? options.filterMode;
 
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(options.filterMode, queryString.parse(location.search))
   );
 
   const updateInterfaceConfig = useCallback(
-    (updatedFilter: ListFilterModel) => {
-      setInterfaceState({
-        [options.filterMode]: {
-          filter: updatedFilter.makeQueryParameters(),
-          itemsPerPage: updatedFilter.itemsPerPage,
-          currentPage: updatedFilter.currentPage,
-        },
+    (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
+      setInterfaceState((prevState) => {
+        if (level === PersistanceLevel.VIEW) {
+          return {
+            [persistanceKey]: {
+              ...prevState[persistanceKey],
+              filter: queryString.stringify({
+                ...queryString.parse(prevState[persistanceKey]?.filter ?? ""),
+                disp: updatedFilter.displayMode,
+              }),
+            },
+          };
+        }
+        return {
+          [persistanceKey]: {
+            filter: updatedFilter.makeQueryParameters(),
+            itemsPerPage: updatedFilter.itemsPerPage,
+            currentPage: updatedFilter.currentPage,
+          },
+        };
       });
     },
-    [options.filterMode, setInterfaceState]
+    [persistanceKey, setInterfaceState]
   );
 
   useEffect(() => {
@@ -451,20 +472,25 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     if (!options.persistState) return;
 
-    const storedQuery = interfaceState.data?.[options.filterMode];
+    const storedQuery = interfaceState.data?.[persistanceKey];
     if (!storedQuery) return;
 
     const queryFilter = queryString.parse(history.location.search);
     const storedFilter = queryString.parse(storedQuery.filter);
+
+    const activeFilter =
+      options.persistState === PersistanceLevel.ALL
+        ? storedFilter
+        : { disp: storedFilter.disp };
     const query = history.location.search
       ? {
-          sortby: storedFilter.sortby,
-          sortdir: storedFilter.sortdir,
-          disp: storedFilter.disp,
-          perPage: storedFilter.perPage,
+          sortby: activeFilter.sortby,
+          sortdir: activeFilter.sortdir,
+          disp: activeFilter.disp,
+          perPage: activeFilter.perPage,
           ...queryFilter,
         }
-      : storedFilter;
+      : activeFilter;
 
     const newFilter = new ListFilterModel(options.filterMode, query);
 
@@ -474,7 +500,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     newLocation.search = newFilter.makeQueryParameters();
     if (newLocation.search !== filter.makeQueryParameters()) {
       setFilter(newFilter);
-      updateInterfaceConfig(newFilter);
+      updateInterfaceConfig(newFilter, options.persistState);
     }
     // If constructed search is different from current, update it as well
     if (newLocation.search !== location.search) {
@@ -488,6 +514,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     history,
     location.search,
     options.filterMode,
+    persistanceKey,
     forageInitialised,
     updateInterfaceConfig,
     options.persistState,
@@ -499,7 +526,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     newLocation.search = listFilter.makeQueryParameters();
     history.replace(newLocation);
     if (options.persistState) {
-      updateInterfaceConfig(listFilter);
+      updateInterfaceConfig(listFilter, options.persistState);
     }
   }
 
