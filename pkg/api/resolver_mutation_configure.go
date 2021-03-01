@@ -151,6 +151,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		refreshScraperCache = true
 	}
 
+	config.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+
 	if input.StashBoxes != nil {
 		if err := config.ValidateStashBoxes(input.StashBoxes); err != nil {
 			return nil, err

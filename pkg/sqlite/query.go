@@ -136,6 +136,10 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 				}
 				qb.addWhere(column + " NOT regexp ?")
 				qb.addArg(c.Value)
+			case models.CriterionModifierIsNull:
+				qb.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
+			case models.CriterionModifierNotNull:
+				qb.addWhere("(" + column + " IS NOT NULL AND TRIM(" + column + ") != '')")
 			default:
 				clause, count := getSimpleCriterionClause(modifier, "?")
 				qb.addWhere(column + " " + clause)

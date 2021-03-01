@@ -223,6 +223,7 @@ For `sceneByFragment`, the `queryURL` field must also be present. This field is 
 * `{oshash}` - the oshash of the scene
 * `{filename}` - the base filename of the scene
 * `{title}` - the title of the scene
+* `{url}` - the url of the scene
 
 These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below.
 
@@ -240,6 +241,24 @@ sceneByFragment:
 ```
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
+
+### scrapeXPath and scrapeJson use with `<scene|performer|gallery|movie>ByURL`
+
+For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
+* `{url}` - the url of the scene/performer/gallery
+
+```yaml
+sceneByURL:
+  - action: scrapeJson
+    url:
+      - metartnetwork.com
+    scraper: sceneScraper
+    queryURL: "{url}"
+    queryURLReplace:
+      url:
+        - regex: '^(?:.+\.)?([^.]+)\.com/.+movie/(\d+)/(\w+)/?$'
+          with: https://www.$1.com/api/movie?name=$3&date=$2
+```
 
 ### Stash
 
@@ -486,6 +505,33 @@ driver:
     - Cookies:
         - Name: "_warn"
           Value: "123"
+          Domain: ".somewhere.com"
+```
+
+For some sites, the value of the cookie itself doesn't actually matter. In these cases, we can use the `ValueRandom`
+property instead of `Value`. Unlike `Value`, `ValueRandom` requires an integer value greater than `0` where the value
+indicates how long the cookie string should be.
+
+In the following example, we will adapt the previous cookies to use `ValueRandom` instead. We set the `_test2` cookie
+to randomly generate a value with a length of 6 characters and the `_warn` cookie to a length of 3.
+
+```yaml
+driver:
+  cookies:
+    - CookieURL: "https://www.example.com"
+      Cookies:
+        - Name: "_warning"
+          Domain: ".example.com"
+          Value: "true"
+          Path: "/"
+        - Name: "_test2"
+          ValueRandom: 6
+          Domain: ".example.com"
+          Path: "/"
+    - CookieURL: "https://api.somewhere.com"
+      Cookies:
+        - Name: "_warn"
+          ValueRandom: 3
           Domain: ".somewhere.com"
 ```
 

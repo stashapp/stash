@@ -315,14 +315,22 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 			scene, _ := sqb.FindByPath(scenePath)
 			// found related Scene
 			if scene != nil {
-				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
-
-				if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
-					return err
+				sceneGalleries, _ := sqb.FindByGalleryID(g.ID) // check if gallery is already associated to the scene
+				isAssoc := false
+				for _, sg := range sceneGalleries {
+					if scene.ID == sg.ID {
+						isAssoc = true
+						break
+					}
+				}
+				if !isAssoc {
+					logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+					if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
+						return err
+					}
 				}
 			}
 		}
-
 		return nil
 	}); err != nil {
 		logger.Error(err.Error())
@@ -380,9 +388,16 @@ func (t *ScanTask) scanScene() *models.Scene {
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, s.FileModTime)
 		if modified || !s.Size.Valid {
+			oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 			s, err = t.rescanScene(s, fileModTime)
 			if err != nil {
 				return logError(err)
+			}
+
+			// Migrate any generated files if the hash has changed
+			newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+			if newHash != oldHash {
+				MigrateHash(oldHash, newHash)
 			}
 		}
 
@@ -1037,6 +1052,14 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	excludeVidRegex := generateRegexps(config.GetExcludes())
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
+	// don't scan zip images directly
+	if image.IsZipPath(s.Path) {
+		logger.Warnf("Cannot rescan zip image %s. Rescan zip gallery instead.", s.Path)
+		return nil
+	}
+
+	generatedPath := config.GetGeneratedPath()
+
 	return utils.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.Warnf("error scanning %s: %s", path, err.Error())
@@ -1044,6 +1067,11 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		}
 
 		if info.IsDir() {
+			// #1102 - ignore files in generated path
+			if utils.IsPathInDir(generatedPath, path) {
+				return filepath.SkipDir
+			}
+
 			return nil
 		}
 

@@ -3,6 +3,7 @@ package scraper
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -22,6 +23,7 @@ import (
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
+	stashConfig "github.com/stashapp/stash/pkg/manager/config"
 )
 
 // Timeout for the scrape http request. Includes transfer time. May want to make this
@@ -49,6 +51,9 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	printCookies(jar, scraperConfig, "Jar cookies set from scraper")
 
 	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !stashConfig.GetScraperCertCheck()},
+		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to 20
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {

@@ -44,6 +44,14 @@ func TestPerformerFindBySceneID(t *testing.T) {
 }
 
 func TestPerformerFindByNames(t *testing.T) {
+	getNames := func(p []*models.Performer) []string {
+		var ret []string
+		for _, pp := range p {
+			ret = append(ret, pp.Name.String)
+		}
+		return ret
+	}
+
 	withTxn(func(r models.Repository) error {
 		var names []string
 
@@ -72,19 +80,20 @@ func TestPerformerFindByNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
-		assert.Len(t, performers, 2) // performerIdxWithScene and performerIdx1WithScene
-		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
-		assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
+		retNames := getNames(performers)
+		assert.Equal(t, names, retNames)
 
 		performers, err = pqb.FindByNames(names, true) // find performers by names ( 2 names nocase)
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
-		assert.Len(t, performers, 4) // performerIdxWithScene and performerIdxWithDupName , performerIdx1WithScene and performerIdx1WithDupName
-		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
-		assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
-		assert.Equal(t, performerNames[performerIdx1WithDupName], performers[2].Name.String)
-		assert.Equal(t, performerNames[performerIdxWithDupName], performers[3].Name.String)
+		retNames = getNames(performers)
+		assert.Equal(t, []string{
+			performerNames[performerIdxWithScene],
+			performerNames[performerIdx1WithScene],
+			performerNames[performerIdx1WithDupName],
+			performerNames[performerIdxWithDupName],
+		}, retNames)
 
 		return nil
 	})
