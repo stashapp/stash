@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"time"
 
+	"golang.org/x/sys/cpu"
+
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -26,10 +28,12 @@ var ErrNoVersion = errors.New("no stash version")
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
-		"windows/amd64": "stash-win.exe",
-		"linux/amd64":   "stash-linux",
 		"darwin/amd64":  "stash-osx",
+		"linux/amd64":   "stash-linux",
+		"windows/amd64": "stash-win.exe",
 		"linux/arm":     "stash-pi",
+		"linux/arm64":   "stash-linux-arm64v8",
+		"linux/armv7":   "stash-linux-arm32v7",
 	}
 }
 
@@ -141,7 +145,13 @@ func makeGithubRequest(url string, output interface{}) error {
 // which is the latest pre-release build.
 func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease string, err error) {
 
-	platform := fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
+	arch := runtime.GOARCH                                                                    // https://en.wikipedia.org/wiki/Comparison_of_ARM_cores
+	isARMv7 := cpu.ARM.HasNEON || cpu.ARM.HasVFPv3 || cpu.ARM.HasVFPv3D16 || cpu.ARM.HasVFPv4 // armv6 doesn't support any of these features
+	if arch == "arm" && isARMv7 {
+		arch = "armv7"
+	}
+
+	platform := fmt.Sprintf("%s/%s", runtime.GOOS, arch)
 	wantedRelease := stashReleases()[platform]
 
 	version, _, _ := GetVersion()

@@ -9,7 +9,11 @@ import {
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindMovies, useMoviesDestroy } from "src/core/StashService";
-import { showWhenSelected, useMoviesList } from "src/hooks/ListHook";
+import {
+  showWhenSelected,
+  useMoviesList,
+  PersistanceLevel,
+} from "src/hooks/ListHook";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { MovieCard } from "./MovieCard";
 
@@ -65,7 +69,7 @@ export const MovieList: React.FC = () => {
     addKeybinds,
     otherOperations,
     selectable: true,
-    persistState: true,
+    persistState: PersistanceLevel.ALL,
     renderDeleteDialog,
   });
 
