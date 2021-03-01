@@ -57,6 +57,8 @@ const Preview: React.FC<{
   );
   const video = (
     <video
+      disableRemotePlayback
+      playsInline
       src={previews.video}
       poster={previews.image}
       autoPlay={previewType === "video"}

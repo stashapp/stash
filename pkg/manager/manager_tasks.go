@@ -215,13 +215,13 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 				task := ScanTask{
 					TxnManager:           s.TxnManager,
 					FilePath:             path,
-					UseFileMetadata:      input.UseFileMetadata,
-					StripFileExtension:   input.StripFileExtension,
+					UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
+					StripFileExtension:   utils.IsTrue(input.StripFileExtension),
 					fileNamingAlgorithm:  fileNamingAlgo,
 					calculateMD5:         calculateMD5,
-					GeneratePreview:      input.ScanGeneratePreviews,
-					GenerateImagePreview: input.ScanGenerateImagePreviews,
-					GenerateSprite:       input.ScanGenerateSprites,
+					GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
+					GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
+					GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				}
 				go task.Start(&wg)
 

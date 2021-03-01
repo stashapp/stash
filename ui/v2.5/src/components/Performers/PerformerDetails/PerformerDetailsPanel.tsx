@@ -11,6 +11,8 @@ import {
   queryScrapePerformer,
   queryScrapePerformerURL,
   mutateReloadScrapers,
+  usePerformerUpdate,
+  usePerformerCreate,
 } from "src/core/StashService";
 import {
   Icon,
@@ -26,6 +28,7 @@ import {
   EditableTextUtils,
 } from "src/utils";
 import { useToast } from "src/hooks";
+import { useHistory } from "react-router-dom";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
 interface IPerformerDetails {
@@ -33,11 +36,6 @@ interface IPerformerDetails {
   isNew?: boolean;
   isEditing?: boolean;
   isVisible: boolean;
-  onSave?: (
-    performer:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) => void;
   onDelete?: () => void;
   onImageChange?: (image?: string | null) => void;
   onImageEncoding?: (loading?: boolean) => void;
@@ -48,12 +46,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   isNew,
   isEditing,
   isVisible,
-  onSave,
   onDelete,
   onImageChange,
   onImageEncoding,
 }) => {
   const Toast = useToast();
+  const history = useHistory();
 
   // Editing state
   const [
@@ -99,6 +97,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const intl = useIntl();
+
+  const [updatePerformer] = usePerformerUpdate();
+  const [createPerformer] = usePerformerCreate();
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -199,6 +200,43 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   function onImageLoad(imageData: string) {
     setImage(imageData);
+  }
+
+  async function onSave(
+    performerInput:
+      | Partial<GQL.PerformerCreateInput>
+      | Partial<GQL.PerformerUpdateInput>
+  ) {
+    setIsLoading(true);
+    try {
+      if (!isNew) {
+        await updatePerformer({
+          variables: {
+            input: {
+              ...performerInput,
+              stash_ids: performerInput?.stash_ids?.map((s) => ({
+                endpoint: s.endpoint,
+                stash_id: s.stash_id,
+              })),
+            } as GQL.PerformerUpdateInput,
+          },
+        });
+        if (performerInput.image) {
+          // Refetch image to bust browser cache
+          await fetch(`/performer/${performer.id}/image`, { cache: "reload" });
+        }
+      } else {
+        const result = await createPerformer({
+          variables: performerInput as GQL.PerformerCreateInput,
+        });
+        if (result.data?.performerCreate) {
+          history.push(`/performers/${result.data.performerCreate.id}`);
+        }
+      }
+    } catch (e) {
+      Toast.error(e);
+    }
+    setIsLoading(false);
   }
 
   // set up hotkeys
