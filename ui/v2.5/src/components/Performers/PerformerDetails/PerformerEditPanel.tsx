@@ -31,7 +31,7 @@ import {
 } from "src/components/Shared";
 import { ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
-import { useHistory } from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
@@ -625,6 +625,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {renderDeleteAlert()}
       {renderScraperDialog()}
       {maybeRenderScrapeDialog()}
+
+      <Prompt
+        when={formik.dirty}
+        message="Unsaved changes. Are you sure you want to leave?"
+      />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
         <Form.Row>
