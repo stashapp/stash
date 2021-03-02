@@ -251,7 +251,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           // Refetch image to bust browser cache
           await fetch(`/performer/${performer.id}/image`, { cache: "reload" });
         }
-        
+
         history.push(`/performers/${performer.id}`);
       } else {
         const result = await createPerformer({
