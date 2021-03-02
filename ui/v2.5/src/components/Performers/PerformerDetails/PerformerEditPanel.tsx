@@ -629,183 +629,183 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {renderScraperDialog()}
       {maybeRenderScrapeDialog()}
 
-          <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
-            <Form.Row>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  placeholder="Name"
-                  {...formik.getFieldProps("name")}
-                  isInvalid={!!formik.errors.name}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formik.errors.name}
-                </Form.Control.Feedback>
-              </Form.Group>
-              <Form.Group as={Col} sm="8">
-                <Form.Label>Aliases</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  placeholder="Aliases"
-                  {...formik.getFieldProps("aliases")}
-                />
-              </Form.Group>
-            </Form.Row>
+      <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
+        <Form.Row>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              className="text-input"
+              placeholder="Name"
+              {...formik.getFieldProps("name")}
+              isInvalid={!!formik.errors.name}
+            />
+            <Form.Control.Feedback type="invalid">
+              {formik.errors.name}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group as={Col} sm="8">
+            <Form.Label>Aliases</Form.Label>
+            <Form.Control
+              className="text-input"
+              placeholder="Aliases"
+              {...formik.getFieldProps("aliases")}
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} md="auto">
-                <Form.Label>Gender</Form.Label>
-                <Form.Control
-                  as="select"
-                  className="input-control"
-                  {...formik.getFieldProps("gender")}
-                >
-                  {genderOptions.map((opt) => (
-                    <option value={opt} key={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} md="auto">
+            <Form.Label>Gender</Form.Label>
+            <Form.Control
+              as="select"
+              className="input-control"
+              {...formik.getFieldProps("gender")}
+            >
+              {genderOptions.map((opt) => (
+                <option value={opt} key={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Birthdate</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  placeholder="Birthdate"
-                  {...formik.getFieldProps("birthdate")}
-                />
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Birthdate</Form.Label>
+            <Form.Control
+              className="text-input"
+              placeholder="Birthdate"
+              {...formik.getFieldProps("birthdate")}
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Country</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("country")}
-                  placeholder="Country"
-                />
-              </Form.Group>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Ethnicity</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("ethnicity")}
-                  placeholder="Ethnicity"
-                />
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Country</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("country")}
+              placeholder="Country"
+            />
+          </Form.Group>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Ethnicity</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("ethnicity")}
+              placeholder="Ethnicity"
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Eye Color</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("eye_color")}
-                  placeholder="Eye Color"
-                />
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Eye Color</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("eye_color")}
+              placeholder="Eye Color"
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Height (cm)</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("height")}
-                  placeholder="Height (cm)"
-                />
-              </Form.Group>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Measurements</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("measurements")}
-                  placeholder="Measurements"
-                />
-              </Form.Group>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Fake Tits</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("fake_tits")}
-                  placeholder="Fake Tits"
-                />
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Height (cm)</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("height")}
+              placeholder="Height (cm)"
+            />
+          </Form.Group>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Measurements</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("measurements")}
+              placeholder="Measurements"
+            />
+          </Form.Group>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Fake Tits</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("fake_tits")}
+              placeholder="Fake Tits"
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} lg="6">
-                <Form.Label>Tattoos</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("tattoos")}
-                  placeholder="Tattoos"
-                />
-              </Form.Group>
-              <Form.Group as={Col} lg="6">
-                <Form.Label>Piercings</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("piercings")}
-                  placeholder="Piercings"
-                />
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} lg="6">
+            <Form.Label>Tattoos</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("tattoos")}
+              placeholder="Tattoos"
+            />
+          </Form.Group>
+          <Form.Group as={Col} lg="6">
+            <Form.Label>Piercings</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("piercings")}
+              placeholder="Piercings"
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} sm="4">
-                <Form.Label>Career Length</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("career_length")}
-                  placeholder="Career Length"
-                />
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} sm="4">
+            <Form.Label>Career Length</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("career_length")}
+              placeholder="Career Length"
+            />
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} sm="6">
-                <Form.Label>URL</Form.Label>
-                <InputGroup>
-                  <Form.Control
-                    className="text-input"
-                    {...formik.getFieldProps("url")}
-                    placeholder="URL"
-                  />
-                  <InputGroup.Append>
-                    {maybeRenderScrapeButton(formik.values.url)}
-                  </InputGroup.Append>
-                </InputGroup>
-              </Form.Group>
-            </Form.Row>
+        <Form.Row>
+          <Form.Group as={Col} sm="6">
+            <Form.Label>URL</Form.Label>
+            <InputGroup>
+              <Form.Control
+                className="text-input"
+                {...formik.getFieldProps("url")}
+                placeholder="URL"
+              />
+              <InputGroup.Append>
+                {maybeRenderScrapeButton(formik.values.url)}
+              </InputGroup.Append>
+            </InputGroup>
+          </Form.Group>
+        </Form.Row>
 
-            <Form.Row>
-              <Form.Group as={Col} lg="6">
-                <Form.Label>Twitter</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("twitter")}
-                  placeholder="Twitter"
-                />
-              </Form.Group>
-              <Form.Group as={Col} lg="6">
-                <Form.Label>Instagram</Form.Label>
-                <Form.Control
-                  className="text-input"
-                  {...formik.getFieldProps("instagram")}
-                  placeholder="Instagram"
-                />
-              </Form.Group>
-            </Form.Row>
-            {renderStashIDs()}
+        <Form.Row>
+          <Form.Group as={Col} lg="6">
+            <Form.Label>Twitter</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("twitter")}
+              placeholder="Twitter"
+            />
+          </Form.Group>
+          <Form.Group as={Col} lg="6">
+            <Form.Label>Instagram</Form.Label>
+            <Form.Control
+              className="text-input"
+              {...formik.getFieldProps("instagram")}
+              placeholder="Instagram"
+            />
+          </Form.Group>
+        </Form.Row>
+        {renderStashIDs()}
 
-            {renderButtons()}
-          </Form>
+        {renderButtons()}
+      </Form>
     </>
   );
 };

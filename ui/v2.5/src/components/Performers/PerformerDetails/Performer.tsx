@@ -127,11 +127,7 @@ export const Performer: React.FC = () => {
       unmountOnExit
     >
       <Tab eventKey="details" title="Details">
-        <PerformerDetailsPanel
-          performer={performer}
-          isEditing={false}
-          isVisible={activeTabKey === "details"}
-        />
+        <PerformerDetailsPanel performer={performer} />
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
