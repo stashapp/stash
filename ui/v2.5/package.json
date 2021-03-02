@@ -101,7 +101,7 @@
     "extract-react-intl-messages": "^4.1.1",
     "postcss-safe-parser": "^5.0.2",
     "prettier": "2.2.1",
-    "react-scripts": "^4.0.1",
+    "react-scripts": "^4.0.3",
     "stylelint": "^13.9.0",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-order": "^4.1.0",
