@@ -22,6 +22,7 @@ import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerEditPanel } from "./PerformerEditPanel";
 
 interface IPerformerParams {
   id?: string;
@@ -142,9 +143,8 @@ export const Performer: React.FC = () => {
         <PerformerImagesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title="Edit">
-        <PerformerDetailsPanel
+        <PerformerEditPanel
           performer={performer}
-          isEditing
           isVisible={activeTabKey === "edit"}
           isNew={isNew}
           onDelete={onDelete}
@@ -266,11 +266,10 @@ export const Performer: React.FC = () => {
         <div className="col-4">{renderPerformerImage()}</div>
         <div className="col-6">
           <h2>Create Performer</h2>
-          <PerformerDetailsPanel
+          <PerformerEditPanel
             performer={performer}
-            isEditing
             isVisible
-            isNew={isNew}
+            isNew
             onDelete={onDelete}
             onImageChange={onImageChange}
             onImageEncoding={onImageEncoding}

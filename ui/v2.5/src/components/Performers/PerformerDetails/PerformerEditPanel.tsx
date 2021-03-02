@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, Popover, OverlayTrigger, Form, Col, InputGroup, Row, Badge } from "react-bootstrap";
+import {
+  Button,
+  Popover,
+  OverlayTrigger,
+  Form,
+  Col,
+  InputGroup,
+  Row,
+  Badge,
+} from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -23,18 +32,15 @@ import {
   TagSelect,
   CollapseButton,
 } from "src/components/Shared";
-import {
-  ImageUtils,
-} from "src/utils";
+import { ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { useHistory } from "react-router-dom";
-import { Formik } from "formik";
+import { Formik, useFormik } from "formik";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isNew?: boolean;
-  isEditing?: boolean;
   isVisible: boolean;
   onDelete?: () => void;
   onImageChange?: (image?: string | null) => void;
@@ -44,7 +50,6 @@ interface IPerformerDetails {
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isNew,
-  isEditing,
   isVisible,
   onDelete,
   onImageChange,
@@ -64,41 +69,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   ] = useState<GQL.ScrapedPerformerDataFragment>();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
-  // Editing performer state
-  const [image, setImage] = useState<string | null>();
-  const [name, setName] = useState<string>(performer?.name ?? "");
-  const [aliases, setAliases] = useState<string>(performer.aliases ?? "");
-  const [birthdate, setBirthdate] = useState<string>(performer.birthdate ?? "");
-  const [ethnicity, setEthnicity] = useState<string>(performer.ethnicity ?? "");
-  const [country, setCountry] = useState<string>(performer.country ?? "");
-  const [eyeColor, setEyeColor] = useState<string>(performer.eye_color ?? "");
-  const [height, setHeight] = useState<string>(performer.height ?? "");
-  const [measurements, setMeasurements] = useState<string>(
-    performer.measurements ?? ""
-  );
-  const [fakeTits, setFakeTits] = useState<string>(performer.fake_tits ?? "");
-  const [careerLength, setCareerLength] = useState<string>(
-    performer.career_length ?? ""
-  );
-  const [tattoos, setTattoos] = useState<string>(performer.tattoos ?? "");
-  const [piercings, setPiercings] = useState<string>(performer.piercings ?? "");
-  // const [url, setUrl] = useState<string>(performer.url ?? "");
-  const [twitter, setTwitter] = useState<string>(performer.twitter ?? "");
-  const [instagram, setInstagram] = useState<string>(performer.instagram ?? "");
-  const [gender, setGender] = useState<string | undefined>(
-    genderToString(performer.gender ?? undefined)
-  );
-
-  // const [tagIds, setTagIds] = useState<string[]>(
-  //   (performer.tags ?? []).map((t) => t.id)
-  // );
-  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
-
-  const [stashIDs /* , setStashIDs*/ ] = useState<GQL.StashIdInput[]>(
-    performer.stash_ids ?? []
-  );
-  const favorite = performer.favorite ?? false;
-
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
@@ -112,9 +82,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     GQL.ScrapedPerformer | undefined
   >();
 
-  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  // const [createTag] = useTagCreate({ name: "" });
+  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
   const genderOptions = [""].concat(getGenderStrings());
 
@@ -124,18 +92,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     gender: yup.string().optional().oneOf(genderOptions),
     birthdate: yup.string().optional(),
     ethnicity: yup.string().optional(),
-    eyeColor: yup.string().optional(),
+    eye_color: yup.string().optional(),
     country: yup.string().optional(),
     height: yup.string().optional(),
     measurements: yup.string().optional(),
-    fakeTits: yup.string().optional(),
-    careerLength: yup.string().optional(),
+    fake_tits: yup.string().optional(),
+    career_length: yup.string().optional(),
     tattoos: yup.string().optional(),
     piercings: yup.string().optional(),
     url: yup.string().optional(),
     twitter: yup.string().optional(),
     instagram: yup.string().optional(),
-    tagIds: yup.array(yup.string().required()).optional(),
+    stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
+    image: yup.string().optional().nullable(),
   });
 
   const initialValues = {
@@ -144,19 +113,28 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     gender: genderToString(performer.gender ?? undefined),
     birthdate: performer.birthdate ?? undefined,
     ethnicity: performer.ethnicity ?? undefined,
-    eyeColor: performer.eye_color ?? undefined,
+    eye_color: performer.eye_color ?? undefined,
     country: performer.country ?? undefined,
     height: performer.height ?? undefined,
     measurements: performer.measurements ?? undefined,
-    fakeTits: performer.fake_tits ?? undefined,
-    careerLength: performer.career_length ?? undefined,
+    fake_tits: performer.fake_tits ?? undefined,
+    career_length: performer.career_length ?? undefined,
     tattoos: performer.tattoos ?? undefined,
     piercings: performer.piercings ?? undefined,
     url: performer.url ?? undefined,
     twitter: performer.twitter ?? undefined,
     instagram: performer.instagram ?? undefined,
-    tagIds: performer.tags?.map(t => t.id) ?? undefined,
+    stash_ids: performer.stash_ids ?? undefined,
+    image: undefined,
   };
+
+  type InputValues = typeof initialValues;
+
+  const formik = useFormik({
+    initialValues,
+    validationSchema: schema,
+    onSubmit: (values) => onSave(getPerformerInput(values)),
+  });
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -179,131 +157,61 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return genderToString(retEnum);
   }
 
-  function renderNewTags() {
-    if (!newTags || newTags.length === 0) {
-      return;
-    }
-
-    const ret = (
-      <>
-        {newTags.map((t) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={t.name}
-            onClick={() => createNewTag(t)}
-          >
-            {t.name}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon="plus" />
-            </Button>
-          </Badge>
-        ))}
-      </>
-    );
-
-    const minCollapseLength = 10;
-
-    if (newTags.length >= minCollapseLength) {
-      return (
-        <CollapseButton text={`Missing (${newTags.length})`}>
-          {ret}
-        </CollapseButton>
-      );
-    }
-
-    return ret;
-  }
-
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
-    // let tagInput: GQL.TagCreateInput = { name: "" };
-    try {
-      // tagInput = Object.assign(tagInput, toCreate);
-      // const result = await createTag({
-      //   variables: tagInput,
-      // });
-
-      // add the new tag to the new tags value
-      // const newTagIds = tagIds.concat([result.data!.tagCreate!.id]);
-      // setTagIds(newTagIds);
-
-      // remove the tag from the list
-      const newTagsClone = newTags!.concat();
-      const pIndex = newTagsClone.indexOf(toCreate);
-      newTagsClone.splice(pIndex, 1);
-
-      setNewTags(newTagsClone);
-
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{toCreate.name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
   function updatePerformerEditStateFromScraper(
     state: Partial<GQL.ScrapedPerformerDataFragment>
   ) {
     if (state.name) {
-      setName(state.name);
+      formik.setFieldValue("name", state.name);
     }
 
     if (state.aliases) {
-      setAliases(state.aliases ?? undefined);
+      formik.setFieldValue("aliases", state.aliases);
     }
     if (state.birthdate) {
-      setBirthdate(state.birthdate ?? undefined);
+      formik.setFieldValue("birthdate", state.birthdate);
     }
     if (state.ethnicity) {
-      setEthnicity(state.ethnicity ?? undefined);
+      formik.setFieldValue("ethnicity", state.ethnicity);
     }
     if (state.country) {
-      setCountry(state.country ?? undefined);
+      formik.setFieldValue("country", state.country);
     }
     if (state.eye_color) {
-      setEyeColor(state.eye_color ?? undefined);
+      formik.setFieldValue("eye_color", state.eye_color);
     }
     if (state.height) {
-      setHeight(state.height ?? undefined);
+      formik.setFieldValue("height", state.height);
     }
     if (state.measurements) {
-      setMeasurements(state.measurements ?? undefined);
+      formik.setFieldValue("measurements", state.measurements);
     }
     if (state.fake_tits) {
-      setFakeTits(state.fake_tits ?? undefined);
+      formik.setFieldValue("fake_tits", state.fake_tits);
     }
     if (state.career_length) {
-      setCareerLength(state.career_length ?? undefined);
+      formik.setFieldValue("career_length", state.career_length);
     }
     if (state.tattoos) {
-      setTattoos(state.tattoos ?? undefined);
+      formik.setFieldValue("tattoos", state.tattoos);
     }
     if (state.piercings) {
-      setPiercings(state.piercings ?? undefined);
+      formik.setFieldValue("piercings", state.piercings);
     }
-    // if (state.url) {
-    //   setUrl(state.url ?? undefined);
-    // }
+    if (state.url) {
+      formik.setFieldValue("url", state.url);
+    }
     if (state.twitter) {
-      setTwitter(state.twitter ?? undefined);
+      formik.setFieldValue("twitter", state.twitter);
     }
     if (state.instagram) {
-      setInstagram(state.instagram ?? undefined);
+      formik.setFieldValue("instagram", state.instagram);
     }
     if (state.gender) {
       // gender is a string in the scraper data
-      setGender(translateScrapedGender(state.gender ?? undefined));
-    }
-    if (state.tags) {
-      // const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
-      // setTagIds(newTagIds as string[]);
-
-      setNewTags(state.tags.filter((t) => !t.stored_id));
+      formik.setFieldValue(
+        "gender",
+        translateScrapedGender(state.gender ?? undefined)
+      );
     }
 
     // image is a base64 string
@@ -311,16 +219,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // overwrite if not new since it came from a dialog
     // otherwise follow existing behaviour
     if (
-      (!isNew || image === undefined) &&
+      (!isNew || formik.values.image === undefined) &&
       (state as GQL.ScrapedPerformerDataFragment).image !== undefined
     ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
-      setImage(imageStr ?? undefined);
+      formik.setFieldValue("image", imageStr ?? undefined);
     }
   }
 
   function onImageLoad(imageData: string) {
-    setImage(imageData);
+    formik.setFieldValue("image", imageData);
   }
 
   async function onSave(
@@ -362,9 +270,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // set up hotkeys
   useEffect(() => {
-    if (isEditing && isVisible) {
+    if (isVisible) {
       Mousetrap.bind("s s", () => {
-        onSave?.(getPerformerInput());
+        onSave?.(getPerformerInput(formik.values));
       });
 
       if (!isNew) {
@@ -385,10 +293,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   useEffect(() => {
     if (onImageChange) {
-      onImageChange(image);
+      onImageChange(formik.values.image);
     }
     return () => onImageChange?.();
-  }, [image, onImageChange]);
+  }, [formik.values.image, onImageChange]);
 
   useEffect(() => onImageEncoding?.(imageEncoding), [
     onImageEncoding,
@@ -407,33 +315,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   if (isLoading) return <LoadingIndicator />;
 
-  function getPerformerInput() {
+  function getPerformerInput(values: InputValues) {
     const performerInput: Partial<
       GQL.PerformerCreateInput | GQL.PerformerUpdateInput
     > = {
-      name,
-      aliases,
-      favorite,
-      birthdate,
-      ethnicity,
-      country,
-      eye_color: eyeColor,
-      height,
-      measurements,
-      fake_tits: fakeTits,
-      career_length: careerLength,
-      tattoos,
-      piercings,
-      // url,
-      twitter,
-      instagram,
-      image,
-      gender: stringToGender(gender),
-      // tag_ids: tagIds,
-      stash_ids: stashIDs.map((s) => ({
-        stash_id: s.stash_id,
-        endpoint: s.endpoint,
-      })),
+      ...values,
+      gender: stringToGender(values.gender),
     };
 
     if (!isNew) {
@@ -519,7 +406,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   function renderScraperMenu() {
-    if (!performer || !isEditing) {
+    if (!performer) {
       return;
     }
 
@@ -598,23 +485,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     const currentPerformer: Partial<GQL.PerformerDataFragment> = {
-      name,
-      aliases,
-      birthdate,
-      ethnicity,
-      country,
-      eye_color: eyeColor,
-      height,
-      measurements,
-      fake_tits: fakeTits,
-      career_length: careerLength,
-      tattoos,
-      piercings,
-      // url,
-      twitter,
-      instagram,
-      gender: stringToGender(gender),
-      image_path: image ?? performer.image_path,
+      ...formik.values,
+      gender: stringToGender(formik.values.gender),
+      image_path: formik.values.image ?? performer.image_path,
     };
 
     return (
@@ -648,35 +521,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function renderTagsField(tagIds: string[] | undefined, setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void) {
+  function renderButtons() {
     return (
-      <Form.Row>
-        <Form.Group as={Col} sm="12">
-          <Form.Label>
-            Tags
-          </Form.Label>
-          <TagSelect
-            menuPortalTarget={document.body}
-            isMulti
-            onSelect={(items) => setFieldValue("tagIds", items.map((item) => item.id))}
-            ids={tagIds}
-          />
-          {renderNewTags()}
-        </Form.Group>
-      </Form.Row>
-    );
-  }
-
-  function maybeRenderButtons() {
-    if (isEditing) {
-      return (
-        <Row>
-          <Col className="mt-3 pl-0" xs={12}>
+      <Row>
+        <Col className="mt-3 pl-0" xs={12}>
           <Button
             className="mr-2"
             variant="primary"
-            onClick={() => onSave?.(getPerformerInput())}
+            onClick={() => formik.submitForm()}
           >
             Save
           </Button>
@@ -692,25 +544,17 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             ""
           )}
           {renderScraperMenu()}
-          <ImageInput
-            isEditing={!!isEditing}
-            onImageChange={onImageChangeHandler}
-          />
-          {isEditing ? (
-            <Button
-              className="mx-2"
-              variant="danger"
-              onClick={() => setImage(null)}
-            >
-              Clear image
-            </Button>
-          ) : (
-            ""
-          )}
-          </Col>
-        </Row>
-      );
-    }
+          <ImageInput isEditing onImageChange={onImageChangeHandler} />
+          <Button
+            className="mx-2"
+            variant="danger"
+            onClick={() => formik.setFieldValue("image", null)}
+          >
+            Clear image
+          </Button>
+        </Col>
+      </Row>
+    );
   }
 
   function renderDeleteAlert() {
@@ -721,64 +565,63 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {name}?</p>
+        <p>Are you sure you want to delete {performer.name}?</p>
       </Modal>
     );
   }
 
-  // const removeStashID = (stashID: GQL.StashIdInput) => {
-  //   setStashIDs(
-  //     stashIDs.filter(
-  //       (s) =>
-  //         !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
-  //     )
-  //   );
-  // };
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    formik.setFieldValue(
+      "stash_ids",
+      (formik.values.stash_ids ?? []).filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
 
-  // function renderStashIDs() {
-  //   if (!performer.stash_ids?.length) {
-  //     return;
-  //   }
+  function renderStashIDs() {
+    if (!formik.values.stash_ids?.length) {
+      return;
+    }
 
-  //   return (
-  //     <tr>
-  //       <td>StashIDs</td>
-  //       <td>
-  //         <ul className="pl-0">
-  //           {stashIDs.map((stashID) => {
-  //             const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-  //             const link = base ? (
-  //               <a
-  //                 href={`${base}performers/${stashID.stash_id}`}
-  //                 target="_blank"
-  //                 rel="noopener noreferrer"
-  //               >
-  //                 {stashID.stash_id}
-  //               </a>
-  //             ) : (
-  //               stashID.stash_id
-  //             );
-  //             return (
-  //               <li key={stashID.stash_id} className="row no-gutters">
-  //                 {isEditing && (
-  //                   <Button
-  //                     variant="danger"
-  //                     className="mr-2 py-0"
-  //                     title="Delete StashID"
-  //                     onClick={() => removeStashID(stashID)}
-  //                   >
-  //                     <Icon icon="trash-alt" />
-  //                   </Button>
-  //                 )}
-  //                 {link}
-  //               </li>
-  //             );
-  //           })}
-  //         </ul>
-  //       </td>
-  //     </tr>
-  //   );
-  // }
+    return (
+      <tr>
+        <td>StashIDs</td>
+        <td>
+          <ul className="pl-0">
+            {formik.values.stash_ids.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  href={`${base}performers/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                stashID.stash_id
+              );
+              return (
+                <li key={stashID.stash_id} className="row no-gutters">
+                  <Button
+                    variant="danger"
+                    className="mr-2 py-0"
+                    title="Delete StashID"
+                    onClick={() => removeStashID(stashID)}
+                  >
+                    <Icon icon="trash-alt" />
+                  </Button>
+                  {link}
+                </li>
+              );
+            })}
+          </ul>
+        </td>
+      </tr>
+    );
+  }
 
   return (
     <>
@@ -787,247 +630,185 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {maybeRenderScrapeDialog()}
 
       <Row>
-        <Col xl={8} lg={12}>
-        <Formik
-          validationSchema={schema}
-          onSubmit={console.log}
-          initialValues={initialValues}
-        >
-          {({
-            handleSubmit,
-            handleChange,
-            values,
-            setFieldValue,
-            touched,
-            errors,
-          }) => (
-            <Form noValidate onSubmit={handleSubmit} id="performer-edit">
-              <Form.Row>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    name="name"
-                    className="text-input"
-                    value={values.name}
-                    placeholder="Name"
-                    onChange={handleChange}
-                    isValid={touched.name && !errors.name}
-                  />
-                </Form.Group>
-                <Form.Group as={Col} sm="8">
-                  <Form.Label>Aliases</Form.Label>
-                  <Form.Control
-                    name="aliases"
-                    className="text-input"
-                    value={values.aliases}
-                    placeholder="Aliases"
-                    onChange={handleChange}
-                    isValid={touched.aliases && !errors.aliases}
-                  />
-                </Form.Group>
-              </Form.Row>
+        <Col sm="auto">
+          <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
+            <Form.Row>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  placeholder="Name"
+                  {...formik.getFieldProps("name")}
+                  isInvalid={!!formik.errors.name}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {formik.errors.name}
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group as={Col} sm="8">
+                <Form.Label>Aliases</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  placeholder="Aliases"
+                  {...formik.getFieldProps("alias")}
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} md={8}>
-                  <Form.Label>Gender</Form.Label>
-                  <Form.Control
-                    name="gender"
-                    as="select"
-                    className="input-control"
-                    value={values.gender}
-                    onChange={handleChange}
-                    isValid={touched.gender && !errors.gender}
-                  >
-                    {genderOptions.map((opt) => (
-                      <option value={opt} key={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} md="auto">
+                <Form.Label>Gender</Form.Label>
+                <Form.Control
+                  as="select"
+                  className="input-control"
+                  {...formik.getFieldProps("gender")}
+                >
+                  {genderOptions.map((opt) => (
+                    <option value={opt} key={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Birthdate</Form.Label>
-                  <Form.Control
-                    name="birthdate"
-                    className="text-input"
-                    value={values.birthdate}
-                    placeholder="Birthdate"
-                    onChange={handleChange}
-                    isValid={touched.birthdate && !errors.birthdate}
-                  />
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Birthdate</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  placeholder="Birthdate"
+                  {...formik.getFieldProps("birthdate")}
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Country</Form.Label>
-                  <Form.Control
-                    name="country"
-                    className="text-input"
-                    value={values.country}
-                    placeholder="Country"
-                    onChange={handleChange}
-                    isValid={touched.country && !errors.country}
-                  />
-                </Form.Group>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Ethnicity</Form.Label>
-                  <Form.Control
-                    name="ethnicity"
-                    className="text-input"
-                    value={values.ethnicity}
-                    placeholder="Ethnicity"
-                    onChange={handleChange}
-                    isValid={touched.ethnicity && !errors.ethnicity}
-                  />
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Country</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("country")}
+                  placeholder="Country"
+                />
+              </Form.Group>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Ethnicity</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("ethnicity")}
+                  placeholder="Ethnicity"
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Eye Color</Form.Label>
-                  <Form.Control
-                    name="eyeColor"
-                    className="text-input"
-                    value={values.eyeColor}
-                    placeholder="Eye Color"
-                    onChange={handleChange}
-                    isValid={touched.eyeColor && !errors.eyeColor}
-                  />
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Eye Color</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("eyeColor")}
+                  placeholder="Eye Color"
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Height (cm)</Form.Label>
-                  <Form.Control
-                    name="height"
-                    className="text-input"
-                    value={values.height}
-                    placeholder="Height (cm)"
-                    onChange={handleChange}
-                    isValid={touched.height && !errors.height}
-                  />
-                </Form.Group>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Measurements</Form.Label>
-                  <Form.Control
-                    name="measurements"
-                    className="text-input"
-                    value={values.measurements}
-                    placeholder="Measurements"
-                    onChange={handleChange}
-                    isValid={touched.measurements && !errors.measurements}
-                  />
-                </Form.Group>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Fake Tits</Form.Label>
-                  <Form.Control
-                    name="fakeTits"
-                    className="text-input"
-                    value={values.fakeTits}
-                    placeholder="Fake Tits"
-                    onChange={handleChange}
-                    isValid={touched.fakeTits && !errors.fakeTits}
-                  />
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Height (cm)</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("height")}
+                  placeholder="Height (cm)"
+                />
+              </Form.Group>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Measurements</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("measurements")}
+                  placeholder="Measurements"
+                />
+              </Form.Group>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Fake Tits</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("fakeTits")}
+                  placeholder="Fake Tits"
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} lg="6">
-                  <Form.Label>Tattoos</Form.Label>
-                  <Form.Control
-                    name="tattoos"
-                    className="text-input"
-                    value={values.tattoos}
-                    placeholder="Tattoos"
-                    onChange={handleChange}
-                    isValid={touched.tattoos && !errors.tattoos}
-                  />
-                </Form.Group>
-                <Form.Group as={Col} lg="6">
-                  <Form.Label>Piercings</Form.Label>
-                  <Form.Control
-                    name="piercings"
-                    className="text-input"
-                    value={values.piercings}
-                    placeholder="Piercings"
-                    onChange={handleChange}
-                    isValid={touched.piercings && !errors.piercings}
-                  />
-                </Form.Group>
-              </Form.Row>
-              
-              <Form.Row>
-                <Form.Group as={Col} sm="4">
-                  <Form.Label>Career Length</Form.Label>
-                  <Form.Control
-                    name="careerLength"
-                    className="text-input"
-                    value={values.careerLength}
-                    placeholder="Career Length"
-                    onChange={handleChange}
-                    isValid={touched.careerLength && !errors.careerLength}
-                  />
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} lg="6">
+                <Form.Label>Tattoos</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("tattoos")}
+                  placeholder="Tattoos"
+                />
+              </Form.Group>
+              <Form.Group as={Col} lg="6">
+                <Form.Label>Piercings</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("piercings")}
+                  placeholder="Piercings"
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} sm="12">
-                  <Form.Label>
-                    URL
-                  </Form.Label>
-                  <InputGroup>
-                    <Form.Control
-                      name="url"
-                      className="text-input"
-                      value={values.url}
-                      placeholder="URL"
-                      onChange={handleChange}
-                      isValid={touched.url && !errors.url}
-                    />
-                    <InputGroup.Append>
-                      {maybeRenderScrapeButton(values.url)}
-                    </InputGroup.Append>
-                  </InputGroup>
-                </Form.Group>
-              </Form.Row>
+            <Form.Row>
+              <Form.Group as={Col} sm="4">
+                <Form.Label>Career Length</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("careerLength")}
+                  placeholder="Career Length"
+                />
+              </Form.Group>
+            </Form.Row>
 
-              <Form.Row>
-                <Form.Group as={Col} lg="6">
-                  <Form.Label>Twitter</Form.Label>
+            <Form.Row>
+              <Form.Group as={Col} sm="12">
+                <Form.Label>URL</Form.Label>
+                <InputGroup>
                   <Form.Control
-                    name="Twitter"
                     className="text-input"
-                    value={values.twitter}
-                    placeholder="Twitter"
-                    onChange={handleChange}
-                    isValid={touched.twitter && !errors.twitter}
+                    {...formik.getFieldProps("url")}
+                    placeholder="URL"
                   />
-                </Form.Group>
-                <Form.Group as={Col} lg="6">
-                  <Form.Label>Instagram</Form.Label>
-                  <Form.Control
-                    name="instagram"
-                    className="text-input"
-                    value={values.instagram}
-                    placeholder="Instagram"
-                    onChange={handleChange}
-                    isValid={touched.instagram && !errors.instagram}
-                  />
-                </Form.Group>
-              </Form.Row>
-              {renderTagsField(values.tagIds, setFieldValue)}
-              {/* {renderStashIDs()} */}
+                  <InputGroup.Append>
+                    {maybeRenderScrapeButton(formik.values.url)}
+                  </InputGroup.Append>
+                </InputGroup>
+              </Form.Group>
+            </Form.Row>
 
-              {maybeRenderButtons()}
-            </Form>
-          )}
-        </Formik>
-      </Col>
+            <Form.Row>
+              <Form.Group as={Col} lg="6">
+                <Form.Label>Twitter</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("twitter")}
+                  placeholder="Twitter"
+                />
+              </Form.Group>
+              <Form.Group as={Col} lg="6">
+                <Form.Label>Instagram</Form.Label>
+                <Form.Control
+                  className="text-input"
+                  {...formik.getFieldProps("instagram")}
+                  placeholder="Instagram"
+                />
+              </Form.Group>
+            </Form.Row>
+            {renderStashIDs()}
+
+            {renderButtons()}
+          </Form>
+        </Col>
       </Row>
     </>
   );
