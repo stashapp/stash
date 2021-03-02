@@ -1,6 +1,5 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import { Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
@@ -22,9 +21,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <tr>
-        <td>StashIDs</td>
-        <td>
+      <dl className="row">
+        <dt className="col-3 col-xl-2">StashIDs</dt>
+        <dd className="col-9 col-xl-10">
           <ul className="pl-0">
             {performer.stash_ids.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
@@ -46,8 +45,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
               );
             })}
           </ul>
-        </td>
-      </tr>
+        </dd>
+      </dl>
     );
   }
 
@@ -64,49 +63,45 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   return (
     <>
-      <Table id="performer-details" className="w-100">
-        <tbody>
-          <TextField
-            name="Gender"
-            value={genderToString(performer.gender ?? undefined)}
-          />
-          <TextField
-            name="Birthdate"
-            value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
-          />
-          <TextField name="Ethnicity" value={performer.ethnicity} />
-          <TextField name="Eye Color" value={performer.eye_color} />
-          <TextField name="Country" value={performer.country} />
-          <TextField name="Height" value={formatHeight(performer.height)} />
-          <TextField name="Measurements" value={performer.measurements} />
-          <TextField name="Fake Tits" value={performer.fake_tits} />
-          <TextField name="Career Length" value={performer.career_length} />
-          <TextField name="Tattoos" value={performer.tattoos} />
-          <TextField name="Piercings" value={performer.piercings} />
-          <URLField
-            name="URL"
-            value={performer.url}
-            url={TextUtils.sanitiseURL(performer.url ?? "")}
-          />
-          <URLField
-            name="Twitter"
-            value={performer.twitter}
-            url={TextUtils.sanitiseURL(
-              performer.twitter ?? "",
-              TextUtils.twitterURL
-            )}
-          />
-          <URLField
-            name="Instagram"
-            value={performer.instagram}
-            url={TextUtils.sanitiseURL(
-              performer.instagram ?? "",
-              TextUtils.instagramURL
-            )}
-          />
-          {renderStashIDs()}
-        </tbody>
-      </Table>
+      <TextField
+        name="Gender"
+        value={genderToString(performer.gender ?? undefined)}
+      />
+      <TextField
+        name="Birthdate"
+        value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
+      />
+      <TextField name="Ethnicity" value={performer.ethnicity} />
+      <TextField name="Eye Color" value={performer.eye_color} />
+      <TextField name="Country" value={performer.country} />
+      <TextField name="Height" value={formatHeight(performer.height)} />
+      <TextField name="Measurements" value={performer.measurements} />
+      <TextField name="Fake Tits" value={performer.fake_tits} />
+      <TextField name="Career Length" value={performer.career_length} />
+      <TextField name="Tattoos" value={performer.tattoos} />
+      <TextField name="Piercings" value={performer.piercings} />
+      <URLField
+        name="URL"
+        value={performer.url}
+        url={TextUtils.sanitiseURL(performer.url ?? "")}
+      />
+      <URLField
+        name="Twitter"
+        value={performer.twitter}
+        url={TextUtils.sanitiseURL(
+          performer.twitter ?? "",
+          TextUtils.twitterURL
+        )}
+      />
+      <URLField
+        name="Instagram"
+        value={performer.instagram}
+        url={TextUtils.sanitiseURL(
+          performer.instagram ?? "",
+          TextUtils.instagramURL
+        )}
+      />
+      {renderStashIDs()}
     </>
   );
 };

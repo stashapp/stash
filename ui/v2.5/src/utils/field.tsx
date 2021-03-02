@@ -18,13 +18,13 @@ export const TextField: React.FC<ITextField> = ({ name, value }) => {
   );
 };
 
-interface ITextField {
+interface IURLField {
   name: string;
   value?: string | null;
   url?: string | null;
 }
 
-export const URLField: React.FC<ITextField> = ({ name, value, url }) => {
+export const URLField: React.FC<IURLField> = ({ name, value, url }) => {
   if (!value) {
     return null;
   }

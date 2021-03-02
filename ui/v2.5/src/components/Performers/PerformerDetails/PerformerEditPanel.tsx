@@ -521,7 +521,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function renderButtons() {
     return (
       <Row>
-        <Col className="mt-3 pl-0" xs={12}>
+        <Col className="mt-3" xs={12}>
           <Button
             className="mr-2"
             variant="primary"
@@ -583,9 +583,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <tr>
-        <td>StashIDs</td>
-        <td>
+      <Row>
+        <Col sm="auto">
+          <div>StashIDs</div>
           <ul className="pl-0">
             {formik.values.stash_ids.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
@@ -601,7 +601,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 stashID.stash_id
               );
               return (
-                <li key={stashID.stash_id} className="row no-gutters">
+                <li key={stashID.stash_id} className="row no-gutters mb-1">
                   <Button
                     variant="danger"
                     className="mr-2 py-0"
@@ -615,8 +615,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               );
             })}
           </ul>
-        </td>
-      </tr>
+        </Col>
+      </Row>
     );
   }
 

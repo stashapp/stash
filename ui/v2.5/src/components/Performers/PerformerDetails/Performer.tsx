@@ -259,8 +259,8 @@ export const Performer: React.FC = () => {
   if (isNew)
     return (
       <div className="row new-view">
-        <div className="col-4">{renderPerformerImage()}</div>
-        <div className="col-6">
+        <div className="col-md-4">{renderPerformerImage()}</div>
+        <div className="col-md-8">
           <h2>Create Performer</h2>
           <PerformerEditPanel
             performer={performer}
