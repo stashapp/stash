@@ -629,8 +629,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       {renderScraperDialog()}
       {maybeRenderScrapeDialog()}
 
-      <Row>
-        <Col sm="auto">
           <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
             <Form.Row>
               <Form.Group as={Col} sm="4">
@@ -650,7 +648,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 <Form.Control
                   className="text-input"
                   placeholder="Aliases"
-                  {...formik.getFieldProps("alias")}
+                  {...formik.getFieldProps("aliases")}
                 />
               </Form.Group>
             </Form.Row>
@@ -707,7 +705,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 <Form.Label>Eye Color</Form.Label>
                 <Form.Control
                   className="text-input"
-                  {...formik.getFieldProps("eyeColor")}
+                  {...formik.getFieldProps("eye_color")}
                   placeholder="Eye Color"
                 />
               </Form.Group>
@@ -734,7 +732,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 <Form.Label>Fake Tits</Form.Label>
                 <Form.Control
                   className="text-input"
-                  {...formik.getFieldProps("fakeTits")}
+                  {...formik.getFieldProps("fake_tits")}
                   placeholder="Fake Tits"
                 />
               </Form.Group>
@@ -764,14 +762,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 <Form.Label>Career Length</Form.Label>
                 <Form.Control
                   className="text-input"
-                  {...formik.getFieldProps("careerLength")}
+                  {...formik.getFieldProps("career_length")}
                   placeholder="Career Length"
                 />
               </Form.Group>
             </Form.Row>
 
             <Form.Row>
-              <Form.Group as={Col} sm="12">
+              <Form.Group as={Col} sm="6">
                 <Form.Label>URL</Form.Label>
                 <InputGroup>
                   <Form.Control
@@ -808,8 +806,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
             {renderButtons()}
           </Form>
-        </Col>
-      </Row>
     </>
   );
 };
