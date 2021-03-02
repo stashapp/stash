@@ -1,35 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useIntl } from "react-intl";
-import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
-import Mousetrap from "mousetrap";
+import { Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  getGenderStrings,
-  useListPerformerScrapers,
-  genderToString,
-  stringToGender,
-  queryScrapePerformer,
-  queryScrapePerformerURL,
-  mutateReloadScrapers,
-  usePerformerUpdate,
-  usePerformerCreate,
-} from "src/core/StashService";
-import {
-  Icon,
-  Modal,
-  ImageInput,
-  ScrapePerformerSuggest,
-  LoadingIndicator,
-} from "src/components/Shared";
-import {
-  ImageUtils,
-  TableUtils,
-  TextUtils,
-  EditableTextUtils,
-} from "src/utils";
-import { useToast } from "src/hooks";
-import { useHistory } from "react-router-dom";
-import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
+import { genderToString } from "src/core/StashService";
+import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface IPerformerDetails {

@@ -7,7 +7,6 @@ import {
   Col,
   InputGroup,
   Row,
-  Badge,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -29,13 +28,11 @@ import {
   ImageInput,
   ScrapePerformerSuggest,
   LoadingIndicator,
-  TagSelect,
-  CollapseButton,
 } from "src/components/Shared";
 import { ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { useHistory } from "react-router-dom";
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
 interface IPerformerDetails {
