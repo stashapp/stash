@@ -64,7 +64,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			}
 
 			// handle redirect if no user and user is required
-			if userID == "" && config.HasCredentials() && !allowUnauthenticated(r) {
+			if userID == "" && config.GetInstance().HasCredentials() && !allowUnauthenticated(r) {
 				// always allow
 
 				// if we don't have a userID, then redirect
@@ -113,7 +113,8 @@ func Start() {
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
-	if config.GetLogAccess() {
+	c := config.GetInstance()
+	if c.GetLogAccess() {
 		r.Use(middleware.Logger)
 	}
 	r.Use(middleware.DefaultCompress)
@@ -135,7 +136,7 @@ func Start() {
 			return true
 		},
 	})
-	maxUploadSize := handler.UploadMaxSize(config.GetMaxUploadSize())
+	maxUploadSize := handler.UploadMaxSize(c.GetMaxUploadSize())
 	websocketKeepAliveDuration := handler.WebsocketKeepAliveDuration(10 * time.Second)
 
 	txnManager := manager.GetInstance().TxnManager
@@ -176,12 +177,12 @@ func Start() {
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")
-		if !config.GetCSSEnabled() {
+		if !c.GetCSSEnabled() {
 			return
 		}
 
 		// search for custom.css in current directory, then $HOME/.stash
-		fn := config.GetCSSPath()
+		fn := c.GetCSSPath()
 		exists, _ := utils.FileExists(fn)
 		if !exists {
 			return
@@ -254,12 +255,13 @@ func Start() {
 		_ = os.Mkdir(downloads, 0755)
 
 		// #536 - set stash as slice of strings
-		config.Set(config.Stash, []string{stash})
-		config.Set(config.Generated, generated)
-		config.Set(config.Metadata, metadata)
-		config.Set(config.Cache, cache)
-		config.Set(config.Downloads, downloads)
-		if err := config.Write(); err != nil {
+		c := config.GetInstance()
+		c.Set(config.Stash, []string{stash})
+		c.Set(config.Generated, generated)
+		c.Set(config.Metadata, metadata)
+		c.Set(config.Cache, cache)
+		c.Set(config.Downloads, downloads)
+		if err := c.Write(); err != nil {
 			http.Error(w, fmt.Sprintf("there was an error saving the config file: %s", err), 500)
 			return
 		}
@@ -270,7 +272,7 @@ func Start() {
 	})
 
 	// Serve static folders
-	customServedFolders := config.GetCustomServedFolders()
+	customServedFolders := c.GetCustomServedFolders()
 	if customServedFolders != nil {
 		r.HandleFunc("/custom/*", func(w http.ResponseWriter, r *http.Request) {
 			r.URL.Path = strings.Replace(r.URL.Path, "/custom", "", 1)
@@ -301,13 +303,13 @@ func Start() {
 		}
 	})
 
-	displayHost := config.GetHost()
+	displayHost := c.GetHost()
 	if displayHost == "0.0.0.0" {
 		displayHost = "localhost"
 	}
-	displayAddress := displayHost + ":" + strconv.Itoa(config.GetPort())
+	displayAddress := displayHost + ":" + strconv.Itoa(c.GetPort())
 
-	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
+	address := c.GetHost() + ":" + strconv.Itoa(c.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
 		httpsServer := &http.Server{
 			Addr:      address,
@@ -402,7 +404,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		}
 		baseURL := scheme + "://" + r.Host
 
-		externalHost := config.GetExternalHost()
+		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
 			baseURL = externalHost
 		}
@@ -418,7 +420,7 @@ func ConfigCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		shouldRedirect := ext == "" && r.Method == "GET"
-		if !config.IsValid() && shouldRedirect {
+		if !config.GetInstance().IsValid() && shouldRedirect {
 			// #539 - don't redirect if loading login page
 			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
 				http.Redirect(w, r, setupEndPoint, http.StatusFound)

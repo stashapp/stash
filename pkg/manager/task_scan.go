@@ -58,6 +58,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 			if t.GeneratePreview {
 				iwg.Add()
 
+				config := config.GetInstance()
 				var previewSegmentDuration = config.GetPreviewSegmentDuration()
 				var previewSegments = config.GetPreviewSegments()
 				var previewExcludeStart = config.GetPreviewExcludeStart()
@@ -302,7 +303,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 
 		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
 		var relatedFiles []string
-		vExt := config.GetVideoExtensions()
+		vExt := config.GetInstance().GetVideoExtensions()
 		// make a list of media files that can be related to the gallery
 		for _, ext := range vExt {
 			related := basename + "." + ext
@@ -387,6 +388,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		// if the mod time of the file is different than that of the associated
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, s.FileModTime)
+		config := config.GetInstance()
 		if modified || !s.Size.Valid {
 			oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 			s, err = t.rescanScene(s, fileModTime)
@@ -863,7 +865,7 @@ func (t *ScanTask) scanImage() {
 				logger.Error(err.Error())
 				return
 			}
-		} else if config.GetCreateGalleriesFromFolders() {
+		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
 			// create gallery from folder or associate with existing gallery
 			logger.Infof("Associating image %s with folder gallery", i.Path)
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -1016,6 +1018,7 @@ func (t *ScanTask) calculateImageChecksum() (string, error) {
 }
 
 func (t *ScanTask) doesPathExist() bool {
+	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
@@ -1046,6 +1049,7 @@ func (t *ScanTask) doesPathExist() bool {
 }
 
 func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
+	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()

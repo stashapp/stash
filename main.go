@@ -15,7 +15,7 @@ func main() {
 	manager.Initialize()
 
 	// perform the post-migration for new databases
-	if database.Initialize(config.GetDatabasePath()) {
+	if database.Initialize(config.GetInstance().GetDatabasePath()) {
 		manager.GetInstance().PostMigrate()
 	}
 

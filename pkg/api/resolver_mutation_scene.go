@@ -139,7 +139,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		err = manager.SetSceneScreenshot(scene.GetHash(config.GetVideoFileNamingAlgorithm()), coverImageData)
+		err = manager.SetSceneScreenshot(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
 		if err != nil {
 			return nil, err
 		}
@@ -380,7 +380,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// if delete generated is true, then delete the generated files
 	// for the scene
 	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedSceneFiles(scene, config.GetVideoFileNamingAlgorithm())
+		manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
 	}
 
 	// if delete file is true, then delete the file as well
@@ -422,7 +422,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		f()
 	}
 
-	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	for _, scene := range scenes {
 		// if delete generated is true, then delete the generated files
 		// for the scene
@@ -582,7 +582,7 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	// remove the marker preview if the timestamp was changed
 	if scene != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
 		seconds := int(existingMarker.Seconds)
-		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
+		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetInstance().GetVideoFileNamingAlgorithm())
 	}
 
 	return sceneMarker, nil

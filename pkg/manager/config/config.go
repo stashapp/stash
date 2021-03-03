@@ -1,8 +1,9 @@
 package config
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"runtime"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"errors"
 	"io/ioutil"
@@ -124,29 +125,40 @@ const LogAccess = "logAccess"
 // File upload options
 const MaxUploadSize = "max_upload_size"
 
-func Set(key string, value interface{}) {
+type Instance struct{}
+
+var instance *Instance
+
+func GetInstance() *Instance {
+	if instance == nil {
+		instance = &Instance{}
+	}
+	return instance
+}
+
+func (i *Instance) Set(key string, value interface{}) {
 	viper.Set(key, value)
 }
 
-func SetPassword(value string) {
+func (i *Instance) SetPassword(value string) {
 	// if blank, don't bother hashing; we want it to be blank
 	if value == "" {
-		Set(Password, "")
+		i.Set(Password, "")
 	} else {
-		Set(Password, hashPassword(value))
+		i.Set(Password, hashPassword(value))
 	}
 }
 
-func Write() error {
+func (i *Instance) Write() error {
 	return viper.WriteConfig()
 }
 
-func GetConfigPath() string {
+func (i *Instance) GetConfigPath() string {
 	configFileUsed := viper.ConfigFileUsed()
 	return filepath.Dir(configFileUsed)
 }
 
-func GetStashPaths() []*models.StashConfig {
+func (i *Instance) GetStashPaths() []*models.StashConfig {
 	var ret []*models.StashConfig
 	if err := viper.UnmarshalKey(Stash, &ret); err != nil || len(ret) == 0 {
 		// fallback to legacy format
@@ -163,47 +175,47 @@ func GetStashPaths() []*models.StashConfig {
 	return ret
 }
 
-func GetCachePath() string {
+func (i *Instance) GetCachePath() string {
 	return viper.GetString(Cache)
 }
 
-func GetGeneratedPath() string {
+func (i *Instance) GetGeneratedPath() string {
 	return viper.GetString(Generated)
 }
 
-func GetMetadataPath() string {
+func (i *Instance) GetMetadataPath() string {
 	return viper.GetString(Metadata)
 }
 
-func GetDatabasePath() string {
+func (i *Instance) GetDatabasePath() string {
 	return viper.GetString(Database)
 }
 
-func GetJWTSignKey() []byte {
+func (i *Instance) GetJWTSignKey() []byte {
 	return []byte(viper.GetString(JWTSignKey))
 }
 
-func GetSessionStoreKey() []byte {
+func (i *Instance) GetSessionStoreKey() []byte {
 	return []byte(viper.GetString(SessionStoreKey))
 }
 
-func GetDefaultScrapersPath() string {
+func (i *Instance) GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
 
-	fn := filepath.Join(GetConfigPath(), "scrapers")
+	fn := filepath.Join(i.GetConfigPath(), "scrapers")
 
 	return fn
 }
 
-func GetExcludes() []string {
+func (i *Instance) GetExcludes() []string {
 	return viper.GetStringSlice(Exclude)
 }
 
-func GetImageExcludes() []string {
+func (i *Instance) GetImageExcludes() []string {
 	return viper.GetStringSlice(ImageExclude)
 }
 
-func GetVideoExtensions() []string {
+func (i *Instance) GetVideoExtensions() []string {
 	ret := viper.GetStringSlice(VideoExtensions)
 	if ret == nil {
 		ret = defaultVideoExtensions
@@ -211,7 +223,7 @@ func GetVideoExtensions() []string {
 	return ret
 }
 
-func GetImageExtensions() []string {
+func (i *Instance) GetImageExtensions() []string {
 	ret := viper.GetStringSlice(ImageExtensions)
 	if ret == nil {
 		ret = defaultImageExtensions
@@ -219,7 +231,7 @@ func GetImageExtensions() []string {
 	return ret
 }
 
-func GetGalleryExtensions() []string {
+func (i *Instance) GetGalleryExtensions() []string {
 	ret := viper.GetStringSlice(GalleryExtensions)
 	if ret == nil {
 		ret = defaultGalleryExtensions
@@ -227,11 +239,11 @@ func GetGalleryExtensions() []string {
 	return ret
 }
 
-func GetCreateGalleriesFromFolders() bool {
+func (i *Instance) GetCreateGalleriesFromFolders() bool {
 	return viper.GetBool(CreateGalleriesFromFolders)
 }
 
-func GetLanguage() string {
+func (i *Instance) GetLanguage() string {
 	ret := viper.GetString(Language)
 
 	// default to English
@@ -244,13 +256,13 @@ func GetLanguage() string {
 
 // IsCalculateMD5 returns true if MD5 checksums should be generated for
 // scene video files.
-func IsCalculateMD5() bool {
+func (i *Instance) IsCalculateMD5() bool {
 	return viper.GetBool(CalculateMD5)
 }
 
 // GetVideoFileNamingAlgorithm returns what hash algorithm should be used for
 // naming generated scene video files.
-func GetVideoFileNamingAlgorithm() models.HashAlgorithm {
+func (i *Instance) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	ret := viper.GetString(VideoFileNamingAlgorithm)
 
 	// default to oshash
@@ -261,23 +273,23 @@ func GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	return models.HashAlgorithm(ret)
 }
 
-func GetScrapersPath() string {
+func (i *Instance) GetScrapersPath() string {
 	return viper.GetString(ScrapersPath)
 }
 
-func GetScraperUserAgent() string {
+func (i *Instance) GetScraperUserAgent() string {
 	return viper.GetString(ScraperUserAgent)
 }
 
 // GetScraperCDPPath gets the path to the Chrome executable or remote address
 // to an instance of Chrome.
-func GetScraperCDPPath() string {
+func (i *Instance) GetScraperCDPPath() string {
 	return viper.GetString(ScraperCDPPath)
 }
 
 // GetScraperCertCheck returns true if the scraper should check for insecure
 // certificates when fetching an image or a page.
-func GetScraperCertCheck() bool {
+func (i *Instance) GetScraperCertCheck() bool {
 	ret := true
 	if viper.IsSet(ScraperCertCheck) {
 		ret = viper.GetBool(ScraperCertCheck)
@@ -286,48 +298,48 @@ func GetScraperCertCheck() bool {
 	return ret
 }
 
-func GetStashBoxes() []*models.StashBox {
+func (i *Instance) GetStashBoxes() []*models.StashBox {
 	var boxes []*models.StashBox
 	viper.UnmarshalKey(StashBoxes, &boxes)
 	return boxes
 }
 
-func GetDefaultPluginsPath() string {
+func (i *Instance) GetDefaultPluginsPath() string {
 	// default to the same directory as the config file
-	fn := filepath.Join(GetConfigPath(), "plugins")
+	fn := filepath.Join(i.GetConfigPath(), "plugins")
 
 	return fn
 }
 
-func GetPluginsPath() string {
+func (i *Instance) GetPluginsPath() string {
 	return viper.GetString(PluginsPath)
 }
 
-func GetHost() string {
+func (i *Instance) GetHost() string {
 	return viper.GetString(Host)
 }
 
-func GetPort() int {
+func (i *Instance) GetPort() int {
 	return viper.GetInt(Port)
 }
 
-func GetExternalHost() string {
+func (i *Instance) GetExternalHost() string {
 	return viper.GetString(ExternalHost)
 }
 
 // GetPreviewSegmentDuration returns the duration of a single segment in a
 // scene preview file, in seconds.
-func GetPreviewSegmentDuration() float64 {
+func (i *Instance) GetPreviewSegmentDuration() float64 {
 	return viper.GetFloat64(PreviewSegmentDuration)
 }
 
 // GetParallelTasks returns the number of parallel tasks that should be started
 // by scan or generate task.
-func GetParallelTasks() int {
+func (i *Instance) GetParallelTasks() int {
 	return viper.GetInt(ParallelTasks)
 }
 
-func GetParallelTasksWithAutoDetection() int {
+func (i *Instance) GetParallelTasksWithAutoDetection() int {
 	parallelTasks := viper.GetInt(ParallelTasks)
 	if parallelTasks <= 0 {
 		parallelTasks = (runtime.NumCPU() / 4) + 1
@@ -336,7 +348,7 @@ func GetParallelTasksWithAutoDetection() int {
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.
-func GetPreviewSegments() int {
+func (i *Instance) GetPreviewSegments() int {
 	return viper.GetInt(PreviewSegments)
 }
 
@@ -346,7 +358,7 @@ func GetPreviewSegments() int {
 // of seconds to exclude from the start of the video before it is included
 // in the preview. If the value is suffixed with a '%' character (for example
 // '2%'), then it is interpreted as a proportion of the total video duration.
-func GetPreviewExcludeStart() string {
+func (i *Instance) GetPreviewExcludeStart() string {
 	return viper.GetString(PreviewExcludeStart)
 }
 
@@ -355,13 +367,13 @@ func GetPreviewExcludeStart() string {
 // is interpreted as the amount of seconds to exclude from the end of the video
 // when generating previews. If the value is suffixed with a '%' character,
 // then it is interpreted as a proportion of the total video duration.
-func GetPreviewExcludeEnd() string {
+func (i *Instance) GetPreviewExcludeEnd() string {
 	return viper.GetString(PreviewExcludeEnd)
 }
 
 // GetPreviewPreset returns the preset when generating previews. Defaults to
 // Slow.
-func GetPreviewPreset() models.PreviewPreset {
+func (i *Instance) GetPreviewPreset() models.PreviewPreset {
 	ret := viper.GetString(PreviewPreset)
 
 	// default to slow
@@ -372,7 +384,7 @@ func GetPreviewPreset() models.PreviewPreset {
 	return models.PreviewPreset(ret)
 }
 
-func GetMaxTranscodeSize() models.StreamingResolutionEnum {
+func (i *Instance) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	ret := viper.GetString(MaxTranscodeSize)
 
 	// default to original
@@ -383,7 +395,7 @@ func GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	return models.StreamingResolutionEnum(ret)
 }
 
-func GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
+func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	ret := viper.GetString(MaxStreamingTranscodeSize)
 
 	// default to original
@@ -394,29 +406,29 @@ func GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	return models.StreamingResolutionEnum(ret)
 }
 
-func GetUsername() string {
+func (i *Instance) GetUsername() string {
 	return viper.GetString(Username)
 }
 
-func GetPasswordHash() string {
+func (i *Instance) GetPasswordHash() string {
 	return viper.GetString(Password)
 }
 
-func GetCredentials() (string, string) {
-	if HasCredentials() {
+func (i *Instance) GetCredentials() (string, string) {
+	if i.HasCredentials() {
 		return viper.GetString(Username), viper.GetString(Password)
 	}
 
 	return "", ""
 }
 
-func HasCredentials() bool {
+func (i *Instance) HasCredentials() bool {
 	if !viper.IsSet(Username) || !viper.IsSet(Password) {
 		return false
 	}
 
-	username := GetUsername()
-	pwHash := GetPasswordHash()
+	username := i.GetUsername()
+	pwHash := i.GetPasswordHash()
 
 	return username != "" && pwHash != ""
 }
@@ -427,20 +439,20 @@ func hashPassword(password string) string {
 	return string(hash)
 }
 
-func ValidateCredentials(username string, password string) bool {
-	if !HasCredentials() {
+func (i *Instance) ValidateCredentials(username string, password string) bool {
+	if !i.HasCredentials() {
 		// don't need to authenticate if no credentials saved
 		return true
 	}
 
-	authUser, authPWHash := GetCredentials()
+	authUser, authPWHash := i.GetCredentials()
 
 	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
 
 	return username == authUser && err == nil
 }
 
-func ValidateStashBoxes(boxes []*models.StashBoxInput) error {
+func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
 	re, err := regexp.Compile("^http.*graphql$")
@@ -464,56 +476,56 @@ func ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 
 // GetMaxSessionAge gets the maximum age for session cookies, in seconds.
 // Session cookie expiry times are refreshed every request.
-func GetMaxSessionAge() int {
+func (i *Instance) GetMaxSessionAge() int {
 	viper.SetDefault(MaxSessionAge, DefaultMaxSessionAge)
 	return viper.GetInt(MaxSessionAge)
 }
 
 // GetCustomServedFolders gets the map of custom paths to their applicable
 // filesystem locations
-func GetCustomServedFolders() URLMap {
+func (i *Instance) GetCustomServedFolders() URLMap {
 	return viper.GetStringMapString(CustomServedFolders)
 }
 
 // Interface options
-func GetMenuItems() []string {
+func (i *Instance) GetMenuItems() []string {
 	if viper.IsSet(MenuItems) {
 		return viper.GetStringSlice(MenuItems)
 	}
 	return defaultMenuItems
 }
 
-func GetSoundOnPreview() bool {
+func (i *Instance) GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
 	return viper.GetBool(SoundOnPreview)
 }
 
-func GetWallShowTitle() bool {
+func (i *Instance) GetWallShowTitle() bool {
 	viper.SetDefault(WallShowTitle, true)
 	return viper.GetBool(WallShowTitle)
 }
 
-func GetWallPlayback() string {
+func (i *Instance) GetWallPlayback() string {
 	viper.SetDefault(WallPlayback, "video")
 	return viper.GetString(WallPlayback)
 }
 
-func GetMaximumLoopDuration() int {
+func (i *Instance) GetMaximumLoopDuration() int {
 	viper.SetDefault(MaximumLoopDuration, 0)
 	return viper.GetInt(MaximumLoopDuration)
 }
 
-func GetAutostartVideo() bool {
+func (i *Instance) GetAutostartVideo() bool {
 	viper.SetDefault(AutostartVideo, false)
 	return viper.GetBool(AutostartVideo)
 }
 
-func GetShowStudioAsText() bool {
+func (i *Instance) GetShowStudioAsText() bool {
 	viper.SetDefault(ShowStudioAsText, false)
 	return viper.GetBool(ShowStudioAsText)
 }
 
-func GetCSSPath() string {
+func (i *Instance) GetCSSPath() string {
 	// use custom.css in the same directory as the config file
 	configFileUsed := viper.ConfigFileUsed()
 	configDir := filepath.Dir(configFileUsed)
@@ -523,8 +535,8 @@ func GetCSSPath() string {
 	return fn
 }
 
-func GetCSS() string {
-	fn := GetCSSPath()
+func (i *Instance) GetCSS() string {
+	fn := i.GetCSSPath()
 
 	exists, _ := utils.FileExists(fn)
 	if !exists {
@@ -540,28 +552,28 @@ func GetCSS() string {
 	return string(buf)
 }
 
-func SetCSS(css string) {
-	fn := GetCSSPath()
+func (i *Instance) SetCSS(css string) {
+	fn := i.GetCSSPath()
 
 	buf := []byte(css)
 
 	ioutil.WriteFile(fn, buf, 0777)
 }
 
-func GetCSSEnabled() bool {
+func (i *Instance) GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
 }
 
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
-func GetLogFile() string {
+func (i *Instance) GetLogFile() string {
 	return viper.GetString(LogFile)
 }
 
 // GetLogOut returns true if logging should be output to the terminal
 // in addition to writing to a log file. Logging will be output to the
 // terminal if file logging is disabled. Defaults to true.
-func GetLogOut() bool {
+func (i *Instance) GetLogOut() bool {
 	ret := true
 	if viper.IsSet(LogOut) {
 		ret = viper.GetBool(LogOut)
@@ -572,7 +584,7 @@ func GetLogOut() bool {
 
 // GetLogLevel returns the lowest log level to write to the log.
 // Should be one of "Debug", "Info", "Warning", "Error"
-func GetLogLevel() string {
+func (i *Instance) GetLogLevel() string {
 	const defaultValue = "Info"
 
 	value := viper.GetString(LogLevel)
@@ -585,7 +597,7 @@ func GetLogLevel() string {
 
 // GetLogAccess returns true if http requests should be logged to the terminal.
 // HTTP requests are not logged to the log file. Defaults to true.
-func GetLogAccess() bool {
+func (i *Instance) GetLogAccess() bool {
 	ret := true
 	if viper.IsSet(LogAccess) {
 		ret = viper.GetBool(LogAccess)
@@ -595,7 +607,7 @@ func GetLogAccess() bool {
 }
 
 // Max allowed graphql upload size in megabytes
-func GetMaxUploadSize() int64 {
+func (i *Instance) GetMaxUploadSize() int64 {
 	ret := int64(1024)
 	if viper.IsSet(MaxUploadSize) {
 		ret = viper.GetInt64(MaxUploadSize)
@@ -603,7 +615,7 @@ func GetMaxUploadSize() int64 {
 	return ret << 20
 }
 
-func IsValid() bool {
+func (i *Instance) IsValid() bool {
 	setPaths := viper.IsSet(Stash) && viper.IsSet(Cache) && viper.IsSet(Generated) && viper.IsSet(Metadata)
 
 	// TODO: check valid paths
@@ -619,21 +631,21 @@ func setDefaultValues() {
 }
 
 // SetInitialConfig fills in missing required config fields
-func SetInitialConfig() error {
+func (i *Instance) SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
-	if string(GetJWTSignKey()) == "" {
+	if string(i.GetJWTSignKey()) == "" {
 		signKey := utils.GenerateRandomKey(apiKeyLength)
-		Set(JWTSignKey, signKey)
+		i.Set(JWTSignKey, signKey)
 	}
 
-	if string(GetSessionStoreKey()) == "" {
+	if string(i.GetSessionStoreKey()) == "" {
 		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
-		Set(SessionStoreKey, sessionStoreKey)
+		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
 	setDefaultValues()
 
-	return Write()
+	return i.Write()
 }

@@ -68,6 +68,7 @@ func Initialize() *singleton {
 
 		// clear the downloads and tmp directories
 		// #1021 - only clear these directories if the generated folder is non-empty
+		config := config.GetInstance()
 		if config.GetGeneratedPath() != "" {
 			utils.EmptyDir(instance.Paths.Generated.Downloads)
 			utils.EmptyDir(instance.Paths.Generated.Tmp)
@@ -98,7 +99,8 @@ func initConfig() {
 	}
 	logger.Infof("using config file: %s", viper.ConfigFileUsed())
 
-	config.SetInitialConfig()
+	c := config.GetInstance()
+	c.SetInitialConfig()
 
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 
@@ -106,8 +108,8 @@ func initConfig() {
 	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
 
 	// Set default scrapers and plugins paths
-	viper.SetDefault(config.ScrapersPath, config.GetDefaultScrapersPath())
-	viper.SetDefault(config.PluginsPath, config.GetDefaultPluginsPath())
+	viper.SetDefault(config.ScrapersPath, c.GetDefaultScrapersPath())
+	viper.SetDefault(config.PluginsPath, c.GetDefaultPluginsPath())
 
 	// Disabling config watching due to race condition issue
 	// See: https://github.com/spf13/viper/issues/174
@@ -144,6 +146,7 @@ func initEnvs() {
 	viper.BindEnv("cache")         // STASH_CACHE
 
 	// only set stash config flag if not already set
+	config := config.GetInstance()
 	if config.GetStashPaths() == nil {
 		viper.BindEnv("stash") // STASH_STASH
 	}
@@ -174,10 +177,12 @@ The error was: %s
 }
 
 func initLog() {
+	config := config.GetInstance()
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
 func initPluginCache() *plugin.Cache {
+	config := config.GetInstance()
 	ret, err := plugin.NewCache(config.GetPluginsPath())
 
 	if err != nil {
@@ -189,12 +194,7 @@ func initPluginCache() *plugin.Cache {
 
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *singleton) initScraperCache() *scraper.Cache {
-	scraperConfig := scraper.GlobalConfig{
-		Path:      config.GetScrapersPath(),
-		UserAgent: config.GetScraperUserAgent(),
-		CDPPath:   config.GetScraperCDPPath(),
-	}
-	ret, err := scraper.NewCache(scraperConfig, s.TxnManager)
+	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager)
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -205,6 +205,7 @@ func (s *singleton) initScraperCache() *scraper.Cache {
 
 func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths()
+	config := config.GetInstance()
 	if config.IsValid() {
 		utils.EnsureDir(s.Paths.Generated.Screenshots)
 		utils.EnsureDir(s.Paths.Generated.Vtt)

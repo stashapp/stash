@@ -18,17 +18,17 @@ import (
 )
 
 func isGallery(pathname string) bool {
-	gExt := config.GetGalleryExtensions()
+	gExt := config.GetInstance().GetGalleryExtensions()
 	return matchExtension(pathname, gExt)
 }
 
 func isVideo(pathname string) bool {
-	vidExt := config.GetVideoExtensions()
+	vidExt := config.GetInstance().GetVideoExtensions()
 	return matchExtension(pathname, vidExt)
 }
 
 func isImage(pathname string) bool {
-	imgExt := config.GetImageExtensions()
+	imgExt := config.GetInstance().GetImageExtensions()
 	return matchExtension(pathname, imgExt)
 }
 
@@ -84,7 +84,7 @@ func (t *TaskStatus) updated() {
 
 func getScanPaths(inputPaths []string) []*models.StashConfig {
 	if len(inputPaths) == 0 {
-		return config.GetStashPaths()
+		return config.GetInstance().GetStashPaths()
 	}
 
 	var ret []*models.StashConfig
@@ -181,6 +181,7 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 		}
 
 		start := time.Now()
+		config := config.GetInstance()
 		parallelTasks := config.GetParallelTasksWithAutoDetection()
 		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 		wg := sizedwaitgroup.New(parallelTasks)
@@ -275,6 +276,7 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
+		config := config.GetInstance()
 		task := ImportTask{
 			txnManager:          s.TxnManager,
 			BaseDir:             config.GetMetadataPath(),
@@ -303,7 +305,7 @@ func (s *singleton) Export() {
 		task := ExportTask{
 			txnManager:          s.TxnManager,
 			full:                true,
-			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
+			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
 		}
 		go task.Start(&wg)
 		wg.Wait()
@@ -331,6 +333,7 @@ func (s *singleton) RunSingleTask(t Task) (*sync.WaitGroup, error) {
 }
 
 func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {
+	config := config.GetInstance()
 	if optionsInput.PreviewSegments == nil {
 		val := config.GetPreviewSegments()
 		optionsInput.PreviewSegments = &val
@@ -408,6 +411,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			return
 		}
 
+		config := config.GetInstance()
 		parallelTasks := config.GetParallelTasksWithAutoDetection()
 
 		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
@@ -576,7 +580,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 			txnManager:          s.TxnManager,
 			Scene:               *scene,
 			ScreenshotAt:        at,
-			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
+			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
 		}
 
 		var wg sync.WaitGroup
@@ -851,7 +855,7 @@ func (s *singleton) Clean(input models.CleanMetadataInput) {
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
 		total := len(scenes) + len(images) + len(galleries)
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -933,7 +937,7 @@ func (s *singleton) MigrateHash() {
 	go func() {
 		defer s.returnToIdleState()
 
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
@@ -1008,7 +1012,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 		chTimeout <- struct{}{}
 	}()
 
-	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	overwrite := false
 	if input.Overwrite != nil {
 		overwrite = *input.Overwrite

@@ -23,6 +23,7 @@ func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, t
 		}
 	}
 
+	config := config.GetInstance()
 	serverConnection := common.StashServerConnection{
 		Scheme:        "http",
 		Port:          config.GetPort(),

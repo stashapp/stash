@@ -24,6 +24,7 @@ type generatedPaths struct {
 
 func newGeneratedPaths() *generatedPaths {
 	gp := generatedPaths{}
+	config := config.GetInstance()
 	gp.Screenshots = filepath.Join(config.GetGeneratedPath(), "screenshots")
 	gp.Thumbnails = filepath.Join(config.GetGeneratedPath(), "thumbnails")
 	gp.Vtt = filepath.Join(config.GetGeneratedPath(), "vtt")
