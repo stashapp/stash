@@ -265,7 +265,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
-          <Icon icon="image" />
+          <Icon icon="images" />
           <span>{props.scene.galleries.length}</span>
         </Button>
       </HoverPopover>
