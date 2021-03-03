@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -60,7 +59,7 @@ func initConfig(flags flagStruct) {
 
 func postInitConfig() {
 	c := instance
-	viper.SetDefault(Database, paths.GetDefaultDatabaseFilePath())
+	//viper.SetDefault(Database, paths.GetDefaultDatabaseFilePath())
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))

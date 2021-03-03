@@ -24,7 +24,26 @@ var dbPath string
 var appSchemaVersion uint = 18
 var databaseSchemaVersion uint
 
+var (
+	// ErrMigrationNeeded indicates that a database migration is needed
+	// before the database can be initialized
+	ErrMigrationNeeded = errors.New("database migration required")
+
+	// ErrDatabaseNotInitialized indicates that the database is not
+	// initialized, usually due to an incomplete configuration.
+	ErrDatabaseNotInitialized = errors.New("database not initialized")
+)
+
 const sqlite3Driver = "sqlite3ex"
+
+// Ready returns an error if the database is not ready to begin transactions.
+func Ready() error {
+	if DB == nil {
+		return ErrDatabaseNotInitialized
+	}
+
+	return nil
+}
 
 func init() {
 	// register custom driver with regexp function

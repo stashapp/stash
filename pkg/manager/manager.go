@@ -56,6 +56,8 @@ func Initialize() *singleton {
 			Config:        cfg,
 			Status:        TaskStatus{Status: Idle, Progress: -1},
 			DownloadStore: NewDownloadStore(),
+
+			TxnManager: sqlite.NewTransactionManager(),
 		}
 
 		cfgFile := cfg.GetConfigFile()
@@ -124,7 +126,6 @@ func (s *singleton) PostInit() {
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	s.PluginCache = initPluginCache()
 	s.ScraperCache = instance.initScraperCache()
-	s.TxnManager = sqlite.NewTransactionManager()
 
 	s.RefreshConfig()
 
