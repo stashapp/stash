@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"runtime"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -125,7 +127,9 @@ const LogAccess = "logAccess"
 // File upload options
 const MaxUploadSize = "max_upload_size"
 
-type Instance struct{}
+type Instance struct {
+	err error
+}
 
 var instance *Instance
 
@@ -153,9 +157,15 @@ func (i *Instance) Write() error {
 	return viper.WriteConfig()
 }
 
+// GetConfigFile returns the full path to the used configuration file.
+func (i *Instance) GetConfigFile() string {
+	return viper.ConfigFileUsed()
+}
+
+// GetConfigPath returns the path of the directory containing the used
+// configuration file.
 func (i *Instance) GetConfigPath() string {
-	configFileUsed := viper.ConfigFileUsed()
-	return filepath.Dir(configFileUsed)
+	return filepath.Dir(i.GetConfigFile())
 }
 
 func (i *Instance) GetStashPaths() []*models.StashConfig {
@@ -615,11 +625,31 @@ func (i *Instance) GetMaxUploadSize() int64 {
 	return ret << 20
 }
 
-func (i *Instance) IsValid() bool {
-	setPaths := viper.IsSet(Stash) && viper.IsSet(Cache) && viper.IsSet(Generated) && viper.IsSet(Metadata)
+func (i *Instance) Validate() error {
+	if i.err != nil {
+		return i.err
+	}
 
-	// TODO: check valid paths
-	return setPaths
+	mandatoryPaths := []string{
+		Stash,
+		Cache,
+		Generated,
+		Metadata,
+	}
+
+	var missingPaths []string
+
+	for _, p := range mandatoryPaths {
+		if !viper.IsSet(p) {
+			missingPaths = append(missingPaths, p)
+		}
+	}
+
+	if len(missingPaths) > 0 {
+		return fmt.Errorf("missing the following mandatory settings: %s", strings.Join(missingPaths, ", "))
+	}
+
+	return nil
 }
 
 func setDefaultValues() {
@@ -631,7 +661,7 @@ func setDefaultValues() {
 }
 
 // SetInitialConfig fills in missing required config fields
-func (i *Instance) SetInitialConfig() error {
+func (i *Instance) SetInitialConfig() {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -646,6 +676,4 @@ func (i *Instance) SetInitialConfig() error {
 	}
 
 	setDefaultValues()
-
-	return i.Write()
 }

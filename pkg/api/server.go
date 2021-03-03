@@ -266,7 +266,7 @@ func Start() {
 			return
 		}
 
-		manager.GetInstance().RefreshConfig()
+		manager.GetInstance().PostInit()
 
 		http.Redirect(w, r, "/", 301)
 	})
@@ -420,7 +420,7 @@ func ConfigCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		shouldRedirect := ext == "" && r.Method == "GET"
-		if !config.GetInstance().IsValid() && shouldRedirect {
+		if config.GetInstance().Validate() != nil && shouldRedirect {
 			// #539 - don't redirect if loading login page
 			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
 				http.Redirect(w, r, setupEndPoint, http.StatusFound)

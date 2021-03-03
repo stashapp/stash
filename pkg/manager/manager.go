@@ -1,11 +1,9 @@
 package manager
 
 import (
-	"net"
 	"sync"
 
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -18,6 +16,8 @@ import (
 )
 
 type singleton struct {
+	Config *config.Instance
+
 	Status TaskStatus
 	Paths  *paths.Paths
 
@@ -48,30 +48,27 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
-		_ = utils.EnsureDir(paths.GetConfigDirectory())
-		initFlags()
-		initConfig()
+		_ = utils.EnsureDir(paths.GetStashHomeDirectory())
+		cfg := config.Initialize()
 		initLog()
-		initEnvs()
+
 		instance = &singleton{
-			Status: TaskStatus{Status: Idle, Progress: -1},
-			Paths:  paths.NewPaths(),
-
-			PluginCache: initPluginCache(),
-
+			Config:        cfg,
+			Status:        TaskStatus{Status: Idle, Progress: -1},
 			DownloadStore: NewDownloadStore(),
-			TxnManager:    sqlite.NewTransactionManager(),
 		}
-		instance.ScraperCache = instance.initScraperCache()
 
-		instance.RefreshConfig()
+		cfgFile := cfg.GetConfigFile()
+		if cfgFile != "" {
+			logger.Infof("using config file: %s", cfg.GetConfigFile())
 
-		// clear the downloads and tmp directories
-		// #1021 - only clear these directories if the generated folder is non-empty
-		config := config.GetInstance()
-		if config.GetGeneratedPath() != "" {
-			utils.EmptyDir(instance.Paths.Generated.Downloads)
-			utils.EmptyDir(instance.Paths.Generated.Tmp)
+			if err := cfg.Validate(); err != nil {
+				logger.Warnf("error initializing configuration: %s", err.Error())
+			} else {
+				instance.PostInit()
+			}
+		} else {
+			logger.Warn("config file not found. Assuming new system...")
 		}
 
 		initFFMPEG()
@@ -80,80 +77,8 @@ func Initialize() *singleton {
 	return instance
 }
 
-func initConfig() {
-	// The config file is called config.  Leave off the file extension.
-	viper.SetConfigName("config")
-
-	if flagConfigFileExists, _ := utils.FileExists(flags.configFilePath); flagConfigFileExists {
-		viper.SetConfigFile(flags.configFilePath)
-	}
-	viper.AddConfigPath(".")            // Look for config in the working directory
-	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
-
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		_ = utils.Touch(paths.GetDefaultConfigFilePath())
-		if err = viper.ReadInConfig(); err != nil {
-			panic(err)
-		}
-	}
-	logger.Infof("using config file: %s", viper.ConfigFileUsed())
-
-	c := config.GetInstance()
-	c.SetInitialConfig()
-
-	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
-
-	// Set generated to the metadata path for backwards compat
-	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
-
-	// Set default scrapers and plugins paths
-	viper.SetDefault(config.ScrapersPath, c.GetDefaultScrapersPath())
-	viper.SetDefault(config.PluginsPath, c.GetDefaultPluginsPath())
-
-	// Disabling config watching due to race condition issue
-	// See: https://github.com/spf13/viper/issues/174
-	// Changes to the config outside the system will require a restart
-	// Watch for changes
-	// viper.WatchConfig()
-	// viper.OnConfigChange(func(e fsnotify.Event) {
-	// 	fmt.Println("Config file changed:", e.Name)
-	// 	instance.refreshConfig()
-	// })
-
-	//viper.Set("stash", []string{"/", "/stuff"})
-	//viper.WriteConfig()
-}
-
-func initFlags() {
-	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
-	pflag.Int("port", 9999, "port to serve from")
-	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
-
-	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		logger.Infof("failed to bind flags: %s", err.Error())
-	}
-}
-
-func initEnvs() {
-	viper.SetEnvPrefix("stash")    // will be uppercased automatically
-	viper.BindEnv("host")          // STASH_HOST
-	viper.BindEnv("port")          // STASH_PORT
-	viper.BindEnv("external_host") // STASH_EXTERNAL_HOST
-	viper.BindEnv("generated")     // STASH_GENERATED
-	viper.BindEnv("metadata")      // STASH_METADATA
-	viper.BindEnv("cache")         // STASH_CACHE
-
-	// only set stash config flag if not already set
-	config := config.GetInstance()
-	if config.GetStashPaths() == nil {
-		viper.BindEnv("stash") // STASH_STASH
-	}
-}
-
 func initFFMPEG() {
-	configDirectory := paths.GetConfigDirectory()
+	configDirectory := paths.GetStashHomeDirectory()
 	ffmpegPath, ffprobePath := ffmpeg.GetPaths(configDirectory)
 	if ffmpegPath == "" || ffprobePath == "" {
 		logger.Infof("couldn't find FFMPEG, attempting to download it")
@@ -192,6 +117,30 @@ func initPluginCache() *plugin.Cache {
 	return ret
 }
 
+// PostInit initialises the paths, caches and txnManager after the initial
+// configuration has been set. Should only be called if the configuration
+// is valid.
+func (s *singleton) PostInit() {
+	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	s.PluginCache = initPluginCache()
+	s.ScraperCache = instance.initScraperCache()
+	s.TxnManager = sqlite.NewTransactionManager()
+
+	s.RefreshConfig()
+
+	// clear the downloads and tmp directories
+	// #1021 - only clear these directories if the generated folder is non-empty
+	if s.Config.GetGeneratedPath() != "" {
+		utils.EmptyDir(instance.Paths.Generated.Downloads)
+		utils.EmptyDir(instance.Paths.Generated.Tmp)
+	}
+
+	// perform the post-migration for new databases
+	if database.Initialize(s.Config.GetDatabasePath()) {
+		s.PostMigrate()
+	}
+}
+
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *singleton) initScraperCache() *scraper.Cache {
 	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager)
@@ -204,9 +153,9 @@ func (s *singleton) initScraperCache() *scraper.Cache {
 }
 
 func (s *singleton) RefreshConfig() {
-	s.Paths = paths.NewPaths()
-	config := config.GetInstance()
-	if config.IsValid() {
+	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	config := s.Config
+	if config.Validate() == nil {
 		utils.EnsureDir(s.Paths.Generated.Screenshots)
 		utils.EnsureDir(s.Paths.Generated.Vtt)
 		utils.EnsureDir(s.Paths.Generated.Markers)
