@@ -782,9 +782,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 {...formik.getFieldProps("url")}
                 placeholder="URL"
               />
-              <InputGroup.Append>
-                {maybeRenderScrapeButton()}
-              </InputGroup.Append>
+              <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
             </InputGroup>
           </Form.Group>
         </Form.Row>
