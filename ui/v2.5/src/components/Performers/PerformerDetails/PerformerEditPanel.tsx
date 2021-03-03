@@ -105,22 +105,22 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   });
 
   const initialValues = {
-    name: performer.name ?? undefined,
-    aliases: performer.aliases ?? undefined,
+    name: performer.name ?? "",
+    aliases: performer.aliases ?? "",
     gender: genderToString(performer.gender ?? undefined),
-    birthdate: performer.birthdate ?? undefined,
-    ethnicity: performer.ethnicity ?? undefined,
-    eye_color: performer.eye_color ?? undefined,
-    country: performer.country ?? undefined,
-    height: performer.height ?? undefined,
-    measurements: performer.measurements ?? undefined,
-    fake_tits: performer.fake_tits ?? undefined,
-    career_length: performer.career_length ?? undefined,
-    tattoos: performer.tattoos ?? undefined,
-    piercings: performer.piercings ?? undefined,
-    url: performer.url ?? undefined,
-    twitter: performer.twitter ?? undefined,
-    instagram: performer.instagram ?? undefined,
+    birthdate: performer.birthdate ?? "",
+    ethnicity: performer.ethnicity ?? "",
+    eye_color: performer.eye_color ?? "",
+    country: performer.country ?? "",
+    height: performer.height ?? "",
+    measurements: performer.measurements ?? "",
+    fake_tits: performer.fake_tits ?? "",
+    career_length: performer.career_length ?? "",
+    tattoos: performer.tattoos ?? "",
+    piercings: performer.piercings ?? "",
+    url: performer.url ?? "",
+    twitter: performer.twitter ?? "",
+    instagram: performer.instagram ?? "",
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
   };
@@ -382,7 +382,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  async function onScrapePerformerURL(url?: string) {
+  async function onScrapePerformerURL() {
+    const { url } = formik.values;
     if (!url) return;
     setIsLoading(true);
     try {
@@ -507,11 +508,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScrapedPerformer(undefined);
   }
 
-  function maybeRenderScrapeButton(url?: string) {
+  function maybeRenderScrapeButton() {
     return (
       <Button
         variant="secondary"
-        disabled={!urlScrapable(url)}
+        disabled={!urlScrapable(formik.values.url)}
         className="scrape-url-button text-input"
         onClick={() => onScrapePerformerURL()}
       >
@@ -782,7 +783,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 placeholder="URL"
               />
               <InputGroup.Append>
-                {maybeRenderScrapeButton(formik.values.url)}
+                {maybeRenderScrapeButton()}
               </InputGroup.Append>
             </InputGroup>
           </Form.Group>
