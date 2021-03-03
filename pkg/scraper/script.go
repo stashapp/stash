@@ -30,6 +30,13 @@ func newScriptScraper(scraper scraperTypeConfig, config config, globalConfig Glo
 func (s *scriptScraper) runScraperScript(inString string, out interface{}) error {
 	command := s.scraper.Script
 
+	if command[0] == "python" || command[0] == "python3" {
+		executable, err := findPythonExecutable()
+		if err == nil {
+			command[0] = executable
+		}
+	}
+
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Dir = filepath.Dir(s.config.path)
 
@@ -183,4 +190,20 @@ func (s *scriptScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, erro
 	err := s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
+}
+
+func findPythonExecutable() (string, error) {
+	_, err := exec.LookPath("python3")
+
+	if err != nil {
+		_, err = exec.LookPath("python")
+
+		if err != nil {
+			return "", err
+		}
+
+		return "python", nil
+	}
+
+	return "python3", nil
 }

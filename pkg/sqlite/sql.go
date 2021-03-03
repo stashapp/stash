@@ -103,7 +103,7 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 	notStr := ""
 	binaryType := " OR "
 	if not {
-		notStr = " NOT "
+		notStr = " NOT"
 		binaryType = " AND "
 	}
 
