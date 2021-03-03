@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"net"
 	"sync"
 
@@ -13,14 +12,6 @@ import (
 )
 
 var once sync.Once
-
-type ConfigFileNotFoundError struct {
-	fn string
-}
-
-func (e ConfigFileNotFoundError) Error() string {
-	return fmt.Sprintf("config file '%s' not found", e.fn)
-}
 
 type flagStruct struct {
 	configFilePath string

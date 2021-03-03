@@ -5,3 +5,11 @@ query JobStatus {
     message
   }
 }
+
+query SystemStatus {
+  systemStatus {
+    databaseSchema
+    appSchema
+    status
+  }
+}

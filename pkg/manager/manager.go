@@ -171,3 +171,24 @@ func (s *singleton) RefreshConfig() {
 func (s *singleton) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
 }
+
+func (s *singleton) GetSystemStatus() *models.SystemStatus {
+	status := models.SystemStatusEnumOk
+	dbSchema := int(database.Version())
+	appSchema := int(database.AppSchemaVersion())
+
+	if s.Config.GetConfigFile() == "" {
+		status = models.SystemStatusEnumSetup
+	} else if err := config.GetInstance().Validate(); err != nil {
+		// assume missing config
+		status = models.SystemStatusEnumMissingConfig
+	} else if dbSchema < appSchema {
+		status = models.SystemStatusEnumNeedsMigration
+	}
+
+	return &models.SystemStatus{
+		DatabaseSchema: &dbSchema,
+		AppSchema:      appSchema,
+		Status:         status,
+	}
+}

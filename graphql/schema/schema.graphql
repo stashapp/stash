@@ -103,7 +103,7 @@ type Query {
   directory(path: String): Directory!
 
   # Metadata
-
+  systemStatus: SystemStatus!
   jobStatus: MetadataUpdateStatus!
 
   # Get everything

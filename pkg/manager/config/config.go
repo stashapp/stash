@@ -127,6 +127,14 @@ const LogAccess = "logAccess"
 // File upload options
 const MaxUploadSize = "max_upload_size"
 
+type MissingConfigError struct {
+	missingFields []string
+}
+
+func (e MissingConfigError) Error() string {
+	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
+}
+
 type Instance struct {
 	err error
 }
@@ -646,7 +654,9 @@ func (i *Instance) Validate() error {
 	}
 
 	if len(missingPaths) > 0 {
-		return fmt.Errorf("missing the following mandatory settings: %s", strings.Join(missingPaths, ", "))
+		return MissingConfigError{
+			missingFields: missingPaths,
+		}
 	}
 
 	return nil

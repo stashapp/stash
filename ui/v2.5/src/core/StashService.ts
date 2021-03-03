@@ -668,6 +668,11 @@ export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
+export const querySystemStatus = () => 
+  client.query<GQL.SystemStatusQuery>({
+    query: GQL.SystemStatusDocument,
+  });
+
 export const useLogs = () =>
   GQL.useLogsQuery({
     fetchPolicy: "no-cache",
@@ -941,3 +946,14 @@ export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
       input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
     },
   });
+
+async function initialise() {
+  const status = await querySystemStatus();
+  if (window.location.pathname !== "/setup" && status.data.systemStatus.status === GQL.SystemStatusEnum.Setup) {
+    // redirect to login page
+    const newURL = new URL("/setup", window.location.toString());
+    window.location.href = newURL.toString();
+  }
+}
+
+initialise();
