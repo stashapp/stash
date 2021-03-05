@@ -13,6 +13,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
+	err := manager.GetInstance().Setup(input)
+	return err == nil, err
+}
+
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	c := config.GetInstance()
 	if len(input.Stashes) > 0 {

@@ -1,3 +1,13 @@
+input SetupInput {
+  """Empty to indicate $HOME/.stash/config.yml default"""
+  configLocation: String!
+  stashes: [StashConfigInput!]!
+  """Empty to indicate default"""
+  databaseFile: String!
+  """Empty to indicate default"""
+  generatedLocation: String!
+}
+
 enum StreamingResolutionEnum {
   "240p", LOW
   "480p", STANDARD

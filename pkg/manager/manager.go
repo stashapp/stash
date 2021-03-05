@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -67,7 +70,9 @@ func Initialize() *singleton {
 			if err := cfg.Validate(); err != nil {
 				logger.Warnf("error initializing configuration: %s", err.Error())
 			} else {
-				instance.PostInit()
+				if err := instance.PostInit(); err != nil {
+					panic(err)
+				}
 			}
 		} else {
 			logger.Warn("config file not found. Assuming new system...")
@@ -122,7 +127,7 @@ func initPluginCache() *plugin.Cache {
 // PostInit initialises the paths, caches and txnManager after the initial
 // configuration has been set. Should only be called if the configuration
 // is valid.
-func (s *singleton) PostInit() {
+func (s *singleton) PostInit() error {
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	s.PluginCache = initPluginCache()
 	s.ScraperCache = instance.initScraperCache()
@@ -136,10 +141,12 @@ func (s *singleton) PostInit() {
 		utils.EmptyDir(instance.Paths.Generated.Tmp)
 	}
 
-	// perform the post-migration for new databases
-	if database.Initialize(s.Config.GetDatabasePath()) {
-		s.PostMigrate()
+	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {
+		return err
 	}
+	s.PostMigrate()
+
+	return nil
 }
 
 // initScraperCache initializes a new scraper cache and returns it.
@@ -170,6 +177,51 @@ func (s *singleton) RefreshConfig() {
 // configuration changes.
 func (s *singleton) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
+}
+
+func setSetupDefaults(input *models.SetupInput) {
+	if input.ConfigLocation == "" {
+		input.ConfigLocation = filepath.Join(utils.GetHomeDirectory(), "config.yml")
+	}
+
+	configDir := filepath.Dir(input.ConfigLocation)
+	if input.GeneratedLocation == "" {
+		input.GeneratedLocation = filepath.Join(configDir, "generated")
+	}
+
+	if input.DatabaseFile == "" {
+		input.DatabaseFile = filepath.Join(configDir, "stash-go.sqlite")
+	}
+}
+
+func (s *singleton) Setup(input models.SetupInput) error {
+	setSetupDefaults(&input)
+
+	// create the generated directory if it does not exist
+	if exists, _ := utils.DirExists(input.GeneratedLocation); !exists {
+		if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
+			return fmt.Errorf("error creating generated directory: %s", err.Error())
+		}
+	}
+
+	if err := utils.Touch(input.ConfigLocation); err != nil {
+		return fmt.Errorf("error creating config file: %s", err.Error())
+	}
+
+	// set the configuration
+	s.Config.Set(config.Generated, input.GeneratedLocation)
+	s.Config.Set(config.Database, input.DatabaseFile)
+	s.Config.Set(config.Stash, input.Stashes)
+	if err := s.Config.Write(); err != nil {
+		return fmt.Errorf("error writing configuration file: %s", err.Error())
+	}
+
+	// initialise the database
+	if err := s.PostInit(); err != nil {
+		return fmt.Errorf("error initializing the database: %s", err.Error())
+	}
+
+	return nil
 }
 
 func (s *singleton) GetSystemStatus() *models.SystemStatus {

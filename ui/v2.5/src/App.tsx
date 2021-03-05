@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
@@ -25,6 +25,7 @@ import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilen
 import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
 import Images from "./components/Images/Images";
+import { Setup } from "./components/Setup/Setup";
 
 initPolyfills();
 
@@ -45,13 +46,21 @@ export const App: React.FC = () => {
   const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages = flattenMessages((locales as any)[messageLanguage]);
+  const setupMatch = useRouteMatch("/setup");
+
+  function maybeRenderNavbar() {
+    // don't render navbar for setup views
+    if (!setupMatch) {
+      return <MainNavbar />;
+    }
+  }
 
   return (
     <ErrorBoundary>
       <IntlProvider locale={language} messages={messages} formats={intlFormats}>
         <ToastProvider>
           <LightboxProvider>
-            <MainNavbar />
+            {maybeRenderNavbar()}
             <div className="main container-fluid">
               <Switch>
                 <Route exact path="/" component={Stats} />
@@ -67,6 +76,7 @@ export const App: React.FC = () => {
                   path="/sceneFilenameParser"
                   component={SceneFilenameParser}
                 />
+                <Route path="/setup" component={Setup} />
                 <Route component={PageNotFound} />
               </Switch>
             </div>

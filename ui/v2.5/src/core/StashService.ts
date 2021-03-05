@@ -273,6 +273,14 @@ export const useLatestVersion = () =>
   });
 
 export const useConfiguration = () => GQL.useConfigurationQuery();
+export const mutateSetup = (input: GQL.SetupInput) =>
+  client.mutate<GQL.SetupMutation>({
+    mutation: GQL.SetupDocument,
+    variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
@@ -668,7 +676,7 @@ export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
-export const querySystemStatus = () => 
+export const querySystemStatus = () =>
   client.query<GQL.SystemStatusQuery>({
     query: GQL.SystemStatusDocument,
   });
@@ -949,8 +957,11 @@ export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
 
 async function initialise() {
   const status = await querySystemStatus();
-  if (window.location.pathname !== "/setup" && status.data.systemStatus.status === GQL.SystemStatusEnum.Setup) {
-    // redirect to login page
+  if (
+    window.location.pathname !== "/setup" &&
+    status.data.systemStatus.status === GQL.SystemStatusEnum.Setup
+  ) {
+    // redirect to setup page
     const newURL = new URL("/setup", window.location.toString());
     window.location.href = newURL.toString();
   }

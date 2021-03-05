@@ -54,20 +54,20 @@ func init() {
 // performs a full migration to the latest schema version. Otherwise, any
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
-func Initialize(databasePath string) bool {
+func Initialize(databasePath string) error {
 	dbPath = databasePath
 
 	if err := getDatabaseSchemaVersion(); err != nil {
-		panic(err)
+		return fmt.Errorf("error getting database schema version: %s", err.Error())
 	}
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
 		if err := RunMigrations(); err != nil {
-			panic(err)
+			return fmt.Errorf("error running initial schema migrations: %s", err.Error())
 		}
 		// RunMigrations calls Initialise. Just return
-		return true
+		return nil
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
 			panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
@@ -76,14 +76,14 @@ func Initialize(databasePath string) bool {
 		// if migration is needed, then don't open the connection
 		if NeedsMigration() {
 			logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
-			return false
+			return nil
 		}
 	}
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
 
-	return false
+	return nil
 }
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {

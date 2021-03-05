@@ -128,6 +128,8 @@ type Query {
 }
 
 type Mutation {
+  setup(input: SetupInput!): Boolean!
+
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
