@@ -508,7 +508,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
-          {getFingerprintCount() > 0 && (
+          {(getFingerprintCount() > 0 || hideUnmatched) && (
             <Button onClick={toggleHideUnmatchedScenes}>
               {hideUnmatched ? "Show" : "Hide"} unmatched scenes
             </Button>
