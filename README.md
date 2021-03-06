@@ -8,12 +8,11 @@ https://stashapp.cc
 
 **Stash is a locally hosted web-based app written in Go which organizes and serves your porn.**
 
-See a demo [here](https://vimeo.com/275537038) (password is stashapp).
 * It can gather information about movies in your collection from the internet, and is extensible through the use of community-built plugins.
 * It supports a wide variety of both video and image formats
 * It provides statistics about performers, views, studios and other things.
 
-You can [watch a demo video] (https://vimeo.com/275537038)to see it in action (password is stashapp).
+You can [watch a demo video](https://vimeo.com/275537038)to see it in action (password is stashapp).
 
 For further information you can [read the in-app manual](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en).
 
@@ -48,7 +47,7 @@ The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on m
 2) Run Stash. It will prompt you for some configuration options and a directory to index (you can also do this step afterward)
 3) After configuation, Stash will open your web browser and take you to the home screen.
 
-Note that Stash does not currently retrieve and organize information about your entire library automatically.  You will need to help it along through the use of [scrapers](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Scraping.md).  The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers)].
+Note that Stash does not currently retrieve and organize information about your entire library automatically.  You will need to help it along through the use of [scrapers](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Scraping.md).  The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers).
 
 The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) which uses filename keywords to help identify the file and pull in scene and performer information from our database. Note that this information is not comprehensive and you may need to use the scrapers to identify some of your media.
 
@@ -72,8 +71,8 @@ Once you have a certificate and key file name them `stash.crt` and `stash.key` a
 
 You can make Stash interface fit your desired style with  [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
 
-[Stash Plex Theme](https://github.com/stashapp/stash/wiki/Stash-Plex-Theme) is a community created theme inspired by popular Plex Interface.
-[Stash Pulsar Theme](https://github.com/stashapp/stash/wiki/Pulsar-Theme) is another option.
+-[Plex](https://github.com/stashapp/stash/wiki/Stash-Plex-Theme) is a community created theme inspired by popular Plex Interface.
+[Pulsar](https://github.com/stashapp/stash/wiki/Pulsar-Theme) is another option.
 
 
 # FAQ
@@ -153,10 +152,3 @@ where the app can be cross-compiled.  This process is kicked off by CI via the `
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
-
-## Customization
-
-You can make Stash interface fit your desired style with  [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
-
-[Stash Plex Theme](https://github.com/stashapp/stash/wiki/Stash-Plex-Theme) is a community created theme inspired by popular Plex Interface.
-
