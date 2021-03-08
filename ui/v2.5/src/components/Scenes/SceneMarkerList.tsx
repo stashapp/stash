@@ -6,6 +6,7 @@ import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
 import { queryFindSceneMarkers } from "src/core/StashService";
 import { NavUtils } from "src/utils";
 import { useSceneMarkersList } from "src/hooks";
+import { PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
@@ -41,7 +42,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     renderContent,
     filterHook,
     addKeybinds,
-    persistState: true,
+    persistState: PersistanceLevel.ALL,
   });
 
   async function playRandom(

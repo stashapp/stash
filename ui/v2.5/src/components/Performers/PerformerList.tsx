@@ -11,7 +11,7 @@ import {
   usePerformersDestroy,
 } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
@@ -21,7 +21,7 @@ import { EditPerformersDialog } from "./EditPerformersDialog";
 
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: boolean;
+  persistState?: PersistanceLevel;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({

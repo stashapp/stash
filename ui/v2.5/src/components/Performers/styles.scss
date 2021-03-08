@@ -1,8 +1,6 @@
-#performer-details {
-  .scrape-url-button {
-    color: $text-color;
-    float: right;
-    margin-right: 0.5rem;
+#performer-edit {
+  .scrape-url-button:disabled {
+    opacity: 0.5;
   }
 }
 

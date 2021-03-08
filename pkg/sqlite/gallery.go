@@ -233,7 +233,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		}
 
 		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
-		whereClause, havingClause := getMultiCriterionClause("galleries", "tags", "tags_join", "gallery_id", "tag_id", tagsFilter)
+		whereClause, havingClause := getMultiCriterionClause("galleries", "tags", "galleries_tags", "gallery_id", "tag_id", tagsFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -244,7 +244,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		}
 
 		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
-		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_join", "gallery_id", "performer_id", performersFilter)
+		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_galleries", "gallery_id", "performer_id", performersFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}

@@ -273,13 +273,250 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 	})
 }
 
-func queryGalleries(t *testing.T, sqb models.GalleryReader, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) []*models.Gallery {
+func queryGallery(t *testing.T, sqb models.GalleryReader, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) []*models.Gallery {
 	galleries, _, err := sqb.Query(galleryFilter, findFilter)
 	if err != nil {
-		t.Errorf("Error querying galleries: %s", err.Error())
+		t.Errorf("Error querying gallery: %s", err.Error())
 	}
 
 	return galleries
+}
+
+func TestGalleryQueryIsMissingStudio(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		isMissing := "studio"
+		galleryFilter := models.GalleryFilterType{
+			IsMissing: &isMissing,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, &findFilter)
+
+		assert.Len(t, galleries, 0)
+
+		findFilter.Q = nil
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+
+		// ensure non of the ids equal the one with studio
+		for _, gallery := range galleries {
+			assert.NotEqual(t, galleryIDs[galleryIdxWithStudio], gallery.ID)
+		}
+
+		return nil
+	})
+}
+
+func TestGalleryQueryIsMissingPerformers(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		isMissing := "performers"
+		galleryFilter := models.GalleryFilterType{
+			IsMissing: &isMissing,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithPerformer, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, &findFilter)
+
+		assert.Len(t, galleries, 0)
+
+		findFilter.Q = nil
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+
+		assert.True(t, len(galleries) > 0)
+
+		// ensure non of the ids equal the one with movies
+		for _, gallery := range galleries {
+			assert.NotEqual(t, galleryIDs[galleryIdxWithPerformer], gallery.ID)
+		}
+
+		return nil
+	})
+}
+
+func TestGalleryQueryIsMissingTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		isMissing := "tags"
+		galleryFilter := models.GalleryFilterType{
+			IsMissing: &isMissing,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, &findFilter)
+
+		assert.Len(t, galleries, 0)
+
+		findFilter.Q = nil
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+
+		assert.True(t, len(galleries) > 0)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryPerformers(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		performerCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdxWithGallery]),
+				strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		galleryFilter := models.GalleryFilterType{
+			Performers: &performerCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 2)
+
+		// ensure ids are correct
+		for _, gallery := range galleries {
+			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformer] || gallery.ID == galleryIDs[galleryIdxWithTwoPerformers])
+		}
+
+		performerCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+				strconv.Itoa(performerIDs[performerIdx2WithGallery]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithTwoPerformers], galleries[0].ID)
+
+		performerCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdx1WithGallery]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithTwoPerformers, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithGallery]),
+				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		galleryFilter := models.GalleryFilterType{
+			Tags: &tagCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Len(t, galleries, 2)
+
+		// ensure ids are correct
+		for _, gallery := range galleries {
+			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithTag] || gallery.ID == galleryIDs[galleryIdxWithTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+				strconv.Itoa(tagIDs[tagIdx2WithGallery]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithTwoTags], galleries[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryStudio(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		studioCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGallery]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		galleryFilter := models.GalleryFilterType{
+			Studios: &studioCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 1)
+
+		// ensure id is correct
+		assert.Equal(t, galleryIDs[galleryIdxWithStudio], galleries[0].ID)
+
+		studioCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGallery]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		return nil
+	})
 }
 
 func TestGalleryQueryPerformerTags(t *testing.T) {
@@ -297,7 +534,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			PerformerTags: &tagCriterion,
 		}
 
-		galleries := queryGalleries(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 2)
 
 		// ensure ids are correct
@@ -313,7 +550,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		galleries = queryGalleries(t, sqb, &galleryFilter, nil)
+		galleries = queryGallery(t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
@@ -330,7 +567,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries = queryGalleries(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		return nil

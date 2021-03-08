@@ -60,6 +60,9 @@ const (
 	performerIdx2WithImage
 	performerIdxWithTag
 	performerIdxWithTwoTags
+	performerIdxWithGallery
+	performerIdx1WithGallery
+	performerIdx2WithGallery
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -82,10 +85,13 @@ const (
 const (
 	galleryIdxWithScene = iota
 	galleryIdxWithImage
-	galleryIdxWithPerformerTag
-	galleryIdxWithPerformerTwoTags
+	galleryIdxWithPerformer
+	galleryIdxWithTwoPerformers
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
+	galleryIdxWithStudio
+	galleryIdxWithPerformerTag
+	galleryIdxWithPerformerTwoTags
 	// new indexes above
 	lastGalleryIdx
 
@@ -123,6 +129,7 @@ const (
 	studioIdxWithChildStudio
 	studioIdxWithParentStudio
 	studioIdxWithImage
+	studioIdxWithGallery
 	// new indexes above
 	// studios with dup names start from the end
 	studioIdxWithDupName
@@ -214,6 +221,9 @@ var (
 
 var (
 	galleryPerformerLinks = [][2]int{
+		{galleryIdxWithPerformer, performerIdxWithGallery},
+		{galleryIdxWithTwoPerformers, performerIdx1WithGallery},
+		{galleryIdxWithTwoPerformers, performerIdx2WithGallery},
 		{galleryIdxWithPerformerTag, performerIdxWithTag},
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 	}
@@ -365,6 +375,14 @@ func populateDB() error {
 			return fmt.Errorf("error linking image studio: %s", err.Error())
 		}
 
+		if err := linkMovieStudios(r.Movie()); err != nil {
+			return fmt.Errorf("error linking movie studios: %s", err.Error())
+		}
+
+		if err := linkStudiosParent(r.Studio()); err != nil {
+			return fmt.Errorf("error linking studios parent: %s", err.Error())
+		}
+
 		if err := linkGalleryPerformers(r.Gallery()); err != nil {
 			return fmt.Errorf("error linking gallery performers: %s", err.Error())
 		}
@@ -373,12 +391,8 @@ func populateDB() error {
 			return fmt.Errorf("error linking gallery tags: %s", err.Error())
 		}
 
-		if err := linkMovieStudios(r.Movie()); err != nil {
-			return fmt.Errorf("error linking movie studios: %s", err.Error())
-		}
-
-		if err := linkStudiosParent(r.Studio()); err != nil {
-			return fmt.Errorf("error linking studios parent: %s", err.Error())
+		if err := linkGalleryStudio(r.Gallery(), galleryIdxWithStudio, studioIdxWithGallery); err != nil {
+			return fmt.Errorf("error linking gallery studio: %s", err.Error())
 		}
 
 		if err := createMarker(r.SceneMarker(), sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
@@ -942,4 +956,14 @@ func linkStudiosParent(qb models.StudioWriter) error {
 
 func addTagImage(qb models.TagWriter, tagIndex int) error {
 	return qb.UpdateImage(tagIDs[tagIndex], models.DefaultTagImage)
+}
+
+func linkGalleryStudio(qb models.GalleryWriter, galleryIndex, studioIndex int) error {
+	gallery := models.GalleryPartial{
+		ID:       galleryIDs[galleryIndex],
+		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+	}
+	_, err := qb.UpdatePartial(gallery)
+
+	return err
 }
