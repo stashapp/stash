@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { Alert, Button, Card, Container, Form } from "react-bootstrap";
+import {
+  Alert,
+  Button,
+  Card,
+  Container,
+  Form,
+  InputGroup,
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { mutateSetup, useSystemStatus } from "src/core/StashService";
 import { Link } from "react-router-dom";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon, LoadingIndicator } from "../Shared";
+import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 
 export const Setup: React.FC = () => {
   const [step, setStep] = useState(0);
@@ -14,6 +22,8 @@ export const Setup: React.FC = () => {
   const [databaseFile, setDatabaseFile] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
+
+  const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
 
@@ -104,6 +114,22 @@ export const Setup: React.FC = () => {
     );
   }
 
+  function onGeneratedClosed(d?: string) {
+    if (d) {
+      setGeneratedLocation(d);
+    }
+
+    setShowGeneratedDialog(false);
+  }
+
+  function maybeRenderGeneratedSelectDialog() {
+    if (!showGeneratedDialog) {
+      return;
+    }
+
+    return <FolderSelectDialog onClose={onGeneratedClosed} />;
+  }
+
   function renderSetPaths() {
     return (
       <>
@@ -159,15 +185,25 @@ export const Setup: React.FC = () => {
               current working directory) path. Stash will create this directory
               if it does not already exist.
             </p>
-            {/* TODO - Add folder select dialog */}
-            <Form.Control
-              className="text-input"
-              defaultValue={generatedLocation}
-              placeholder="path to generated directory (empty for default)"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setGeneratedLocation(e.currentTarget.value)
-              }
-            />
+            <InputGroup>
+              <Form.Control
+                className="text-input"
+                value={generatedLocation}
+                placeholder="path to generated directory (empty for default)"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setGeneratedLocation(e.currentTarget.value)
+                }
+              />
+              <InputGroup.Append>
+                <Button
+                  variant="secondary"
+                  className="text-input"
+                  onClick={() => setShowGeneratedDialog(true)}
+                >
+                  <Icon icon="ellipsis-h" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
           </Form.Group>
         </section>
         <section className="mt-5">
@@ -412,6 +448,7 @@ export const Setup: React.FC = () => {
 
   return (
     <Container>
+      {maybeRenderGeneratedSelectDialog()}
       <h1 className="text-center">Stash Setup Wizard</h1>
       {loading ? (
         <LoadingIndicator message="Creating your system" />
