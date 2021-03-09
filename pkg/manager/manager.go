@@ -173,7 +173,6 @@ func (s *singleton) RefreshConfig() {
 		utils.EnsureDir(s.Paths.Generated.Markers)
 		utils.EnsureDir(s.Paths.Generated.Transcodes)
 		utils.EnsureDir(s.Paths.Generated.Downloads)
-		paths.EnsureJSONDirs(config.GetMetadataPath())
 	}
 }
 
