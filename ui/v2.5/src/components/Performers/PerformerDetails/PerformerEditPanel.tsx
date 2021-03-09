@@ -440,7 +440,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (!scrapePerformerDetails) return {};
 
     // image is not supported
-    const { __typename, image: _image, ...ret } = scrapePerformerDetails;
+    // remove tags as well
+    const {
+      __typename,
+      image: _image,
+      tags: _tags,
+      ...ret
+    } = scrapePerformerDetails;
     return ret;
   }
 
