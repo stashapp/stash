@@ -94,6 +94,12 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 			return err
 		}
 
+		if len(input.TagIds) > 0 {
+			if err := r.updatePerformerTags(qb, performer.ID, input.TagIds); err != nil {
+				return err
+			}
+		}
+
 		// update image table
 		if len(imageData) > 0 {
 			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
