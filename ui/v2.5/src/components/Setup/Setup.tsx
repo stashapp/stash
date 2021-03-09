@@ -15,7 +15,22 @@ export const Setup: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
 
-  const { data: systemStatus, loading: statusLoading, error } = useSystemStatus();
+  const { data: systemStatus, loading: statusLoading } = useSystemStatus();
+
+  const discordLink = (
+    <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
+      Discord
+    </a>
+  );
+  const githubLink = (
+    <a
+      href="https://github.com/stashapp/stash/issues"
+      target="_blank"
+      rel="noreferrer"
+    >
+      Github repository
+    </a>
+  );
 
   function onConfigLocationChosen(loc: string) {
     setConfigLocation(loc);
@@ -289,8 +304,8 @@ export const Setup: React.FC = () => {
           </p>
           <p>
             If this looks like a problem with your inputs, go ahead and click
-            back to fix them up. Otherwise, raise a bug on the Github repository
-            or seek help in the Discord.
+            back to fix them up. Otherwise, raise a bug on the {githubLink}
+            or seek help in the {discordLink}.
           </p>
         </section>
         <section className="mt-5">
@@ -330,16 +345,22 @@ export const Setup: React.FC = () => {
           </p>
           <p>
             If you run into issues or have any questions or suggestions, feel
-            free to open an issue in the <a href="https://github.com/stashapp/stash/issues" target="_blank">Github repository</a>, or ask the community
-            in the <a href="https://discord.gg/2TsNFKt">Discord</a>.
+            free to open an issue in the {githubLink}, or ask the community in
+            the {discordLink}.
           </p>
         </section>
         <section>
           <h3>Support us</h3>
           <p>
-            Check out our <a href="https://opencollective.com/stashapp"
-            target="_blank">OpenCollective</a> to see how you can contribute to the
-            continued development of Stash.
+            Check out our{" "}
+            <a
+              href="https://opencollective.com/stashapp"
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenCollective
+            </a>{" "}
+            to see how you can contribute to the continued development of Stash.
           </p>
           <p>
             We also welcome contributions in the form of code (bug fixes,
@@ -379,7 +400,10 @@ export const Setup: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  if (systemStatus && systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup) {
+  if (
+    systemStatus &&
+    systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
+  ) {
     // redirect to main page
     const newURL = new URL("/", window.location.toString());
     window.location.href = newURL.toString();

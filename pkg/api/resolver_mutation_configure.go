@@ -18,6 +18,11 @@ func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (
 	return err == nil, err
 }
 
+func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInput) (bool, error) {
+	err := manager.GetInstance().Migrate(input)
+	return err == nil, err
+}
+
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	c := config.GetInstance()
 	if len(input.Stashes) > 0 {

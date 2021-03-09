@@ -112,6 +112,11 @@ enum SystemStatusEnum {
 
 type SystemStatus {
   databaseSchema: Int
+  databasePath: String
   appSchema: Int!
   status: SystemStatusEnum!
+}
+
+input MigrateInput {
+  backupPath: String!
 }

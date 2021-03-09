@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -144,7 +145,10 @@ func (s *singleton) PostInit() error {
 	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {
 		return err
 	}
-	s.PostMigrate()
+
+	if database.Ready() == nil {
+		s.PostMigrate()
+	}
 
 	return nil
 }
@@ -224,9 +228,50 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	return nil
 }
 
+func (s *singleton) Migrate(input models.MigrateInput) error {
+	// always backup so that we can roll back to the previous version if
+	// migration fails
+	backupPath := input.BackupPath
+	if backupPath == "" {
+		backupPath = database.DatabaseBackupPath()
+	}
+
+	// perform database backup
+	if err := database.Backup(database.DB, backupPath); err != nil {
+		return fmt.Errorf("error backing up database: %s", err)
+	}
+
+	if err := database.RunMigrations(); err != nil {
+		errStr := fmt.Sprintf("error performing migration: %s", err)
+
+		// roll back to the backed up version
+		restoreErr := database.RestoreFromBackup(backupPath)
+		if restoreErr != nil {
+			errStr = fmt.Sprintf("ERROR: unable to restore database from backup after migration failure: %s\n%s", restoreErr.Error(), errStr)
+		} else {
+			errStr = "An error occurred migrating the database to the latest schema version. The backup database file was automatically renamed to restore the database.\n" + errStr
+		}
+
+		return errors.New(errStr)
+	}
+
+	// perform post-migration operations
+	s.PostMigrate()
+
+	// if no backup path was provided, then delete the created backup
+	if input.BackupPath == "" {
+		if err := os.Remove(backupPath); err != nil {
+			logger.Warnf("error removing unwanted database backup (%s): %s", backupPath, err.Error())
+		}
+	}
+
+	return nil
+}
+
 func (s *singleton) GetSystemStatus() *models.SystemStatus {
 	status := models.SystemStatusEnumOk
 	dbSchema := int(database.Version())
+	dbPath := database.DatabasePath()
 	appSchema := int(database.AppSchemaVersion())
 
 	if s.Config.GetConfigFile() == "" {
@@ -237,6 +282,7 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 
 	return &models.SystemStatus{
 		DatabaseSchema: &dbSchema,
+		DatabasePath:   &dbPath,
 		AppSchema:      appSchema,
 		Status:         status,
 	}

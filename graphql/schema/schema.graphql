@@ -129,6 +129,7 @@ type Query {
 
 type Mutation {
   setup(input: SetupInput!): Boolean!
+  migrate(input: MigrateInput!): Boolean!
 
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]

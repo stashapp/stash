@@ -26,6 +26,7 @@ import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
 import Images from "./components/Images/Images";
 import { Setup } from "./components/Setup/Setup";
+import { Migrate } from "./components/Setup/Migrate";
 
 initPolyfills();
 
@@ -46,7 +47,8 @@ export const App: React.FC = () => {
   const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages = flattenMessages((locales as any)[messageLanguage]);
-  const setupMatch = useRouteMatch("/setup");
+
+  const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
   function maybeRenderNavbar() {
     // don't render navbar for setup views
@@ -77,6 +79,7 @@ export const App: React.FC = () => {
                   component={SceneFilenameParser}
                 />
                 <Route path="/setup" component={Setup} />
+                <Route path="/migrate" component={Migrate} />
                 <Route component={PageNotFound} />
               </Switch>
             </div>

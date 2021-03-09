@@ -113,11 +113,13 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onImport() {
     setIsImportAlertOpen(false);
-    mutateMetadataImport().then(() => {
-      jobStatus.refetch();
-    }).catch(e => {
-      Toast.error(e);
-    });
+    mutateMetadataImport()
+      .then(() => {
+        jobStatus.refetch();
+      })
+      .catch((e) => {
+        Toast.error(e);
+      });
   }
 
   function renderImportAlert() {
@@ -527,9 +529,11 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="secondary"
           type="submit"
           onClick={() =>
-            mutateMetadataExport().then(() => {
-              jobStatus.refetch();
-            }).catch(e => Toast.error(e))
+            mutateMetadataExport()
+              .then(() => {
+                jobStatus.refetch();
+              })
+              .catch((e) => Toast.error(e))
           }
         >
           Full Export

@@ -9,6 +9,7 @@ query JobStatus {
 query SystemStatus {
   systemStatus {
     databaseSchema
+    databasePath
     appSchema
     status
   }

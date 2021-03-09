@@ -281,6 +281,12 @@ export const mutateSetup = (input: GQL.SetupInput) =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const mutateMigrate = (input: GQL.MigrateInput) =>
+  client.mutate<GQL.MigrateMutation>({
+    mutation: GQL.MigrateDocument,
+    variables: { input },
+  });
+
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
@@ -969,6 +975,15 @@ async function initialise() {
   ) {
     // redirect to setup page
     const newURL = new URL("/setup", window.location.toString());
+    window.location.href = newURL.toString();
+  }
+
+  if (
+    window.location.pathname !== "/migrate" &&
+    status.data.systemStatus.status === GQL.SystemStatusEnum.NeedsMigration
+  ) {
+    // redirect to setup page
+    const newURL = new URL("/migrate", window.location.toString());
     window.location.href = newURL.toString();
   }
 }

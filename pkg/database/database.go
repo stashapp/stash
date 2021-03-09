@@ -165,6 +165,10 @@ func AppSchemaVersion() uint {
 	return appSchemaVersion
 }
 
+func DatabasePath() string {
+	return dbPath
+}
+
 func DatabaseBackupPath() string {
 	return fmt.Sprintf("%s.%d.%s", dbPath, databaseSchemaVersion, time.Now().Format("20060102_150405"))
 }

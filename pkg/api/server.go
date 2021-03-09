@@ -22,7 +22,6 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -121,7 +120,6 @@ func Start() {
 	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
-	r.Use(DatabaseCheckMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
@@ -413,20 +411,4 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
-}
-
-func DatabaseCheckMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET"
-		if shouldRedirect && database.NeedsMigration() {
-			// #451 - don't redirect if loading login page
-			// #539 - or setup page
-			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
-				http.Redirect(w, r, migrateEndPoint, http.StatusFound)
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
-	})
 }
