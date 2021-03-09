@@ -124,7 +124,7 @@ export const Setup: React.FC = () => {
             <Form.Control
               className="text-input"
               defaultValue={databaseFile}
-              placeholder="database filename"
+              placeholder="database filename (empty for default)"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setDatabaseFile(e.currentTarget.value)
               }
@@ -146,7 +146,7 @@ export const Setup: React.FC = () => {
             <Form.Control
               className="text-input"
               defaultValue={generatedLocation}
-              placeholder="path to generated directory"
+              placeholder="path to generated directory (empty for default)"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setGeneratedLocation(e.currentTarget.value)
               }
@@ -328,14 +328,15 @@ export const Setup: React.FC = () => {
           </p>
           <p>
             If you run into issues or have any questions or suggestions, feel
-            free to open an issue in the Github repository, or ask the community
-            in the Discord.
+            free to open an issue in the <a href="https://github.com/stashapp/stash/issues" target="_blank">Github repository</a>, or ask the community
+            in the <a href="https://discord.gg/2TsNFKt">Discord</a>.
           </p>
         </section>
         <section>
           <h3>Support us</h3>
           <p>
-            Check out our OpenCollective to see how you can contribute to the
+            Check out our <a href="https://opencollective.com/stashapp"
+            target="_blank">OpenCollective</a> to see how you can contribute to the
             continued development of Stash.
           </p>
           <p>
