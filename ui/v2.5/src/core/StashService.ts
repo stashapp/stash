@@ -679,6 +679,12 @@ export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 export const querySystemStatus = () =>
   client.query<GQL.SystemStatusQuery>({
     query: GQL.SystemStatusDocument,
+    fetchPolicy: "no-cache",
+  });
+
+export const useSystemStatus = () =>
+  GQL.useSystemStatusQuery({
+    fetchPolicy: "no-cache",
   });
 
 export const useLogs = () =>

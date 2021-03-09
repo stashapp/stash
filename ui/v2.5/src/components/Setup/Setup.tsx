@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Alert, Button, Card, Container, Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { mutateSetup } from "src/core/StashService";
+import { mutateSetup, useSystemStatus } from "src/core/StashService";
 import { Link } from "react-router-dom";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon, LoadingIndicator } from "../Shared";
@@ -14,6 +14,8 @@ export const Setup: React.FC = () => {
   const [databaseFile, setDatabaseFile] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
+
+  const { data: systemStatus, loading: statusLoading, error } = useSystemStatus();
 
   function onConfigLocationChosen(loc: string) {
     setConfigLocation(loc);
@@ -371,6 +373,18 @@ export const Setup: React.FC = () => {
   }
 
   const steps = [renderWelcome, renderSetPaths, renderConfirm, renderFinish];
+
+  // only display setup wizard if system is not setup
+  if (statusLoading) {
+    return <LoadingIndicator />;
+  }
+
+  if (systemStatus && systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup) {
+    // redirect to main page
+    const newURL = new URL("/", window.location.toString());
+    window.location.href = newURL.toString();
+    return <LoadingIndicator />;
+  }
 
   return (
     <Container>
