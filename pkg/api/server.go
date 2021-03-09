@@ -8,9 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
-	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -37,7 +35,6 @@ var githash string
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
-var setupUIBox *packr.Box
 var loginUIBox *packr.Box
 
 func allowUnauthenticated(r *http.Request) bool {
@@ -94,14 +91,11 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
-const setupEndPoint = "/setup"
-const migrateEndPoint = "/migrate"
 const loginEndPoint = "/login"
 
 func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
-	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 	loginUIBox = packr.New("Login UI Box", "../../ui/login")
 
 	initSessionStore()
@@ -188,21 +182,6 @@ func Start() {
 		http.ServeFile(w, r, fn)
 	})
 
-	// Serve the migration UI
-	r.Get("/migrate", getMigrateHandler)
-	r.Post("/migrate", doMigrateHandler)
-
-	// Serve the setup UI
-	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == "" {
-			data, _ := setupUIBox.Find("index.html")
-			_, _ = w.Write(data)
-		} else {
-			r.URL.Path = strings.Replace(r.URL.Path, "/setup", "", 1)
-			http.FileServer(setupUIBox).ServeHTTP(w, r)
-		}
-	})
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
@@ -212,60 +191,6 @@ func Start() {
 			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
 			http.FileServer(loginUIBox).ServeHTTP(w, r)
 		}
-	})
-	r.Post("/init", func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error: %s", err), 500)
-		}
-		stash := filepath.Clean(r.Form.Get("stash"))
-		generated := filepath.Clean(r.Form.Get("generated"))
-		metadata := filepath.Clean(r.Form.Get("metadata"))
-		cache := filepath.Clean(r.Form.Get("cache"))
-		//downloads := filepath.Clean(r.Form.Get("downloads")) // TODO
-		downloads := filepath.Join(metadata, "downloads")
-
-		exists, _ := utils.DirExists(stash)
-		if !exists || stash == "." {
-			http.Error(w, fmt.Sprintf("the stash path either doesn't exist, or is not a directory <%s>.  Go back and try again.", stash), 500)
-			return
-		}
-
-		exists, _ = utils.DirExists(generated)
-		if !exists || generated == "." {
-			http.Error(w, fmt.Sprintf("the generated path either doesn't exist, or is not a directory <%s>.  Go back and try again.", generated), 500)
-			return
-		}
-
-		exists, _ = utils.DirExists(metadata)
-		if !exists || metadata == "." {
-			http.Error(w, fmt.Sprintf("the metadata path either doesn't exist, or is not a directory <%s>  Go back and try again.", metadata), 500)
-			return
-		}
-
-		exists, _ = utils.DirExists(cache)
-		if !exists || cache == "." {
-			http.Error(w, fmt.Sprintf("the cache path either doesn't exist, or is not a directory <%s>  Go back and try again.", cache), 500)
-			return
-		}
-
-		_ = os.Mkdir(downloads, 0755)
-
-		// #536 - set stash as slice of strings
-		c := config.GetInstance()
-		c.Set(config.Stash, []string{stash})
-		c.Set(config.Generated, generated)
-		c.Set(config.Metadata, metadata)
-		c.Set(config.Cache, cache)
-		c.Set(config.Downloads, downloads)
-		if err := c.Write(); err != nil {
-			http.Error(w, fmt.Sprintf("there was an error saving the config file: %s", err), 500)
-			return
-		}
-
-		manager.GetInstance().PostInit()
-
-		http.Redirect(w, r, "/", 301)
 	})
 
 	// Serve static folders
