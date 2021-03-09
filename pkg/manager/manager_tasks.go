@@ -264,9 +264,15 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 	}()
 }
 
-func (s *singleton) Import() {
+func (s *singleton) Import() error {
+	config := config.GetInstance()
+	metadataPath := config.GetMetadataPath()
+	if metadataPath == "" {
+		return errors.New("metadata path must be set in config")
+	}
+
 	if s.Status.Status != Idle {
-		return
+		return nil
 	}
 	s.Status.SetStatus(Import)
 	s.Status.indefiniteProgress()
@@ -276,10 +282,10 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		config := config.GetInstance()
+
 		task := ImportTask{
 			txnManager:          s.TxnManager,
-			BaseDir:             config.GetMetadataPath(),
+			BaseDir:             metadataPath,
 			Reset:               true,
 			DuplicateBehaviour:  models.ImportDuplicateEnumFail,
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
@@ -288,11 +294,19 @@ func (s *singleton) Import() {
 		go task.Start(&wg)
 		wg.Wait()
 	}()
+
+	return nil
 }
 
-func (s *singleton) Export() {
+func (s *singleton) Export() error {
+	config := config.GetInstance()
+	metadataPath := config.GetMetadataPath()
+	if metadataPath == "" {
+		return errors.New("metadata path must be set in config")
+	}
+
 	if s.Status.Status != Idle {
-		return
+		return nil
 	}
 	s.Status.SetStatus(Export)
 	s.Status.indefiniteProgress()
@@ -305,11 +319,13 @@ func (s *singleton) Export() {
 		task := ExportTask{
 			txnManager:          s.TxnManager,
 			full:                true,
-			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
+			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
+
+	return nil
 }
 
 func (s *singleton) RunSingleTask(t Task) (*sync.WaitGroup, error) {

@@ -115,6 +115,8 @@ export const SettingsTasksPanel: React.FC = () => {
     setIsImportAlertOpen(false);
     mutateMetadataImport().then(() => {
       jobStatus.refetch();
+    }).catch(e => {
+      Toast.error(e);
     });
   }
 
@@ -527,7 +529,7 @@ export const SettingsTasksPanel: React.FC = () => {
           onClick={() =>
             mutateMetadataExport().then(() => {
               jobStatus.refetch();
-            })
+            }).catch(e => Toast.error(e))
           }
         >
           Full Export
