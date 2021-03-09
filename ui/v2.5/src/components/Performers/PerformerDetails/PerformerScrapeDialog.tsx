@@ -113,7 +113,7 @@ function renderScrapedTagsRow(
 }
 
 interface IPerformerScrapeDialogProps {
-  performer: Partial<GQL.PerformerDataFragment>;
+  performer: Partial<GQL.PerformerUpdateInput>;
   scraped: GQL.ScrapedPerformer;
 
   onClose: (scrapedPerformer?: GQL.ScrapedPerformer) => void;
@@ -248,7 +248,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 
   const [tags, setTags] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      sortIdList((props.performer.tags ?? []).map((t) => t.id)),
+      sortIdList(props.performer.tag_ids ?? undefined),
       mapStoredIdObjects(props.scraped.tags ?? undefined)
     )
   );
@@ -258,7 +258,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.image_path, props.scraped.image)
+    new ScrapeResult<string>(props.performer.image, props.scraped.image)
   );
 
   const allFields = [
