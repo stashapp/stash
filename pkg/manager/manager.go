@@ -68,7 +68,7 @@ func Initialize() *singleton {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
 
 			if err := cfg.Validate(); err != nil {
-				logger.Warnf("error initializing configuration: %s", err.Error())
+				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
 			} else {
 				if err := instance.PostInit(); err != nil {
 					panic(err)
@@ -231,9 +231,6 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 
 	if s.Config.GetConfigFile() == "" {
 		status = models.SystemStatusEnumSetup
-	} else if err := config.GetInstance().Validate(); err != nil {
-		// assume missing config
-		status = models.SystemStatusEnumMissingConfig
 	} else if dbSchema < appSchema {
 		status = models.SystemStatusEnumNeedsMigration
 	}

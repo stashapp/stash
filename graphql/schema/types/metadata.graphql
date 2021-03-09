@@ -107,7 +107,6 @@ input BackupDatabaseInput {
 enum SystemStatusEnum {
   SETUP
   NEEDS_MIGRATION
-  MISSING_CONFIG
   OK
 }
 
