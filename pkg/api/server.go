@@ -121,7 +121,6 @@ func Start() {
 	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
-	r.Use(ConfigCheckMiddleware)
 	r.Use(DatabaseCheckMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
@@ -414,21 +413,6 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
-}
-
-func ConfigCheckMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET"
-		if config.GetInstance().Validate() != nil && shouldRedirect {
-			// #539 - don't redirect if loading login page
-			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
-				http.Redirect(w, r, setupEndPoint, http.StatusFound)
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
-	})
 }
 
 func DatabaseCheckMiddleware(next http.Handler) http.Handler {
