@@ -2,6 +2,7 @@ package config
 
 import (
 	"net"
+	"os"
 	"sync"
 
 	"github.com/spf13/pflag"
@@ -38,6 +39,14 @@ func initConfig(flags flagStruct) {
 	viper.AddConfigPath(".")            // Look for config in the working directory
 	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
 
+	// for Docker compatibility, if STASH_CONFIG_FILE is set, then touch the
+	// given filename
+	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
+	if envConfigFile != "" {
+		utils.Touch(envConfigFile)
+		viper.SetConfigFile(envConfigFile)
+	}
+
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
 		// continue, but set an error to be handled by caller
@@ -50,7 +59,9 @@ func initConfig(flags flagStruct) {
 
 func postInitConfig() {
 	c := instance
-	//viper.SetDefault(Database, paths.GetDefaultDatabaseFilePath())
+	if c.GetConfigFile() != "" {
+		viper.SetDefault(Database, c.GetDefaultDatabaseFilePath())
+	}
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))

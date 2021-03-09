@@ -176,6 +176,12 @@ func (i *Instance) GetConfigPath() string {
 	return filepath.Dir(i.GetConfigFile())
 }
 
+// GetDefaultDatabaseFilePath returns the default database filename,
+// which is located in the same directory as the config file.
+func (i *Instance) GetDefaultDatabaseFilePath() string {
+	return filepath.Join(i.GetConfigPath(), "stash-go.sqlite")
+}
+
 func (i *Instance) GetStashPaths() []*models.StashConfig {
 	var ret []*models.StashConfig
 	if err := viper.UnmarshalKey(Stash, &ret); err != nil || len(ret) == 0 {
