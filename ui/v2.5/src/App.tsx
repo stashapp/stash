@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider } from "react-intl";
 import { ToastProvider } from "src/hooks/Toast";
@@ -8,7 +8,7 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 import { initPolyfills } from "src/polyfills";
 
 import locales from "src/locale";
-import { useConfiguration } from "src/core/StashService";
+import { useConfiguration, useSystemStatus } from "src/core/StashService";
 import { flattenMessages } from "src/utils";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
@@ -27,6 +27,8 @@ import Tags from "./components/Tags/Tags";
 import Images from "./components/Images/Images";
 import { Setup } from "./components/Setup/Setup";
 import { Migrate } from "./components/Setup/Migrate";
+import * as GQL from "./core/generated-graphql";
+import { LoadingIndicator } from "./components/Shared";
 
 initPolyfills();
 
@@ -43,6 +45,7 @@ const intlFormats = {
 
 export const App: React.FC = () => {
   const config = useConfiguration();
+  const {data: systemStatusData, loading, error} = useSystemStatus();
   const language = config.data?.configuration?.interface?.language ?? "en-GB";
   const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,11 +53,63 @@ export const App: React.FC = () => {
 
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
+  // redirect to setup or migrate as needed
+  useEffect(() => {
+    if (!systemStatusData) {
+      return;
+    }
+
+    if (
+      window.location.pathname !== "/setup" &&
+      systemStatusData.systemStatus.status === GQL.SystemStatusEnum.Setup
+    ) {
+      // redirect to setup page
+      const newURL = new URL("/setup", window.location.toString());
+      window.location.href = newURL.toString();
+    }
+  
+    if (
+      window.location.pathname !== "/migrate" &&
+      systemStatusData.systemStatus.status === GQL.SystemStatusEnum.NeedsMigration
+    ) {
+      // redirect to setup page
+      const newURL = new URL("/migrate", window.location.toString());
+      window.location.href = newURL.toString();
+    }
+  }, [systemStatusData]);
+
   function maybeRenderNavbar() {
     // don't render navbar for setup views
     if (!setupMatch) {
       return <MainNavbar />;
     }
+  }
+
+  function renderContent() {
+    if (!systemStatusData) {
+      return <LoadingIndicator />
+    }
+
+    return (
+      <Switch>
+        <Route exact path="/" component={Stats} />
+        <Route path="/scenes" component={Scenes} />
+        <Route path="/images" component={Images} />
+        <Route path="/galleries" component={Galleries} />
+        <Route path="/performers" component={Performers} />
+        <Route path="/tags" component={Tags} />
+        <Route path="/studios" component={Studios} />
+        <Route path="/movies" component={Movies} />
+        <Route path="/settings" component={Settings} />
+        <Route
+          path="/sceneFilenameParser"
+          component={SceneFilenameParser}
+        />
+        <Route path="/setup" component={Setup} />
+        <Route path="/migrate" component={Migrate} />
+        <Route component={PageNotFound} />
+      </Switch>
+    );
   }
 
   return (
@@ -64,24 +119,7 @@ export const App: React.FC = () => {
           <LightboxProvider>
             {maybeRenderNavbar()}
             <div className="main container-fluid">
-              <Switch>
-                <Route exact path="/" component={Stats} />
-                <Route path="/scenes" component={Scenes} />
-                <Route path="/images" component={Images} />
-                <Route path="/galleries" component={Galleries} />
-                <Route path="/performers" component={Performers} />
-                <Route path="/tags" component={Tags} />
-                <Route path="/studios" component={Studios} />
-                <Route path="/movies" component={Movies} />
-                <Route path="/settings" component={Settings} />
-                <Route
-                  path="/sceneFilenameParser"
-                  component={SceneFilenameParser}
-                />
-                <Route path="/setup" component={Setup} />
-                <Route path="/migrate" component={Migrate} />
-                <Route component={PageNotFound} />
-              </Switch>
+              {renderContent()}
             </div>
           </LightboxProvider>
         </ToastProvider>

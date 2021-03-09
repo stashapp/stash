@@ -966,26 +966,3 @@ export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
       input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
     },
   });
-
-async function initialise() {
-  const status = await querySystemStatus();
-  if (
-    window.location.pathname !== "/setup" &&
-    status.data.systemStatus.status === GQL.SystemStatusEnum.Setup
-  ) {
-    // redirect to setup page
-    const newURL = new URL("/setup", window.location.toString());
-    window.location.href = newURL.toString();
-  }
-
-  if (
-    window.location.pathname !== "/migrate" &&
-    status.data.systemStatus.status === GQL.SystemStatusEnum.NeedsMigration
-  ) {
-    // redirect to setup page
-    const newURL = new URL("/migrate", window.location.toString());
-    window.location.href = newURL.toString();
-  }
-}
-
-initialise();
