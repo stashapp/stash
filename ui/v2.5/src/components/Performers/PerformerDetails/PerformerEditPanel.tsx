@@ -576,10 +576,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       return;
     }
 
-    const currentPerformer: Partial<GQL.PerformerDataFragment> = {
+    const currentPerformer: Partial<GQL.PerformerUpdateInput> = {
       ...formik.values,
       gender: stringToGender(formik.values.gender),
-      image_path: formik.values.image ?? performer.image_path,
+      image: formik.values.image ?? performer.image_path,
     };
 
     return (
