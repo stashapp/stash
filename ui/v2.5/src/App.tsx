@@ -45,7 +45,7 @@ const intlFormats = {
 
 export const App: React.FC = () => {
   const config = useConfiguration();
-  const {data: systemStatusData, loading, error} = useSystemStatus();
+  const { data: systemStatusData } = useSystemStatus();
   const language = config.data?.configuration?.interface?.language ?? "en-GB";
   const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,10 +67,11 @@ export const App: React.FC = () => {
       const newURL = new URL("/setup", window.location.toString());
       window.location.href = newURL.toString();
     }
-  
+
     if (
       window.location.pathname !== "/migrate" &&
-      systemStatusData.systemStatus.status === GQL.SystemStatusEnum.NeedsMigration
+      systemStatusData.systemStatus.status ===
+        GQL.SystemStatusEnum.NeedsMigration
     ) {
       // redirect to setup page
       const newURL = new URL("/migrate", window.location.toString());
@@ -87,7 +88,7 @@ export const App: React.FC = () => {
 
   function renderContent() {
     if (!systemStatusData) {
-      return <LoadingIndicator />
+      return <LoadingIndicator />;
     }
 
     return (
@@ -101,10 +102,7 @@ export const App: React.FC = () => {
         <Route path="/studios" component={Studios} />
         <Route path="/movies" component={Movies} />
         <Route path="/settings" component={Settings} />
-        <Route
-          path="/sceneFilenameParser"
-          component={SceneFilenameParser}
-        />
+        <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
         <Route path="/setup" component={Setup} />
         <Route path="/migrate" component={Migrate} />
         <Route component={PageNotFound} />
@@ -118,9 +116,7 @@ export const App: React.FC = () => {
         <ToastProvider>
           <LightboxProvider>
             {maybeRenderNavbar()}
-            <div className="main container-fluid">
-              {renderContent()}
-            </div>
+            <div className="main container-fluid">{renderContent()}</div>
           </LightboxProvider>
         </ToastProvider>
       </IntlProvider>
