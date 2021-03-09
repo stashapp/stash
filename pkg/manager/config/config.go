@@ -639,23 +639,22 @@ func (i *Instance) Validate() error {
 	}
 
 	mandatoryPaths := []string{
+		Database,
 		Stash,
-		Cache,
 		Generated,
-		Metadata,
 	}
 
-	var missingPaths []string
+	var missingFields []string
 
 	for _, p := range mandatoryPaths {
 		if !viper.IsSet(p) {
-			missingPaths = append(missingPaths, p)
+			missingFields = append(missingFields, p)
 		}
 	}
 
-	if len(missingPaths) > 0 {
+	if len(missingFields) > 0 {
 		return MissingConfigError{
-			missingFields: missingPaths,
+			missingFields: missingFields,
 		}
 	}
 
