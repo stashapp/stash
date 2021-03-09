@@ -640,7 +640,6 @@ func (i *Instance) Validate() error {
 
 	mandatoryPaths := []string{
 		Database,
-		Stash,
 		Generated,
 	}
 
