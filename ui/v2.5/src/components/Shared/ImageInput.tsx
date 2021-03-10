@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Button, Col, Form, OverlayTrigger, Popover, Row } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Form,
+  OverlayTrigger,
+  Popover,
+  Row,
+} from "react-bootstrap";
 import { FormUtils } from "src/utils";
 import { Modal } from ".";
 import Icon from "./Icon";
@@ -35,7 +42,7 @@ export const ImageInput: React.FC<IImageInput> = ({
           accept={`.jpg,.jpeg,.png${acceptSVG ? ",.svg" : ""}`}
         />
       </Form.Label>
-    )
+    );
   }
 
   function onConfirmURL() {
@@ -83,12 +90,8 @@ export const ImageInput: React.FC<IImageInput> = ({
           <div>
             <Form.Label className="image-input">
               <Button variant="secondary">
-                <span className="fa-icon">
-                  <Icon icon="file" />
-                </span>
-                <span>
-                  From file...
-                </span>
+                <Icon icon="file" className="fa-fw" />
+                <span>From file...</span>
               </Button>
               <Form.Control
                 type="file"
@@ -99,9 +102,7 @@ export const ImageInput: React.FC<IImageInput> = ({
           </div>
           <div>
             <Button className="minimal" onClick={() => setIsShowDialog(true)}>
-              <span className="fa-icon">
-                <Icon icon="link" />
-              </span>
+              <Icon icon="link" className="fa-fw" />
               <span>From URL...</span>
             </Button>
           </div>
@@ -113,9 +114,14 @@ export const ImageInput: React.FC<IImageInput> = ({
   return (
     <>
       {renderDialog()}
-      <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
+      <OverlayTrigger
+        trigger="click"
+        placement="top"
+        overlay={popover}
+        rootClose
+      >
         <Button variant="secondary" className="mr-2">
-        {text ?? "Set image..."}
+          {text ?? "Set image..."}
         </Button>
       </OverlayTrigger>
     </>
