@@ -7,7 +7,6 @@ import {
   Popover,
   Row,
 } from "react-bootstrap";
-import { FormUtils } from "src/utils";
 import { Modal } from ".";
 import Icon from "./Icon";
 

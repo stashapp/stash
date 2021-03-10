@@ -537,7 +537,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
 
     return (
-      <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
+      <OverlayTrigger
+        trigger="click"
+        placement="top"
+        overlay={popover}
+        rootClose
+      >
         <Button variant="secondary" className="mr-2">
           Scrape with...
         </Button>
@@ -640,9 +645,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             ""
           )}
           {renderScraperMenu()}
-          <ImageInput 
-            isEditing 
-            onImageChange={onImageChangeHandler} 
+          <ImageInput
+            isEditing
+            onImageChange={onImageChangeHandler}
             onImageURL={onImageChangeURL}
           />
           <Button
