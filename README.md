@@ -8,9 +8,10 @@ https://stashapp.cc
 
 **Stash is a locally hosted web-based app written in Go which organizes and serves your porn.**
 
-* It can gather information about movies in your collection from the internet, and is extensible through the use of community-built plugins.
+* It can gather information about videos in your collection from the internet, and is extensible through the use of community-built plugins.
 * It supports a wide variety of both video and image formats
-* It provides statistics about performers, views, studios and other things.
+* You can tag videos and find them later.
+* It provides statistics about performers, tags, studios and other things.
 
 You can [watch a demo video](https://vimeo.com/275537038)to see it in action (password is stashapp).
 
@@ -45,7 +46,7 @@ The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on m
 ## Quickstart Guide
 1) Download and install Stash and its dependencies
 2) Run Stash. It will prompt you for some configuration options and a directory to index (you can also do this step afterward)
-3) After configuation, Stash will open your web browser and take you to the home screen.
+3) After configuration, launch your web browser and navigate to the URL shown within the Stash app.
 
 Note that Stash does not currently retrieve and organize information about your entire library automatically.  You will need to help it along through the use of [scrapers](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Scraping.md).  The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers).
 
@@ -83,7 +84,7 @@ Try running `chmod u+x stash-osx` or `chmod u+x stash-linux` to make the file ex
 
 > I cannot connect to the server from elsewhere within my network
 
-Changing the address of the server from 127.0.0.1 to the IP address of the computer on which you are running Stash
+Change the address of the server from 0.0.0.0 to the IP address of the computer on which you are running Stash.
 
 > I have a question not answered here.
 
