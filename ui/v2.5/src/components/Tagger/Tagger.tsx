@@ -175,6 +175,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [fingerprints, setFingerprints] = useState<
     Record<string, IStashBoxScene>
   >({});
+  const [hideUnmatched, setHideUnmatched] = useState(false);
   const fingerprintQueue =
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
 
@@ -285,13 +286,21 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     );
 
   const getFingerprintCount = () => {
-    const count = scenes.filter(
+    return scenes.filter(
       (s) =>
         s.stash_ids.length === 0 &&
         ((s.checksum && fingerprints[s.checksum]) ||
           (s.oshash && fingerprints[s.oshash]))
     ).length;
+  };
+
+  const getFingerprintCountMessage = () => {
+    const count = getFingerprintCount();
     return `${count > 0 ? count : "No"} new fingerprint matches found`;
+  };
+
+  const toggleHideUnmatchedScenes = () => {
+    setHideUnmatched(!hideUnmatched);
   };
 
   const renderScenes = () =>
@@ -460,7 +469,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         );
       }
 
-      return (
+      return hideUnmatched && !fingerprintMatch ? null : (
         <div key={scene.id} className="mt-3 search-item">
           <div className="row">
             <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
@@ -499,6 +508,13 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
+          {(getFingerprintCount() > 0 || hideUnmatched) && (
+            <Button onClick={toggleHideUnmatchedScenes}>
+              {hideUnmatched ? "Show" : "Hide"} unmatched scenes
+            </Button>
+          )}
+        </div>
+        <div className="mr-2">
           {fingerprintQueue.length > 0 && (
             <Button
               onClick={handleFingerprintSubmission}
@@ -519,7 +535,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           disabled={!canFingerprintSearch() && !loadingFingerprints}
         >
           {canFingerprintSearch() && <span>Match Fingerprints</span>}
-          {!canFingerprintSearch() && getFingerprintCount()}
+          {!canFingerprintSearch() && getFingerprintCountMessage()}
           {loadingFingerprints && <LoadingIndicator message="" inline small />}
         </Button>
       </div>
