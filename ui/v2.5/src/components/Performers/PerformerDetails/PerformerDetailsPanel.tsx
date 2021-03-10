@@ -1,5 +1,6 @@
 import React from "react";
 import { useIntl } from "react-intl";
+import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
@@ -14,6 +15,25 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 }) => {
   // Network state
   const intl = useIntl();
+
+  function renderTagsField() {
+    if (!performer.tags?.length) {
+      return;
+    }
+
+    return (
+      <dl className="row">
+        <dt className="col-3 col-xl-2">Tags</dt>
+        <dd className="col-9 col-xl-10">
+          <ul className="pl-0">
+            {(performer.tags ?? []).map((tag) => (
+              <TagLink key={tag.id} tagType="performer" tag={tag} />
+            ))}
+          </ul>
+        </dd>
+      </dl>
+    );
+  }
 
   function renderStashIDs() {
     if (!performer.stash_ids?.length) {
@@ -101,6 +121,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           TextUtils.instagramURL
         )}
       />
+      {renderTagsField()}
       {renderStashIDs()}
     </>
   );
