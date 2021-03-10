@@ -386,7 +386,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
         <h4>Library File Types</h4>
         <Form.Group id="video-extensions">
-          <h6>Included Video Extensions</h6>
+          <h6>Video Extensions</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={videoExtensions}
@@ -401,7 +401,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="image-extensions">
-          <h6>Included Image Extensions</h6>
+          <h6>Image Extensions</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={imageExtensions}
@@ -416,7 +416,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="gallery-extensions">
-          <h6>Included Compressed Gallery Extensions</h6>
+          <h6>ICompressed Gallery Extensions</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={galleryExtensions}
@@ -546,7 +546,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             ))}
           </Form.Control>
           <Form.Text className="text-muted">
-            Maximum size for generated transcodes
+            Maximum Transcode Size - Conversion
           </Form.Text>
         </Form.Group>
         <Form.Group id="streaming-transcode-size">
@@ -747,7 +747,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>Logins</h4>
+        <h4>Authentication</h4>
         <Form.Group id="username">
           <h6>Username</h6>
           <Form.Control
