@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/corona10/goimagehash"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -61,6 +61,20 @@ WHERE scenes.checksum is null
 var countScenesForMissingOSHashQuery = `
 SELECT id FROM scenes
 WHERE scenes.oshash is null
+`
+
+var findExactDuplicateQuery = `
+SELECT GROUP_CONCAT(id) as ids
+FROM scenes
+WHERE phash IS NOT NULL
+GROUP BY phash
+HAVING COUNT(*) > 1;
+`
+
+var findAllPhashesQuery = `
+SELECT id, phash
+FROM scenes
+WHERE phash IS NOT NULL
 `
 
 type sceneQueryBuilder struct {
@@ -790,35 +804,14 @@ func (qb *sceneQueryBuilder) UpdateStashIDs(sceneID int, stashIDs []models.Stash
 	return qb.stashIDRepository().replace(sceneID, stashIDs)
 }
 
-var phashExact = `
-SELECT GROUP_CONCAT(id) as ids
-FROM scenes
-WHERE phash IS NOT NULL
-GROUP BY phash
-HAVING COUNT(*) > 1;
-`
-
-var phashInaccurate = `
-SELECT id, phash
-FROM scenes
-WHERE phash IS NOT NULL
-`
-
-type Phash struct {
-	SceneID   int   `db:"id"`
-	Hash      int64 `db:"phash"`
-	Neighbors []int
-	Bucket    int
-}
-
 func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, error) {
+	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string
-		if err := qb.tx.Select(&ids, phashExact); err != nil {
+		if err := qb.tx.Select(&ids, findExactDuplicateQuery); err != nil {
 			return nil, err
 		}
 
-		var duplicates [][]*models.Scene
 		for _, id := range ids {
 			strIds := strings.Split(id, ",")
 			var sceneIds []int
@@ -827,17 +820,13 @@ func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, er
 					sceneIds = append(sceneIds, intId)
 				}
 			}
-			if scenes, err := qb.FindMany(sceneIds); err == nil {
-				duplicates = append(duplicates, scenes)
-			}
+			dupeIds = append(dupeIds, sceneIds)
 		}
-
-		return duplicates, nil
 	} else {
-		var hashes []*Phash
+		var hashes []*utils.Phash
 
-		if err := qb.queryFunc(phashInaccurate, nil, func(rows *sqlx.Rows) error {
-			phash := Phash{
+		if err := qb.queryFunc(findAllPhashesQuery, nil, func(rows *sqlx.Rows) error {
+			phash := utils.Phash{
 				Bucket: -1,
 			}
 			if err := rows.StructScan(&phash); err != nil {
@@ -850,48 +839,15 @@ func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, er
 			return nil, err
 		}
 
-		for i, scene := range hashes {
-			sceneHash := goimagehash.NewImageHash(uint64(scene.Hash), goimagehash.PHash)
-			for j, neighbor := range hashes {
-				if i != j {
-					neighborHash := goimagehash.NewImageHash(uint64(neighbor.Hash), goimagehash.PHash)
-					neighborDistance, _ := sceneHash.Distance(neighborHash)
-					if neighborDistance <= distance {
-						scene.Neighbors = append(scene.Neighbors, j)
-					}
-				}
-			}
-		}
-
-		var buckets [][]int
-		for _, scene := range hashes {
-			if len(scene.Neighbors) > 0 && scene.Bucket == -1 {
-				bucket := len(buckets)
-				scenes := []int{scene.SceneID}
-				scene.Bucket = bucket
-				findNeighbors(bucket, scene.Neighbors, hashes, &scenes)
-				buckets = append(buckets, scenes)
-			}
-		}
-
-		var duplicates [][]*models.Scene
-		for _, sceneIds := range buckets {
-			if scenes, err := qb.FindMany(sceneIds); err == nil {
-				duplicates = append(duplicates, scenes)
-			}
-		}
-
-		return duplicates, nil
+		dupeIds = utils.FindDuplicates(hashes, distance)
 	}
-}
 
-func findNeighbors(bucket int, neighbors []int, hashes []*Phash, scenes *[]int) {
-	for _, id := range neighbors {
-		hash := hashes[id]
-		if hash.Bucket == -1 {
-			hash.Bucket = bucket
-			*scenes = append(*scenes, hash.SceneID)
-			findNeighbors(bucket, hash.Neighbors, hashes, scenes)
+	var duplicates [][]*models.Scene
+	for _, sceneIds := range dupeIds {
+		if scenes, err := qb.FindMany(sceneIds); err == nil {
+			duplicates = append(duplicates, scenes)
 		}
 	}
+
+	return duplicates, nil
 }
