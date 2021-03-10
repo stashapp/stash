@@ -11,6 +11,13 @@ import (
 
 const performerTable = "performers"
 const performerIDColumn = "performer_id"
+const performersTagsTable = "performers_tags"
+
+var countPerformersForTagQuery = `
+SELECT tag_id AS id FROM performers_tags
+WHERE performers_tags.tag_id = ?
+GROUP BY performers_tags.performer_id
+`
 
 type performerQueryBuilder struct {
 	repository
@@ -153,6 +160,11 @@ func (qb *performerQueryBuilder) FindByNames(names []string, nocase bool) ([]*mo
 	return qb.queryPerformers(query, args)
 }
 
+func (qb *performerQueryBuilder) CountByTagID(tagID int) (int, error) {
+	args := []interface{}{tagID}
+	return qb.runCountQuery(qb.buildCountQuery(countPerformersForTagQuery), args)
+}
+
 func (qb *performerQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
@@ -249,6 +261,18 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
+
+	if tagsFilter := performerFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
+		for _, tagID := range tagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += ` left join performers_tags as tags_join on tags_join.performer_id = performers.id
+			LEFT JOIN tags on tags_join.tag_id = tags.id`
+		whereClause, havingClause := getMultiCriterionClause("performers", "tags", "performers_tags", "performer_id", "tag_id", tagsFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
@@ -359,6 +383,26 @@ func (qb *performerQueryBuilder) queryPerformers(query string, args []interface{
 	}
 
 	return []*models.Performer(ret), nil
+}
+
+func (qb *performerQueryBuilder) tagsRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: performersTagsTable,
+			idColumn:  performerIDColumn,
+		},
+		fkColumn: tagIDColumn,
+	}
+}
+
+func (qb *performerQueryBuilder) GetTagIDs(id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(id)
+}
+
+func (qb *performerQueryBuilder) UpdateTags(id int, tagIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository().replace(id, tagIDs)
 }
 
 func (qb *performerQueryBuilder) imageRepository() *imageRepository {

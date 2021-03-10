@@ -68,7 +68,7 @@ const parseDate = (input: string): string => {
   if (mmddyy) {
     output = output.replace(
       mmddyy[0],
-      ` 20${mmddyy[1]}-${mmddyy[2]}-${mmddyy[3]} `
+      ` ${mmddyy[1]}-${mmddyy[2]}-${mmddyy[3]} `
     );
   }
   const ddMMyy = output.match(ddMMyyRegex);
@@ -133,7 +133,7 @@ function prepareQueryString(
     s = paths[paths.length - 1];
   }
   blacklist.forEach((b) => {
-    s = s.replace(new RegExp(b, "i"), "");
+    s = s.replace(new RegExp(b, "gi"), " ");
   });
   s = parseDate(s);
   return s.replace(/\./g, " ");

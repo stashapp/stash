@@ -52,7 +52,8 @@ func (s *xpathScraper) scrapeURL(url string) (*html.Node, *mappedScraper, error)
 }
 
 func (s *xpathScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
-	doc, scraper, err := s.scrapeURL(url)
+	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
+	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,8 @@ func (s *xpathScraper) scrapePerformerByURL(url string) (*models.ScrapedPerforme
 }
 
 func (s *xpathScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
-	doc, scraper, err := s.scrapeURL(url)
+	u := replaceURL(url, s.scraper) // allow a URL Replace for scene by URL queries
+	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +74,8 @@ func (s *xpathScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error
 }
 
 func (s *xpathScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
-	doc, scraper, err := s.scrapeURL(url)
+	u := replaceURL(url, s.scraper) // allow a URL Replace for gallery by URL queries
+	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +85,8 @@ func (s *xpathScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, e
 }
 
 func (s *xpathScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
-	doc, scraper, err := s.scrapeURL(url)
+	u := replaceURL(url, s.scraper) // allow a URL Replace for movie by URL queries
+	doc, scraper, err := s.scrapeURL(u)
 	if err != nil {
 		return nil, err
 	}

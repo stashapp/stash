@@ -360,6 +360,8 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		query.addHaving(havingClause)
 	}
 
+	handleImagePerformerTagsCriterion(&query, imageFilter.PerformerTags)
+
 	query.sortAndPagination = qb.getImageSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
@@ -377,6 +379,31 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 	}
 
 	return images, countResult, nil
+}
+
+func handleImagePerformerTagsCriterion(query *queryBuilder, performerTagsFilter *models.MultiCriterionInput) {
+	if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
+		for _, tagID := range performerTagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += " LEFT JOIN performers_tags AS performer_tags_join on performers_join.performer_id = performer_tags_join.performer_id"
+
+		if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
+			// includes any of the provided ids
+			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
+		} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
+			// includes all of the provided ids
+			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
+			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
+		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
+			query.addWhere(fmt.Sprintf(`not exists 
+				(select performers_images.performer_id from performers_images 
+					left join performers_tags on performers_tags.performer_id = performers_images.performer_id where
+					performers_images.image_id = images.id AND
+					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
+		}
+	}
 }
 
 func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) string {

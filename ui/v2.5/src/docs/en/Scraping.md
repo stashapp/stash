@@ -85,7 +85,8 @@ script:
   - query
 ```
 
-This configuration would execute `python iafdScrape.py query`.
+Stash will find the correct python executable for your system, either `python` or `python3`. So for example. this configuration could execute `python iafdScrape.py query` or `python3 iafdScrape.py query`.
+`python3` will be looked for first and if it's not found, we'll check for `python`. In the case neither are found, you will get an error.
 
 Stash sends data to the script process's `stdin` stream and expects the output to be streamed to the `stdout` stream. Any errors and progress messages should be output to `stderr`.
 
@@ -223,6 +224,7 @@ For `sceneByFragment`, the `queryURL` field must also be present. This field is 
 * `{oshash}` - the oshash of the scene
 * `{filename}` - the base filename of the scene
 * `{title}` - the title of the scene
+* `{url}` - the url of the scene
 
 These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below.
 
@@ -240,6 +242,24 @@ sceneByFragment:
 ```
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
+
+### scrapeXPath and scrapeJson use with `<scene|performer|gallery|movie>ByURL`
+
+For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
+* `{url}` - the url of the scene/performer/gallery
+
+```yaml
+sceneByURL:
+  - action: scrapeJson
+    url:
+      - metartnetwork.com
+    scraper: sceneScraper
+    queryURL: "{url}"
+    queryURLReplace:
+      url:
+        - regex: '^(?:.+\.)?([^.]+)\.com/.+movie/(\d+)/(\w+)/?$'
+          with: https://www.$1.com/api/movie?name=$3&date=$2
+```
 
 ### Stash
 
@@ -689,6 +709,7 @@ CareerLength
 Tattoos
 Piercings
 Aliases
+Tags (see Tag fields)
 Image
 ```
 

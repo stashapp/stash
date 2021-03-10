@@ -298,6 +298,15 @@ export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
     update: deleteCache(performerMutationImpactedQueries),
   });
+
+export const useBulkPerformerUpdate = (input: GQL.BulkPerformerUpdateInput) =>
+  GQL.useBulkPerformerUpdateMutation({
+    variables: {
+      input,
+    },
+    update: deleteCache(performerMutationImpactedQueries),
+  });
+
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
     refetchQueries: getQueryNames([

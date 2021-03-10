@@ -273,6 +273,18 @@ func (r *repository) newQuery() queryBuilder {
 	}
 }
 
+func (r *repository) join(j joiner, as string, parentIDCol string) {
+	t := r.tableName
+	if as != "" {
+		t = as
+	}
+	j.addJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
+}
+
+type joiner interface {
+	addJoin(table, as, onClause string)
+}
+
 type joinRepository struct {
 	repository
 	fkColumn string

@@ -220,9 +220,11 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 				return nil, err
 			}
 
-			// post-process - set the image if applicable
-			if err := setPerformerImage(ret, c.globalConfig); err != nil {
-				logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+			if ret != nil {
+				err = c.postScrapePerformer(ret)
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			return ret, nil
@@ -230,6 +232,49 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 	}
 
 	return nil, nil
+}
+
+func (c Cache) postScrapePerformer(ret *models.ScrapedPerformer) error {
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		tqb := r.Tag()
+
+		for _, t := range ret.Tags {
+			err := MatchScrapedSceneTag(tqb, t)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	// post-process - set the image if applicable
+	if err := setPerformerImage(ret, c.globalConfig); err != nil {
+		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+	}
+
+	return nil
+}
+
+func (c Cache) postScrapeScenePerformer(ret *models.ScrapedScenePerformer) error {
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		tqb := r.Tag()
+
+		for _, t := range ret.Tags {
+			err := MatchScrapedSceneTag(tqb, t)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
@@ -240,8 +285,11 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			err := MatchScrapedScenePerformer(pqb, p)
-			if err != nil {
+			if err := c.postScrapeScenePerformer(p); err != nil {
+				return err
+			}
+
+			if err := MatchScrapedScenePerformer(pqb, p); err != nil {
 				return err
 			}
 		}

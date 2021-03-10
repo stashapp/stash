@@ -22,6 +22,7 @@ import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
+import { TagPerformersPanel } from "./TagPerformersPanel";
 
 interface ITabParams {
   id?: string;
@@ -51,7 +52,10 @@ export const Tag: React.FC = () => {
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
-  const activeTabKey = tab === "markers" || tab === "images" ? tab : "scenes";
+  const activeTabKey =
+    tab === "markers" || tab === "images" || tab === "performers"
+      ? tab
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -259,6 +263,9 @@ export const Tag: React.FC = () => {
             </Tab>
             <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="performers" title="Performers">
+              <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>
         </div>

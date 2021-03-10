@@ -47,6 +47,19 @@ export const TagCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderPerformersPopoverButton() {
+    if (!tag.performer_count) return;
+
+    return (
+      <Link to={NavUtils.makeTagPerformersUrl(tag)}>
+        <Button className="minimal">
+          <Icon icon="user" />
+          <span>{tag.performer_count}</span>
+        </Button>
+      </Link>
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (tag) {
       return (
@@ -55,6 +68,7 @@ export const TagCard: React.FC<IProps> = ({
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
             {maybeRenderSceneMarkersPopoverButton()}
+            {maybeRenderPerformersPopoverButton()}
           </ButtonGroup>
         </>
       );
