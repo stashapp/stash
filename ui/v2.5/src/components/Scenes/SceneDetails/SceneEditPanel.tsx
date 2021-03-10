@@ -723,7 +723,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   alt="Scene cover"
                 />
               )}
-              <ImageInput isEditing onImageChange={onCoverImageChange} />
+              <ImageInput isEditing onImageChange={onCoverImageChange} onImageURL={onImageLoad} />
             </Form.Group>
           </div>
         </div>

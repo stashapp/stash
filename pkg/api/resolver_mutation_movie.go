@@ -26,7 +26,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 
 	// Process the base 64 encoded image string
 	if input.FrontImage != nil {
-		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
+		frontimageData, err = utils.ProcessImageInput(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
@@ -34,7 +34,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 
 	// Process the base 64 encoded image string
 	if input.BackImage != nil {
-		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
+		backimageData, err = utils.ProcessImageInput(*input.BackImage)
 		if err != nil {
 			return nil, err
 		}
@@ -126,7 +126,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	var frontimageData []byte
 	frontImageIncluded := translator.hasField("front_image")
 	if input.FrontImage != nil {
-		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
+		frontimageData, err = utils.ProcessImageInput(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +134,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	backImageIncluded := translator.hasField("back_image")
 	var backimageData []byte
 	if input.BackImage != nil {
-		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
+		backimageData, err = utils.ProcessImageInput(*input.BackImage)
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +189,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 				// HACK - if front image is null and back image is not null, then set the front image
 				// to the default image since we can't have a null front image and a non-null back image
 				if frontimageData == nil && backimageData != nil {
-					_, frontimageData, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+					frontimageData, _ = utils.ProcessImageInput(models.DefaultMovieImage)
 				}
 
 				if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {

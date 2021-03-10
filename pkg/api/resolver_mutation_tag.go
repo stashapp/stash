@@ -24,7 +24,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	var err error
 
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 
 		if err != nil {
 			return nil, err
@@ -82,7 +82,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 
 		if err != nil {
 			return nil, err
