@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  DropdownButton,
+  Form,
+  Col,
+  Row,
+} from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
+  queryScrapeGallery,
   queryScrapeGalleryURL,
   useGalleryCreate,
   useGalleryUpdate,
   useListGalleryScrapers,
+  mutateReloadScrapers,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -64,6 +73,7 @@ export const GalleryEditPanel: React.FC<
   );
 
   const Scrapers = useListGalleryScrapers();
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
   const [
     scrapedGallery,
@@ -118,6 +128,16 @@ export const GalleryEditPanel: React.FC<
     }
   });
 
+  useEffect(() => {
+    const newQueryableScrapers = (
+      Scrapers?.data?.listGalleryScrapers ?? []
+    ).filter((s) =>
+      s.gallery?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    );
+
+    setQueryableScrapers(newQueryableScrapers);
+  }, [Scrapers]);
+
   function getGalleryInput() {
     return {
       id: isNew ? undefined : gallery?.id ?? "",
@@ -162,6 +182,39 @@ export const GalleryEditPanel: React.FC<
     setIsLoading(false);
   }
 
+  async function onScrapeClicked(scraper: GQL.Scraper) {
+    setIsLoading(true);
+    try {
+      const galleryInput = getGalleryInput() as GQL.GalleryUpdateInput;
+      const result = await queryScrapeGallery(scraper.id, galleryInput);
+      if (!result.data || !result.data.scrapeGallery) {
+        Toast.success({
+          content: "No galleries found",
+        });
+        return;
+      }
+      setScrapedGallery(result.data.scrapeGallery);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+
+      // reload the performer scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   function onScrapeDialogClosed(data?: GQL.ScrapedGalleryDataFragment) {
     if (data) {
       updateGalleryFromScrapedGallery(data);
@@ -184,6 +237,32 @@ export const GalleryEditPanel: React.FC<
           onScrapeDialogClosed(data);
         }}
       />
+    );
+  }
+
+  function renderScraperMenu() {
+    if (isNew) {
+      return;
+    }
+
+    return (
+      <DropdownButton
+        className="d-inline-block"
+        id="gallery-scrape"
+        title="Scrape with..."
+      >
+        {queryableScrapers.map((s) => (
+          <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
+            {s.name}
+          </Dropdown.Item>
+        ))}
+        <Dropdown.Item onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon="sync-alt" />
+          </span>
+          <span>Reload scrapers</span>
+        </Dropdown.Item>
+      </DropdownButton>
     );
   }
 
@@ -290,6 +369,9 @@ export const GalleryEditPanel: React.FC<
             Delete
           </Button>
         </div>
+        <Col xs={6} className="text-right">
+          {renderScraperMenu()}
+        </Col>
       </div>
       <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
