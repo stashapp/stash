@@ -76,19 +76,12 @@ You can make Stash interface fit your desired style with  [Custom CSS snippets](
 [Pulsar](https://github.com/stashapp/stash/wiki/Pulsar-Theme) is another option.
 
 
-# FAQ
+# Suppport
 
-> I'm unable to run the app on OSX or Linux
+Answers to frequently asked questions can be found [on our Wiki](https://github.com/stashapp/stash/wiki/FAQ)
 
-Try running `chmod u+x stash-osx` or `chmod u+x stash-linux` to make the file executable.
+For issues not addressed there, there are a few options.
 
-> I cannot connect to the server from elsewhere within my network
-
-Change the address of the server from 0.0.0.0 to the IP address of the computer on which you are running Stash.
-
-> I have a question not answered here.
-
-There are a few options
 * Read the [Wiki](https://github.com/stashapp/stash/wiki)
 * Check the in-app documentation (also available [here](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en)
 * Join the [Discord server](https://discord.gg/2TsNFKt).
