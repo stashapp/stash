@@ -20,6 +20,10 @@ type GeneratePhashTask struct {
 func (t *GeneratePhashTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
+	if !t.shouldGenerate() {
+		return
+	}
+
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	generator, err := NewPhashGenerator(imagePath)
@@ -55,4 +59,12 @@ func (t *GeneratePhashTask) doesSpriteExist(sceneChecksum string) bool {
 
 	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetSpriteImageFilePath(sceneChecksum))
 	return imageExists
+}
+
+func (t *GeneratePhashTask) shouldGenerate() bool {
+	if !t.Scene.Phash.Valid {
+		sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
+		return t.doesSpriteExist(sceneHash)
+	}
+	return false
 }

@@ -1079,7 +1079,14 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 			}
 
 			if input.Phashes {
-				totals.phashes++
+				task := GeneratePhashTask{
+					Scene:               *scene,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
+
+				if task.shouldGenerate() {
+					totals.phashes++
+				}
 			}
 		}
 		//check for timeout
