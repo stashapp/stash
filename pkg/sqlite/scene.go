@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/corona10/goimagehash"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -851,9 +851,14 @@ func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, er
 		}
 
 		for i, scene := range hashes {
+			sceneHash := goimagehash.NewImageHash(uint64(scene.Hash), goimagehash.PHash)
 			for j, neighbor := range hashes {
-				if i != j && utils.HammingDistance(uint64(scene.Hash), uint64(neighbor.Hash)) <= distance {
-					scene.Neighbors = append(scene.Neighbors, j)
+				if i != j {
+					neighborHash := goimagehash.NewImageHash(uint64(neighbor.Hash), goimagehash.PHash)
+					neighborDistance, _ := sceneHash.Distance(neighborHash)
+					if neighborDistance <= distance {
+						scene.Neighbors = append(scene.Neighbors, j)
+					}
 				}
 			}
 		}
