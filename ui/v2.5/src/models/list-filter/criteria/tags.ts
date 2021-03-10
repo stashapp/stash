@@ -14,12 +14,15 @@ export class TagsCriterion extends Criterion {
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
-  constructor(type: "tags" | "sceneTags") {
+  constructor(type: "tags" | "sceneTags" | "performerTags") {
     super();
     this.type = type;
     this.parameterName = type;
     if (type === "sceneTags") {
       this.parameterName = "scene_tags";
+    }
+    if (type === "performerTags") {
+      this.parameterName = "performer_tags";
     }
   }
 
@@ -38,4 +41,9 @@ export class TagsCriterionOption implements ICriterionOption {
 export class SceneTagsCriterionOption implements ICriterionOption {
   public label: string = Criterion.getLabel("sceneTags");
   public value: CriterionType = "sceneTags";
+}
+
+export class PerformerTagsCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("performerTags");
+  public value: CriterionType = "performerTags";
 }

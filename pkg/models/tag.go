@@ -4,6 +4,7 @@ type TagReader interface {
 	Find(id int) (*Tag, error)
 	FindMany(ids []int) ([]*Tag, error)
 	FindBySceneID(sceneID int) ([]*Tag, error)
+	FindByPerformerID(performerID int) ([]*Tag, error)
 	FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error)
 	FindByImageID(imageID int) ([]*Tag, error)
 	FindByGalleryID(galleryID int) ([]*Tag, error)

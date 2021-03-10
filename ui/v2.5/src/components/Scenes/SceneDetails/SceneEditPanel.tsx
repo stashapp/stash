@@ -666,8 +666,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
               />
             </Col>
           </Form.Group>
-        </div>
-        <div className="col-12 col-lg-6 col-xl-12">
           <Form.Group controlId="details">
             <Form.Label>StashIDs</Form.Label>
             <ul className="pl-0">

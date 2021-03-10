@@ -20,110 +20,240 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-const totalScenes = 12
-const totalImages = 6 // TODO - add one for zip file
-const performersNameCase = 9
-const performersNameNoCase = 2
-const moviesNameCase = 2
-const moviesNameNoCase = 1
-const totalGalleries = 8
-const tagsNameNoCase = 2
-const tagsNameCase = 12
-const studiosNameCase = 6
-const studiosNameNoCase = 1
+const (
+	sceneIdxWithMovie = iota
+	sceneIdxWithGallery
+	sceneIdxWithPerformer
+	sceneIdxWithTwoPerformers
+	sceneIdxWithTag
+	sceneIdxWithTwoTags
+	sceneIdxWithStudio
+	sceneIdxWithMarker
+	sceneIdxWithPerformerTag
+	sceneIdxWithPerformerTwoTags
+	// new indexes above
+	lastSceneIdx
 
-var sceneIDs []int
-var imageIDs []int
-var performerIDs []int
-var movieIDs []int
-var galleryIDs []int
-var tagIDs []int
-var studioIDs []int
-var markerIDs []int
+	totalScenes = lastSceneIdx + 3
+)
 
-var tagNames []string
-var studioNames []string
-var movieNames []string
-var performerNames []string
+const (
+	imageIdxWithGallery = iota
+	imageIdxWithPerformer
+	imageIdxWithTwoPerformers
+	imageIdxWithTag
+	imageIdxWithTwoTags
+	imageIdxWithStudio
+	imageIdxInZip // TODO - not implemented
+	imageIdxWithPerformerTag
+	imageIdxWithPerformerTwoTags
+	// new indexes above
+	totalImages
+)
 
-const sceneIdxWithMovie = 0
-const sceneIdxWithGallery = 1
-const sceneIdxWithPerformer = 2
-const sceneIdxWithTwoPerformers = 3
-const sceneIdxWithTag = 4
-const sceneIdxWithTwoTags = 5
-const sceneIdxWithStudio = 6
-const sceneIdxWithMarker = 7
+const (
+	performerIdxWithScene = iota
+	performerIdx1WithScene
+	performerIdx2WithScene
+	performerIdxWithImage
+	performerIdx1WithImage
+	performerIdx2WithImage
+	performerIdxWithTag
+	performerIdxWithTwoTags
+	performerIdxWithGallery
+	performerIdx1WithGallery
+	performerIdx2WithGallery
+	// new indexes above
+	// performers with dup names start from the end
+	performerIdx1WithDupName
+	performerIdxWithDupName
 
-const imageIdxWithGallery = 0
-const imageIdxWithPerformer = 1
-const imageIdxWithTwoPerformers = 2
-const imageIdxWithTag = 3
-const imageIdxWithTwoTags = 4
-const imageIdxWithStudio = 5
-const imageIdxInZip = 6
+	performersNameCase   = performerIdx1WithDupName
+	performersNameNoCase = 2
+)
 
-const performerIdxWithScene = 0
-const performerIdx1WithScene = 1
-const performerIdx2WithScene = 2
-const performerIdxWithImage = 3
-const performerIdx1WithImage = 4
-const performerIdx2WithImage = 5
-const performerIdxWithGallery = 6
-const performerIdx1WithGallery = 7
-const performerIdx2WithGallery = 8
+const (
+	movieIdxWithScene = iota
+	movieIdxWithStudio
+	// movies with dup names start from the end
+	movieIdxWithDupName
 
-// performers with dup names start from the end
-const performerIdx1WithDupName = 9
-const performerIdxWithDupName = 10
+	moviesNameCase   = movieIdxWithDupName
+	moviesNameNoCase = 1
+)
 
-const movieIdxWithScene = 0
-const movieIdxWithStudio = 1
+const (
+	galleryIdxWithScene = iota
+	galleryIdxWithImage
+	galleryIdxWithPerformer
+	galleryIdxWithTwoPerformers
+	galleryIdxWithTag
+	galleryIdxWithTwoTags
+	galleryIdxWithStudio
+	galleryIdxWithPerformerTag
+	galleryIdxWithPerformerTwoTags
+	// new indexes above
+	lastGalleryIdx
 
-// movies with dup names start from the end
-const movieIdxWithDupName = 2
+	totalGalleries = lastGalleryIdx + 1
+)
 
-const galleryIdxWithScene = 0
-const galleryIdxWithImage = 1
-const galleryIdxWithPerformer = 2
-const galleryIdxWithTwoPerformers = 3
-const galleryIdxWithTag = 4
-const galleryIdxWithTwoTags = 5
-const galleryIdxWithStudio = 6
+const (
+	tagIdxWithScene = iota
+	tagIdx1WithScene
+	tagIdx2WithScene
+	tagIdxWithPrimaryMarker
+	tagIdxWithMarker
+	tagIdxWithCoverImage
+	tagIdxWithImage
+	tagIdx1WithImage
+	tagIdx2WithImage
+	tagIdxWithPerformer
+	tagIdx1WithPerformer
+	tagIdx2WithPerformer
+	tagIdxWithGallery
+	tagIdx1WithGallery
+	tagIdx2WithGallery
+	// new indexes above
+	// tags with dup names start from the end
+	tagIdx1WithDupName
+	tagIdxWithDupName
 
-const tagIdxWithScene = 0
-const tagIdx1WithScene = 1
-const tagIdx2WithScene = 2
-const tagIdxWithPrimaryMarker = 3
-const tagIdxWithMarker = 4
-const tagIdxWithCoverImage = 5
-const tagIdxWithImage = 6
-const tagIdx1WithImage = 7
-const tagIdx2WithImage = 8
-const tagIdxWithGallery = 9
-const tagIdx1WithGallery = 10
-const tagIdx2WithGallery = 11
+	tagsNameNoCase = 2
+	tagsNameCase   = tagIdx1WithDupName
+)
 
-// tags with dup names start from the end
-const tagIdx1WithDupName = 12
-const tagIdxWithDupName = 13
+const (
+	studioIdxWithScene = iota
+	studioIdxWithMovie
+	studioIdxWithChildStudio
+	studioIdxWithParentStudio
+	studioIdxWithImage
+	studioIdxWithGallery
+	// new indexes above
+	// studios with dup names start from the end
+	studioIdxWithDupName
 
-const studioIdxWithScene = 0
-const studioIdxWithMovie = 1
-const studioIdxWithChildStudio = 2
-const studioIdxWithParentStudio = 3
-const studioIdxWithImage = 4
-const studioIdxWithGallery = 5
+	studiosNameCase   = studioIdxWithDupName
+	studiosNameNoCase = 1
+)
 
-// studios with dup names start from the end
-const studioIdxWithDupName = 6
+const (
+	markerIdxWithScene = iota
+)
 
-const markerIdxWithScene = 0
+const (
+	pathField     = "Path"
+	checksumField = "Checksum"
+	titleField    = "Title"
+	zipPath       = "zipPath.zip"
+)
 
-const pathField = "Path"
-const checksumField = "Checksum"
-const titleField = "Title"
-const zipPath = "zipPath.zip"
+var (
+	sceneIDs     []int
+	imageIDs     []int
+	performerIDs []int
+	movieIDs     []int
+	galleryIDs   []int
+	tagIDs       []int
+	studioIDs    []int
+	markerIDs    []int
+
+	tagNames       []string
+	studioNames    []string
+	movieNames     []string
+	performerNames []string
+)
+
+type idAssociation struct {
+	first  int
+	second int
+}
+
+var (
+	sceneTagLinks = [][2]int{
+		{sceneIdxWithTag, tagIdxWithScene},
+		{sceneIdxWithTwoTags, tagIdx1WithScene},
+		{sceneIdxWithTwoTags, tagIdx2WithScene},
+	}
+
+	scenePerformerLinks = [][2]int{
+		{sceneIdxWithPerformer, performerIdxWithScene},
+		{sceneIdxWithTwoPerformers, performerIdx1WithScene},
+		{sceneIdxWithTwoPerformers, performerIdx2WithScene},
+		{sceneIdxWithPerformerTag, performerIdxWithTag},
+		{sceneIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+	}
+
+	sceneGalleryLinks = [][2]int{
+		{sceneIdxWithGallery, galleryIdxWithScene},
+	}
+
+	sceneMovieLinks = [][2]int{
+		{sceneIdxWithMovie, movieIdxWithScene},
+	}
+
+	sceneStudioLinks = [][2]int{
+		{sceneIdxWithStudio, studioIdxWithScene},
+	}
+)
+
+var (
+	imageGalleryLinks = [][2]int{
+		{imageIdxWithGallery, galleryIdxWithImage},
+	}
+	imageStudioLinks = [][2]int{
+		{imageIdxWithStudio, studioIdxWithImage},
+	}
+	imageTagLinks = [][2]int{
+		{imageIdxWithTag, tagIdxWithImage},
+		{imageIdxWithTwoTags, tagIdx1WithImage},
+		{imageIdxWithTwoTags, tagIdx2WithImage},
+	}
+	imagePerformerLinks = [][2]int{
+		{imageIdxWithPerformer, performerIdxWithImage},
+		{imageIdxWithTwoPerformers, performerIdx1WithImage},
+		{imageIdxWithTwoPerformers, performerIdx2WithImage},
+		{imageIdxWithPerformerTag, performerIdxWithTag},
+		{imageIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+	}
+)
+
+var (
+	galleryPerformerLinks = [][2]int{
+		{galleryIdxWithPerformer, performerIdxWithGallery},
+		{galleryIdxWithTwoPerformers, performerIdx1WithGallery},
+		{galleryIdxWithTwoPerformers, performerIdx2WithGallery},
+		{galleryIdxWithPerformerTag, performerIdxWithTag},
+		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+	}
+
+	galleryTagLinks = [][2]int{
+		{galleryIdxWithTag, tagIdxWithGallery},
+		{galleryIdxWithTwoTags, tagIdx1WithGallery},
+		{galleryIdxWithTwoTags, tagIdx2WithGallery},
+	}
+)
+
+var (
+	movieStudioLinks = [][2]int{
+		{movieIdxWithStudio, studioIdxWithMovie},
+	}
+)
+
+var (
+	studioParentLinks = [][2]int{
+		{studioIdxWithChildStudio, studioIdxWithParentStudio},
+	}
+)
+
+var (
+	performerTagLinks = [][2]int{
+		{performerIdxWithTag, tagIdxWithPerformer},
+		{performerIdxWithTwoTags, tagIdx1WithPerformer},
+		{performerIdxWithTwoTags, tagIdx2WithPerformer},
+	}
+)
 
 func TestMain(m *testing.M) {
 	ret := runTests(m)
@@ -205,12 +335,16 @@ func populateDB() error {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
-		if err := linkSceneGallery(r.Scene(), sceneIdxWithGallery, galleryIdxWithScene); err != nil {
-			return fmt.Errorf("error linking scene to gallery: %s", err.Error())
+		if err := linkPerformerTags(r.Performer()); err != nil {
+			return fmt.Errorf("error linking performer tags: %s", err.Error())
 		}
 
-		if err := linkSceneMovie(r.Scene(), sceneIdxWithMovie, movieIdxWithScene); err != nil {
-			return fmt.Errorf("error scene to movie: %s", err.Error())
+		if err := linkSceneGalleries(r.Scene()); err != nil {
+			return fmt.Errorf("error linking scenes to galleries: %s", err.Error())
+		}
+
+		if err := linkSceneMovies(r.Scene()); err != nil {
+			return fmt.Errorf("error linking scenes to movies: %s", err.Error())
 		}
 
 		if err := linkScenePerformers(r.Scene()); err != nil {
@@ -221,11 +355,11 @@ func populateDB() error {
 			return fmt.Errorf("error linking scene tags: %s", err.Error())
 		}
 
-		if err := linkSceneStudio(r.Scene(), sceneIdxWithStudio, studioIdxWithScene); err != nil {
-			return fmt.Errorf("error linking scene studio: %s", err.Error())
+		if err := linkSceneStudios(r.Scene()); err != nil {
+			return fmt.Errorf("error linking scene studios: %s", err.Error())
 		}
 
-		if err := linkImageGallery(r.Gallery(), imageIdxWithGallery, galleryIdxWithImage); err != nil {
+		if err := linkImageGalleries(r.Gallery()); err != nil {
 			return fmt.Errorf("error linking gallery images: %s", err.Error())
 		}
 
@@ -237,16 +371,16 @@ func populateDB() error {
 			return fmt.Errorf("error linking image tags: %s", err.Error())
 		}
 
-		if err := linkImageStudio(r.Image(), imageIdxWithStudio, studioIdxWithImage); err != nil {
+		if err := linkImageStudios(r.Image()); err != nil {
 			return fmt.Errorf("error linking image studio: %s", err.Error())
 		}
 
-		if err := linkMovieStudio(r.Movie(), movieIdxWithStudio, studioIdxWithMovie); err != nil {
-			return fmt.Errorf("error linking movie studio: %s", err.Error())
+		if err := linkMovieStudios(r.Movie()); err != nil {
+			return fmt.Errorf("error linking movie studios: %s", err.Error())
 		}
 
-		if err := linkStudioParent(r.Studio(), studioIdxWithChildStudio, studioIdxWithParentStudio); err != nil {
-			return fmt.Errorf("error linking studio parent: %s", err.Error())
+		if err := linkStudiosParent(r.Studio()); err != nil {
+			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
 		if err := linkGalleryPerformers(r.Gallery()); err != nil {
@@ -512,6 +646,30 @@ func getTagMarkerCount(id int) int {
 	return 0
 }
 
+func getTagImageCount(id int) int {
+	if id == tagIDs[tagIdx1WithImage] || id == tagIDs[tagIdx2WithImage] || id == tagIDs[tagIdxWithImage] {
+		return 1
+	}
+
+	return 0
+}
+
+func getTagGalleryCount(id int) int {
+	if id == tagIDs[tagIdx1WithGallery] || id == tagIDs[tagIdx2WithGallery] || id == tagIDs[tagIdxWithGallery] {
+		return 1
+	}
+
+	return 0
+}
+
+func getTagPerformerCount(id int) int {
+	if id == tagIDs[tagIdx1WithPerformer] || id == tagIDs[tagIdx2WithPerformer] || id == tagIDs[tagIdxWithPerformer] {
+		return 1
+	}
+
+	return 0
+}
+
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -624,187 +782,180 @@ func createMarker(mqb models.SceneMarkerReaderWriter, sceneIdx, primaryTagIdx in
 	return nil
 }
 
-func linkSceneMovie(qb models.SceneReaderWriter, sceneIndex, movieIndex int) error {
-	sceneID := sceneIDs[sceneIndex]
-	movies, err := qb.GetMovies(sceneID)
-	if err != nil {
-		return err
+func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
+	for _, l := range links {
+		if err := fn(l[0], l[1]); err != nil {
+			return err
+		}
 	}
 
-	movies = append(movies, models.MoviesScenes{
-		MovieID: movieIDs[movieIndex],
-		SceneID: sceneID,
+	return nil
+}
+
+func linkPerformerTags(qb models.PerformerReaderWriter) error {
+	return doLinks(performerTagLinks, func(performerIndex, tagIndex int) error {
+		performerID := performerIDs[performerIndex]
+		tagID := tagIDs[tagIndex]
+		tagIDs, err := qb.GetTagIDs(performerID)
+		if err != nil {
+			return err
+		}
+
+		tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+
+		return qb.UpdateTags(performerID, tagIDs)
 	})
-	return qb.UpdateMovies(sceneID, movies)
+}
+
+func linkSceneMovies(qb models.SceneReaderWriter) error {
+	return doLinks(sceneMovieLinks, func(sceneIndex, movieIndex int) error {
+		sceneID := sceneIDs[sceneIndex]
+		movies, err := qb.GetMovies(sceneID)
+		if err != nil {
+			return err
+		}
+
+		movies = append(movies, models.MoviesScenes{
+			MovieID: movieIDs[movieIndex],
+			SceneID: sceneID,
+		})
+		return qb.UpdateMovies(sceneID, movies)
+	})
 }
 
 func linkScenePerformers(qb models.SceneReaderWriter) error {
-	if err := linkScenePerformer(qb, sceneIdxWithPerformer, performerIdxWithScene); err != nil {
+	return doLinks(scenePerformerLinks, func(sceneIndex, performerIndex int) error {
+		_, err := scene.AddPerformer(qb, sceneIDs[sceneIndex], performerIDs[performerIndex])
 		return err
-	}
-	if err := linkScenePerformer(qb, sceneIdxWithTwoPerformers, performerIdx1WithScene); err != nil {
-		return err
-	}
-	if err := linkScenePerformer(qb, sceneIdxWithTwoPerformers, performerIdx2WithScene); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
-func linkScenePerformer(qb models.SceneReaderWriter, sceneIndex, performerIndex int) error {
-	_, err := scene.AddPerformer(qb, sceneIDs[sceneIndex], performerIDs[performerIndex])
-	return err
-}
-
-func linkSceneGallery(qb models.SceneReaderWriter, sceneIndex, galleryIndex int) error {
-	_, err := scene.AddGallery(qb, sceneIDs[sceneIndex], galleryIDs[galleryIndex])
-	return err
+func linkSceneGalleries(qb models.SceneReaderWriter) error {
+	return doLinks(sceneGalleryLinks, func(sceneIndex, galleryIndex int) error {
+		_, err := scene.AddGallery(qb, sceneIDs[sceneIndex], galleryIDs[galleryIndex])
+		return err
+	})
 }
 
 func linkSceneTags(qb models.SceneReaderWriter) error {
-	if err := linkSceneTag(qb, sceneIdxWithTag, tagIdxWithScene); err != nil {
+	return doLinks(sceneTagLinks, func(sceneIndex, tagIndex int) error {
+		_, err := scene.AddTag(qb, sceneIDs[sceneIndex], tagIDs[tagIndex])
 		return err
-	}
-	if err := linkSceneTag(qb, sceneIdxWithTwoTags, tagIdx1WithScene); err != nil {
-		return err
-	}
-	if err := linkSceneTag(qb, sceneIdxWithTwoTags, tagIdx2WithScene); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
-func linkSceneTag(qb models.SceneReaderWriter, sceneIndex, tagIndex int) error {
-	_, err := scene.AddTag(qb, sceneIDs[sceneIndex], tagIDs[tagIndex])
-	return err
+func linkSceneStudios(sqb models.SceneWriter) error {
+	return doLinks(sceneStudioLinks, func(sceneIndex, studioIndex int) error {
+		scene := models.ScenePartial{
+			ID:       sceneIDs[sceneIndex],
+			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+		}
+		_, err := sqb.Update(scene)
+
+		return err
+	})
 }
 
-func linkSceneStudio(sqb models.SceneWriter, sceneIndex, studioIndex int) error {
-	scene := models.ScenePartial{
-		ID:       sceneIDs[sceneIndex],
-		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-	}
-	_, err := sqb.Update(scene)
-
-	return err
-}
-
-func linkImageGallery(gqb models.GalleryReaderWriter, imageIndex, galleryIndex int) error {
-	return gallery.AddImage(gqb, galleryIDs[galleryIndex], imageIDs[imageIndex])
+func linkImageGalleries(gqb models.GalleryReaderWriter) error {
+	return doLinks(imageGalleryLinks, func(imageIndex, galleryIndex int) error {
+		return gallery.AddImage(gqb, galleryIDs[galleryIndex], imageIDs[imageIndex])
+	})
 }
 
 func linkImageTags(iqb models.ImageReaderWriter) error {
-	if err := linkImageTag(iqb, imageIdxWithTag, tagIdxWithImage); err != nil {
-		return err
-	}
-	if err := linkImageTag(iqb, imageIdxWithTwoTags, tagIdx1WithImage); err != nil {
-		return err
-	}
-	if err := linkImageTag(iqb, imageIdxWithTwoTags, tagIdx2WithImage); err != nil {
-		return err
-	}
+	return doLinks(imageTagLinks, func(imageIndex, tagIndex int) error {
+		imageID := imageIDs[imageIndex]
+		tags, err := iqb.GetTagIDs(imageID)
+		if err != nil {
+			return err
+		}
 
-	return nil
+		tags = append(tags, tagIDs[tagIndex])
+
+		return iqb.UpdateTags(imageID, tags)
+	})
 }
 
-func linkImageTag(iqb models.ImageReaderWriter, imageIndex, tagIndex int) error {
-	imageID := imageIDs[imageIndex]
-	tags, err := iqb.GetTagIDs(imageID)
-	if err != nil {
+func linkImageStudios(qb models.ImageWriter) error {
+	return doLinks(imageStudioLinks, func(imageIndex, studioIndex int) error {
+		image := models.ImagePartial{
+			ID:       imageIDs[imageIndex],
+			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+		}
+		_, err := qb.Update(image)
+
 		return err
-	}
-
-	tags = append(tags, tagIDs[tagIndex])
-
-	return iqb.UpdateTags(imageID, tags)
-}
-
-func linkImageStudio(qb models.ImageWriter, imageIndex, studioIndex int) error {
-	image := models.ImagePartial{
-		ID:       imageIDs[imageIndex],
-		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-	}
-	_, err := qb.Update(image)
-
-	return err
+	})
 }
 
 func linkImagePerformers(qb models.ImageReaderWriter) error {
-	if err := linkImagePerformer(qb, imageIdxWithPerformer, performerIdxWithImage); err != nil {
-		return err
-	}
-	if err := linkImagePerformer(qb, imageIdxWithTwoPerformers, performerIdx1WithImage); err != nil {
-		return err
-	}
-	if err := linkImagePerformer(qb, imageIdxWithTwoPerformers, performerIdx2WithImage); err != nil {
-		return err
-	}
+	return doLinks(imagePerformerLinks, func(imageIndex, performerIndex int) error {
+		imageID := imageIDs[imageIndex]
+		performers, err := qb.GetPerformerIDs(imageID)
+		if err != nil {
+			return err
+		}
 
-	return nil
+		performers = append(performers, performerIDs[performerIndex])
+
+		return qb.UpdatePerformers(imageID, performers)
+	})
 }
 
-func linkImagePerformer(iqb models.ImageReaderWriter, imageIndex, performerIndex int) error {
-	imageID := imageIDs[imageIndex]
-	performers, err := iqb.GetPerformerIDs(imageID)
-	if err != nil {
+func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
+	return doLinks(galleryPerformerLinks, func(galleryIndex, performerIndex int) error {
+		galleryID := imageIDs[galleryIndex]
+		performers, err := qb.GetPerformerIDs(galleryID)
+		if err != nil {
+			return err
+		}
+
+		performers = append(performers, performerIDs[performerIndex])
+
+		return qb.UpdatePerformers(galleryID, performers)
+	})
+}
+
+func linkGalleryTags(iqb models.GalleryReaderWriter) error {
+	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
+		galleryID := imageIDs[galleryIndex]
+		tags, err := iqb.GetTagIDs(galleryID)
+		if err != nil {
+			return err
+		}
+
+		tags = append(tags, tagIDs[tagIndex])
+
+		return iqb.UpdateTags(galleryID, tags)
+	})
+}
+
+func linkMovieStudios(mqb models.MovieWriter) error {
+	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
+		movie := models.MoviePartial{
+			ID:       movieIDs[movieIndex],
+			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+		}
+		_, err := mqb.Update(movie)
+
 		return err
-	}
-
-	performers = append(performers, performerIDs[performerIndex])
-
-	return iqb.UpdatePerformers(imageID, performers)
+	})
 }
 
-func linkMovieStudio(mqb models.MovieWriter, movieIndex, studioIndex int) error {
-	movie := models.MoviePartial{
-		ID:       movieIDs[movieIndex],
-		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-	}
-	_, err := mqb.Update(movie)
+func linkStudiosParent(qb models.StudioWriter) error {
+	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
+		studio := models.StudioPartial{
+			ID:       studioIDs[childIndex],
+			ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
+		}
+		_, err := qb.Update(studio)
 
-	return err
-}
-
-func linkStudioParent(qb models.StudioWriter, parentIndex, childIndex int) error {
-	studio := models.StudioPartial{
-		ID:       studioIDs[childIndex],
-		ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
-	}
-	_, err := qb.Update(studio)
-
-	return err
+		return err
+	})
 }
 
 func addTagImage(qb models.TagWriter, tagIndex int) error {
 	return qb.UpdateImage(tagIDs[tagIndex], models.DefaultTagImage)
-}
-
-func linkGalleryTags(iqb models.GalleryReaderWriter) error {
-	if err := linkGalleryTag(iqb, galleryIdxWithTag, tagIdxWithGallery); err != nil {
-		return err
-	}
-	if err := linkGalleryTag(iqb, galleryIdxWithTwoTags, tagIdx1WithGallery); err != nil {
-		return err
-	}
-	if err := linkGalleryTag(iqb, galleryIdxWithTwoTags, tagIdx2WithGallery); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func linkGalleryTag(iqb models.GalleryReaderWriter, galleryIndex, tagIndex int) error {
-	galleryID := galleryIDs[galleryIndex]
-	tags, err := iqb.GetTagIDs(galleryID)
-	if err != nil {
-		return err
-	}
-
-	tags = append(tags, tagIDs[tagIndex])
-
-	return iqb.UpdateTags(galleryID, tags)
 }
 
 func linkGalleryStudio(qb models.GalleryWriter, galleryIndex, studioIndex int) error {
@@ -815,30 +966,4 @@ func linkGalleryStudio(qb models.GalleryWriter, galleryIndex, studioIndex int) e
 	_, err := qb.UpdatePartial(gallery)
 
 	return err
-}
-
-func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
-	if err := linkGalleryPerformer(qb, galleryIdxWithPerformer, performerIdxWithGallery); err != nil {
-		return err
-	}
-	if err := linkGalleryPerformer(qb, galleryIdxWithTwoPerformers, performerIdx1WithGallery); err != nil {
-		return err
-	}
-	if err := linkGalleryPerformer(qb, galleryIdxWithTwoPerformers, performerIdx2WithGallery); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func linkGalleryPerformer(iqb models.GalleryReaderWriter, galleryIndex, performerIndex int) error {
-	galleryID := galleryIDs[galleryIndex]
-	performers, err := iqb.GetPerformerIDs(galleryID)
-	if err != nil {
-		return err
-	}
-
-	performers = append(performers, performerIDs[performerIndex])
-
-	return iqb.UpdatePerformers(galleryID, performers)
 }

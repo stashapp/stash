@@ -406,7 +406,6 @@ div.dropdown-menu {
 
 .image-input {
   margin-bottom: 0;
-  overflow: hidden;
   position: relative;
 
   input[type="file"], /* FF, IE7+, chrome (except button) */
@@ -418,7 +417,6 @@ div.dropdown-menu {
   [type="file"] {
     display: block;
     filter: alpha(opacity=0);
-    font-size: 999px;
     min-height: 100%;
     min-width: 100%;
     opacity: 0;

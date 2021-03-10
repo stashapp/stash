@@ -940,6 +940,61 @@ func TestSceneQueryTags(t *testing.T) {
 	})
 }
 
+func TestSceneQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		sceneFilter := models.SceneFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 2)
+
+		// ensure ids are correct
+		for _, scene := range scenes {
+			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformerTag] || scene.ID == sceneIDs[sceneIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(sceneIdxWithPerformerTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
+}
+
 func TestSceneQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()

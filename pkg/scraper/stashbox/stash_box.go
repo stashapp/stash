@@ -322,6 +322,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		Twitter:      findURL(p.Urls, "TWITTER"),
 		RemoteSiteID: &id,
 		Images:       images,
+		// TODO - tags not currently supported
 		// TODO - Image - should be returned as a set of URLs. Will need a
 		// graphql schema change to accommodate this. Leave off for now.
 	}
