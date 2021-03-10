@@ -44,6 +44,9 @@ export const SettingsTasksPanel: React.FC = () => {
   const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
     false
   );
+  const [scanGeneratePhashes, setScanGeneratePhashes] = useState<boolean>(
+    false
+  );
   const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
   const [
     scanGenerateImagePreviews,
@@ -206,6 +209,7 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGeneratePreviews,
         scanGenerateImagePreviews,
         scanGenerateSprites,
+        scanGeneratePhashes: scanGenerateSprites && scanGeneratePhashes,
       });
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
@@ -414,6 +418,19 @@ export const SettingsTasksPanel: React.FC = () => {
           label="Generate sprites during scan (for the scene scrubber)"
           onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
         />
+        <div className="d-flex flex-row">
+          <div>↳</div>
+          <Form.Check
+            id="scan-generate-phashes"
+            checked={scanGenerateSprites && scanGeneratePhashes}
+            disabled={!scanGenerateSprites}
+            label="Generate phashes during scan (for deduplication)"
+            onChange={() =>
+              setScanGeneratePhashes(!scanGeneratePhashes)
+            }
+            className="ml-2 flex-grow"
+          />
+        </div>
       </Form.Group>
       <Form.Group>
         <Button

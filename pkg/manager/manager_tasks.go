@@ -222,6 +222,7 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 					GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
 					GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
 					GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
+					GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
 				}
 				go task.Start(&wg)
 
