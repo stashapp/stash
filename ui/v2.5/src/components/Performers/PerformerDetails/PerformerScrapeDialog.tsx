@@ -11,8 +11,12 @@ import {
   getGenderStrings,
   genderToString,
   stringToGender,
+  useTagCreate,
 } from "src/core/StashService";
 import { Form } from "react-bootstrap";
+import { TagSelect } from "src/components/Shared";
+import { useToast } from "src/hooks";
+import _ from "lodash";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
@@ -62,8 +66,54 @@ function renderScrapedGenderRow(
   );
 }
 
+function renderScrapedTags(
+  result: ScrapeResult<string[]>,
+  isNew?: boolean,
+  onChange?: (value: string[]) => void
+) {
+  const resultValue = isNew ? result.newValue : result.originalValue;
+  const value = resultValue ?? [];
+
+  return (
+    <TagSelect
+      isMulti
+      className="form-control react-select"
+      isDisabled={!isNew}
+      onSelect={(items) => {
+        if (onChange) {
+          onChange(items.map((i) => i.id));
+        }
+      }}
+      ids={value}
+    />
+  );
+}
+
+function renderScrapedTagsRow(
+  result: ScrapeResult<string[]>,
+  onChange: (value: ScrapeResult<string[]>) => void,
+  newTags: GQL.ScrapedSceneTag[],
+  onCreateNew?: (value: GQL.ScrapedSceneTag) => void
+) {
+  return (
+    <ScrapeDialogRow
+      title="Tags"
+      result={result}
+      renderOriginalField={() => renderScrapedTags(result)}
+      renderNewField={() =>
+        renderScrapedTags(result, true, (value) =>
+          onChange(result.cloneWithValue(value))
+        )
+      }
+      newValues={newTags}
+      onChange={onChange}
+      onCreateNew={onCreateNew}
+    />
+  );
+}
+
 interface IPerformerScrapeDialogProps {
-  performer: Partial<GQL.PerformerDataFragment>;
+  performer: Partial<GQL.PerformerUpdateInput>;
   scraped: GQL.ScrapedPerformer;
 
   onClose: (scrapedPerformer?: GQL.ScrapedPerformer) => void;
@@ -151,8 +201,64 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
+  const [createTag] = useTagCreate({ name: "" });
+  const Toast = useToast();
+
+  interface IHasStoredID {
+    stored_id?: string | null;
+  }
+
+  function mapStoredIdObjects(
+    scrapedObjects?: IHasStoredID[]
+  ): string[] | undefined {
+    if (!scrapedObjects) {
+      return undefined;
+    }
+    const ret = scrapedObjects
+      .map((p) => p.stored_id)
+      .filter((p) => {
+        return p !== undefined && p !== null;
+      }) as string[];
+
+    if (ret.length === 0) {
+      return undefined;
+    }
+
+    // sort by id numerically
+    ret.sort((a, b) => {
+      return parseInt(a, 10) - parseInt(b, 10);
+    });
+
+    return ret;
+  }
+
+  function sortIdList(idList?: string[] | null) {
+    if (!idList) {
+      return;
+    }
+
+    const ret = _.clone(idList);
+    // sort by id numerically
+    ret.sort((a, b) => {
+      return parseInt(a, 10) - parseInt(b, 10);
+    });
+
+    return ret;
+  }
+
+  const [tags, setTags] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      sortIdList(props.performer.tag_ids ?? undefined),
+      mapStoredIdObjects(props.scraped.tags ?? undefined)
+    )
+  );
+
+  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>(
+    props.scraped.tags?.filter((t) => !t.stored_id) ?? []
+  );
+
   const [image, setImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.image_path, props.scraped.image)
+    new ScrapeResult<string>(props.performer.image, props.scraped.image)
   );
 
   const allFields = [
@@ -173,11 +279,47 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     instagram,
     gender,
     image,
+    tags,
   ];
   // don't show the dialog if nothing was scraped
   if (allFields.every((r) => !r.scraped)) {
     props.onClose();
     return <></>;
+  }
+
+  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+    let tagInput: GQL.TagCreateInput = { name: "" };
+    try {
+      tagInput = Object.assign(tagInput, toCreate);
+      const result = await createTag({
+        variables: tagInput,
+      });
+
+      // add the new tag to the new tags value
+      const tagClone = tags.cloneWithValue(tags.newValue);
+      if (!tagClone.newValue) {
+        tagClone.newValue = [];
+      }
+      tagClone.newValue.push(result.data!.tagCreate!.id);
+      setTags(tagClone);
+
+      // remove the tag from the list
+      const newTagsClone = newTags.concat();
+      const pIndex = newTagsClone.indexOf(toCreate);
+      newTagsClone.splice(pIndex, 1);
+
+      setNewTags(newTagsClone);
+
+      Toast.success({
+        content: (
+          <span>
+            Created tag: <b>{toCreate.name}</b>
+          </span>
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function makeNewScrapedItem(): GQL.ScrapedPerformer {
@@ -198,6 +340,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       twitter: twitter.getNewValue(),
       instagram: instagram.getNewValue(),
       gender: gender.getNewValue(),
+      tags: tags.getNewValue()?.map((m) => {
+        return {
+          stored_id: m,
+          name: "",
+        };
+      }),
       image: image.getNewValue(),
     };
   }
@@ -281,6 +429,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={instagram}
           onChange={(value) => setInstagram(value)}
         />
+        {renderScrapedTagsRow(
+          tags,
+          (value) => setTags(value),
+          newTags,
+          createNewTag
+        )}
         <ScrapedImageRow
           title="Performer Image"
           className="performer-image"

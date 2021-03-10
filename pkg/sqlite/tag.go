@@ -113,6 +113,18 @@ func (qb *tagQueryBuilder) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 	return qb.queryTags(query, args)
 }
 
+func (qb *tagQueryBuilder) FindByPerformerID(performerID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN performers_tags as performers_join on performers_join.tag_id = tags.id
+		WHERE performers_join.performer_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getTagSort(nil)
+	args := []interface{}{performerID}
+	return qb.queryTags(query, args)
+}
+
 func (qb *tagQueryBuilder) FindByImageID(imageID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
@@ -211,6 +223,12 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 
 	query.body += ` 
 	left join tags_image on tags_image.tag_id = tags.id
+	left join images_tags on images_tags.tag_id = tags.id
+	left join images on images_tags.image_id = images.id
+	left join galleries_tags on galleries_tags.tag_id = tags.id
+	left join galleries on galleries_tags.gallery_id = galleries.id
+	left join performers_tags on performers_tags.tag_id = tags.id
+	left join performers on performers_tags.performer_id = performers.id
 	left join scenes_tags on scenes_tags.tag_id = tags.id
 	left join scenes on scenes_tags.scene_id = scenes.id`
 
@@ -235,6 +253,30 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 		query.addHaving(clause)
 		if count == 1 {
 			query.addArg(sceneCount.Value)
+		}
+	}
+
+	if imageCount := tagFilter.ImageCount; imageCount != nil {
+		clause, count := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
+		query.addHaving(clause)
+		if count == 1 {
+			query.addArg(imageCount.Value)
+		}
+	}
+
+	if galleryCount := tagFilter.GalleryCount; galleryCount != nil {
+		clause, count := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
+		query.addHaving(clause)
+		if count == 1 {
+			query.addArg(galleryCount.Value)
+		}
+	}
+
+	if performersCount := tagFilter.PerformerCount; performersCount != nil {
+		clause, count := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performersCount)
+		query.addHaving(clause)
+		if count == 1 {
+			query.addArg(performersCount.Value)
 		}
 	}
 

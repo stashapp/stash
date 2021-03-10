@@ -16,6 +16,8 @@ type ScrapedPerformer {
   tattoos: String
   piercings: String
   aliases: String
+  # Should be ScrapedPerformerTag - but would be identical types
+  tags: [ScrapedSceneTag!]
 
   """This should be base64 encoded"""
   image: String
@@ -39,5 +41,6 @@ input ScrapedPerformerInput {
   piercings: String
   aliases: String
 
+  # not including tags for the input
   # not including image for the input
 }

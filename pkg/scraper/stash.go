@@ -100,6 +100,13 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 		return nil, err
 	}
 
+	if q.FindPerformer != nil {
+		// the ids of the tags must be nilled
+		for _, t := range q.FindPerformer.Tags {
+			t.ID = nil
+		}
+	}
+
 	// need to copy back to a scraped performer
 	ret := models.ScrapedPerformer{}
 	err = copier.Copy(&ret, q.FindPerformer)

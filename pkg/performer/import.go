@@ -3,6 +3,7 @@ package performer
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
@@ -10,15 +11,24 @@ import (
 )
 
 type Importer struct {
-	ReaderWriter models.PerformerReaderWriter
-	Input        jsonschema.Performer
+	ReaderWriter        models.PerformerReaderWriter
+	TagWriter           models.TagReaderWriter
+	Input               jsonschema.Performer
+	MissingRefBehaviour models.ImportMissingRefEnum
 
+	ID        int
 	performer models.Performer
 	imageData []byte
+
+	tags []*models.Tag
 }
 
 func (i *Importer) PreImport() error {
 	i.performer = performerJSONToPerformer(i.Input)
+
+	if err := i.populateTags(); err != nil {
+		return err
+	}
 
 	var err error
 	if len(i.Input.Image) > 0 {
@@ -31,7 +41,82 @@ func (i *Importer) PreImport() error {
 	return nil
 }
 
+func (i *Importer) populateTags() error {
+	if len(i.Input.Tags) > 0 {
+
+		tags, err := importTags(i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
+		if err != nil {
+			return err
+		}
+
+		i.tags = tags
+	}
+
+	return nil
+}
+
+func importTags(tagWriter models.TagReaderWriter, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+	tags, err := tagWriter.FindByNames(names, false)
+	if err != nil {
+		return nil, err
+	}
+
+	var pluckedNames []string
+	for _, tag := range tags {
+		pluckedNames = append(pluckedNames, tag.Name)
+	}
+
+	missingTags := utils.StrFilter(names, func(name string) bool {
+		return !utils.StrInclude(pluckedNames, name)
+	})
+
+	if len(missingTags) > 0 {
+		if missingRefBehaviour == models.ImportMissingRefEnumFail {
+			return nil, fmt.Errorf("tags [%s] not found", strings.Join(missingTags, ", "))
+		}
+
+		if missingRefBehaviour == models.ImportMissingRefEnumCreate {
+			createdTags, err := createTags(tagWriter, missingTags)
+			if err != nil {
+				return nil, fmt.Errorf("error creating tags: %s", err.Error())
+			}
+
+			tags = append(tags, createdTags...)
+		}
+
+		// ignore if MissingRefBehaviour set to Ignore
+	}
+
+	return tags, nil
+}
+
+func createTags(tagWriter models.TagWriter, names []string) ([]*models.Tag, error) {
+	var ret []*models.Tag
+	for _, name := range names {
+		newTag := *models.NewTag(name)
+
+		created, err := tagWriter.Create(newTag)
+		if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, created)
+	}
+
+	return ret, nil
+}
+
 func (i *Importer) PostImport(id int) error {
+	if len(i.tags) > 0 {
+		var tagIDs []int
+		for _, t := range i.tags {
+			tagIDs = append(tagIDs, t.ID)
+		}
+		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
+			return fmt.Errorf("failed to associate tags: %s", err.Error())
+		}
+	}
+
 	if len(i.imageData) > 0 {
 		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
 			return fmt.Errorf("error setting performer image: %s", err.Error())

@@ -27,6 +27,7 @@ type Performer {
   piercings: String
   aliases: String
   favorite: Boolean!
+  tags: [Tag!]!
 
   image_path: String # Resolver
   scene_count: Int # Resolver
@@ -52,6 +53,7 @@ input PerformerCreateInput {
   twitter: String
   instagram: String
   favorite: Boolean
+  tag_ids: [ID!]
   """This should be base64 encoded"""
   image: String
   stash_ids: [StashIDInput!]
@@ -76,9 +78,32 @@ input PerformerUpdateInput {
   twitter: String
   instagram: String
   favorite: Boolean
+  tag_ids: [ID!]
   """This should be base64 encoded"""
   image: String
   stash_ids: [StashIDInput!]
+}
+
+input BulkPerformerUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  url: String
+  gender: GenderEnum
+  birthdate: String
+  ethnicity: String
+  country: String
+  eye_color: String
+  height: String
+  measurements: String
+  fake_tits: String
+  career_length: String
+  tattoos: String
+  piercings: String
+  aliases: String
+  twitter: String
+  instagram: String
+  favorite: Boolean
+  tag_ids: BulkUpdateIds
 }
 
 input PerformerDestroyInput {

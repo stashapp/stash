@@ -351,6 +351,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
 	query.handleCriterionFunc(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterionFunc(sceneStashIDsHandler(qb, sceneFilter.StashID))
+	query.handleCriterionFunc(scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 
 	return query
 }
@@ -561,6 +562,60 @@ func sceneStashIDsHandler(qb *sceneQueryBuilder, stashID *string) criterionHandl
 		if stashID != nil && *stashID != "" {
 			qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
 			stringLiteralCriterionHandler(stashID, "scene_stash_ids.stash_id")(f)
+		}
+	}
+}
+
+func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, performerTagsFilter *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
+			qb.performersRepository().join(f, "performers_join", "scenes.id")
+			f.addJoin("performers_tags", "performer_tags_join", "performers_join.performer_id = performer_tags_join.performer_id")
+
+			var args []interface{}
+			for _, tagID := range performerTagsFilter.Value {
+				args = append(args, tagID)
+			}
+
+			if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
+				// includes any of the provided ids
+				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
+			} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
+				// includes all of the provided ids
+				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
+				f.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
+			} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
+				f.addWhere(fmt.Sprintf(`not exists 
+					(select performers_scenes.performer_id from performers_scenes 
+						left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
+						performers_scenes.scene_id = scenes.id AND
+						performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))), args...)
+			}
+		}
+	}
+}
+
+func handleScenePerformerTagsCriterion(query *queryBuilder, performerTagsFilter *models.MultiCriterionInput) {
+	if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
+		for _, tagID := range performerTagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += " LEFT JOIN performers_tags AS performer_tags_join on performers_join.performer_id = performer_tags_join.performer_id"
+
+		if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
+			// includes any of the provided ids
+			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
+		} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
+			// includes all of the provided ids
+			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
+			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
+		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
+			query.addWhere(fmt.Sprintf(`not exists 
+				(select performers_scenes.performer_id from performers_scenes 
+					left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
+					performers_scenes.scene_id = scenes.id AND
+					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
 		}
 	}
 }

@@ -85,7 +85,8 @@ script:
   - query
 ```
 
-This configuration would execute `python iafdScrape.py query`.
+Stash will find the correct python executable for your system, either `python` or `python3`. So for example. this configuration could execute `python iafdScrape.py query` or `python3 iafdScrape.py query`.
+`python3` will be looked for first and if it's not found, we'll check for `python`. In the case neither are found, you will get an error.
 
 Stash sends data to the script process's `stdin` stream and expects the output to be streamed to the `stdout` stream. Any errors and progress messages should be output to `stderr`.
 
@@ -708,6 +709,7 @@ CareerLength
 Tattoos
 Piercings
 Aliases
+Tags (see Tag fields)
 Image
 ```
 

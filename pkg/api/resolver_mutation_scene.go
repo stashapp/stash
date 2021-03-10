@@ -253,7 +253,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 
 			// Save the tags
 			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustSceneTagIDs(qb, sceneID, *input.TagIds)
+				tagIDs, err := adjustTagIDs(qb, sceneID, *input.TagIds)
 				if err != nil {
 					return err
 				}
@@ -330,7 +330,11 @@ func adjustScenePerformerIDs(qb models.SceneReader, sceneID int, ids models.Bulk
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustSceneTagIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+type tagIDsGetter interface {
+	GetTagIDs(id int) ([]int, error)
+}
+
+func adjustTagIDs(qb tagIDsGetter, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(sceneID)
 	if err != nil {
 		return nil, err
