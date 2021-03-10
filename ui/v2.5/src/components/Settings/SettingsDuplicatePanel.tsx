@@ -9,28 +9,56 @@ import {
   ErrorMessage,
   HoverPopover,
 } from "src/components/Shared";
+import { Pagination } from "src/components/List/Pagination";
 import { TextUtils } from "src/utils";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
 
+const CLASSNAME = "DuplicateFinder";
+
 export const SettingsDuplicatePanel: React.FC = () => {
+  const [page, setPage] = useState(1);
   const [distance, setDistance] = useState(0);
+  const [isMultiDelete, setIsMultiDelete] = useState(false);
+  const [checkedScenes, setCheckedScenes] = useState<Record<string, boolean>>(
+    {}
+  );
   const { data, loading, refetch } = GQL.useFindDuplicateScenesQuery({
     fetchPolicy: "no-cache",
     variables: { distance },
   });
-  const [
-    deletingScene,
-    setDeletingScene,
-  ] = useState<GQL.SlimSceneDataFragment | null>(null);
+  const [deletingScene, setDeletingScene] = useState<
+    GQL.SlimSceneDataFragment[] | null
+  >(null);
 
   if (loading) return <LoadingIndicator />;
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;
   const scenes = data?.findDuplicateScenes ?? [];
+  const filteredScenes = scenes.slice((page - 1) * 20, page * 20);
+  const checkCount = Object.keys(checkedScenes).filter(
+    (id) => checkedScenes[id]
+  ).length;
 
   function onDeleteDialogClosed(deleted: boolean) {
     setDeletingScene(null);
-    if (deleted) refetch();
+    if (deleted) {
+      refetch();
+      if (isMultiDelete) setCheckedScenes({});
+    }
   }
+
+  const handleCheck = (checked: boolean, sceneID: string) => {
+    setCheckedScenes({ ...checkedScenes, [sceneID]: checked });
+  };
+
+  const handleDeleteChecked = () => {
+    setDeletingScene(scenes.flat().filter((s) => checkedScenes[s.id]));
+    setIsMultiDelete(true);
+  };
+
+  const handleDeleteScene = (scene: GQL.SlimSceneDataFragment) => {
+    setDeletingScene([scene]);
+    setIsMultiDelete(false);
+  };
 
   const renderFilesize = (filesize: string | null | undefined) => {
     const { size, unit } = TextUtils.fileSize(
@@ -48,10 +76,10 @@ export const SettingsDuplicatePanel: React.FC = () => {
   };
 
   return (
-    <div className="container">
+    <div className={CLASSNAME}>
       {deletingScene && (
         <DeleteScenesDialog
-          selected={[deletingScene]}
+          selected={deletingScene}
           onClose={onDeleteDialogClosed}
         />
       )}
@@ -80,10 +108,39 @@ export const SettingsDuplicatePanel: React.FC = () => {
           yield larger amounts of false positives.
         </Form.Text>
       </Form.Group>
-      <h6>{scenes.length} sets of duplicates found.</h6>
-      <Table striped>
+      <div className="d-flex mb-2">
+        <h6 className="mr-auto">{scenes.length} sets of duplicates found.</h6>
+        {checkCount > 0 && (
+          <Button
+            className="edit-button"
+            variant="danger"
+            onClick={handleDeleteChecked}
+          >
+            Delete {checkCount} scene{checkCount > 1 && "s"}
+          </Button>
+        )}
+        <Pagination
+          itemsPerPage={20}
+          currentPage={page}
+          totalItems={scenes.length}
+          onChangePage={setPage}
+        />
+      </div>
+      <Table striped className={`${CLASSNAME}-table`}>
+        <colgroup>
+          <col className={`${CLASSNAME}-checkbox`} />
+          <col className={`${CLASSNAME}-sprite`} />
+          <col className={`${CLASSNAME}-title`} />
+          <col className={`${CLASSNAME}-duration`} />
+          <col className={`${CLASSNAME}-filesize`} />
+          <col className={`${CLASSNAME}-resolution`} />
+          <col className={`${CLASSNAME}-bitrate`} />
+          <col className={`${CLASSNAME}-codec`} />
+          <col className={`${CLASSNAME}-operations`} />
+        </colgroup>
         <thead>
           <tr>
+            <th> </th>
             <th> </th>
             <th>Title</th>
             <th>Duration</th>
@@ -95,9 +152,16 @@ export const SettingsDuplicatePanel: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {scenes.map((group) =>
+          {filteredScenes.map((group) =>
             group.map((scene, i) => (
-              <tr className={i === 0 ? "duplicate-group" : ""}>
+              <tr className={i === 0 ? "duplicate-group" : ""} key={scene.id}>
+                <td>
+                  <Form.Check
+                    onChange={(e) =>
+                      handleCheck(e.currentTarget.checked, scene.id)
+                    }
+                  />
+                </td>
                 <td>
                   <HoverPopover
                     content={
@@ -131,7 +195,7 @@ export const SettingsDuplicatePanel: React.FC = () => {
                   <Button
                     className="edit-button"
                     variant="danger"
-                    onClick={() => setDeletingScene(scene)}
+                    onClick={() => handleDeleteScene(scene)}
                   >
                     Delete
                   </Button>

@@ -425,9 +425,7 @@ export const SettingsTasksPanel: React.FC = () => {
             checked={scanGenerateSprites && scanGeneratePhashes}
             disabled={!scanGenerateSprites}
             label="Generate phashes during scan (for deduplication)"
-            onChange={() =>
-              setScanGeneratePhashes(!scanGeneratePhashes)
-            }
+            onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
             className="ml-2 flex-grow"
           />
         </div>
