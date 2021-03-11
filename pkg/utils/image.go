@@ -13,7 +13,7 @@ import (
 
 // Timeout to get the image. Includes transfer time. May want to make this
 // configurable at some point.
-const imageGetTimeout = time.Second * 30
+const imageGetTimeout = time.Second * 60
 
 const base64RE = `^data:.+\/(.+);base64,(.*)$`
 
