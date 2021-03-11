@@ -153,6 +153,10 @@ input GalleryFilterType {
 }
 
 input TagFilterType {
+  AND: TagFilterType
+  OR: TagFilterType
+  NOT: TagFilterType
+
   """Filter to only include tags missing this property"""
   is_missing: String
 
