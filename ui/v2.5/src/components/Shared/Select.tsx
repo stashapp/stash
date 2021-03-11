@@ -10,7 +10,6 @@ import {
   useAllStudiosForFilter,
   useAllPerformersForFilter,
   useMarkerStrings,
-  useScrapePerformerList,
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
@@ -338,48 +337,6 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
       placeholder="Search for scene..."
       noOptionsMessage={query === "" ? null : "No scenes found."}
       showDropdown={false}
-    />
-  );
-};
-
-interface IScrapePerformerSuggestProps {
-  scraperId: string;
-  onSelectPerformer: (performer: GQL.ScrapedPerformerDataFragment) => void;
-  placeholder?: string;
-}
-export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
-  props
-) => {
-  const [query, setQuery] = useState<string>("");
-  const { data, loading } = useScrapePerformerList(props.scraperId, query);
-
-  const performers = data?.scrapePerformerList ?? [];
-  const items = performers.map((item) => ({
-    label: item.name ?? "",
-    value: item.name ?? "",
-  }));
-
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
-
-  const onChange = (option: ValueType<Option, false>) => {
-    const performer = performers.find((p) => p.name === option?.value);
-    if (performer) props.onSelectPerformer(performer);
-  };
-
-  return (
-    <SelectComponent
-      isMulti={false}
-      onChange={onChange}
-      onInputChange={onInputChange}
-      isLoading={loading}
-      items={items}
-      initialIds={[]}
-      placeholder={props.placeholder}
-      className="select-suggest"
-      showDropdown={false}
-      noOptionsMessage={query === "" ? null : "No performers found."}
     />
   );
 };
