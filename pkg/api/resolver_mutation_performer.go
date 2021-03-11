@@ -18,7 +18,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	var err error
 
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 	}
 
 	if err != nil {
@@ -139,7 +139,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	var err error
 	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 		if err != nil {
 			return nil, err
 		}

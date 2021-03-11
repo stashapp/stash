@@ -571,8 +571,10 @@ export const Movie: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onFrontImageChange}
+          onImageChangeURL={onFrontImageLoad}
           onClearImage={onClearFrontImage}
           onBackImageChange={onBackImageChange}
+          onBackImageChangeURL={onBackImageLoad}
           onClearBackImage={onClearBackImage}
           onDelete={onDelete}
         />

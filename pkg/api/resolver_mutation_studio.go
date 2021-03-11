@@ -20,7 +20,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	// Process the base 64 encoded image string
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +96,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
 		var err error
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 		if err != nil {
 			return nil, err
 		}

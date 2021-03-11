@@ -319,6 +319,7 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onImageChangeURL={onImageLoad}
           onClearImage={() => {
             onClearImage();
           }}

@@ -80,7 +80,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
-		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
+		coverImageData, err = utils.ProcessImageInput(*input.CoverImage)
 		if err != nil {
 			return nil, err
 		}
