@@ -84,6 +84,14 @@ func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
 	panic("unknown hash algorithm")
 }
 
+func (s Scene) GetMinResolution() int64 {
+	if s.Width.Int64 < s.Height.Int64 {
+		return s.Width.Int64
+	}
+
+	return s.Height.Int64
+}
+
 // SceneFileType represents the file metadata for a scene.
 type SceneFileType struct {
 	Size       *string  `graphql:"size" json:"size"`
