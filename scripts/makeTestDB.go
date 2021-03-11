@@ -1,17 +1,16 @@
-// +build ignore
+// uild ignore
 
 package main
 
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
@@ -24,42 +23,46 @@ type config struct {
 	scenes     int
 	markers    int
 	images     int
+	galleries  int
 	performers int
 	studios    int
 	tags       int
 }
 
+var txnManager models.TransactionManager
+var c config
+
 func main() {
-	f, err := ioutil.TempFile(".", "*.sqlite")
-	if err != nil {
-		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
-	}
+	database.Initialize("generated.sqlite")
 
-	f.Close()
-	databaseFile := f.Name()
-	database.Initialize(databaseFile)
-
-	populateDB(config{
-		scenes: 30000,
-		images: 150000,
-		// galleries: 1500,
+	c = config{
+		scenes:     30000,
+		images:     150000,
+		galleries:  1500,
 		markers:    300,
 		performers: 10000,
 		studios:    500,
 		tags:       1500,
-	})
+	}
+
+	populateDB()
 }
 
-func populateDB(c config) {
+func populateDB() {
 	makeTags(c.tags)
 	makeStudios(c.studios)
 	makePerformers(c.performers)
 	makeScenes(c.scenes)
+	makeImages(c.images)
+	makeGalleries(c.galleries)
 }
 
 func withTxn(f func(r models.Repository) error) error {
-	t := sqlite.NewTransactionManager()
-	return t.WithTxn(context.TODO(), f)
+	if txnManager == nil {
+		txnManager = sqlite.NewTransactionManager()
+	}
+
+	return txnManager.WithTxn(context.TODO(), f)
 }
 
 func makeTags(n int) {
@@ -128,20 +131,27 @@ func makePerformers(n int) {
 }
 
 func makeScenes(n int) {
-	if err := withTxn(func(r models.Repository) error {
-		for i := 0; i < n; i++ {
-			scene := generateScene(i)
-
-			// TODO - set tags, performers, studio etc
-
-			if _, err := r.Scene().Create(scene); err != nil {
-				return err
-			}
+	logger.Infof("creating %d scenes...", n)
+	rand.Seed(533)
+	for i := 0; i < n; i++ {
+		if i > 0 && i%100 == 0 {
+			logger.Infof("... created %d scenes", i)
 		}
 
-		return nil
-	}); err != nil {
-		panic(err)
+		if err := withTxn(func(r models.Repository) error {
+			scene := generateScene(i)
+			scene.StudioID = getRandomStudioID(r)
+
+			created, err := r.Scene().Create(scene)
+			if err != nil {
+				return err
+			}
+
+			makeSceneRelationships(r, created.ID)
+			return nil
+		}); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -171,8 +181,6 @@ func getDate() string {
 
 func generateScene(i int) models.Scene {
 	path := utils.MD5FromString("scene/" + strconv.Itoa(i))
-	rand.Seed(533)
-
 	w, h := getResolution()
 
 	return models.Scene{
@@ -190,4 +198,231 @@ func generateScene(i int) models.Scene {
 			Valid:  true,
 		},
 	}
+}
+
+func makeImages(n int) {
+	logger.Infof("creating %d images...", n)
+	rand.Seed(1293)
+	for i := 0; i < n; i++ {
+		if i > 0 && i%100 == 0 {
+			logger.Infof("... created %d images", i)
+		}
+		if err := withTxn(func(r models.Repository) error {
+			image := generateImage(i)
+			image.StudioID = getRandomStudioID(r)
+
+			created, err := r.Image().Create(image)
+			if err != nil {
+				return err
+			}
+
+			makeImageRelationships(r, created.ID)
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func generateImage(i int) models.Image {
+	path := utils.MD5FromString("image/" + strconv.Itoa(i))
+
+	w, h := getResolution()
+
+	return models.Image{
+		Path:     path,
+		Checksum: utils.MD5FromString(path),
+		Height:   models.NullInt64(h),
+		Width:    models.NullInt64(w),
+	}
+}
+
+func makeGalleries(n int) {
+	logger.Infof("creating %d galleries...", n)
+	rand.Seed(92113)
+	for i := 0; i < n; i++ {
+		if i > 0 && i%100 == 0 {
+			logger.Infof("... created %d galleries", i)
+		}
+
+		if err := withTxn(func(r models.Repository) error {
+			gallery := generateGallery(i)
+			gallery.StudioID = getRandomStudioID(r)
+
+			created, err := r.Gallery().Create(gallery)
+			if err != nil {
+				return err
+			}
+
+			makeGalleryRelationships(r, created.ID)
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func generateGallery(i int) models.Gallery {
+	path := utils.MD5FromString("gallery/" + strconv.Itoa(i))
+
+	return models.Gallery{
+		Path:     sql.NullString{String: path, Valid: true},
+		Checksum: utils.MD5FromString(path),
+		Date: models.SQLiteDate{
+			String: getDate(),
+			Valid:  true,
+		},
+	}
+}
+
+func getRandomFilter(n int) *models.FindFilterType {
+	sortBy := "random"
+	return &models.FindFilterType{
+		Sort:    &sortBy,
+		PerPage: &n,
+	}
+}
+
+func getRandomStudioID(r models.Repository) sql.NullInt64 {
+	if rand.Intn(10) == 0 {
+		return sql.NullInt64{}
+	}
+
+	// s, _, err := r.Studio().Query(nil, getRandomFilter(1))
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	return sql.NullInt64{
+		Int64: int64(rand.Int63n(int64(c.studios)) + 1),
+		Valid: true,
+	}
+}
+
+func makeSceneRelationships(r models.Repository, id int) {
+	// add tags
+	tagIDs := getRandomTags(r)
+	if len(tagIDs) > 0 {
+		if err := r.Scene().UpdateTags(id, tagIDs); err != nil {
+			panic(err)
+		}
+	}
+
+	// add performers
+	performerIDs := getRandomPerformers(r)
+	if len(tagIDs) > 0 {
+		if err := r.Scene().UpdatePerformers(id, performerIDs); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func makeImageRelationships(r models.Repository, id int) {
+	// add tags
+	tagIDs := getRandomTags(r)
+	if len(tagIDs) > 0 {
+		if err := r.Image().UpdateTags(id, tagIDs); err != nil {
+			panic(err)
+		}
+	}
+
+	// add performers
+	performerIDs := getRandomPerformers(r)
+	if len(tagIDs) > 0 {
+		if err := r.Image().UpdatePerformers(id, performerIDs); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func makeGalleryRelationships(r models.Repository, id int) {
+	// add tags
+	tagIDs := getRandomTags(r)
+	if len(tagIDs) > 0 {
+		if err := r.Gallery().UpdateTags(id, tagIDs); err != nil {
+			panic(err)
+		}
+	}
+
+	// add performers
+	performerIDs := getRandomPerformers(r)
+	if len(tagIDs) > 0 {
+		if err := r.Gallery().UpdatePerformers(id, performerIDs); err != nil {
+			panic(err)
+		}
+	}
+
+	// add images
+	imageIDs := getRandomImages(r)
+	if len(tagIDs) > 0 {
+		if err := r.Gallery().UpdateImages(id, imageIDs); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func getRandomPerformers(r models.Repository) []int {
+	n := rand.Intn(5)
+
+	var ret []int
+	// if n > 0 {
+	// 	p, _, err := r.Performer().Query(nil, getRandomFilter(n))
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	for _, pp := range p {
+	// 		ret = utils.IntAppendUnique(ret, pp.ID)
+	// 	}
+	// }
+
+	for i := 0; i < n; i++ {
+		ret = utils.IntAppendUnique(ret, rand.Intn(c.performers)+1)
+	}
+
+	return ret
+}
+
+func getRandomTags(r models.Repository) []int {
+	n := rand.Intn(15)
+
+	var ret []int
+	// if n > 0 {
+	// 	t, _, err := r.Tag().Query(nil, getRandomFilter(n))
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	for _, tt := range t {
+	// 		ret = utils.IntAppendUnique(ret, tt.ID)
+	// 	}
+	// }
+
+	for i := 0; i < n; i++ {
+		ret = utils.IntAppendUnique(ret, rand.Intn(c.tags)+1)
+	}
+
+	return ret
+}
+
+func getRandomImages(r models.Repository) []int {
+	n := rand.Intn(500)
+
+	var ret []int
+	// if n > 0 {
+	// 	t, _, err := r.Image().Query(nil, getRandomFilter(n))
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	for _, tt := range t {
+	// 		ret = utils.IntAppendUnique(ret, tt.ID)
+	// 	}
+	// }
+
+	for i := 0; i < n; i++ {
+		ret = utils.IntAppendUnique(ret, rand.Intn(c.images)+1)
+	}
+
+	return ret
 }
