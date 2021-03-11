@@ -418,6 +418,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  function onImageChangeURL(url: string) {
+    formik.setFieldValue("image", url);
+  }
+
   function onDisplayScrapeDialog(scraper: GQL.Scraper) {
     setIsDisplayingScraperDialog(scraper);
   }
@@ -533,7 +537,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
 
     return (
-      <OverlayTrigger trigger="click" placement="top" overlay={popover}>
+      <OverlayTrigger
+        trigger="click"
+        placement="top"
+        overlay={popover}
+        rootClose
+      >
         <Button variant="secondary" className="mr-2">
           Scrape with...
         </Button>
@@ -636,7 +645,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             ""
           )}
           {renderScraperMenu()}
-          <ImageInput isEditing onImageChange={onImageChangeHandler} />
+          <ImageInput
+            isEditing
+            onImageChange={onImageChangeHandler}
+            onImageURL={onImageChangeURL}
+          />
           <Button
             className="mx-2"
             variant="danger"
