@@ -137,8 +137,6 @@ export const Tag: React.FC = () => {
           },
         });
         if (result.data?.tagUpdate) {
-          if (result.data.tagUpdate.image_path)
-            await fetch(result.data.tagUpdate.image_path, { cache: "reload" });
           updateTagData(result.data.tagUpdate);
           setIsEditing(false);
         }

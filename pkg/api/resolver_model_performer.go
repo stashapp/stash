@@ -134,7 +134,7 @@ func (r *performerResolver) Favorite(ctx context.Context, obj *models.Performer)
 
 func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj.ID).GetPerformerImageURL()
+	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj).GetPerformerImageURL()
 	return &imagePath, nil
 }
 
