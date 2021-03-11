@@ -1,14 +1,4 @@
-export {
-  GallerySelect,
-  ScrapePerformerSuggest,
-  MarkerTitleSuggest,
-  FilterSelect,
-  PerformerSelect,
-  StudioSelect,
-  TagSelect,
-  SceneSelect,
-} from "./Select";
-
+export  *  from "./Select";
 export { default as Icon } from "./Icon";
 export { default as Modal } from "./Modal";
 export { CollapseButton } from "./CollapseButton";
