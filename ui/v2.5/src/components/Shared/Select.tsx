@@ -32,6 +32,7 @@ interface ITypeProps {
     | "parent_studios"
     | "tags"
     | "sceneTags"
+    | "performerTags"
     | "movies";
 }
 interface IFilterProps {
@@ -43,6 +44,8 @@ interface IFilterProps {
   isMulti?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
+  creatable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
 }
 interface ISelectProps<T extends boolean> {
   className?: string;
@@ -60,6 +63,7 @@ interface ISelectProps<T extends boolean> {
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
+  menuPortalTarget?: HTMLElement | null;
   closeMenuOnSelect?: boolean;
   noOptionsMessage?: string | null;
 }
@@ -109,6 +113,7 @@ const SelectComponent = <T extends boolean>({
   placeholder,
   showDropdown = true,
   groupHeader,
+  menuPortalTarget,
   closeMenuOnSelect = true,
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
@@ -158,6 +163,7 @@ const SelectComponent = <T extends boolean>({
     isLoading,
     styles,
     closeMenuOnSelect,
+    menuPortalTarget,
     components: {
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
@@ -430,7 +436,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     <FilterSelectComponent
       {...props}
       isMulti={props.isMulti ?? false}
-      creatable
+      creatable={props.creatable ?? true}
       onCreate={onCreate}
       type="performers"
       isLoading={loading}
@@ -464,7 +470,7 @@ export const StudioSelect: React.FC<
       isLoading={loading}
       items={studios}
       placeholder={props.noSelectionString ?? "Select studio..."}
-      creatable
+      creatable={props.creatable ?? true}
       onCreate={onCreate}
     />
   );
@@ -505,7 +511,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
       {...props}
       isMulti={props.isMulti ?? false}
       items={tags}
-      creatable
+      creatable={props.creatable ?? true}
       type="tags"
       placeholder={placeholder}
       isLoading={loading}
@@ -517,11 +523,11 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   props.type === "performers" ? (
-    <PerformerSelect {...props} />
+    <PerformerSelect {...props} creatable={false} />
   ) : props.type === "studios" || props.type === "parent_studios" ? (
-    <StudioSelect {...props} />
+    <StudioSelect {...props} creatable={false} />
   ) : props.type === "movies" ? (
-    <MovieSelect {...props} />
+    <MovieSelect {...props} creatable={false} />
   ) : (
-    <TagSelect {...props} />
+    <TagSelect {...props} creatable={false} />
   );

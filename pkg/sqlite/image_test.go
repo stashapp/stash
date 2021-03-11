@@ -619,6 +619,70 @@ func TestImageQueryStudio(t *testing.T) {
 	})
 }
 
+func queryImages(t *testing.T, sqb models.ImageReader, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) []*models.Image {
+	images, _, err := sqb.Query(imageFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying images: %s", err.Error())
+	}
+
+	return images
+}
+
+func TestImageQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		imageFilter := models.ImageFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 2)
+
+		// ensure ids are correct
+		for _, image := range images {
+			assert.True(t, image.ID == imageIDs[imageIdxWithPerformerTag] || image.ID == imageIDs[imageIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		images = queryImages(t, sqb, &imageFilter, nil)
+
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithPerformerTwoTags], images[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getImageStringValue(imageIdxWithPerformerTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
 func TestImageQuerySorting(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sort := titleField

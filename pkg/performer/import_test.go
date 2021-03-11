@@ -3,6 +3,8 @@ package performer
 import (
 	"errors"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -16,9 +18,15 @@ const invalidImage = "aW1hZ2VCeXRlcw&&"
 
 const (
 	existingPerformerID = 100
+	existingTagID       = 105
+	errTagsID           = 106
 
 	existingPerformerName = "existingPerformerName"
 	performerNameErr      = "performerNameErr"
+
+	existingTagName = "existingTagName"
+	existingTagErr  = "existingTagErr"
+	missingTagName  = "missingTagName"
 )
 
 func TestImporterName(t *testing.T) {
@@ -51,6 +59,91 @@ func TestImporterPreImport(t *testing.T) {
 	expectedPerformer := *createFullPerformer(0, performerName)
 	expectedPerformer.Checksum = utils.MD5FromString(performerName)
 	assert.Equal(t, expectedPerformer, i.performer)
+}
+
+func TestImporterPreImportWithTag(t *testing.T) {
+	tagReaderWriter := &mocks.TagReaderWriter{}
+
+	i := Importer{
+		TagWriter:           tagReaderWriter,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+		Input: jsonschema.Performer{
+			Tags: []string{
+				existingTagName,
+			},
+		},
+	}
+
+	tagReaderWriter.On("FindByNames", []string{existingTagName}, false).Return([]*models.Tag{
+		{
+			ID:   existingTagID,
+			Name: existingTagName,
+		},
+	}, nil).Once()
+	tagReaderWriter.On("FindByNames", []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Once()
+
+	err := i.PreImport()
+	assert.Nil(t, err)
+	assert.Equal(t, existingTagID, i.tags[0].ID)
+
+	i.Input.Tags = []string{existingTagErr}
+	err = i.PreImport()
+	assert.NotNil(t, err)
+
+	tagReaderWriter.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingTag(t *testing.T) {
+	tagReaderWriter := &mocks.TagReaderWriter{}
+
+	i := Importer{
+		TagWriter: tagReaderWriter,
+		Input: jsonschema.Performer{
+			Tags: []string{
+				missingTagName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	tagReaderWriter.On("FindByNames", []string{missingTagName}, false).Return(nil, nil).Times(3)
+	tagReaderWriter.On("Create", mock.AnythingOfType("models.Tag")).Return(&models.Tag{
+		ID: existingTagID,
+	}, nil)
+
+	err := i.PreImport()
+	assert.NotNil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport()
+	assert.Nil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport()
+	assert.Nil(t, err)
+	assert.Equal(t, existingTagID, i.tags[0].ID)
+
+	tagReaderWriter.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
+	tagReaderWriter := &mocks.TagReaderWriter{}
+
+	i := Importer{
+		TagWriter: tagReaderWriter,
+		Input: jsonschema.Performer{
+			Tags: []string{
+				missingTagName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
+	}
+
+	tagReaderWriter.On("FindByNames", []string{missingTagName}, false).Return(nil, nil).Once()
+	tagReaderWriter.On("Create", mock.AnythingOfType("models.Tag")).Return(nil, errors.New("Create error"))
+
+	err := i.PreImport()
+	assert.NotNil(t, err)
 }
 
 func TestImporterPostImport(t *testing.T) {
@@ -106,6 +199,32 @@ func TestImporterFindExistingID(t *testing.T) {
 	i.Input.Name = performerNameErr
 	id, err = i.FindExistingID()
 	assert.Nil(t, id)
+	assert.NotNil(t, err)
+
+	readerWriter.AssertExpectations(t)
+}
+
+func TestImporterPostImportUpdateTags(t *testing.T) {
+	readerWriter := &mocks.PerformerReaderWriter{}
+
+	i := Importer{
+		ReaderWriter: readerWriter,
+		tags: []*models.Tag{
+			{
+				ID: existingTagID,
+			},
+		},
+	}
+
+	updateErr := errors.New("UpdateTags error")
+
+	readerWriter.On("UpdateTags", performerID, []int{existingTagID}).Return(nil).Once()
+	readerWriter.On("UpdateTags", errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
+
+	err := i.PostImport(performerID)
+	assert.Nil(t, err)
+
+	err = i.PostImport(errTagsID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

@@ -5,6 +5,7 @@ type Tag {
   image_path: String # Resolver
   scene_count: Int # Resolver
   scene_marker_count: Int # Resolver
+  performer_count: Int
 }
 
 input TagCreateInput {

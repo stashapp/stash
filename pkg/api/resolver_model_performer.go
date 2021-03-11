@@ -138,6 +138,17 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 	return &imagePath, nil
 }
 
+func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (ret []*models.Tag, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Tag().FindByPerformerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {

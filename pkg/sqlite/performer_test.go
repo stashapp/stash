@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -222,6 +223,69 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 			verifyInt(t, age, ageCriterion)
 		}
+
+		return nil
+	})
+}
+
+func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
+	performers, _, err := qb.Query(performerFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying performers: %s", err.Error())
+	}
+
+	return performers
+}
+
+func TestPerformerQueryTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		performerFilter := models.PerformerFilterType{
+			Tags: &tagCriterion,
+		}
+
+		// ensure ids are correct
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Len(t, performers, 2)
+		for _, performer := range performers {
+			assert.True(t, performer.ID == performerIDs[performerIdxWithTag] || performer.ID == performerIDs[performerIdxWithTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		performers = queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 1)
+		assert.Equal(t, sceneIDs[performerIdxWithTwoTags], performers[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(performerIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+		assert.Len(t, performers, 0)
 
 		return nil
 	})

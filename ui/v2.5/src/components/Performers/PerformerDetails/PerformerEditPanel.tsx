@@ -7,6 +7,7 @@ import {
   Col,
   InputGroup,
   Row,
+  Badge,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -20,6 +21,7 @@ import {
   mutateReloadScrapers,
   usePerformerUpdate,
   usePerformerCreate,
+  useTagCreate,
   queryScrapePerformerURL,
 } from "src/core/StashService";
 import {
@@ -28,6 +30,8 @@ import {
   ImageInput,
   ScrapePerformerSuggest,
   LoadingIndicator,
+  CollapseButton,
+  TagSelect,
 } from "src/components/Shared";
 import { ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
@@ -64,6 +68,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     scrapePerformerDetails,
     setScrapePerformerDetails,
   ] = useState<GQL.ScrapedPerformerDataFragment>();
+  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
+
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -80,6 +86,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   >();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
+
+  const [createTag] = useTagCreate({ name: "" });
 
   const genderOptions = [""].concat(getGenderStrings());
 
@@ -100,6 +108,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     url: yup.string().optional(),
     twitter: yup.string().optional(),
     instagram: yup.string().optional(),
+    tag_ids: yup.array(yup.string().required()).optional(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
   });
@@ -121,6 +130,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     url: performer.url ?? "",
     twitter: performer.twitter ?? "",
     instagram: performer.instagram ?? "",
+    tag_ids: (performer.tags ?? []).map((t) => t.id),
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
   };
@@ -152,6 +162,75 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
 
     return genderToString(retEnum);
+  }
+
+  function renderNewTags() {
+    if (!newTags || newTags.length === 0) {
+      return;
+    }
+
+    const ret = (
+      <>
+        {newTags.map((t) => (
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => createNewTag(t)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
+              <Icon className="fa-fw" icon="plus" />
+            </Button>
+          </Badge>
+        ))}
+      </>
+    );
+
+    const minCollapseLength = 10;
+
+    if (newTags.length >= minCollapseLength) {
+      return (
+        <CollapseButton text={`Missing (${newTags.length})`}>
+          {ret}
+        </CollapseButton>
+      );
+    }
+
+    return ret;
+  }
+
+  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+    let tagInput: GQL.TagCreateInput = { name: "" };
+    try {
+      tagInput = Object.assign(tagInput, toCreate);
+      const result = await createTag({
+        variables: tagInput,
+      });
+
+      // add the new tag to the new tags value
+      const newTagIds = formik.values.tag_ids.concat([
+        result.data!.tagCreate!.id,
+      ]);
+      formik.setFieldValue("tag_ids", newTagIds);
+
+      // remove the tag from the list
+      const newTagsClone = newTags!.concat();
+      const pIndex = newTagsClone.indexOf(toCreate);
+      newTagsClone.splice(pIndex, 1);
+
+      setNewTags(newTagsClone);
+
+      Toast.success({
+        content: (
+          <span>
+            Created tag: <b>{toCreate.name}</b>
+          </span>
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function updatePerformerEditStateFromScraper(
@@ -209,6 +288,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         "gender",
         translateScrapedGender(state.gender ?? undefined)
       );
+    }
+    if (state.tags) {
+      // map tags to their ids and filter out those not found
+      const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
+      formik.setFieldValue("tag_ids", newTagIds as string[]);
+
+      setNewTags(state.tags.filter((t) => !t.stored_id));
     }
 
     // image is a base64 string
@@ -354,7 +440,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (!scrapePerformerDetails) return {};
 
     // image is not supported
-    const { __typename, image: _image, ...ret } = scrapePerformerDetails;
+    // remove tags as well
+    const {
+      __typename,
+      image: _image,
+      tags: _tags,
+      ...ret
+    } = scrapePerformerDetails;
     return ret;
   }
 
@@ -484,10 +576,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       return;
     }
 
-    const currentPerformer: Partial<GQL.PerformerDataFragment> = {
+    const currentPerformer: Partial<GQL.PerformerUpdateInput> = {
       ...formik.values,
       gender: stringToGender(formik.values.gender),
-      image_path: formik.values.image ?? performer.image_path,
+      image: formik.values.image ?? performer.image_path,
     };
 
     return (
@@ -567,6 +659,28 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       >
         <p>Are you sure you want to delete {performer.name}?</p>
       </Modal>
+    );
+  }
+
+  function renderTagsField() {
+    return (
+      <Form.Row>
+        <Form.Group as={Col} sm="6">
+          <Form.Label>Tags</Form.Label>
+          <TagSelect
+            menuPortalTarget={document.body}
+            isMulti
+            onSelect={(items) =>
+              formik.setFieldValue(
+                "tag_ids",
+                items.map((item) => item.id)
+              )
+            }
+            ids={formik.values.tag_ids}
+          />
+          {renderNewTags()}
+        </Form.Group>
+      </Form.Row>
     );
   }
 
@@ -805,6 +919,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             />
           </Form.Group>
         </Form.Row>
+        {renderTagsField()}
         {renderStashIDs()}
 
         {renderButtons()}

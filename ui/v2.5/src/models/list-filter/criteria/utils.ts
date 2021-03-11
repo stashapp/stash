@@ -43,6 +43,9 @@ export function makeCriteria(type: CriterionType = "none") {
     case "o_counter":
     case "scene_count":
     case "marker_count":
+    case "image_count":
+    case "gallery_count":
+    case "performer_count":
       return new NumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
@@ -72,6 +75,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new TagsCriterion("tags");
     case "sceneTags":
       return new TagsCriterion("sceneTags");
+    case "performerTags":
+      return new TagsCriterion("performerTags");
     case "performers":
       return new PerformersCriterion();
     case "studios":
