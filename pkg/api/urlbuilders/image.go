@@ -20,9 +20,9 @@ func NewImageURLBuilder(baseURL string, image *models.Image) ImageURLBuilder {
 }
 
 func (b ImageURLBuilder) GetImageURL() string {
-	return b.BaseURL + "/image/" + b.ImageID + "/image" + b.UpdatedAt
+	return b.BaseURL + "/image/" + b.ImageID + "/image?" + b.UpdatedAt
 }
 
 func (b ImageURLBuilder) GetThumbnailURL() string {
-	return b.BaseURL + "/image/" + b.ImageID + "/thumbnail" + b.UpdatedAt
+	return b.BaseURL + "/image/" + b.ImageID + "/thumbnail?" + b.UpdatedAt
 }
