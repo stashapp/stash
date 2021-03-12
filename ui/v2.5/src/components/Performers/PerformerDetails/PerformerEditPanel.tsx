@@ -629,7 +629,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         scraper={scraper}
         onHide={() => setScraper(undefined)}
         onSelectPerformer={onScrapePerformer}
-        name={performer.name ?? undefined}
+        name={formik.values.name || ""}
       />
     );
 

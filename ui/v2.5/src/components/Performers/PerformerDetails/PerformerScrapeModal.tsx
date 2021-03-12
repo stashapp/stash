@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { debounce } from "lodash";
 import { Button, Form } from "react-bootstrap";
 
@@ -21,6 +21,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
   onHide,
   onSelectPerformer,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string>(name ?? "");
   const { data, loading } = useScrapePerformerList(scraper.id, query);
 
@@ -29,6 +30,8 @@ const PerformerScrapeModal: React.FC<IProps> = ({
   const onInputChange = debounce((input: string) => {
     setQuery(input);
   }, 500);
+
+  useEffect(() => inputRef.current?.focus(), []);
 
   return (
     <Modal
@@ -43,6 +46,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
           defaultValue={name ?? ""}
           placeholder="Performer name..."
           className="text-input mb-4"
+          ref={inputRef}
         />
         {loading ? (
           <div className="m-4 text-center">
