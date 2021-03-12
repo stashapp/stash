@@ -36,6 +36,7 @@ type Scene {
   organized: Boolean!
   o_counter: Int
   path: String!
+  phash: String
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver

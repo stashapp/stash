@@ -219,10 +219,22 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     );
   }
 
+  function renderPhash() {
+    if (props.scene.phash) {
+      return (
+        <div className="row">
+          <span className="col-4">PHash</span>
+          <TruncatedText className="col-8" text={props.scene.phash} />
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="container scene-file-info">
       {renderOSHash()}
       {renderChecksum()}
+      {renderPhash()}
       {renderPath()}
       {renderStream()}
       {renderFileSize()}

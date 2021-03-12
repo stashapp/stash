@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
@@ -201,4 +202,12 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 	}
 
 	return ret, nil
+}
+
+func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Phash.Valid {
+		hexval := strconv.FormatUint(uint64(obj.Phash.Int64), 16)
+		return &hexval, nil
+	}
+	return nil, nil
 }

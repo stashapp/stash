@@ -6,9 +6,9 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GeneratePhashTask struct {
@@ -24,9 +24,14 @@ func (t *GeneratePhashTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 		return
 	}
 
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	if err != nil {
+		logger.Errorf("error reading video file: %s", err.Error())
+		return
+	}
+
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
-	generator, err := NewPhashGenerator(imagePath)
+	generator, err := NewPhashGenerator(*videoFile, sceneHash)
 
 	if err != nil {
 		logger.Errorf("error creating phash generator: %s", err.Error())
@@ -52,19 +57,6 @@ func (t *GeneratePhashTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	}
 }
 
-func (t *GeneratePhashTask) doesSpriteExist(sceneChecksum string) bool {
-	if sceneChecksum == "" {
-		return false
-	}
-
-	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetSpriteImageFilePath(sceneChecksum))
-	return imageExists
-}
-
 func (t *GeneratePhashTask) shouldGenerate() bool {
-	if !t.Scene.Phash.Valid {
-		sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-		return t.doesSpriteExist(sceneHash)
-	}
-	return false
+	return !t.Scene.Phash.Valid
 }
