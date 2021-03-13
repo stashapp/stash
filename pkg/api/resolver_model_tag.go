@@ -45,6 +45,6 @@ func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag) (ret 
 
 func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj.ID).GetTagImageURL()
+	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL()
 	return &imagePath, nil
 }

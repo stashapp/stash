@@ -121,6 +121,7 @@ func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Add("Etag", etag)
+	w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
 	_, err := w.Write(image)
 	return err
 }
