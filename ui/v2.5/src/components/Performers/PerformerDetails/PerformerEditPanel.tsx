@@ -26,11 +26,10 @@ import {
 } from "src/core/StashService";
 import {
   Icon,
-  Modal,
   ImageInput,
-  ScrapePerformerSuggest,
   LoadingIndicator,
   CollapseButton,
+  Modal,
   TagSelect,
 } from "src/components/Shared";
 import { ImageUtils } from "src/utils";
@@ -38,6 +37,7 @@ import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
+import PerformerScrapeModal from "./PerformerScrapeModal";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
@@ -60,14 +60,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const history = useHistory();
 
   // Editing state
-  const [
-    isDisplayingScraperDialog,
-    setIsDisplayingScraperDialog,
-  ] = useState<GQL.Scraper>();
-  const [
-    scrapePerformerDetails,
-    setScrapePerformerDetails,
-  ] = useState<GQL.ScrapedPerformerDataFragment>();
+  const [scraper, setScraper] = useState<GQL.Scraper | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
@@ -422,10 +415,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     formik.setFieldValue("image", url);
   }
 
-  function onDisplayScrapeDialog(scraper: GQL.Scraper) {
-    setIsDisplayingScraperDialog(scraper);
-  }
-
   async function onReloadScrapers() {
     setIsLoading(true);
     try {
@@ -440,29 +429,22 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  function getQueryScraperPerformerInput() {
-    if (!scrapePerformerDetails) return {};
-
-    // image is not supported
-    // remove tags as well
-    const {
-      __typename,
-      image: _image,
-      tags: _tags,
-      ...ret
-    } = scrapePerformerDetails;
-    return ret;
-  }
-
-  async function onScrapePerformer() {
-    setIsDisplayingScraperDialog(undefined);
+  async function onScrapePerformer(
+    selectedPerformer: GQL.ScrapedPerformerDataFragment
+  ) {
+    setScraper(undefined);
     try {
-      if (!scrapePerformerDetails || !isDisplayingScraperDialog) return;
+      if (!scraper) return;
       setIsLoading(true);
-      const result = await queryScrapePerformer(
-        isDisplayingScraperDialog.id,
-        getQueryScraperPerformerInput()
-      );
+
+      const {
+        __typename,
+        image: _image,
+        tags: _tags,
+        ...ret
+      } = selectedPerformer;
+
+      const result = await queryScrapePerformer(scraper.id, ret);
       if (!result?.data?.scrapePerformer) return;
 
       // if this is a new performer, just dump the data
@@ -516,7 +498,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                     <Button
                       key={s.name}
                       className="minimal"
-                      onClick={() => onDisplayScrapeDialog(s)}
+                      onClick={() => setScraper(s)}
                     >
                       {s.name}
                     </Button>
@@ -547,27 +529,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           Scrape with...
         </Button>
       </OverlayTrigger>
-    );
-  }
-
-  function renderScraperDialog() {
-    return (
-      <Modal
-        show={!!isDisplayingScraperDialog}
-        onHide={() => setIsDisplayingScraperDialog(undefined)}
-        header="Scrape"
-        accept={{ onClick: onScrapePerformer, text: "Scrape" }}
-      >
-        <div className="dialog-content">
-          <ScrapePerformerSuggest
-            placeholder="Performer name"
-            scraperId={
-              isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""
-            }
-            onSelectPerformer={(query) => setScrapePerformerDetails(query)}
-          />
-        </div>
-      </Modal>
     );
   }
 
@@ -662,6 +623,16 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  const renderScrapeModal = () =>
+    scraper !== undefined && (
+      <PerformerScrapeModal
+        scraper={scraper}
+        onHide={() => setScraper(undefined)}
+        onSelectPerformer={onScrapePerformer}
+        name={formik.values.name || ""}
+      />
+    );
+
   function renderDeleteAlert() {
     return (
       <Modal
@@ -753,7 +724,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   return (
     <>
       {renderDeleteAlert()}
-      {renderScraperDialog()}
+      {renderScrapeModal()}
       {maybeRenderScrapeDialog()}
 
       <Prompt

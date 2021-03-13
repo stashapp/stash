@@ -90,3 +90,16 @@
 #performer-scraper-popover {
   z-index: 1;
 }
+
+.PerformerScrapeModal {
+  &-list {
+    list-style-type: none;
+    max-height: 50vh;
+    overflow-x: auto;
+    padding-left: 1rem;
+
+    .btn {
+      font-size: 1.2rem;
+    }
+  }
+}
