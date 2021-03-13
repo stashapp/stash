@@ -23,6 +23,7 @@ import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
 import { TagPerformersPanel } from "./TagPerformersPanel";
+import { TagGalleriesPanel } from "./TagGalleriesPanel";
 
 interface ITabParams {
   id?: string;
@@ -53,7 +54,10 @@ export const Tag: React.FC = () => {
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
   const activeTabKey =
-    tab === "markers" || tab === "images" || tab === "performers"
+    tab === "markers" ||
+    tab === "images" ||
+    tab === "performers" ||
+    tab === "galleries"
       ? tab
       : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
@@ -260,6 +264,9 @@ export const Tag: React.FC = () => {
             </Tab>
             <Tab eventKey="images" title="Images">
               <TagImagesPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="galleries" title="Galleries">
+              <TagGalleriesPanel tag={tag} />
             </Tab>
             <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />
