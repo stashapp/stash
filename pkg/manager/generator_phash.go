@@ -38,8 +38,8 @@ func NewPhashGenerator(videoFile ffmpeg.VideoFile, checksum string) (*PhashGener
 	return &PhashGenerator{
 		Info:          generator,
 		VideoChecksum: checksum,
-		Columns:       4,
-		Rows:          4,
+		Columns:       5,
+		Rows:          5,
 	}, nil
 }
 
