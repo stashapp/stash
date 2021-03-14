@@ -35,29 +35,6 @@ func (_m *StudioReaderWriter) All() ([]*models.Studio, error) {
 	return r0, r1
 }
 
-// AllSlim provides a mock function with given fields:
-func (_m *StudioReaderWriter) AllSlim() ([]*models.Studio, error) {
-	ret := _m.Called()
-
-	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func() []*models.Studio); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Studio)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Count provides a mock function with given fields:
 func (_m *StudioReaderWriter) Count() (int, error) {
 	ret := _m.Called()

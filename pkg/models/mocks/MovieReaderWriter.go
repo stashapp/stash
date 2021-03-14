@@ -35,29 +35,6 @@ func (_m *MovieReaderWriter) All() ([]*models.Movie, error) {
 	return r0, r1
 }
 
-// AllSlim provides a mock function with given fields:
-func (_m *MovieReaderWriter) AllSlim() ([]*models.Movie, error) {
-	ret := _m.Called()
-
-	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func() []*models.Movie); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Movie)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Count provides a mock function with given fields:
 func (_m *MovieReaderWriter) Count() (int, error) {
 	ret := _m.Called()

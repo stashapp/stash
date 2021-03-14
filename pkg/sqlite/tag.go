@@ -192,10 +192,6 @@ func (qb *tagQueryBuilder) All() ([]*models.Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getDefaultTagSort(), nil)
 }
 
-func (qb *tagQueryBuilder) AllSlim() ([]*models.Tag, error) {
-	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getDefaultTagSort(), nil)
-}
-
 func (qb *tagQueryBuilder) validateFilter(tagFilter *models.TagFilterType) error {
 	const and = "AND"
 	const or = "OR"

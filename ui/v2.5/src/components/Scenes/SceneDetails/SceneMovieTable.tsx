@@ -3,8 +3,6 @@ import * as GQL from "src/core/generated-graphql";
 import { useAllMoviesForFilter } from "src/core/StashService";
 import { Form, Row, Col } from "react-bootstrap";
 
-type ValidTypes = GQL.SlimMovieDataFragment;
-
 export type MovieSceneIndexMap = Map<string, number | undefined>;
 
 export interface IProps {
@@ -17,8 +15,8 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
 ) => {
   const { data } = useAllMoviesForFilter();
 
-  const items = !!data && !!data.allMoviesSlim ? data.allMoviesSlim : [];
-  let itemsFilter: ValidTypes[] = [];
+  const items = !!data && !!data.allMovies ? data.allMovies: [];
+  let itemsFilter: GQL.SlimMovieDataFragment[] = [];
 
   if (!!props.movieSceneIndexes && !!items) {
     props.movieSceneIndexes.forEach((_index, movieId) => {

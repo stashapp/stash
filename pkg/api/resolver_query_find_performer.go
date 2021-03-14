@@ -52,14 +52,3 @@ func (r *queryResolver) AllPerformers(ctx context.Context) (ret []*models.Perfor
 
 	return ret, nil
 }
-
-func (r *queryResolver) AllPerformersSlim(ctx context.Context) (ret []*models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Performer().AllSlim()
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
