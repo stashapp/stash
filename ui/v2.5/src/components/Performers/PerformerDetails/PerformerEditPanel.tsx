@@ -91,6 +91,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const genderOptions = [""].concat(getGenderStrings());
 
+  const labelXS = 3;
+  const labelXL = 2;
+  const fieldXS = 9;
+  const fieldXL = 7;
+
   const schema = yup.object({
     name: yup.string().required(),
     aliases: yup.string().optional(),
@@ -677,7 +682,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function renderTagsField() {
     return (
-      <Form.Group controlId={"tags"} as={Row}>
+      <Form.Group controlId="tags" as={Row}>
         <Form.Label column sm={labelXS} xl={labelXL}>
           Tags
         </Form.Label>
@@ -753,11 +758,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       </Row>
     );
   }
-
-  const labelXS = 3;
-  const labelXL = 2;
-  const fieldXS = 9;
-  const fieldXL = 7;
 
   function renderTextField(field: string, title: string) {
     return (
