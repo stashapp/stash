@@ -806,7 +806,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("aliases", "Alias")}
+        <Form.Group controlId="aliases" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Alias
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <Form.Control
+              as="textarea"
+              className="text-input"
+              placeholder="Alias"
+              {...formik.getFieldProps("aliases")}
+            />
+          </Col>
+        </Form.Group>
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
