@@ -6,6 +6,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapeDialogRow,
+  ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog";
 import {
   getGenderStrings,
@@ -358,7 +359,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={name}
           onChange={(value) => setName(value)}
         />
-        <ScrapedInputGroupRow
+        <ScrapedTextAreaRow
           title="Aliases"
           result={aliases}
           onChange={(value) => setAliases(value)}
@@ -404,12 +405,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={careerLength}
           onChange={(value) => setCareerLength(value)}
         />
-        <ScrapedInputGroupRow
+        <ScrapedTextAreaRow
           title="Tattoos"
           result={tattoos}
           onChange={(value) => setTattoos(value)}
         />
-        <ScrapedInputGroupRow
+        <ScrapedTextAreaRow
           title="Piercings"
           result={piercings}
           onChange={(value) => setPiercings(value)}
