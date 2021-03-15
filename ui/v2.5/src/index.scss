@@ -44,6 +44,10 @@ code,
     monospace;
 }
 
+dd {
+  white-space: pre-line;
+}
+
 .input-control,
 .text-input {
   border: 0;
