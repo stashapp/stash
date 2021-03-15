@@ -15,7 +15,7 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
 ) => {
   const { data } = useAllMoviesForFilter();
 
-  const items = !!data && !!data.allMovies ? data.allMovies: [];
+  const items = !!data && !!data.allMovies ? data.allMovies : [];
   let itemsFilter: GQL.SlimMovieDataFragment[] = [];
 
   if (!!props.movieSceneIndexes && !!items) {
