@@ -311,13 +311,13 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 						f.setError(err)
 						return
 					}
-					f.addWhere(column+" regexp ?", c.Value)
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", column), c.Value)
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
-					f.addWhere(column+" NOT regexp ?", c.Value)
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column), c.Value)
 				default:
 					clause, count := getSimpleCriterionClause(modifier, "?")
 
