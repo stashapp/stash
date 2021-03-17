@@ -19,9 +19,18 @@ const CLASSNAME = "DuplicateChecker";
 export const SettingsDuplicatePanel: React.FC = () => {
   const history = useHistory();
   const { page, size, distance } = querystring.parse(history.location.search);
-  const currentPage = Number.parseInt(Array.isArray(page) ? page[0] : page ?? '1', 10);
-  const pageSize = Number.parseInt(Array.isArray(size) ? size[0] : size ?? '20', 10);
-  const hashDistance = Number.parseInt(Array.isArray(distance) ? distance[0] : distance ?? '0', 10);
+  const currentPage = Number.parseInt(
+    Array.isArray(page) ? page[0] : page ?? "1",
+    10
+  );
+  const pageSize = Number.parseInt(
+    Array.isArray(size) ? size[0] : size ?? "20",
+    10
+  );
+  const hashDistance = Number.parseInt(
+    Array.isArray(distance) ? distance[0] : distance ?? "0",
+    10
+  );
   const [isMultiDelete, setIsMultiDelete] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState<Record<string, boolean>>(
     {}
@@ -38,17 +47,22 @@ export const SettingsDuplicatePanel: React.FC = () => {
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;
 
   const scenes = data?.findDuplicateScenes ?? [];
-  const filteredScenes = scenes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const filteredScenes = scenes.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
   const checkCount = Object.keys(checkedScenes).filter(
     (id) => checkedScenes[id]
   ).length;
 
-  const setQuery = (q: Record<string, string|number|undefined>) => {
-    history.push({ search:  querystring.stringify({
-      ...querystring.parse(history.location.search),
-      ...q,
-    }) });
-  }
+  const setQuery = (q: Record<string, string | number | undefined>) => {
+    history.push({
+      search: querystring.stringify({
+        ...querystring.parse(history.location.search),
+        ...q,
+      }),
+    });
+  };
 
   function onDeleteDialogClosed(deleted: boolean) {
     setDeletingScene(null);
@@ -102,7 +116,15 @@ export const SettingsDuplicatePanel: React.FC = () => {
           <Col xs={2}>
             <Form.Control
               as="select"
-              onChange={e => setQuery({ distance: e.currentTarget.value === "0" ? undefined : e.currentTarget.value, page: undefined })}
+              onChange={(e) =>
+                setQuery({
+                  distance:
+                    e.currentTarget.value === "0"
+                      ? undefined
+                      : e.currentTarget.value,
+                  page: undefined,
+                })
+              }
               defaultValue={distance ?? 0}
               className="ml-4"
             >
@@ -114,12 +136,14 @@ export const SettingsDuplicatePanel: React.FC = () => {
           </Col>
         </Row>
         <Form.Text>
-          Levels below &ldquo;Exact&rdquo; can take longer to calculate. False positives
-          might also be returned on lower accuracy levels.
+          Levels below &ldquo;Exact&rdquo; can take longer to calculate. False
+          positives might also be returned on lower accuracy levels.
         </Form.Text>
       </Form.Group>
       <div className="d-flex mb-2">
-        <h6 className="mr-auto align-self-center">{scenes.length} sets of duplicates found.</h6>
+        <h6 className="mr-auto align-self-center">
+          {scenes.length} sets of duplicates found.
+        </h6>
         {checkCount > 0 && (
           <Button
             className="edit-button"
@@ -133,13 +157,22 @@ export const SettingsDuplicatePanel: React.FC = () => {
           itemsPerPage={pageSize}
           currentPage={currentPage}
           totalItems={scenes.length}
-          onChangePage={newPage => setQuery({ page: newPage === 1 ? undefined : newPage })}
+          onChangePage={(newPage) =>
+            setQuery({ page: newPage === 1 ? undefined : newPage })
+          }
         />
         <Form.Control
           as="select"
           className="w-auto ml-2 btn-secondary"
           defaultValue={pageSize}
-          onChange={e => setQuery({ size: e.currentTarget.value === "20" ? undefined : e.currentTarget.value })}
+          onChange={(e) =>
+            setQuery({
+              size:
+                e.currentTarget.value === "20"
+                  ? undefined
+                  : e.currentTarget.value,
+            })
+          }
         >
           <option value={10}>10</option>
           <option value={20}>20</option>
