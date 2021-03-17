@@ -12,13 +12,14 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
+import usePlaylist from "src/hooks/Playlist";
 import { WallPanel } from "../Wall/WallPanel";
-import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { SceneCardsGrid } from "./SceneCardsGrid";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -30,6 +31,7 @@ export const SceneList: React.FC<ISceneList> = ({
   persistState,
 }) => {
   const history = useHistory();
+  const { setPlaylist } = usePlaylist();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -125,6 +127,12 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsExportDialogOpen(true);
   }
 
+  function populatePlaylist(filter: ListFilterModel) {
+    setPlaylist({
+      query: filter,
+    });
+  }
+
   function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
     if (isGenerateDialogOpen) {
       return (
@@ -171,25 +179,6 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  function renderSceneCard(
-    scene: SlimSceneDataFragment,
-    selectedIds: Set<string>,
-    zoomIndex: number
-  ) {
-    return (
-      <SceneCard
-        key={scene.id}
-        scene={scene}
-        zoomIndex={zoomIndex}
-        selecting={selectedIds.size > 0}
-        selected={selectedIds.has(scene.id)}
-        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          listData.onSelectChange(scene.id, selected, shiftKey)
-        }
-      />
-    );
-  }
-
   function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
@@ -201,11 +190,15 @@ export const SceneList: React.FC<ISceneList> = ({
     }
     if (filter.displayMode === DisplayMode.Grid) {
       return (
-        <div className="row justify-content-center">
-          {result.data.findScenes.scenes.map((scene) =>
-            renderSceneCard(scene, selectedIds, zoomIndex)
-          )}
-        </div>
+        <SceneCardsGrid
+          scenes={result.data.findScenes.scenes}
+          zoomIndex={zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={(id, selected, shiftKey) =>
+            listData.onSelectChange(id, selected, shiftKey)
+          }
+          onSceneClick={() => populatePlaylist(filter)}
+        />
       );
     }
     if (filter.displayMode === DisplayMode.List) {

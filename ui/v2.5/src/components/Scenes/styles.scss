@@ -159,6 +159,11 @@ textarea.scene-description {
 
 .scene-card,
 .gallery-card {
+  a {
+    color: $text-color;
+    text-decoration: none;
+  }
+
   &-check {
     left: 0.5rem;
     margin-top: -12px;
@@ -572,4 +577,38 @@ input[type="range"].blue-slider {
   border: none;
   padding-left: 0;
   padding-right: 0.25rem;
+}
+
+#playlist-viewer {
+  // position: absolute;
+  // right: 0.7rem;
+  // top: 0;
+  // display: block;
+  // width: 200px;
+  // height: 100%;
+  // overflow-y: scroll;
+
+  .thumbnail-container {
+    height: 50px;
+    margin-right: 0.75rem;
+    min-width: 100px;
+    width: 100px;
+  }
+
+  ol {
+    padding-inline-start: 20px;
+  }
+
+  img {
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    width: 100%;
+  }
+
+  a {
+    color: $text-color;
+    text-decoration: none;
+    font-weight: 500;
+  }
 }

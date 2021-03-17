@@ -12,6 +12,7 @@ import {
   useSceneStreams,
   useSceneGenerateScreenshot,
   useSceneUpdate,
+  queryFindScenes,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
@@ -19,6 +20,9 @@ import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
 import Mousetrap from "mousetrap";
+import usePlaylist from "src/hooks/Playlist";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { PlaylistViewer } from "./PlaylistViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -40,6 +44,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const { playlist } = usePlaylist();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
@@ -65,8 +70,23 @@ export const Scene: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
+  const [playlistScenes, setPlaylistScenes] = useState<
+    GQL.SlimSceneDataFragment[]
+  >();
+
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
+
+  async function getPlaylistScenes(filter: ListFilterModel) {
+    const scenes = await queryFindScenes(filter);
+    setPlaylistScenes(scenes.data.findScenes.scenes);
+  }
+
+  useEffect(() => {
+    if (playlist.query) {
+      getPlaylistScenes(playlist.query);
+    }
+  }, [playlist]);
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
@@ -256,6 +276,9 @@ export const Scene: React.FC = () => {
               <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
             </Nav.Item>
             <Nav.Item>
+              <Nav.Link eventKey="scene-playlist-panel">Playlist</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
             </Nav.Item>
             {scene.movies.length > 0 ? (
@@ -309,6 +332,9 @@ export const Scene: React.FC = () => {
         <Tab.Content>
           <Tab.Pane eventKey="scene-details-panel">
             <SceneDetailPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-playlist-panel">
+            <PlaylistViewer scenes={playlistScenes} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel
