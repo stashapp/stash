@@ -11,7 +11,7 @@ export interface IPlaylistViewer {
   currentID?: string;
 }
 
-export const PlaylistViewer: React.FC<IPlaylistViewer> = ({
+export const QueueViewer: React.FC<IPlaylistViewer> = ({
   scenes,
   currentID,
 }) => {

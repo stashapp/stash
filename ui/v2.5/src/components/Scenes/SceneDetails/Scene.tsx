@@ -22,7 +22,7 @@ import { TextUtils, JWUtils } from "src/utils";
 import Mousetrap from "mousetrap";
 import usePlaylist from "src/hooks/Playlist";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { PlaylistViewer } from "./PlaylistViewer";
+import { QueueViewer } from "./QueueViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -276,7 +276,7 @@ export const Scene: React.FC = () => {
               <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="scene-playlist-panel">Playlist</Nav.Link>
+              <Nav.Link eventKey="scene-playlist-panel">Queue</Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
@@ -334,7 +334,7 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-playlist-panel">
-            <PlaylistViewer scenes={playlistScenes} currentID={scene.id} />
+            <QueueViewer scenes={playlistScenes} currentID={scene.id} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel
