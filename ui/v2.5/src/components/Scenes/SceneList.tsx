@@ -31,7 +31,7 @@ export const SceneList: React.FC<ISceneList> = ({
   persistState,
 }) => {
   const history = useHistory();
-  const { setPlaylist } = usePlaylist();
+  const [ _playlist, setPlaylist ] = usePlaylist();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -127,10 +127,12 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsExportDialogOpen(true);
   }
 
-  function populatePlaylist(filter: ListFilterModel) {
-    setPlaylist({
+  async function sceneClicked(sceneId: string, filter: ListFilterModel) {
+    await setPlaylist({
       query: filter,
     });
+
+    history.push(`/scenes/${sceneId}`);
   }
 
   function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
@@ -197,7 +199,7 @@ export const SceneList: React.FC<ISceneList> = ({
           onSelectChange={(id, selected, shiftKey) =>
             listData.onSelectChange(id, selected, shiftKey)
           }
-          onSceneClick={() => populatePlaylist(filter)}
+          onSceneClick={(id) => sceneClicked(id, filter)}
         />
       );
     }

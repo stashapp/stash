@@ -324,6 +324,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       event.preventDefault();
     } else if (props.onSceneClicked) {
       props.onSceneClicked();
+      event.preventDefault();
     }
   }
 

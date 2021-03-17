@@ -44,7 +44,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
-  const { playlist } = usePlaylist();
+  const [ playlist ] = usePlaylist();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
@@ -83,8 +83,8 @@ export const Scene: React.FC = () => {
   }
 
   useEffect(() => {
-    if (playlist.query) {
-      getPlaylistScenes(playlist.query);
+    if (playlist?.data?.query) {
+      getPlaylistScenes(playlist.data.query);
     }
   }, [playlist]);
 

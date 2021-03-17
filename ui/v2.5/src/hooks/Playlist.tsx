@@ -1,42 +1,13 @@
 import React, { useState, useContext } from "react";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { useLocalForage } from "./LocalForage";
 
 export interface IPlaylist {
   query?: ListFilterModel;
-  sceneIDs?: [number];
+  sceneIDs?: number[];
 }
 
-interface IPlaylistContextData {
-  playlist: IPlaylist;
-  setPlaylist: (p: IPlaylist) => void;
-}
-
-const defaultPlaylistContextData: IPlaylistContextData = {
-  playlist: {},
-  setPlaylist: () => null,
-};
-
-const PlaylistContext = React.createContext<IPlaylistContextData>(
-  defaultPlaylistContextData
-);
-
-export const PlaylistProvider: React.FC = ({ children }) => {
-  const [playlist, setPlaylist] = useState<IPlaylist>({});
-
-  return (
-    <PlaylistContext.Provider
-      value={{
-        playlist,
-        setPlaylist,
-      }}
-    >
-      {children}
-    </PlaylistContext.Provider>
-  );
-};
-
-const usePlaylist = () => {
-  return useContext(PlaylistContext);
-};
+export const usePlaylist = () =>
+  useLocalForage<IPlaylist>("playlist");
 
 export default usePlaylist;
