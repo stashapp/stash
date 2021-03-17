@@ -421,7 +421,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Form.Check
           id="scan-generate-phashes"
           checked={scanGeneratePhashes}
-          label="Generate phashes during scan (for deduplication)"
+          label="Generate phashes during scan (for deduplication and scene identification)"
           onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
         />
       </Form.Group>

@@ -69,7 +69,7 @@ export const GenerateButton: React.FC = () => {
         <Form.Check
           id="phash-task"
           checked={phashes}
-          label="Phashes (for deduplication)"
+          label="Phashes (for deduplication and scene identification)"
           onChange={() => setPhashes(!phashes)}
         />
       </Form.Group>

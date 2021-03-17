@@ -14,7 +14,7 @@ import { Pagination } from "src/components/List/Pagination";
 import { TextUtils } from "src/utils";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
 
-const CLASSNAME = "DuplicateFinder";
+const CLASSNAME = "DuplicateChecker";
 
 export const SettingsDuplicatePanel: React.FC = () => {
   const history = useHistory();

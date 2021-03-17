@@ -47,7 +47,7 @@ export const Settings: React.FC = () => {
                 <Nav.Link eventKey="logs">Logs</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="duplicates">Dupe Finder</Nav.Link>
+                <Nav.Link eventKey="duplicates">Dupe Checker</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="about">About</Nav.Link>

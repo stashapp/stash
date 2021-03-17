@@ -223,7 +223,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     if (props.scene.phash) {
       return (
         <div className="row">
-          <span className="col-4">PHash</span>
+          <abbr className="col-4" title="Perceptual hash">PHash</abbr>
           <TruncatedText className="col-8" text={props.scene.phash} />
         </div>
       );
