@@ -11,7 +11,6 @@ type PerformerReader interface {
 	CountByTagID(tagID int) (int, error)
 	Count() (int, error)
 	All() ([]*Performer, error)
-	AllSlim() ([]*Performer, error)
 	Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	GetImage(performerID int) ([]byte, error)
 	GetStashIDs(performerID int) ([]*StashID, error)

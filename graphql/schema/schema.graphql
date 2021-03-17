@@ -115,11 +115,6 @@ type Query {
 
   # Get everything with minimal metadata
 
-  allPerformersSlim: [Performer!]!
-  allStudiosSlim: [Studio!]!
-  allMoviesSlim: [Movie!]!
-  allTagsSlim: [Tag!]!
-
   # Version
   version: Version!
   

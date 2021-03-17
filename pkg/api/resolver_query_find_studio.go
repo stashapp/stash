@@ -54,14 +54,3 @@ func (r *queryResolver) AllStudios(ctx context.Context) (ret []*models.Studio, e
 
 	return ret, nil
 }
-
-func (r *queryResolver) AllStudiosSlim(ctx context.Context) (ret []*models.Studio, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Studio().AllSlim()
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
