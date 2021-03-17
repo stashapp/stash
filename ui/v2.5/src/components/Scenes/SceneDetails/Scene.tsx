@@ -44,7 +44,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
-  const [ playlist ] = usePlaylist();
+  const [playlist] = usePlaylist();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
@@ -334,7 +334,7 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-playlist-panel">
-            <PlaylistViewer scenes={playlistScenes} />
+            <PlaylistViewer scenes={playlistScenes} currentID={scene.id} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel

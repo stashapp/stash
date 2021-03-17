@@ -31,7 +31,7 @@ export const SceneList: React.FC<ISceneList> = ({
   persistState,
 }) => {
   const history = useHistory();
-  const [ _playlist, setPlaylist ] = usePlaylist();
+  const [, setPlaylist] = usePlaylist();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
