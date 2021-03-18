@@ -127,7 +127,11 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsExportDialogOpen(true);
   }
 
-  async function sceneClicked(sceneId: string, sceneIndex: number, filter: ListFilterModel) {
+  async function sceneClicked(
+    sceneId: string,
+    sceneIndex: number,
+    filter: ListFilterModel
+  ) {
     const queue = SceneQueue.fromListFilterModel(filter, sceneIndex);
     const paramStr = queue.makeQueryParameters();
     history.push(`/scenes/${sceneId}?${paramStr}`);

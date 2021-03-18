@@ -15,14 +15,23 @@ export class SceneQueue {
   public query?: ListFilterModel;
   public sceneIDs?: string[];
 
-  public static fromListFilterModel(filter: ListFilterModel, currentSceneIndex?: number) {
+  public static fromListFilterModel(
+    filter: ListFilterModel,
+    currentSceneIndex?: number
+  ) {
     const ret = new SceneQueue();
 
-    const filterCopy = Object.assign(new ListFilterModel(filter.filterMode), filter);
+    const filterCopy = Object.assign(
+      new ListFilterModel(filter.filterMode),
+      filter
+    );
     filterCopy.itemsPerPage = 40;
 
     // adjust page to be correct for the index
-    const filterIndex = currentSceneIndex !== undefined ? currentSceneIndex + ((filter.currentPage - 1) * filter.itemsPerPage) : 0;
+    const filterIndex =
+      currentSceneIndex !== undefined
+        ? currentSceneIndex + (filter.currentPage - 1) * filter.itemsPerPage
+        : 0;
     const newPage = Math.floor(filterIndex / filterCopy.itemsPerPage) + 1;
     filterCopy.currentPage = newPage;
 
@@ -39,12 +48,12 @@ export class SceneQueue {
         qfq: queryParams.q,
         qsort: queryParams.sortby,
         qsortd: queryParams.sortdir,
-      }
+      };
 
       if (page !== undefined) {
         translatedParams.qfp = page;
       }
-      
+
       return queryString.stringify(translatedParams, { encode: false });
     } else if (this.sceneIDs && this.sceneIDs.length > 0) {
       const params = {
@@ -66,9 +75,12 @@ export class SceneQueue {
       p: parsed.qfp,
       c: parsed.qfc,
     };
-    
+
     if (parsed.qfp) {
-      const query = new ListFilterModel(FilterMode.Scenes, translated as queryString.ParsedQuery);
+      const query = new ListFilterModel(
+        FilterMode.Scenes,
+        translated as queryString.ParsedQuery
+      );
       ret.query = query;
     } else if (parsed.qs) {
       // must be scene list

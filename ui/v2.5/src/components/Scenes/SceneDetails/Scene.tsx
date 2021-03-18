@@ -70,37 +70,43 @@ export const Scene: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
-  const [queueScenes, setQueueScenes] = useState<
-    GQL.SlimSceneDataFragment[]
-  >([]);
+  const [sceneQueue, setSceneQueue] = useState<SceneQueue>(new SceneQueue());
+  const [queueScenes, setQueueScenes] = useState<GQL.SlimSceneDataFragment[]>(
+    []
+  );
 
   const [queueTotal, setQueueTotal] = useState(0);
+  const [queueStart, setQueueStart] = useState(1);
 
   const [rerenderPlayer, setRerenderPlayer] = useState(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
-  const sceneQueue = SceneQueue.fromQueryParameters(location.search);
-  const currentQueueIndex = queueScenes.findIndex(s => s.id === id);
+  const currentQueueIndex = queueScenes.findIndex((s) => s.id === id);
 
   async function getQueueFilterScenes(filter: ListFilterModel) {
     const query = await queryFindScenes(filter);
     const { scenes, count } = query.data.findScenes;
     setQueueScenes(scenes);
     setQueueTotal(count);
+    setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
   }
 
   // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
   // a rerender by not drawing it
   useEffect(() => {
     if (rerenderPlayer) {
-      setRerenderPlayer(false)
+      setRerenderPlayer(false);
     }
   }, [rerenderPlayer]);
 
   useEffect(() => {
     setRerenderPlayer(true);
   }, [id]);
+
+  useEffect(() => {
+    setSceneQueue(SceneQueue.fromQueryParameters(location.search));
+  }, [location.search]);
 
   useEffect(() => {
     if (sceneQueue.query) {
@@ -200,6 +206,50 @@ export const Scene: React.FC = () => {
     Toast.success({ content: "Generating screenshot" });
   }
 
+  async function onQueueLessScenes() {
+    if (!sceneQueue.query || queueStart <= 1) {
+      return;
+    }
+
+    const filterCopy = Object.assign(
+      new ListFilterModel(FilterMode.Scenes),
+      sceneQueue.query
+    );
+    const newStart = queueStart - filterCopy.itemsPerPage;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindScenes(filterCopy);
+    const { scenes } = query.data.findScenes;
+
+    // prepend scenes to scene list
+    const newScenes = scenes.concat(queueScenes);
+    setQueueScenes(newScenes);
+    setQueueStart(newStart);
+  }
+
+  function queueHasMoreScenes() {
+    return queueStart + queueScenes.length - 1 < queueTotal;
+  }
+
+  async function onQueueMoreScenes() {
+    if (!sceneQueue.query || !queueHasMoreScenes()) {
+      return;
+    }
+
+    const filterCopy = Object.assign(
+      new ListFilterModel(FilterMode.Scenes),
+      sceneQueue.query
+    );
+    const newStart = queueStart + queueScenes.length;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindScenes(filterCopy);
+    const { scenes } = query.data.findScenes;
+
+    // append scenes to scene list
+    const newScenes = scenes.concat(queueScenes);
+    setQueueScenes(newScenes);
+    // don't change queue start
+  }
+
   function playScene(id: string, page?: number) {
     const paramStr = sceneQueue.makeQueryParameters(page);
     history.push(`/scenes/${id}?${paramStr}&autoplay=true`);
@@ -207,24 +257,26 @@ export const Scene: React.FC = () => {
 
   function onQueueNext() {
     if (currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) {
-      playScene(queueScenes[currentQueueIndex+1].id);
+      playScene(queueScenes[currentQueueIndex + 1].id);
     }
   }
 
   function onQueuePrevious() {
     if (currentQueueIndex > 0) {
-      playScene(queueScenes[currentQueueIndex-1].id)
+      playScene(queueScenes[currentQueueIndex - 1].id);
     }
   }
 
   async function onQueueRandom() {
     if (sceneQueue.query) {
       const query = sceneQueue.query;
-      // TODO - choose a random page, then a random index from that page
       const pages = Math.ceil(queueTotal / query.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
       const index = Math.floor(Math.random() * query.itemsPerPage);
-      const filterCopy = Object.assign(new ListFilterModel(FilterMode.Scenes), sceneQueue.query);
+      const filterCopy = Object.assign(
+        new ListFilterModel(FilterMode.Scenes),
+        sceneQueue.query
+      );
       filterCopy.currentPage = page;
       const queryResults = await queryFindScenes(filterCopy);
       if (queryResults.data.findScenes.scenes.length > index) {
@@ -346,7 +398,9 @@ export const Scene: React.FC = () => {
               <Nav.Item>
                 <Nav.Link eventKey="scene-queue-panel">Queue</Nav.Link>
               </Nav.Item>
-            ) : ("")}
+            ) : (
+              ""
+            )}
             <Nav.Item>
               <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
             </Nav.Item>
@@ -403,13 +457,17 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-queue-panel">
-            <QueueViewer 
-              scenes={queueScenes} 
-              currentID={scene.id} 
+            <QueueViewer
+              scenes={queueScenes}
+              currentID={scene.id}
               onSceneClicked={(id) => playScene(id)}
               onNext={onQueueNext}
               onPrevious={onQueuePrevious}
               onRandom={onQueueRandom}
+              start={queueStart}
+              hasMoreScenes={queueHasMoreScenes()}
+              onLessScenes={() => onQueueLessScenes()}
+              onMoreScenes={() => onQueueMoreScenes()}
             />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel">
@@ -525,7 +583,7 @@ export const Scene: React.FC = () => {
             sceneStreams={sceneStreams?.sceneStreams ?? []}
             onComplete={onComplete}
           />
-        ): undefined}
+        ) : undefined}
       </div>
     </div>
   );
