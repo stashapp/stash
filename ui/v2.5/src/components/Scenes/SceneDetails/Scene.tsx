@@ -235,6 +235,13 @@ export const Scene: React.FC = () => {
     }
   }
 
+  function onComplete() {
+    // load the next scene if we're autoplaying
+    if (autoplay) {
+      onQueueNext();
+    }
+  }
+
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
@@ -513,6 +520,7 @@ export const Scene: React.FC = () => {
             timestamp={timestamp}
             autoplay={autoplay}
             sceneStreams={sceneStreams?.sceneStreams ?? []}
+            onComplete={onComplete}
           />
         ): undefined}
       </div>
