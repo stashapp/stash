@@ -146,6 +146,10 @@ func GetConfigPath() string {
 	return filepath.Dir(configFileUsed)
 }
 
+func GetConfigFilePath() string {
+	return viper.ConfigFileUsed()
+}
+
 func GetStashPaths() []*models.StashConfig {
 	var ret []*models.StashConfig
 	if err := viper.UnmarshalKey(Stash, &ret); err != nil || len(ret) == 0 {
