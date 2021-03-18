@@ -200,8 +200,8 @@ export const Scene: React.FC = () => {
     Toast.success({ content: "Generating screenshot" });
   }
 
-  function playScene(id: string) {
-    const paramStr = sceneQueue.makeQueryParameters();
+  function playScene(id: string, page?: number) {
+    const paramStr = sceneQueue.makeQueryParameters(page);
     history.push(`/scenes/${id}?${paramStr}&autoplay=true`);
   }
 
@@ -219,15 +219,18 @@ export const Scene: React.FC = () => {
 
   async function onQueueRandom() {
     if (sceneQueue.query) {
-      const index = Math.floor(Math.random() * queueTotal);
+      const query = sceneQueue.query;
+      // TODO - choose a random page, then a random index from that page
+      const pages = Math.ceil(queueTotal / query.itemsPerPage);
+      const page = Math.floor(Math.random() * pages) + 1;
+      const index = Math.floor(Math.random() * query.itemsPerPage);
       const filterCopy = Object.assign(new ListFilterModel(FilterMode.Scenes), sceneQueue.query);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindScenes(filterCopy);
-      if (singleResult.data.findScenes.scenes.length === 1) {
-        const { id } = singleResult!.data!.findScenes!.scenes[0];
+      filterCopy.currentPage = page;
+      const queryResults = await queryFindScenes(filterCopy);
+      if (queryResults.data.findScenes.scenes.length > index) {
+        const { id } = queryResults!.data!.findScenes!.scenes[index];
         // navigate to the image player page
-        playScene(id);
+        playScene(id, page);
       }
     } else {
       const index = Math.floor(Math.random() * queueTotal);

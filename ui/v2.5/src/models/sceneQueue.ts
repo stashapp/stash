@@ -30,7 +30,7 @@ export class SceneQueue {
     return ret;
   }
 
-  public makeQueryParameters() {
+  public makeQueryParameters(page?: number) {
     if (this.query) {
       const queryParams = this.query.getQueryParameters();
       const translatedParams = {
@@ -39,6 +39,10 @@ export class SceneQueue {
         qfq: queryParams.q,
         qsort: queryParams.sortby,
         qsortd: queryParams.sortdir,
+      }
+
+      if (page !== undefined) {
+        translatedParams.qfp = page;
       }
       
       return queryString.stringify(translatedParams, { encode: false });
