@@ -34,6 +34,7 @@ import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
 import { SceneQueue } from "src/models/sceneQueue";
+import { FilterMode } from "src/models/list-filter/types";
 
 interface ISceneParams {
   id?: string;
@@ -71,16 +72,35 @@ export const Scene: React.FC = () => {
 
   const [queueScenes, setQueueScenes] = useState<
     GQL.SlimSceneDataFragment[]
-  >();
+  >([]);
+
+  const [queueTotal, setQueueTotal] = useState(0);
+
+  const [rerenderPlayer, setRerenderPlayer] = useState(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
   const sceneQueue = SceneQueue.fromQueryParameters(location.search);
+  const currentQueueIndex = queueScenes.findIndex(s => s.id === id);
 
   async function getQueueFilterScenes(filter: ListFilterModel) {
-    const scenes = await queryFindScenes(filter);
-    setQueueScenes(scenes.data.findScenes.scenes);
+    const query = await queryFindScenes(filter);
+    const { scenes, count } = query.data.findScenes;
+    setQueueScenes(scenes);
+    setQueueTotal(count);
   }
+
+  // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
+  // a rerender by not drawing it
+  useEffect(() => {
+    if (rerenderPlayer) {
+      setRerenderPlayer(false)
+    }
+  }, [rerenderPlayer]);
+
+  useEffect(() => {
+    setRerenderPlayer(true);
+  }, [id]);
 
   useEffect(() => {
     if (sceneQueue.query) {
@@ -88,7 +108,7 @@ export const Scene: React.FC = () => {
     } else if (sceneQueue.sceneIDs) {
       // TODO
     }
-  }, [sceneQueue])
+  }, [sceneQueue]);
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
@@ -178,6 +198,41 @@ export const Scene: React.FC = () => {
       },
     });
     Toast.success({ content: "Generating screenshot" });
+  }
+
+  function playScene(id: string) {
+    const paramStr = sceneQueue.makeQueryParameters();
+    history.push(`/scenes/${id}?${paramStr}&autoplay=true`);
+  }
+
+  function onQueueNext() {
+    if (currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) {
+      playScene(queueScenes[currentQueueIndex+1].id);
+    }
+  }
+
+  function onQueuePrevious() {
+    if (currentQueueIndex > 0) {
+      playScene(queueScenes[currentQueueIndex-1].id)
+    }
+  }
+
+  async function onQueueRandom() {
+    if (sceneQueue.query) {
+      const index = Math.floor(Math.random() * queueTotal);
+      const filterCopy = Object.assign(new ListFilterModel(FilterMode.Scenes), sceneQueue.query);
+      filterCopy.itemsPerPage = 1;
+      filterCopy.currentPage = index + 1;
+      const singleResult = await queryFindScenes(filterCopy);
+      if (singleResult.data.findScenes.scenes.length === 1) {
+        const { id } = singleResult!.data!.findScenes!.scenes[0];
+        // navigate to the image player page
+        playScene(id);
+      }
+    } else {
+      const index = Math.floor(Math.random() * queueTotal);
+      playScene(queueScenes[index].id);
+    }
   }
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -277,9 +332,11 @@ export const Scene: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="scene-playlist-panel">Queue</Nav.Link>
-            </Nav.Item>
+            {(queueScenes ?? []).length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-queue-panel">Queue</Nav.Link>
+              </Nav.Item>
+            ) : ("")}
             <Nav.Item>
               <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
             </Nav.Item>
@@ -335,8 +392,15 @@ export const Scene: React.FC = () => {
           <Tab.Pane eventKey="scene-details-panel">
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-playlist-panel">
-            <QueueViewer scenes={queueScenes} currentID={scene.id} />
+          <Tab.Pane eventKey="scene-queue-panel">
+            <QueueViewer 
+              scenes={queueScenes} 
+              currentID={scene.id} 
+              onSceneClicked={(id) => playScene(id)}
+              onNext={onQueueNext}
+              onPrevious={onQueuePrevious}
+              onRandom={onQueueRandom}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel
@@ -442,13 +506,15 @@ export const Scene: React.FC = () => {
         </Button>
       </div>
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
-        <ScenePlayer
-          className="w-100 m-sm-auto no-gutter"
-          scene={scene}
-          timestamp={timestamp}
-          autoplay={autoplay}
-          sceneStreams={sceneStreams?.sceneStreams ?? []}
-        />
+        {!rerenderPlayer ? (
+          <ScenePlayer
+            className="w-100 m-sm-auto no-gutter"
+            scene={scene}
+            timestamp={timestamp}
+            autoplay={autoplay}
+            sceneStreams={sceneStreams?.sceneStreams ?? []}
+          />
+        ): undefined}
       </div>
     </div>
   );
