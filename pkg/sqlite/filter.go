@@ -182,7 +182,7 @@ func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) strin
 			}
 		}
 
-		ret += op + subFilterClause
+		ret += op + "(" + subFilterClause + ")"
 	}
 
 	return ret
@@ -216,7 +216,7 @@ func (f *filterBuilder) generateHavingClauses() (string, []interface{}) {
 	if f.subFilter != nil {
 		c, a := f.subFilter.generateHavingClauses()
 		if c != "" {
-			clause += " " + f.subFilterOp + " " + c
+			clause = f.getSubFilterClause(clause, c)
 			if len(a) > 0 {
 				args = append(args, a...)
 			}
@@ -284,7 +284,10 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 	}
 
 	if len(clauses) > 0 {
-		c := "(" + strings.Join(clauses, " AND ") + ")"
+		c := strings.Join(clauses, " AND ")
+		if len(clauses) > 1 {
+			c = "(" + c + ")"
+		}
 		return c, args
 	}
 
