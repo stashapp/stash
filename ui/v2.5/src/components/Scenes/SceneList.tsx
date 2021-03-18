@@ -95,20 +95,19 @@ export const SceneList: React.FC<ISceneList> = ({
     if (result.data && result.data.findScenes) {
       const { count } = result.data.findScenes;
 
-      const index = Math.floor(Math.random() * count);
+      const pages = Math.ceil(count / filter.itemsPerPage);
+      const page = Math.floor(Math.random() * pages) + 1;
+      const index = Math.floor(Math.random() * filter.itemsPerPage);
       const filterCopy = _.cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindScenes(filterCopy);
-      if (
-        singleResult &&
-        singleResult.data &&
-        singleResult.data.findScenes &&
-        singleResult.data.findScenes.scenes.length === 1
-      ) {
-        const { id } = singleResult!.data!.findScenes!.scenes[0];
-        // navigate to the scene player page
-        history.push(`/scenes/${id}?autoplay=true`);
+      filterCopy.currentPage = page;
+      filterCopy.sortBy = "random";
+      const queryResults = await queryFindScenes(filterCopy);
+      if (queryResults.data.findScenes.scenes.length > index) {
+        const { id } = queryResults!.data!.findScenes!.scenes[index];
+        // navigate to the image player page
+        const queue = SceneQueue.fromListFilterModel(filterCopy, index);
+        const paramStr = queue.makeQueryParameters();
+        history.push(`/scenes/${id}?${paramStr}&autoplay=true`);
       }
     }
   }
