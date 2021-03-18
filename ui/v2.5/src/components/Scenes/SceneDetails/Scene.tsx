@@ -20,7 +20,6 @@ import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
 import Mousetrap from "mousetrap";
-import usePlaylist from "src/hooks/Playlist";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { QueueViewer } from "./QueueViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
@@ -34,6 +33,7 @@ import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
+import { SceneQueue } from "src/models/sceneQueue";
 
 interface ISceneParams {
   id?: string;
@@ -44,7 +44,6 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
-  const [playlist] = usePlaylist();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
@@ -70,23 +69,26 @@ export const Scene: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
-  const [playlistScenes, setPlaylistScenes] = useState<
+  const [queueScenes, setQueueScenes] = useState<
     GQL.SlimSceneDataFragment[]
   >();
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
+  const sceneQueue = SceneQueue.fromQueryParameters(location.search);
 
-  async function getPlaylistScenes(filter: ListFilterModel) {
+  async function getQueueFilterScenes(filter: ListFilterModel) {
     const scenes = await queryFindScenes(filter);
-    setPlaylistScenes(scenes.data.findScenes.scenes);
+    setQueueScenes(scenes.data.findScenes.scenes);
   }
 
   useEffect(() => {
-    if (playlist?.data?.query) {
-      getPlaylistScenes(playlist.data.query);
+    if (sceneQueue.query) {
+      getQueueFilterScenes(sceneQueue.query);
+    } else if (sceneQueue.sceneIDs) {
+      // TODO
     }
-  }, [playlist]);
+  }, [sceneQueue])
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
@@ -334,7 +336,7 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-playlist-panel">
-            <QueueViewer scenes={playlistScenes} currentID={scene.id} />
+            <QueueViewer scenes={queueScenes} currentID={scene.id} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel

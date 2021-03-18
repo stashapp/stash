@@ -7,7 +7,7 @@ interface ISceneCardsGrid {
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
-  onSceneClick?: (id: string) => void;
+  onSceneClick?: (id: string, index: number) => void;
 }
 
 export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
@@ -17,15 +17,15 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
   onSelectChange,
   onSceneClick,
 }) => {
-  function sceneClicked(sceneID: string) {
+  function sceneClicked(sceneID: string, index: number) {
     if (onSceneClick) {
-      onSceneClick(sceneID);
+      onSceneClick(sceneID, index);
     }
   }
 
   return (
     <div className="row justify-content-center">
-      {scenes.map((scene) => (
+      {scenes.map((scene, index) => (
         <SceneCard
           key={scene.id}
           scene={scene}
@@ -35,7 +35,7 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
             onSelectChange(scene.id, selected, shiftKey)
           }
-          onSceneClicked={() => sceneClicked(scene.id)}
+          onSceneClicked={() => sceneClicked(scene.id, index)}
         />
       ))}
     </div>

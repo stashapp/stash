@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import queryString from "query-string";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -12,7 +13,6 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
-import usePlaylist from "src/hooks/Playlist";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
@@ -20,6 +20,7 @@ import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
+import { SceneQueue } from "src/models/sceneQueue";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -31,7 +32,6 @@ export const SceneList: React.FC<ISceneList> = ({
   persistState,
 }) => {
   const history = useHistory();
-  const [, setPlaylist] = usePlaylist();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -127,12 +127,10 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsExportDialogOpen(true);
   }
 
-  async function sceneClicked(sceneId: string, filter: ListFilterModel) {
-    await setPlaylist({
-      query: filter,
-    });
-
-    history.push(`/scenes/${sceneId}`);
+  async function sceneClicked(sceneId: string, sceneIndex: number, filter: ListFilterModel) {
+    const queue = SceneQueue.fromListFilterModel(filter, sceneIndex);
+    const paramStr = queue.makeQueryParameters();
+    history.push(`/scenes/${sceneId}?${paramStr}`);
   }
 
   function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
@@ -199,7 +197,7 @@ export const SceneList: React.FC<ISceneList> = ({
           onSelectChange={(id, selected, shiftKey) =>
             listData.onSelectChange(id, selected, shiftKey)
           }
-          onSceneClick={(id) => sceneClicked(id, filter)}
+          onSceneClick={(id, index) => sceneClicked(id, index, filter)}
         />
       );
     }
