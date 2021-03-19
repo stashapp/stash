@@ -13,7 +13,7 @@ interface IQueryParameters {
 
 export class SceneQueue {
   public query?: ListFilterModel;
-  public sceneIDs?: string[];
+  public sceneIDs?: number[];
 
   public static fromListFilterModel(
     filter: ListFilterModel,
@@ -37,6 +37,12 @@ export class SceneQueue {
 
     ret.query = filterCopy;
     return ret;
+  }
+
+  public static fromSceneIDList(sceneIDs: string[]) {
+    const ret = new SceneQueue();
+    ret.sceneIDs = sceneIDs.map(v => Number(v));
+    return ret
   }
 
   public makeQueryParameters(page?: number) {
@@ -84,7 +90,7 @@ export class SceneQueue {
       ret.query = query;
     } else if (parsed.qs) {
       // must be scene list
-      ret.sceneIDs = parsed.qs;
+      ret.sceneIDs = parsed.qs.map(v => Number(v));
     }
 
     return ret;

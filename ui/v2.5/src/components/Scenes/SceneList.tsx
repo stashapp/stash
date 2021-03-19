@@ -38,6 +38,11 @@ export const SceneList: React.FC<ISceneList> = ({
 
   const otherOperations = [
     {
+      text: "Play selected",
+      onClick: playSelected,
+      isDisplayed: showWhenSelected,
+    },
+    {
       text: "Play Random",
       onClick: playRandom,
     },
@@ -86,6 +91,18 @@ export const SceneList: React.FC<ISceneList> = ({
     addKeybinds,
     persistState,
   });
+
+  async function playSelected(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    // populate queue and go to first scene
+    const sceneIDs = Array.from(selectedIds.values());
+    const queue = SceneQueue.fromSceneIDList(sceneIDs);
+    const paramStr = queue.makeQueryParameters();
+    history.push(`/scenes/${sceneIDs[0]}?${paramStr}`);
+  }
 
   async function playRandom(
     result: FindScenesQueryResult,

@@ -13,6 +13,7 @@ import {
   useSceneGenerateScreenshot,
   useSceneUpdate,
   queryFindScenes,
+  queryFindScenesByID,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
@@ -92,6 +93,14 @@ export const Scene: React.FC = () => {
     setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
   }
 
+  async function getQueueScenes(sceneIDs: number[]) {
+    const query = await queryFindScenesByID(sceneIDs);
+    const { scenes, count } = query.data.findScenes;
+    setQueueScenes(scenes);
+    setQueueTotal(count);
+    setQueueStart(1);
+  }
+
   // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
   // a rerender by not drawing it
   useEffect(() => {
@@ -112,7 +121,7 @@ export const Scene: React.FC = () => {
     if (sceneQueue.query) {
       getQueueFilterScenes(sceneQueue.query);
     } else if (sceneQueue.sceneIDs) {
-      // TODO
+      getQueueScenes(sceneQueue.sceneIDs);
     }
   }, [sceneQueue]);
 
