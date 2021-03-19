@@ -1,4 +1,5 @@
 import queryString from "query-string";
+import { RouteComponentProps } from "react-router-dom";
 import { ListFilterModel } from "./list-filter/filter";
 import { FilterMode } from "./list-filter/types";
 
@@ -45,7 +46,7 @@ export class SceneQueue {
     return ret;
   }
 
-  public makeQueryParameters(page?: number) {
+  private makeQueryParameters(page?: number) {
     if (this.query) {
       const queryParams = this.query.getQueryParameters();
       const translatedParams = {
@@ -96,5 +97,14 @@ export class SceneQueue {
     }
 
     return ret;
+  }
+
+  public playScene(
+    history: RouteComponentProps["history"],
+    sceneID: string,
+    newPage?: number
+  ) {
+    const paramStr = this.makeQueryParameters(newPage);
+    history.push(`/scenes/${sceneID}?${paramStr}&autoplay=true`);
   }
 }

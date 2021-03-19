@@ -99,8 +99,7 @@ export const SceneList: React.FC<ISceneList> = ({
     // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
-    const paramStr = queue.makeQueryParameters();
-    history.push(`/scenes/${sceneIDs[0]}?${paramStr}`);
+    queue.playScene(history, sceneIDs[0]);
   }
 
   async function playRandom(
@@ -122,8 +121,7 @@ export const SceneList: React.FC<ISceneList> = ({
         const { id } = queryResults!.data!.findScenes!.scenes[index];
         // navigate to the image player page
         const queue = SceneQueue.fromListFilterModel(filterCopy, index);
-        const paramStr = queue.makeQueryParameters();
-        history.push(`/scenes/${id}?${paramStr}&autoplay=true`);
+        queue.playScene(history, id);
       }
     }
   }
@@ -148,8 +146,7 @@ export const SceneList: React.FC<ISceneList> = ({
     filter: ListFilterModel
   ) {
     const queue = SceneQueue.fromListFilterModel(filter, sceneIndex);
-    const paramStr = queue.makeQueryParameters();
-    history.push(`/scenes/${sceneId}?${paramStr}`);
+    queue.playScene(history, sceneId);
   }
 
   function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {

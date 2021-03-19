@@ -260,8 +260,7 @@ export const Scene: React.FC = () => {
   }
 
   function playScene(sceneID: string, page?: number) {
-    const paramStr = sceneQueue.makeQueryParameters(page);
-    history.push(`/scenes/${sceneID}?${paramStr}&autoplay=true`);
+    sceneQueue.playScene(history, sceneID, page);
   }
 
   function onQueueNext() {
