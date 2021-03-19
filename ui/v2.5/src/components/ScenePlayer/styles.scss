@@ -65,10 +65,10 @@ $sceneTabWidth: 450px;
     }
 
     .tab-content {
-      min-height: 15rem;
       flex: 1 1 auto;
-      overflow-y: auto;
+      min-height: 15rem;
       overflow-x: hidden;
+      overflow-y: auto;
     }
   }
 

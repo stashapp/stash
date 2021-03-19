@@ -90,7 +90,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
 
   return (
     <div id="queue-viewer">
-      <div id="queue-controls">
+      <div className="queue-controls">
         <div>
           {(currentIndex ?? 0) > 0 ? (
             <Button

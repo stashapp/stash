@@ -585,7 +585,7 @@ input[type="range"].blue-slider {
 }
 
 #queue-viewer {
-  #queue-controls {
+  .queue-controls {
     display: flex;
     flex: 0 1 auto;
     justify-content: flex-end;
