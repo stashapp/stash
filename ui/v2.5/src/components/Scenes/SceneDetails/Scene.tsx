@@ -22,6 +22,8 @@ import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { FilterMode } from "src/models/list-filter/types";
+import { SceneQueue } from "src/models/sceneQueue";
 import { QueueViewer } from "./QueueViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
@@ -34,8 +36,6 @@ import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
-import { SceneQueue } from "src/models/sceneQueue";
-import { FilterMode } from "src/models/list-filter/types";
 
 interface ISceneParams {
   id?: string;
@@ -259,9 +259,9 @@ export const Scene: React.FC = () => {
     // don't change queue start
   }
 
-  function playScene(id: string, page?: number) {
+  function playScene(sceneID: string, page?: number) {
     const paramStr = sceneQueue.makeQueryParameters(page);
-    history.push(`/scenes/${id}?${paramStr}&autoplay=true`);
+    history.push(`/scenes/${sceneID}?${paramStr}&autoplay=true`);
   }
 
   function onQueueNext() {
@@ -278,7 +278,7 @@ export const Scene: React.FC = () => {
 
   async function onQueueRandom() {
     if (sceneQueue.query) {
-      const query = sceneQueue.query;
+      const { query } = sceneQueue;
       const pages = Math.ceil(queueTotal / query.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
       const index = Math.floor(Math.random() * query.itemsPerPage);
@@ -289,9 +289,9 @@ export const Scene: React.FC = () => {
       filterCopy.currentPage = page;
       const queryResults = await queryFindScenes(filterCopy);
       if (queryResults.data.findScenes.scenes.length > index) {
-        const { id } = queryResults!.data!.findScenes!.scenes[index];
+        const { id: sceneID } = queryResults!.data!.findScenes!.scenes[index];
         // navigate to the image player page
-        playScene(id, page);
+        playScene(sceneID, page);
       }
     } else {
       const index = Math.floor(Math.random() * queueTotal);
@@ -469,7 +469,7 @@ export const Scene: React.FC = () => {
             <QueueViewer
               scenes={queueScenes}
               currentID={scene.id}
-              onSceneClicked={(id) => playScene(id)}
+              onSceneClicked={(sceneID) => playScene(sceneID)}
               onNext={onQueueNext}
               onPrevious={onQueuePrevious}
               onRandom={onQueueRandom}

@@ -1,5 +1,5 @@
-import { ListFilterModel } from "./list-filter/filter";
 import queryString from "query-string";
+import { ListFilterModel } from "./list-filter/filter";
 import { FilterMode } from "./list-filter/types";
 
 interface IQueryParameters {
@@ -41,8 +41,8 @@ export class SceneQueue {
 
   public static fromSceneIDList(sceneIDs: string[]) {
     const ret = new SceneQueue();
-    ret.sceneIDs = sceneIDs.map(v => Number(v));
-    return ret
+    ret.sceneIDs = sceneIDs.map((v) => Number(v));
+    return ret;
   }
 
   public makeQueryParameters(page?: number) {
@@ -61,7 +61,9 @@ export class SceneQueue {
       }
 
       return queryString.stringify(translatedParams, { encode: false });
-    } else if (this.sceneIDs && this.sceneIDs.length > 0) {
+    }
+
+    if (this.sceneIDs && this.sceneIDs.length > 0) {
       const params = {
         qs: this.sceneIDs,
       };
@@ -90,7 +92,7 @@ export class SceneQueue {
       ret.query = query;
     } else if (parsed.qs) {
       // must be scene list
-      ret.sceneIDs = parsed.qs.map(v => Number(v));
+      ret.sceneIDs = parsed.qs.map((v) => Number(v));
     }
 
     return ret;

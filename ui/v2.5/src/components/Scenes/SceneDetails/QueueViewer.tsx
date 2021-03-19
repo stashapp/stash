@@ -4,7 +4,7 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { Button, Spinner } from "react-bootstrap";
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import { Icon } from "src/components/Shared";
 
 export interface IPlaylistViewer {
   scenes?: GQL.SlimSceneDataFragment[];
@@ -92,7 +92,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     <div id="playlist-viewer">
       <div id="playlist-controls" className="d-flex justify-content-end">
         <div>
-          {currentIndex ?? 0 > 0 ? (
+          {(currentIndex ?? 0) > 0 ? (
             <Button
               className="minimal"
               variant="secondary"
@@ -125,10 +125,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
       </div>
       {(start ?? 0) > 1 ? (
         <div className="d-flex justify-content-center">
-          <Button
-            onClick={() => lessClicked()}
-            disabled={lessLoading}
-          >
+          <Button onClick={() => lessClicked()} disabled={lessLoading}>
             {!lessLoading ? (
               <Icon icon="chevron-up" />
             ) : (
@@ -140,16 +137,12 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
       <ol start={start}>{(scenes ?? []).map(renderPlaylistEntry)}</ol>
       {hasMoreScenes ? (
         <div className="d-flex justify-content-center">
-          <Button
-            onClick={() => moreClicked()}
-            disabled={moreLoading}
-          >
+          <Button onClick={() => moreClicked()} disabled={moreLoading}>
             {!moreLoading ? (
               <Icon icon="chevron-down" />
             ) : (
               <Spinner animation="border" role="status" />
             )}
-            
           </Button>
         </div>
       ) : undefined}
