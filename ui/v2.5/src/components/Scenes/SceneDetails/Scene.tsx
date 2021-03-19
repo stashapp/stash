@@ -260,7 +260,10 @@ export const Scene: React.FC = () => {
   }
 
   function playScene(sceneID: string, page?: number) {
-    sceneQueue.playScene(history, sceneID, page);
+    sceneQueue.playScene(history, sceneID, {
+      newPage: page,
+      autoPlay: true,
+    });
   }
 
   function onQueueNext() {

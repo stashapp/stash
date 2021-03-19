@@ -12,6 +12,11 @@ interface IQueryParameters {
   qs?: string[];
 }
 
+export interface IPlaySceneOptions {
+  newPage?: number;
+  autoPlay?: boolean;
+}
+
 export class SceneQueue {
   public query?: ListFilterModel;
   public sceneIDs?: number[];
@@ -102,9 +107,10 @@ export class SceneQueue {
   public playScene(
     history: RouteComponentProps["history"],
     sceneID: string,
-    newPage?: number
+    options?: IPlaySceneOptions
   ) {
-    const paramStr = this.makeQueryParameters(newPage);
-    history.push(`/scenes/${sceneID}?${paramStr}&autoplay=true`);
+    const paramStr = this.makeQueryParameters(options?.newPage);
+    const autoplayParam = options?.autoPlay ? "&autoplay=true" : "";
+    history.push(`/scenes/${sceneID}?${paramStr}${autoplayParam}`);
   }
 }

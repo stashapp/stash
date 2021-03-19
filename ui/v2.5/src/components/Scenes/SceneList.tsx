@@ -99,7 +99,7 @@ export const SceneList: React.FC<ISceneList> = ({
     // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
-    queue.playScene(history, sceneIDs[0]);
+    queue.playScene(history, sceneIDs[0], { autoPlay: true });
   }
 
   async function playRandom(
@@ -121,7 +121,7 @@ export const SceneList: React.FC<ISceneList> = ({
         const { id } = queryResults!.data!.findScenes!.scenes[index];
         // navigate to the image player page
         const queue = SceneQueue.fromListFilterModel(filterCopy, index);
-        queue.playScene(history, id);
+        queue.playScene(history, id, { autoPlay: true });
       }
     }
   }
