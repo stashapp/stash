@@ -89,8 +89,8 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   }
 
   return (
-    <div id="playlist-viewer">
-      <div id="playlist-controls" className="d-flex justify-content-end">
+    <div id="queue-viewer">
+      <div id="queue-controls">
         <div>
           {(currentIndex ?? 0) > 0 ? (
             <Button
@@ -123,29 +123,31 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
           </Button>
         </div>
       </div>
-      {(start ?? 0) > 1 ? (
-        <div className="d-flex justify-content-center">
-          <Button onClick={() => lessClicked()} disabled={lessLoading}>
-            {!lessLoading ? (
-              <Icon icon="chevron-up" />
-            ) : (
-              <Spinner animation="border" role="status" />
-            )}
-          </Button>
-        </div>
-      ) : undefined}
-      <ol start={start}>{(scenes ?? []).map(renderPlaylistEntry)}</ol>
-      {hasMoreScenes ? (
-        <div className="d-flex justify-content-center">
-          <Button onClick={() => moreClicked()} disabled={moreLoading}>
-            {!moreLoading ? (
-              <Icon icon="chevron-down" />
-            ) : (
-              <Spinner animation="border" role="status" />
-            )}
-          </Button>
-        </div>
-      ) : undefined}
+      <div id="queue-content">
+        {(start ?? 0) > 1 ? (
+          <div className="d-flex justify-content-center">
+            <Button onClick={() => lessClicked()} disabled={lessLoading}>
+              {!lessLoading ? (
+                <Icon icon="chevron-up" />
+              ) : (
+                <Spinner animation="border" role="status" />
+              )}
+            </Button>
+          </div>
+        ) : undefined}
+        <ol start={start}>{(scenes ?? []).map(renderPlaylistEntry)}</ol>
+        {hasMoreScenes ? (
+          <div className="d-flex justify-content-center">
+            <Button onClick={() => moreClicked()} disabled={moreLoading}>
+              {!moreLoading ? (
+                <Icon icon="chevron-down" />
+              ) : (
+                <Spinner animation="border" role="status" />
+              )}
+            </Button>
+          </div>
+        ) : undefined}
+      </div>
     </div>
   );
 };

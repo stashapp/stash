@@ -44,9 +44,12 @@ $scrubberHeight: 120px;
 .scene-tabs,
 .scene-player-container {
   padding-left: 15px;
-  padding-right: 15px;
   position: relative;
   width: 100%;
+}
+
+.scene-player-container {
+  padding-right: 15px;
 }
 
 $sceneTabWidth: 450px;
@@ -59,6 +62,13 @@ $sceneTabWidth: 450px;
 
     &.collapsed {
       display: none;
+    }
+
+    .tab-content {
+      min-height: 15rem;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
   }
 

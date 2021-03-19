@@ -285,10 +285,15 @@ textarea.scene-description {
 }
 
 .scene-tabs {
+  display: flex;
+  flex-direction: column;
   max-height: calc(100vh - 4rem);
-
   overflow-wrap: break-word;
   word-wrap: break-word;
+
+  > div {
+    flex: 0 1 auto;
+  }
 }
 
 input[type="range"].filter-slider {
@@ -579,14 +584,12 @@ input[type="range"].blue-slider {
   padding-right: 0.25rem;
 }
 
-#playlist-viewer {
-  // position: absolute;
-  // right: 0.7rem;
-  // top: 0;
-  // display: block;
-  // width: 200px;
-  // height: 100%;
-  // overflow-y: scroll;
+#queue-viewer {
+  #queue-controls {
+    display: flex;
+    flex: 0 1 auto;
+    justify-content: flex-end;
+  }
 
   .thumbnail-container {
     height: 50px;
@@ -595,10 +598,6 @@ input[type="range"].blue-slider {
     margin-top: 5px;
     min-width: 100px;
     width: 100px;
-  }
-
-  ol {
-    padding-inline-start: 20px;
   }
 
   img {
