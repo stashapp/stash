@@ -34,6 +34,13 @@
       text-align: center;
     }
 
+    &-delay {
+      display: flex;
+      flex-direction: column;
+      margin-left: 100px;
+      text-align: left;
+    }
+
     .fa-icon {
       height: 1.5rem;
       opacity: 1;

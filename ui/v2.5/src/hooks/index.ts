@@ -1,4 +1,5 @@
 export { default as useToast } from "./Toast";
+export { default as useInterval } from "./Interval";
 export {
   useInterfaceLocalForage,
   useChangelogStorage,

@@ -1,8 +1,9 @@
 package config
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"runtime"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"errors"
 	"io/ioutil"
@@ -114,6 +115,7 @@ const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
+const SlideshowDelay = "slideshow_delay"
 
 // Logging options
 const LogFile = "logFile"
@@ -515,6 +517,11 @@ func GetAutostartVideo() bool {
 func GetShowStudioAsText() bool {
 	viper.SetDefault(ShowStudioAsText, false)
 	return viper.GetBool(ShowStudioAsText)
+}
+
+func GetSlideshowDelay() int {
+	viper.SetDefault(SlideshowDelay, 5000)
+	return viper.GetInt(SlideshowDelay)
 }
 
 func GetCSSPath() string {

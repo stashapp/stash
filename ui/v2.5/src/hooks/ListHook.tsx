@@ -37,7 +37,7 @@ import {
   useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
+import { FilterMode, DisplayMode } from "src/models/list-filter/types";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -671,4 +671,13 @@ export const showWhenSelected = <T extends IQueryResult>(
   selectedIds: Set<string>
 ) => {
   return selectedIds.size > 0;
+};
+
+export const showWhenDisplayModeWall = <T extends IQueryResult>(
+  _result: T,
+  _filter: ListFilterModel,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  selectedIds: Set<string>
+) => {
+  return _filter.displayMode === DisplayMode.Wall;
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -16,7 +16,9 @@ import {
   IListHookOperation,
   showWhenSelected,
   PersistanceLevel,
+  showWhenDisplayModeWall,
 } from "src/hooks/ListHook";
+
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -28,6 +30,8 @@ interface IImageWallProps {
   onChangePage: (page: number) => void;
   currentPage: number;
   pageCount: number;
+  slideshowRunning: boolean;
+  onSlideshowClose: () => void;
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({
@@ -35,6 +39,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
   onChangePage,
   currentPage,
   pageCount,
+  onSlideshowClose,
+  slideshowRunning = false,
 }) => {
   const handleLightBoxPage = useCallback(
     (direction: number) => {
@@ -42,12 +48,20 @@ const ImageWall: React.FC<IImageWallProps> = ({
         if (currentPage === 1) return false;
         onChangePage(currentPage - 1);
       } else {
-        if (currentPage === pageCount) return false;
+        if (currentPage === pageCount) {
+          // if the slideshow is running
+          // return to the first page
+          if (slideshowRunning) {
+            onChangePage(0);
+            return true;
+          }
+          return false;
+        }
         onChangePage(currentPage + 1);
       }
       return direction === -1 || direction === 1;
     },
-    [onChangePage, currentPage, pageCount]
+    [onChangePage, currentPage, pageCount, slideshowRunning]
   );
 
   const showLightbox = useLightbox({
@@ -55,7 +69,15 @@ const ImageWall: React.FC<IImageWallProps> = ({
     showNavigation: false,
     pageCallback: handleLightBoxPage,
     pageHeader: `Page ${currentPage} / ${pageCount}`,
+    slideshowEnabled: slideshowRunning,
+    onClose: onSlideshowClose,
   });
+
+  useEffect(() => {
+    if (slideshowRunning) {
+      showLightbox(0, true);
+    }
+  }, [slideshowRunning, showLightbox]);
 
   const thumbs = images.map((image, index) => (
     <div
@@ -97,6 +119,22 @@ export const ImageList: React.FC<IImageList> = ({
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
+  const [isSlideshowRunning, setIsSlideshowRunning] = useState(false);
+
+  function startSlideshow(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    result: GQL.FindImagesQueryResult,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    filter: ListFilterModel,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    selectedIds: Set<string>
+  ) {
+    setIsSlideshowRunning(true);
+  }
+
+  const onSlideshowClose = useCallback(() => {
+    setIsSlideshowRunning(false);
+  }, []);
 
   const otherOperations = (extraOperations ?? []).concat([
     {
@@ -111,6 +149,12 @@ export const ImageList: React.FC<IImageList> = ({
     {
       text: "Export all...",
       onClick: onExportAll,
+    },
+    {
+      text: "Start Slideshow",
+      onClick: startSlideshow,
+      isDisplayed: showWhenDisplayModeWall,
+      postRefetch: false,
     },
   ]);
 
@@ -259,6 +303,8 @@ export const ImageList: React.FC<IImageList> = ({
           onChangePage={onChangePage}
           currentPage={filter.currentPage}
           pageCount={pageCount}
+          slideshowRunning={isSlideshowRunning}
+          onSlideshowClose={onSlideshowClose}
         />
       );
     }

@@ -1,15 +1,24 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { Button } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  FormControl,
+  InputGroup,
+  FormLabel,
+} from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
+import { useInterval } from "src/hooks";
+import { useConfiguration } from "src/core/StashService";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
+const CLASSNAME_DELAY = `${CLASSNAME_HEADER}-delay`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
@@ -19,6 +28,9 @@ const CLASSNAME_NAV = `${CLASSNAME}-nav`;
 const CLASSNAME_NAVIMAGE = `${CLASSNAME_NAV}-image`;
 const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 
+const DEFAULT_SLIDESHOW_DELAY = 5000;
+const SECONDS_TO_MS = 1000;
+
 type Image = Pick<GQL.Image, "paths">;
 interface IProps {
   images: Image[];
@@ -26,6 +38,7 @@ interface IProps {
   isLoading: boolean;
   initialIndex?: number;
   showNavigation: boolean;
+  slideshowEnabled?: boolean;
   pageHeader?: string;
   pageCallback?: (direction: number) => boolean;
   hide: () => void;
@@ -37,6 +50,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   isLoading,
   initialIndex = 0,
   showNavigation,
+  slideshowEnabled = false,
   pageHeader,
   pageCallback,
   hide,
@@ -49,7 +63,13 @@ export const LightboxComponent: React.FC<IProps> = ({
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
+  const clearIntervalCallback = useRef<() => void>();
+  const config = useConfiguration();
 
+  const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
+    config?.data?.configuration.interface.slideshowDelay ??
+      DEFAULT_SLIDESHOW_DELAY
+  );
   useEffect(() => {
     setIsSwitchingPage(false);
     if (index.current === -1) index.current = images.length - 1;
@@ -138,6 +158,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       } else setIndex(images.length - 1);
     } else setIndex((index.current ?? 0) - 1);
   }, [images, setIndex, pageCallback, isSwitchingPage]);
+
   const handleRight = useCallback(() => {
     if (isSwitchingPage) return;
 
@@ -164,8 +185,12 @@ export const LightboxComponent: React.FC<IProps> = ({
     },
     [setInstant, handleLeft, handleRight, close]
   );
-  const handleFullScreenChange = () =>
+  const handleFullScreenChange = () => {
+    if (clearIntervalCallback.current) {
+      clearIntervalCallback.current();
+    }
     setFullscreen(document.fullscreenElement !== null);
+  };
 
   const handleTouchStart = (ev: React.TouchEvent<HTMLDivElement>) => {
     setInstantTransition(true);
@@ -212,6 +237,13 @@ export const LightboxComponent: React.FC<IProps> = ({
     el.addEventListener("touchcancel", handleCancel);
   };
 
+  clearIntervalCallback.current = useInterval(
+    () => {
+      handleRight();
+    },
+    slideshowEnabled ? slideshowInterval : null
+  );
+
   useEffect(() => {
     if (isVisible) {
       document.addEventListener("keydown", handleKey);
@@ -227,6 +259,18 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (!isFullscreen) containerRef.current?.requestFullscreen();
     else document.exitFullscreen();
   }, [isFullscreen]);
+
+  const toggleSlideshow = useCallback(() => {
+    if (slideshowInterval) {
+      setSlideshowInterval(null);
+    } else {
+      setSlideshowInterval(DEFAULT_SLIDESHOW_DELAY);
+    }
+  }, [slideshowInterval]);
+
+  const handleSlideshowIntervalChange = (newSlideshowInterval: number) => {
+    setSlideshowInterval(newSlideshowInterval);
+  };
 
   const navItems = images.map((image, i) => (
     <img
@@ -260,6 +304,38 @@ export const LightboxComponent: React.FC<IProps> = ({
                 {`${currentIndex + 1} / ${images.length}`}
               </b>
             </div>
+            {slideshowEnabled && (
+              <>
+                <div className={CLASSNAME_DELAY}>
+                  <InputGroup>
+                    <FormLabel column sm="5">
+                      Delay (Sec)
+                    </FormLabel>
+                    <Col sm="4">
+                      <FormControl
+                        type="number"
+                        value={(slideshowInterval ?? 0) / SECONDS_TO_MS}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          handleSlideshowIntervalChange(
+                            Number.parseInt(e.currentTarget.value, 10) *
+                              SECONDS_TO_MS
+                          );
+                        }}
+                        size="sm"
+                        disabled={slideshowInterval === null}
+                      />
+                    </Col>
+                  </InputGroup>
+                </div>
+                <Button
+                  variant="link"
+                  onClick={toggleSlideshow}
+                  title="Toggle Slideshow"
+                >
+                  <Icon icon={slideshowInterval !== null ? "pause" : "play"} />
+                </Button>
+              </>
+            )}
             {document.fullscreenEnabled && (
               <Button
                 variant="link"
