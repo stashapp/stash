@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
@@ -15,25 +15,31 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Form, Button, Col, Row, InputGroup } from "react-bootstrap";
-import {
-  DurationUtils,
-  ImageUtils,
-} from "src/utils";
+import { DurationUtils, ImageUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
-import { MovieScrapeDialog } from "./MovieScrapeDialog";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
+import { MovieScrapeDialog } from "./MovieScrapeDialog";
 
 interface IMovieEditPanel {
   movie?: Partial<GQL.MovieDataFragment>;
-  onSubmit: (movie: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>) => void;
+  onSubmit: (
+    movie: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
+  ) => void;
   onCancel: () => void;
   onDelete: () => void;
   setFrontImage: (image?: string | null) => void;
   setBackImage: (image?: string | null) => void;
 }
 
-export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCancel, onDelete, setFrontImage, setBackImage}) => {
+export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
+  movie,
+  onSubmit,
+  onCancel,
+  onDelete,
+  setFrontImage,
+  setBackImage,
+}) => {
   const Toast = useToast();
 
   const isNew = movie === undefined;
@@ -110,33 +116,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
     };
   });
 
-  function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
-    formik.setFieldValue("name", state.name ?? undefined);
-    formik.setFieldValue("aliases", state.aliases ?? undefined);
-    formik.setFieldValue("duration", state.duration ?? undefined);
-    formik.setFieldValue("date", state.date ?? undefined);
-    formik.setFieldValue("rating", state.rating ?? undefined);
-    formik.setFieldValue("studio_id", state?.studio?.id ?? undefined);
-    formik.setFieldValue("director", state.director ?? undefined);
-    formik.setFieldValue("synopsis", state.synopsis ?? undefined);
-    formik.setFieldValue("url", state.url ?? undefined);
-  }
-
-  const updateMovieData = useCallback(
-    (movieData: Partial<GQL.MovieDataFragment>) => {
-      setFrontImage(undefined);
-      setBackImage(undefined);
-      updateMovieEditState(movieData);
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (movie) {
-      updateMovieData(movie);
-    }
-  }, [movie]);
-
   function getMovieInput(values: InputValues) {
     const input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       ...values,
@@ -162,7 +141,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
     }
 
     if (state.duration) {
-      formik.setFieldValue("duration", DurationUtils.stringToSeconds(state.duration) ?? undefined);
+      formik.setFieldValue(
+        "duration",
+        DurationUtils.stringToSeconds(state.duration) ?? undefined
+      );
     }
 
     if (state.date) {
@@ -191,7 +173,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
   }
 
   async function onScrapeMovieURL() {
-    const url = formik.values.url;
+    const { url } = formik.values;
     if (!url) return;
     setIsLoading(true);
 
@@ -224,7 +206,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
   }
 
   function maybeRenderScrapeButton() {
-    const url = formik.values.url;
+    const { url } = formik.values;
     if (!url || !urlScrapable(url)) {
       return undefined;
     }
@@ -350,7 +332,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
           <Col sm={fieldXS} xl={fieldXL}>
             <StudioSelect
               onSelect={(items) =>
-                formik.setFieldValue("studio_id", items.length > 0 ? items[0]?.id : undefined)
+                formik.setFieldValue(
+                  "studio_id",
+                  items.length > 0 ? items[0]?.id : undefined
+                )
               }
               ids={formik.values.studio_id ? [formik.values.studio_id] : []}
             />
@@ -364,10 +349,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
             Rating
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
-              <RatingStars
-                value={formik.values.rating ?? undefined}
-                onSetRating={(value) => formik.setFieldValue("rating", value)}
-              />
+            <RatingStars
+              value={formik.values.rating ?? undefined}
+              onSetRating={(value) => formik.setFieldValue("rating", value)}
+            />
           </Col>
         </Form.Group>
 
@@ -401,7 +386,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
           </Col>
         </Form.Group>
       </Form>
-      
+
       <DetailsEditNavbar
         objectName={movie?.name ?? "movie"}
         isNew={isNew}
@@ -410,10 +395,14 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
         onSave={() => formik.handleSubmit()}
         onImageChange={onFrontImageChange}
         onImageChangeURL={setFrontImage}
-        onClearImage={() => { setFrontImage(null)}}
+        onClearImage={() => {
+          setFrontImage(null);
+        }}
         onBackImageChange={onBackImageChange}
         onBackImageChangeURL={setBackImage}
-        onClearBackImage={() => { setBackImage(null)}}
+        onClearBackImage={() => {
+          setBackImage(null);
+        }}
         onDelete={onDelete}
       />
 

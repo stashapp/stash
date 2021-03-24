@@ -20,11 +20,11 @@
 }
 
 .movie-images {
-  margin: 1rem;
+  align-items: center;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  align-items: center;
+  margin: 1rem;
   max-width: 100%;
 
   .movie-image-container {

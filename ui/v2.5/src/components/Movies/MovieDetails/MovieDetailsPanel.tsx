@@ -1,10 +1,7 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import {
-  DurationUtils,
-  TextUtils,
-} from "src/utils";
+import { DurationUtils, TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { TextField, URLField } from "src/utils/field";
 
@@ -12,7 +9,7 @@ interface IMovieDetailsPanel {
   movie: Partial<GQL.MovieDataFragment>;
 }
 
-export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({movie}) => {
+export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
   // Network state
   const intl = useIntl();
 
@@ -36,10 +33,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({movie}) => {
       <dl className="row">
         <dt className="col-3 col-xl-2">Rating</dt>
         <dd className="col-9 col-xl-10">
-          <RatingStars
-            value={movie.rating}
-            disabled={true}
-          />
+          <RatingStars value={movie.rating} disabled />
         </dd>
       </dl>
     );
@@ -57,7 +51,9 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({movie}) => {
       <div>
         <TextField
           name="Duration"
-          value={movie.duration ? DurationUtils.secondsToString(movie.duration) : ""}
+          value={
+            movie.duration ? DurationUtils.secondsToString(movie.duration) : ""
+          }
         />
         <TextField
           name="Date"
@@ -68,10 +64,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({movie}) => {
           value={movie.studio?.name}
           url={`/studios/${movie.studio?.id}`}
         />
-        <TextField
-          name="Director"
-          value={movie.director}
-        />
+        <TextField name="Director" value={movie.director} />
 
         {renderRatingField()}
 
@@ -81,10 +74,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({movie}) => {
           url={TextUtils.sanitiseURL(movie.url ?? "")}
         />
 
-        <TextField
-          name="Synopsis"
-          value={movie.synopsis}
-        />
+        <TextField name="Synopsis" value={movie.synopsis} />
       </div>
     </div>
   );

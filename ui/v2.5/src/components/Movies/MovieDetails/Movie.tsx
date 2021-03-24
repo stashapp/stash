@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import cx from "classnames";
-import { useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -8,29 +7,17 @@ import {
   useMovieUpdate,
   useMovieCreate,
   useMovieDestroy,
-  queryScrapeMovieURL,
-  useListMovieScrapers,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
 import {
   DetailsEditNavbar,
   LoadingIndicator,
   Modal,
-  StudioSelect,
-  Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Table, Form, Modal as BSModal, Button } from "react-bootstrap";
-import {
-  TableUtils,
-  ImageUtils,
-  EditableTextUtils,
-  TextUtils,
-  DurationUtils,
-} from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { Modal as BSModal, Button } from "react-bootstrap";
+import { ImageUtils } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
-import { MovieScrapeDialog } from "./MovieScrapeDialog";
 import { MovieDetailsPanel } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
 
@@ -69,7 +56,7 @@ export const Movie: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [updateMovie] = useMovieUpdate();
   const [createMovie] = useMovieCreate();
-  const [deleteMovie] = useMovieDestroy({id});
+  const [deleteMovie] = useMovieDestroy({ id });
 
   // set up hotkeys
   useEffect(() => {
@@ -107,7 +94,9 @@ export const Movie: React.FC = () => {
     }
   }
 
-  function getMovieInput(input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>) {
+  function getMovieInput(
+    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
+  ) {
     const ret: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       ...input,
       front_image: frontImage,
@@ -120,7 +109,9 @@ export const Movie: React.FC = () => {
     return ret;
   }
 
-  async function onSave(input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>) {
+  async function onSave(
+    input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
+  ) {
     try {
       setIsLoading(true);
 
@@ -263,7 +254,11 @@ export const Movie: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div className={cx("movie-details mb-3 col", {"col-xl-4 col-lg-6": !isNew})}>
+      <div
+        className={cx("movie-details mb-3 col", {
+          "col-xl-4 col-lg-6": !isNew,
+        })}
+      >
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
@@ -277,9 +272,7 @@ export const Movie: React.FC = () => {
 
         {!isEditing && movie ? (
           <>
-            <MovieDetailsPanel
-              movie={movie}
-            />
+            <MovieDetailsPanel movie={movie} />
             {/* HACK - this is also rendered in the MovieEditPanel */}
             <DetailsEditNavbar
               objectName={movie?.name ?? "movie"}
