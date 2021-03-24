@@ -58,13 +58,6 @@ export const Movie: React.FC = () => {
   );
 
   // Movie state
-  const [imagePreview, setImagePreview] = useState<string | undefined>(
-    undefined
-  );
-  const [backimagePreview, setBackImagePreview] = useState<string | undefined>(
-    undefined
-  );
-
   const [imageClipboard, setImageClipboard] = useState<string | undefined>(
     undefined
   );
@@ -96,25 +89,13 @@ export const Movie: React.FC = () => {
 
   function setImageFromClipboard(isFrontImage: boolean) {
     if (isFrontImage) {
-      setImagePreview(imageClipboard);
       setFrontImage(imageClipboard);
     } else {
-      setBackImagePreview(imageClipboard);
       setBackImage(imageClipboard);
     }
 
     setImageClipboard(undefined);
     setIsImageAlertOpen(false);
-  }
-
-  function onBackImageLoad(imageData: string) {
-    setBackImagePreview(imageData);
-    setBackImage(imageData);
-  }
-
-  function onFrontImageLoad(imageData: string) {
-    setImagePreview(imageData);
-    setFrontImage(imageData);
   }
 
   const encodingImage = ImageUtils.usePasteImage(showImageAlert, isEditing);
@@ -141,6 +122,8 @@ export const Movie: React.FC = () => {
 
   async function onSave(input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>) {
     try {
+      setIsLoading(true);
+
       if (!isNew) {
         const result = await updateMovie({
           variables: {
@@ -162,26 +145,23 @@ export const Movie: React.FC = () => {
       }
     } catch (e) {
       Toast.error(e);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function onDelete() {
     try {
+      setIsLoading(true);
       await deleteMovie();
     } catch (e) {
       Toast.error(e);
+    } finally {
+      setIsLoading(false);
     }
 
     // redirect to movies page
     history.push(`/movies`);
-  }
-
-  function onFrontImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onFrontImageLoad);
-  }
-
-  function onBackImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onBackImageLoad);
   }
 
   function onToggleEdit() {
@@ -240,18 +220,41 @@ export const Movie: React.FC = () => {
     );
   }
 
-  function renderImage(originalImage: string | undefined | null, editedImage: string | undefined | null, altText: string) {
-    let image = originalImage;
+  function renderFrontImage() {
+    let image = movie?.front_image_path;
     if (isEditing) {
-      if (editedImage === null) {
+      if (frontImage === null) {
         image = `${image}&default=true`;
-      } else if (editedImage) {
-        image = editedImage;
+      } else if (frontImage) {
+        image = frontImage;
       }
     }
 
     if (image) {
-      return <img alt={altText} className="logo w-50" src={image} />
+      return (
+        <div className="movie-image-container">
+          <img alt="Front Cover" src={image} />
+        </div>
+      );
+    }
+  }
+
+  function renderBackImage() {
+    let image = movie?.back_image_path;
+    if (isEditing) {
+      if (backImage === null) {
+        image = undefined;
+      } else if (backImage) {
+        image = backImage;
+      }
+    }
+
+    if (image) {
+      return (
+        <div className="movie-image-container">
+          <img alt="Back Cover" src={image} />
+        </div>
+      );
     }
   }
 
@@ -260,15 +263,15 @@ export const Movie: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div className="movie-details col">
+      <div className="movie-details col-xl-4 col-lg-6 mb-3">
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
-            <>
-              {renderImage(movie?.front_image_path, frontImage, "Front cover")}
-              {renderImage(movie?.back_image_path, backImage, "Back cover")}
-            </>
+            <div className="movie-images">
+              {renderFrontImage()}
+              {renderBackImage()}
+            </div>
           )}
         </div>
 
@@ -301,7 +304,7 @@ export const Movie: React.FC = () => {
       </div>
 
       {!isNew && movie && (
-        <div className="col-lg-8 col-md-7">
+        <div className="col-xl-8 col-lg-6">
           <MovieScenesPanel movie={movie} />
         </div>
       )}
