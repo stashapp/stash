@@ -63,6 +63,7 @@
       "react/destructuring-assignment": "off",
       "react/require-default-props": "off",
       "react/jsx-props-no-spreading": "off",
+      "react/sort-comp": "off",
       "react/style-prop-object": ["error", {
         "allow": ["FormattedNumber"]
       }],
