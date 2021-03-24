@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import * as GQL from "src/core/generated-graphql";
+import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import {
   queryScrapeMovieURL,
@@ -10,18 +11,18 @@ import {
   StudioSelect,
   Icon,
   DetailsEditNavbar,
+  DurationInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Table, Form, Modal as BSModal, Button } from "react-bootstrap";
+import { Form, Button, Col, Row, InputGroup } from "react-bootstrap";
 import {
-  TableUtils,
-  EditableTextUtils,
-  TextUtils,
   DurationUtils,
   ImageUtils,
 } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
+import { useFormik } from "formik";
+import { Prompt } from "react-router-dom";
 
 interface IMovieEditPanel {
   movie?: Partial<GQL.MovieDataFragment>;
@@ -39,21 +40,49 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Editing movie state
-  const [name, setName] = useState<string | undefined>(undefined);
-  const [aliases, setAliases] = useState<string | undefined>(undefined);
-  const [duration, setDuration] = useState<number | undefined>(undefined);
-  const [date, setDate] = useState<string | undefined>(undefined);
-  const [rating, setRating] = useState<number | undefined>(undefined);
-  const [studioId, setStudioId] = useState<string>();
-  const [director, setDirector] = useState<string | undefined>(undefined);
-  const [synopsis, setSynopsis] = useState<string | undefined>(undefined);
-  const [url, setUrl] = useState<string | undefined>(undefined);
-
   const Scrapers = useListMovieScrapers();
   const [scrapedMovie, setScrapedMovie] = useState<
     GQL.ScrapedMovie | undefined
   >();
+
+  const labelXS = 3;
+  const labelXL = 3;
+  const fieldXS = 9;
+  const fieldXL = 9;
+
+  const schema = yup.object({
+    name: yup.string().required(),
+    aliases: yup.string().optional().nullable(),
+    duration: yup.string().optional().nullable(),
+    rating: yup.number().optional().nullable(),
+    studio_id: yup.string().optional().nullable(),
+    director: yup.string().optional().nullable(),
+    synopsis: yup.string().optional().nullable(),
+    url: yup.string().optional().nullable(),
+  });
+
+  const initialValues = {
+    name: movie?.name,
+    aliases: movie?.aliases,
+    duration: movie?.duration,
+    rating: movie?.rating,
+    studio_id: movie?.studio?.id,
+    director: movie?.director,
+    synopsis: movie?.synopsis,
+    url: movie?.url,
+  };
+
+  type InputValues = typeof initialValues;
+
+  const formik = useFormik({
+    initialValues,
+    validationSchema: schema,
+    onSubmit: (values) => onSubmit(getMovieInput(values)),
+  });
+
+  function setRating(v: number) {
+    formik.setFieldValue("rating", v);
+  }
 
   // set up hotkeys
   useEffect(() => {
@@ -67,7 +96,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
     //   setStudioFocus()
     //   e.preventDefault();
     // });
-    Mousetrap.bind("s s", () => onSubmit(getMovieInput()));
+    Mousetrap.bind("s s", () => formik.handleSubmit());
 
     return () => {
       Mousetrap.unbind("r 0");
@@ -82,15 +111,15 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
   });
 
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
-    setName(state.name ?? undefined);
-    setAliases(state.aliases ?? undefined);
-    setDuration(state.duration ?? undefined);
-    setDate(state.date ?? undefined);
-    setRating(state.rating ?? undefined);
-    setStudioId(state?.studio?.id ?? undefined);
-    setDirector(state.director ?? undefined);
-    setSynopsis(state.synopsis ?? undefined);
-    setUrl(state.url ?? undefined);
+    formik.setFieldValue("name", state.name ?? undefined);
+    formik.setFieldValue("aliases", state.aliases ?? undefined);
+    formik.setFieldValue("duration", state.duration ?? undefined);
+    formik.setFieldValue("date", state.date ?? undefined);
+    formik.setFieldValue("rating", state.rating ?? undefined);
+    formik.setFieldValue("studio_id", state?.studio?.id ?? undefined);
+    formik.setFieldValue("director", state.director ?? undefined);
+    formik.setFieldValue("synopsis", state.synopsis ?? undefined);
+    formik.setFieldValue("url", state.url ?? undefined);
   }
 
   const updateMovieData = useCallback(
@@ -108,17 +137,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
     }
   }, [movie]);
 
-  function getMovieInput() {
+  function getMovieInput(values: InputValues) {
     const input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
-      name,
-      aliases,
-      duration,
-      date,
-      rating: rating ?? null,
-      studio_id: studioId ?? null,
-      director,
-      synopsis,
-      url,
+      ...values,
+      rating: values.rating ?? null,
+      studio_id: values.studio_id ?? null,
     };
 
     if (movie && movie.id) {
@@ -131,33 +154,33 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
     state: Partial<GQL.ScrapedMovieDataFragment>
   ) {
     if (state.name) {
-      setName(state.name);
+      formik.setFieldValue("name", state.name);
     }
 
     if (state.aliases) {
-      setAliases(state.aliases ?? undefined);
+      formik.setFieldValue("aliases", state.aliases ?? undefined);
     }
 
     if (state.duration) {
-      setDuration(DurationUtils.stringToSeconds(state.duration) ?? undefined);
+      formik.setFieldValue("duration", DurationUtils.stringToSeconds(state.duration) ?? undefined);
     }
 
     if (state.date) {
-      setDate(state.date ?? undefined);
+      formik.setFieldValue("date", state.date ?? undefined);
     }
 
     if (state.studio && state.studio.id) {
-      setStudioId(state.studio.id ?? undefined);
+      formik.setFieldValue("studio_id", state.studio.id ?? undefined);
     }
 
     if (state.director) {
-      setDirector(state.director ?? undefined);
+      formik.setFieldValue("director", state.director ?? undefined);
     }
     if (state.synopsis) {
-      setSynopsis(state.synopsis ?? undefined);
+      formik.setFieldValue("synopsis", state.synopsis ?? undefined);
     }
     if (state.url) {
-      setUrl(state.url ?? undefined);
+      formik.setFieldValue("url", state.url ?? undefined);
     }
 
     const imageStr = (state as GQL.ScrapedMovieDataFragment).front_image;
@@ -168,6 +191,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
   }
 
   async function onScrapeMovieURL() {
+    const url = formik.values.url;
     if (!url) return;
     setIsLoading(true);
 
@@ -200,6 +224,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
   }
 
   function maybeRenderScrapeButton() {
+    const url = formik.values.url;
     if (!url || !urlScrapable(url)) {
       return undefined;
     }
@@ -218,7 +243,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
       return;
     }
 
-    const currentMovie = getMovieInput();
+    const currentMovie = getMovieInput(formik.values);
 
     // Get image paths for scrape gui
     currentMovie.front_image = movie?.front_image_path;
@@ -254,107 +279,143 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({movie, onSubmit, onCa
 
   const isEditing = true;
 
+  function renderTextField(field: string, title: string) {
+    return (
+      <Form.Group controlId={field} as={Row}>
+        <Form.Label column xs={labelXS} xl={labelXL}>
+          {title}
+        </Form.Label>
+        <Col xs={fieldXS} xl={fieldXL}>
+          <Form.Control
+            className="text-input"
+            placeholder={title}
+            {...formik.getFieldProps(field)}
+            isInvalid={!!formik.getFieldMeta(field).error}
+          />
+        </Col>
+      </Form.Group>
+    );
+  }
+
   // TODO: CSS class
   return (
-    <div className="row">
-      <div className="movie-details col">
-        {isNew && <h2>Add Movie</h2>}
+    <div>
+      {isNew && <h2>Add Movie</h2>}
 
-        <Table>
-          <tbody>
-            {TableUtils.renderInputGroup({
-              title: "Name",
-              value: name ?? "",
-              isEditing,
-              onChange: setName,
-            })}
-            {TableUtils.renderInputGroup({
-              title: "Aliases",
-              value: aliases,
-              isEditing,
-              onChange: setAliases,
-            })}
-            {TableUtils.renderDurationInput({
-              title: "Duration",
-              value: duration ? duration.toString() : "",
-              isEditing,
-              onChange: (value: string | undefined) =>
-                setDuration(value ? Number.parseInt(value, 10) : undefined),
-            })}
-            {TableUtils.renderInputGroup({
-              title: "Date (YYYY-MM-DD)",
-              value: date,
-              isEditing,
-              onChange: setDate,
-            })}
-            <tr>
-              <td>Studio</td>
-              <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                  }
-                  ids={studioId ? [studioId] : []}
-                />
-              </td>
-            </tr>
-            {TableUtils.renderInputGroup({
-              title: "Director",
-              value: director,
-              isEditing,
-              onChange: setDirector,
-            })}
-            <tr>
-              <td>Rating</td>
-              <td>
-                <RatingStars
-                  value={rating}
-                  onSetRating={(value) => setRating(value)}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
+      <Prompt
+        when={formik.dirty}
+        message="Unsaved changes. Are you sure you want to leave?"
+      />
 
-        <Form.Group controlId="url">
-          <Form.Label>URL {maybeRenderScrapeButton()}</Form.Label>
-          <div>
-            {EditableTextUtils.renderInputGroup({
-              isEditing,
-              onChange: setUrl,
-              value: url,
-              url: TextUtils.sanitiseURL(url),
-            })}
-          </div>
+      <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">
+        <Form.Group controlId="name" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Name
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <Form.Control
+              className="text-input"
+              placeholder="Name"
+              {...formik.getFieldProps("name")}
+              isInvalid={!!formik.errors.name}
+            />
+            <Form.Control.Feedback type="invalid">
+              {formik.errors.name}
+            </Form.Control.Feedback>
+          </Col>
         </Form.Group>
 
-        <Form.Group controlId="synopsis">
-          <Form.Label>Synopsis</Form.Label>
-          <Form.Control
-            as="textarea"
-            className="movie-synopsis text-input"
-            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setSynopsis(newValue.currentTarget.value)
-            }
-            value={synopsis}
-          />
+        {renderTextField("aliases", "Aliases")}
+
+        <Form.Group controlId="duration" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Duration
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <DurationInput
+              numericValue={formik.values.duration ?? undefined}
+              onValueChange={(valueAsNumber: number) => {
+                formik.setFieldValue("duration", valueAsNumber);
+              }}
+            />
+          </Col>
         </Form.Group>
 
-        <DetailsEditNavbar
-          objectName={movie?.name ?? "movie"}
-          isNew={isNew}
-          isEditing={isEditing}
-          onToggleEdit={onCancel}
-          onSave={() => onSubmit(getMovieInput())}
-          onImageChange={onFrontImageChange}
-          onImageChangeURL={setFrontImage}
-          onClearImage={() => { setFrontImage(null)}}
-          onBackImageChange={onBackImageChange}
-          onBackImageChangeURL={setBackImage}
-          onClearBackImage={() => { setBackImage(null)}}
-          onDelete={onDelete}
-        />
-      </div>
+        {renderTextField("date", "Date (YYYY-MM-DD)")}
+
+        <Form.Group controlId="studio" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Studio
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <StudioSelect
+              onSelect={(items) =>
+                formik.setFieldValue("studio_id", items.length > 0 ? items[0]?.id : undefined)
+              }
+              ids={formik.values.studio_id ? [formik.values.studio_id] : []}
+            />
+          </Col>
+        </Form.Group>
+
+        {renderTextField("director", "Director")}
+
+        <Form.Group controlId="rating" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Rating
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+              <RatingStars
+                value={formik.values.rating ?? undefined}
+                onSetRating={(value) => formik.setFieldValue("rating", value)}
+              />
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="url" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            URL
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <InputGroup>
+              <Form.Control
+                className="text-input"
+                placeholder="URL"
+                {...formik.getFieldProps("url")}
+              />
+              <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
+            </InputGroup>
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="synopsis" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Synopsis
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <Form.Control
+              as="textarea"
+              className="text-input"
+              placeholder="Synopsis"
+              {...formik.getFieldProps("synopsis")}
+            />
+          </Col>
+        </Form.Group>
+      </Form>
+      
+      <DetailsEditNavbar
+        objectName={movie?.name ?? "movie"}
+        isNew={isNew}
+        isEditing={isEditing}
+        onToggleEdit={onCancel}
+        onSave={() => formik.handleSubmit()}
+        onImageChange={onFrontImageChange}
+        onImageChangeURL={setFrontImage}
+        onClearImage={() => { setFrontImage(null)}}
+        onBackImageChange={onBackImageChange}
+        onBackImageChangeURL={setBackImage}
+        onClearBackImage={() => { setBackImage(null)}}
+        onDelete={onDelete}
+      />
 
       {maybeRenderScrapeDialog()}
     </div>
