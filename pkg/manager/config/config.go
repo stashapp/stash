@@ -37,7 +37,7 @@ var defaultVideoExtensions = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", 
 
 const ImageExtensions = "image_extensions"
 
-var defaultImageExtensions = []string{"png", "jpg", "jpeg", "gif", "webp"}
+var defaultImageExtensions = []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}
 
 const GalleryExtensions = "gallery_extensions"
 
