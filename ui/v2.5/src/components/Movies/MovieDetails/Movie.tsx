@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import cx from "classnames";
 import { useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -47,7 +48,6 @@ export const Movie: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
-  const [movieEditState, setMovieEditState] = useState<Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>>();
 
   // Editing movie state
   const [frontImage, setFrontImage] = useState<string | undefined | null>(
@@ -263,7 +263,7 @@ export const Movie: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div className="movie-details col-xl-4 col-lg-6 mb-3">
+      <div className={cx("movie-details mb-3 col", {"col-xl-4 col-lg-6": !isNew})}>
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
