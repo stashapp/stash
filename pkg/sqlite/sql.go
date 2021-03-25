@@ -44,10 +44,15 @@ func getPaginationSQL(page int, perPage int) string {
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 
-func getSort(sort string, direction string, tableName string) string {
+func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
-		direction = "ASC"
+		return "ASC"
+	} else {
+		return direction
 	}
+}
+func getSort(sort string, direction string, tableName string) string {
+	direction = getSortDirection(direction)
 
 	const randomSeedPrefix = "random_"
 

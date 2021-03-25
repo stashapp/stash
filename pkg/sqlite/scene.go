@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -286,7 +287,7 @@ func (qb *sceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
 }
 
 func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
-	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
+	return qb.queryScenes(selectAll(sceneTable)+qb.getDefaultSceneSort(), nil)
 }
 
 func illegalFilterCombination(type1, type2 string) error {
@@ -383,7 +384,8 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	query.addFilter(filter)
 
-	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+	qb.setSceneSort(&query, findFilter)
+	query.sortAndPagination += getPagination(findFilter)
 
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
@@ -585,8 +587,8 @@ func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, performerTagsFilt
 				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
 				f.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
 			} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-				f.addWhere(fmt.Sprintf(`not exists 
-					(select performers_scenes.performer_id from performers_scenes 
+				f.addWhere(fmt.Sprintf(`not exists
+					(select performers_scenes.performer_id from performers_scenes
 						left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
 						performers_scenes.scene_id = scenes.id AND
 						performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))), args...)
@@ -611,8 +613,8 @@ func handleScenePerformerTagsCriterion(query *queryBuilder, performerTagsFilter 
 			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
 			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
 		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-			query.addWhere(fmt.Sprintf(`not exists 
-				(select performers_scenes.performer_id from performers_scenes 
+			query.addWhere(fmt.Sprintf(`not exists
+				(select performers_scenes.performer_id from performers_scenes
 					left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
 					performers_scenes.scene_id = scenes.id AND
 					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
@@ -620,13 +622,24 @@ func handleScenePerformerTagsCriterion(query *queryBuilder, performerTagsFilter 
 	}
 }
 
-func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) string {
+func (qb *sceneQueryBuilder) getDefaultSceneSort() string {
+	return " ORDER BY scenes.path, scenes.date ASC "
+}
+
+func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
 	if findFilter == nil {
-		return " ORDER BY scenes.path, scenes.date ASC "
+		query.sortAndPagination += qb.getDefaultSceneSort()
+		return
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	return getSort(sort, direction, "scenes")
+	if strings.Compare(sort, "tag_count") == 0 {
+		query.sortAndPagination +=
+			" ORDER BY (SELECT COUNT(*) FROM scenes_tags WHERE scene_id = scenes.id) " +
+				getSortDirection(direction)
+	} else {
+		query.sortAndPagination += getSort(sort, direction, "scenes")
+	}
 }
 
 func (qb *sceneQueryBuilder) queryScene(query string, args []interface{}) (*models.Scene, error) {

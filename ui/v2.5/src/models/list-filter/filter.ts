@@ -128,6 +128,7 @@ export class ListFilterModel {
           "duration",
           "framerate",
           "bitrate",
+          "tag_count",
           "random",
         ];
         this.displayModeOptions = [
