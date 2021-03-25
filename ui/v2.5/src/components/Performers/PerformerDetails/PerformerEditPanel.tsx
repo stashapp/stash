@@ -805,7 +805,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("birthdate", "Birthdate")}
+        {renderTextField("birthdate", "YYYY-MM-DD")}
         {renderTextField("country", "Country")}
         {renderTextField("ethnicity", "Ethnicity")}
         {renderTextField("eye_color", "Eye Color")}
