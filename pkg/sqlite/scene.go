@@ -348,6 +348,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 
 	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
+	query.handleCriterionFunc(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterionFunc(scenePerformersCriterionHandler(qb, sceneFilter.Performers))
 	query.handleCriterionFunc(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
 	query.handleCriterionFunc(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
@@ -521,6 +522,7 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 		addJoinsFunc: addJoinsFunc,
 	}
 }
+
 func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.tagsRepository().join(f, "tags_join", "scenes.id")
@@ -529,6 +531,22 @@ func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterio
 	h := qb.getMultiCriterionHandlerBuilder(tagTable, scenesTagsTable, tagIDColumn, addJoinsFunc)
 
 	return h.handler(tags)
+}
+
+func sceneTagCountCriterionHandler(qb *sceneQueryBuilder, tagCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if tagCount != nil {
+			clause, count := getIntCriterionWhereClause(
+				"IFNULL(( SELECT COUNT(*) FROM scenes_tags WHERE scene_id = scenes.id ), 0)",
+				*tagCount)
+
+			if count == 1 {
+				f.addWhere(clause, tagCount.Value)
+			} else {
+				f.addWhere(clause)
+			}
+		}
+	}
 }
 
 func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {

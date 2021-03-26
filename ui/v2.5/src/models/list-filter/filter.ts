@@ -148,6 +148,7 @@ export class ListFilterModel {
           new HasMarkersCriterionOption(),
           new SceneIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
           new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
@@ -545,6 +546,14 @@ export class ListFilterModel {
           result.performer_tags = {
             value: performerTagsCrit.value.map((tag) => tag.id),
             modifier: performerTagsCrit.modifier,
+          };
+          break;
+        }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
           };
           break;
         }

@@ -25,6 +25,7 @@ export type CriterionType =
   | "tags"
   | "sceneTags"
   | "performerTags"
+  | "tag_count"
   | "performers"
   | "studios"
   | "movies"
@@ -89,6 +90,8 @@ export abstract class Criterion {
         return "Scene Tags";
       case "performerTags":
         return "Performer Tags";
+      case "tag_count":
+        return "Tag Count";
       case "performers":
         return "Performers";
       case "studios":
