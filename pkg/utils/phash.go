@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"strconv"
+
 	"github.com/corona10/goimagehash"
 )
 
@@ -48,4 +50,8 @@ func findNeighbors(bucket int, neighbors []int, hashes []*Phash, scenes *[]int) 
 			findNeighbors(bucket, hash.Neighbors, hashes, scenes)
 		}
 	}
+}
+
+func PhashToString(phash int64) string {
+	return strconv.FormatUint(uint64(phash), 16)
 }
