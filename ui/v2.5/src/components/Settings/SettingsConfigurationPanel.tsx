@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration, useConfigureGeneral, useGenerateAPIKey } from "src/core/StashService";
+import {
+  useConfiguration,
+  useConfigureGeneral,
+  useGenerateAPIKey,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import StashBoxConfiguration, {
@@ -245,7 +249,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       await generateAPIKey({
         variables: {
           input: {},
-        }
+        },
       });
     } catch (e) {
       Toast.error(e);
@@ -258,8 +262,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
         variables: {
           input: {
             clear: true,
-          }
-        }
+          },
+        },
       });
     } catch (e) {
       Toast.error(e);
@@ -830,7 +834,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </InputGroup.Append>
           </InputGroup>
           <Form.Text className="text-muted">
-            API key for external systems. Only required when username/password is configured. Username must be saved before generating API key.
+            API key for external systems. Only required when username/password
+            is configured. Username must be saved before generating API key.
           </Form.Text>
         </Form.Group>
 
@@ -847,7 +852,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-          Maximum idle time before a login session is expired, in seconds.
+            Maximum idle time before a login session is expired, in seconds.
           </Form.Text>
         </Form.Group>
       </Form.Group>
