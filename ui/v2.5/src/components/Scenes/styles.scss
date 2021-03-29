@@ -209,15 +209,36 @@ textarea.scene-description {
     }
   }
 
-  &:hover {
-    .scene-specs-overlay,
-    .rating-banner,
-    .scene-studio-overlay {
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
+  @media (pointer: fine) {
+    &:hover {
+      .scene-specs-overlay,
+      .rating-banner,
+      .scene-studio-overlay {
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
 
-    .scene-studio-overlay:hover {
+      .scene-studio-overlay:hover {
+        opacity: 0.75;
+        transition: opacity 0.5s;
+      }
+
+      .scene-card-check {
+        opacity: 0.75;
+        transition: opacity 0.5s;
+      }
+
+      .scene-card-preview-video {
+        top: 0;
+        transition-delay: 0.2s;
+      }
+    }
+  }
+
+  /* replicate hover for non-hoverable interfaces */
+  @media (hover: none), (pointer: coarse), (pointer: none) {
+    /* don't hide overlays */
+    .scene-studio-overlay {
       opacity: 0.75;
       transition: opacity 0.5s;
     }
@@ -544,4 +565,11 @@ input[type="range"].blue-slider {
   &.organized {
     color: #664c3f;
   }
+}
+
+.o-counter .dropdown-toggle {
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  padding-left: 0;
+  padding-right: 0.25rem;
 }

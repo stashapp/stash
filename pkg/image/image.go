@@ -59,6 +59,13 @@ func ZipFilename(zipFilename, filenameInZip string) string {
 	return zipFilename + zipSeparator + filenameInZip
 }
 
+// IsZipPath returns true if the path includes the zip separator byte,
+// indicating it is within a zip file.
+// TODO - this should be moved to utils
+func IsZipPath(p string) bool {
+	return strings.Contains(p, zipSeparator)
+}
+
 type imageReadCloser struct {
 	src io.ReadCloser
 	zrc *zip.ReadCloser
@@ -239,7 +246,7 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 
 func IsCover(img *models.Image) bool {
 	_, fn := getFilePath(img.Path)
-	return fn == "cover.jpg"
+	return strings.HasSuffix(fn, "cover.jpg")
 }
 
 func GetTitle(s *models.Image) string {

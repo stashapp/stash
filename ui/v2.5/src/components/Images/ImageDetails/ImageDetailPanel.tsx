@@ -14,7 +14,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   function renderTags() {
     if (props.image.tags.length === 0) return;
     const tags = props.image.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} tagType="image" />
     ));
     return (
       <>

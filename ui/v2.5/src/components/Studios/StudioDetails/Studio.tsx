@@ -134,10 +134,6 @@ export const Studio: React.FC = () => {
             input: getStudioInput() as GQL.StudioUpdateInput,
           },
         });
-        if (result.data?.studioUpdate?.image_path)
-          await fetch(result.data?.studioUpdate?.image_path, {
-            cache: "reload",
-          });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
@@ -319,6 +315,7 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onImageChangeURL={onImageLoad}
           onClearImage={() => {
             onClearImage();
           }}

@@ -139,6 +139,7 @@ func TestSceneQueryQ(t *testing.T) {
 }
 
 func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
+	t.Helper()
 	scenes, _, err := sqb.Query(sceneFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying scene: %s", err.Error())
@@ -186,6 +187,143 @@ func TestSceneQueryPath(t *testing.T) {
 	verifyScenesPath(t, pathCriterion)
 }
 
+func TestSceneQueryPathOr(t *testing.T) {
+	const scene1Idx = 1
+	const scene2Idx = 2
+
+	scene1Path := getSceneStringValue(scene1Idx, "Path")
+	scene2Path := getSceneStringValue(scene2Idx, "Path")
+
+	sceneFilter := models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    scene1Path,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.SceneFilterType{
+			Path: &models.StringCriterionInput{
+				Value:    scene2Path,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 2)
+		assert.Equal(t, scene1Path, scenes[0].Path)
+		assert.Equal(t, scene2Path, scenes[1].Path)
+
+		return nil
+	})
+}
+
+func TestSceneQueryPathAndRating(t *testing.T) {
+	const sceneIdx = 1
+	scenePath := getSceneStringValue(sceneIdx, "Path")
+	sceneRating := getRating(sceneIdx)
+
+	sceneFilter := models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    scenePath,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.SceneFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(sceneRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, scenePath, scenes[0].Path)
+		assert.Equal(t, sceneRating.Int64, scenes[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestSceneQueryPathNotRating(t *testing.T) {
+	const sceneIdx = 1
+
+	sceneRating := getRating(sceneIdx)
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    "scene_.*1_Path",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(sceneRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	sceneFilter := models.SceneFilterType{
+		Path: &pathCriterion,
+		Not: &models.SceneFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		for _, scene := range scenes {
+			verifyString(t, scene.Path, pathCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, scene.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestSceneIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const sceneIdx = 1
+	subFilter := models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    getSceneStringValue(sceneIdx, "Path"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	sceneFilter := &models.SceneFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		_, _, err := sqb.Query(sceneFilter, nil)
+		assert.NotNil(err)
+
+		sceneFilter.Or = nil
+		sceneFilter.Not = &subFilter
+		_, _, err = sqb.Query(sceneFilter, nil)
+		assert.NotNil(err)
+
+		sceneFilter.And = nil
+		sceneFilter.Or = &subFilter
+		_, _, err = sqb.Query(sceneFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
@@ -217,6 +355,17 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	}
 	if criterion.Modifier == models.CriterionModifierNotEquals {
 		assert.NotEqual(criterion.Value, value.String)
+	}
+	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+		assert.True(value.Valid)
+		assert.Regexp(regexp.MustCompile(criterion.Value), value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+		if !value.Valid {
+			// correct
+			return
+		}
+		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
 	}
 }
 
@@ -791,6 +940,61 @@ func TestSceneQueryTags(t *testing.T) {
 		}
 
 		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
+}
+
+func TestSceneQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		sceneFilter := models.SceneFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 2)
+
+		// ensure ids are correct
+		for _, scene := range scenes {
+			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformerTag] || scene.ID == sceneIDs[sceneIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(sceneIdxWithPerformerTwoTags, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}

@@ -214,7 +214,7 @@ github.com/markbates/safe
 # github.com/matryer/moq v0.0.0-20200106131100-75d0ddfc0007
 github.com/matryer/moq
 github.com/matryer/moq/pkg/moq
-# github.com/mattn/go-sqlite3 v1.13.0
+# github.com/mattn/go-sqlite3 v1.14.6
 github.com/mattn/go-sqlite3
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
@@ -324,6 +324,7 @@ golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 golang.org/x/net/publicsuffix
 # golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/text v0.3.2

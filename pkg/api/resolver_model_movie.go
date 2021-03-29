@@ -84,13 +84,13 @@ func (r *movieResolver) Synopsis(ctx context.Context, obj *models.Movie) (*strin
 
 func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	frontimagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj.ID).GetMovieFrontImageURL()
+	frontimagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj).GetMovieFrontImageURL()
 	return &frontimagePath, nil
 }
 
 func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	backimagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj.ID).GetMovieBackImageURL()
+	backimagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj).GetMovieBackImageURL()
 	return &backimagePath, nil
 }
 

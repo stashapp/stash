@@ -35,29 +35,6 @@ func (_m *PerformerReaderWriter) All() ([]*models.Performer, error) {
 	return r0, r1
 }
 
-// AllSlim provides a mock function with given fields:
-func (_m *PerformerReaderWriter) AllSlim() ([]*models.Performer, error) {
-	ret := _m.Called()
-
-	var r0 []*models.Performer
-	if rf, ok := ret.Get(0).(func() []*models.Performer); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Performer)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Count provides a mock function with given fields:
 func (_m *PerformerReaderWriter) Count() (int, error) {
 	ret := _m.Called()
@@ -72,6 +49,27 @@ func (_m *PerformerReaderWriter) Count() (int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func() error); ok {
 		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountByTagID provides a mock function with given fields: tagID
+func (_m *PerformerReaderWriter) CountByTagID(tagID int) (int, error) {
+	ret := _m.Called(tagID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(tagID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(tagID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -337,6 +335,29 @@ func (_m *PerformerReaderWriter) GetStashIDs(performerID int) ([]*models.StashID
 	return r0, r1
 }
 
+// GetTagIDs provides a mock function with given fields: sceneID
+func (_m *PerformerReaderWriter) GetTagIDs(sceneID int) ([]int, error) {
+	ret := _m.Called(sceneID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(sceneID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Query provides a mock function with given fields: performerFilter, findFilter
 func (_m *PerformerReaderWriter) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	ret := _m.Called(performerFilter, findFilter)
@@ -434,6 +455,20 @@ func (_m *PerformerReaderWriter) UpdateStashIDs(performerID int, stashIDs []mode
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []models.StashID) error); ok {
 		r0 = rf(performerID, stashIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateTags provides a mock function with given fields: sceneID, tagIDs
+func (_m *PerformerReaderWriter) UpdateTags(sceneID int, tagIDs []int) error {
+	ret := _m.Called(sceneID, tagIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(sceneID, tagIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

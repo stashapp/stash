@@ -16,6 +16,7 @@ mutation PerformerCreate(
   $twitter: String,
   $instagram: String,
   $favorite: Boolean,
+  $tag_ids: [ID!],
   $stash_ids: [StashIDInput!],
   $image: String) {
 
@@ -37,6 +38,7 @@ mutation PerformerCreate(
                             twitter: $twitter,
                             instagram: $instagram,
                             favorite: $favorite,
+                            tag_ids: $tag_ids,
                             stash_ids: $stash_ids,
                             image: $image
                           }) {
@@ -48,6 +50,14 @@ mutation PerformerUpdate(
   $input: PerformerUpdateInput!) {
 
   performerUpdate(input: $input) {
+    ...PerformerData
+  }
+}
+
+mutation BulkPerformerUpdate(
+  $input: BulkPerformerUpdateInput!) {
+
+  bulkPerformerUpdate(input: $input) {
     ...PerformerData
   }
 }

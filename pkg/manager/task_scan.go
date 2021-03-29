@@ -315,14 +315,22 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 			scene, _ := sqb.FindByPath(scenePath)
 			// found related Scene
 			if scene != nil {
-				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
-
-				if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
-					return err
+				sceneGalleries, _ := sqb.FindByGalleryID(g.ID) // check if gallery is already associated to the scene
+				isAssoc := false
+				for _, sg := range sceneGalleries {
+					if scene.ID == sg.ID {
+						isAssoc = true
+						break
+					}
+				}
+				if !isAssoc {
+					logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+					if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
+						return err
+					}
 				}
 			}
 		}
-
 		return nil
 	}); err != nil {
 		logger.Error(err.Error())
@@ -1043,6 +1051,12 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	gExt := config.GetGalleryExtensions()
 	excludeVidRegex := generateRegexps(config.GetExcludes())
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
+
+	// don't scan zip images directly
+	if image.IsZipPath(s.Path) {
+		logger.Warnf("Cannot rescan zip image %s. Rescan zip gallery instead.", s.Path)
+		return nil
+	}
 
 	generatedPath := config.GetGeneratedPath()
 

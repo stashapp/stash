@@ -158,10 +158,11 @@ type scraperDebugOptions struct {
 }
 
 type scraperCookies struct {
-	Name   string `yaml:"Name"`
-	Value  string `yaml:"Value"`
-	Domain string `yaml:"Domain"`
-	Path   string `yaml:"Path"`
+	Name        string `yaml:"Name"`
+	Value       string `yaml:"Value"`
+	ValueRandom int    `yaml:"ValueRandom"`
+	Domain      string `yaml:"Domain"`
+	Path        string `yaml:"Path"`
 }
 
 type cookieOptions struct {

@@ -24,43 +24,45 @@ type ScrapedItem struct {
 }
 
 type ScrapedPerformer struct {
-	Name         *string `graphql:"name" json:"name"`
-	Gender       *string `graphql:"gender" json:"gender"`
-	URL          *string `graphql:"url" json:"url"`
-	Twitter      *string `graphql:"twitter" json:"twitter"`
-	Instagram    *string `graphql:"instagram" json:"instagram"`
-	Birthdate    *string `graphql:"birthdate" json:"birthdate"`
-	Ethnicity    *string `graphql:"ethnicity" json:"ethnicity"`
-	Country      *string `graphql:"country" json:"country"`
-	EyeColor     *string `graphql:"eye_color" json:"eye_color"`
-	Height       *string `graphql:"height" json:"height"`
-	Measurements *string `graphql:"measurements" json:"measurements"`
-	FakeTits     *string `graphql:"fake_tits" json:"fake_tits"`
-	CareerLength *string `graphql:"career_length" json:"career_length"`
-	Tattoos      *string `graphql:"tattoos" json:"tattoos"`
-	Piercings    *string `graphql:"piercings" json:"piercings"`
-	Aliases      *string `graphql:"aliases" json:"aliases"`
-	Image        *string `graphql:"image" json:"image"`
+	Name         *string            `graphql:"name" json:"name"`
+	Gender       *string            `graphql:"gender" json:"gender"`
+	URL          *string            `graphql:"url" json:"url"`
+	Twitter      *string            `graphql:"twitter" json:"twitter"`
+	Instagram    *string            `graphql:"instagram" json:"instagram"`
+	Birthdate    *string            `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string            `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string            `graphql:"country" json:"country"`
+	EyeColor     *string            `graphql:"eye_color" json:"eye_color"`
+	Height       *string            `graphql:"height" json:"height"`
+	Measurements *string            `graphql:"measurements" json:"measurements"`
+	FakeTits     *string            `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string            `graphql:"career_length" json:"career_length"`
+	Tattoos      *string            `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string            `graphql:"piercings" json:"piercings"`
+	Aliases      *string            `graphql:"aliases" json:"aliases"`
+	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
+	Image        *string            `graphql:"image" json:"image"`
 }
 
 // this type has no Image field
 type ScrapedPerformerStash struct {
-	Name         *string `graphql:"name" json:"name"`
-	Gender       *string `graphql:"gender" json:"gender"`
-	URL          *string `graphql:"url" json:"url"`
-	Twitter      *string `graphql:"twitter" json:"twitter"`
-	Instagram    *string `graphql:"instagram" json:"instagram"`
-	Birthdate    *string `graphql:"birthdate" json:"birthdate"`
-	Ethnicity    *string `graphql:"ethnicity" json:"ethnicity"`
-	Country      *string `graphql:"country" json:"country"`
-	EyeColor     *string `graphql:"eye_color" json:"eye_color"`
-	Height       *string `graphql:"height" json:"height"`
-	Measurements *string `graphql:"measurements" json:"measurements"`
-	FakeTits     *string `graphql:"fake_tits" json:"fake_tits"`
-	CareerLength *string `graphql:"career_length" json:"career_length"`
-	Tattoos      *string `graphql:"tattoos" json:"tattoos"`
-	Piercings    *string `graphql:"piercings" json:"piercings"`
-	Aliases      *string `graphql:"aliases" json:"aliases"`
+	Name         *string            `graphql:"name" json:"name"`
+	Gender       *string            `graphql:"gender" json:"gender"`
+	URL          *string            `graphql:"url" json:"url"`
+	Twitter      *string            `graphql:"twitter" json:"twitter"`
+	Instagram    *string            `graphql:"instagram" json:"instagram"`
+	Birthdate    *string            `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string            `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string            `graphql:"country" json:"country"`
+	EyeColor     *string            `graphql:"eye_color" json:"eye_color"`
+	Height       *string            `graphql:"height" json:"height"`
+	Measurements *string            `graphql:"measurements" json:"measurements"`
+	FakeTits     *string            `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string            `graphql:"career_length" json:"career_length"`
+	Tattoos      *string            `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string            `graphql:"piercings" json:"piercings"`
+	Aliases      *string            `graphql:"aliases" json:"aliases"`
+	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
 }
 
 type ScrapedScene struct {
@@ -106,25 +108,26 @@ type ScrapedGalleryStash struct {
 
 type ScrapedScenePerformer struct {
 	// Set if performer matched
-	ID           *string  `graphql:"id" json:"id"`
-	Name         string   `graphql:"name" json:"name"`
-	Gender       *string  `graphql:"gender" json:"gender"`
-	URL          *string  `graphql:"url" json:"url"`
-	Twitter      *string  `graphql:"twitter" json:"twitter"`
-	Instagram    *string  `graphql:"instagram" json:"instagram"`
-	Birthdate    *string  `graphql:"birthdate" json:"birthdate"`
-	Ethnicity    *string  `graphql:"ethnicity" json:"ethnicity"`
-	Country      *string  `graphql:"country" json:"country"`
-	EyeColor     *string  `graphql:"eye_color" json:"eye_color"`
-	Height       *string  `graphql:"height" json:"height"`
-	Measurements *string  `graphql:"measurements" json:"measurements"`
-	FakeTits     *string  `graphql:"fake_tits" json:"fake_tits"`
-	CareerLength *string  `graphql:"career_length" json:"career_length"`
-	Tattoos      *string  `graphql:"tattoos" json:"tattoos"`
-	Piercings    *string  `graphql:"piercings" json:"piercings"`
-	Aliases      *string  `graphql:"aliases" json:"aliases"`
-	RemoteSiteID *string  `graphql:"remote_site_id" json:"remote_site_id"`
-	Images       []string `graphql:"images" json:"images"`
+	ID           *string            `graphql:"id" json:"id"`
+	Name         string             `graphql:"name" json:"name"`
+	Gender       *string            `graphql:"gender" json:"gender"`
+	URL          *string            `graphql:"url" json:"url"`
+	Twitter      *string            `graphql:"twitter" json:"twitter"`
+	Instagram    *string            `graphql:"instagram" json:"instagram"`
+	Birthdate    *string            `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string            `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string            `graphql:"country" json:"country"`
+	EyeColor     *string            `graphql:"eye_color" json:"eye_color"`
+	Height       *string            `graphql:"height" json:"height"`
+	Measurements *string            `graphql:"measurements" json:"measurements"`
+	FakeTits     *string            `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string            `graphql:"career_length" json:"career_length"`
+	Tattoos      *string            `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string            `graphql:"piercings" json:"piercings"`
+	Aliases      *string            `graphql:"aliases" json:"aliases"`
+	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
+	RemoteSiteID *string            `graphql:"remote_site_id" json:"remote_site_id"`
+	Images       []string           `graphql:"images" json:"images"`
 }
 
 type ScrapedSceneStudio struct {

@@ -2,12 +2,77 @@ package utils
 
 import (
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
+
+// Timeout to get the image. Includes transfer time. May want to make this
+// configurable at some point.
+const imageGetTimeout = time.Second * 60
+
+const base64RE = `^data:.+\/(.+);base64,(.*)$`
+
+// ProcessImageInput transforms an image string either from a base64 encoded
+// string, or from a URL, and returns the image as a byte slice
+func ProcessImageInput(imageInput string) ([]byte, error) {
+	regex := regexp.MustCompile(base64RE)
+	if regex.MatchString(imageInput) {
+		_, d, err := ProcessBase64Image(imageInput)
+		return d, err
+	}
+
+	// assume input is a URL. Read it.
+	return ReadImageFromURL(imageInput)
+}
+
+// ReadImageFromURL returns image data from a URL
+func ReadImageFromURL(url string) ([]byte, error) {
+	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+
+		Timeout: imageGetTimeout,
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// assume is a URL for now
+
+	// set the host of the URL as the referer
+	if req.URL.Scheme != "" {
+		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
+	}
+	req.Header.Set("User-Agent", GetUserAgent())
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
 
 // ProcessBase64Image transforms a base64 encoded string from a form post and returns the MD5 hash of the data and the
 // image itself as a byte slice.
@@ -16,7 +81,7 @@ func ProcessBase64Image(imageString string) (string, []byte, error) {
 		return "", nil, fmt.Errorf("empty image string")
 	}
 
-	regex := regexp.MustCompile(`^data:.+\/(.+);base64,(.*)$`)
+	regex := regexp.MustCompile(base64RE)
 	matches := regex.FindStringSubmatch(imageString)
 	var encodedString string
 	if len(matches) > 2 {
@@ -66,6 +131,7 @@ func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Add("Etag", etag)
+	w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
 	_, err := w.Write(image)
 	return err
 }

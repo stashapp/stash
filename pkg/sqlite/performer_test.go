@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -44,6 +45,14 @@ func TestPerformerFindBySceneID(t *testing.T) {
 }
 
 func TestPerformerFindByNames(t *testing.T) {
+	getNames := func(p []*models.Performer) []string {
+		var ret []string
+		for _, pp := range p {
+			ret = append(ret, pp.Name.String)
+		}
+		return ret
+	}
+
 	withTxn(func(r models.Repository) error {
 		var names []string
 
@@ -72,19 +81,20 @@ func TestPerformerFindByNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
-		assert.Len(t, performers, 2) // performerIdxWithScene and performerIdx1WithScene
-		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
-		assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
+		retNames := getNames(performers)
+		assert.Equal(t, names, retNames)
 
 		performers, err = pqb.FindByNames(names, true) // find performers by names ( 2 names nocase)
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
-		assert.Len(t, performers, 4) // performerIdxWithScene and performerIdxWithDupName , performerIdx1WithScene and performerIdx1WithDupName
-		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
-		assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
-		assert.Equal(t, performerNames[performerIdx1WithDupName], performers[2].Name.String)
-		assert.Equal(t, performerNames[performerIdxWithDupName], performers[3].Name.String)
+		retNames = getNames(performers)
+		assert.Equal(t, []string{
+			performerNames[performerIdxWithScene],
+			performerNames[performerIdx1WithScene],
+			performerNames[performerIdx1WithDupName],
+			performerNames[performerIdxWithDupName],
+		}, retNames)
 
 		return nil
 	})
@@ -213,6 +223,109 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 			verifyInt(t, age, ageCriterion)
 		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryCareerLength(t *testing.T) {
+	const value = "2005"
+	careerLengthCriterion := models.StringCriterionInput{
+		Value:    value,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierMatchesRegex
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+}
+
+func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			CareerLength: &criterion,
+		}
+
+		performers, _, err := qb.Query(&performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performer: %s", err.Error())
+		}
+
+		for _, performer := range performers {
+			cl := performer.CareerLength
+			verifyNullString(t, cl, criterion)
+		}
+
+		return nil
+	})
+}
+
+func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
+	performers, _, err := qb.Query(performerFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying performers: %s", err.Error())
+	}
+
+	return performers
+}
+
+func TestPerformerQueryTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		performerFilter := models.PerformerFilterType{
+			Tags: &tagCriterion,
+		}
+
+		// ensure ids are correct
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Len(t, performers, 2)
+		for _, performer := range performers {
+			assert.True(t, performer.ID == performerIDs[performerIdxWithTag] || performer.ID == performerIDs[performerIdxWithTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		performers = queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 1)
+		assert.Equal(t, sceneIDs[performerIdxWithTwoTags], performers[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(performerIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+		assert.Len(t, performers, 0)
 
 		return nil
 	})

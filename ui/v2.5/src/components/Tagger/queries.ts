@@ -65,21 +65,21 @@ export const useCreatePerformer = () => {
         >({
           query: GQL.AllPerformersForFilterDocument,
         });
-        const allPerformersSlim = sortBy(
+        const allPerformers = sortBy(
           [
-            ...(currentQuery?.allPerformersSlim ?? []),
+            ...(currentQuery?.allPerformers ?? []),
             newPerformer.data.performerCreate,
           ],
           ["name"]
         );
-        if (allPerformersSlim.length > 1) {
+        if (allPerformers.length > 1) {
           store.writeQuery<
             GQL.AllPerformersForFilterQuery,
             GQL.AllPerformersForFilterQueryVariables
           >({
             query: GQL.AllPerformersForFilterDocument,
             data: {
-              allPerformersSlim,
+              allPerformers,
             },
           });
         }
@@ -169,18 +169,18 @@ export const useCreateStudio = () => {
         >({
           query: GQL.AllStudiosForFilterDocument,
         });
-        const allStudiosSlim = sortBy(
-          [...(currentQuery?.allStudiosSlim ?? []), result.data.studioCreate],
+        const allStudios = sortBy(
+          [...(currentQuery?.allStudios ?? []), result.data.studioCreate],
           ["name"]
         );
-        if (allStudiosSlim.length > 1) {
+        if (allStudios.length > 1) {
           store.writeQuery<
             GQL.AllStudiosForFilterQuery,
             GQL.AllStudiosForFilterQueryVariables
           >({
             query: GQL.AllStudiosForFilterDocument,
             data: {
-              allStudiosSlim,
+              allStudios,
             },
           });
         }
@@ -225,8 +225,8 @@ export const useCreateTag = () => {
         >({
           query: GQL.AllTagsForFilterDocument,
         });
-        const allTagsSlim = sortBy(
-          [...(currentQuery?.allTagsSlim ?? []), result.data.tagCreate],
+        const allTags = sortBy(
+          [...(currentQuery?.allTags ?? []), result.data.tagCreate],
           ["name"]
         );
 
@@ -236,7 +236,7 @@ export const useCreateTag = () => {
         >({
           query: GQL.AllTagsForFilterDocument,
           data: {
-            allTagsSlim,
+            allTags,
           },
         });
       },

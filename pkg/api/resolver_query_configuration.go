@@ -46,6 +46,8 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Stashes:                    config.GetStashPaths(),
 		DatabasePath:               config.GetDatabasePath(),
 		GeneratedPath:              config.GetGeneratedPath(),
+		ConfigFilePath:             config.GetConfigFilePath(),
+		ScrapersPath:               config.GetScrapersPath(),
 		CachePath:                  config.GetCachePath(),
 		CalculateMd5:               config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:   config.GetVideoFileNamingAlgorithm(),
@@ -71,6 +73,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Excludes:                   config.GetExcludes(),
 		ImageExcludes:              config.GetImageExcludes(),
 		ScraperUserAgent:           &scraperUserAgent,
+		ScraperCertCheck:           config.GetScraperCertCheck(),
 		ScraperCDPPath:             &scraperCDPPath,
 		StashBoxes:                 config.GetStashBoxes(),
 	}

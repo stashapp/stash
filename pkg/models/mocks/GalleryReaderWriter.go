@@ -300,8 +300,8 @@ func (_m *GalleryReaderWriter) GetPerformerIDs(galleryID int) ([]int, error) {
 	return r0, r1
 }
 
-// GetTagIDs provides a mock function with given fields: galleryID
-func (_m *GalleryReaderWriter) GetTagIDs(galleryID int) ([]int, error) {
+// GetSceneIDs provides a mock function with given fields: galleryID
+func (_m *GalleryReaderWriter) GetSceneIDs(galleryID int) ([]int, error) {
 	ret := _m.Called(galleryID)
 
 	var r0 []int
@@ -323,8 +323,8 @@ func (_m *GalleryReaderWriter) GetTagIDs(galleryID int) ([]int, error) {
 	return r0, r1
 }
 
-// GetSceneIDs provides a mock function with given fields: galleryID
-func (_m *GalleryReaderWriter) GetSceneIDs(galleryID int) ([]int, error) {
+// GetTagIDs provides a mock function with given fields: galleryID
+func (_m *GalleryReaderWriter) GetTagIDs(galleryID int) ([]int, error) {
 	ret := _m.Called(galleryID)
 
 	var r0 []int
@@ -464,20 +464,6 @@ func (_m *GalleryReaderWriter) UpdatePerformers(galleryID int, performerIDs []in
 	return r0
 }
 
-// UpdateTags provides a mock function with given fields: galleryID, tagIDs
-func (_m *GalleryReaderWriter) UpdateTags(galleryID int, tagIDs []int) error {
-	ret := _m.Called(galleryID, tagIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
-		r0 = rf(galleryID, tagIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // UpdateScenes provides a mock function with given fields: galleryID, sceneIDs
 func (_m *GalleryReaderWriter) UpdateScenes(galleryID int, sceneIDs []int) error {
 	ret := _m.Called(galleryID, sceneIDs)
@@ -485,6 +471,20 @@ func (_m *GalleryReaderWriter) UpdateScenes(galleryID int, sceneIDs []int) error
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
 		r0 = rf(galleryID, sceneIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateTags provides a mock function with given fields: galleryID, tagIDs
+func (_m *GalleryReaderWriter) UpdateTags(galleryID int, tagIDs []int) error {
+	ret := _m.Called(galleryID, tagIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(galleryID, tagIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

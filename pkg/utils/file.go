@@ -276,7 +276,7 @@ func IsPathInDir(dir, pathToCheck string) bool {
 	rel, err := filepath.Rel(dir, pathToCheck)
 
 	if err == nil {
-		if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		if !strings.HasPrefix(rel, "..") {
 			return true
 		}
 	}

@@ -1,8 +1,6 @@
-#performer-details {
-  .scrape-url-button {
-    color: $text-color;
-    float: right;
-    margin-right: 0.5rem;
+#performer-edit {
+  .scrape-url-button:disabled {
+    opacity: 0.5;
   }
 }
 
@@ -91,4 +89,17 @@
 
 #performer-scraper-popover {
   z-index: 1;
+}
+
+.PerformerScrapeModal {
+  &-list {
+    list-style-type: none;
+    max-height: 50vh;
+    overflow-x: auto;
+    padding-left: 1rem;
+
+    .btn {
+      font-size: 1.2rem;
+    }
+  }
 }

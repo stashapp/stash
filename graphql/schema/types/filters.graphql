@@ -59,6 +59,8 @@ input PerformerFilterType {
   gender: GenderCriterionInput
   """Filter to only include performers missing this property"""
   is_missing: String
+  """Filter to only include performers with these tags"""
+  tags: MultiCriterionInput
   """Filter by StashID"""
   stash_id: String
 }
@@ -75,6 +77,10 @@ input SceneMarkerFilterType {
 }
 
 input SceneFilterType {
+  AND: SceneFilterType
+  OR: SceneFilterType
+  NOT: SceneFilterType
+  
   """Filter by path"""
   path: StringCriterionInput
   """Filter by rating"""
@@ -97,6 +103,8 @@ input SceneFilterType {
   movies: MultiCriterionInput
   """Filter to only include scenes with these tags"""
   tags: MultiCriterionInput
+  """Filter to only include scenes with performers with these tags"""
+  performer_tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
   """Filter by StashID"""
@@ -132,22 +140,37 @@ input GalleryFilterType {
   organized: Boolean
   """Filter by average image resolution"""
   average_resolution: ResolutionEnum
-  """Filter to only include scenes with this studio"""
+  """Filter to only include galleries with this studio"""
   studios: MultiCriterionInput
-  """Filter to only include scenes with these tags"""
+  """Filter to only include galleries with these tags"""
   tags: MultiCriterionInput
-  """Filter to only include scenes with these performers"""
+  """Filter to only include galleries with performers with these tags"""
+  performer_tags: MultiCriterionInput
+  """Filter to only include galleries with these performers"""
   performers: MultiCriterionInput
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
 }
 
 input TagFilterType {
+  AND: TagFilterType
+  OR: TagFilterType
+  NOT: TagFilterType
+
   """Filter to only include tags missing this property"""
   is_missing: String
 
   """Filter by number of scenes with this tag"""
   scene_count: IntCriterionInput
+
+  """Filter by number of images with this tag"""
+  image_count: IntCriterionInput
+
+  """Filter by number of galleries with this tag"""
+  gallery_count: IntCriterionInput
+
+  """Filter by number of performers with this tag"""
+  performer_count: IntCriterionInput
 
   """Filter by number of markers with this tag"""
   marker_count: IntCriterionInput
@@ -170,6 +193,8 @@ input ImageFilterType {
   studios: MultiCriterionInput
   """Filter to only include images with these tags"""
   tags: MultiCriterionInput
+  """Filter to only include images with performers with these tags"""
+  performer_tags: MultiCriterionInput
   """Filter to only include images with these performers"""
   performers: MultiCriterionInput
   """Filter to only include images with these galleries"""

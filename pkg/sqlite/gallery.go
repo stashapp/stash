@@ -233,7 +233,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		}
 
 		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
-		whereClause, havingClause := getMultiCriterionClause("galleries", "tags", "tags_join", "gallery_id", "tag_id", tagsFilter)
+		whereClause, havingClause := getMultiCriterionClause("galleries", "tags", "galleries_tags", "gallery_id", "tag_id", tagsFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -244,7 +244,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		}
 
 		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
-		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_join", "gallery_id", "performer_id", performersFilter)
+		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_galleries", "gallery_id", "performer_id", performersFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -258,6 +258,8 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
+
+	handleGalleryPerformerTagsCriterion(&query, galleryFilter.PerformerTags)
 
 	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
@@ -340,6 +342,31 @@ func (qb *galleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder
 
 		if havingClause != "" {
 			query.addHaving(havingClause)
+		}
+	}
+}
+
+func handleGalleryPerformerTagsCriterion(query *queryBuilder, performerTagsFilter *models.MultiCriterionInput) {
+	if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
+		for _, tagID := range performerTagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += " LEFT JOIN performers_tags AS performer_tags_join on performers_join.performer_id = performer_tags_join.performer_id"
+
+		if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
+			// includes any of the provided ids
+			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
+		} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
+			// includes all of the provided ids
+			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
+			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
+		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
+			query.addWhere(fmt.Sprintf(`not exists 
+				(select performers_galleries.performer_id from performers_galleries 
+					left join performers_tags on performers_tags.performer_id = performers_galleries.performer_id where
+					performers_galleries.gallery_id = galleries.id AND
+					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
 		}
 	}
 }
