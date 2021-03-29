@@ -39,6 +39,7 @@ type Scene struct {
 	Title      string          `json:"title,omitempty"`
 	Checksum   string          `json:"checksum,omitempty"`
 	OSHash     string          `json:"oshash,omitempty"`
+	Phash      string          `json:"phash,omitempty"`
 	Studio     string          `json:"studio,omitempty"`
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`
