@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
+import { useConfiguration, useConfigureGeneral, useGenerateAPIKey } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import StashBoxConfiguration, {
@@ -130,6 +130,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const { data, error, loading } = useConfiguration();
 
+  const [generateAPIKey] = useGenerateAPIKey();
+
   const [updateGeneralConfig] = useConfigureGeneral({
     stashes: stashes.map((s) => ({
       path: s.path,
@@ -235,6 +237,32 @@ export const SettingsConfigurationPanel: React.FC = () => {
   function listToCommaDelimited(value: string[] | undefined) {
     if (value) {
       return value.join(", ");
+    }
+  }
+
+  async function onGenerateAPIKey() {
+    try {
+      await generateAPIKey({
+        variables: {
+          input: {},
+        }
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
+  async function onClearAPIKey() {
+    try {
+      await generateAPIKey({
+        variables: {
+          input: {
+            clear: true,
+          }
+        }
+      });
+    } catch (e) {
+      Toast.error(e);
     }
   }
 
@@ -775,6 +803,37 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Text>
         </Form.Group>
 
+        <Form.Group id="apikey">
+          <h6>API Key</h6>
+          <InputGroup>
+            <Form.Control
+              className="col col-sm-6 text-input"
+              value={data.configuration.general.apiKey}
+              readOnly
+            />
+            <InputGroup.Append>
+              <Button
+                className=""
+                title="Generate API key"
+                onClick={() => onGenerateAPIKey()}
+              >
+                <Icon icon="redo" />
+              </Button>
+              <Button
+                className=""
+                variant="danger"
+                title="Clear API key"
+                onClick={() => onClearAPIKey()}
+              >
+                <Icon icon="minus" />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+          <Form.Text className="text-muted">
+            API key for external systems. Only required when username/password is configured. Username must be saved before generating API key.
+          </Form.Text>
+        </Form.Group>
+
         <Form.Group id="maxSessionAge">
           <h6>Maximum Session Age</h6>
           <Form.Control
@@ -788,7 +847,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Maximum idle time before a login session is expired, in seconds.
+          Maximum idle time before a login session is expired, in seconds.
           </Form.Text>
         </Form.Group>
       </Form.Group>
