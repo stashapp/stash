@@ -47,7 +47,9 @@ const getFingerprintStatus = (
 ) => {
   const checksum = stashScene.checksum ?? stashScene.oshash ?? undefined;
   const checksumMatch = scene.fingerprints.some((f) => f.hash === checksum);
-  const phashMatch = scene.fingerprints.some((f) => f.hash === stashScene.phash);
+  const phashMatch = scene.fingerprints.some(
+    (f) => f.hash === stashScene.phash
+  );
   if (checksumMatch || phashMatch)
     return (
       <div className="font-weight-bold">
