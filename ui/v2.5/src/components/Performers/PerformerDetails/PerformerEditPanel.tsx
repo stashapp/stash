@@ -725,7 +725,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-function renderTextField(field: string, title: string, placeholder?: string) {
+  function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
