@@ -12,7 +12,7 @@ import Mousetrap from "mousetrap";
 import debounce from "lodash/debounce";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import { useInterval } from "src/hooks";
+import { useInterval, usePageVisibility } from "src/hooks";
 import { useConfiguration } from "src/core/StashService";
 
 const CLASSNAME = "Lightbox";
@@ -64,6 +64,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const clearIntervalCallback = useRef<() => void>();
+  const resetIntervalCallback = useRef<() => void>();
   const config = useConfiguration();
 
   const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
@@ -128,6 +129,18 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [initialIndex, isVisible, setIndex]);
 
+  const toggleSlideshow = useCallback(() => {
+    if (slideshowInterval) {
+      setSlideshowInterval(null);
+    } else {
+      setSlideshowInterval(DEFAULT_SLIDESHOW_DELAY);
+    }
+  }, [slideshowInterval]);
+
+  usePageVisibility(() => {
+    toggleSlideshow();
+  });
+
   const close = useCallback(() => {
     if (!isFullscreen) {
       hide();
@@ -142,7 +155,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (nodeName === "DIV" || nodeName === "PICTURE") close();
   };
 
-  const handleLeft = useCallback(() => {
+  const handleLeft = useCallback((isUserAction = true) => {
     if (isSwitchingPage || index.current === -1) return;
 
     if (index.current === 0) {
@@ -157,9 +170,13 @@ export const LightboxComponent: React.FC<IProps> = ({
         }
       } else setIndex(images.length - 1);
     } else setIndex((index.current ?? 0) - 1);
-  }, [images, setIndex, pageCallback, isSwitchingPage]);
 
-  const handleRight = useCallback(() => {
+    if (isUserAction && resetIntervalCallback.current) {
+      resetIntervalCallback.current();
+    }
+  }, [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]);
+
+  const handleRight = useCallback((isUserAction = true) => {
     if (isSwitchingPage) return;
 
     if (index.current === images.length - 1) {
@@ -173,7 +190,12 @@ export const LightboxComponent: React.FC<IProps> = ({
         }
       } else setIndex(0);
     } else setIndex((index.current ?? 0) + 1);
-  }, [images, setIndex, pageCallback, isSwitchingPage]);
+
+    if (isUserAction && resetIntervalCallback.current) {
+      resetIntervalCallback.current();
+    }
+
+  }, [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -237,12 +259,15 @@ export const LightboxComponent: React.FC<IProps> = ({
     el.addEventListener("touchcancel", handleCancel);
   };
 
-  clearIntervalCallback.current = useInterval(
+  const [clearCallback, resetCallback] = useInterval(
     () => {
-      handleRight();
+      handleRight(false);
     },
     slideshowEnabled ? slideshowInterval : null
   );
+
+  resetIntervalCallback.current = resetCallback;
+  clearIntervalCallback.current = clearCallback;
 
   useEffect(() => {
     if (isVisible) {
@@ -259,14 +284,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (!isFullscreen) containerRef.current?.requestFullscreen();
     else document.exitFullscreen();
   }, [isFullscreen]);
-
-  const toggleSlideshow = useCallback(() => {
-    if (slideshowInterval) {
-      setSlideshowInterval(null);
-    } else {
-      setSlideshowInterval(DEFAULT_SLIDESHOW_DELAY);
-    }
-  }, [slideshowInterval]);
 
   const handleSlideshowIntervalChange = (newSlideshowInterval: number) => {
     setSlideshowInterval(newSlideshowInterval);

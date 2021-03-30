@@ -1,5 +1,6 @@
 export { default as useToast } from "./Toast";
 export { default as useInterval } from "./Interval";
+export { default as usePageVisibility } from "./PageVisibility";
 export {
   useInterfaceLocalForage,
   useChangelogStorage,
