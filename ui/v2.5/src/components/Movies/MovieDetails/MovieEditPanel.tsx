@@ -60,6 +60,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     name: yup.string().required(),
     aliases: yup.string().optional().nullable(),
     duration: yup.string().optional().nullable(),
+    date: yup
+      .string()
+      .optional()
+      .nullable()
+      .matches(/^\d{4}-\d{2}-\d{2}$/),
     rating: yup.number().optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     director: yup.string().optional().nullable(),
@@ -71,6 +76,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     name: movie?.name,
     aliases: movie?.aliases,
     duration: movie?.duration,
+    date: movie?.date,
     rating: movie?.rating,
     studio_id: movie?.studio?.id,
     director: movie?.director,
