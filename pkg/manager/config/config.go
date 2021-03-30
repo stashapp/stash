@@ -488,7 +488,7 @@ func GetMenuItems() []string {
 }
 
 func GetSoundOnPreview() bool {
-	viper.SetDefault(SoundOnPreview, true)
+	viper.SetDefault(SoundOnPreview, false)
 	return viper.GetBool(SoundOnPreview)
 }
 
