@@ -314,6 +314,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                     <Col sm="4">
                       <FormControl
                         type="number"
+                        className="text-input"
+                        min={1}
                         value={(slideshowInterval ?? 0) / SECONDS_TO_MS}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           handleSlideshowIntervalChange(
