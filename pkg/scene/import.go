@@ -75,7 +75,7 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 
 	if sceneJSON.Phash != "" {
 		hash, err := strconv.ParseUint(sceneJSON.Phash, 16, 64)
-		newScene.Phash = sql.NullInt64{Int64: int64(hash), Valid: err != nil}
+		newScene.Phash = sql.NullInt64{Int64: int64(hash), Valid: err == nil}
 	}
 
 	if sceneJSON.Title != "" {
