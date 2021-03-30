@@ -94,6 +94,24 @@ const makeTagSceneMarkersUrl = (tag: Partial<GQL.TagDataFragment>) => {
   return `/scenes/markers?${filter.makeQueryParameters()}`;
 };
 
+const makeTagGalleriesUrl = (tag: Partial<GQL.TagDataFragment>) => {
+  if (!tag.id) return "#";
+  const filter = new ListFilterModel(FilterMode.Galleries);
+  const criterion = new TagsCriterion("tags");
+  criterion.value = [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }];
+  filter.criteria.push(criterion);
+  return `/galleries?${filter.makeQueryParameters()}`;
+};
+
+const makeTagImagesUrl = (tag: Partial<GQL.TagDataFragment>) => {
+  if (!tag.id) return "#";
+  const filter = new ListFilterModel(FilterMode.Images);
+  const criterion = new TagsCriterion("tags");
+  criterion.value = [{ id: tag.id, label: tag.name || `Tag ${tag.id}` }];
+  filter.criteria.push(criterion);
+  return `/images?${filter.makeQueryParameters()}`;
+};
+
 const makeSceneMarkerUrl = (
   sceneMarker: Partial<GQL.SceneMarkerDataFragment>
 ) => {
@@ -108,6 +126,8 @@ export default {
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeTagPerformersUrl,
+  makeTagGalleriesUrl,
+  makeTagImagesUrl,
   makeSceneMarkerUrl,
   makeMovieScenesUrl,
   makeChildStudiosUrl,
