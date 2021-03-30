@@ -1153,6 +1153,47 @@ func TestSceneQueryPagination(t *testing.T) {
 	})
 }
 
+func TestSceneQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyScenesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyScenesTagCount(t, tagCountCriterion)
+}
+
+func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Greater(t, len(scenes), 0)
+
+		for _, scene := range scenes {
+			ids, err := sqb.GetTagIDs(scene.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func TestSceneCountByTagID(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
