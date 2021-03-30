@@ -587,6 +587,15 @@ func getPerformerBirthdate(index int) string {
 	return birthdate.Format("2006-01-02")
 }
 
+func getPerformerCareerLength(index int) *string {
+	if index%5 == 0 {
+		return nil
+	}
+
+	ret := fmt.Sprintf("20%2d", index)
+	return &ret
+}
+
 //createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -611,6 +620,11 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 				String: getPerformerBirthdate(i),
 				Valid:  true,
 			},
+		}
+
+		careerLength := getPerformerCareerLength(i)
+		if careerLength != nil {
+			performer.CareerLength = models.NullString(*careerLength)
 		}
 
 		created, err := pqb.Create(performer)

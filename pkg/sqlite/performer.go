@@ -173,10 +173,6 @@ func (qb *performerQueryBuilder) All() ([]*models.Performer, error) {
 	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil)
 }
 
-func (qb *performerQueryBuilder) AllSlim() ([]*models.Performer, error) {
-	return qb.queryPerformers("SELECT performers.id, performers.name, performers.gender FROM performers "+qb.getPerformerSort(nil), nil)
-}
-
 func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
@@ -196,7 +192,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"performers.name", "performers.checksum", "performers.birthdate", "performers.ethnicity"}
+		searchColumns := []string{"performers.name", "performers.aliases"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)

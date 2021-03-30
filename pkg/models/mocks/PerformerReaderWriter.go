@@ -35,29 +35,6 @@ func (_m *PerformerReaderWriter) All() ([]*models.Performer, error) {
 	return r0, r1
 }
 
-// AllSlim provides a mock function with given fields:
-func (_m *PerformerReaderWriter) AllSlim() ([]*models.Performer, error) {
-	ret := _m.Called()
-
-	var r0 []*models.Performer
-	if rf, ok := ret.Get(0).(func() []*models.Performer); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Performer)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Count provides a mock function with given fields:
 func (_m *PerformerReaderWriter) Count() (int, error) {
 	ret := _m.Called()

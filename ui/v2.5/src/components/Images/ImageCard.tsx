@@ -42,7 +42,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     if (props.image.tags.length <= 0) return;
 
     const popoverContent = props.image.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} tagType="image" />
     ));
 
     return (

@@ -84,6 +84,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const genderOptions = [""].concat(getGenderStrings());
 
+  const labelXS = 3;
+  const labelXL = 2;
+  const fieldXS = 9;
+  const fieldXL = 7;
+
   const schema = yup.object({
     name: yup.string().required(),
     aliases: yup.string().optional(),
@@ -643,9 +648,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function renderTagsField() {
     return (
-      <Form.Row>
-        <Form.Group as={Col} sm="6">
-          <Form.Label>Tags</Form.Label>
+      <Form.Group controlId="tags" as={Row}>
+        <Form.Label column sm={labelXS} xl={labelXL}>
+          Tags
+        </Form.Label>
+        <Col xs={fieldXS} xl={fieldXL}>
           <TagSelect
             menuPortalTarget={document.body}
             isMulti
@@ -658,8 +665,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             ids={formik.values.tag_ids}
           />
           {renderNewTags()}
-        </Form.Group>
-      </Form.Row>
+        </Col>
+      </Form.Group>
     );
   }
 
@@ -680,8 +687,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <Row>
-        <Col sm="auto">
-          <div>StashIDs</div>
+        <Form.Label column sm={labelXS} xl={labelXL}>
+          StashIDs
+        </Form.Label>
+        <Col sm={fieldXS} xl={fieldXL}>
           <ul className="pl-0">
             {formik.values.stash_ids.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
@@ -716,6 +725,24 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  function renderTextField(field: string, title: string) {
+    return (
+      <Form.Group controlId={field} as={Row}>
+        <Form.Label column xs={labelXS} xl={labelXL}>
+          {title}
+        </Form.Label>
+        <Col xs={fieldXS} xl={fieldXL}>
+          <Form.Control
+            className="text-input"
+            placeholder={title}
+            {...formik.getFieldProps(field)}
+            isInvalid={!!formik.getFieldMeta(field).error}
+          />
+        </Col>
+      </Form.Group>
+    );
+  }
+
   return (
     <>
       {renderDeleteAlert()}
@@ -728,9 +755,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
-        <Form.Row>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Name</Form.Label>
+        <Form.Group controlId="name" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Name
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
               placeholder="Name"
@@ -740,20 +769,28 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <Form.Control.Feedback type="invalid">
               {formik.errors.name}
             </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group as={Col} sm="8">
-            <Form.Label>Aliases</Form.Label>
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="aliases" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Alias
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
+              as="textarea"
               className="text-input"
-              placeholder="Aliases"
+              placeholder="Alias"
               {...formik.getFieldProps("aliases")}
             />
-          </Form.Group>
-        </Form.Row>
+          </Col>
+        </Form.Group>
 
-        <Form.Row>
-          <Form.Group as={Col} md="auto">
-            <Form.Label>Gender</Form.Label>
+        <Form.Group as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Gender
+          </Form.Label>
+          <Col xs="auto">
             <Form.Control
               as="select"
               className="input-control"
@@ -765,139 +802,66 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 </option>
               ))}
             </Form.Control>
-          </Form.Group>
-        </Form.Row>
+          </Col>
+        </Form.Group>
 
-        <Form.Row>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Birthdate</Form.Label>
-            <Form.Control
-              className="text-input"
-              placeholder="Birthdate"
-              {...formik.getFieldProps("birthdate")}
-            />
-          </Form.Group>
-        </Form.Row>
+        {renderTextField("birthdate", "Birthdate")}
+        {renderTextField("country", "Country")}
+        {renderTextField("ethnicity", "Ethnicity")}
+        {renderTextField("eye_color", "Eye Color")}
+        {renderTextField("height", "Height (cm)")}
+        {renderTextField("measurements", "Measurements")}
+        {renderTextField("fake_tits", "Fake Tits")}
 
-        <Form.Row>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Country</Form.Label>
+        <Form.Group controlId="tattoos" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Tattoos
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
+              as="textarea"
               className="text-input"
-              {...formik.getFieldProps("country")}
-              placeholder="Country"
-            />
-          </Form.Group>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Ethnicity</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("ethnicity")}
-              placeholder="Ethnicity"
-            />
-          </Form.Group>
-        </Form.Row>
-
-        <Form.Row>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Eye Color</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("eye_color")}
-              placeholder="Eye Color"
-            />
-          </Form.Group>
-        </Form.Row>
-
-        <Form.Row>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Height (cm)</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("height")}
-              placeholder="Height (cm)"
-            />
-          </Form.Group>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Measurements</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("measurements")}
-              placeholder="Measurements"
-            />
-          </Form.Group>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Fake Tits</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("fake_tits")}
-              placeholder="Fake Tits"
-            />
-          </Form.Group>
-        </Form.Row>
-
-        <Form.Row>
-          <Form.Group as={Col} lg="6">
-            <Form.Label>Tattoos</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("tattoos")}
               placeholder="Tattoos"
+              {...formik.getFieldProps("tattoos")}
             />
-          </Form.Group>
-          <Form.Group as={Col} lg="6">
-            <Form.Label>Piercings</Form.Label>
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="piercings" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Piercings
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
+              as="textarea"
               className="text-input"
-              {...formik.getFieldProps("piercings")}
               placeholder="Piercings"
+              {...formik.getFieldProps("piercings")}
             />
-          </Form.Group>
-        </Form.Row>
+          </Col>
+        </Form.Group>
 
-        <Form.Row>
-          <Form.Group as={Col} sm="4">
-            <Form.Label>Career Length</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("career_length")}
-              placeholder="Career Length"
-            />
-          </Form.Group>
-        </Form.Row>
+        {renderTextField("career_length", "Career Length")}
 
-        <Form.Row>
-          <Form.Group as={Col} sm="6">
-            <Form.Label>URL</Form.Label>
+        <Form.Group controlId="name" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            URL
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
             <InputGroup>
               <Form.Control
                 className="text-input"
-                {...formik.getFieldProps("url")}
                 placeholder="URL"
+                {...formik.getFieldProps("url")}
               />
               <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
             </InputGroup>
-          </Form.Group>
-        </Form.Row>
+          </Col>
+        </Form.Group>
 
-        <Form.Row>
-          <Form.Group as={Col} lg="6">
-            <Form.Label>Twitter</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("twitter")}
-              placeholder="Twitter"
-            />
-          </Form.Group>
-          <Form.Group as={Col} lg="6">
-            <Form.Label>Instagram</Form.Label>
-            <Form.Control
-              className="text-input"
-              {...formik.getFieldProps("instagram")}
-              placeholder="Instagram"
-            />
-          </Form.Group>
-        </Form.Row>
+        {renderTextField("twitter", "Twitter")}
+        {renderTextField("instagram", "Instagram")}
+
         {renderTagsField()}
         {renderStashIDs()}
 

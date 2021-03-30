@@ -47,7 +47,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     if (props.gallery.tags.length <= 0) return;
 
     const popoverContent = props.gallery.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} tagType="gallery" />
     ));
 
     return (

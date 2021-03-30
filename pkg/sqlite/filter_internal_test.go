@@ -227,14 +227,14 @@ func TestGenerateWhereClauses(t *testing.T) {
 	// ensure single where clause is generated correctly
 	f.addWhere(clause1)
 	r, rArgs := f.generateWhereClauses()
-	assert.Equal("("+clause1+")", r)
+	assert.Equal(clause1, r)
 	assert.Len(rArgs, 0)
 
 	// ensure multiple where clauses are surrounded with parenthesis and
 	// ANDed together
 	f.addWhere(clause2, arg1, arg2)
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause1+" AND "+clause2+")", r)
+	assert.Equal(fmt.Sprintf("(%s AND %s)", clause1, clause2), r)
 	assert.Len(rArgs, 2)
 
 	// ensure empty subfilter is not added to generated where clause
@@ -242,13 +242,13 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.and(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause1+" AND "+clause2+")", r)
+	assert.Equal(fmt.Sprintf("(%s AND %s)", clause1, clause2), r)
 	assert.Len(rArgs, 2)
 
 	// ensure sub-filter is generated correctly
 	sf.addWhere(clause3, arg3)
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause1+" AND "+clause2+") AND ("+clause3+")", r)
+	assert.Equal(fmt.Sprintf("(%s AND %s) AND (%s)", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 
 	// ensure OR sub-filter is generated correctly
@@ -258,7 +258,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.or(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause1+" AND "+clause2+") OR ("+clause3+")", r)
+	assert.Equal(fmt.Sprintf("(%s AND %s) OR (%s)", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 
 	// ensure NOT sub-filter is generated correctly
@@ -268,7 +268,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.not(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause1+" AND "+clause2+") AND NOT ("+clause3+")", r)
+	assert.Equal(fmt.Sprintf("(%s AND %s) AND NOT (%s)", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 
 	// ensure empty filter with ANDed sub-filter does not include AND
@@ -276,7 +276,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.and(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause3+")", r)
+	assert.Equal(fmt.Sprintf("(%s)", clause3), r)
 	assert.Len(rArgs, 1)
 
 	// ensure empty filter with ORed sub-filter does not include OR
@@ -284,7 +284,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.or(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("("+clause3+")", r)
+	assert.Equal(fmt.Sprintf("(%s)", clause3), r)
 	assert.Len(rArgs, 1)
 
 	// ensure empty filter with NOTed sub-filter does not include AND
@@ -292,8 +292,19 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.not(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal("NOT ("+clause3+")", r)
+	assert.Equal(fmt.Sprintf("NOT (%s)", clause3), r)
 	assert.Len(rArgs, 1)
+
+	// (clause1) AND ((clause2) OR (clause3))
+	f = &filterBuilder{}
+	f.addWhere(clause1)
+	sf2 := &filterBuilder{}
+	sf2.addWhere(clause2, arg1, arg2)
+	f.and(sf2)
+	sf2.or(sf)
+	r, rArgs = f.generateWhereClauses()
+	assert.Equal(fmt.Sprintf("%s AND (%s OR (%s))", clause1, clause2, clause3), r)
+	assert.Len(rArgs, 3)
 }
 
 func TestGenerateHavingClauses(t *testing.T) {
@@ -312,7 +323,7 @@ func TestGenerateHavingClauses(t *testing.T) {
 	// ensure single Having clause is generated correctly
 	f.addHaving(clause1)
 	r, rArgs := f.generateHavingClauses()
-	assert.Equal("("+clause1+")", r)
+	assert.Equal(clause1, r)
 	assert.Len(rArgs, 0)
 
 	// ensure multiple Having clauses are surrounded with parenthesis and
@@ -530,7 +541,7 @@ func TestStringCriterionHandlerMatchesRegex(t *testing.T) {
 	}, column))
 
 	assert.Len(f.whereClauses, 1)
-	assert.Equal(fmt.Sprintf("%[1]s regexp ?", column), f.whereClauses[0].sql)
+	assert.Equal(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 1)
 	assert.Equal(validValue, f.whereClauses[0].args[0])
 
@@ -558,7 +569,7 @@ func TestStringCriterionHandlerNotMatchesRegex(t *testing.T) {
 	}, column))
 
 	assert.Len(f.whereClauses, 1)
-	assert.Equal(fmt.Sprintf("%[1]s NOT regexp ?", column), f.whereClauses[0].sql)
+	assert.Equal(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 1)
 	assert.Equal(validValue, f.whereClauses[0].args[0])
 

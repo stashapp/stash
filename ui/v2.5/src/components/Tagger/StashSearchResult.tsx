@@ -263,7 +263,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         const newTagIDs = tagOperation === "merge" ? updatedTags : [];
         const tags = scene.tags ?? [];
         if (tags.length > 0) {
-          const tagDict: Record<string, string> = (allTags?.allTagsSlim ?? [])
+          const tagDict: Record<string, string> = (allTags?.allTags ?? [])
             .filter((t) => t.name)
             .reduce(
               (dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }),

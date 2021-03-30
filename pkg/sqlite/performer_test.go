@@ -228,6 +228,46 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 	})
 }
 
+func TestPerformerQueryCareerLength(t *testing.T) {
+	const value = "2005"
+	careerLengthCriterion := models.StringCriterionInput{
+		Value:    value,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierMatchesRegex
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+}
+
+func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			CareerLength: &criterion,
+		}
+
+		performers, _, err := qb.Query(&performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performer: %s", err.Error())
+		}
+
+		for _, performer := range performers {
+			cl := performer.CareerLength
+			verifyNullString(t, cl, criterion)
+		}
+
+		return nil
+	})
+}
+
 func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
 	performers, _, err := qb.Query(performerFilter, findFilter)
 	if err != nil {

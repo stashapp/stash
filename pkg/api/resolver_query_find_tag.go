@@ -53,14 +53,3 @@ func (r *queryResolver) AllTags(ctx context.Context) (ret []*models.Tag, err err
 
 	return ret, nil
 }
-
-func (r *queryResolver) AllTagsSlim(ctx context.Context) (ret []*models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Tag().AllSlim()
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}

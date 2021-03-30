@@ -356,6 +356,17 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	if criterion.Modifier == models.CriterionModifierNotEquals {
 		assert.NotEqual(criterion.Value, value.String)
 	}
+	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+		assert.True(value.Valid)
+		assert.Regexp(regexp.MustCompile(criterion.Value), value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+		if !value.Valid {
+			// correct
+			return
+		}
+		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
+	}
 }
 
 func verifyString(t *testing.T, value string, criterion models.StringCriterionInput) {

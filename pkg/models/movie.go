@@ -8,7 +8,6 @@ type MovieReader interface {
 	FindByNames(names []string, nocase bool) ([]*Movie, error)
 	All() ([]*Movie, error)
 	Count() (int, error)
-	AllSlim() ([]*Movie, error)
 	Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
 	GetFrontImage(movieID int) ([]byte, error)
 	GetBackImage(movieID int) ([]byte, error)

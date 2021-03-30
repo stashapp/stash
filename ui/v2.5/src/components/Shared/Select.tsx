@@ -377,7 +377,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllPerformersForFilter();
   const [createPerformer] = usePerformerCreate();
 
-  const performers = data?.allPerformersSlim ?? [];
+  const performers = data?.allPerformers ?? [];
 
   const onCreate = async (name: string) => {
     const result = await createPerformer({
@@ -410,7 +410,7 @@ export const StudioSelect: React.FC<
   const [createStudio] = useStudioCreate({ name: "" });
 
   const exclude = props.excludeIds ?? [];
-  const studios = (data?.allStudiosSlim ?? []).filter(
+  const studios = (data?.allStudios ?? []).filter(
     (studio) => !exclude.includes(studio.id)
   );
 
@@ -435,7 +435,7 @@ export const StudioSelect: React.FC<
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
-  const items = data?.allMoviesSlim ?? [];
+  const items = data?.allMovies ?? [];
 
   return (
     <FilterSelectComponent
@@ -454,7 +454,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   const [createTag] = useTagCreate({ name: "" });
   const placeholder = props.noSelectionString ?? "Select tags...";
 
-  const tags = data?.allTagsSlim ?? [];
+  const tags = data?.allTags ?? [];
 
   const onCreate = async (name: string) => {
     const result = await createTag({
