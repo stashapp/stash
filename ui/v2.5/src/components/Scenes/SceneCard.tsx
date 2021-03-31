@@ -64,10 +64,12 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  compact?: boolean;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  onSceneClicked?: () => void;
 }
 
 export const SceneCard: React.FC<ISceneCardProps> = (
@@ -286,13 +288,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   function maybeRenderPopoverButtonGroup() {
     if (
-      props.scene.tags.length > 0 ||
-      props.scene.performers.length > 0 ||
-      props.scene.movies.length > 0 ||
-      props.scene.scene_markers.length > 0 ||
-      props.scene?.o_counter ||
-      props.scene.galleries.length > 0 ||
-      props.scene.organized
+      !props.compact &&
+      (props.scene.tags.length > 0 ||
+        props.scene.performers.length > 0 ||
+        props.scene.movies.length > 0 ||
+        props.scene.scene_markers.length > 0 ||
+        props.scene?.o_counter ||
+        props.scene.galleries.length > 0 ||
+        props.scene.organized)
     ) {
       return (
         <>
@@ -318,6 +321,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
     if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, shiftKey);
+      event.preventDefault();
+    } else if (props.onSceneClicked) {
+      props.onSceneClicked();
       event.preventDefault();
     }
   }
@@ -348,10 +354,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     return height > width;
   }
 
+  function zoomIndex() {
+    if (!props.compact && props.zoomIndex !== undefined) {
+      return `zoom-${props.zoomIndex}`;
+    }
+  }
+
   let shiftKey = false;
 
   return (
-    <Card className={`scene-card zoom-${props.zoomIndex}`}>
+    <Card className={`scene-card ${zoomIndex()}`}>
       <Form.Control
         type="checkbox"
         className="scene-card-check"
@@ -388,14 +400,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       </div>
       <div className="card-section">
         <h5 className="card-section-title">
-          <TruncatedText
-            text={
-              props.scene.title
-                ? props.scene.title
-                : TextUtils.fileNameFromPath(props.scene.path)
-            }
-            lineCount={2}
-          />
+          <Link to={`/scenes/${props.scene.id}`}>
+            <TruncatedText
+              text={
+                props.scene.title
+                  ? props.scene.title
+                  : TextUtils.fileNameFromPath(props.scene.path)
+              }
+              lineCount={2}
+            />
+          </Link>
         </h5>
         <span>{props.scene.date}</span>
         <p>

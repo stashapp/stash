@@ -79,7 +79,7 @@ const getAge = (dateString?: string | null, fromDateString?: string) => {
   if (
     birthdate.getMonth() > fromDate.getMonth() ||
     (birthdate.getMonth() >= fromDate.getMonth() &&
-      birthdate.getDay() > fromDate.getDay())
+      birthdate.getDate() > fromDate.getDate())
   ) {
     age -= 1;
   }

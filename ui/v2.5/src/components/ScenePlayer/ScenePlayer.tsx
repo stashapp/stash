@@ -15,6 +15,7 @@ interface IScenePlayerProps {
   onReady?: () => void;
   onSeeked?: () => void;
   onTime?: () => void;
+  onComplete?: () => void;
   config?: GQL.ConfigInterfaceDataFragment;
 }
 interface IScenePlayerState {
@@ -139,6 +140,12 @@ export class ScenePlayerImpl extends React.Component<
     if (difference > 1) {
       this.lastTime = position;
       this.setState({ scrubberPosition: position });
+    }
+  }
+
+  private onComplete() {
+    if (this.props?.onComplete) {
+      this.props.onComplete();
     }
   }
 
@@ -307,6 +314,7 @@ export class ScenePlayerImpl extends React.Component<
           onReady={this.onReady}
           onSeeked={this.onSeeked}
           onTime={this.onTime}
+          onOneHundredPercent={() => this.onComplete()}
         />
         <ScenePlayerScrubber
           scene={this.props.scene}
