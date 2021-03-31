@@ -401,3 +401,23 @@ func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionI
 		}
 	}
 }
+
+type countCriterionHandlerBuilder struct {
+	primaryTable string
+	joinTable    string
+	primaryFK    string
+}
+
+func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil {
+			clause, count := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
+
+			if count == 1 {
+				f.addWhere(clause, criterion.Value)
+			} else {
+				f.addWhere(clause)
+			}
+		}
+	}
+}

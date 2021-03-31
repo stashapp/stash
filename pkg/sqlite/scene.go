@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -534,19 +533,13 @@ func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterio
 }
 
 func sceneTagCountCriterionHandler(qb *sceneQueryBuilder, tagCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
-		if tagCount != nil {
-			clause, count := getIntCriterionWhereClause(
-				"IFNULL(( SELECT COUNT(*) FROM scenes_tags WHERE scene_id = scenes.id ), 0)",
-				*tagCount)
-
-			if count == 1 {
-				f.addWhere(clause, tagCount.Value)
-			} else {
-				f.addWhere(clause)
-			}
-		}
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    scenesTagsTable,
+		primaryFK:    sceneIDColumn,
 	}
+
+	return h.handler(tagCount)
 }
 
 func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
@@ -651,10 +644,8 @@ func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *model
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	if strings.Compare(sort, "tag_count") == 0 {
-		query.sortAndPagination +=
-			" ORDER BY (SELECT COUNT(*) FROM scenes_tags WHERE scene_id = scenes.id) " +
-				getSortDirection(direction)
+	if sort == "tag_count" {
+		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	} else {
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
