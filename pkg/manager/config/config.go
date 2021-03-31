@@ -148,6 +148,10 @@ func GetInstance() *Instance {
 	return instance
 }
 
+func (i *Instance) SetConfigFile(fn string) {
+	viper.SetConfigFile(fn)
+}
+
 func (i *Instance) Set(key string, value interface{}) {
 	viper.Set(key, value)
 }

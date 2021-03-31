@@ -211,6 +211,8 @@ func (s *singleton) Setup(input models.SetupInput) error {
 		return fmt.Errorf("error creating config file: %s", err.Error())
 	}
 
+	s.Config.SetConfigFile(input.ConfigLocation)
+
 	// set the configuration
 	s.Config.Set(config.Generated, input.GeneratedLocation)
 	s.Config.Set(config.Database, input.DatabaseFile)
