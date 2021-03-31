@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"os"
 	"sort"
 
 	"github.com/corona10/goimagehash"
@@ -110,6 +111,10 @@ func (g *PhashGenerator) generateSprite(encoder *ffmpeg.Encoder) (image.Image, e
 		y := height * int(math.Floor(float64(index)/float64(g.Rows)))
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
+	}
+
+	for _, imagePath := range imagePaths {
+		os.Remove(imagePath)
 	}
 
 	return montage, nil
