@@ -6,6 +6,7 @@ require (
 	github.com/antchfx/htmlquery v1.2.3
 	github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
 	github.com/chromedp/chromedp v0.5.3
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/go-chi/chi v4.0.2+incompatible

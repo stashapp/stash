@@ -680,6 +680,12 @@ export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useGenerateAPIKey = () =>
+  GQL.useGenerateApiKeyMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
