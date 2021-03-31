@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -33,6 +34,10 @@ func ProcessImageInput(imageInput string) ([]byte, error) {
 // ReadImageFromURL returns image data from a URL
 func ReadImageFromURL(url string) ([]byte, error) {
 	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+
 		Timeout: imageGetTimeout,
 	}
 
@@ -47,11 +52,16 @@ func ReadImageFromURL(url string) ([]byte, error) {
 	if req.URL.Scheme != "" {
 		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
 	}
+	req.Header.Set("User-Agent", GetUserAgent())
 
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()

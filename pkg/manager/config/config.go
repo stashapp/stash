@@ -21,6 +21,7 @@ const Cache = "cache"
 const Generated = "generated"
 const Metadata = "metadata"
 const Downloads = "downloads"
+const ApiKey = "api_key"
 const Username = "username"
 const Password = "password"
 const MaxSessionAge = "max_session_age"
@@ -398,6 +399,10 @@ func GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	}
 
 	return models.StreamingResolutionEnum(ret)
+}
+
+func GetAPIKey() string {
+	return viper.GetString(ApiKey)
 }
 
 func GetUsername() string {

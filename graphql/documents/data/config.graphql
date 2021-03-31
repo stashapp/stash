@@ -17,6 +17,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
+  apiKey
   username
   password
   maxSessionAge
