@@ -47,7 +47,7 @@ export const Performer: React.FC = () => {
   const activeImage =
     imagePreview === undefined
       ? performer.image_path ?? ""
-      : imagePreview ?? `${performer.image_path}&default=true`;
+      : imagePreview ?? (isNew ? "" : `${performer.image_path}&default=true`);
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
