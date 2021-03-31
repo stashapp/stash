@@ -602,9 +602,8 @@ export const movieMutationImpactedQueries = [
   GQL.AllMoviesForFilterDocument,
 ];
 
-export const useMovieCreate = (input: GQL.MovieCreateInput) =>
+export const useMovieCreate = () =>
   GQL.useMovieCreateMutation({
-    variables: input,
     update: deleteCache([
       GQL.FindMoviesDocument,
       GQL.AllMoviesForFilterDocument,
