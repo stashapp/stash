@@ -30,12 +30,12 @@ const useInterval = (
 
     const tick = () => {
       if (savedCallback.current) savedCallback.current();
-    }
+    };
 
     if (savedDelay !== null) {
       savedIntervalId.current = setInterval(tick, savedDelay);
     }
-  }
+  };
 
   useEffect(() => {
     cancel();

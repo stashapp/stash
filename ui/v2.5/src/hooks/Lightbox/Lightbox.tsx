@@ -155,47 +155,52 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (nodeName === "DIV" || nodeName === "PICTURE") close();
   };
 
-  const handleLeft = useCallback((isUserAction = true) => {
-    if (isSwitchingPage || index.current === -1) return;
+  const handleLeft = useCallback(
+    (isUserAction = true) => {
+      if (isSwitchingPage || index.current === -1) return;
 
-    if (index.current === 0) {
-      if (pageCallback) {
-        setIsSwitchingPage(true);
-        setIndex(-1);
-        // Check if calling page wants to swap page
-        const repage = pageCallback(-1);
-        if (!repage) {
-          setIsSwitchingPage(false);
+      if (index.current === 0) {
+        if (pageCallback) {
+          setIsSwitchingPage(true);
+          setIndex(-1);
+          // Check if calling page wants to swap page
+          const repage = pageCallback(-1);
+          if (!repage) {
+            setIsSwitchingPage(false);
+            setIndex(0);
+          }
+        } else setIndex(images.length - 1);
+      } else setIndex((index.current ?? 0) - 1);
+
+      if (isUserAction && resetIntervalCallback.current) {
+        resetIntervalCallback.current();
+      }
+    },
+    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]
+  );
+
+  const handleRight = useCallback(
+    (isUserAction = true) => {
+      if (isSwitchingPage) return;
+
+      if (index.current === images.length - 1) {
+        if (pageCallback) {
+          setIsSwitchingPage(true);
           setIndex(0);
-        }
-      } else setIndex(images.length - 1);
-    } else setIndex((index.current ?? 0) - 1);
+          const repage = pageCallback?.(1);
+          if (!repage) {
+            setIsSwitchingPage(false);
+            setIndex(images.length - 1);
+          }
+        } else setIndex(0);
+      } else setIndex((index.current ?? 0) + 1);
 
-    if (isUserAction && resetIntervalCallback.current) {
-      resetIntervalCallback.current();
-    }
-  }, [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]);
-
-  const handleRight = useCallback((isUserAction = true) => {
-    if (isSwitchingPage) return;
-
-    if (index.current === images.length - 1) {
-      if (pageCallback) {
-        setIsSwitchingPage(true);
-        setIndex(0);
-        const repage = pageCallback?.(1);
-        if (!repage) {
-          setIsSwitchingPage(false);
-          setIndex(images.length - 1);
-        }
-      } else setIndex(0);
-    } else setIndex((index.current ?? 0) + 1);
-
-    if (isUserAction && resetIntervalCallback.current) {
-      resetIntervalCallback.current();
-    }
-
-  }, [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]);
+      if (isUserAction && resetIntervalCallback.current) {
+        resetIntervalCallback.current();
+      }
+    },
+    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]
+  );
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
