@@ -72,11 +72,14 @@ const fileNameFromPath = (path: string) => {
 const getAge = (dateString?: string | null, fromDateString?: string) => {
   if (!dateString) return 0;
 
+  const birthdate = new Date(dateString);
+  const fromDate = fromDateString ? new Date(fromDateString) : new Date();
+
   // Set time to midnight to force system timezone instead of UTC
-  const birthdate = new Date(`${dateString} 00:00:00`);
-  const fromDate = fromDateString
-    ? new Date(`${fromDateString} 00:00:00`)
-    : new Date();
+  birthdate.setHours(0, 0, 0, 0);
+  if (fromDateString) {
+    fromDate.setHours(0, 0, 0, 0);
+  }
 
   let age = fromDate.getFullYear() - birthdate.getFullYear();
   if (
