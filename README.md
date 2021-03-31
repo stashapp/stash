@@ -76,7 +76,7 @@ There is a [directory of themes](https://github.com/stashapp/stash/wiki/Themes) 
 ## CSS Customization
 You can make Stash interface fit your desired style with [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
 
-# Suppport
+# Support (FAQ)
 
 Answers to frequently asked questions can be found [on our Wiki](https://github.com/stashapp/stash/wiki/FAQ)
 
