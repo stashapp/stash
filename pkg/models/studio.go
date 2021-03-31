@@ -7,7 +7,6 @@ type StudioReader interface {
 	FindByName(name string, nocase bool) (*Studio, error)
 	Count() (int, error)
 	All() ([]*Studio, error)
-	AllSlim() ([]*Studio, error)
 	Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int, error)
 	GetImage(studioID int) ([]byte, error)
 	HasImage(studioID int) (bool, error)

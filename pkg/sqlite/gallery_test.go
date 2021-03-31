@@ -519,6 +519,61 @@ func TestGalleryQueryStudio(t *testing.T) {
 	})
 }
 
+func TestGalleryQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		galleryFilter := models.GalleryFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Len(t, galleries, 2)
+
+		// ensure ids are correct
+		for _, gallery := range galleries {
+			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformerTag] || gallery.ID == galleryIDs[galleryIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithPerformerTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO All
 // TODO Query

@@ -20,6 +20,11 @@ fragment PerformerData on Performer {
   favorite
   image_path
   scene_count
+
+  tags {
+    ...TagData
+  }
+
   stash_ids {
     stash_id
     endpoint

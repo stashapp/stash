@@ -199,6 +199,10 @@ func (i *Instance) GetStashPaths() []*models.StashConfig {
 	return ret
 }
 
+func (i *Instance) GetConfigFilePath() string {
+	return viper.ConfigFileUsed()
+}
+
 func (i *Instance) GetCachePath() string {
 	return viper.GetString(Cache)
 }

@@ -209,6 +209,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			readerWriter := r.Performer()
 			importer := &performer.Importer{
 				ReaderWriter: readerWriter,
+				TagWriter:    r.Tag(),
 				Input:        *performerJSON,
 			}
 

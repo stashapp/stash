@@ -6,17 +6,24 @@
 
 https://stashapp.cc
 
-**Stash is a Go app which organizes and serves your porn.**
+**Stash is a locally hosted web-based app written in Go which organizes and serves your porn.**
 
-See a demo [here](https://vimeo.com/275537038) (password is stashapp).
+* It can gather information about videos in your collection from the internet, and is extensible through the use of community-built plugins.
+* It supports a wide variety of both video and image formats
+* You can tag videos and find them later.
+* It provides statistics about performers, tags, studios and other things.
 
-An in-app manual is available, and the manual pages can be viewed [here](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en).
+You can [watch a demo video](https://vimeo.com/275537038)to see it in action (password is stashapp).
 
-# Docker install
+For further information you can [read the in-app manual](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en).
+
+# Installing stash
+
+## Docker install
 
 Follow [this README.md in the docker directory.](docker/production/README.md)
 
-# Bare-metal Install
+## Pre-Compiled Binaries
 
 Stash supports macOS, Windows, and Linux.  Download the [latest release here](https://github.com/stashapp/stash/releases).
 
@@ -36,9 +43,18 @@ The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on m
 
 # Usage
 
+## Quickstart Guide
+1) Download and install Stash and its dependencies
+2) Run Stash. It will prompt you for some configuration options and a directory to index (you can also do this step afterward)
+3) After configuration, launch your web browser and navigate to the URL shown within the Stash app.
+
+**Note that Stash does not currently retrieve and organize information about your entire library automatically.**  You will need to help it along through the use of [scrapers](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Scraping.md).  The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers).
+
+The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) which uses filename keywords to help identify the file and pull in scene and performer information from our database. Note that this information is not comprehensive and you may need to use the scrapers to identify some of your media.
+
 ## CLI
 
-Stash provides some command line options.  See what is currently available by running `stash --help`.
+Stash runs as a command-line app and local web server.  There are some command-line options available, which you can see by running `stash --help`.
 
 For example, to run stash locally on port 80 run it like this (OSX / Linux) `stash --host 127.0.0.1 --port 80`
 
@@ -52,17 +68,25 @@ This command would need customizing for your environment.  [This link](https://s
 
 Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the `~/.stash` directory.  Stash detects these and starts up using HTTPS rather than HTTP.
 
-# FAQ
+# Customization
 
-> I'm unable to run the app on OSX or Linux
+## Themes
+There is a [directory of themes](https://github.com/stashapp/stash/wiki/Themes) on our Wiki, along with instructions on how to install them..
 
-Try running `chmod u+x stash-osx` or `chmod u+x stash-linux` to make the file executable.
+## CSS Customization
+You can make Stash interface fit your desired style with [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
 
-> I have a question not answered here.
+# Suppport
 
-Join the [Discord server](https://discord.gg/2TsNFKt).
+Answers to frequently asked questions can be found [on our Wiki](https://github.com/stashapp/stash/wiki/FAQ)
 
-# Development
+For issues not addressed there, there are a few options.
+
+* Read the [Wiki](https://github.com/stashapp/stash/wiki)
+* Check the in-app documentation (also available [here](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en)
+* Join the [Discord server](https://discord.gg/2TsNFKt).
+
+# Building From Source Code
 
 ## Install
 
@@ -122,10 +146,3 @@ where the app can be cross-compiled.  This process is kicked off by CI via the `
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
-
-## Customization
-
-You can make Stash interface fit your desired style with  [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
-
-[Stash Plex Theme](https://github.com/stashapp/stash/wiki/Stash-Plex-Theme) is a community created theme inspired by popular Plex Interface.
-

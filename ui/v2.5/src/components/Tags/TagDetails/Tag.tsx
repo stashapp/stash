@@ -22,6 +22,8 @@ import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
+import { TagPerformersPanel } from "./TagPerformersPanel";
+import { TagGalleriesPanel } from "./TagGalleriesPanel";
 
 interface ITabParams {
   id?: string;
@@ -51,7 +53,13 @@ export const Tag: React.FC = () => {
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
-  const activeTabKey = tab === "markers" || tab === "images" ? tab : "scenes";
+  const activeTabKey =
+    tab === "markers" ||
+    tab === "images" ||
+    tab === "performers" ||
+    tab === "galleries"
+      ? tab
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -133,8 +141,6 @@ export const Tag: React.FC = () => {
           },
         });
         if (result.data?.tagUpdate) {
-          if (result.data.tagUpdate.image_path)
-            await fetch(result.data.tagUpdate.image_path, { cache: "reload" });
           updateTagData(result.data.tagUpdate);
           setIsEditing(false);
         }
@@ -257,8 +263,14 @@ export const Tag: React.FC = () => {
             <Tab eventKey="images" title="Images">
               <TagImagesPanel tag={tag} />
             </Tab>
+            <Tab eventKey="galleries" title="Galleries">
+              <TagGalleriesPanel tag={tag} />
+            </Tab>
             <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="performers" title="Performers">
+              <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>
         </div>

@@ -121,10 +121,6 @@ func (qb *studioQueryBuilder) All() ([]*models.Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil)
 }
 
-func (qb *studioQueryBuilder) AllSlim() ([]*models.Studio, error) {
-	return qb.queryStudios("SELECT studios.id, studios.name, studios.parent_id FROM studios "+qb.getStudioSort(nil), nil)
-}
-
 func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}

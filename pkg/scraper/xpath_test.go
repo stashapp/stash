@@ -520,7 +520,7 @@ func makeSceneXPathConfig() mappedScraper {
 	performerConfig := make(mappedConfig)
 	performerConfig["Name"] = makeSimpleAttrConfig(`$performerElem/@data-mxptext`)
 	performerConfig["URL"] = makeSimpleAttrConfig(`$performerElem/@href`)
-	config.Performers = performerConfig
+	config.Performers.mappedConfig = performerConfig
 
 	studioConfig := make(mappedConfig)
 	studioConfig["Name"] = makeSimpleAttrConfig(`$studioElem`)
@@ -730,7 +730,7 @@ xPathScrapers:
 	assert.Equal(t, "//title", sceneConfig.mappedConfig["Title"].Selector)
 	assert.Equal(t, "//tags", sceneConfig.Tags["Name"].Selector)
 	assert.Equal(t, "//movies", sceneConfig.Movies["Name"].Selector)
-	assert.Equal(t, "//performers", sceneConfig.Performers["Name"].Selector)
+	assert.Equal(t, "//performers", sceneConfig.Performers.mappedConfig["Name"].Selector)
 	assert.Equal(t, "//studio", sceneConfig.Studio["Name"].Selector)
 
 	postProcess := sceneConfig.mappedConfig["Title"].postProcessActions

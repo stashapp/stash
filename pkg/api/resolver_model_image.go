@@ -34,7 +34,7 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*models.Im
 
 func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.ImagePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	builder := urlbuilders.NewImageURLBuilder(baseURL, obj.ID)
+	builder := urlbuilders.NewImageURLBuilder(baseURL, obj)
 	thumbnailPath := builder.GetThumbnailURL()
 	imagePath := builder.GetImageURL()
 	return &models.ImagePathsType{

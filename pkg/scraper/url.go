@@ -78,6 +78,10 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d", resp.StatusCode)
+	}
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)

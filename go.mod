@@ -18,7 +18,7 @@ require (
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/json-iterator/go v1.1.9
-	github.com/mattn/go-sqlite3 v1.13.0
+	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/rs/cors v1.6.0

@@ -312,6 +312,15 @@ export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
     update: deleteCache(performerMutationImpactedQueries),
   });
+
+export const useBulkPerformerUpdate = (input: GQL.BulkPerformerUpdateInput) =>
+  GQL.useBulkPerformerUpdateMutation({
+    variables: {
+      input,
+    },
+    update: deleteCache(performerMutationImpactedQueries),
+  });
+
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
     refetchQueries: getQueryNames([
@@ -792,13 +801,13 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
 
 export const queryScrapeGallery = (
   scraperId: string,
-  scene: GQL.GalleryUpdateInput
+  gallery: GQL.GalleryUpdateInput
 ) =>
   client.query<GQL.ScrapeGalleryQuery>({
     query: GQL.ScrapeGalleryDocument,
     variables: {
       scraper_id: scraperId,
-      scene,
+      gallery,
     },
     fetchPolicy: "network-only",
   });

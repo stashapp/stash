@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -110,6 +111,10 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()

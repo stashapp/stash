@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/fvbommel/sortorder"
@@ -20,8 +21,9 @@ import (
 )
 
 var DB *sqlx.DB
+var WriteMu *sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 18
+var appSchemaVersion uint = 19
 var databaseSchemaVersion uint
 
 var (
@@ -82,6 +84,7 @@ func Initialize(databasePath string) error {
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
+	WriteMu = &sync.Mutex{}
 
 	return nil
 }
@@ -96,6 +99,7 @@ func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	conn, err := sqlx.Open(sqlite3Driver, url)
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
+	conn.SetConnMaxLifetime(30 * time.Second)
 	if err != nil {
 		logger.Fatalf("db.Open(): %q\n", err)
 	}

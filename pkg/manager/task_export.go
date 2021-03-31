@@ -725,6 +725,18 @@ func (t *ExportTask) exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.
 			continue
 		}
 
+		tags, err := repo.Tag().FindByPerformerID(p.ID)
+		if err != nil {
+			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Checksum, err.Error())
+			continue
+		}
+
+		newPerformerJSON.Tags = tag.GetNames(tags)
+
+		if t.includeDependencies {
+			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+		}
+
 		performerJSON, err := t.json.getPerformer(p.Checksum)
 		if err != nil {
 			logger.Debugf("[performers] error reading performer json: %s", err.Error())

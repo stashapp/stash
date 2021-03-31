@@ -356,6 +356,17 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	if criterion.Modifier == models.CriterionModifierNotEquals {
 		assert.NotEqual(criterion.Value, value.String)
 	}
+	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+		assert.True(value.Valid)
+		assert.Regexp(regexp.MustCompile(criterion.Value), value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+		if !value.Valid {
+			// correct
+			return
+		}
+		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
+	}
 }
 
 func verifyString(t *testing.T, value string, criterion models.StringCriterionInput) {
@@ -929,6 +940,61 @@ func TestSceneQueryTags(t *testing.T) {
 		}
 
 		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
+}
+
+func TestSceneQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		sceneFilter := models.SceneFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 2)
+
+		// ensure ids are correct
+		for _, scene := range scenes {
+			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformerTag] || scene.ID == sceneIDs[sceneIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(sceneIdxWithPerformerTwoTags, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}

@@ -194,7 +194,38 @@ func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 	return container, nil
 }
 
-func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models.SceneStreamEndpoint, error) {
+func includeSceneStreamPath(scene *models.Scene, streamingResolution models.StreamingResolutionEnum, maxStreamingTranscodeSize models.StreamingResolutionEnum) bool {
+	// convert StreamingResolutionEnum to ResolutionEnum so we can get the min
+	// resolution
+	convertedRes := models.ResolutionEnum(streamingResolution)
+
+	minResolution := int64(convertedRes.GetMinResolution())
+	sceneResolution := scene.GetMinResolution()
+
+	// don't include if scene resolution is smaller than the streamingResolution
+	if sceneResolution != 0 && sceneResolution < minResolution {
+		return false
+	}
+
+	// if we always allow everything, then return true
+	if maxStreamingTranscodeSize == models.StreamingResolutionEnumOriginal {
+		return true
+	}
+
+	// convert StreamingResolutionEnum to ResolutionEnum
+	maxStreamingResolution := models.ResolutionEnum(maxStreamingTranscodeSize)
+	return int64(maxStreamingResolution.GetMinResolution()) >= minResolution
+}
+
+func makeStreamEndpoint(streamURL string, streamingResolution models.StreamingResolutionEnum, mimeType, label string) *models.SceneStreamEndpoint {
+	return &models.SceneStreamEndpoint{
+		URL:      fmt.Sprintf("%s?resolution=%s", streamURL, streamingResolution.String()),
+		MimeType: &mimeType,
+		Label:    &label,
+	}
+}
+
+func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreamingTranscodeSize models.StreamingResolutionEnum) ([]*models.SceneStreamEndpoint, error) {
 	if scene == nil {
 		return nil, fmt.Errorf("nil scene")
 	}
@@ -248,106 +279,50 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models
 	// Note: These have the wrong mime type intentionally to allow jwplayer to selection between mp4/webm
 	webmLabelFourK := "WEBM 4K (2160p)"         // "FOUR_K"
 	webmLabelFullHD := "WEBM Full HD (1080p)"   // "FULL_HD"
-	webmLabelStardardHD := "WEBM HD (720p)"     // "STANDARD_HD"
+	webmLabelStandardHD := "WEBM HD (720p)"     // "STANDARD_HD"
 	webmLabelStandard := "WEBM Standard (480p)" // "STANDARD"
 	webmLabelLow := "WEBM Low (240p)"           // "LOW"
-
-	if !scene.Height.Valid || scene.Height.Int64 >= 2160 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".webm?resolution=FOUR_K",
-			MimeType: &mimeMp4,
-			Label:    &webmLabelFourK,
-		}
-		ret = append(ret, &new)
-	}
-
-	if !scene.Height.Valid || scene.Height.Int64 >= 1080 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".webm?resolution=FULL_HD",
-			MimeType: &mimeMp4,
-			Label:    &webmLabelFullHD,
-		}
-		ret = append(ret, &new)
-	}
-
-	if !scene.Height.Valid || scene.Height.Int64 >= 720 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".webm?resolution=STANDARD_HD",
-			MimeType: &mimeMp4,
-			Label:    &webmLabelStardardHD,
-		}
-		ret = append(ret, &new)
-	}
-
-	if !scene.Height.Valid || scene.Height.Int64 >= 480 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".webm?resolution=STANDARD",
-			MimeType: &mimeMp4,
-			Label:    &webmLabelStandard,
-		}
-		ret = append(ret, &new)
-	}
-
-	if !scene.Height.Valid || scene.Height.Int64 >= 240 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".webm?resolution=LOW",
-			MimeType: &mimeMp4,
-			Label:    &webmLabelLow,
-		}
-		ret = append(ret, &new)
-	}
 
 	// Setup up lower quality transcoding options (MP4)
 	mp4LabelFourK := "MP4 4K (2160p)"         // "FOUR_K"
 	mp4LabelFullHD := "MP4 Full HD (1080p)"   // "FULL_HD"
-	mp4LabelStardardHD := "MP4 HD (720p)"     // "STANDARD_HD"
+	mp4LabelStandardHD := "MP4 HD (720p)"     // "STANDARD_HD"
 	mp4LabelStandard := "MP4 Standard (480p)" // "STANDARD"
 	mp4LabelLow := "MP4 Low (240p)"           // "LOW"
 
-	if !scene.Height.Valid || scene.Height.Int64 >= 2160 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".mp4?resolution=FOUR_K",
-			MimeType: &mimeMp4,
-			Label:    &mp4LabelFourK,
-		}
-		ret = append(ret, &new)
+	var webmStreams []*models.SceneStreamEndpoint
+	var mp4Streams []*models.SceneStreamEndpoint
+
+	webmURL := directStreamURL + ".webm"
+	mp4URL := directStreamURL + ".mp4"
+
+	if includeSceneStreamPath(scene, models.StreamingResolutionEnumFourK, maxStreamingTranscodeSize) {
+		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFourK, mimeMp4, webmLabelFourK))
+		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFourK, mimeMp4, mp4LabelFourK))
 	}
 
-	if !scene.Height.Valid || scene.Height.Int64 >= 1080 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".mp4?resolution=FULL_HD",
-			MimeType: &mimeMp4,
-			Label:    &mp4LabelFullHD,
-		}
-		ret = append(ret, &new)
+	if includeSceneStreamPath(scene, models.StreamingResolutionEnumFullHd, maxStreamingTranscodeSize) {
+		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFullHd, mimeMp4, webmLabelFullHD))
+		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFullHd, mimeMp4, mp4LabelFullHD))
 	}
 
-	if !scene.Height.Valid || scene.Height.Int64 >= 720 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".mp4?resolution=STANDARD_HD",
-			MimeType: &mimeMp4,
-			Label:    &mp4LabelStardardHD,
-		}
-		ret = append(ret, &new)
+	if includeSceneStreamPath(scene, models.StreamingResolutionEnumStandardHd, maxStreamingTranscodeSize) {
+		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandardHd, mimeMp4, webmLabelStandardHD))
+		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandardHd, mimeMp4, mp4LabelStandardHD))
 	}
 
-	if !scene.Height.Valid || scene.Height.Int64 >= 480 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".mp4?resolution=STANDARD",
-			MimeType: &mimeMp4,
-			Label:    &mp4LabelStandard,
-		}
-		ret = append(ret, &new)
+	if includeSceneStreamPath(scene, models.StreamingResolutionEnumStandard, maxStreamingTranscodeSize) {
+		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandard, mimeMp4, webmLabelStandard))
+		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandard, mimeMp4, mp4LabelStandard))
 	}
 
-	if !scene.Height.Valid || scene.Height.Int64 >= 240 {
-		new := models.SceneStreamEndpoint{
-			URL:      directStreamURL + ".mp4?resolution=LOW",
-			MimeType: &mimeMp4,
-			Label:    &mp4LabelLow,
-		}
-		ret = append(ret, &new)
+	if includeSceneStreamPath(scene, models.StreamingResolutionEnumLow, maxStreamingTranscodeSize) {
+		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow))
+		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow))
 	}
+
+	ret = append(ret, webmStreams...)
+	ret = append(ret, mp4Streams...)
 
 	defaultStreams := []*models.SceneStreamEndpoint{
 		{

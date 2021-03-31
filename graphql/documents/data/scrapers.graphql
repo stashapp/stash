@@ -15,6 +15,9 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   tattoos
   piercings
   aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   image
 }
 
@@ -36,6 +39,9 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   tattoos
   piercings
   aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   remote_site_id
   images
 }

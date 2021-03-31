@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -222,6 +223,109 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 			verifyInt(t, age, ageCriterion)
 		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryCareerLength(t *testing.T) {
+	const value = "2005"
+	careerLengthCriterion := models.StringCriterionInput{
+		Value:    value,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierMatchesRegex
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+
+	careerLengthCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyPerformerCareerLength(t, careerLengthCriterion)
+}
+
+func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			CareerLength: &criterion,
+		}
+
+		performers, _, err := qb.Query(&performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performer: %s", err.Error())
+		}
+
+		for _, performer := range performers {
+			cl := performer.CareerLength
+			verifyNullString(t, cl, criterion)
+		}
+
+		return nil
+	})
+}
+
+func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
+	performers, _, err := qb.Query(performerFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying performers: %s", err.Error())
+	}
+
+	return performers
+}
+
+func TestPerformerQueryTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		performerFilter := models.PerformerFilterType{
+			Tags: &tagCriterion,
+		}
+
+		// ensure ids are correct
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Len(t, performers, 2)
+		for _, performer := range performers {
+			assert.True(t, performer.ID == performerIDs[performerIdxWithTag] || performer.ID == performerIDs[performerIdxWithTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		performers = queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 1)
+		assert.Equal(t, sceneIDs[performerIdxWithTwoTags], performers[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getSceneStringValue(performerIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+		assert.Len(t, performers, 0)
 
 		return nil
 	})

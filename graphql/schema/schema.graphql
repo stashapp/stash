@@ -115,11 +115,6 @@ type Query {
 
   # Get everything with minimal metadata
 
-  allPerformersSlim: [Performer!]!
-  allStudiosSlim: [Studio!]!
-  allMoviesSlim: [Movie!]!
-  allTagsSlim: [Tag!]!
-
   # Version
   version: Version!
   
@@ -177,6 +172,7 @@ type Mutation {
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
   performersDestroy(ids: [ID!]!): Boolean!
+  bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!]
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
