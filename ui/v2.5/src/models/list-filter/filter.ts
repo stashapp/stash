@@ -392,7 +392,7 @@ export class ListFilterModel {
     return this.sortBy;
   }
 
-  public makeQueryParameters(): string {
+  public getQueryParameters() {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
       const encodedCriterion: Partial<Criterion> = {
@@ -427,7 +427,12 @@ export class ListFilterModel {
           : undefined,
       c: encodedCriteria,
     };
-    return queryString.stringify(result, { encode: false });
+
+    return result;
+  }
+
+  public makeQueryParameters(): string {
+    return queryString.stringify(this.getQueryParameters(), { encode: false });
   }
 
   // TODO: These don't support multiple of the same criteria, only the last one set is used.
