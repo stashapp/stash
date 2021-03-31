@@ -76,6 +76,14 @@ export const queryFindScenes = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindScenesByID = (sceneIDs: number[]) =>
+  client.query<GQL.FindScenesQuery>({
+    query: GQL.FindScenesDocument,
+    variables: {
+      scene_ids: sceneIDs,
+    },
+  });
+
 export const useFindSceneMarkers = (filter: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
     variables: {
