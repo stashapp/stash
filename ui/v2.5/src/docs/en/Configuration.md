@@ -91,6 +91,12 @@ Some scrapers require a Chrome instance to function correctly. If left empty, st
 
 By default, stash is not configured with any sort of password protection. To enable password protection, both `Username` and `Password` must be populated. Note that when entering a new username and password where none was set previously, the system will immediately request these credentials to log you in.
 
+## API key
+
+If password protection is enabled, you may also generate an API key. An API key is used by external systems to access your stash system without needing to login first.
+
+External systems using the API key must set the `ApiKey` header value to the configured API key in order to bypass the login requirement.
+
 ### Logging out
 
 The logout button is situated in the upper-right part of the screen when you are logged in.

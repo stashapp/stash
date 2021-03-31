@@ -223,3 +223,24 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	return makeConfigInterfaceResult(), nil
 }
+
+func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {
+	var newAPIKey string
+	if input.Clear == nil || !*input.Clear {
+		username := config.GetUsername()
+		if username != "" {
+			var err error
+			newAPIKey, err = manager.GenerateAPIKey(username)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
+	config.Set(config.ApiKey, newAPIKey)
+	if err := config.Write(); err != nil {
+		return newAPIKey, err
+	}
+
+	return newAPIKey, nil
+}
