@@ -113,7 +113,14 @@ func (qb *performerQueryBuilder) FindBySceneID(sceneID int) ([]*models.Performer
 	query := selectAll("performers") + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
-		ORDER BY performers.gender, performers.name
+		ORDER BY CASE performers.gender
+			WHEN "FEMALE" THEN 0
+			WHEN "TRANSGENDER_FEMALE" THEN 1
+			WHEN "MALE" THEN 2
+			WHEN "TRANSGENDER_MALE" THEN 3
+			WHEN "NON_BINARY" THEN 4
+			WHEN "INTERSEX" THEN 5
+	  	END, performers.name
 	`
 	args := []interface{}{sceneID}
 	return qb.queryPerformers(query, args)
