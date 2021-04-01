@@ -239,7 +239,12 @@ export class ListFilterModel {
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
-        this.sortByOptions = ["path", "file_mod_time", "images_count", "random"];
+        this.sortByOptions = [
+          "path",
+          "file_mod_time",
+          "images_count",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
