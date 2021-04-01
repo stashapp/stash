@@ -317,7 +317,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
 
   const [createStudio] = useStudioCreate({ name: "" });
   const [createPerformer] = usePerformerCreate();
-  const [createMovie] = useMovieCreate({ name: "" });
+  const [createMovie] = useMovieCreate();
   const [createTag] = useTagCreate({ name: "" });
 
   const Toast = useToast();

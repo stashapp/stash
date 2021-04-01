@@ -94,6 +94,8 @@ github.com/chromedp/chromedp/kb
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging
 # github.com/fsnotify/fsnotify v1.4.7
