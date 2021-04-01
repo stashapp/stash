@@ -24,6 +24,8 @@ const (
 	sceneIdxWithMovie = iota
 	sceneIdxWithGallery
 	sceneIdxWithPerformer
+	sceneIdx1WithPerformer
+	sceneIdx2WithPerformer
 	sceneIdxWithTwoPerformers
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
@@ -40,6 +42,8 @@ const (
 const (
 	imageIdxWithGallery = iota
 	imageIdxWithPerformer
+	imageIdx1WithPerformer
+	imageIdx2WithPerformer
 	imageIdxWithTwoPerformers
 	imageIdxWithTag
 	imageIdxWithTwoTags
@@ -55,12 +59,15 @@ const (
 	performerIdxWithScene = iota
 	performerIdx1WithScene
 	performerIdx2WithScene
+	performerIdxWithTwoScenes
 	performerIdxWithImage
+	performerIdxWithTwoImages
 	performerIdx1WithImage
 	performerIdx2WithImage
 	performerIdxWithTag
 	performerIdxWithTwoTags
 	performerIdxWithGallery
+	performerIdxWithTwoGalleries
 	performerIdx1WithGallery
 	performerIdx2WithGallery
 	// new indexes above
@@ -86,6 +93,8 @@ const (
 	galleryIdxWithScene = iota
 	galleryIdxWithImage
 	galleryIdxWithPerformer
+	galleryIdx1WithPerformer
+	galleryIdx2WithPerformer
 	galleryIdxWithTwoPerformers
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
@@ -183,6 +192,8 @@ var (
 		{sceneIdxWithTwoPerformers, performerIdx2WithScene},
 		{sceneIdxWithPerformerTag, performerIdxWithTag},
 		{sceneIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+		{sceneIdx1WithPerformer, performerIdxWithTwoScenes},
+		{sceneIdx2WithPerformer, performerIdxWithTwoScenes},
 	}
 
 	sceneGalleryLinks = [][2]int{
@@ -216,6 +227,8 @@ var (
 		{imageIdxWithTwoPerformers, performerIdx2WithImage},
 		{imageIdxWithPerformerTag, performerIdxWithTag},
 		{imageIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+		{imageIdx1WithPerformer, performerIdxWithTwoImages},
+		{imageIdx2WithPerformer, performerIdxWithTwoImages},
 	}
 )
 
@@ -226,6 +239,8 @@ var (
 		{galleryIdxWithTwoPerformers, performerIdx2WithGallery},
 		{galleryIdxWithPerformerTag, performerIdxWithTag},
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
+		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
 	}
 
 	galleryTagLinks = [][2]int{

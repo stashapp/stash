@@ -270,6 +270,11 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		query.addHaving(havingClause)
 	}
 
+	query.handleCountCriterion(performerFilter.TagCount, performerTable, performersTagsTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.SceneCount, performerTable, performersScenesTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.ImageCount, performerTable, performersImagesTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.GalleryCount, performerTable, performersGalleriesTable, performerIDColumn)
+
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
@@ -369,6 +374,11 @@ func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterT
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
+
+	if sort == "tag_count" {
+		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	}
+
 	return getSort(sort, direction, "performers")
 }
 

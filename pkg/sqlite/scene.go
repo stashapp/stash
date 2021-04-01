@@ -349,6 +349,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterionFunc(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterionFunc(scenePerformersCriterionHandler(qb, sceneFilter.Performers))
+	query.handleCriterionFunc(scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
 	query.handleCriterionFunc(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
 	query.handleCriterionFunc(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterionFunc(sceneStashIDsHandler(qb, sceneFilter.StashID))
@@ -552,6 +553,16 @@ func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.M
 	return h.handler(performers)
 }
 
+func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    performersScenesTable,
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(performerCount)
+}
+
 func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		f.addJoin("studios", "studio", "studio.id = scenes.studio_id")
@@ -644,9 +655,12 @@ func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *model
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	if sort == "tag_count" {
+	switch sort {
+	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
-	} else {
+	case "performer_count":
+		query.sortAndPagination += getCountSort(sceneTable, performersScenesTable, sceneIDColumn, direction)
+	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
 }

@@ -61,6 +61,14 @@ input PerformerFilterType {
   is_missing: String
   """Filter to only include performers with these tags"""
   tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
+  """Filter by scene count"""
+  scene_count: IntCriterionInput
+  """Filter by scene count"""
+  image_count: IntCriterionInput
+  """Filter by scene count"""
+  gallery_count: IntCriterionInput
   """Filter by StashID"""
   stash_id: String
 }
@@ -109,6 +117,8 @@ input SceneFilterType {
   performer_tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
+  """Filter by performer count"""
+  performer_count: IntCriterionInput
   """Filter by StashID"""
   stash_id: String
 }
@@ -146,10 +156,14 @@ input GalleryFilterType {
   studios: MultiCriterionInput
   """Filter to only include galleries with these tags"""
   tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
   """Filter to only include galleries with performers with these tags"""
   performer_tags: MultiCriterionInput
   """Filter to only include galleries with these performers"""
   performers: MultiCriterionInput
+  """Filter by performer count"""
+  performer_count: IntCriterionInput
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
 }
@@ -195,10 +209,14 @@ input ImageFilterType {
   studios: MultiCriterionInput
   """Filter to only include images with these tags"""
   tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
   """Filter to only include images with performers with these tags"""
   performer_tags: MultiCriterionInput
   """Filter to only include images with these performers"""
   performers: MultiCriterionInput
+  """Filter by performer count"""
+  performer_count: IntCriterionInput
   """Filter to only include images with these galleries"""
   galleries: MultiCriterionInput
 }
