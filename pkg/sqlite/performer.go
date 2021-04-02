@@ -192,7 +192,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"performers.name", "performers.checksum", "performers.birthdate", "performers.ethnicity"}
+		searchColumns := []string{"performers.name", "performers.aliases"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)

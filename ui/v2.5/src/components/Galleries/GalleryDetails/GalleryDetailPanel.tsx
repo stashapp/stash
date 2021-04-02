@@ -25,7 +25,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
   function renderTags() {
     if (!props.gallery.tags || props.gallery.tags.length === 0) return;
     const tags = props.gallery.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} tagType="gallery" />
     ));
     return (
       <>

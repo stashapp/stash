@@ -190,6 +190,9 @@ type Mutation {
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
 
+  """Generate and set (or clear) API key"""
+  generateAPIKey(input: GenerateAPIKeyInput!): String!
+
   """Returns a link to download the result"""
   exportObjects(input: ExportObjectsInput!): String
 

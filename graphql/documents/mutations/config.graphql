@@ -9,3 +9,7 @@ mutation ConfigureInterface($input: ConfigInterfaceInput!) {
     ...ConfigInterfaceData
   }
 }
+
+mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {
+  generateAPIKey(input: $input)
+}
