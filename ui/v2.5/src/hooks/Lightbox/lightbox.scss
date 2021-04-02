@@ -27,17 +27,17 @@
     height: 4rem;
 
     &-left-spacer {
-      flex: 1;
       display: flex;
+      flex: 1;
       justify-content: center;
     }
 
     &-indicator {
       display: flex;
+      flex: 1;
       flex-direction: column;
       margin-right: auto;
       text-align: center;
-      flex: 1;
     }
 
     &-delay {
