@@ -6,6 +6,8 @@ import {
   FormControl,
   InputGroup,
   FormLabel,
+  OverlayTrigger,
+  Popover,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -17,8 +19,12 @@ import { useConfiguration } from "src/core/StashService";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
+const CLASSNAME_LEFT_SPACER = `${CLASSNAME_HEADER}-left-spacer`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
 const CLASSNAME_DELAY = `${CLASSNAME_HEADER}-delay`;
+const CLASSNAME_DELAY_ICON = `${CLASSNAME_DELAY}-icon`;
+const CLASSNAME_DELAY_INLINE = `${CLASSNAME_DELAY}-inline`;
+const CLASSNAME_RIGHT = `${CLASSNAME_HEADER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
@@ -30,6 +36,7 @@ const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 
 const DEFAULT_SLIDESHOW_DELAY = 5000;
 const SECONDS_TO_MS = 1000;
+const MIN_VALID_INTERVAL_SECONDS = 1;
 
 type Image = Pick<GQL.Image, "paths">;
 interface IProps {
@@ -59,6 +66,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
+  const [mouseDownTargetId, setMouseDownTargetId] = useState<string>();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -67,10 +75,24 @@ export const LightboxComponent: React.FC<IProps> = ({
   const resetIntervalCallback = useRef<() => void>();
   const config = useConfiguration();
 
-  const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
+  const userSelectedSlideshowDelayOrDefault =
     config?.data?.configuration.interface.slideshowDelay ??
-      DEFAULT_SLIDESHOW_DELAY
+    DEFAULT_SLIDESHOW_DELAY;
+
+  // slideshowInterval is used for controlling the logic
+  // displaySlideshowInterval is for display purposes only
+  // keeping them separate and independant allows us to handle the logic however we want
+  // while still displaying something that makes sense to the user
+  const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
+    null
   );
+  const [
+    displayedSlideshowInterval,
+    setDisplayedSlideshowInterval,
+  ] = useState<string>(
+    (userSelectedSlideshowDelayOrDefault / SECONDS_TO_MS).toString()
+  );
+
   useEffect(() => {
     setIsSwitchingPage(false);
     if (index.current === -1) index.current = images.length - 1;
@@ -80,6 +102,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     () => setInstantTransition(false),
     400
   );
+
   const setInstant = useCallback(() => {
     setInstantTransition(true);
     disableInstantTransition();
@@ -132,10 +155,20 @@ export const LightboxComponent: React.FC<IProps> = ({
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
       setSlideshowInterval(null);
+    } else if (
+      displayedSlideshowInterval !== null &&
+      typeof displayedSlideshowInterval !== "undefined"
+    ) {
+      const intervalNumber = Number.parseInt(displayedSlideshowInterval, 10);
+      setSlideshowInterval(intervalNumber * SECONDS_TO_MS);
     } else {
-      setSlideshowInterval(DEFAULT_SLIDESHOW_DELAY);
+      setSlideshowInterval(userSelectedSlideshowDelayOrDefault);
     }
-  }, [slideshowInterval]);
+  }, [
+    slideshowInterval,
+    userSelectedSlideshowDelayOrDefault,
+    displayedSlideshowInterval,
+  ]);
 
   usePageVisibility(() => {
     toggleSlideshow();
@@ -152,6 +185,11 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { nodeName } = e.target as Node;
+    if (mouseDownTargetId === "delay-input") {
+      setMouseDownTargetId(undefined);
+      return;
+    }
+
     if (nodeName === "DIV" || nodeName === "PICTURE") close();
   };
 
@@ -308,7 +346,59 @@ export const LightboxComponent: React.FC<IProps> = ({
     />
   ));
 
+  const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let numberValue = Number.parseInt(e.currentTarget.value, 10);
+    // Without this exception, the blocking of updates for invalid values is even weirder
+    if (e.currentTarget.value === "-" || e.currentTarget.value === "") {
+      setDisplayedSlideshowInterval(e.currentTarget.value);
+      return;
+    }
+
+    setDisplayedSlideshowInterval(e.currentTarget.value);
+    if (slideshowInterval !== null) {
+      numberValue =
+        numberValue >= MIN_VALID_INTERVAL_SECONDS
+          ? numberValue
+          : MIN_VALID_INTERVAL_SECONDS;
+      handleSlideshowIntervalChange(numberValue * SECONDS_TO_MS);
+    }
+  };
+
   const currentIndex = index.current === null ? initialIndex : index.current;
+  const handleInputMouseDown = (e: React.MouseEvent<HTMLInputElement>) => {
+    setMouseDownTargetId(e.currentTarget.id);
+  };
+
+  const DelayForm: React.FC<{}> = () => (
+    <>
+      <FormLabel column sm="5">
+        Delay (Sec)
+      </FormLabel>
+      <Col sm="4">
+        <FormControl
+          type="number"
+          className="text-input"
+          min={1}
+          value={displayedSlideshowInterval ?? 0}
+          onChange={onDelayChange}
+          onMouseDown={handleInputMouseDown}
+          size="sm"
+          id="delay-input"
+        />
+      </Col>
+    </>
+  );
+
+  const delayPopover = (
+    <Popover id="basic-bitch">
+      <Popover.Title>Set slideshow delay</Popover.Title>
+      <Popover.Content>
+        <InputGroup>
+          <DelayForm />
+        </InputGroup>
+      </Popover.Content>
+    </Popover>
+  );
 
   const element = isVisible ? (
     <div
@@ -320,62 +410,60 @@ export const LightboxComponent: React.FC<IProps> = ({
       {images.length > 0 && !isLoading && !isSwitchingPage ? (
         <>
           <div className={CLASSNAME_HEADER}>
+            <div className={CLASSNAME_LEFT_SPACER} />
             <div className={CLASSNAME_INDICATOR}>
               <span>{pageHeader}</span>
               <b ref={indicatorRef}>
                 {`${currentIndex + 1} / ${images.length}`}
               </b>
             </div>
-            {slideshowEnabled && (
-              <>
-                <div className={CLASSNAME_DELAY}>
-                  <InputGroup>
-                    <FormLabel column sm="5">
-                      Delay (Sec)
-                    </FormLabel>
-                    <Col sm="4">
-                      <FormControl
-                        type="number"
-                        className="text-input"
-                        min={1}
-                        value={(slideshowInterval ?? 0) / SECONDS_TO_MS}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          handleSlideshowIntervalChange(
-                            Number.parseInt(e.currentTarget.value, 10) *
-                              SECONDS_TO_MS
-                          );
-                        }}
-                        size="sm"
-                        disabled={slideshowInterval === null}
-                      />
-                    </Col>
-                  </InputGroup>
-                </div>
+            <div className={CLASSNAME_RIGHT}>
+              {slideshowEnabled && (
+                <>
+                  <div className={CLASSNAME_DELAY}>
+                    <div className={CLASSNAME_DELAY_ICON}>
+                      <OverlayTrigger
+                        trigger="click"
+                        placement="bottom"
+                        overlay={delayPopover}
+                      >
+                        <Button variant="link" title="Slideshow delay settings">
+                          <Icon icon="cog" />
+                        </Button>
+                      </OverlayTrigger>
+                    </div>
+                    <InputGroup className={CLASSNAME_DELAY_INLINE}>
+                      <DelayForm />
+                    </InputGroup>
+                  </div>
+                  <Button
+                    variant="link"
+                    onClick={toggleSlideshow}
+                    title="Toggle Slideshow"
+                  >
+                    <Icon
+                      icon={slideshowInterval !== null ? "pause" : "play"}
+                    />
+                  </Button>
+                </>
+              )}
+              {document.fullscreenEnabled && (
                 <Button
                   variant="link"
-                  onClick={toggleSlideshow}
-                  title="Toggle Slideshow"
+                  onClick={toggleFullscreen}
+                  title="Toggle Fullscreen"
                 >
-                  <Icon icon={slideshowInterval !== null ? "pause" : "play"} />
+                  <Icon icon="expand" />
                 </Button>
-              </>
-            )}
-            {document.fullscreenEnabled && (
+              )}
               <Button
                 variant="link"
-                onClick={toggleFullscreen}
-                title="Toggle Fullscreen"
+                onClick={() => close()}
+                title="Close Lightbox"
               >
-                <Icon icon="expand" />
+                <Icon icon="times" />
               </Button>
-            )}
-            <Button
-              variant="link"
-              onClick={() => close()}
-              title="Close Lightbox"
-            >
-              <Icon icon="times" />
-            </Button>
+            </div>
           </div>
           <div className={CLASSNAME_DISPLAY} onTouchStart={handleTouchStart}>
             {images.length > 1 && (

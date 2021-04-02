@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import noop from "lodash/noop";
 
+const MIN_VALID_INTERVAL = 1000;
+
 const useInterval = (
   callback: () => void,
   delay: number | null = 5000
@@ -14,7 +16,14 @@ const useInterval = (
   }, [callback]);
 
   useEffect(() => {
-    setSavedDelay(delay);
+    let validDelay;
+    if (delay !== null) {
+      validDelay = delay >= MIN_VALID_INTERVAL ? delay : MIN_VALID_INTERVAL;
+    } else {
+      validDelay = delay;
+    }
+
+    setSavedDelay(validDelay);
   }, [delay]);
 
   const cancel = () => {
@@ -44,11 +53,11 @@ const useInterval = (
       if (savedCallback.current) savedCallback.current();
     };
 
-    if (delay !== null) {
-      savedIntervalId.current = setInterval(tick, delay);
+    if (savedDelay !== null) {
+      savedIntervalId.current = setInterval(tick, savedDelay);
       return cancel;
     }
-  }, [callback, delay]);
+  }, [callback, savedDelay]);
 
   return delay ? [cancel, reset] : [noop, noop];
 };

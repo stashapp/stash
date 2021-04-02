@@ -26,12 +26,18 @@
     flex-shrink: 0;
     height: 4rem;
 
+    &-left-spacer {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
     &-indicator {
       display: flex;
       flex-direction: column;
-      margin-left: 49%;
       margin-right: auto;
       text-align: center;
+      flex: 1;
     }
 
     &-delay {
@@ -39,6 +45,30 @@
       flex-direction: column;
       margin-left: 100px;
       text-align: left;
+
+      &-icon {
+        display: inline-block;
+      }
+
+      &-inline {
+        display: none;
+      }
+
+      @media screen and (min-width: 1300px) {
+        &-icon {
+          display: none;
+        }
+
+        &-inline {
+          display: flex;
+        }
+      }
+    }
+
+    &-right {
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
     }
 
     .fa-icon {
