@@ -338,7 +338,7 @@ export class ListFilterModel {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      this.searchTerm = params.q;
+      this.searchTerm = params.q.trim();
     }
     if (params.p) {
       this.currentPage = Number.parseInt(params.p, 10);
