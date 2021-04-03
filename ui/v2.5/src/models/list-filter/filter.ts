@@ -151,6 +151,7 @@ export class ListFilterModel {
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Images:
@@ -568,6 +569,14 @@ export class ListFilterModel {
           result.movies = {
             value: movCrit.value.map((movie) => movie.id),
             modifier: movCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }

@@ -109,6 +109,8 @@ input SceneFilterType {
   performers: MultiCriterionInput
   """Filter by StashID"""
   stash_id: String
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input MovieFilterType {
