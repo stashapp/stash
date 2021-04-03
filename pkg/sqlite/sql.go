@@ -108,7 +108,8 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 	}
 
 	queryWords := strings.Split(q, " ")
-	trimmedQuery := strings.Trim(q, "\"")
+	trimmedQuery := strings.Trim(q, " \"")
+
 	if trimmedQuery == q {
 		// Search for any word
 		for _, word := range queryWords {
