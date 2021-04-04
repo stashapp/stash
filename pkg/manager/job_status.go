@@ -13,6 +13,7 @@ const (
 	AutoTag         JobStatus = 7
 	Migrate         JobStatus = 8
 	PluginOperation JobStatus = 9
+	StashBoxBatch   JobStatus = 10
 )
 
 func (s JobStatus) String() string {
@@ -37,6 +38,8 @@ func (s JobStatus) String() string {
 		statusMessage = "Clean"
 	case PluginOperation:
 		statusMessage = "Plugin Operation"
+	case StashBoxBatch:
+		statusMessage = "Stash-Box Batch Operation"
 	}
 
 	return statusMessage

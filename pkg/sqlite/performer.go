@@ -470,3 +470,23 @@ func (qb *performerQueryBuilder) GetStashIDs(performerID int) ([]*models.StashID
 func (qb *performerQueryBuilder) UpdateStashIDs(performerID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(performerID, stashIDs)
 }
+
+func (qb *performerQueryBuilder) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
+	`
+
+	if hasStashID {
+		query += `
+			WHERE performer_stash_ids.stash_id IS NOT NULL
+			AND performer_stash_ids.endpoint = ?
+		`
+	} else {
+		query += `
+			WHERE performer_stash_ids.stash_id IS NULL
+		`
+	}
+
+	args := []interface{}{stashboxEndpoint}
+	return qb.queryPerformers(query, args)
+}

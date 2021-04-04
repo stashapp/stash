@@ -143,3 +143,11 @@ type StashBoxFingerprint {
   hash: String!
   duration: Int!
 }
+
+input StashBoxBatchPerformerTagInput {
+  endpoint: Int!
+  exclude_fields: [String!]
+  refresh: Boolean!
+  performer_ids: [ID!]
+  performer_names: [String!]
+}

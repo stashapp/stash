@@ -324,9 +324,12 @@ func findURL(urls []*graphql.URLFragment, urlType string) *string {
 	return nil
 }
 
-func enumToStringPtr(e fmt.Stringer) *string {
+func enumToStringPtr(e fmt.Stringer, titleCase bool) *string {
 	if e != nil {
 		ret := e.String()
+		if titleCase {
+			ret = strings.Title(strings.ToLower(ret))
+		}
 		return &ret
 	}
 
@@ -440,19 +443,19 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	}
 
 	if p.Gender != nil {
-		sp.Gender = enumToStringPtr(p.Gender)
+		sp.Gender = enumToStringPtr(p.Gender, false)
 	}
 
 	if p.Ethnicity != nil {
-		sp.Ethnicity = enumToStringPtr(p.Ethnicity)
+		sp.Ethnicity = enumToStringPtr(p.Ethnicity, true)
 	}
 
 	if p.EyeColor != nil {
-		sp.EyeColor = enumToStringPtr(p.EyeColor)
+		sp.EyeColor = enumToStringPtr(p.EyeColor, true)
 	}
 
 	if p.BreastType != nil {
-		sp.FakeTits = enumToStringPtr(p.BreastType)
+		sp.FakeTits = enumToStringPtr(p.BreastType, true)
 	}
 
 	return sp
@@ -548,4 +551,30 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 	}
 
 	return ss, nil
+}
+
+func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedScenePerformer, error) {
+	performer, err := c.client.FindPerformerByID(context.TODO(), id)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := performerFragmentToScrapedScenePerformer(*performer.FindPerformer)
+	return ret, nil
+}
+
+func (c Client) FindStashBoxPerformerByName(name string) (*models.ScrapedScenePerformer, error) {
+	performers, err := c.client.SearchPerformer(context.TODO(), name)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret *models.ScrapedScenePerformer
+	for _, performer := range performers.SearchPerformer {
+		if strings.ToLower(performer.Name) == strings.ToLower(name) {
+			ret = performerFragmentToScrapedScenePerformer(*performer)
+		}
+	}
+
+	return ret, nil
 }

@@ -235,6 +235,9 @@ type Mutation {
 
   """Backup the database. Optionally returns a link to download the database file"""
   backupDatabase(input: BackupDatabaseInput!): String
+
+  """Run batch performer tag task. Returns the job ID."""
+  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
 }
 
 type Subscription {
