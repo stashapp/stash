@@ -12,7 +12,6 @@ import {
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 
-import PerformerModal from "../PerformerModal";
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
 import {
@@ -93,7 +92,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       let mainContent;
       if (!isTagged && hasStashIDs) {
         mainContent = (
-          <div className="text-right">
+          <div className="text-left">
             <h5 className="text-bold">Performer already tagged</h5>
           </div>
         );
@@ -131,7 +130,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         );
       } else if (isTagged) {
         mainContent = (
-          <div className="d-flex flex-column text-right">
+          <div className="d-flex flex-column text-left">
             <h5>Performer successfully tagged:</h5>
             <h6>
               <Link className="bold" to={`/performers/${performer.id}`}>
@@ -193,11 +192,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             <img src={performer.image_path ?? ''} alt="" />
           </Card>
           <div className="flex-grow-1 ml-3">
-            <Link to={`/performers/${performer.id}`}>
+            <Link to={`/performers/${performer.id}`} className={`${CLASSNAME}-header`}>
               <h2>{performer.name}</h2>
             </Link>
             {mainContent}
-            <div className="sub-content text-right">{subContent}</div>
+            <div className="sub-content text-left">{subContent}</div>
             {searchResult}
           </div>
         </div>

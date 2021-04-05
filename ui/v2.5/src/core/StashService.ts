@@ -813,6 +813,17 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
     },
   });
 
+export const queryStashBoxPerformer = (stashBoxIndex: number, performerID: string) =>
+  client.query<GQL.QueryStashBoxPerformerQuery>({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: {
+      input: {
+        stash_box_index: stashBoxIndex,
+        performer_ids: [performerID],
+      },
+    },
+  });
+
 export const queryScrapeGallery = (
   scraperId: string,
   gallery: GQL.GalleryUpdateInput

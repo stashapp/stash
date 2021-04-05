@@ -284,10 +284,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  // function onStashBoxQueryClicked(/* stashBoxIndex: number */) {
-  // TODO
-  // }
-
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {

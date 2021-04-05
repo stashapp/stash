@@ -23,6 +23,8 @@ import {
   usePerformerCreate,
   useTagCreate,
   queryScrapePerformerURL,
+  useConfiguration,
+  queryStashBoxPerformer,
 } from "src/core/StashService";
 import {
   Icon,
@@ -33,6 +35,7 @@ import {
   TagSelect,
 } from "src/components/Shared";
 import { ImageUtils } from "src/utils";
+import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
@@ -77,6 +80,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [scrapedPerformer, setScrapedPerformer] = useState<
     GQL.ScrapedPerformer | undefined
   >();
+  const stashConfig = useConfiguration();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
@@ -544,15 +548,57 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
+  async function onScrapeStashBoxClicked(stashBoxIndex: number) {
+    if (!performer.id)
+      return;
+
+    setIsLoading(true);
+    try {
+      const result = await queryStashBoxPerformer(stashBoxIndex, performer.id);
+      if (!result.data || !result.data.queryStashBoxPerformer) {
+        return;
+      }
+
+      if (result.data.queryStashBoxPerformer.length > 0) {
+        const performer = result.data.queryStashBoxPerformer[0].results[0];
+        setScrapedPerformer({
+          ...performer,
+          image: performer.images?.[0] ?? undefined,
+          country: getCountryByISO(performer.country),
+          __typename: "ScrapedPerformer",
+        });
+      } else {
+        Toast.success({
+          content: "No performers found",
+        });
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   function renderScraperMenu() {
     if (!performer) {
       return;
     }
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
     const popover = (
       <Popover id="performer-scraper-popover">
         <Popover.Content>
           <>
+            {stashBoxes.map((s, index) => (
+              <div key={s.endpoint}>
+                <Button
+                  className="minimal"
+                  onClick={() => onScrapeStashBoxClicked(index)}
+                >
+                  {s.name ?? "Stash-Box" }
+                </Button>
+              </div>
+            ))}
             {queryableScrapers
               ? queryableScrapers.map((s) => (
                   <div key={s.name}>
