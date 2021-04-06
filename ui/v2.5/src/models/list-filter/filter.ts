@@ -219,7 +219,7 @@ export class ListFilterModel {
       }
       case FilterMode.Studios:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortByOptions = ["name", "scenes_count", "random"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
@@ -229,7 +229,7 @@ export class ListFilterModel {
         break;
       case FilterMode.Movies:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortByOptions = ["name", "scenes_count", "random"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
@@ -239,7 +239,12 @@ export class ListFilterModel {
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
-        this.sortByOptions = ["path", "file_mod_time", "images_count"];
+        this.sortByOptions = [
+          "path",
+          "file_mod_time",
+          "images_count",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
@@ -286,6 +291,7 @@ export class ListFilterModel {
           "images_count",
           "galleries_count",
           "performers_count",
+          "random",
           /* "scene_markers_count" */
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
