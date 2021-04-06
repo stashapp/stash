@@ -67,7 +67,7 @@ input SceneUpdateInput {
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   cover_image: String
   stash_ids: [StashIDInput!]
 }
