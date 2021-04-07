@@ -548,15 +548,15 @@ and having a look at the log / console in debug mode.
 
 Sending request headers is possible when using a scraper.
 Headers can be set in the `driver` section and are supported for plain, CDP enabled and JSON scrapers.
-They consist of a key and a value. If the the key is empty or not defined then the header is ignored.
+They consist of a Key and a Value. If the the Key is empty or not defined then the header is ignored.
 
 ```yaml
 driver:
   headers:
-    - key: User-Agent
-      value: My Stash Scraper
-    - key: Authorization
-      value: Bearer ds3sdfcFdfY17p4qBkTVF03zscUU2glSjWF17bZyoe8
+    - Key: User-Agent
+      Value: My Stash Scraper
+    - Key: Authorization
+      Value: Bearer ds3sdfcFdfY17p4qBkTVF03zscUU2glSjWF17bZyoe8
 ```
 
 * headers are set after stash's `User-Agent` configuration option is applied.
@@ -723,10 +723,10 @@ jsonScrapers:
         Name: $data.tags.#.tag
 driver:
   headers:
-    - key: User-Agent
-      value: Stash JSON Scraper
-    - key: Authorization
-      value: Bearer lPdwFdfY17p4qBkTVF03zscUU2glSjdf17bZyoe  # use an actual API Key here
+    - Key: User-Agent
+      Value: Stash JSON Scraper
+    - Key: Authorization
+      Value: Bearer lPdwFdfY17p4qBkTVF03zscUU2glSjdf17bZyoe  # use an actual API Key here
 # Last Updated April 7, 2021
 ```
 

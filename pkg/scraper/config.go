@@ -176,8 +176,8 @@ type clickOptions struct {
 }
 
 type header struct {
-	Key   string `yaml:"key"`
-	Value string `yaml:"value"`
+	Key   string `yaml:"Key"`
+	Value string `yaml:"Value"`
 }
 
 type scraperDriverOptions struct {
