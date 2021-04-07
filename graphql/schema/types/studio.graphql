@@ -15,7 +15,7 @@ input StudioCreateInput {
   name: String!
   url: String
   parent_id: ID
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
 }
@@ -25,7 +25,7 @@ input StudioUpdateInput {
   name: String
   url: String
   parent_id: ID,
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
 }
