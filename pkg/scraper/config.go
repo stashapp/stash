@@ -175,11 +175,17 @@ type clickOptions struct {
 	Sleep int    `yaml:"sleep"`
 }
 
+type header struct {
+	Key   string `yaml:"key"`
+	Value string `yaml:"value"`
+}
+
 type scraperDriverOptions struct {
 	UseCDP  bool             `yaml:"useCDP"`
 	Sleep   int              `yaml:"sleep"`
 	Clicks  []*clickOptions  `yaml:"clicks"`
 	Cookies []*cookieOptions `yaml:"cookies"`
+	Headers []*header        `yaml:"headers"`
 }
 
 func loadScraperFromYAML(id string, reader io.Reader) (*config, error) {
