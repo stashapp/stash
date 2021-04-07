@@ -112,18 +112,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "tattoos":
     case "piercings":
     case "aliases":
+    case "url":
       return new StringCriterion(type, type);
-    case "url": {
-      const ret = new StringCriterion(type, type);
-      ret.modifierOptions = [
-        Criterion.getModifierOption(CriterionModifier.Equals),
-        Criterion.getModifierOption(CriterionModifier.NotEquals),
-        Criterion.getModifierOption(CriterionModifier.Includes),
-        Criterion.getModifierOption(CriterionModifier.Excludes),
-        Criterion.getModifierOption(CriterionModifier.MatchesRegex),
-        Criterion.getModifierOption(CriterionModifier.NotMatchesRegex),
-      ];
-      return ret;
-    }
   }
 }

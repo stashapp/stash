@@ -63,6 +63,8 @@ input PerformerFilterType {
   tags: MultiCriterionInput
   """Filter by StashID"""
   stash_id: String
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -118,6 +120,8 @@ input MovieFilterType {
   studios: MultiCriterionInput
   """Filter to only include movies missing this property"""
   is_missing: String
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input StudioFilterType {
@@ -127,6 +131,8 @@ input StudioFilterType {
   stash_id: String
   """Filter to only include studios missing this property"""
   is_missing: String
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input GalleryFilterType {
@@ -152,6 +158,8 @@ input GalleryFilterType {
   performers: MultiCriterionInput
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input TagFilterType {
