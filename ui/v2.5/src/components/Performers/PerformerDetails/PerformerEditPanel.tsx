@@ -560,11 +560,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       }
 
       if (result.data.queryStashBoxPerformer.length > 0) {
-        const performer = result.data.queryStashBoxPerformer[0].results[0];
+        const performerResult = result.data.queryStashBoxPerformer[0].results[0];
         setScrapedPerformer({
-          ...performer,
-          image: performer.images?.[0] ?? undefined,
-          country: getCountryByISO(performer.country),
+          ...performerResult,
+          image: performerResult.images?.[0] ?? undefined,
+          country: getCountryByISO(performerResult.country),
           __typename: "ScrapedPerformer",
         });
       } else {

@@ -642,7 +642,7 @@ func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.SetStatus(StashBoxBatch)
+	s.Status.SetStatus(AutoTag)
 	s.Status.indefiniteProgress()
 
 	go func() {
@@ -1259,7 +1259,7 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.SetStatus(AutoTag)
+	s.Status.SetStatus(StashBoxBatch)
 	s.Status.indefiniteProgress()
 
 	go func() {
