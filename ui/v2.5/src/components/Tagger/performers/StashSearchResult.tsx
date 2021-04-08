@@ -40,7 +40,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       setError({});
       setSaveState("Saving performer");
       setModalPerformer(undefined);
-      console.log(excludedFields);
 
       const res = await updatePerformer({
         ...performerData,

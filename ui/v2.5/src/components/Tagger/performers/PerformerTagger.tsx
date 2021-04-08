@@ -121,7 +121,12 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const handleBatchAdd = () => {
     if (!performerInput.current) return;
 
-    const names = performerInput.current.value.split(",").map((n) => n.trim());
+    const names = performerInput.current.value
+      .split(",")
+      .map((n) => n.trim())
+      .filter((n) => n.length === 0);
+    if (names.length === 0) return;
+
     doBatchQuery({
       variables: {
         input: {
@@ -165,7 +170,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     imageIndex: number,
     excludedFields: string[]
   ) => {
-    console.log(excludedFields);
     const performerData = modalPerformer;
     setModalPerformer(undefined);
     if (performerData?.id) {

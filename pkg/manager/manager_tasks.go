@@ -1301,13 +1301,15 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 			}
 		} else if len(input.PerformerNames) > 0 {
 			for i := range input.PerformerNames {
-				tasks = append(tasks, StashBoxPerformerTagTask{
-					txnManager:      s.TxnManager,
-					name:            &input.PerformerNames[i],
-					refresh:         input.Refresh,
-					box:             box,
-					excluded_fields: input.ExcludeFields,
-				})
+				if len(input.PerformerNames[i]) > 0 {
+					tasks = append(tasks, StashBoxPerformerTagTask{
+						txnManager:      s.TxnManager,
+						name:            &input.PerformerNames[i],
+						refresh:         input.Refresh,
+						box:             box,
+						excluded_fields: input.ExcludeFields,
+					})
+				}
 			}
 		} else {
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
@@ -1337,6 +1339,11 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 				logger.Error(err.Error())
 				return
 			}
+		}
+
+		if len(tasks) == 0 {
+			s.returnToIdleState()
+			return
 		}
 
 		s.Status.setProgress(0, len(tasks))
