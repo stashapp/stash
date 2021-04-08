@@ -220,13 +220,15 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
               )}
             </div>
             <div className="d-flex mt-2">
-              <Button
-                className="mr-auto"
-                onClick={setPrev}
-                disabled={images.length === 1}
-              >
-                <Icon icon="arrow-left" />
-              </Button>
+              {!create && (
+                <Button
+                  className="mr-auto"
+                  onClick={setPrev}
+                  disabled={images.length === 1}
+                >
+                  <Icon icon="arrow-left" />
+                </Button>
+              )}
               <h5>
                 Select performer image
                 <br />
