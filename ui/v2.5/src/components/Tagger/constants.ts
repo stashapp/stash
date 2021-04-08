@@ -10,9 +10,7 @@ export const DEFAULT_BLACKLIST = [
   "\\[",
   "\\]",
 ];
-export const DEFAULT_EXCLUDED_PERFORMER_FIELDS = [
-  "name",
-];
+export const DEFAULT_EXCLUDED_PERFORMER_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
@@ -47,21 +45,21 @@ export interface ITaggerConfig {
 }
 
 export const PERFORMER_FIELDS = [
-  'name',
-  'aliases',
-  'image',
-  'gender',
-  'birthdate',
-  'ethnicity',
-  'country',
-  'eye_color',
-  'height',
-  'measurements',
-  'fake_tits',
-  'career_length',
-  'tattoos',
-  'piercings',
-  'url',
-  'twitter',
-  'instagram',
+  "name",
+  "aliases",
+  "image",
+  "gender",
+  "birthdate",
+  "ethnicity",
+  "country",
+  "eye_color",
+  "height",
+  "measurements",
+  "fake_tits",
+  "career_length",
+  "tattoos",
+  "piercings",
+  "url",
+  "twitter",
+  "instagram",
 ];

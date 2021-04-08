@@ -85,7 +85,7 @@ export const SettingsTasksPanel: React.FC = () => {
       case "Migrate":
         return "Migrating";
       case "Stash-Box Performer Batch Operation":
-        return "Tagging performers from Stash-Box instance"
+        return "Tagging performers from Stash-Box instance";
       default:
         return "Idle";
     }

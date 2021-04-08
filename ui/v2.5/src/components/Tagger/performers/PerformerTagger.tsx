@@ -15,17 +15,10 @@ import { Manual } from "src/components/Help/Manual";
 
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
-import {
-  LOCAL_FORAGE_KEY,
-  ITaggerConfig,
-  initialConfig,
-} from "../constants";
-import {
-  IStashBoxPerformer,
-  selectPerformers,
-} from "../utils";
+import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
+import { IStashBoxPerformer, selectPerformers } from "../utils";
 
-const CLASSNAME = 'PerformerTagger';
+const CLASSNAME = "PerformerTagger";
 
 interface IPerformerTaggerListProps {
   performers: GQL.PerformerDataFragment[];
@@ -56,13 +49,15 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const [refresh, setRefresh] = useState(false);
   const [showBatchAdd, setShowBatchAdd] = useState(false);
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
-  const performerInput = useRef<HTMLTextAreaElement | null>(null)
+  const performerInput = useRef<HTMLTextAreaElement | null>(null);
   const [doBatchQuery] = GQL.useStashBoxBatchPerformerTagMutation();
 
   const doBoxSearch = (performerID: string, searchVal: string) => {
     stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
-        const s = selectPerformers(queryData.data?.queryStashBoxPerformer?.[0].results ?? []);
+        const s = selectPerformers(
+          queryData.data?.queryStashBoxPerformer?.[0].results ?? []
+        );
         setSearchResults({
           ...searchResults,
           [performerID]: s,
@@ -88,37 +83,39 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   };
 
   const handleBatchAdd = () => {
-    if (!performerInput.current)
-      return;
+    if (!performerInput.current) return;
 
-    const names = performerInput.current.value.split(',').map(n => n.trim());
+    const names = performerInput.current.value.split(",").map((n) => n.trim());
     doBatchQuery({
       variables: {
         input: {
           performer_names: names,
           endpoint: selectedEndpoint.index,
           refresh: false,
-        }
-      }
+        },
+      },
     });
     setShowBatchAdd(false);
-  }
+  };
 
-  const handleBatchUpdate= () => {
-    const ids = !queryAll ? performers.map(p => p.id) : undefined;
+  const handleBatchUpdate = () => {
+    const ids = !queryAll ? performers.map((p) => p.id) : undefined;
     doBatchQuery({
       variables: {
         input: {
           performer_ids: ids,
           endpoint: selectedEndpoint.index,
           refresh,
-        }
-      }
+        },
+      },
     });
     setShowBatchUpdate(false);
-  }
+  };
 
-  const handleTaggedPerformer = (performer: Pick<GQL.SlimPerformerDataFragment, 'id'> & Partial<Omit<GQL.SlimPerformerDataFragment, 'id'>>) => {
+  const handleTaggedPerformer = (
+    performer: Pick<GQL.SlimPerformerDataFragment, "id"> &
+      Partial<Omit<GQL.SlimPerformerDataFragment, "id">>
+  ) => {
     setTaggedPerformers({
       ...taggedPerformers,
       [performer.id]: performer,
@@ -145,12 +142,18 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             </InputGroup.Prepend>
             <Form.Control
               className="text-input"
-              defaultValue={performer.name ?? ''}
-              onChange={e => setQueries({ ...queries, [performer.id]: e.currentTarget.value })}
+              defaultValue={performer.name ?? ""}
+              onChange={(e) =>
+                setQueries({
+                  ...queries,
+                  [performer.id]: e.currentTarget.value,
+                })
+              }
               onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-                e.key === "Enter" && doBoxSearch(
+                e.key === "Enter" &&
+                doBoxSearch(
                   performer.id,
-                  queries[performer.id] ?? performer.name ?? '',
+                  queries[performer.id] ?? performer.name ?? ""
                 )
               }
             />
@@ -160,7 +163,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
                 onClick={() =>
                   doBoxSearch(
                     performer.id,
-                    queries[performer.id] ?? performer.name ?? '',
+                    queries[performer.id] ?? performer.name ?? ""
                   )
                 }
               >
@@ -230,10 +233,13 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       return (
         <div key={performer.id} className={`${CLASSNAME}-performer`}>
           <Card className="performer-card p-0 m-0">
-            <img src={performer.image_path ?? ''} alt="" />
+            <img src={performer.image_path ?? ""} alt="" />
           </Card>
           <div className="flex-grow-1 ml-3">
-            <Link to={`/performers/${performer.id}`} className={`${CLASSNAME}-header`}>
+            <Link
+              to={`/performers/${performer.id}`}
+              className={`${CLASSNAME}-header`}
+            >
               <h2>{performer.name}</h2>
             </Link>
             {mainContent}
@@ -251,11 +257,17 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         icon="tags"
         header="Update Performers"
         accept={{ text: "Update Performers", onClick: handleBatchUpdate }}
-        cancel={{ text: "Cancel", variant: "danger", onClick: () => setShowBatchUpdate(false) }}
+        cancel={{
+          text: "Cancel",
+          variant: "danger",
+          onClick: () => setShowBatchUpdate(false),
+        }}
         disabled={!isIdle}
       >
         <Form.Group>
-          <Form.Label><h6>Performer selection</h6></Form.Label>
+          <Form.Label>
+            <h6>Performer selection</h6>
+          </Form.Label>
           <Form.Check
             id="query-page"
             type="radio"
@@ -274,7 +286,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           />
         </Form.Group>
         <Form.Group>
-          <Form.Label><h6>Tag Status</h6></Form.Label>
+          <Form.Label>
+            <h6>Tag Status</h6>
+          </Form.Label>
           <Form.Check
             id="untagged-performers"
             type="radio"
@@ -283,7 +297,10 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             defaultChecked
             onChange={() => setRefresh(false)}
           />
-          <Form.Text>Updating untagged performers will try to match any performers that lack a stashid and update the metadata.</Form.Text>
+          <Form.Text>
+            Updating untagged performers will try to match any performers that
+            lack a stashid and update the metadata.
+          </Form.Text>
           <Form.Check
             id="tagged-performers"
             type="radio"
@@ -292,28 +309,49 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             defaultChecked={false}
             onChange={() => setRefresh(true)}
           />
-          <Form.Text>Refreshing will update the data of any tagged performers from the stash-box instance.</Form.Text>
+          <Form.Text>
+            Refreshing will update the data of any tagged performers from the
+            stash-box instance.
+          </Form.Text>
         </Form.Group>
-        <b>{ `${queryAll ? allPerformers?.allPerformers.length ?? 0 : performers.length} performers will be processed` }</b>
+        <b>{`${
+          queryAll
+            ? allPerformers?.allPerformers.length ?? 0
+            : performers.length
+        } performers will be processed`}</b>
       </Modal>
       <Modal
         show={showBatchAdd}
         icon="star"
         header="Add New Performers"
         accept={{ text: "Add Performers", onClick: handleBatchAdd }}
-        cancel={{ text: "Cancel", variant: "danger", onClick: () => setShowBatchAdd(false) }}
+        cancel={{
+          text: "Cancel",
+          variant: "danger",
+          onClick: () => setShowBatchAdd(false),
+        }}
         disabled={!isIdle}
       >
-        <Form.Control as="textarea" ref={performerInput} placeholder="Performer names separated by comma" rows={6} />
-        <Form.Text>Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.</Form.Text>
+        <Form.Control
+          as="textarea"
+          ref={performerInput}
+          placeholder="Performer names separated by comma"
+          rows={6}
+        />
+        <Form.Text>
+          Any names entered will be queried from the remote Stash-Box instance
+          and added if found. Only exact matches will be considered a match.
+        </Form.Text>
       </Modal>
       <div className="ml-auto mb-3">
-        <Button onClick={() => setShowBatchAdd(true)}>Batch Add Performers</Button>
-        <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>Batch Update Performers</Button>
+        <Button onClick={() => setShowBatchAdd(true)}>
+          Batch Add Performers
+        </Button>
+        <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
+          Batch Update Performers
+        </Button>
       </div>
-      <div className={CLASSNAME}>
-        {renderPerformers()}
-      </div>
+      <div className={CLASSNAME}>{renderPerformers()}</div>
     </Card>
   );
 };
@@ -348,7 +386,12 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
 
   console.log(jobStatus.data?.metadataUpdate.status);
   console.log(jobStatus.data);
-  const progress = jobStatus.data?.metadataUpdate.status === "Stash-Box Performer Batch Operation" && jobStatus.data.metadataUpdate.progress >= 0 ? jobStatus.data.metadataUpdate.progress * 100 : null;
+  const progress =
+    jobStatus.data?.metadataUpdate.status ===
+      "Stash-Box Performer Batch Operation" &&
+    jobStatus.data.metadataUpdate.progress >= 0
+      ? jobStatus.data.metadataUpdate.progress * 100
+      : null;
 
   return (
     <>
@@ -357,7 +400,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         onClose={() => setShowManual(false)}
         defaultActiveTab="Tagger.md"
       />
-      { progress !== null && (
+      {progress !== null && (
         <Form.Group className="px-4">
           <h5>Status: Tagging performers</h5>
           <ProgressBar
@@ -384,7 +427,11 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
               </Button>
             </div>
 
-            <PerformerConfig config={config} setConfig={setConfig} show={showConfig} />
+            <PerformerConfig
+              config={config}
+              setConfig={setConfig}
+              show={showConfig}
+            />
             <PerformerTaggerList
               performers={performers}
               selectedEndpoint={{

@@ -813,7 +813,10 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
     },
   });
 
-export const queryStashBoxPerformer = (stashBoxIndex: number, performerID: string) =>
+export const queryStashBoxPerformer = (
+  stashBoxIndex: number,
+  performerID: string
+) =>
   client.query<GQL.QueryStashBoxPerformerQuery>({
     query: GQL.QueryStashBoxPerformerDocument,
     variables: {
@@ -1026,7 +1029,10 @@ export const stashBoxSceneQuery = (searchVal: string, stashBoxIndex: number) =>
     variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
   });
 
-export const stashBoxPerformerQuery = (searchVal: string, stashBoxIndex: number) =>
+export const stashBoxPerformerQuery = (
+  searchVal: string,
+  stashBoxIndex: number
+) =>
   client?.query<
     GQL.QueryStashBoxPerformerQuery,
     GQL.QueryStashBoxPerformerQueryVariables
@@ -1035,7 +1041,10 @@ export const stashBoxPerformerQuery = (searchVal: string, stashBoxIndex: number)
     variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
   });
 
-export const stashBoxSceneBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
+export const stashBoxSceneBatchQuery = (
+  sceneIds: string[],
+  stashBoxIndex: number
+) =>
   client?.query<
     GQL.QueryStashBoxSceneQuery,
     GQL.QueryStashBoxSceneQueryVariables
@@ -1046,7 +1055,10 @@ export const stashBoxSceneBatchQuery = (sceneIds: string[], stashBoxIndex: numbe
     },
   });
 
-export const stashBoxPerformerBatchQuery = (performerIds: string[], stashBoxIndex: number) =>
+export const stashBoxPerformerBatchQuery = (
+  performerIds: string[],
+  stashBoxIndex: number
+) =>
   client?.query<
     GQL.QueryStashBoxPerformerQuery,
     GQL.QueryStashBoxPerformerQueryVariables

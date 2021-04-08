@@ -549,8 +549,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   async function onScrapeStashBoxClicked(stashBoxIndex: number) {
-    if (!performer.id)
-      return;
+    if (!performer.id) return;
 
     setIsLoading(true);
     try {
@@ -560,7 +559,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       }
 
       if (result.data.queryStashBoxPerformer.length > 0) {
-        const performerResult = result.data.queryStashBoxPerformer[0].results[0];
+        const performerResult =
+          result.data.queryStashBoxPerformer[0].results[0];
         setScrapedPerformer({
           ...performerResult,
           image: performerResult.images?.[0] ?? undefined,
@@ -595,7 +595,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                   className="minimal"
                   onClick={() => onScrapeStashBoxClicked(index)}
                 >
-                  {s.name ?? "Stash-Box" }
+                  {s.name ?? "Stash-Box"}
                 </Button>
               </div>
             ))}

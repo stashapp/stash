@@ -186,7 +186,9 @@ export const PerformerList: React.FC<IPerformerList> = ({
       );
     }
     if (filter.displayMode === DisplayMode.Tagger) {
-      return <PerformerTagger performers={result.data.findPerformers.performers} />;
+      return (
+        <PerformerTagger performers={result.data.findPerformers.performers} />
+      );
     }
   }
 

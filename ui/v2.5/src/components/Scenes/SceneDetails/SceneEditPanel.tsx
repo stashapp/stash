@@ -357,7 +357,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             key={s.endpoint}
             onClick={() => onScrapeStashBoxClicked(index)}
           >
-            { s.name ?? "Stash-Box" }
+            {s.name ?? "Stash-Box"}
           </Dropdown.Item>
         ))}
         {queryableScrapers.map((s) => (
