@@ -113,12 +113,11 @@
   }
 }
 
-
 .PerformerTagger {
-  max-width: 1600px;
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr 1fr;
+  max-width: 1600px;
 
   &-header {
     color: white;
@@ -131,8 +130,8 @@
   &-performer {
     background-color: #495b68;
     border-radius: 3px;
-    padding: 1rem;
     display: flex;
+    padding: 1rem;
 
     .performer-card {
       flex-shrink: 0;
@@ -140,6 +139,7 @@
 
       img {
         height: 100%;
+        max-height: 18rem;
         object-fit: cover;
         object-position: top;
       }
@@ -151,10 +151,10 @@
     flex-wrap: wrap;
 
     &-item {
-      display: flex;
-      overflow: hidden;
       align-items: center;
       align-text: left;
+      display: flex;
+      overflow: hidden;
     }
   }
 
