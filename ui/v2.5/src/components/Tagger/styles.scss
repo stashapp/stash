@@ -99,7 +99,14 @@
     text-align: center;
 
     .performer-image {
+      position: relative;
       height: 85%;
+
+      &-exclude {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+      }
     }
 
     img {
@@ -110,6 +117,18 @@
 
   .LoadingIndicator {
     height: 100%;
+  }
+
+  &-field {
+    margin-bottom: 5px;
+
+    .btn {
+      margin-right: 5px;
+    }
+
+    .fa-icon {
+      width: 12px;
+    }
   }
 }
 

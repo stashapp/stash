@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator, SuccessIcon } from "src/components/Shared";
-import { IStashBoxPerformer } from "../utils";
-import { useUpdatePerformerStashID } from "../queries";
+import { IStashBoxPerformer, filterPerformer } from "../utils";
+import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
 
 interface IStashSearchResultProps {
@@ -15,43 +14,46 @@ interface IStashSearchResultProps {
     performer: Pick<GQL.SlimPerformerDataFragment, "id"> &
       Partial<Omit<GQL.SlimPerformerDataFragment, "id">>
   ) => void;
+  excludedPerformerFields: string[];
 }
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   performer,
   stashboxPerformers,
-  endpoint,
   onPerformerTagged,
+  excludedPerformerFields,
+  endpoint,
 }) => {
   const [modalPerformer, setModalPerformer] = useState<
     IStashBoxPerformer | undefined
   >();
-  const [selectedPerformer, setSelectedPerformer] = useState<
-    IStashBoxPerformer | undefined
-  >();
-  const [performerImage, setPerformerImage] = useState<Record<string, number>>(
-    {}
-  );
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
   );
 
-  const updatePerformerStashID = useUpdatePerformerStashID();
+  const updatePerformer = useUpdatePerformer();
 
-  const handleSave = async () => {
-    if (selectedPerformer) {
+  const handleSave = async (image: number, excludedFields: string[]) => {
+    if (modalPerformer) {
+      const performerData = filterPerformer(modalPerformer, excludedFields);
       setError({});
       setSaveState("Saving performer");
+      setModalPerformer(undefined);
+      console.log(excludedFields);
 
-      const res = await updatePerformerStashID(performer.id, [
-        ...performer.stash_ids,
-        { stash_id: selectedPerformer.stash_id, endpoint },
-      ]);
+      const res = await updatePerformer({
+        ...performerData,
+        image: excludedFields.includes("image")
+          ? undefined
+          : modalPerformer.images[image],
+        stash_ids: [{ stash_id: modalPerformer.stash_id, endpoint }],
+        id: performer.id,
+      });
 
       if (!res.data?.performerUpdate)
         setError({
-          message: `Failed to save stashID to performer "${performer.name}"`,
+          message: `Failed to save performer "${performer.name}"`,
           details: res?.errors?.[0].message,
         });
       else onPerformerTagged(performer);
@@ -59,36 +61,17 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
-  const performers = stashboxPerformers.map((p) => {
-    const isActive = selectedPerformer?.stash_id === p.stash_id;
-
-    return (
-      <Button
-        className="PerformerTagger-performer-search-item minimal col-6"
-        variant="link"
-        key={p.stash_id}
-        onClick={() => setModalPerformer(p)}
-      >
-        <img
-          src={p.images[performerImage[p.stash_id] ?? 0]}
-          alt=""
-          className="PerformerTagger-thumb"
-        />
-        <span className={isActive ? "font-weight-bold" : ""}>{p.name}</span>
-        {isActive && <SuccessIcon />}
-      </Button>
-    );
-  });
-
-  const handlePerformerSelect = (image: number) => {
-    setSelectedPerformer(modalPerformer);
-    if (modalPerformer?.stash_id)
-      setPerformerImage({
-        ...performerImage,
-        [modalPerformer.stash_id]: image,
-      });
-    setModalPerformer(undefined);
-  };
+  const performers = stashboxPerformers.map((p) => (
+    <Button
+      className="PerformerTagger-performer-search-item minimal col-6"
+      variant="link"
+      key={p.stash_id}
+      onClick={() => setModalPerformer(p)}
+    >
+      <img src={p.images[0]} alt="" className="PerformerTagger-thumb" />
+      <span>{p.name}</span>
+    </Button>
+  ));
 
   return (
     <>
@@ -97,7 +80,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           closeModal={() => setModalPerformer(undefined)}
           modalVisible={modalPerformer !== undefined}
           performer={modalPerformer}
-          handlePerformerCreate={handlePerformerSelect}
+          handlePerformerCreate={handleSave}
+          icon="tags"
+          header="Update Performer"
+          excludedPerformerFields={excludedPerformerFields}
         />
       )}
       <div className="PerformerTagger-performer-search">{performers}</div>
@@ -113,9 +99,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         {saveState && (
           <strong className="col-4 mt-1 mr-2 text-right">{saveState}</strong>
         )}
-        <Button onClick={handleSave} disabled={selectedPerformer === undefined}>
-          {saveState ? <LoadingIndicator inline small message="" /> : "Save"}
-        </Button>
       </div>
     </>
   );

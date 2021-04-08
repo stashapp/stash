@@ -16,7 +16,13 @@ import { Manual } from "src/components/Help/Manual";
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
-import { IStashBoxPerformer, selectPerformers } from "../utils";
+import {
+  IStashBoxPerformer,
+  selectPerformers,
+  filterPerformer,
+} from "../utils";
+import PerformerModal from "../PerformerModal";
+import { useUpdatePerformer } from "../queries";
 
 const CLASSNAME = "PerformerTagger";
 
@@ -24,12 +30,16 @@ interface IPerformerTaggerListProps {
   performers: GQL.PerformerDataFragment[];
   selectedEndpoint: { endpoint: string; index: number };
   isIdle: boolean;
+  config: ITaggerConfig;
+  stashBoxes?: GQL.StashBox[];
 }
 
 const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   performers,
   selectedEndpoint,
   isIdle,
+  config,
+  stashBoxes,
 }) => {
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
@@ -51,6 +61,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
   const performerInput = useRef<HTMLTextAreaElement | null>(null);
   const [doBatchQuery] = GQL.useStashBoxBatchPerformerTagMutation();
+
+  const [loadingUpdate, setLoadingUpdate] = useState<string | undefined>();
+  const [modalPerformer, setModalPerformer] = useState<
+    IStashBoxPerformer | undefined
+  >();
 
   const doBoxSearch = (performerID: string, searchVal: string) => {
     stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
@@ -82,6 +97,27 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     setLoading(true);
   };
 
+  const doBoxUpdate = (
+    performerID: string,
+    stashID: string,
+    endpointIndex: number
+  ) => {
+    setLoadingUpdate(stashID);
+    stashBoxPerformerQuery(stashID, endpointIndex)
+      .then((queryData) => {
+        const data = selectPerformers(
+          queryData.data?.queryStashBoxPerformer?.[0].results ?? []
+        );
+        if (data.length > 0) {
+          setModalPerformer({
+            ...data[0],
+            id: performerID,
+          });
+        }
+      })
+      .finally(() => setLoadingUpdate(undefined));
+  };
+
   const handleBatchAdd = () => {
     if (!performerInput.current) return;
 
@@ -106,6 +142,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           performer_ids: ids,
           endpoint: selectedEndpoint.index,
           refresh,
+          exclude_fields: config.excludedPerformerFields ?? [],
         },
       },
     });
@@ -120,6 +157,29 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       ...taggedPerformers,
       [performer.id]: performer,
     });
+  };
+
+  const updatePerformer = useUpdatePerformer();
+
+  const handlePerformerUpdate = async (
+    imageIndex: number,
+    excludedFields: string[]
+  ) => {
+    console.log(excludedFields);
+    const performerData = modalPerformer;
+    setModalPerformer(undefined);
+    if (performerData?.id) {
+      const filteredData = filterPerformer(performerData, excludedFields);
+
+      await updatePerformer({
+        ...filteredData,
+        image: excludedFields.includes("image")
+          ? undefined
+          : performerData.images[imageIndex],
+        id: performerData.id,
+      });
+    }
+    setModalPerformer(undefined);
   };
 
   const renderPerformers = () =>
@@ -202,7 +262,31 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             <div className="small">{stashID.stash_id}</div>
           );
 
-          return link;
+          const endpoint =
+            stashBoxes?.findIndex((box) => box.endpoint === stashID.endpoint) ??
+            -1;
+
+          return (
+            <InputGroup>
+              <InputGroup.Text>{link}</InputGroup.Text>
+              <InputGroup.Append>
+                {endpoint !== -1 && (
+                  <Button
+                    onClick={() =>
+                      doBoxUpdate(performer.id, stashID.stash_id, endpoint)
+                    }
+                    disabled={!!loadingUpdate}
+                  >
+                    {loadingUpdate === stashID.stash_id ? (
+                      <LoadingIndicator inline small message="" />
+                    ) : (
+                      "Refresh"
+                    )}
+                  </Button>
+                )}
+              </InputGroup.Append>
+            </InputGroup>
+          );
         });
         subContent = <>{stashLinks}</>;
       } else if (searchErrors[performer.id]) {
@@ -226,12 +310,24 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             performer={performer}
             endpoint={selectedEndpoint.endpoint}
             onPerformerTagged={handleTaggedPerformer}
+            excludedPerformerFields={config.excludedPerformerFields ?? []}
           />
         );
       }
 
       return (
         <div key={performer.id} className={`${CLASSNAME}-performer`}>
+          {modalPerformer && (
+            <PerformerModal
+              closeModal={() => setModalPerformer(undefined)}
+              modalVisible={modalPerformer !== undefined}
+              performer={modalPerformer}
+              handlePerformerCreate={handlePerformerUpdate}
+              excludedPerformerFields={config.excludedPerformerFields}
+              icon="tags"
+              header="Update Performer"
+            />
+          )}
           <Card className="performer-card p-0 m-0">
             <img src={performer.image_path ?? ""} alt="" />
           </Card>
@@ -384,8 +480,6 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const selectedEndpoint =
     stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
 
-  console.log(jobStatus.data?.metadataUpdate.status);
-  console.log(jobStatus.data);
   const progress =
     jobStatus.data?.metadataUpdate.status ===
       "Stash-Box Performer Batch Operation" &&
@@ -439,6 +533,8 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
                 index: selectedEndpointIndex,
               }}
               isIdle={progress === null}
+              config={config}
+              stashBoxes={stashConfig.data?.configuration.general.stashBoxes}
             />
           </>
         ) : (

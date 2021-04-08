@@ -5,7 +5,7 @@ import cx from "classnames";
 import { SuccessIcon, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
-import { IStashBoxPerformer } from "./utils";
+import { IStashBoxPerformer, filterPerformer } from "./utils";
 
 import PerformerModal from "./PerformerModal";
 
@@ -74,14 +74,19 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     }
   };
 
-  const handlePerformerCreate = (imageIndex: number) => {
+  const handlePerformerCreate = (
+    imageIndex: number,
+    excludedFields: string[]
+  ) => {
     const selectedImage = performer.images[imageIndex];
     const images = selectedImage ? [selectedImage] : [];
+
     setSelectedSource("create");
     setPerformer({
       type: "create",
       data: {
-        ...performer,
+        ...filterPerformer(performer, excludedFields),
+        name: performer.name,
         images,
       },
     });
@@ -121,6 +126,9 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         modalVisible={modalVisible}
         performer={performer}
         handlePerformerCreate={handlePerformerCreate}
+        icon="star"
+        header="Create Performer"
+        create
       />
       <div className="entity-name">
         Performer:

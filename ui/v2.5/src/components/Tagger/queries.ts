@@ -48,6 +48,45 @@ export const useUpdatePerformerStashID = () => {
   return updatePerformerHandler;
 };
 
+export const useUpdatePerformer = () => {
+  const [updatePerformer] = GQL.usePerformerUpdateMutation({
+    onError: (errors) => errors,
+  });
+
+  const updatePerformerHandler = (input: GQL.PerformerUpdateInput) =>
+    updatePerformer({
+      variables: {
+        input,
+      },
+      update: (store, updatedPerformer) => {
+        if (!updatedPerformer.data?.performerUpdate) return;
+
+        updatedPerformer.data.performerUpdate.stash_ids.forEach((id) => {
+          store.writeQuery<
+            GQL.FindPerformersQuery,
+            GQL.FindPerformersQueryVariables
+          >({
+            query: GQL.FindPerformersDocument,
+            variables: {
+              performer_filter: {
+                stash_id: id.stash_id,
+              },
+            },
+            data: {
+              findPerformers: {
+                count: 1,
+                performers: [updatedPerformer.data!.performerUpdate!],
+                __typename: "FindPerformersResultType",
+              },
+            },
+          });
+        });
+      },
+    });
+
+  return updatePerformerHandler;
+};
+
 export const useCreatePerformer = () => {
   const [createPerformer] = GQL.usePerformerCreateMutation({
     onError: (errors) => errors,
