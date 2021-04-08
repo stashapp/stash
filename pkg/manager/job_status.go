@@ -3,17 +3,17 @@ package manager
 type JobStatus int
 
 const (
-	Idle            JobStatus = 0
-	Import          JobStatus = 1
-	Export          JobStatus = 2
-	Scan            JobStatus = 3
-	Generate        JobStatus = 4
-	Clean           JobStatus = 5
-	Scrape          JobStatus = 6
-	AutoTag         JobStatus = 7
-	Migrate         JobStatus = 8
-	PluginOperation JobStatus = 9
-	StashBoxBatch   JobStatus = 10
+	Idle                   JobStatus = 0
+	Import                 JobStatus = 1
+	Export                 JobStatus = 2
+	Scan                   JobStatus = 3
+	Generate               JobStatus = 4
+	Clean                  JobStatus = 5
+	Scrape                 JobStatus = 6
+	AutoTag                JobStatus = 7
+	Migrate                JobStatus = 8
+	PluginOperation        JobStatus = 9
+	StashBoxBatchPerformer JobStatus = 10
 )
 
 func (s JobStatus) String() string {
@@ -38,8 +38,8 @@ func (s JobStatus) String() string {
 		statusMessage = "Clean"
 	case PluginOperation:
 		statusMessage = "Plugin Operation"
-	case StashBoxBatch:
-		statusMessage = "Stash-Box Batch Operation"
+	case StashBoxBatchPerformer:
+		statusMessage = "Stash-Box Performer Batch Operation"
 	}
 
 	return statusMessage

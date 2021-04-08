@@ -1259,7 +1259,7 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.SetStatus(StashBoxBatch)
+	s.Status.SetStatus(StashBoxBatchPerformer)
 	s.Status.indefiniteProgress()
 
 	go func() {

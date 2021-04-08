@@ -30,12 +30,13 @@ const CLASSNAME = 'PerformerTagger';
 interface IPerformerTaggerListProps {
   performers: GQL.PerformerDataFragment[];
   selectedEndpoint: { endpoint: string; index: number };
-  config: ITaggerConfig;
+  isIdle: boolean;
 }
 
 const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   performers,
   selectedEndpoint,
+  isIdle,
 }) => {
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
@@ -251,6 +252,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         header="Update Performers"
         accept={{ text: "Update Performers", onClick: handleBatchUpdate }}
         cancel={{ text: "Cancel", variant: "danger", onClick: () => setShowBatchUpdate(false) }}
+        disabled={!isIdle}
       >
         <Form.Group>
           <Form.Label><h6>Performer selection</h6></Form.Label>
@@ -258,7 +260,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             id="query-page"
             type="radio"
             name="performer-query"
-            label="Current Page"
+            label="Current page"
             defaultChecked
             onChange={() => setQueryAll(false)}
           />
@@ -266,7 +268,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             id="query-all"
             type="radio"
             name="performer-query"
-            label="All Performers"
+            label="All performers in the database"
             defaultChecked={false}
             onChange={() => setQueryAll(true)}
           />
@@ -277,7 +279,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             id="untagged-performers"
             type="radio"
             name="performer-refresh"
-            label="Untagged Performers"
+            label="Untagged performers"
             defaultChecked
             onChange={() => setRefresh(false)}
           />
@@ -286,11 +288,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             id="tagged-performers"
             type="radio"
             name="performer-refresh"
-            label="Refresh Tagged Performers"
+            label="Refresh tagged performers"
             defaultChecked={false}
             onChange={() => setRefresh(true)}
           />
-          <Form.Text>Refreshing will update the performer data from the stash-box instance.</Form.Text>
+          <Form.Text>Refreshing will update the data of any tagged performers from the stash-box instance.</Form.Text>
         </Form.Group>
         <b>{ `${queryAll ? allPerformers?.allPerformers.length ?? 0 : performers.length} performers will be processed` }</b>
       </Modal>
@@ -300,8 +302,10 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         header="Add New Performers"
         accept={{ text: "Add Performers", onClick: handleBatchAdd }}
         cancel={{ text: "Cancel", variant: "danger", onClick: () => setShowBatchAdd(false) }}
+        disabled={!isIdle}
       >
         <Form.Control as="textarea" ref={performerInput} placeholder="Performer names separated by comma" rows={6} />
+        <Form.Text>Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.</Form.Text>
       </Modal>
       <div className="ml-auto mb-3">
         <Button onClick={() => setShowBatchAdd(true)}>Batch Add Performers</Button>
@@ -342,7 +346,9 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const selectedEndpoint =
     stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
 
-  const progress = jobStatus.data?.metadataUpdate.status === "Stash-Box Batch Operation" && jobStatus.data.metadataUpdate.progress >= 0 ? jobStatus.data.metadataUpdate.progress * 100 : null;
+  console.log(jobStatus.data?.metadataUpdate.status);
+  console.log(jobStatus.data);
+  const progress = jobStatus.data?.metadataUpdate.status === "Stash-Box Performer Batch Operation" && jobStatus.data.metadataUpdate.progress >= 0 ? jobStatus.data.metadataUpdate.progress * 100 : null;
 
   return (
     <>
@@ -352,7 +358,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         defaultActiveTab="Tagger.md"
       />
       { progress !== null && (
-        <Form.Group>
+        <Form.Group className="px-4">
           <h5>Status: Tagging performers</h5>
           <ProgressBar
             animated
@@ -381,11 +387,11 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
             <PerformerConfig config={config} setConfig={setConfig} show={showConfig} />
             <PerformerTaggerList
               performers={performers}
-              config={config}
               selectedEndpoint={{
                 endpoint: selectedEndpoint.endpoint,
                 index: selectedEndpointIndex,
               }}
+              isIdle={progress === null}
             />
           </>
         ) : (
