@@ -620,6 +620,7 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 				String: getPerformerBirthdate(i),
 				Valid:  true,
 			},
+			Details: sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
 		}
 
 		careerLength := getPerformerCareerLength(i)

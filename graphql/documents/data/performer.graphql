@@ -29,4 +29,5 @@ fragment PerformerData on Performer {
     stash_id
     endpoint
   }
+  details
 }

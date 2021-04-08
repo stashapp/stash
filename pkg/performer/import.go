@@ -225,5 +225,9 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
 	}
 
+	if performerJSON.Details != "" {
+		newPerformer.Details = sql.NullString{String: performerJSON.Details, Valid: true}
+	}
+
 	return newPerformer
 }

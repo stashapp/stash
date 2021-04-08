@@ -36,6 +36,7 @@ const (
 	piercings     = "piercings"
 	tattoos       = "tattoos"
 	twitter       = "twitter"
+	details       = "details"
 )
 
 var imageBytes = []byte("imageBytes")
@@ -79,6 +80,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		UpdatedAt: models.SQLiteTimestamp{
 			Timestamp: updateTime,
 		},
+		Details: models.NullString(details),
 	}
 }
 
@@ -119,7 +121,8 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		UpdatedAt: models.JSONTime{
 			Time: updateTime,
 		},
-		Image: image,
+		Image:   image,
+		Details: details,
 	}
 }
 

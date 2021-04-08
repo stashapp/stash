@@ -19,6 +19,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
     ...ScrapedSceneTagData
   }
   image
+  details
 }
 
 fragment ScrapedScenePerformerData on ScrapedScenePerformer {
@@ -44,6 +45,7 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   }
   remote_site_id
   images
+  details
 }
 
 fragment ScrapedMovieStudioData on ScrapedMovieStudio {

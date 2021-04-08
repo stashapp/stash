@@ -42,6 +42,7 @@ type ScrapedPerformer struct {
 	Aliases      *string            `graphql:"aliases" json:"aliases"`
 	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
 	Image        *string            `graphql:"image" json:"image"`
+	Details      *string            `graphql:"details" json:"details"`
 }
 
 // this type has no Image field
@@ -63,6 +64,7 @@ type ScrapedPerformerStash struct {
 	Piercings    *string            `graphql:"piercings" json:"piercings"`
 	Aliases      *string            `graphql:"aliases" json:"aliases"`
 	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
+	Details      *string            `graphql:"details" json:"details"`
 }
 
 type ScrapedScene struct {
@@ -128,6 +130,7 @@ type ScrapedScenePerformer struct {
 	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
 	RemoteSiteID *string            `graphql:"remote_site_id" json:"remote_site_id"`
 	Images       []string           `graphql:"images" json:"images"`
+	Details      *string            `graphql:"details" json:"details"`
 }
 
 type ScrapedSceneStudio struct {

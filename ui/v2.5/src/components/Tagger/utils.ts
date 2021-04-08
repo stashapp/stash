@@ -56,6 +56,7 @@ export interface IStashBoxPerformer {
   piercings?: string;
   aliases?: string;
   images: string[];
+  details?: string;
 }
 
 export interface IStashBoxTag {
@@ -126,6 +127,7 @@ const selectPerformers = (
     piercings: p.piercings ? toTitleCase(p.piercings) : undefined,
     aliases: p.aliases ?? undefined,
     images: p.images ?? [],
+    details: p.details ?? undefined,
   }));
 
 export const selectScenes = (

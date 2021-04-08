@@ -9,6 +9,7 @@ type Studio {
   image_path: String # Resolver
   scene_count: Int # Resolver
   stash_ids: [StashID!]!
+  details: String
 }
 
 input StudioCreateInput {
@@ -18,6 +19,7 @@ input StudioCreateInput {
   """This should be base64 encoded"""
   image: String
   stash_ids: [StashIDInput!]
+  details: String
 }
 
 input StudioUpdateInput {
@@ -28,6 +30,7 @@ input StudioUpdateInput {
   """This should be base64 encoded"""
   image: String
   stash_ids: [StashIDInput!]
+  details: String
 }
 
 input StudioDestroyInput {

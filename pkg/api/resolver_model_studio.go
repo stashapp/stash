@@ -90,3 +90,10 @@ func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) (ret 
 
 	return ret, nil
 }
+
+func (r *studioResolver) Details(ctx context.Context, obj *models.Studio) (*string, error) {
+	if obj.Details.Valid {
+		return &obj.Details.String, nil
+	}
+	return nil, nil
+}

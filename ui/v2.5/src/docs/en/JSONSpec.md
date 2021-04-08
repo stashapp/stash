@@ -64,6 +64,7 @@ piercings
 image (base64 encoding of the image file)  
 created_at  
 updated_at
+details
 ```
 
 ## Studio
@@ -72,7 +73,8 @@ name
 url  
 image (base64 encoding of the image file)  
 created_at  
-updated_at  
+updated_at
+details  
 ```
 
 ## Scene
@@ -276,6 +278,10 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
     "updated_at": {
       "description": "The time this performers data was last changed in the database. Format is YYYY-MM-DDThh:mm:ssTZD",
       "type": "string"
+    },
+    "details": {
+      "description": "Description of the performer",
+      "type": "string"
     }
   },
   "required": ["name", "ethnicity", "image", "created_at", "updated_at"]
@@ -311,6 +317,10 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
     },
     "updated_at": {
       "description": "The time this studios data was last changed in the database. Format is YYYY-MM-DDThh:mm:ssTZD",
+      "type": "string"
+    },
+    "details": {
+      "description": "Description of the studio",
       "type": "string"
     }
   },

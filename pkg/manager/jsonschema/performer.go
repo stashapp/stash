@@ -30,6 +30,7 @@ type Performer struct {
 	Image        string          `json:"image,omitempty"`
 	CreatedAt    models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt    models.JSONTime `json:"updated_at,omitempty"`
+	Details      string          `json:"details,omitempty"`
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

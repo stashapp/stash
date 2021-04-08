@@ -109,6 +109,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: yup.array(yup.string().required()).optional(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
+    details: yup.string().optional(),
   });
 
   const initialValues = {
@@ -131,6 +132,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
+    details: performer.details ?? "",
   };
 
   type InputValues = typeof initialValues;
@@ -305,6 +307,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       formik.setFieldValue("image", imageStr ?? undefined);
+    }
+    if (state.details) {
+      formik.setFieldValue("details", state.details);
     }
   }
 
@@ -861,7 +866,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderTextField("twitter", "Twitter")}
         {renderTextField("instagram", "Instagram")}
-
+        <Form.Group controlId="details" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Alias
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <Form.Control
+              as="textarea"
+              className="text-input"
+              placeholder="Details"
+              {...formik.getFieldProps("details")}
+            />
+          </Col>
+        </Form.Group>
         {renderTagsField()}
         {renderStashIDs()}
 

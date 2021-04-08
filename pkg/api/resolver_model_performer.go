@@ -182,3 +182,10 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 
 	return ret, nil
 }
+
+func (r *performerResolver) Details(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.Details.Valid {
+		return &obj.Details.String, nil
+	}
+	return nil, nil
+}

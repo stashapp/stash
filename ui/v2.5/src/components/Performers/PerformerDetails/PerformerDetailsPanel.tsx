@@ -100,6 +100,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       <TextField name="Career Length" value={performer.career_length} />
       <TextField name="Tattoos" value={performer.tattoos} />
       <TextField name="Piercings" value={performer.piercings} />
+      <TextField name="Details" value={performer.details} />
       <URLField
         name="URL"
         value={performer.url}

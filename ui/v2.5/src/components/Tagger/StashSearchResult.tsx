@@ -217,6 +217,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 stash_id: stashID,
               },
             ],
+            details: performer.data.details,
           };
 
           const res = await createPerformer(performerInput, stashID);

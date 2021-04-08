@@ -201,6 +201,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       translateScrapedGender(props.scraped.gender)
     )
   );
+  const [details, setDetails] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(props.performer.details, props.scraped.details)
+  );
 
   const [createTag] = useTagCreate({ name: "" });
   const Toast = useToast();
@@ -281,6 +284,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     gender,
     image,
     tags,
+    details,
   ];
   // don't show the dialog if nothing was scraped
   if (allFields.every((r) => !r.scraped)) {
@@ -348,6 +352,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
         };
       }),
       image: image.getNewValue(),
+      details: details.getNewValue(),
     };
   }
 
@@ -429,6 +434,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           title="Instagram"
           result={instagram}
           onChange={(value) => setInstagram(value)}
+        />
+        <ScrapedTextAreaRow
+          title="Details"
+          result={details}
+          onChange={(value) => setDetails(value)}
         />
         {renderScrapedTagsRow(
           tags,
