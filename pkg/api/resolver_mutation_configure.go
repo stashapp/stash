@@ -51,8 +51,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	}
 
 	if input.CachePath != nil {
-		if err := utils.EnsureDir(*input.CachePath); err != nil {
-			return makeConfigGeneralResult(), err
+		if *input.CachePath != "" {
+			if err := utils.EnsureDir(*input.CachePath); err != nil {
+				return makeConfigGeneralResult(), err
+			}
 		}
 		c.Set(config.Cache, input.CachePath)
 	}
