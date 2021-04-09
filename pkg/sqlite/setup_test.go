@@ -34,6 +34,8 @@ const (
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
 	sceneIdxWithStudio
+	sceneIdx1WithStudio
+	sceneIdx2WithStudio
 	sceneIdxWithMarker
 	sceneIdxWithPerformerTag
 	sceneIdxWithPerformerTwoTags
@@ -53,6 +55,8 @@ const (
 	imageIdxWithTag
 	imageIdxWithTwoTags
 	imageIdxWithStudio
+	imageIdx1WithStudio
+	imageIdx2WithStudio
 	imageIdxInZip // TODO - not implemented
 	imageIdxWithPerformerTag
 	imageIdxWithPerformerTwoTags
@@ -105,6 +109,8 @@ const (
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
 	galleryIdxWithStudio
+	galleryIdx1WithStudio
+	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
 	galleryIdxWithPerformerTwoTags
 	// new indexes above
@@ -140,11 +146,14 @@ const (
 
 const (
 	studioIdxWithScene = iota
+	studioIdxWithTwoScenes
 	studioIdxWithMovie
 	studioIdxWithChildStudio
 	studioIdxWithParentStudio
 	studioIdxWithImage
+	studioIdxWithTwoImages
 	studioIdxWithGallery
+	studioIdxWithTwoGalleries
 	// new indexes above
 	// studios with dup names start from the end
 	studioIdxWithDupName
@@ -213,6 +222,8 @@ var (
 
 	sceneStudioLinks = [][2]int{
 		{sceneIdxWithStudio, studioIdxWithScene},
+		{sceneIdx1WithStudio, studioIdxWithTwoScenes},
+		{sceneIdx2WithStudio, studioIdxWithTwoScenes},
 	}
 )
 
@@ -222,6 +233,8 @@ var (
 	}
 	imageStudioLinks = [][2]int{
 		{imageIdxWithStudio, studioIdxWithImage},
+		{imageIdx1WithStudio, studioIdxWithTwoImages},
+		{imageIdx2WithStudio, studioIdxWithTwoImages},
 	}
 	imageTagLinks = [][2]int{
 		{imageIdxWithTag, tagIdxWithImage},
@@ -248,6 +261,12 @@ var (
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
 		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
+	}
+
+	galleryStudioLinks = [][2]int{
+		{galleryIdxWithStudio, studioIdxWithGallery},
+		{galleryIdx1WithStudio, studioIdxWithTwoGalleries},
+		{galleryIdx2WithStudio, studioIdxWithTwoGalleries},
 	}
 
 	galleryTagLinks = [][2]int{
@@ -413,8 +432,8 @@ func populateDB() error {
 			return fmt.Errorf("error linking gallery tags: %s", err.Error())
 		}
 
-		if err := linkGalleryStudio(r.Gallery(), galleryIdxWithStudio, studioIdxWithGallery); err != nil {
-			return fmt.Errorf("error linking gallery studio: %s", err.Error())
+		if err := linkGalleryStudios(r.Gallery()); err != nil {
+			return fmt.Errorf("error linking gallery studios: %s", err.Error())
 		}
 
 		if err := createMarker(r.SceneMarker(), sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
@@ -1014,6 +1033,18 @@ func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
 	})
 }
 
+func linkGalleryStudios(qb models.GalleryReaderWriter) error {
+	return doLinks(galleryStudioLinks, func(galleryIndex, studioIndex int) error {
+		gallery := models.GalleryPartial{
+			ID:       galleryIDs[galleryIndex],
+			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+		}
+		_, err := qb.UpdatePartial(gallery)
+
+		return err
+	})
+}
+
 func linkGalleryTags(iqb models.GalleryReaderWriter) error {
 	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
 		galleryID := imageIDs[galleryIndex]
@@ -1054,14 +1085,4 @@ func linkStudiosParent(qb models.StudioWriter) error {
 
 func addTagImage(qb models.TagWriter, tagIndex int) error {
 	return qb.UpdateImage(tagIDs[tagIndex], models.DefaultTagImage)
-}
-
-func linkGalleryStudio(qb models.GalleryWriter, galleryIndex, studioIndex int) error {
-	gallery := models.GalleryPartial{
-		ID:       galleryIDs[galleryIndex],
-		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-	}
-	_, err := qb.UpdatePartial(gallery)
-
-	return err
 }
