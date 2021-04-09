@@ -772,9 +772,13 @@ export class ListFilterModel {
           result.gallery_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
+    
     return result;
   }
 
