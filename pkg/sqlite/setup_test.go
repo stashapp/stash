@@ -1021,7 +1021,7 @@ func linkImagePerformers(qb models.ImageReaderWriter) error {
 
 func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
 	return doLinks(galleryPerformerLinks, func(galleryIndex, performerIndex int) error {
-		galleryID := imageIDs[galleryIndex]
+		galleryID := galleryIDs[galleryIndex]
 		performers, err := qb.GetPerformerIDs(galleryID)
 		if err != nil {
 			return err
@@ -1045,17 +1045,17 @@ func linkGalleryStudios(qb models.GalleryReaderWriter) error {
 	})
 }
 
-func linkGalleryTags(iqb models.GalleryReaderWriter) error {
+func linkGalleryTags(qb models.GalleryReaderWriter) error {
 	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
-		galleryID := imageIDs[galleryIndex]
-		tags, err := iqb.GetTagIDs(galleryID)
+		galleryID := galleryIDs[galleryIndex]
+		tags, err := qb.GetTagIDs(galleryID)
 		if err != nil {
 			return err
 		}
 
 		tags = append(tags, tagIDs[tagIndex])
 
-		return iqb.UpdateTags(galleryID, tags)
+		return qb.UpdateTags(galleryID, tags)
 	})
 }
 
