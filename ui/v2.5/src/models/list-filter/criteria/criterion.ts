@@ -25,6 +25,7 @@ export type CriterionType =
   | "tags"
   | "sceneTags"
   | "performerTags"
+  | "tag_count"
   | "performers"
   | "studios"
   | "movies"
@@ -90,6 +91,8 @@ export abstract class Criterion {
         return "Scene Tags";
       case "performerTags":
         return "Performer Tags";
+      case "tag_count":
+        return "Tag Count";
       case "performers":
         return "Performers";
       case "studios":
@@ -356,6 +359,15 @@ export class NumberCriterion extends Criterion {
       this.parameterName = type;
     }
   }
+}
+
+export class MandatoryNumberCriterion extends NumberCriterion {
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+  ];
 }
 
 export class DurationCriterion extends Criterion {

@@ -683,6 +683,88 @@ func TestImageQueryPerformerTags(t *testing.T) {
 	})
 }
 
+func TestImageQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyImagesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImagesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyImagesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyImagesTagCount(t, tagCountCriterion)
+}
+
+func verifyImagesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Greater(t, len(images), 0)
+
+		for _, image := range images {
+			ids, err := sqb.GetTagIDs(image.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestImageQueryPerformerCount(t *testing.T) {
+	const performerCount = 1
+	performerCountCriterion := models.IntCriterionInput{
+		Value:    performerCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyImagesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImagesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyImagesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyImagesPerformerCount(t, performerCountCriterion)
+}
+
+func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			PerformerCount: &performerCountCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Greater(t, len(images), 0)
+
+		for _, image := range images {
+			ids, err := sqb.GetPerformerIDs(image.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), performerCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func TestImageQuerySorting(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sort := titleField

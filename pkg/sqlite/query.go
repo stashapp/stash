@@ -151,3 +151,15 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 		}
 	}
 }
+
+func (qb *queryBuilder) handleCountCriterion(countFilter *models.IntCriterionInput, primaryTable, joinTable, primaryFK string) {
+	if countFilter != nil {
+		clause, count := getCountCriterionClause(primaryTable, joinTable, primaryFK, *countFilter)
+
+		if count == 1 {
+			qb.addArg(countFilter.Value)
+		}
+
+		qb.addWhere(clause)
+	}
+}
