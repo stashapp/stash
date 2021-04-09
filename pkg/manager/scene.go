@@ -243,10 +243,9 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	if scene.AudioCodec.Valid {
 		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
-	container, err := GetSceneFileContainer(scene)
-	if err != nil {
-		return nil, err
-	}
+
+	// don't care if we can't get the container
+	container, _ := GetSceneFileContainer(scene)
 
 	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"

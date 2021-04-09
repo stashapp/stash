@@ -76,6 +76,14 @@ export const queryFindScenes = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindScenesByID = (sceneIDs: number[]) =>
+  client.query<GQL.FindScenesQuery>({
+    query: GQL.FindScenesDocument,
+    variables: {
+      scene_ids: sceneIDs,
+    },
+  });
+
 export const useFindSceneMarkers = (filter: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
     variables: {
@@ -608,9 +616,8 @@ export const movieMutationImpactedQueries = [
   GQL.AllMoviesForFilterDocument,
 ];
 
-export const useMovieCreate = (input: GQL.MovieCreateInput) =>
+export const useMovieCreate = () =>
   GQL.useMovieCreateMutation({
-    variables: input,
     update: deleteCache([
       GQL.FindMoviesDocument,
       GQL.AllMoviesForFilterDocument,
@@ -683,6 +690,12 @@ export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
 export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
   GQL.useConfigureInterfaceMutation({
     variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const useGenerateAPIKey = () =>
+  GQL.useGenerateApiKeyMutation({
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });

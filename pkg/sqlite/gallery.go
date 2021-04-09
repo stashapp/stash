@@ -198,6 +198,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
 	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
+	query.handleStringCriterionInput(galleryFilter.URL, "galleries.url")
 	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
 
 	if Organized := galleryFilter.Organized; Organized != nil {

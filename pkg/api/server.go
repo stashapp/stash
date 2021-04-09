@@ -37,6 +37,8 @@ var uiBox *packr.Box
 //var legacyUiBox *packr.Box
 var loginUIBox *packr.Box
 
+const ApiKeyHeader = "ApiKey"
+
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
 }
@@ -44,14 +46,29 @@ func allowUnauthenticated(r *http.Request) bool {
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := config.GetInstance()
 			ctx := r.Context()
 
 			// translate api key into current user, if present
 			userID := ""
+			apiKey := r.Header.Get(ApiKeyHeader)
 			var err error
 
-			// handle session
-			userID, err = getSessionUserID(w, r)
+			if apiKey != "" {
+				// match against configured API and set userID to the
+				// configured username. In future, we'll want to
+				// get the username from the key.
+				if c.GetAPIKey() != apiKey {
+					w.Header().Add("WWW-Authenticate", `FormBased`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				userID = c.GetUsername()
+			} else {
+				// handle session
+				userID, err = getSessionUserID(w, r)
+			}
 
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -60,9 +77,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			}
 
 			// handle redirect if no user and user is required
-			if userID == "" && config.GetInstance().HasCredentials() && !allowUnauthenticated(r) {
-				// always allow
-
+			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
 				// if we don't have a userID, then redirect
 				// if graphql was requested, we just return a forbidden error
 				if r.URL.Path == "/graphql" {
@@ -103,6 +118,7 @@ func Start() {
 
 	r := chi.NewRouter()
 
+	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 

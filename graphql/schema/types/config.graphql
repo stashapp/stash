@@ -130,6 +130,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """API Key"""
+  apiKey: String!
   """Username"""
   username: String!
   """Password"""
@@ -234,4 +236,8 @@ type StashConfig {
   path: String!
   excludeVideo: Boolean!
   excludeImage: Boolean!
+}
+
+input GenerateAPIKeyInput {
+  clear: Boolean
 }

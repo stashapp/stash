@@ -594,7 +594,7 @@ func TestStringCriterionHandlerIsNull(t *testing.T) {
 	}, column))
 
 	assert.Len(f.whereClauses, 1)
-	assert.Equal(fmt.Sprintf("%[1]s IS NULL", column), f.whereClauses[0].sql)
+	assert.Equal(fmt.Sprintf("(%[1]s IS NULL OR TRIM(%[1]s) = '')", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 0)
 }
 
@@ -609,6 +609,6 @@ func TestStringCriterionHandlerNotNull(t *testing.T) {
 	}, column))
 
 	assert.Len(f.whereClauses, 1)
-	assert.Equal(fmt.Sprintf("%[1]s IS NOT NULL", column), f.whereClauses[0].sql)
+	assert.Equal(fmt.Sprintf("(%[1]s IS NOT NULL AND TRIM(%[1]s) != '')", column), f.whereClauses[0].sql)
 	assert.Len(f.whereClauses[0].args, 0)
 }

@@ -23,6 +23,7 @@ const Cache = "cache"
 const Generated = "generated"
 const Metadata = "metadata"
 const Downloads = "downloads"
+const ApiKey = "api_key"
 const Username = "username"
 const Password = "password"
 const MaxSessionAge = "max_session_age"
@@ -438,6 +439,10 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	return models.StreamingResolutionEnum(ret)
 }
 
+func (i *Instance) GetAPIKey() string {
+	return viper.GetString(ApiKey)
+}
+
 func (i *Instance) GetUsername() string {
 	return viper.GetString(Username)
 }
@@ -528,7 +533,7 @@ func (i *Instance) GetMenuItems() []string {
 }
 
 func (i *Instance) GetSoundOnPreview() bool {
-	viper.SetDefault(SoundOnPreview, true)
+	viper.SetDefault(SoundOnPreview, false)
 	return viper.GetBool(SoundOnPreview)
 }
 
