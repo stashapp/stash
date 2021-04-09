@@ -87,6 +87,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       data: {
         ...filterPerformer(performer, excludedFields),
         name: performer.name,
+        stash_id: performer.stash_id,
         images,
       },
     });
