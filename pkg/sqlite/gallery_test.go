@@ -193,6 +193,62 @@ func verifyGalleriesPath(t *testing.T, sqb models.GalleryReader, pathCriterion m
 	}
 }
 
+func TestGalleryQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	galleryURL := getGalleryStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    galleryURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.GalleryFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(g *models.Gallery) {
+		t.Helper()
+		verifyNullString(t, g.URL, urlCriterion)
+	}
+
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "gallery_.*1_URL"
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyGalleryQuery(t, filter, verifyFn)
+}
+
+func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn func(s *models.Gallery)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Gallery()
+
+		galleries := queryGallery(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(galleries), 0)
+
+		for _, gallery := range galleries {
+			verifyFn(gallery)
+		}
+
+		return nil
+	})
+}
+
 func TestGalleryQueryRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{

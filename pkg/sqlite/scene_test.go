@@ -187,6 +187,44 @@ func TestSceneQueryPath(t *testing.T) {
 	verifyScenesPath(t, pathCriterion)
 }
 
+func TestSceneQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	scenePath := getSceneStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    scenePath,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.SceneFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(s *models.Scene) {
+		t.Helper()
+		verifyNullString(t, s.URL, urlCriterion)
+	}
+
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "scene_.*1_URL"
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifySceneQuery(t, filter, verifyFn)
+}
+
 func TestSceneQueryPathOr(t *testing.T) {
 	const scene1Idx = 1
 	const scene2Idx = 2
@@ -324,6 +362,24 @@ func TestSceneIllegalQuery(t *testing.T) {
 	})
 }
 
+func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func(s *models.Scene)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(scenes), 0)
+
+		for _, scene := range scenes {
+			verifyFn(scene)
+		}
+
+		return nil
+	})
+}
+
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
@@ -345,10 +401,15 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierIsNull {
+		if value.Valid && value.String == "" {
+			// correct
+			return
+		}
 		assert.False(value.Valid, "expect is null values to be null")
 	}
 	if criterion.Modifier == models.CriterionModifierNotNull {
 		assert.True(value.Valid, "expect is null values to be null")
+		assert.Greater(len(value.String), 0)
 	}
 	if criterion.Modifier == models.CriterionModifierEquals {
 		assert.Equal(criterion.Value, value.String)

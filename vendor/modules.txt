@@ -94,6 +94,8 @@ github.com/chromedp/chromedp/kb
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging
 # github.com/fsnotify/fsnotify v1.4.7
@@ -305,7 +307,7 @@ github.com/vektra/mockery/v2/pkg/logging
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20190802002840-cff245a6509b
+# golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
 golang.org/x/image/riff
