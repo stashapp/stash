@@ -361,6 +361,15 @@ export class NumberCriterion extends Criterion {
   }
 }
 
+export class MandatoryNumberCriterion extends NumberCriterion {
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+  ];
+}
+
 export class DurationCriterion extends Criterion {
   public type: CriterionType;
   public parameterName: string;

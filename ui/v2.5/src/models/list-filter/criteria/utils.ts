@@ -1,12 +1,11 @@
 /* eslint-disable consistent-return, default-case */
-import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  Criterion,
   CriterionType,
   StringCriterion,
   NumberCriterion,
   DurationCriterion,
   MandatoryStringCriterion,
+  MandatoryNumberCriterion,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion } from "./favorite";
@@ -47,7 +46,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "gallery_count":
     case "performer_count":
     case "tag_count":
-      return new NumberCriterion(type, type);
+      return new MandatoryNumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":
@@ -90,17 +89,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new GalleriesCriterion();
     case "birth_year":
       return new NumberCriterion(type, type);
-    case "age": {
-      const ret = new NumberCriterion(type, type);
-      // null/not null doesn't make sense for these criteria
-      ret.modifierOptions = [
-        Criterion.getModifierOption(CriterionModifier.Equals),
-        Criterion.getModifierOption(CriterionModifier.NotEquals),
-        Criterion.getModifierOption(CriterionModifier.GreaterThan),
-        Criterion.getModifierOption(CriterionModifier.LessThan),
-      ];
-      return ret;
-    }
+    case "age":
+      return new MandatoryNumberCriterion(type, type);
     case "gender":
       return new GenderCriterion();
     case "ethnicity":
