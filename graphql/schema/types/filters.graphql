@@ -143,6 +143,12 @@ input StudioFilterType {
   stash_id: String
   """Filter to only include studios missing this property"""
   is_missing: String
+  """Filter by scene count"""
+  scene_count: IntCriterionInput
+  """Filter by image count"""
+  image_count: IntCriterionInput
+  """Filter by gallery count"""
+  gallery_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
 }

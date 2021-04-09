@@ -133,7 +133,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 
 	query.body = selectDistinctIDs("studios")
 	query.body += `
-		left join scenes on studios.id = scenes.studio_id		
+		left join scenes on studios.id = scenes.studio_id
 		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
 
@@ -164,6 +164,10 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.addWhere("studio_stash_ids.stash_id = ?")
 		query.addArg(stashIDFilter)
 	}
+
+	query.handleCountCriterion(studioFilter.SceneCount, studioTable, sceneTable, studioIDColumn)
+	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
+	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
 
 	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
 
