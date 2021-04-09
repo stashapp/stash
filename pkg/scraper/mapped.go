@@ -362,6 +362,17 @@ type postProcessParseDate string
 func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 	parseDate := string(*p)
 
+	const internalDateFormat = "2006-01-02"
+
+	value = strings.ToLower(value)
+	if value == "today" || value == "yesterday" { // handle today, yesterday
+		dt := time.Now()
+		if value == "yesterday" { // subtract 1 day from now
+			dt = dt.AddDate(0, 0, -1)
+		}
+		return dt.Format(internalDateFormat)
+	}
+
 	if parseDate == "" {
 		return value
 	}
@@ -375,7 +386,6 @@ func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 	}
 
 	// convert it into our date format
-	const internalDateFormat = "2006-01-02"
 	return parsedValue.Format(internalDateFormat)
 }
 
