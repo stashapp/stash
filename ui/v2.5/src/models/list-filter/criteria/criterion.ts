@@ -137,7 +137,7 @@ export abstract class Criterion {
       case "performer_count":
         return "Performer Count";
       case "url":
-        return "Url";
+        return "URL";
     }
   }
 
