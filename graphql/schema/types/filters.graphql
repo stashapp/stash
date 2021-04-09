@@ -65,9 +65,9 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   """Filter by scene count"""
   scene_count: IntCriterionInput
-  """Filter by scene count"""
+  """Filter by image count"""
   image_count: IntCriterionInput
-  """Filter by scene count"""
+  """Filter by gallery count"""
   gallery_count: IntCriterionInput
   """Filter by StashID"""
   stash_id: String
