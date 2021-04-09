@@ -119,23 +119,24 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   };
 
   const handleBatchAdd = () => {
-    if (!performerInput.current) return;
+    if (performerInput.current) {
+      const names = performerInput.current.value
+        .split(",")
+        .map((n) => n.trim())
+        .filter((n) => n.length > 0);
 
-    const names = performerInput.current.value
-      .split(",")
-      .map((n) => n.trim())
-      .filter((n) => n.length === 0);
-    if (names.length === 0) return;
-
-    doBatchQuery({
-      variables: {
-        input: {
-          performer_names: names,
-          endpoint: selectedEndpoint.index,
-          refresh: false,
-        },
-      },
-    });
+      if (names.length > 0) {
+        doBatchQuery({
+          variables: {
+            input: {
+              performer_names: names,
+              endpoint: selectedEndpoint.index,
+              refresh: false,
+            },
+          },
+        });
+      }
+    }
     setShowBatchAdd(false);
   };
 
