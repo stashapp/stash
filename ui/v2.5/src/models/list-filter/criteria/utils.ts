@@ -113,6 +113,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "tattoos":
     case "piercings":
     case "aliases":
+    case "url":
       return new StringCriterion(type, type);
   }
 }

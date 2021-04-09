@@ -345,6 +345,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
 	query.handleCriterionFunc(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterionFunc(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
 
 	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterionFunc(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))

@@ -268,6 +268,62 @@ func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionI
 	})
 }
 
+func TestPerformerQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	performerURL := getPerformerStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    performerURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.PerformerFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(g *models.Performer) {
+		t.Helper()
+		verifyNullString(t, g.URL, urlCriterion)
+	}
+
+	verifyPerformerQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformerQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "performer_.*1_URL"
+	verifyPerformerQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyPerformerQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyPerformerQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyPerformerQuery(t, filter, verifyFn)
+}
+
+func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verifyFn func(s *models.Performer)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(performers), 0)
+
+		for _, p := range performers {
+			verifyFn(p)
+		}
+
+		return nil
+	})
+}
+
 func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
 	performers, _, err := qb.Query(performerFilter, findFilter)
 	if err != nil {

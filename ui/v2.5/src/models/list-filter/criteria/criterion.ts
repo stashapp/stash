@@ -48,7 +48,8 @@ export type CriterionType =
   | "marker_count"
   | "image_count"
   | "gallery_count"
-  | "performer_count";
+  | "performer_count"
+  | "url";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -138,6 +139,8 @@ export abstract class Criterion {
         return "Gallery Count";
       case "performer_count":
         return "Performer Count";
+      case "url":
+        return "URL";
     }
   }
 

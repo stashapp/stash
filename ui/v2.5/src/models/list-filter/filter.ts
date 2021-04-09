@@ -155,6 +155,7 @@ export class ListFilterModel {
           ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Images:
@@ -218,6 +219,7 @@ export class ListFilterModel {
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
           ListFilterModel.createCriterionOption("tag_count"),
           ListFilterModel.createCriterionOption("scene_count"),
           ListFilterModel.createCriterionOption("image_count"),
@@ -231,22 +233,24 @@ export class ListFilterModel {
       }
       case FilterMode.Studios:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortByOptions = ["name", "scenes_count", "random"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Movies:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortByOptions = ["name", "scenes_count", "random"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new StudiosCriterionOption(),
           new MovieIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Galleries:
@@ -257,6 +261,7 @@ export class ListFilterModel {
           "images_count",
           "tag_count",
           "performer_count",
+          "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
@@ -272,6 +277,7 @@ export class ListFilterModel {
           new PerformersCriterionOption(),
           ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -306,6 +312,7 @@ export class ListFilterModel {
           "images_count",
           "galleries_count",
           "performers_count",
+          "random",
           /* "scene_markers_count" */
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -612,6 +619,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
@@ -720,6 +735,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
         case "tag_count": {
           const tagCountCrit = criterion as NumberCriterion;
           result.tag_count = {
@@ -749,9 +772,6 @@ export class ListFilterModel {
           result.gallery_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
-          };
-          break;
-        }
         // no default
       }
     });
@@ -946,6 +966,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
         case "movieIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
@@ -963,6 +991,14 @@ export class ListFilterModel {
           result.parents = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }
@@ -1092,6 +1128,14 @@ export class ListFilterModel {
           result.studios = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }
