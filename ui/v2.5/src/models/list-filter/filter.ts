@@ -195,6 +195,7 @@ export class ListFilterModel {
           "height",
           "birthdate",
           "scenes_count",
+          "tag_count",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -778,7 +779,7 @@ export class ListFilterModel {
         // no default
       }
     });
-    
+
     return result;
   }
 
