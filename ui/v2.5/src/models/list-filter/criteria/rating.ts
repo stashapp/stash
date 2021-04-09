@@ -1,9 +1,12 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+  NumberCriterion,
+} from "./criterion";
 
-export class RatingCriterion extends Criterion {
-  public type: CriterionType = "rating";
-  public parameterName: string = "rating";
+export class RatingCriterion extends NumberCriterion {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.Equals),
@@ -13,8 +16,10 @@ export class RatingCriterion extends Criterion {
     Criterion.getModifierOption(CriterionModifier.IsNull),
     Criterion.getModifierOption(CriterionModifier.NotNull),
   ];
-  public options: number[] = [1, 2, 3, 4, 5];
-  public value: number = 0;
+
+  constructor() {
+    super("rating", "rating", [1, 2, 3, 4, 5]);
+  }
 }
 
 export class RatingCriterionOption implements ICriterionOption {

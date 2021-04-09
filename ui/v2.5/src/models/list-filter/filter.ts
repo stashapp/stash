@@ -104,7 +104,8 @@ export class ListFilterModel {
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
-  public criteria: Array<Criterion> = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public criteria: Array<Criterion<any>> = [];
   public randomSeed = -1;
 
   private static createCriterionOption(criterion: CriterionType) {
@@ -455,7 +456,7 @@ export class ListFilterModel {
   public getQueryParameters() {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
-      const encodedCriterion: Partial<Criterion> = {
+      const encodedCriterion: Partial<Criterion<never>> = {
         type: criterion.type,
         // #394 - the presence of a # symbol results in the query URL being
         // malformed. We could set encode: true in the queryString.stringify

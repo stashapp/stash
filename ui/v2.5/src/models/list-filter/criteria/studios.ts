@@ -1,8 +1,13 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+  ILabeledIdCriterion,
+} from "./criterion";
 
-export class StudiosCriterion extends Criterion {
+export class StudiosCriterion extends ILabeledIdCriterion {
   public type: CriterionType = "studios";
   public parameterName: string = "studios";
   public modifier = CriterionModifier.Includes;

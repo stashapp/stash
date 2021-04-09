@@ -15,10 +15,12 @@ import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 
 interface IAddFilterProps {
-  onAddCriterion: (criterion: Criterion, oldId?: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onAddCriterion: (criterion: Criterion<any>, oldId?: string) => void;
   onCancel: () => void;
   filter: ListFilterModel;
-  editingCriterion?: Criterion;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  editingCriterion?: Criterion<any>;
 }
 
 export const AddFilter: React.FC<IAddFilterProps> = (
@@ -27,7 +29,10 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   const defaultValue = useRef<string | number | undefined>();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [criterion, setCriterion] = useState<Criterion>(new NoneCriterion());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [criterion, setCriterion] = useState<Criterion<any>>(
+    new NoneCriterion()
+  );
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 

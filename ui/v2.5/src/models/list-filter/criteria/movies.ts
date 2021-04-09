@@ -1,6 +1,11 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, encodeILabeledId } from "../types";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+  ILabeledIdCriterion,
+} from "./criterion";
 
 interface IOptionType {
   id: string;
@@ -8,7 +13,7 @@ interface IOptionType {
   image_path?: string;
 }
 
-export class MoviesCriterion extends Criterion {
+export class MoviesCriterion extends ILabeledIdCriterion {
   public type: CriterionType = "movies";
   public parameterName: string = "movies";
   public modifier = CriterionModifier.Includes;

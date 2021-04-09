@@ -58,7 +58,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
-    Criterion | undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Criterion<any> | undefined
   >(undefined);
 
   useEffect(() => {
@@ -180,7 +181,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     props.onFilterUpdate(newFilter);
   }
 
-  function onAddCriterion(criterion: Criterion, oldId?: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function onAddCriterion(criterion: Criterion<any>, oldId?: string) {
     const newFilter = _.cloneDeep(props.filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
@@ -208,7 +210,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     setEditingCriterion(undefined);
   }
 
-  function onRemoveCriterion(removedCriterion: Criterion) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function onRemoveCriterion(removedCriterion: Criterion<any>) {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.criteria = newFilter.criteria.filter(
       (criterion) => criterion.getId() !== removedCriterion.getId()
@@ -218,7 +221,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   let removedCriterionId = "";
-  function onRemoveCriterionTag(criterion?: Criterion) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function onRemoveCriterionTag(criterion?: Criterion<any>) {
     if (!criterion) {
       return;
     }
@@ -227,7 +231,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     onRemoveCriterion(criterion);
   }
 
-  function onClickCriterionTag(criterion?: Criterion) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function onClickCriterionTag(criterion?: Criterion<any>) {
     if (!criterion || removedCriterionId !== "") {
       return;
     }

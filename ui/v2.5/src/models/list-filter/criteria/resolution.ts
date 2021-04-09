@@ -1,26 +1,31 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+  StringCriterion,
+} from "./criterion";
 
-export class ResolutionCriterion extends Criterion {
-  public type: CriterionType = "resolution";
-  public parameterName: string = "resolution";
+export class ResolutionCriterion extends StringCriterion {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
-  public options: string[] = [
-    "144p",
-    "240p",
-    "360p",
-    "480p",
-    "540p",
-    "720p",
-    "1080p",
-    "1440p",
-    "4k",
-    "5k",
-    "6k",
-    "8k",
-  ];
-  public value: string = "";
+
+  constructor() {
+    super("resolution", "resolution", [
+      "144p",
+      "240p",
+      "360p",
+      "480p",
+      "540p",
+      "720p",
+      "1080p",
+      "1440p",
+      "4k",
+      "5k",
+      "6k",
+      "8k",
+    ]);
+  }
 }
 
 export class ResolutionCriterionOption implements ICriterionOption {

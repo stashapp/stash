@@ -58,7 +58,7 @@ export type CriterionType =
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
 
-export abstract class Criterion {
+export abstract class Criterion<T extends CriterionValue> {
   public static getLabel(type: CriterionType = "none") {
     switch (type) {
       case "none":
@@ -196,14 +196,10 @@ export abstract class Criterion {
   public abstract modifier: CriterionModifier;
   public abstract modifierOptions: ILabeledValue[];
   public abstract options: Option[] | undefined;
-  public abstract value: CriterionValue;
+  public abstract value: T;
   public inputType: "number" | "text" | undefined;
 
-  public getLabelValue(): string {
-    if (typeof this.value === "string") return this.value;
-    if (typeof this.value === "number") return this.value.toString();
-    return this.value.map((v) => v.label).join(", ");
-  }
+  public abstract getLabelValue(): string;
 
   public getLabel(): string {
     let modifierString: string;
@@ -261,18 +257,7 @@ export abstract class Criterion {
     return `${this.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
-  private static replaceSpecialCharacter(str: string, c: string) {
-    return str.replaceAll(c, encodeURIComponent(c));
-  }
-
-  public encodeValue(): CriterionValue {
-    // replace certain characters
-    if (typeof this.value === "string") {
-      let ret = this.value;
-      ret = Criterion.replaceSpecialCharacter(ret, "&");
-      ret = Criterion.replaceSpecialCharacter(ret, "+");
-      return ret;
-    }
+  public encodeValue(): T {
     return this.value;
   }
 }
@@ -292,7 +277,7 @@ export class CriterionOption implements ICriterionOption {
   }
 }
 
-export class StringCriterion extends Criterion {
+export class StringCriterion extends Criterion<string> {
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
@@ -311,6 +296,18 @@ export class StringCriterion extends Criterion {
 
   public getLabelValue() {
     return this.value;
+  }
+
+  public encodeValue() {
+    // replace certain characters
+    let ret = this.value;
+    ret = StringCriterion.replaceSpecialCharacter(ret, "&");
+    ret = StringCriterion.replaceSpecialCharacter(ret, "+");
+    return ret;
+  }
+
+  private static replaceSpecialCharacter(str: string, c: string) {
+    return str.replaceAll(c, encodeURIComponent(c));
   }
 
   constructor(type: CriterionType, parameterName?: string, options?: string[]) {
@@ -339,7 +336,16 @@ export class MandatoryStringCriterion extends StringCriterion {
   ];
 }
 
-export class NumberCriterion extends Criterion {
+export class BooleanCriterion extends StringCriterion {
+  public modifier = CriterionModifier.Equals;
+  public modifierOptions = [];
+
+  constructor(type: CriterionType, parameterName?: string) {
+    super(type, parameterName, [true.toString(), false.toString()]);
+  }
+}
+
+export class NumberCriterion extends Criterion<number> {
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
@@ -382,7 +388,13 @@ export class MandatoryNumberCriterion extends NumberCriterion {
   ];
 }
 
-export class DurationCriterion extends Criterion {
+export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+  public getLabelValue(): string {
+    return this.value.map((v) => v.label).join(", ");
+  }
+}
+
+export class DurationCriterion extends Criterion<number> {
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;

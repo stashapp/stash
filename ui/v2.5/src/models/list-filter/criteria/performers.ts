@@ -1,8 +1,13 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+  ILabeledIdCriterion,
+} from "./criterion";
 
-export class PerformersCriterion extends Criterion {
+export class PerformersCriterion extends ILabeledIdCriterion {
   public type: CriterionType = "performers";
   public parameterName: string = "performers";
   public modifier = CriterionModifier.IncludesAll;

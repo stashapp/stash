@@ -1,26 +1,35 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+  StringCriterion,
+} from "./criterion";
 
-export abstract class IsMissingCriterion extends Criterion {
-  public parameterName: string = "is_missing";
+export abstract class IsMissingCriterion extends StringCriterion {
   public modifierOptions = [];
   public modifier = CriterionModifier.Equals;
-  public value: string = "";
+
+  constructor(type: CriterionType, options?: string[]) {
+    super(type, "is_missing", options);
+  }
 }
 
 export class SceneIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "sceneIsMissing";
-  public options: string[] = [
-    "title",
-    "details",
-    "url",
-    "date",
-    "galleries",
-    "studio",
-    "movie",
-    "performers",
-    "tags",
-  ];
+  constructor() {
+    super("sceneIsMissing", [
+      "title",
+      "details",
+      "url",
+      "date",
+      "galleries",
+      "studio",
+      "movie",
+      "performers",
+      "tags",
+      "stash_id",
+    ]);
+  }
 }
 
 export class SceneIsMissingCriterionOption implements ICriterionOption {
@@ -29,14 +38,15 @@ export class SceneIsMissingCriterionOption implements ICriterionOption {
 }
 
 export class ImageIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "imageIsMissing";
-  public options: string[] = [
-    "title",
-    "galleries",
-    "studio",
-    "performers",
-    "tags",
-  ];
+  constructor() {
+    super("imageIsMissing", [
+      "title",
+      "galleries",
+      "studio",
+      "performers",
+      "tags",
+    ]);
+  }
 }
 
 export class ImageIsMissingCriterionOption implements ICriterionOption {
@@ -45,28 +55,30 @@ export class ImageIsMissingCriterionOption implements ICriterionOption {
 }
 
 export class PerformerIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "performerIsMissing";
-  public options: string[] = [
-    "url",
-    "twitter",
-    "instagram",
-    "ethnicity",
-    "country",
-    "hair_color",
-    "eye_color",
-    "height",
-    "weight",
-    "measurements",
-    "fake_tits",
-    "career_length",
-    "tattoos",
-    "piercings",
-    "aliases",
-    "gender",
-    "scenes",
-    "image",
-    "details",
-  ];
+  constructor() {
+    super("performerIsMissing", [
+      "url",
+      "twitter",
+      "instagram",
+      "ethnicity",
+      "country",
+      "hair_color",
+      "eye_color",
+      "height",
+      "weight",
+      "measurements",
+      "fake_tits",
+      "career_length",
+      "tattoos",
+      "piercings",
+      "aliases",
+      "gender",
+      "scenes",
+      "image",
+      "details",
+      "stash_id",
+    ]);
+  }
 }
 
 export class PerformerIsMissingCriterionOption implements ICriterionOption {
@@ -75,17 +87,18 @@ export class PerformerIsMissingCriterionOption implements ICriterionOption {
 }
 
 export class GalleryIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "galleryIsMissing";
-  public options: string[] = [
-    "title",
-    "details",
-    "url",
-    "date",
-    "studio",
-    "performers",
-    "tags",
-    "scenes",
-  ];
+  constructor() {
+    super("galleryIsMissing", [
+      "title",
+      "details",
+      "url",
+      "date",
+      "studio",
+      "performers",
+      "tags",
+      "scenes",
+    ]);
+  }
 }
 
 export class GalleryIsMissingCriterionOption implements ICriterionOption {
@@ -94,8 +107,9 @@ export class GalleryIsMissingCriterionOption implements ICriterionOption {
 }
 
 export class TagIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "tagIsMissing";
-  public options: string[] = ["image"];
+  constructor() {
+    super("tagIsMissing", ["image"]);
+  }
 }
 
 export class TagIsMissingCriterionOption implements ICriterionOption {
@@ -104,8 +118,9 @@ export class TagIsMissingCriterionOption implements ICriterionOption {
 }
 
 export class StudioIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "studioIsMissing";
-  public options: string[] = ["image", "details"];
+  constructor() {
+    super("studioIsMissing", ["image", "details", "stash_id"]);
+  }
 }
 
 export class StudioIsMissingCriterionOption implements ICriterionOption {
@@ -114,8 +129,9 @@ export class StudioIsMissingCriterionOption implements ICriterionOption {
 }
 
 export class MovieIsMissingCriterion extends IsMissingCriterion {
-  public type: CriterionType = "movieIsMissing";
-  public options: string[] = ["front_image", "back_image", "scenes"];
+  constructor() {
+    super("movieIsMissing", ["front_image", "back_image", "scenes"]);
+  }
 }
 
 export class MovieIsMissingCriterionOption implements ICriterionOption {

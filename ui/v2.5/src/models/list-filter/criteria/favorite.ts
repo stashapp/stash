@@ -1,13 +1,14 @@
-import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import {
+  BooleanCriterion,
+  Criterion,
+  CriterionType,
+  ICriterionOption,
+} from "./criterion";
 
-export class FavoriteCriterion extends Criterion {
-  public type: CriterionType = "favorite";
-  public parameterName: string = "filter_favorites";
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-  public options: string[] = [true.toString(), false.toString()];
-  public value: string = "";
+export class FavoriteCriterion extends BooleanCriterion {
+  constructor() {
+    super("favorite", "filter_favorites");
+  }
 }
 
 export class FavoriteCriterionOption implements ICriterionOption {
