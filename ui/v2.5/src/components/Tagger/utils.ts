@@ -203,22 +203,42 @@ export const filterPerformer = (
     piercings,
   } = performer;
   return {
-    name: !excludedFields.includes("name") ? name : undefined,
-    aliases: !excludedFields.includes("aliases") ? aliases : undefined,
-    gender: !excludedFields.includes("gender") ? gender : undefined,
-    birthdate: !excludedFields.includes("birthdate") ? birthdate : undefined,
-    ethnicity: !excludedFields.includes("ethnicity") ? ethnicity : undefined,
-    country: !excludedFields.includes("country") ? country : undefined,
-    eye_color: !excludedFields.includes("eye_color") ? eye_color : undefined,
-    height: !excludedFields.includes("height") ? height : undefined,
-    measurements: !excludedFields.includes("measurements")
-      ? measurements
-      : undefined,
-    fake_tits: !excludedFields.includes("fake_tits") ? fake_tits : undefined,
-    career_length: !excludedFields.includes("career_length")
-      ? career_length
-      : undefined,
-    tattoos: !excludedFields.includes("tattoos") ? tattoos : undefined,
-    piercings: !excludedFields.includes("piercings") ? piercings : undefined,
+    name: !excludedFields.includes("name") && name ? name : undefined,
+    aliases:
+      !excludedFields.includes("aliases") && aliases ? aliases : undefined,
+    gender: !excludedFields.includes("gender") && gender ? gender : undefined,
+    birthdate:
+      !excludedFields.includes("birthdate") && birthdate
+        ? birthdate
+        : undefined,
+    ethnicity:
+      !excludedFields.includes("ethnicity") && ethnicity
+        ? ethnicity
+        : undefined,
+    country:
+      !excludedFields.includes("country") && country ? country : undefined,
+    eye_color:
+      !excludedFields.includes("eye_color") && eye_color
+        ? eye_color
+        : undefined,
+    height: !excludedFields.includes("height") && height ? height : undefined,
+    measurements:
+      !excludedFields.includes("measurements") && measurements
+        ? measurements
+        : undefined,
+    fake_tits:
+      !excludedFields.includes("fake_tits") && fake_tits
+        ? fake_tits
+        : undefined,
+    career_length:
+      !excludedFields.includes("career_length") && career_length
+        ? career_length
+        : undefined,
+    tattoos:
+      !excludedFields.includes("tattoos") && tattoos ? tattoos : undefined,
+    piercings:
+      !excludedFields.includes("piercings") && piercings
+        ? piercings
+        : undefined,
   };
 };

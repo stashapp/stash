@@ -73,20 +73,32 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       [name]: !excluded[name],
     });
 
-  const renderField = (name: string) => (
-    <div className="col-6 performer-create-modal-field" key={name}>
-      {!create && (
-        <Button
-          onClick={() => toggleField(name)}
-          variant="secondary"
-          className={excluded[name] ? "text-muted" : "text-success"}
-        >
-          <Icon icon={excluded[name] ? "times" : "check"} />
-        </Button>
-      )}
-      <strong>{TextUtils.capitalize(name)}:</strong>
-    </div>
-  );
+  const renderField = (
+    name: string,
+    text: string | null | undefined,
+    truncate: boolean = true
+  ) =>
+    text && (
+      <div className="row no-gutters">
+        <div className="col-5 performer-create-modal-field" key={name}>
+          {!create && (
+            <Button
+              onClick={() => toggleField(name)}
+              variant="secondary"
+              className={excluded[name] ? "text-muted" : "text-success"}
+            >
+              <Icon icon={excluded[name] ? "times" : "check"} />
+            </Button>
+          )}
+          <strong>{TextUtils.capitalize(name)}:</strong>
+        </div>
+        {truncate ? (
+          <TruncatedText className="col-7" text={text} />
+        ) : (
+          <span className="col-7">{text}</span>
+        )}
+      </div>
+    );
 
   return (
     <Modal
@@ -106,103 +118,39 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       header={header}
     >
       <div className="row">
-        <div className="col-6">
-          <div className="row no-gutters">
-            {renderField("name")}
-            <TruncatedText className="col-6" text={performer.name} />
-          </div>
-          <div className="row no-gutters">
-            {renderField("gender")}
-            <TruncatedText
-              className="col-6 text-capitalize"
-              text={performer.gender && genderToString(performer.gender)}
-            />
-          </div>
-          <div className="row no-gutters">
-            {renderField("birthdate")}
-            <TruncatedText
-              className="col-6"
-              text={performer.birthdate ?? "Unknown"}
-            />
-          </div>
-          <div className="row no-gutters">
-            {renderField("death_date")}
-            <TruncatedText
-              className="col-6"
-              text={performer.death_date ?? "Unknown"}
-            />
-          </div>
-          <div className="row no-gutters">
-            {renderField("ethnicity")}
-            <TruncatedText
-              className="col-6 text-capitalize"
-              text={performer.ethnicity}
-            />
-          </div>
-          <div className="row no-gutters">
-            {renderField("country")}
-            <TruncatedText className="col-6" text={performer.country ?? ""} />
-          </div>
-          <div className="row no-gutters">
-            {renderField("hair_color")}
-            <TruncatedText
-              className="col-6 text-capitalize"
-              text={performer.hair_color}
-            />
-          </div>
-          <div className="row no-gutters">
-            <strong className="col-6">Eye Color:</strong>
-            {renderField("eye_color")}
-            <TruncatedText
-              className="col-6 text-capitalize"
-              text={performer.eye_color}
-            />
-          </div>
-          <div className="row no-gutters">
-            {renderField("height")}
-            <TruncatedText className="col-6" text={performer.height} />
-          </div>
-          <div className="row no-gutters">
-            {renderField("weight")}
-            <TruncatedText className="col-6" text={performer.weight} />
-          </div>
-          <div className="row no-gutters">
-            <strong className="col-6">Measurements:</strong>
-            {renderField("measurements")}
-            <TruncatedText className="col-6" text={performer.measurements} />
-          </div>
-          {performer?.gender !== GQL.GenderEnum.Male && (
-            <div className="row no-gutters">
-              {renderField("fake_tits")}
-              <TruncatedText className="col-6" text={performer.fake_tits} />
-            </div>
-          )}
-          <div className="row no-gutters">
-            {renderField("career_length")}
-            <TruncatedText className="col-6" text={performer.career_length} />
-          </div>
-          <div className="row no-gutters">
-            {renderField("tattoos")}
-            <TruncatedText className="col-6" text={performer.tattoos} />
-          </div>
-          <div className="row no-gutters ">
-            {renderField("piercings")}
-            <TruncatedText className="col-6" text={performer.piercings} />
-          </div>
+        <div className="col-7">
+          {renderField("name", performer.name)}
+          {renderField("gender", genderToString(performer.gender))}
+          {renderField("birthdate", performer.birthdate ?? "Unknown")}
+          {renderField("death_date", performer.death_date ?? "Unknown")}
+          {renderField("ethnicity", performer.ethnicity)}
+          {renderField("country", performer.country)}
+          {renderField("hair_color", performer.hair_color)}
+          {renderField("eye_color", performer.eye_color)}
+          {renderField("height", performer.height)}
+          {renderField("weight", performer.weight)}
+          {renderField("measurements", performer.measurements)}
+          {performer?.gender !== GQL.GenderEnum.Male &&
+            renderField("fake_tits", performer.fake_tits)}
+          {renderField("career_length", performer.career_length)}
+          {renderField("tattoos", performer.tattoos, false)}
+          {renderField("piercings", performer.piercings, false)}
         </div>
         {images.length > 0 && (
-          <div className="col-6 image-selection">
+          <div className="col-5 image-selection">
             <div className="performer-image">
-              <Button
-                onClick={() => toggleField("image")}
-                variant="secondary"
-                className={cx(
-                  "performer-image-exclude",
-                  excluded.image ? "text-muted" : "text-success"
-                )}
-              >
-                <Icon icon={excluded.image ? "times" : "check"} />
-              </Button>
+              {!create && (
+                <Button
+                  onClick={() => toggleField("image")}
+                  variant="secondary"
+                  className={cx(
+                    "performer-image-exclude",
+                    excluded.image ? "text-muted" : "text-success"
+                  )}
+                >
+                  <Icon icon={excluded.image ? "times" : "check"} />
+                </Button>
+              )}
               <img
                 src={images[imageIndex]}
                 className={cx({ "d-none": imageState !== "loaded" })}
@@ -219,26 +167,16 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
                 </div>
               )}
             </div>
-            <div className="d-flex mt-2">
-              {!create && (
-                <Button
-                  className="mr-auto"
-                  onClick={setPrev}
-                  disabled={images.length === 1}
-                >
-                  <Icon icon="arrow-left" />
-                </Button>
-              )}
-              <h5>
+            <div className="d-flex mt-3">
+              <Button onClick={setPrev} disabled={images.length === 1}>
+                <Icon icon="arrow-left" />
+              </Button>
+              <h5 className="flex-grow-1">
                 Select performer image
                 <br />
                 {imageIndex + 1} of {images.length}
               </h5>
-              <Button
-                className="ml-auto"
-                onClick={setNext}
-                disabled={images.length === 1}
-              >
+              <Button onClick={setNext} disabled={images.length === 1}>
                 <Icon icon="arrow-right" />
               </Button>
             </div>
