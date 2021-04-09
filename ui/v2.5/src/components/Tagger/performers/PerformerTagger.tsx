@@ -331,6 +331,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
               excludedPerformerFields={config.excludedPerformerFields}
               icon="tags"
               header="Update Performer"
+              endpoint={selectedEndpoint.endpoint}
             />
           )}
           <Card className="performer-card p-0 m-0">

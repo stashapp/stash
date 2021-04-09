@@ -23,6 +23,7 @@ interface IPerformerModalProps {
   header: string;
   icon: IconName;
   create?: boolean;
+  endpoint: string;
 }
 
 const PerformerModal: React.FC<IPerformerModalProps> = ({
@@ -34,6 +35,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
   header,
   icon,
   create = false,
+  endpoint,
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
   const [imageState, setImageState] = useState<
@@ -100,6 +102,9 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       </div>
     );
 
+  const base = endpoint.match(/https?:\/\/.*?\//)?.[0];
+  const link = base ? `${base}performers/${performer.stash_id}` : undefined;
+
   return (
     <Modal
       show={modalVisible}
@@ -135,6 +140,14 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {renderField("career_length", performer.career_length)}
           {renderField("tattoos", performer.tattoos, false)}
           {renderField("piercings", performer.piercings, false)}
+          {link && (
+            <h6 className="mt-2">
+              <a href={link} target="_blank" rel="noopener noreferrer">
+                Stash-Box Source
+                <Icon icon="external-link-alt" className="ml-2" />
+              </a>
+            </h6>
+          )}
         </div>
         {images.length > 0 && (
           <div className="col-5 image-selection">

@@ -399,6 +399,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                   setPerformer(data, performer.stash_id)
                 }
                 key={`${scene.stash_id}${performer.stash_id}`}
+                endpoint={endpoint}
               />
             ))}
           <div className="row no-gutters mt-2 align-items-center justify-content-end">

@@ -18,11 +18,13 @@ export type PerformerOperation =
 interface IPerformerResultProps {
   performer: IStashBoxPerformer;
   setPerformer: (data: PerformerOperation) => void;
+  endpoint: string;
 }
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({
   performer,
   setPerformer,
+  endpoint,
 }) => {
   const [selectedPerformer, setSelectedPerformer] = useState<string | null>();
   const [selectedSource, setSelectedSource] = useState<
@@ -130,6 +132,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         icon="star"
         header="Create Performer"
         create
+        endpoint={endpoint}
       />
       <div className="entity-name">
         Performer:

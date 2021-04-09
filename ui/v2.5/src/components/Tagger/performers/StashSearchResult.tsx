@@ -83,6 +83,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           icon="tags"
           header="Update Performer"
           excludedPerformerFields={excludedPerformerFields}
+          endpoint={endpoint}
         />
       )}
       <div className="PerformerTagger-performer-search">{performers}</div>
