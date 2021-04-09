@@ -184,7 +184,7 @@ func (s *singleton) RefreshScraperCache() {
 
 func setSetupDefaults(input *models.SetupInput) {
 	if input.ConfigLocation == "" {
-		input.ConfigLocation = filepath.Join(utils.GetHomeDirectory(), "config.yml")
+		input.ConfigLocation = filepath.Join(utils.GetHomeDirectory(), ".stash", "config.yml")
 	}
 
 	configDir := filepath.Dir(input.ConfigLocation)
