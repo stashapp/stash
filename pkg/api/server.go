@@ -41,7 +41,10 @@ var uiBox *packr.Box
 var setupUIBox *packr.Box
 var loginUIBox *packr.Box
 
-const ApiKeyHeader = "ApiKey"
+const (
+	ApiKeyHeader    = "ApiKey"
+	ApiKeyParameter = "apikey"
+)
 
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
@@ -56,6 +59,11 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			userID := ""
 			apiKey := r.Header.Get(ApiKeyHeader)
 			var err error
+
+			// try getting the api key as a query parameter
+			if apiKey == "" {
+				apiKey = r.URL.Query().Get(ApiKeyParameter)
+			}
 
 			if apiKey != "" {
 				// match against configured API and set userID to the
