@@ -124,6 +124,7 @@ func Start() {
 
 	r := chi.NewRouter()
 
+	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 

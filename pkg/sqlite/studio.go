@@ -129,11 +129,10 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		findFilter = &models.FindFilterType{}
 	}
 
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("studios")
-	body += `
+	query := qb.newQuery()
+
+	query.body = selectDistinctIDs("studios")
+	query.body += `
 		left join scenes on studios.id = scenes.studio_id		
 		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
@@ -142,44 +141,47 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		searchColumns := []string{"studios.name"}
 
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		whereClauses = append(whereClauses, clause)
-		args = append(args, thisArgs...)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
 	if parentsFilter := studioFilter.Parents; parentsFilter != nil && len(parentsFilter.Value) > 0 {
-		body += `
+		query.body += `
 			left join studios as parent_studio on parent_studio.id = studios.parent_id
 		`
 
 		for _, studioID := range parentsFilter.Value {
-			args = append(args, studioID)
+			query.addArg(studioID)
 		}
 
 		whereClause, havingClause := getMultiCriterionClause("studios", "parent_studio", "", "", "parent_id", parentsFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
-		whereClauses = append(whereClauses, "studio_stash_ids.stash_id = ?")
-		args = append(args, stashIDFilter)
+		query.addWhere("studio_stash_ids.stash_id = ?")
+		query.addArg(stashIDFilter)
 	}
+
+	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
 
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "image":
-			body += `left join studios_image on studios_image.studio_id = studios.id
+			query.body += `left join studios_image on studios_image.studio_id = studios.id
 			`
-			whereClauses = appendClause(whereClauses, "studios_image.studio_id IS NULL")
+			query.addWhere("studios_image.studio_id IS NULL")
 		case "stash_id":
-			whereClauses = appendClause(whereClauses, "studio_stash_ids.studio_id IS NULL")
+			query.addWhere("studio_stash_ids.studio_id IS NULL")
 		default:
-			whereClauses = appendClause(whereClauses, "studios."+*isMissingFilter+" IS NULL")
+			query.addWhere("studios." + *isMissingFilter + " IS NULL")
 		}
 	}
 
-	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
 	}
