@@ -18,18 +18,19 @@ type flagStruct struct {
 	configFilePath string
 }
 
-func Initialize() *Instance {
+func Initialize() (*Instance, error) {
+	var err error
 	once.Do(func() {
 		instance = &Instance{}
 
 		flags := initFlags()
-		initConfig(flags)
+		err = initConfig(flags)
 		initEnvs()
 	})
-	return instance
+	return instance, err
 }
 
-func initConfig(flags flagStruct) {
+func initConfig(flags flagStruct) error {
 	// The config file is called config.  Leave off the file extension.
 	viper.SetConfigName("config")
 
@@ -48,13 +49,12 @@ func initConfig(flags flagStruct) {
 	}
 
 	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		// continue, but set an error to be handled by caller
-		instance.err = err
-	}
+	// continue, but set an error to be handled by caller
 
 	postInitConfig()
 	instance.SetInitialConfig()
+
+	return err
 }
 
 func postInitConfig() {

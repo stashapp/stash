@@ -53,7 +53,7 @@ func GetInstance() *singleton {
 func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetStashHomeDirectory())
-		cfg := config.Initialize()
+		cfg, err := config.Initialize()
 		initLog()
 
 		instance = &singleton{
@@ -68,7 +68,11 @@ func Initialize() *singleton {
 		if cfgFile != "" {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
 
-			if err := cfg.Validate(); err != nil {
+			if err == nil {
+				err = cfg.Validate()
+			}
+
+			if err != nil {
 				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
 			} else {
 				if err := instance.PostInit(); err != nil {

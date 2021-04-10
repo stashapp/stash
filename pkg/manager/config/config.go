@@ -136,9 +136,7 @@ func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
 }
 
-type Instance struct {
-	err error
-}
+type Instance struct{}
 
 var instance *Instance
 
@@ -653,10 +651,6 @@ func (i *Instance) GetMaxUploadSize() int64 {
 }
 
 func (i *Instance) Validate() error {
-	if i.err != nil {
-		return i.err
-	}
-
 	mandatoryPaths := []string{
 		Database,
 		Generated,
@@ -665,7 +659,7 @@ func (i *Instance) Validate() error {
 	var missingFields []string
 
 	for _, p := range mandatoryPaths {
-		if !viper.IsSet(p) {
+		if !viper.IsSet(p) || viper.GetString(p) == "" {
 			missingFields = append(missingFields, p)
 		}
 	}
