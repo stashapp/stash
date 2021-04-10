@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -106,9 +107,10 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 		notStr = " NOT"
 		binaryType = " AND "
 	}
-
+	q = strings.TrimSpace(q)
+	q = regexp.MustCompile(`\s+`).ReplaceAllString(q, " ")
 	queryWords := strings.Split(q, " ")
-	trimmedQuery := strings.Trim(q, " \"")
+	trimmedQuery := strings.Trim(q, "\"")
 
 	if trimmedQuery == q {
 		// Search for any word

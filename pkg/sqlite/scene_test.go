@@ -1376,6 +1376,60 @@ func TestSceneStashIDs(t *testing.T) {
 	}
 }
 
+func TestSceneQueryQTrim(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Scene()
+
+		// create scene to test against
+		const title = "Girl does threesome"
+		const name = "TestSceneQueryTrim"
+		scene := models.Scene{
+			Title:    sql.NullString{String: title, Valid: true},
+			Path:     name,
+			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		}
+		created, err := qb.Create(scene)
+		if err != nil {
+			return fmt.Errorf("Error creating scene: %s", err.Error())
+		}
+
+		q := " Girl    does    "
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes := queryScene(t, qb, nil, &findFilter)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, scenes[0].ID, created.ID)
+
+		q = "   \"Girl     does   threesome\" "
+		findFilter = models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes = queryScene(t, qb, nil, &findFilter)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, scenes[0].ID, created.ID)
+
+		q = "threesome"
+		findFilter = models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes = queryScene(t, qb, nil, &findFilter)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, scenes[0].ID, created.ID)
+
+		findFilter.Q = nil
+		scenes = queryScene(t, qb, nil, &findFilter)
+		assert.NotEqual(t, 0, len(scenes))
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
 // TODO Update
 // TODO IncrementOCounter
 // TODO DecrementOCounter
