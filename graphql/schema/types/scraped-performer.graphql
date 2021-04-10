@@ -19,7 +19,7 @@ type ScrapedPerformer {
   # Should be ScrapedPerformerTag - but would be identical types
   tags: [ScrapedSceneTag!]
 
-  """This should be base64 encoded"""
+  """This should be a base64 encoded data URL"""
   image: String
   details: String
   deathdate: String

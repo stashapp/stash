@@ -745,7 +745,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  function renderTextField(field: string, title: string) {
+  function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
@@ -754,7 +754,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         <Col xs={fieldXS} xl={fieldXL}>
           <Form.Control
             className="text-input"
-            placeholder={title}
+            placeholder={placeholder ?? title}
             {...formik.getFieldProps(field)}
             isInvalid={!!formik.getFieldMeta(field).error}
           />
@@ -825,8 +825,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("birthdate", "Birthdate")}
-        {renderTextField("deathdate", "Deathdate")}
+        {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
+        {renderTextField("deathdate", "Deathdate", "YYYY-MM-DD")}
         {renderTextField("country", "Country")}
         {renderTextField("ethnicity", "Ethnicity")}
         {renderTextField("hair_color", "Hair Color")}

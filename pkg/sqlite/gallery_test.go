@@ -193,6 +193,62 @@ func verifyGalleriesPath(t *testing.T, sqb models.GalleryReader, pathCriterion m
 	}
 }
 
+func TestGalleryQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	galleryURL := getGalleryStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    galleryURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.GalleryFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(g *models.Gallery) {
+		t.Helper()
+		verifyNullString(t, g.URL, urlCriterion)
+	}
+
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "gallery_.*1_URL"
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyGalleryQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyGalleryQuery(t, filter, verifyFn)
+}
+
+func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn func(s *models.Gallery)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Gallery()
+
+		galleries := queryGallery(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(galleries), 0)
+
+		for _, gallery := range galleries {
+			verifyFn(gallery)
+		}
+
+		return nil
+	})
+}
+
 func TestGalleryQueryRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{
@@ -569,6 +625,88 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 
 		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesTagCount(t, tagCountCriterion)
+}
+
+func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		galleryFilter := models.GalleryFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), 0)
+
+		for _, gallery := range galleries {
+			ids, err := sqb.GetTagIDs(gallery.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestGalleryQueryPerformerCount(t *testing.T) {
+	const performerCount = 1
+	performerCountCriterion := models.IntCriterionInput{
+		Value:    performerCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+}
+
+func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		galleryFilter := models.GalleryFilterType{
+			PerformerCount: &performerCountCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), 0)
+
+		for _, gallery := range galleries {
+			ids, err := sqb.GetPerformerIDs(gallery.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), performerCountCriterion)
+		}
 
 		return nil
 	})

@@ -18,3 +18,21 @@
     width: 100%;
   }
 }
+
+.movie-images {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin: 1rem;
+  max-width: 100%;
+
+  .movie-image-container {
+    margin: 1rem;
+  }
+
+  img {
+    max-width: 100%;
+    object-fit: contain;
+  }
+}

@@ -58,7 +58,7 @@ input PerformerCreateInput {
   instagram: String
   favorite: Boolean
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
   details: String
@@ -87,7 +87,7 @@ input PerformerUpdateInput {
   instagram: String
   favorite: Boolean
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
   details: String

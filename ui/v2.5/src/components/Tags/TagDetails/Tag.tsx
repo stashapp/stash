@@ -204,7 +204,7 @@ export const Tag: React.FC = () => {
   function onClearImage() {
     setImage(null);
     setImagePreview(
-      tag?.image_path ? `${tag.image_path}?default=true` : undefined
+      tag?.image_path ? `${tag.image_path}&default=true` : undefined
     );
   }
 
