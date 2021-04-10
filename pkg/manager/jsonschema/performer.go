@@ -31,6 +31,9 @@ type Performer struct {
 	CreatedAt    models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt    models.JSONTime `json:"updated_at,omitempty"`
 	Details      string          `json:"details,omitempty"`
+	Deathdate    string          `json:"deathdate,omitempty"`
+	HairColor    string          `json:"hair_color,omitempty"`
+	Weight       string          `json:"weight,omitempty"`
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

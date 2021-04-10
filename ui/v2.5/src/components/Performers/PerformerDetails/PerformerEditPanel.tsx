@@ -110,6 +110,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
     details: yup.string().optional(),
+    deathdate: yup.string().optional(),
+    hair_color: yup.string().optional(),
+    weight: yup.string().optional(),
   });
 
   const initialValues = {
@@ -133,6 +136,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
     details: performer.details ?? "",
+    deathdate: performer.deathdate ?? "",
+    hair_color: performer.hair_color ?? "",
+    weight: performer.weight ?? "",
   };
 
   type InputValues = typeof initialValues;
@@ -310,6 +316,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     if (state.details) {
       formik.setFieldValue("details", state.details);
+    }
+    if (state.deathdate) {
+      formik.setFieldValue("deathdate", state.deathdate);
+    }
+    if (state.hair_color) {
+      formik.setFieldValue("hair_color", state.hair_color);
+    }
+    if (state.weight) {
+      formik.setFieldValue("weight", state.weight);
     }
   }
 
@@ -811,10 +826,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         </Form.Group>
 
         {renderTextField("birthdate", "Birthdate")}
+        {renderTextField("deathdate", "Deathdate")}
         {renderTextField("country", "Country")}
         {renderTextField("ethnicity", "Ethnicity")}
+        {renderTextField("hair_color", "Hair Color")}
         {renderTextField("eye_color", "Eye Color")}
         {renderTextField("height", "Height (cm)")}
+        {renderTextField("weight", "Weight (kg)")}
         {renderTextField("measurements", "Measurements")}
         {renderTextField("fake_tits", "Fake Tits")}
 
@@ -868,7 +886,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTextField("instagram", "Instagram")}
         <Form.Group controlId="details" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Alias
+            Details
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control

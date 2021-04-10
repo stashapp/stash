@@ -52,10 +52,13 @@ url
 twitter  
 instagram  
 birthdate  
+deathdate  
 ethnicity  
 country  
+hair_color  
 eye_color  
 height  
+weight  
 measurements  
 fake_tits  
 career_length  
@@ -231,6 +234,10 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
       "description": "Birthdate of the performer. Format is YYYY-MM-DD",
       "type": "string"
     },
+    "deathdate": {
+      "description": "Deathdate of the performer. Format is YYYY-MM-DD",
+      "type": "string"
+    },
     "ethnicity": {
       "description": "Ethnicity of the Performer. Possible values are black, white, asian or hispanic",
       "type": "string"
@@ -239,12 +246,20 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
       "description": "Country of the performer",
       "type": "string"
     },
+    "hair_color": {
+      "description": "Hair color of the performer",
+      "type": "string"
+    },
     "eye_color": {
       "description": "Eye color of the performer",
       "type": "string"
     },
     "height": {
       "description": "Height of the performer in centimeters",
+      "type": "string"
+    },
+    "weight": {
+      "description": "Weight of the performer in kilograms",
       "type": "string"
     },
     "measurements": {

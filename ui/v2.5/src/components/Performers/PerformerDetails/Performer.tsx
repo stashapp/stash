@@ -160,7 +160,9 @@ export const Performer: React.FC = () => {
       // provided by the server
       return (
         <div>
-          <span className="age">{TextUtils.age(performer.birthdate)}</span>
+          <span className="age">
+            {TextUtils.age(performer.birthdate, performer.deathdate)}
+          </span>
           <span className="age-tail"> years old</span>
         </div>
       );

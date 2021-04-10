@@ -86,6 +86,15 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if input.Details != nil {
 		newPerformer.Details = sql.NullString{String: *input.Details, Valid: true}
 	}
+	if input.Deathdate != nil {
+		newPerformer.Deathdate = models.SQLiteDate{String: *input.Deathdate, Valid: true}
+	}
+	if input.HairColor != nil {
+		newPerformer.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
+	}
+	if input.Weight != nil {
+		newPerformer.Weight = sql.NullString{String: *input.Weight, Valid: true}
+	}
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
@@ -181,6 +190,9 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
+	updatedPerformer.Deathdate = translator.sqliteDate(input.Deathdate, "deathdate")
+	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
+	updatedPerformer.Weight = translator.nullString(input.Weight, "weight")
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
@@ -269,6 +281,9 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
+	updatedPerformer.Deathdate = translator.sqliteDate(input.Deathdate, "deathdate")
+	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
+	updatedPerformer.Weight = translator.nullString(input.Weight, "weight")
 
 	if translator.hasField("gender") {
 		if input.Gender != nil {

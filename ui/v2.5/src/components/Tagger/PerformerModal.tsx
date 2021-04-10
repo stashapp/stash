@@ -86,6 +86,13 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
             />
           </div>
           <div className="row no-gutters">
+            <strong className="col-6">Deathdate:</strong>
+            <TruncatedText
+              className="col-6"
+              text={performer.deathdate ?? "Unknown"}
+            />
+          </div>
+          <div className="row no-gutters">
             <strong className="col-6">Ethnicity:</strong>
             <TruncatedText
               className="col-6 text-capitalize"
@@ -97,6 +104,13 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
             <TruncatedText className="col-6" text={performer.country ?? ""} />
           </div>
           <div className="row no-gutters">
+            <strong className="col-6">Hair Color:</strong>
+            <TruncatedText
+              className="col-6 text-capitalize"
+              text={performer.hair_color}
+            />
+          </div>
+          <div className="row no-gutters">
             <strong className="col-6">Eye Color:</strong>
             <TruncatedText
               className="col-6 text-capitalize"
@@ -106,6 +120,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           <div className="row no-gutters">
             <strong className="col-6">Height:</strong>
             <TruncatedText className="col-6" text={performer.height} />
+          </div>
+          <div className="row no-gutters">
+            <strong className="col-6">Weight:</strong>
+            <TruncatedText className="col-6" text={performer.weight} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Measurements:</strong>

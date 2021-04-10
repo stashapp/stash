@@ -28,7 +28,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   selected,
   onSelectedChanged,
 }) => {
-  const age = TextUtils.age(performer.birthdate, ageFromDate);
+  const age = TextUtils.age(
+    performer.birthdate,
+    ageFromDate ?? performer.deathdate
+  );
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 
   function maybeRenderFavoriteBanner() {

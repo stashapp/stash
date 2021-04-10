@@ -699,10 +699,13 @@ URL
 Twitter
 Instagram
 Birthdate
+Deathdate
 Ethnicity
 Country
+HairColor
 EyeColor
 Height
+Weight
 Measurements
 FakeTits
 CareerLength
@@ -711,6 +714,7 @@ Piercings
 Aliases
 Tags (see Tag fields)
 Image
+Details
 ```
 
 *Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).

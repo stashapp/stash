@@ -189,3 +189,24 @@ func (r *performerResolver) Details(ctx context.Context, obj *models.Performer) 
 	}
 	return nil, nil
 }
+
+func (r *performerResolver) Deathdate(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.Deathdate.Valid {
+		return &obj.Deathdate.String, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) HairColor(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.HairColor.Valid {
+		return &obj.HairColor.String, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) Weight(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.Weight.Valid {
+		return &obj.Weight.String, nil
+	}
+	return nil, nil
+}

@@ -153,17 +153,29 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.birthdate, props.scraped.birthdate)
   );
+  const [deathdate, setDeathdate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(props.performer.deathdate, props.scraped.deathdate)
+  );
   const [ethnicity, setEthnicity] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.ethnicity, props.scraped.ethnicity)
   );
   const [country, setCountry] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.country, props.scraped.country)
   );
+  const [hairColor, setHairColor] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.hair_color,
+      props.scraped.hair_color
+    )
+  );
   const [eyeColor, setEyeColor] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.eye_color, props.scraped.eye_color)
   );
   const [height, setHeight] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.height, props.scraped.height)
+  );
+  const [weight, setWeight] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(props.performer.weight, props.scraped.weight)
   );
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -285,6 +297,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     image,
     tags,
     details,
+    deathdate,
+    hairColor,
+    weight,
   ];
   // don't show the dialog if nothing was scraped
   if (allFields.every((r) => !r.scraped)) {
@@ -353,6 +368,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       }),
       image: image.getNewValue(),
       details: details.getNewValue(),
+      deathdate: deathdate.getNewValue(),
+      hair_color: hairColor.getNewValue(),
+      weight: weight.getNewValue(),
     };
   }
 
@@ -376,6 +394,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setBirthdate(value)}
         />
         <ScrapedInputGroupRow
+          title="Deathdate"
+          result={deathdate}
+          onChange={(value) => setDeathdate(value)}
+        />
+        <ScrapedInputGroupRow
           title="Ethnicity"
           result={ethnicity}
           onChange={(value) => setEthnicity(value)}
@@ -386,9 +409,19 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setCountry(value)}
         />
         <ScrapedInputGroupRow
+          title="Hair Color"
+          result={hairColor}
+          onChange={(value) => setHairColor(value)}
+        />
+        <ScrapedInputGroupRow
           title="Eye Color"
           result={eyeColor}
           onChange={(value) => setEyeColor(value)}
+        />
+        <ScrapedInputGroupRow
+          title="Weight"
+          result={weight}
+          onChange={(value) => setWeight(value)}
         />
         <ScrapedInputGroupRow
           title="Height"

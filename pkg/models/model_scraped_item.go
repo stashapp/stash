@@ -43,6 +43,9 @@ type ScrapedPerformer struct {
 	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
 	Image        *string            `graphql:"image" json:"image"`
 	Details      *string            `graphql:"details" json:"details"`
+	Deathdate    *string            `graphql:"deathdate" json:"deathdate"`
+	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
+	Weight       *string            `graphql:"weight" json:"weight"`
 }
 
 // this type has no Image field
@@ -65,6 +68,9 @@ type ScrapedPerformerStash struct {
 	Aliases      *string            `graphql:"aliases" json:"aliases"`
 	Tags         []*ScrapedSceneTag `graphql:"tags" json:"tags"`
 	Details      *string            `graphql:"details" json:"details"`
+	Deathdate    *string            `graphql:"deathdate" json:"deathdate"`
+	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
+	Weight       *string            `graphql:"weight" json:"weight"`
 }
 
 type ScrapedScene struct {
@@ -131,6 +137,9 @@ type ScrapedScenePerformer struct {
 	RemoteSiteID *string            `graphql:"remote_site_id" json:"remote_site_id"`
 	Images       []string           `graphql:"images" json:"images"`
 	Details      *string            `graphql:"details" json:"details"`
+	Deathdate    *string            `graphql:"deathdate" json:"deathdate"`
+	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
+	Weight       *string            `graphql:"weight" json:"weight"`
 }
 
 type ScrapedSceneStudio struct {

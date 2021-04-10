@@ -12,5 +12,4 @@ fragment SlimPerformerData on Performer {
     endpoint
     stash_id
   }
-  details
 }

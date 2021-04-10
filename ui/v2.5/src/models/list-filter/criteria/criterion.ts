@@ -33,8 +33,10 @@ export type CriterionType =
   | "age"
   | "ethnicity"
   | "country"
+  | "hair_color"
   | "eye_color"
   | "height"
+  | "weight"
   | "measurements"
   | "fake_tits"
   | "career_length"
@@ -47,7 +49,8 @@ export type CriterionType =
   | "marker_count"
   | "image_count"
   | "gallery_count"
-  | "performer_count";
+  | "performer_count"
+  | "death_year";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -99,16 +102,22 @@ export abstract class Criterion {
         return "Galleries";
       case "birth_year":
         return "Birth Year";
+      case "death_year":
+        return "Death Year";
       case "age":
         return "Age";
       case "ethnicity":
         return "Ethnicity";
       case "country":
         return "Country";
+      case "hair_color":
+        return "Hair Color";
       case "eye_color":
         return "Eye Color";
       case "height":
         return "Height";
+      case "weight":
+        return "Weight";
       case "measurements":
         return "Measurements";
       case "fake_tits":

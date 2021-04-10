@@ -20,6 +20,9 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   }
   image
   details
+  deathdate
+  hair_color
+  weight
 }
 
 fragment ScrapedScenePerformerData on ScrapedScenePerformer {
@@ -46,6 +49,9 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   remote_site_id
   images
   details
+  deathdate
+  hair_color
+  weight
 }
 
 fragment ScrapedMovieStudioData on ScrapedMovieStudio {

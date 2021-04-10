@@ -37,6 +37,8 @@ const (
 	tattoos       = "tattoos"
 	twitter       = "twitter"
 	details       = "details"
+	hairColor     = "hairColor"
+	weight        = "weight"
 )
 
 var imageBytes = []byte("imageBytes")
@@ -45,6 +47,10 @@ const image = "aW1hZ2VCeXRlcw=="
 
 var birthDate = models.SQLiteDate{
 	String: "2001-01-01",
+	Valid:  true,
+}
+var deathDate = models.SQLiteDate{
+	String: "2021-02-02",
 	Valid:  true,
 }
 var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
@@ -80,7 +86,10 @@ func createFullPerformer(id int, name string) *models.Performer {
 		UpdatedAt: models.SQLiteTimestamp{
 			Timestamp: updateTime,
 		},
-		Details: models.NullString(details),
+		Details:   models.NullString(details),
+		Deathdate: deathDate,
+		HairColor: models.NullString(hairColor),
+		Weight:    models.NullString(weight),
 	}
 }
 
@@ -121,8 +130,11 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		UpdatedAt: models.JSONTime{
 			Time: updateTime,
 		},
-		Image:   image,
-		Details: details,
+		Image:     image,
+		Details:   details,
+		Deathdate: deathDate.String,
+		HairColor: hairColor,
+		Weight:    weight,
 	}
 }
 
