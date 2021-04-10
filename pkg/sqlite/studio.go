@@ -213,7 +213,15 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "studios")
+
+	switch sort {
+	case "images_count":
+		return getCountSort(studioTable, imageTable, studioIDColumn, direction)
+	case "galleries_count":
+		return getCountSort(studioTable, galleryTable, studioIDColumn, direction)
+	default:
+		return getSort(sort, direction, "studios")
+	}
 }
 
 func (qb *studioQueryBuilder) queryStudio(query string, args []interface{}) (*models.Studio, error) {

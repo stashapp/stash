@@ -234,7 +234,13 @@ export class ListFilterModel {
       }
       case FilterMode.Studios:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count", "random"];
+        this.sortByOptions = [
+          "name",
+          "scenes_count",
+          "images_count",
+          "galleries_count",
+          "random"
+        ];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
