@@ -321,6 +321,10 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 						return
 					}
 					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column), c.Value)
+				case models.CriterionModifierIsNull:
+					f.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
+				case models.CriterionModifierNotNull:
+					f.addWhere("(" + column + " IS NOT NULL AND TRIM(" + column + ") != '')")
 				default:
 					clause, count := getSimpleCriterionClause(modifier, "?")
 
@@ -398,6 +402,26 @@ func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionI
 			whereClause, havingClause := getMultiCriterionClause(m.primaryTable, m.foreignTable, m.joinTable, m.primaryFK, m.foreignFK, criterion)
 			f.addWhere(whereClause, args...)
 			f.addHaving(havingClause)
+		}
+	}
+}
+
+type countCriterionHandlerBuilder struct {
+	primaryTable string
+	joinTable    string
+	primaryFK    string
+}
+
+func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil {
+			clause, count := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
+
+			if count == 1 {
+				f.addWhere(clause, criterion.Value)
+			} else {
+				f.addWhere(clause)
+			}
 		}
 	}
 }

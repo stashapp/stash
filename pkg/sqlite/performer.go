@@ -254,6 +254,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.CareerLength, tableName+".career_length")
 	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
 	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
+	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
@@ -269,6 +270,11 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
+
+	query.handleCountCriterion(performerFilter.TagCount, performerTable, performersTagsTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.SceneCount, performerTable, performersScenesTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.ImageCount, performerTable, performersImagesTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.GalleryCount, performerTable, performersGalleriesTable, performerIDColumn)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
@@ -369,6 +375,11 @@ func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterT
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
+
+	if sort == "tag_count" {
+		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	}
+
 	return getSort(sort, direction, "performers")
 }
 

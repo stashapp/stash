@@ -17,8 +17,9 @@ type ScrapedMovie {
   synopsis: String
   studio: ScrapedMovieStudio
 
-  """This should be base64 encoded"""
+  """This should be a base64 encoded data URL"""
   front_image: String
+  """This should be a base64 encoded data URL"""
   back_image: String
 }
 
