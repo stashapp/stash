@@ -302,7 +302,7 @@ func (qb *sceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
 }
 
 func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
-	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
+	return qb.queryScenes(selectAll(sceneTable)+qb.getDefaultSceneSort(), nil)
 }
 
 func illegalFilterCombination(type1, type2 string) error {
@@ -361,9 +361,12 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
 	query.handleCriterionFunc(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterionFunc(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
 
 	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
+	query.handleCriterionFunc(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterionFunc(scenePerformersCriterionHandler(qb, sceneFilter.Performers))
+	query.handleCriterionFunc(scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
 	query.handleCriterionFunc(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
 	query.handleCriterionFunc(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterionFunc(sceneStashIDsHandler(qb, sceneFilter.StashID))
@@ -399,7 +402,8 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	query.addFilter(filter)
 
-	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+	qb.setSceneSort(&query, findFilter)
+	query.sortAndPagination += getPagination(findFilter)
 
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
@@ -535,6 +539,7 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 		addJoinsFunc: addJoinsFunc,
 	}
 }
+
 func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.tagsRepository().join(f, "tags_join", "scenes.id")
@@ -545,6 +550,16 @@ func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterio
 	return h.handler(tags)
 }
 
+func sceneTagCountCriterionHandler(qb *sceneQueryBuilder, tagCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    scenesTagsTable,
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(tagCount)
+}
+
 func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.performersRepository().join(f, "performers_join", "scenes.id")
@@ -553,6 +568,16 @@ func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.M
 	h := qb.getMultiCriterionHandlerBuilder(performerTable, performersScenesTable, performerIDColumn, addJoinsFunc)
 
 	return h.handler(performers)
+}
+
+func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    performersScenesTable,
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(performerCount)
 }
 
 func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
@@ -601,8 +626,8 @@ func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, performerTagsFilt
 				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
 				f.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
 			} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-				f.addWhere(fmt.Sprintf(`not exists 
-					(select performers_scenes.performer_id from performers_scenes 
+				f.addWhere(fmt.Sprintf(`not exists
+					(select performers_scenes.performer_id from performers_scenes
 						left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
 						performers_scenes.scene_id = scenes.id AND
 						performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))), args...)
@@ -627,8 +652,8 @@ func handleScenePerformerTagsCriterion(query *queryBuilder, performerTagsFilter 
 			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
 			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
 		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-			query.addWhere(fmt.Sprintf(`not exists 
-				(select performers_scenes.performer_id from performers_scenes 
+			query.addWhere(fmt.Sprintf(`not exists
+				(select performers_scenes.performer_id from performers_scenes
 					left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
 					performers_scenes.scene_id = scenes.id AND
 					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
@@ -636,13 +661,25 @@ func handleScenePerformerTagsCriterion(query *queryBuilder, performerTagsFilter 
 	}
 }
 
-func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) string {
+func (qb *sceneQueryBuilder) getDefaultSceneSort() string {
+	return " ORDER BY scenes.path, scenes.date ASC "
+}
+
+func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
 	if findFilter == nil {
-		return " ORDER BY scenes.path, scenes.date ASC "
+		query.sortAndPagination += qb.getDefaultSceneSort()
+		return
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	return getSort(sort, direction, "scenes")
+	switch sort {
+	case "tag_count":
+		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
+	case "performer_count":
+		query.sortAndPagination += getCountSort(sceneTable, performersScenesTable, sceneIDColumn, direction)
+	default:
+		query.sortAndPagination += getSort(sort, direction, "scenes")
+	}
 }
 
 func (qb *sceneQueryBuilder) queryScene(query string, args []interface{}) (*models.Scene, error) {

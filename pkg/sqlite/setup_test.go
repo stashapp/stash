@@ -24,6 +24,8 @@ const (
 	sceneIdxWithMovie = iota
 	sceneIdxWithGallery
 	sceneIdxWithPerformer
+	sceneIdx1WithPerformer
+	sceneIdx2WithPerformer
 	sceneIdxWithTwoPerformers
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
@@ -40,6 +42,8 @@ const (
 const (
 	imageIdxWithGallery = iota
 	imageIdxWithPerformer
+	imageIdx1WithPerformer
+	imageIdx2WithPerformer
 	imageIdxWithTwoPerformers
 	imageIdxWithTag
 	imageIdxWithTwoTags
@@ -55,12 +59,15 @@ const (
 	performerIdxWithScene = iota
 	performerIdx1WithScene
 	performerIdx2WithScene
+	performerIdxWithTwoScenes
 	performerIdxWithImage
+	performerIdxWithTwoImages
 	performerIdx1WithImage
 	performerIdx2WithImage
 	performerIdxWithTag
 	performerIdxWithTwoTags
 	performerIdxWithGallery
+	performerIdxWithTwoGalleries
 	performerIdx1WithGallery
 	performerIdx2WithGallery
 	// new indexes above
@@ -76,7 +83,8 @@ const (
 	movieIdxWithScene = iota
 	movieIdxWithStudio
 	// movies with dup names start from the end
-	movieIdxWithDupName
+	// create 10 more basic movies (can remove this if we add more indexes)
+	movieIdxWithDupName = movieIdxWithStudio + 10
 
 	moviesNameCase   = movieIdxWithDupName
 	moviesNameNoCase = 1
@@ -86,6 +94,8 @@ const (
 	galleryIdxWithScene = iota
 	galleryIdxWithImage
 	galleryIdxWithPerformer
+	galleryIdx1WithPerformer
+	galleryIdx2WithPerformer
 	galleryIdxWithTwoPerformers
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
@@ -146,6 +156,7 @@ const (
 	pathField     = "Path"
 	checksumField = "Checksum"
 	titleField    = "Title"
+	urlField      = "URL"
 	zipPath       = "zipPath.zip"
 )
 
@@ -183,6 +194,8 @@ var (
 		{sceneIdxWithTwoPerformers, performerIdx2WithScene},
 		{sceneIdxWithPerformerTag, performerIdxWithTag},
 		{sceneIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+		{sceneIdx1WithPerformer, performerIdxWithTwoScenes},
+		{sceneIdx2WithPerformer, performerIdxWithTwoScenes},
 	}
 
 	sceneGalleryLinks = [][2]int{
@@ -216,6 +229,8 @@ var (
 		{imageIdxWithTwoPerformers, performerIdx2WithImage},
 		{imageIdxWithPerformerTag, performerIdxWithTag},
 		{imageIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+		{imageIdx1WithPerformer, performerIdxWithTwoImages},
+		{imageIdx2WithPerformer, performerIdxWithTwoImages},
 	}
 )
 
@@ -226,6 +241,8 @@ var (
 		{galleryIdxWithTwoPerformers, performerIdx2WithGallery},
 		{galleryIdxWithPerformerTag, performerIdxWithTag},
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
+		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
 	}
 
 	galleryTagLinks = [][2]int{
@@ -407,8 +424,32 @@ func populateDB() error {
 	return nil
 }
 
+func getPrefixedStringValue(prefix string, index int, field string) string {
+	return fmt.Sprintf("%s_%04d_%s", prefix, index, field)
+}
+
+func getPrefixedNullStringValue(prefix string, index int, field string) sql.NullString {
+	if index > 0 && index%5 == 0 {
+		return sql.NullString{}
+	}
+	if index > 0 && index%6 == 0 {
+		return sql.NullString{
+			String: "",
+			Valid:  true,
+		}
+	}
+	return sql.NullString{
+		String: getPrefixedStringValue(prefix, index, field),
+		Valid:  true,
+	}
+}
+
 func getSceneStringValue(index int, field string) string {
-	return fmt.Sprintf("scene_%04d_%s", index, field)
+	return getPrefixedStringValue("scene", index, field)
+}
+
+func getSceneNullStringValue(index int, field string) sql.NullString {
+	return getPrefixedNullStringValue("scene", index, field)
 }
 
 func getRating(index int) sql.NullInt64 {
@@ -455,6 +496,7 @@ func createScenes(sqb models.SceneReaderWriter, n int) error {
 			Title:    sql.NullString{String: getSceneStringValue(i, titleField), Valid: true},
 			Checksum: sql.NullString{String: getSceneStringValue(i, checksumField), Valid: true},
 			Details:  sql.NullString{String: getSceneStringValue(i, "Details"), Valid: true},
+			URL:      getSceneNullStringValue(i, urlField),
 			Rating:   getRating(i),
 			OCounter: getOCounter(i),
 			Duration: getSceneDuration(i),
@@ -511,13 +553,18 @@ func createImages(qb models.ImageReaderWriter, n int) error {
 }
 
 func getGalleryStringValue(index int, field string) string {
-	return "gallery_" + strconv.FormatInt(int64(index), 10) + "_" + field
+	return getPrefixedStringValue("gallery", index, field)
+}
+
+func getGalleryNullStringValue(index int, field string) sql.NullString {
+	return getPrefixedNullStringValue("gallery", index, field)
 }
 
 func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
 			Path:     models.NullString(getGalleryStringValue(i, pathField)),
+			URL:      getGalleryNullStringValue(i, urlField),
 			Checksum: getGalleryStringValue(i, checksumField),
 		}
 
@@ -534,10 +581,14 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 }
 
 func getMovieStringValue(index int, field string) string {
-	return "movie_" + strconv.FormatInt(int64(index), 10) + "_" + field
+	return getPrefixedStringValue("movie", index, field)
 }
 
-//createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
+func getMovieNullStringValue(index int, field string) sql.NullString {
+	return getPrefixedNullStringValue("movie", index, field)
+}
+
+// createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
 func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
@@ -555,6 +606,7 @@ func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
+			URL:      getMovieNullStringValue(index, urlField),
 			Checksum: utils.MD5FromString(name),
 		}
 
@@ -572,7 +624,11 @@ func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 }
 
 func getPerformerStringValue(index int, field string) string {
-	return "performer_" + strconv.FormatInt(int64(index), 10) + "_" + field
+	return getPrefixedStringValue("performer", index, field)
+}
+
+func getPerformerNullStringValue(index int, field string) sql.NullString {
+	return getPrefixedNullStringValue("performer", index, field)
 }
 
 func getPerformerBoolValue(index int) bool {
@@ -596,7 +652,7 @@ func getPerformerCareerLength(index int) *string {
 	return &ret
 }
 
-//createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
+// createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
@@ -615,6 +671,7 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 		performer := models.Performer{
 			Name:     sql.NullString{String: getPerformerStringValue(index, name), Valid: true},
 			Checksum: getPerformerStringValue(i, checksumField),
+			URL:      getPerformerNullStringValue(i, urlField),
 			Favorite: sql.NullBool{Bool: getPerformerBoolValue(i), Valid: true},
 			Birthdate: models.SQLiteDate{
 				String: getPerformerBirthdate(i),
@@ -718,7 +775,11 @@ func createTags(tqb models.TagReaderWriter, n int, o int) error {
 }
 
 func getStudioStringValue(index int, field string) string {
-	return "studio_" + strconv.FormatInt(int64(index), 10) + "_" + field
+	return getPrefixedStringValue("studio", index, field)
+}
+
+func getStudioNullStringValue(index int, field string) sql.NullString {
+	return getPrefixedNullStringValue("studio", index, field)
 }
 
 func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
@@ -731,6 +792,10 @@ func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (
 		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
 	}
 
+	return createStudioFromModel(sqb, studio)
+}
+
+func createStudioFromModel(sqb models.StudioReaderWriter, studio models.Studio) (*models.Studio, error) {
 	created, err := sqb.Create(studio)
 
 	if err != nil {
@@ -740,7 +805,7 @@ func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (
 	return created, nil
 }
 
-//createStudios creates n studios with plain Name and o studios with camel cased NaMe included
+// createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
@@ -756,7 +821,12 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getStudioStringValue(index, name)
-		created, err := createStudio(sqb, name, nil)
+		studio := models.Studio{
+			Name:     sql.NullString{String: name, Valid: true},
+			Checksum: utils.MD5FromString(name),
+			URL:      getStudioNullStringValue(index, urlField),
+		}
+		created, err := createStudioFromModel(sqb, studio)
 
 		if err != nil {
 			return err

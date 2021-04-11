@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -44,10 +45,15 @@ func getPaginationSQL(page int, perPage int) string {
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 
-func getSort(sort string, direction string, tableName string) string {
+func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
-		direction = "ASC"
+		return "ASC"
+	} else {
+		return direction
 	}
+}
+func getSort(sort string, direction string, tableName string) string {
+	direction = getSortDirection(direction)
 
 	const randomSeedPrefix = "random_"
 
@@ -94,6 +100,10 @@ func getRandomSort(tableName string, direction string, seed float64) string {
 	colName := getColumn(tableName, "id")
 	randomSortString := strconv.FormatFloat(seed, 'f', 16, 32)
 	return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
+}
+
+func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
+	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s WHERE %s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
 func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {
@@ -211,6 +221,11 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 	}
 
 	return whereClause, havingClause
+}
+
+func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, int) {
+	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
+	return getIntCriterionWhereClause(lhs, criterion)
 }
 
 func ensureTx(tx *sqlx.Tx) {
