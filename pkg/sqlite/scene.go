@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -59,6 +61,20 @@ WHERE scenes.checksum is null
 var countScenesForMissingOSHashQuery = `
 SELECT id FROM scenes
 WHERE scenes.oshash is null
+`
+
+var findExactDuplicateQuery = `
+SELECT GROUP_CONCAT(id) as ids
+FROM scenes
+WHERE phash IS NOT NULL
+GROUP BY phash
+HAVING COUNT(*) > 1;
+`
+
+var findAllPhashesQuery = `
+SELECT id, phash
+FROM scenes
+WHERE phash IS NOT NULL
 `
 
 type sceneQueryBuilder struct {
@@ -823,4 +839,52 @@ func (qb *sceneQueryBuilder) GetStashIDs(sceneID int) ([]*models.StashID, error)
 
 func (qb *sceneQueryBuilder) UpdateStashIDs(sceneID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(sceneID, stashIDs)
+}
+
+func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, error) {
+	var dupeIds [][]int
+	if distance == 0 {
+		var ids []string
+		if err := qb.tx.Select(&ids, findExactDuplicateQuery); err != nil {
+			return nil, err
+		}
+
+		for _, id := range ids {
+			strIds := strings.Split(id, ",")
+			var sceneIds []int
+			for _, strId := range strIds {
+				if intId, err := strconv.Atoi(strId); err == nil {
+					sceneIds = append(sceneIds, intId)
+				}
+			}
+			dupeIds = append(dupeIds, sceneIds)
+		}
+	} else {
+		var hashes []*utils.Phash
+
+		if err := qb.queryFunc(findAllPhashesQuery, nil, func(rows *sqlx.Rows) error {
+			phash := utils.Phash{
+				Bucket: -1,
+			}
+			if err := rows.StructScan(&phash); err != nil {
+				return err
+			}
+
+			hashes = append(hashes, &phash)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
+		dupeIds = utils.FindDuplicates(hashes, distance)
+	}
+
+	var duplicates [][]*models.Scene
+	for _, sceneIds := range dupeIds {
+		if scenes, err := qb.FindMany(sceneIds); err == nil {
+			duplicates = append(duplicates, scenes)
+		}
+	}
+
+	return duplicates, nil
 }
