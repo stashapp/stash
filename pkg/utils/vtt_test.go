@@ -11,17 +11,20 @@ func TestZeroTimestamp(t *testing.T) {
 	}
 }
 
-// Demonstrates truncation of fractional seconds.
 func TestValidTimestamp(t *testing.T) {
-	s := ((24+1)*60+1)*60 + 1 + 0.1
-	if want, got := "25:01:01.000", GetVTTTime(s); want != got {
+	s := 0.1
+	if want, got := "00:00:00.100", GetVTTTime(s); want != got {
+		t.Errorf("TestValidTimestamp: GetVTTTime(%v) = %v; want %v", s, got, want)
+	}
+	s = ((24+1)*60+1)*60 + 1 + 0.1
+	if want, got := "25:01:01.100", GetVTTTime(s); want != got {
 		t.Errorf("TestValidTimestamp: GetVTTTime(%v) = %v; want %v", s, got, want)
 	}
 }
 
 // Negative timestamps are not defined by WebVTT.
 func TestNegativeTimestamp(t *testing.T) {
-	if want, got := "00:00:0-1.000", GetVTTTime(-1); want != got {
+	if want, got := "00:00:00.000", GetVTTTime(-1); want != got {
 		t.Errorf("TestNegativeTimestamp: GetVTTTime(-1) = %v; want %v", got, want)
 	}
 }
