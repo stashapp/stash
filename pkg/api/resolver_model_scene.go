@@ -83,6 +83,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	streamPath := builder.GetStreamURL()
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
+	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
@@ -91,6 +92,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Webp:        &webpPath,
 		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
+		Sprite:      &spritePath,
 	}, nil
 }
 
@@ -199,4 +201,12 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 	}
 
 	return ret, nil
+}
+
+func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Phash.Valid {
+		hexval := utils.PhashToString(obj.Phash.Int64)
+		return &hexval, nil
+	}
+	return nil, nil
 }

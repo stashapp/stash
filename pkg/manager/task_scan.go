@@ -31,6 +31,7 @@ type ScanTask struct {
 	calculateMD5         bool
 	fileNamingAlgorithm  models.HashAlgorithm
 	GenerateSprite       bool
+	GeneratePhash        bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
@@ -53,6 +54,16 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
 				go taskSprite.Start(&iwg)
+			}
+
+			if t.GeneratePhash {
+				iwg.Add()
+				taskPhash := GeneratePhashTask{
+					Scene:               *s,
+					fileNamingAlgorithm: t.fileNamingAlgorithm,
+					txnManager:          t.TxnManager,
+				}
+				go taskPhash.Start(&iwg)
 			}
 
 			if t.GeneratePreview {
