@@ -106,3 +106,20 @@ input ImportObjectsInput {
 input BackupDatabaseInput {
   download: Boolean
 }
+
+enum SystemStatusEnum {
+  SETUP
+  NEEDS_MIGRATION
+  OK
+}
+
+type SystemStatus {
+  databaseSchema: Int
+  databasePath: String
+  appSchema: Int!
+  status: SystemStatusEnum!
+}
+
+input MigrateInput {
+  backupPath: String!
+}

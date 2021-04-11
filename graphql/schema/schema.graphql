@@ -106,7 +106,7 @@ type Query {
   directory(path: String): Directory!
 
   # Metadata
-
+  systemStatus: SystemStatus!
   jobStatus: MetadataUpdateStatus!
 
   # Get everything
@@ -126,6 +126,9 @@ type Query {
 }
 
 type Mutation {
+  setup(input: SetupInput!): Boolean!
+  migrate(input: MigrateInput!): Boolean!
+
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
