@@ -16,6 +16,7 @@ type ScenePathsType {
   webp: String # Resolver
   vtt: String # Resolver
   chapters_vtt: String # Resolver
+  sprite: String # Resolver
 }
 
 type SceneMovie {
@@ -35,6 +36,7 @@ type Scene {
   organized: Boolean!
   o_counter: Int
   path: String!
+  phash: String
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver

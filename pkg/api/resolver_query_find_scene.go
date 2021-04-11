@@ -151,3 +151,18 @@ func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.
 
 	return ret, nil
 }
+
+func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) (ret [][]*models.Scene, err error) {
+	dist := 0
+	if distance != nil {
+		dist = *distance
+	}
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().FindDuplicates(dist)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}

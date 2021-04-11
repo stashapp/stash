@@ -10,7 +10,7 @@ import (
 )
 
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input models.StashBoxFingerprintSubmissionInput) (bool, error) {
-	boxes := config.GetStashBoxes()
+	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
 		return false, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)

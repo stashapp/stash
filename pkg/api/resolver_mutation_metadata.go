@@ -20,12 +20,15 @@ func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMe
 }
 
 func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
-	manager.GetInstance().Import()
+	if err := manager.GetInstance().Import(); err != nil {
+		return "", err
+	}
+
 	return "todo", nil
 }
 
 func (r *mutationResolver) ImportObjects(ctx context.Context, input models.ImportObjectsInput) (string, error) {
-	t, err := manager.CreateImportTask(config.GetVideoFileNamingAlgorithm(), input)
+	t, err := manager.CreateImportTask(config.GetInstance().GetVideoFileNamingAlgorithm(), input)
 	if err != nil {
 		return "", err
 	}
@@ -39,12 +42,15 @@ func (r *mutationResolver) ImportObjects(ctx context.Context, input models.Impor
 }
 
 func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
-	manager.GetInstance().Export()
+	if err := manager.GetInstance().Export(); err != nil {
+		return "", err
+	}
+
 	return "todo", nil
 }
 
 func (r *mutationResolver) ExportObjects(ctx context.Context, input models.ExportObjectsInput) (*string, error) {
-	t := manager.CreateExportTask(config.GetVideoFileNamingAlgorithm(), input)
+	t := manager.CreateExportTask(config.GetInstance().GetVideoFileNamingAlgorithm(), input)
 	wg, err := manager.GetInstance().RunSingleTask(t)
 	if err != nil {
 		return nil, err

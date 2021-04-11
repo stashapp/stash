@@ -28,7 +28,7 @@ func GenerateAPIKey(userID string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	ss, err := token.SignedString(config.GetJWTSignKey())
+	ss, err := token.SignedString(config.GetInstance().GetJWTSignKey())
 	if err != nil {
 		return "", err
 	}
@@ -40,7 +40,7 @@ func GenerateAPIKey(userID string) (string, error) {
 func GetUserIDFromAPIKey(apiKey string) (string, error) {
 	claims := &APIKeyClaims{}
 	token, err := jwt.ParseWithClaims(apiKey, claims, func(t *jwt.Token) (interface{}, error) {
-		return config.GetJWTSignKey(), nil
+		return config.GetInstance().GetJWTSignKey(), nil
 	})
 
 	if err != nil {

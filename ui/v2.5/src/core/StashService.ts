@@ -281,6 +281,20 @@ export const useLatestVersion = () =>
   });
 
 export const useConfiguration = () => GQL.useConfigurationQuery();
+export const mutateSetup = (input: GQL.SetupInput) =>
+  client.mutate<GQL.SetupMutation>({
+    mutation: GQL.SetupDocument,
+    variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const mutateMigrate = (input: GQL.MigrateInput) =>
+  client.mutate<GQL.MigrateMutation>({
+    mutation: GQL.MigrateDocument,
+    variables: { input },
+  });
+
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
@@ -689,6 +703,17 @@ export const useGenerateAPIKey = () =>
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
+
+export const querySystemStatus = () =>
+  client.query<GQL.SystemStatusQuery>({
+    query: GQL.SystemStatusDocument,
+    fetchPolicy: "no-cache",
+  });
+
+export const useSystemStatus = () =>
+  GQL.useSystemStatusQuery({
+    fetchPolicy: "no-cache",
+  });
 
 export const useLogs = () =>
   GQL.useLogsQuery({

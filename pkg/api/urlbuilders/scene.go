@@ -39,6 +39,10 @@ func (b SceneURLBuilder) GetSpriteVTTURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "_thumbs.vtt"
 }
 
+func (b SceneURLBuilder) GetSpriteURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "_sprite.jpg"
+}
+
 func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?" + strconv.FormatInt(updateTime.Unix(), 10)
 }

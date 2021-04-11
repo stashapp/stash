@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -43,6 +44,7 @@ const (
 	checksum     = "checksum"
 	oshash       = "oshash"
 	title        = "title"
+	phash        = -3846826108889195
 	date         = "2001-01-01"
 	rating       = 5
 	ocounter     = 2
@@ -112,6 +114,7 @@ func createFullScene(id int) models.Scene {
 		Height:     models.NullInt64(height),
 		OCounter:   ocounter,
 		OSHash:     models.NullString(oshash),
+		Phash:      models.NullInt64(phash),
 		Rating:     models.NullInt64(rating),
 		Organized:  organized,
 		Size:       models.NullString(size),
@@ -147,6 +150,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		Details:   details,
 		OCounter:  ocounter,
 		OSHash:    oshash,
+		Phash:     utils.PhashToString(phash),
 		Rating:    rating,
 		Organized: organized,
 		URL:       url,

@@ -107,7 +107,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	startTime := time.Now()
 
 	if t.full {
-		t.baseDir = config.GetMetadataPath()
+		t.baseDir = config.GetInstance().GetMetadataPath()
 	} else {
 		var err error
 		t.baseDir, err = instance.Paths.Generated.TempDir("export")
