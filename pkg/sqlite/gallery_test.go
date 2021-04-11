@@ -630,6 +630,88 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 	})
 }
 
+func TestGalleryQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesTagCount(t, tagCountCriterion)
+}
+
+func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		galleryFilter := models.GalleryFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), 0)
+
+		for _, gallery := range galleries {
+			ids, err := sqb.GetTagIDs(gallery.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestGalleryQueryPerformerCount(t *testing.T) {
+	const performerCount = 1
+	performerCountCriterion := models.IntCriterionInput{
+		Value:    performerCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesPerformerCount(t, performerCountCriterion)
+}
+
+func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		galleryFilter := models.GalleryFilterType{
+			PerformerCount: &performerCountCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), 0)
+
+		for _, gallery := range galleries {
+			ids, err := sqb.GetPerformerIDs(gallery.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), performerCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO All
 // TODO Query

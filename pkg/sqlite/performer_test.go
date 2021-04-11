@@ -387,6 +387,188 @@ func TestPerformerQueryTags(t *testing.T) {
 	})
 }
 
+func TestPerformerQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformersTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformersTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformersTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformersTagCount(t, tagCountCriterion)
+}
+
+func verifyPerformersTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Greater(t, len(performers), 0)
+
+		for _, performer := range performers {
+			ids, err := sqb.GetTagIDs(performer.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQuerySceneCount(t *testing.T) {
+	const sceneCount = 1
+	sceneCountCriterion := models.IntCriterionInput{
+		Value:    sceneCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformersSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformersSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformersSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformersSceneCount(t, sceneCountCriterion)
+}
+
+func verifyPerformersSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			SceneCount: &sceneCountCriterion,
+		}
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Greater(t, len(performers), 0)
+
+		for _, performer := range performers {
+			ids, err := r.Scene().FindByPerformerID(performer.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), sceneCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryImageCount(t *testing.T) {
+	const imageCount = 1
+	imageCountCriterion := models.IntCriterionInput{
+		Value:    imageCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformersImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformersImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformersImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformersImageCount(t, imageCountCriterion)
+}
+
+func verifyPerformersImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			ImageCount: &imageCountCriterion,
+		}
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Greater(t, len(performers), 0)
+
+		for _, performer := range performers {
+			pp := 0
+
+			_, count, err := r.Image().Query(&models.ImageFilterType{
+				Performers: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(performer.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryGalleryCount(t *testing.T) {
+	const galleryCount = 1
+	galleryCountCriterion := models.IntCriterionInput{
+		Value:    galleryCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformersGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformersGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformersGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformersGalleryCount(t, galleryCountCriterion)
+}
+
+func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			GalleryCount: &galleryCountCriterion,
+		}
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		assert.Greater(t, len(performers), 0)
+
+		for _, performer := range performers {
+			pp := 0
+
+			_, count, err := r.Gallery().Query(&models.GalleryFilterType{
+				Performers: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(performer.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, galleryCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func TestPerformerStashIDs(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Performer()
