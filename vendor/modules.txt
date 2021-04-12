@@ -90,10 +90,16 @@ github.com/chromedp/cdproto/webauthn
 github.com/chromedp/chromedp
 github.com/chromedp/chromedp/device
 github.com/chromedp/chromedp/kb
+# github.com/corona10/goimagehash v1.0.3
+github.com/corona10/goimagehash
+github.com/corona10/goimagehash/etcs
+github.com/corona10/goimagehash/transforms
 # github.com/cpuguy83/go-md2man/v2 v2.0.0
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging
 # github.com/fsnotify/fsnotify v1.4.7
@@ -226,6 +232,8 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 github.com/natefinch/pie
+# github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+github.com/nfnt/resize
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
@@ -305,7 +313,7 @@ github.com/vektra/mockery/v2/pkg/logging
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20190802002840-cff245a6509b
+# golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
 golang.org/x/image/riff

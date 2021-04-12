@@ -89,7 +89,7 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 }
 
 func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxQueryInput) ([]*models.ScrapedScene, error) {
-	boxes := config.GetStashBoxes()
+	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
 		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)

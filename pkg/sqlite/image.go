@@ -328,6 +328,16 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		query.addHaving(havingClause)
 	}
 
+	if tagCountFilter := imageFilter.TagCount; tagCountFilter != nil {
+		clause, count := getCountCriterionClause(imageTable, imagesTagsTable, imageIDColumn, *tagCountFilter)
+
+		if count == 1 {
+			query.addArg(tagCountFilter.Value)
+		}
+
+		query.addWhere(clause)
+	}
+
 	if galleriesFilter := imageFilter.Galleries; galleriesFilter != nil && len(galleriesFilter.Value) > 0 {
 		for _, galleryID := range galleriesFilter.Value {
 			query.addArg(galleryID)
@@ -348,6 +358,16 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		whereClause, havingClause := getMultiCriterionClause("images", "performers", "performers_images", "image_id", "performer_id", performersFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
+	}
+
+	if performerCountFilter := imageFilter.PerformerCount; performerCountFilter != nil {
+		clause, count := getCountCriterionClause(imageTable, performersImagesTable, imageIDColumn, *performerCountFilter)
+
+		if count == 1 {
+			query.addArg(performerCountFilter.Value)
+		}
+
+		query.addWhere(clause)
 	}
 
 	if studiosFilter := imageFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
@@ -412,7 +432,15 @@ func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) str
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	return getSort(sort, direction, "images")
+
+	switch sort {
+	case "tag_count":
+		return getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
+	case "performer_count":
+		return getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
+	default:
+		return getSort(sort, direction, "images")
+	}
 }
 
 func (qb *imageQueryBuilder) queryImage(query string, args []interface{}) (*models.Image, error) {

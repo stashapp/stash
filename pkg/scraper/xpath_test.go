@@ -758,6 +758,24 @@ func TestLoadInvalidXPath(t *testing.T) {
 	config.process(q, nil)
 }
 
+type mockGlobalConfig struct{}
+
+func (mockGlobalConfig) GetScraperUserAgent() string {
+	return ""
+}
+
+func (mockGlobalConfig) GetScrapersPath() string {
+	return ""
+}
+
+func (mockGlobalConfig) GetScraperCDPPath() string {
+	return ""
+}
+
+func (mockGlobalConfig) GetScraperCertCheck() bool {
+	return false
+}
+
 func TestSubScrape(t *testing.T) {
 	retHTML := `
 	<div>
@@ -805,7 +823,7 @@ xPathScrapers:
 		return
 	}
 
-	globalConfig := GlobalConfig{}
+	globalConfig := mockGlobalConfig{}
 
 	performer, err := c.ScrapePerformerURL(ts.URL, nil, globalConfig)
 

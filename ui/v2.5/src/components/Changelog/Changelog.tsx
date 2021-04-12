@@ -52,7 +52,6 @@ const Changelog: React.FC = () => {
         date="2021-03-29"
         openState={openState}
         setOpenState={setVersionOpenState}
-        defaultOpen
       >
         <MarkdownPage page={V060} />
       </Version>

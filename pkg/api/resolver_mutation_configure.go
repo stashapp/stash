@@ -13,7 +13,18 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
+	err := manager.GetInstance().Setup(input)
+	return err == nil, err
+}
+
+func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInput) (bool, error) {
+	err := manager.GetInstance().Migrate(input)
+	return err == nil, err
+}
+
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
+	c := config.GetInstance()
 	if len(input.Stashes) > 0 {
 		for _, s := range input.Stashes {
 			exists, err := utils.DirExists(s.Path)
@@ -21,7 +32,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 				return makeConfigGeneralResult(), err
 			}
 		}
-		config.Set(config.Stash, input.Stashes)
+		c.Set(config.Stash, input.Stashes)
 	}
 
 	if input.DatabasePath != nil {
@@ -29,138 +40,140 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		if ext != ".db" && ext != ".sqlite" && ext != ".sqlite3" {
 			return makeConfigGeneralResult(), fmt.Errorf("invalid database path, use extension db, sqlite, or sqlite3")
 		}
-		config.Set(config.Database, input.DatabasePath)
+		c.Set(config.Database, input.DatabasePath)
 	}
 
 	if input.GeneratedPath != nil {
 		if err := utils.EnsureDir(*input.GeneratedPath); err != nil {
 			return makeConfigGeneralResult(), err
 		}
-		config.Set(config.Generated, input.GeneratedPath)
+		c.Set(config.Generated, input.GeneratedPath)
 	}
 
 	if input.CachePath != nil {
-		if err := utils.EnsureDir(*input.CachePath); err != nil {
-			return makeConfigGeneralResult(), err
+		if *input.CachePath != "" {
+			if err := utils.EnsureDir(*input.CachePath); err != nil {
+				return makeConfigGeneralResult(), err
+			}
 		}
-		config.Set(config.Cache, input.CachePath)
+		c.Set(config.Cache, input.CachePath)
 	}
 
 	if !input.CalculateMd5 && input.VideoFileNamingAlgorithm == models.HashAlgorithmMd5 {
 		return makeConfigGeneralResult(), errors.New("calculateMD5 must be true if using MD5")
 	}
 
-	if input.VideoFileNamingAlgorithm != config.GetVideoFileNamingAlgorithm() {
+	if input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
 		// validate changing VideoFileNamingAlgorithm
 		if err := manager.ValidateVideoFileNamingAlgorithm(r.txnManager, input.VideoFileNamingAlgorithm); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
-		config.Set(config.VideoFileNamingAlgorithm, input.VideoFileNamingAlgorithm)
+		c.Set(config.VideoFileNamingAlgorithm, input.VideoFileNamingAlgorithm)
 	}
 
-	config.Set(config.CalculateMD5, input.CalculateMd5)
+	c.Set(config.CalculateMD5, input.CalculateMd5)
 
 	if input.ParallelTasks != nil {
-		config.Set(config.ParallelTasks, *input.ParallelTasks)
+		c.Set(config.ParallelTasks, *input.ParallelTasks)
 	}
 	if input.PreviewSegments != nil {
-		config.Set(config.PreviewSegments, *input.PreviewSegments)
+		c.Set(config.PreviewSegments, *input.PreviewSegments)
 	}
 	if input.PreviewSegmentDuration != nil {
-		config.Set(config.PreviewSegmentDuration, *input.PreviewSegmentDuration)
+		c.Set(config.PreviewSegmentDuration, *input.PreviewSegmentDuration)
 	}
 	if input.PreviewExcludeStart != nil {
-		config.Set(config.PreviewExcludeStart, *input.PreviewExcludeStart)
+		c.Set(config.PreviewExcludeStart, *input.PreviewExcludeStart)
 	}
 	if input.PreviewExcludeEnd != nil {
-		config.Set(config.PreviewExcludeEnd, *input.PreviewExcludeEnd)
+		c.Set(config.PreviewExcludeEnd, *input.PreviewExcludeEnd)
 	}
 	if input.PreviewPreset != nil {
-		config.Set(config.PreviewPreset, input.PreviewPreset.String())
+		c.Set(config.PreviewPreset, input.PreviewPreset.String())
 	}
 
 	if input.MaxTranscodeSize != nil {
-		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
+		c.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
 
 	if input.MaxStreamingTranscodeSize != nil {
-		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
+		c.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
 
 	if input.Username != nil {
-		config.Set(config.Username, input.Username)
+		c.Set(config.Username, input.Username)
 	}
 
 	if input.Password != nil {
 		// bit of a hack - check if the passed in password is the same as the stored hash
 		// and only set if they are different
-		currentPWHash := config.GetPasswordHash()
+		currentPWHash := c.GetPasswordHash()
 
 		if *input.Password != currentPWHash {
-			config.SetPassword(*input.Password)
+			c.SetPassword(*input.Password)
 		}
 	}
 
 	if input.MaxSessionAge != nil {
-		config.Set(config.MaxSessionAge, *input.MaxSessionAge)
+		c.Set(config.MaxSessionAge, *input.MaxSessionAge)
 	}
 
 	if input.LogFile != nil {
-		config.Set(config.LogFile, input.LogFile)
+		c.Set(config.LogFile, input.LogFile)
 	}
 
-	config.Set(config.LogOut, input.LogOut)
-	config.Set(config.LogAccess, input.LogAccess)
+	c.Set(config.LogOut, input.LogOut)
+	c.Set(config.LogAccess, input.LogAccess)
 
-	if input.LogLevel != config.GetLogLevel() {
-		config.Set(config.LogLevel, input.LogLevel)
+	if input.LogLevel != c.GetLogLevel() {
+		c.Set(config.LogLevel, input.LogLevel)
 		logger.SetLogLevel(input.LogLevel)
 	}
 
 	if input.Excludes != nil {
-		config.Set(config.Exclude, input.Excludes)
+		c.Set(config.Exclude, input.Excludes)
 	}
 
 	if input.ImageExcludes != nil {
-		config.Set(config.ImageExclude, input.ImageExcludes)
+		c.Set(config.ImageExclude, input.ImageExcludes)
 	}
 
 	if input.VideoExtensions != nil {
-		config.Set(config.VideoExtensions, input.VideoExtensions)
+		c.Set(config.VideoExtensions, input.VideoExtensions)
 	}
 
 	if input.ImageExtensions != nil {
-		config.Set(config.ImageExtensions, input.ImageExtensions)
+		c.Set(config.ImageExtensions, input.ImageExtensions)
 	}
 
 	if input.GalleryExtensions != nil {
-		config.Set(config.GalleryExtensions, input.GalleryExtensions)
+		c.Set(config.GalleryExtensions, input.GalleryExtensions)
 	}
 
-	config.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
+	c.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
 
 	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
-		config.Set(config.ScraperUserAgent, input.ScraperUserAgent)
+		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
 		refreshScraperCache = true
 	}
 
 	if input.ScraperCDPPath != nil {
-		config.Set(config.ScraperCDPPath, input.ScraperCDPPath)
+		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
 		refreshScraperCache = true
 	}
 
-	config.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+	c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
 
 	if input.StashBoxes != nil {
-		if err := config.ValidateStashBoxes(input.StashBoxes); err != nil {
+		if err := c.ValidateStashBoxes(input.StashBoxes); err != nil {
 			return nil, err
 		}
-		config.Set(config.StashBoxes, input.StashBoxes)
+		c.Set(config.StashBoxes, input.StashBoxes)
 	}
 
-	if err := config.Write(); err != nil {
+	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
 
@@ -173,36 +186,37 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 }
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
+	c := config.GetInstance()
 	if input.MenuItems != nil {
-		config.Set(config.MenuItems, input.MenuItems)
+		c.Set(config.MenuItems, input.MenuItems)
 	}
 
 	if input.SoundOnPreview != nil {
-		config.Set(config.SoundOnPreview, *input.SoundOnPreview)
+		c.Set(config.SoundOnPreview, *input.SoundOnPreview)
 	}
 
 	if input.WallShowTitle != nil {
-		config.Set(config.WallShowTitle, *input.WallShowTitle)
+		c.Set(config.WallShowTitle, *input.WallShowTitle)
 	}
 
 	if input.WallPlayback != nil {
-		config.Set(config.WallPlayback, *input.WallPlayback)
+		c.Set(config.WallPlayback, *input.WallPlayback)
 	}
 
 	if input.MaximumLoopDuration != nil {
-		config.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
+		c.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}
 
 	if input.AutostartVideo != nil {
-		config.Set(config.AutostartVideo, *input.AutostartVideo)
+		c.Set(config.AutostartVideo, *input.AutostartVideo)
 	}
 
 	if input.ShowStudioAsText != nil {
-		config.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
+		c.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
 	}
 
 	if input.Language != nil {
-		config.Set(config.Language, *input.Language)
+		c.Set(config.Language, *input.Language)
 	}
 
 	css := ""
@@ -211,15 +225,38 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		css = *input.CSS
 	}
 
-	config.SetCSS(css)
+	c.SetCSS(css)
 
 	if input.CSSEnabled != nil {
-		config.Set(config.CSSEnabled, *input.CSSEnabled)
+		c.Set(config.CSSEnabled, *input.CSSEnabled)
 	}
 
-	if err := config.Write(); err != nil {
+	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
 	}
 
 	return makeConfigInterfaceResult(), nil
+}
+
+func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {
+	c := config.GetInstance()
+
+	var newAPIKey string
+	if input.Clear == nil || !*input.Clear {
+		username := c.GetUsername()
+		if username != "" {
+			var err error
+			newAPIKey, err = manager.GenerateAPIKey(username)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
+	c.Set(config.ApiKey, newAPIKey)
+	if err := c.Write(); err != nil {
+		return newAPIKey, err
+	}
+
+	return newAPIKey, nil
 }

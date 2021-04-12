@@ -27,6 +27,10 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 		newSceneJSON.OSHash = scene.OSHash.String
 	}
 
+	if scene.Phash.Valid {
+		newSceneJSON.Phash = utils.PhashToString(scene.Phash.Int64)
+	}
+
 	if scene.Title.Valid {
 		newSceneJSON.Title = scene.Title.String
 	}
