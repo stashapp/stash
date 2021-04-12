@@ -22,6 +22,9 @@ ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
 endif
 
+export CGO_ENABLED = 1
+export GO111MODULE = on
+
 .PHONY: release pre-build install clean 
 
 release: generate ui build-release
@@ -41,7 +44,7 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
 # consider -trimpath in go build if we move to go 1.13+
@@ -52,44 +55,47 @@ build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
 build-release-static: build
 
 # cross-compile- targets should be run within the compiler docker container
-cross-compile-windows: GOOS := windows 
-cross-compile-windows: GOARCH := amd64 
-cross-compile-windows: CC := x86_64-w64-mingw32-gcc
-cross-compile-windows: CXX := x86_64-w64-mingw32-g++
-cross-compile-windows: OUTPUT := dist/stash-win.exe
+cross-compile-windows: export GOOS := windows
+cross-compile-windows: export GOARCH := amd64
+cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
+cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
+cross-compile-windows: OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: build-release-static
 
-cross-compile-osx: GOOS := darwin 
-cross-compile-osx: GOARCH := amd64 
-cross-compile-osx: CC := o64-clang
-cross-compile-osx: CXX := o64-clang++
-cross-compile-osx: OUTPUT := dist/stash-osx
-cross-compile-osx: build-release-static
+cross-compile-osx: export GOOS := darwin
+cross-compile-osx: export GOARCH := amd64
+cross-compile-osx: export CC := o64-clang
+cross-compile-osx: export CXX := o64-clang++
+cross-compile-osx: OUTPUT := -o dist/stash-osx
+# can't use static build for OSX
+cross-compile-osx: build-release
 
-cross-compile-linux: GOOS := linux 
-cross-compile-linux: GOARCH := amd64 
-cross-compile-linux: OUTPUT := dist/stash-linux
+cross-compile-linux: export GOOS := linux
+cross-compile-linux: export GOARCH := amd64
+cross-compile-linux: OUTPUT := -o dist/stash-linux
 cross-compile-linux: build-release-static
 
-cross-compile-linux-arm64v8: GOOS := linux 
-cross-compile-linux-arm64v8: GOARCH := arm64 
-cross-compile-linux-arm64v8: CC := aarch64-linux-gnu-gcc
-cross-compile-linux-arm64v8: OUTPUT := dist/stash-linux-arm64v8
+cross-compile-linux-arm64v8: export GOOS := linux
+cross-compile-linux-arm64v8: export GOARCH := arm64
+cross-compile-linux-arm64v8: export CC := aarch64-linux-gnu-gcc
+cross-compile-linux-arm64v8: OUTPUT := -o dist/stash-linux-arm64v8
 cross-compile-linux-arm64v8: build-release-static
 
-cross-compile-linux-arm32v7: GOOS := linux 
-cross-compile-linux-arm32v7: GOARCH := arm 
-cross-compile-linux-arm32v7: GOARM := 7 
-cross-compile-linux-arm32v7: CC := arm-linux-gnueabihf-gcc
-cross-compile-linux-arm32v7: OUTPUT := dist/stash-linux-arm32v7
+cross-compile-linux-arm32v7: export GOOS := linux
+cross-compile-linux-arm32v7: export GOARCH := arm
+cross-compile-linux-arm32v7: export GOARM := 7
+cross-compile-linux-arm32v7: export CC := arm-linux-gnueabihf-gcc
+cross-compile-linux-arm32v7: OUTPUT := -o dist/stash-linux-arm32v7
 cross-compile-linux-arm32v7: build-release-static
 
-cross-compile-pi: GOOS := linux 
-cross-compile-pi: GOARCH := arm 
-cross-compile-pi: GOARM := 6
-cross-compile-pi: CC := arm-linux-gnueabi-gcc
-cross-compile-pi: OUTPUT := dist/stash-pi
+cross-compile-pi: export GOOS := linux
+cross-compile-pi: export GOARCH := arm
+cross-compile-pi: export GOARM := 6
+cross-compile-pi: export CC := arm-linux-gnueabi-gcc
+cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
+
+cross-compile-all: cross-compile-windows cross-compile-osx cross-compile-linux cross-compile-linux-arm64v8 cross-compile-linux-arm32v7 cross-compile-pi
 
 install:
 	packr2 install
