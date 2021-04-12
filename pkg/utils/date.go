@@ -45,3 +45,10 @@ func ParseDateStringAsTime(dateString string) (time.Time, error) {
 
 	return time.Time{}, fmt.Errorf("ParseDateStringAsTime failed: dateString <%s>", dateString)
 }
+
+func IfDateHigherThanAnotherDate(fromDate string, toDate string) bool {
+	f, _ := ParseDateStringAsTime(fromDate)
+	t, _ := ParseDateStringAsTime(toDate)
+
+	return f.After(t)
+}

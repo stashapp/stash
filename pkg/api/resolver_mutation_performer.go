@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strconv"
 	"time"
 
@@ -88,6 +89,12 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	}
 	if input.Deathdate != nil {
 		newPerformer.Deathdate = models.SQLiteDate{String: *input.Deathdate, Valid: true}
+
+		if *input.Deathdate != "" {
+			if utils.IfDateHigherThanAnotherDate(*input.Birthdate, *input.Deathdate) {
+				return nil, errors.New("The date of Death should be higher than the date of Birth")
+			}
+		}
 	}
 	if input.HairColor != nil {
 		newPerformer.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
@@ -163,6 +170,12 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 
 		updatedPerformer.Name = &sql.NullString{String: *input.Name, Valid: true}
 		updatedPerformer.Checksum = &checksum
+	}
+
+	if *input.Deathdate != "" {
+		if utils.IfDateHigherThanAnotherDate(*input.Birthdate, *input.Deathdate) {
+			return nil, errors.New("The date of Death should be higher than the date of Birth")
+		}
 	}
 
 	updatedPerformer.URL = translator.nullString(input.URL, "url")
@@ -290,6 +303,12 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 			updatedPerformer.Gender = &sql.NullString{String: input.Gender.String(), Valid: true}
 		} else {
 			updatedPerformer.Gender = &sql.NullString{String: "", Valid: false}
+		}
+	}
+
+	if *input.Deathdate != "" {
+		if utils.IfDateHigherThanAnotherDate(*input.Birthdate, *input.Deathdate) {
+			return nil, errors.New("The date of Death should be higher than the date of Birth")
 		}
 	}
 
