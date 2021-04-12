@@ -1266,7 +1266,7 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 		defer s.returnToIdleState()
 		logger.Infof("Initiating stash-box batch performer tag")
 
-		boxes := config.GetStashBoxes()
+		boxes := config.GetInstance().GetStashBoxes()
 		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
 			logger.Error(fmt.Errorf("invalid stash_box_index %d", input.Endpoint))
 			return
