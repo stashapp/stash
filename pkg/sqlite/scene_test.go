@@ -1380,7 +1380,6 @@ func TestSceneQueryQTrim(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Scene()
 
-		// create scene to test against
 		const title = "Girl does threesome"
 		const name = "TestSceneQueryTrim"
 		scene := models.Scene{
@@ -1393,35 +1392,29 @@ func TestSceneQueryQTrim(t *testing.T) {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
-		q := " Girl    does    "
-		findFilter := models.FindFilterType{
-			Q: &q,
+		type test struct {
+			query string
+			id    int
+			count int
+		}
+		tests := []test{
+			{query: " Girl    does    ", id: created.ID, count: 1},
+			{query: "   \"Girl does threesome\" ", id: created.ID, count: 1},
+			{query: "threesome", id: created.ID, count: 1},
 		}
 
+		for _, tst := range tests {
+			f := models.FindFilterType{
+				Q: &tst.query,
+			}
+			scenes := queryScene(t, qb, nil, &f)
+
+			assert.Len(t, scenes, tst.count)
+			assert.Equal(t, tst.id, scenes[0].ID)
+		}
+
+		findFilter := models.FindFilterType{}
 		scenes := queryScene(t, qb, nil, &findFilter)
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, scenes[0].ID, created.ID)
-
-		q = "   \"Girl     does   threesome\" "
-		findFilter = models.FindFilterType{
-			Q: &q,
-		}
-
-		scenes = queryScene(t, qb, nil, &findFilter)
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, scenes[0].ID, created.ID)
-
-		q = "threesome"
-		findFilter = models.FindFilterType{
-			Q: &q,
-		}
-
-		scenes = queryScene(t, qb, nil, &findFilter)
-		assert.Len(t, scenes, 1)
-		assert.Equal(t, scenes[0].ID, created.ID)
-
-		findFilter.Q = nil
-		scenes = queryScene(t, qb, nil, &findFilter)
 		assert.NotEqual(t, 0, len(scenes))
 
 		return nil

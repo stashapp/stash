@@ -108,11 +108,11 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 		binaryType = " AND "
 	}
 	q = strings.TrimSpace(q)
-	q = regexp.MustCompile(`\s+`).ReplaceAllString(q, " ")
-	queryWords := strings.Split(q, " ")
 	trimmedQuery := strings.Trim(q, "\"")
 
 	if trimmedQuery == q {
+		q = regexp.MustCompile(`\s+`).ReplaceAllString(q, " ")
+		queryWords := strings.Split(q, " ")
 		// Search for any word
 		for _, word := range queryWords {
 			for _, column := range columns {
