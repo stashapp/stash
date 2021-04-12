@@ -51,6 +51,46 @@ build-release: build
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
 build-release-static: build
 
+# cross-compile- targets should be run within the compiler docker container
+cross-compile-windows: GOOS := windows 
+cross-compile-windows: GOARCH := amd64 
+cross-compile-windows: CC := x86_64-w64-mingw32-gcc
+cross-compile-windows: CXX := x86_64-w64-mingw32-g++
+cross-compile-windows: OUTPUT := dist/stash-win.exe
+cross-compile-windows: build-release-static
+
+cross-compile-osx: GOOS := darwin 
+cross-compile-osx: GOARCH := amd64 
+cross-compile-osx: CC := o64-clang
+cross-compile-osx: CXX := o64-clang++
+cross-compile-osx: OUTPUT := dist/stash-osx
+cross-compile-osx: build-release-static
+
+cross-compile-linux: GOOS := linux 
+cross-compile-linux: GOARCH := amd64 
+cross-compile-linux: OUTPUT := dist/stash-linux
+cross-compile-linux: build-release-static
+
+cross-compile-linux-arm64v8: GOOS := linux 
+cross-compile-linux-arm64v8: GOARCH := arm64 
+cross-compile-linux-arm64v8: CC := aarch64-linux-gnu-gcc
+cross-compile-linux-arm64v8: OUTPUT := dist/stash-linux-arm64v8
+cross-compile-linux-arm64v8: build-release-static
+
+cross-compile-linux-arm32v7: GOOS := linux 
+cross-compile-linux-arm32v7: GOARCH := arm 
+cross-compile-linux-arm32v7: GOARM := 7 
+cross-compile-linux-arm32v7: CC := arm-linux-gnueabihf-gcc
+cross-compile-linux-arm32v7: OUTPUT := dist/stash-linux-arm32v7
+cross-compile-linux-arm32v7: build-release-static
+
+cross-compile-pi: GOOS := linux 
+cross-compile-pi: GOARCH := arm 
+cross-compile-pi: GOARM := 6
+cross-compile-pi: CC := arm-linux-gnueabi-gcc
+cross-compile-pi: OUTPUT := dist/stash-pi
+cross-compile-pi: build-release-static
+
 install:
 	packr2 install
 
