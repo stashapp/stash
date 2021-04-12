@@ -1164,7 +1164,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		lastScene := scenes[len(scenes)-1]
 
 		assert.Equal(t, sceneIDs[0], firstScene.ID)
-		assert.Equal(t, sceneIDs[len(sceneIDs)-1], lastScene.ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], lastScene.ID)
 
 		// sort in descending order
 		direction = models.SortDirectionEnumDesc
@@ -1173,7 +1173,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		firstScene = scenes[0]
 		lastScene = scenes[len(scenes)-1]
 
-		assert.Equal(t, sceneIDs[len(sceneIDs)-1], firstScene.ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], firstScene.ID)
 		assert.Equal(t, sceneIDs[0], lastScene.ID)
 
 		return nil
@@ -1523,17 +1523,7 @@ func TestSceneQueryQTrim(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Scene()
 
-		const title = "Girl does threesome"
-		const name = "TestSceneQueryTrim"
-		scene := models.Scene{
-			Title:    sql.NullString{String: title, Valid: true},
-			Path:     name,
-			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
-		}
-		created, err := qb.Create(scene)
-		if err != nil {
-			return fmt.Errorf("Error creating scene: %s", err.Error())
-		}
+		expectedID := sceneIDs[sceneIdxWithSpacedName]
 
 		type test struct {
 			query string
@@ -1541,9 +1531,13 @@ func TestSceneQueryQTrim(t *testing.T) {
 			count int
 		}
 		tests := []test{
-			{query: " Girl    does    ", id: created.ID, count: 1},
-			{query: "   \"Girl does threesome\" ", id: created.ID, count: 1},
-			{query: "threesome", id: created.ID, count: 1},
+			{query: " zzz    yyy    ", id: expectedID, count: 1},
+			{query: "   \"zzz yyy xxx\" ", id: expectedID, count: 1},
+			{query: "zzz", id: expectedID, count: 1},
+			{query: "\" zzz    yyy    \"", count: 0},
+			{query: "\"zzz    yyy\"", count: 0},
+			{query: "\" zzz yyy\"", count: 0},
+			{query: "\"zzz yyy  \"", count: 0},
 		}
 
 		for _, tst := range tests {
@@ -1553,7 +1547,9 @@ func TestSceneQueryQTrim(t *testing.T) {
 			scenes := queryScene(t, qb, nil, &f)
 
 			assert.Len(t, scenes, tst.count)
-			assert.Equal(t, tst.id, scenes[0].ID)
+			if len(scenes) > 0 {
+				assert.Equal(t, tst.id, scenes[0].ID)
+			}
 		}
 
 		findFilter := models.FindFilterType{}
