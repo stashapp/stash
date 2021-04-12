@@ -79,7 +79,7 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	builder.APIKey = config.GetAPIKey()
+	builder.APIKey = config.GetInstance().GetAPIKey()
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL()
