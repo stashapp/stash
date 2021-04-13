@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ develop, master, prs/1268 ]
+    branches: [ develop, master ]
   pull_request:
     branches: [ develop ]
   release:
@@ -60,9 +60,8 @@ jobs:
       run: docker exec -t build /bin/bash -c "make generate"
     
     - name: Validate UI
-      #github.event_name != 'pull_request' || 
       # skip UI validation for pull requests if UI is unchanged
-      if: ${{ steps.cache-ui.outputs.cache-hit != 'true' }}
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: docker exec -t build /bin/bash -c "make ui-validate"
 
     # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
@@ -73,8 +72,7 @@ jobs:
       # skip UI build for pull requests if UI is unchanged (UI was cached)
       # this means that the build version/time may be incorrect if the UI is
       # not changed in a pull request
-      #github.event_name != 'pull_request' || 
-      if: ${{ steps.cache-ui.outputs.cache-hit != 'true' }}
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: docker exec -t build /bin/bash -c "make ui-only"
 
     - name: Compile for all supported platforms
@@ -99,7 +97,7 @@ jobs:
     
     - name: Upload Windows binary
       # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-win.exe
@@ -115,7 +113,7 @@ jobs:
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
-      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-linux
