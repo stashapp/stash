@@ -42,7 +42,7 @@ func (t *CleanTask) shouldClean(path string) bool {
 	fileExists := image.FileExists(path)
 
 	// #1102 - clean anything in generated path
-	generatedPath := config.GetGeneratedPath()
+	generatedPath := config.GetInstance().GetGeneratedPath()
 	if !fileExists || getStashFromPath(path) == nil || utils.IsPathInDir(generatedPath, path) {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
 		return true
@@ -62,6 +62,7 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 		return true
 	}
 
+	config := config.GetInstance()
 	if !matchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Cleaning: \"%s\"", s.Path)
 		return true
@@ -92,6 +93,7 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 		return true
 	}
 
+	config := config.GetInstance()
 	if !matchExtension(path, config.GetGalleryExtensions()) {
 		logger.Infof("File extension does not match gallery extensions. Cleaning: \"%s\"", path)
 		return true
@@ -121,6 +123,7 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 		return true
 	}
 
+	config := config.GetInstance()
 	if !matchExtension(s.Path, config.GetImageExtensions()) {
 		logger.Infof("File extension does not match image extensions. Cleaning: \"%s\"", s.Path)
 		return true
@@ -199,7 +202,7 @@ func (t *CleanTask) fileExists(filename string) (bool, error) {
 }
 
 func getStashFromPath(pathToCheck string) *models.StashConfig {
-	for _, s := range config.GetStashPaths() {
+	for _, s := range config.GetInstance().GetStashPaths() {
 		if utils.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
 			return s
 		}
@@ -208,7 +211,7 @@ func getStashFromPath(pathToCheck string) *models.StashConfig {
 }
 
 func getStashFromDirPath(pathToCheck string) *models.StashConfig {
-	for _, s := range config.GetStashPaths() {
+	for _, s := range config.GetInstance().GetStashPaths() {
 		if utils.IsPathInDir(s.Path, pathToCheck) {
 			return s
 		}

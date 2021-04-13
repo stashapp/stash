@@ -57,7 +57,7 @@ func (t *GenerateTranscodeTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	outputPath := instance.Paths.Generated.GetTmpPath(sceneHash + ".mp4")
-	transcodeSize := config.GetMaxTranscodeSize()
+	transcodeSize := config.GetInstance().GetMaxTranscodeSize()
 	options := ffmpeg.TranscodeOptions{
 		OutputPath:       outputPath,
 		MaxTranscodeSize: transcodeSize,

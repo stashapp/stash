@@ -8,9 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
-	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -22,7 +20,6 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -38,10 +35,12 @@ var githash string
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
-var setupUIBox *packr.Box
 var loginUIBox *packr.Box
 
-const ApiKeyHeader = "ApiKey"
+const (
+	ApiKeyHeader    = "ApiKey"
+	ApiKeyParameter = "apikey"
+)
 
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
@@ -50,6 +49,7 @@ func allowUnauthenticated(r *http.Request) bool {
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := config.GetInstance()
 			ctx := r.Context()
 
 			// translate api key into current user, if present
@@ -57,17 +57,22 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			apiKey := r.Header.Get(ApiKeyHeader)
 			var err error
 
+			// try getting the api key as a query parameter
+			if apiKey == "" {
+				apiKey = r.URL.Query().Get(ApiKeyParameter)
+			}
+
 			if apiKey != "" {
 				// match against configured API and set userID to the
 				// configured username. In future, we'll want to
 				// get the username from the key.
-				if config.GetAPIKey() != apiKey {
+				if c.GetAPIKey() != apiKey {
 					w.Header().Add("WWW-Authenticate", `FormBased`)
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
 
-				userID = config.GetUsername()
+				userID = c.GetUsername()
 			} else {
 				// handle session
 				userID, err = getSessionUserID(w, r)
@@ -80,7 +85,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			}
 
 			// handle redirect if no user and user is required
-			if userID == "" && config.HasCredentials() && !allowUnauthenticated(r) {
+			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
 				// if we don't have a userID, then redirect
 				// if graphql was requested, we just return a forbidden error
 				if r.URL.Path == "/graphql" {
@@ -109,14 +114,11 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
-const setupEndPoint = "/setup"
-const migrateEndPoint = "/migrate"
 const loginEndPoint = "/login"
 
 func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
-	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 	loginUIBox = packr.New("Login UI Box", "../../ui/login")
 
 	initSessionStore()
@@ -128,15 +130,14 @@ func Start() {
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 
-	if config.GetLogAccess() {
+	c := config.GetInstance()
+	if c.GetLogAccess() {
 		r.Use(middleware.Logger)
 	}
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
-	r.Use(ConfigCheckMiddleware)
-	r.Use(DatabaseCheckMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
@@ -150,7 +151,7 @@ func Start() {
 			return true
 		},
 	})
-	maxUploadSize := handler.UploadMaxSize(config.GetMaxUploadSize())
+	maxUploadSize := handler.UploadMaxSize(c.GetMaxUploadSize())
 	websocketKeepAliveDuration := handler.WebsocketKeepAliveDuration(10 * time.Second)
 
 	txnManager := manager.GetInstance().TxnManager
@@ -191,12 +192,12 @@ func Start() {
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")
-		if !config.GetCSSEnabled() {
+		if !c.GetCSSEnabled() {
 			return
 		}
 
 		// search for custom.css in current directory, then $HOME/.stash
-		fn := config.GetCSSPath()
+		fn := c.GetCSSPath()
 		exists, _ := utils.FileExists(fn)
 		if !exists {
 			return
@@ -205,21 +206,6 @@ func Start() {
 		http.ServeFile(w, r, fn)
 	})
 
-	// Serve the migration UI
-	r.Get("/migrate", getMigrateHandler)
-	r.Post("/migrate", doMigrateHandler)
-
-	// Serve the setup UI
-	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == "" {
-			data, _ := setupUIBox.Find("index.html")
-			_, _ = w.Write(data)
-		} else {
-			r.URL.Path = strings.Replace(r.URL.Path, "/setup", "", 1)
-			http.FileServer(setupUIBox).ServeHTTP(w, r)
-		}
-	})
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
@@ -230,62 +216,9 @@ func Start() {
 			http.FileServer(loginUIBox).ServeHTTP(w, r)
 		}
 	})
-	r.Post("/init", func(w http.ResponseWriter, r *http.Request) {
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error: %s", err), 500)
-		}
-		stash := filepath.Clean(r.Form.Get("stash"))
-		generated := filepath.Clean(r.Form.Get("generated"))
-		metadata := filepath.Clean(r.Form.Get("metadata"))
-		cache := filepath.Clean(r.Form.Get("cache"))
-		//downloads := filepath.Clean(r.Form.Get("downloads")) // TODO
-		downloads := filepath.Join(metadata, "downloads")
-
-		exists, _ := utils.DirExists(stash)
-		if !exists || stash == "." {
-			http.Error(w, fmt.Sprintf("the stash path either doesn't exist, or is not a directory <%s>.  Go back and try again.", stash), 500)
-			return
-		}
-
-		exists, _ = utils.DirExists(generated)
-		if !exists || generated == "." {
-			http.Error(w, fmt.Sprintf("the generated path either doesn't exist, or is not a directory <%s>.  Go back and try again.", generated), 500)
-			return
-		}
-
-		exists, _ = utils.DirExists(metadata)
-		if !exists || metadata == "." {
-			http.Error(w, fmt.Sprintf("the metadata path either doesn't exist, or is not a directory <%s>  Go back and try again.", metadata), 500)
-			return
-		}
-
-		exists, _ = utils.DirExists(cache)
-		if !exists || cache == "." {
-			http.Error(w, fmt.Sprintf("the cache path either doesn't exist, or is not a directory <%s>  Go back and try again.", cache), 500)
-			return
-		}
-
-		_ = os.Mkdir(downloads, 0755)
-
-		// #536 - set stash as slice of strings
-		config.Set(config.Stash, []string{stash})
-		config.Set(config.Generated, generated)
-		config.Set(config.Metadata, metadata)
-		config.Set(config.Cache, cache)
-		config.Set(config.Downloads, downloads)
-		if err := config.Write(); err != nil {
-			http.Error(w, fmt.Sprintf("there was an error saving the config file: %s", err), 500)
-			return
-		}
-
-		manager.GetInstance().RefreshConfig()
-
-		http.Redirect(w, r, "/", 301)
-	})
 
 	// Serve static folders
-	customServedFolders := config.GetCustomServedFolders()
+	customServedFolders := c.GetCustomServedFolders()
 	if customServedFolders != nil {
 		r.HandleFunc("/custom/*", func(w http.ResponseWriter, r *http.Request) {
 			r.URL.Path = strings.Replace(r.URL.Path, "/custom", "", 1)
@@ -316,13 +249,13 @@ func Start() {
 		}
 	})
 
-	displayHost := config.GetHost()
+	displayHost := c.GetHost()
 	if displayHost == "0.0.0.0" {
 		displayHost = "localhost"
 	}
-	displayAddress := displayHost + ":" + strconv.Itoa(config.GetPort())
+	displayAddress := displayHost + ":" + strconv.Itoa(c.GetPort())
 
-	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
+	address := c.GetHost() + ":" + strconv.Itoa(c.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
 		httpsServer := &http.Server{
 			Addr:      address,
@@ -417,7 +350,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		}
 		baseURL := scheme + "://" + r.Host
 
-		externalHost := config.GetExternalHost()
+		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
 			baseURL = externalHost
 		}
@@ -427,35 +360,4 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
-}
-
-func ConfigCheckMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET"
-		if !config.IsValid() && shouldRedirect {
-			// #539 - don't redirect if loading login page
-			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
-				http.Redirect(w, r, setupEndPoint, http.StatusFound)
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
-func DatabaseCheckMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET"
-		if shouldRedirect && database.NeedsMigration() {
-			// #451 - don't redirect if loading login page
-			// #539 - or setup page
-			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
-				http.Redirect(w, r, migrateEndPoint, http.StatusFound)
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
-	})
 }
