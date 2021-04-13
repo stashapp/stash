@@ -17,3 +17,7 @@ func (r *queryResolver) JobStatus(ctx context.Context) (*models.MetadataUpdateSt
 
 	return &ret, nil
 }
+
+func (r *queryResolver) SystemStatus(ctx context.Context) (*models.SystemStatus, error) {
+	return manager.GetInstance().GetSystemStatus(), nil
+}

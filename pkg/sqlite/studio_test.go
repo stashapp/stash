@@ -283,6 +283,71 @@ func TestStudioStashIDs(t *testing.T) {
 	}
 }
 
+func TestStudioQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	studioURL := getStudioStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    studioURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.StudioFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(g *models.Studio) {
+		t.Helper()
+		verifyNullString(t, g.URL, urlCriterion)
+	}
+
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "studio_.*1_URL"
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyStudioQuery(t, filter, verifyFn)
+}
+
+func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(s *models.Studio)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Studio()
+
+		galleries := queryStudio(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(galleries), 0)
+
+		for _, studio := range galleries {
+			verifyFn(studio)
+		}
+
+		return nil
+	})
+}
+
+func queryStudio(t *testing.T, sqb models.StudioReader, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
+	studios, _, err := sqb.Query(studioFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying studio: %s", err.Error())
+	}
+
+	return studios
+}
+
 // TODO Create
 // TODO Update
 // TODO Destroy

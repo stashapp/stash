@@ -54,7 +54,7 @@ func DestroySceneMarker(scene *models.Scene, sceneMarker *models.SceneMarker, qb
 	// delete the preview for the marker
 	return func() {
 		seconds := int(sceneMarker.Seconds)
-		DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
+		DeleteSceneMarkerFiles(scene, seconds, config.GetInstance().GetVideoFileNamingAlgorithm())
 	}, nil
 }
 
@@ -247,7 +247,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	// don't care if we can't get the container
 	container, _ := GetSceneFileContainer(scene)
 
-	if HasTranscode(scene, config.GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"
 		ret = append(ret, &models.SceneStreamEndpoint{
 			URL:      directStreamURL,

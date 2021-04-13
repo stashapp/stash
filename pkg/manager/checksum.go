@@ -31,9 +31,11 @@ func setInitialMD5Config(txnManager models.TransactionManager) {
 		defaultAlgorithm = models.HashAlgorithmMd5
 	}
 
+	// TODO - this should use the config instance
 	viper.SetDefault(config.VideoFileNamingAlgorithm, defaultAlgorithm)
 	viper.SetDefault(config.CalculateMD5, usingMD5)
 
+	config := config.GetInstance()
 	if err := config.Write(); err != nil {
 		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}

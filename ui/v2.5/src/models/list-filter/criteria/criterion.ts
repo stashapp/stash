@@ -25,6 +25,7 @@ export type CriterionType =
   | "tags"
   | "sceneTags"
   | "performerTags"
+  | "tag_count"
   | "performers"
   | "studios"
   | "movies"
@@ -47,7 +48,8 @@ export type CriterionType =
   | "marker_count"
   | "image_count"
   | "gallery_count"
-  | "performer_count";
+  | "performer_count"
+  | "url";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -89,6 +91,8 @@ export abstract class Criterion {
         return "Scene Tags";
       case "performerTags":
         return "Performer Tags";
+      case "tag_count":
+        return "Tag Count";
       case "performers":
         return "Performers";
       case "studios":
@@ -135,6 +139,8 @@ export abstract class Criterion {
         return "Gallery Count";
       case "performer_count":
         return "Performer Count";
+      case "url":
+        return "URL";
     }
   }
 
@@ -353,6 +359,15 @@ export class NumberCriterion extends Criterion {
       this.parameterName = type;
     }
   }
+}
+
+export class MandatoryNumberCriterion extends NumberCriterion {
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+  ];
 }
 
 export class DurationCriterion extends Criterion {

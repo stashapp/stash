@@ -53,6 +53,8 @@ FROM ubuntu:20.04 as app
 RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=compiler /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+
 EXPOSE 9999
 CMD ["stash"]
 

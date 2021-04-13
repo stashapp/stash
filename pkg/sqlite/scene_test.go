@@ -187,6 +187,44 @@ func TestSceneQueryPath(t *testing.T) {
 	verifyScenesPath(t, pathCriterion)
 }
 
+func TestSceneQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	scenePath := getSceneStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    scenePath,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.SceneFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(s *models.Scene) {
+		t.Helper()
+		verifyNullString(t, s.URL, urlCriterion)
+	}
+
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "scene_.*1_URL"
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifySceneQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifySceneQuery(t, filter, verifyFn)
+}
+
 func TestSceneQueryPathOr(t *testing.T) {
 	const scene1Idx = 1
 	const scene2Idx = 2
@@ -324,6 +362,24 @@ func TestSceneIllegalQuery(t *testing.T) {
 	})
 }
 
+func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func(s *models.Scene)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(scenes), 0)
+
+		for _, scene := range scenes {
+			verifyFn(scene)
+		}
+
+		return nil
+	})
+}
+
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
@@ -345,10 +401,15 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierIsNull {
+		if value.Valid && value.String == "" {
+			// correct
+			return
+		}
 		assert.False(value.Valid, "expect is null values to be null")
 	}
 	if criterion.Modifier == models.CriterionModifierNotNull {
 		assert.True(value.Valid, "expect is null values to be null")
+		assert.Greater(len(value.String), 0)
 	}
 	if criterion.Modifier == models.CriterionModifierEquals {
 		assert.Equal(criterion.Value, value.String)
@@ -1103,7 +1164,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		lastScene := scenes[len(scenes)-1]
 
 		assert.Equal(t, sceneIDs[0], firstScene.ID)
-		assert.Equal(t, sceneIDs[len(sceneIDs)-1], lastScene.ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], lastScene.ID)
 
 		// sort in descending order
 		direction = models.SortDirectionEnumDesc
@@ -1112,7 +1173,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		firstScene = scenes[0]
 		lastScene = scenes[len(scenes)-1]
 
-		assert.Equal(t, sceneIDs[len(sceneIDs)-1], firstScene.ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], firstScene.ID)
 		assert.Equal(t, sceneIDs[0], lastScene.ID)
 
 		return nil
@@ -1148,6 +1209,88 @@ func TestSceneQueryPagination(t *testing.T) {
 		assert.Len(t, scenes, 2)
 		assert.Equal(t, firstID, scenes[0].ID)
 		assert.Equal(t, secondID, scenes[1].ID)
+
+		return nil
+	})
+}
+
+func TestSceneQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyScenesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyScenesTagCount(t, tagCountCriterion)
+}
+
+func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Greater(t, len(scenes), 0)
+
+		for _, scene := range scenes {
+			ids, err := sqb.GetTagIDs(scene.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestSceneQueryPerformerCount(t *testing.T) {
+	const performerCount = 1
+	performerCountCriterion := models.IntCriterionInput{
+		Value:    performerCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyScenesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyScenesPerformerCount(t, performerCountCriterion)
+}
+
+func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			PerformerCount: &performerCountCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Greater(t, len(scenes), 0)
+
+		for _, scene := range scenes {
+			ids, err := sqb.GetPerformerIDs(scene.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), performerCountCriterion)
+		}
 
 		return nil
 	})
@@ -1370,6 +1513,49 @@ func TestSceneStashIDs(t *testing.T) {
 		}
 
 		testStashIDReaderWriter(t, qb, created.ID)
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestSceneQueryQTrim(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Scene()
+
+		expectedID := sceneIDs[sceneIdxWithSpacedName]
+
+		type test struct {
+			query string
+			id    int
+			count int
+		}
+		tests := []test{
+			{query: " zzz    yyy    ", id: expectedID, count: 1},
+			{query: "   \"zzz yyy xxx\" ", id: expectedID, count: 1},
+			{query: "zzz", id: expectedID, count: 1},
+			{query: "\" zzz    yyy    \"", count: 0},
+			{query: "\"zzz    yyy\"", count: 0},
+			{query: "\" zzz yyy\"", count: 0},
+			{query: "\"zzz yyy  \"", count: 0},
+		}
+
+		for _, tst := range tests {
+			f := models.FindFilterType{
+				Q: &tst.query,
+			}
+			scenes := queryScene(t, qb, nil, &f)
+
+			assert.Len(t, scenes, tst.count)
+			if len(scenes) > 0 {
+				assert.Equal(t, tst.id, scenes[0].ID)
+			}
+		}
+
+		findFilter := models.FindFilterType{}
+		scenes := queryScene(t, qb, nil, &findFilter)
+		assert.NotEqual(t, 0, len(scenes))
+
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
