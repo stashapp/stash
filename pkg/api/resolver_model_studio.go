@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -52,6 +54,30 @@ func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (re
 	}
 
 	return &res, err
+}
+
+func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = image.CountByStudioID(repo.Image(), obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *studioResolver) GalleryCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = gallery.CountByStudioID(repo.Gallery(), obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {

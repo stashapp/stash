@@ -234,7 +234,7 @@ func (r *repository) querySimple(query string, args []interface{}, out interface
 	return nil
 }
 
-func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int, error) {
+func (r *repository) buildQueryBody(body string, whereClauses []string, havingClauses []string) string {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
@@ -242,6 +242,12 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	if len(havingClauses) > 0 {
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
+
+	return body
+}
+
+func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int, error) {
+	body = r.buildQueryBody(body, whereClauses, havingClauses)
 
 	countQuery := r.buildCountQuery(body)
 	idsQuery := body + sortAndPagination
