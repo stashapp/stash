@@ -66,7 +66,7 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 }
 
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
-// scene's MD5 checksum and/or oshash.
+// scene's MD5/OSHASH checksum, or PHash
 func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
 	ids, err := utils.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
@@ -94,6 +94,10 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.S
 
 			if scene.OSHash.Valid {
 				fingerprints = append(fingerprints, scene.OSHash.String)
+			}
+
+			if scene.Phash.Valid {
+				fingerprints = append(fingerprints, utils.PhashToString(scene.Phash.Int64))
 			}
 		}
 
@@ -182,6 +186,18 @@ func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (
 					fingerprint := graphql.FingerprintInput{
 						Hash:      scene.OSHash.String,
 						Algorithm: graphql.FingerprintAlgorithmOshash,
+						Duration:  int(scene.Duration.Float64),
+					}
+					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+						SceneID:     sceneStashID,
+						Fingerprint: &fingerprint,
+					})
+				}
+
+				if scene.Phash.Valid && scene.Duration.Valid {
+					fingerprint := graphql.FingerprintInput{
+						Hash:      utils.PhashToString(scene.Phash.Int64),
+						Algorithm: graphql.FingerprintAlgorithmPhash,
 						Duration:  int(scene.Duration.Float64),
 					}
 					fingerprints = append(fingerprints, graphql.FingerprintSubmission{

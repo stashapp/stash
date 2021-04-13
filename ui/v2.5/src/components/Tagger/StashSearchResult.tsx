@@ -43,13 +43,18 @@ const getDurationStatus = (
 
 const getFingerprintStatus = (
   scene: IStashBoxScene,
-  stashChecksum?: string
+  stashScene: GQL.SlimSceneDataFragment
 ) => {
-  if (scene.fingerprints.some((f) => f.hash === stashChecksum))
+  const checksum = stashScene.checksum ?? stashScene.oshash ?? undefined;
+  const checksumMatch = scene.fingerprints.some((f) => f.hash === checksum);
+  const phashMatch = scene.fingerprints.some(
+    (f) => f.hash === stashScene.phash
+  );
+  if (checksumMatch || phashMatch)
     return (
       <div className="font-weight-bold">
         <SuccessIcon className="mr-2" />
-        Checksum is a match
+        {phashMatch ? "PHash" : "Checksum"} is a match
       </div>
     );
 };
@@ -374,10 +379,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               Performers: {scene?.performers?.map((p) => p.name).join(", ")}
             </div>
             {getDurationStatus(scene, stashScene.file?.duration)}
-            {getFingerprintStatus(
-              scene,
-              stashScene.checksum ?? stashScene.oshash ?? undefined
-            )}
+            {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>
       </div>

@@ -128,6 +128,8 @@ export class ListFilterModel {
           "duration",
           "framerate",
           "bitrate",
+          "tag_count",
+          "performer_count",
           "random",
         ];
         this.displayModeOptions = [
@@ -147,10 +149,13 @@ export class ListFilterModel {
           new HasMarkersCriterionOption(),
           new SceneIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
           new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
+          ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Images:
@@ -162,6 +167,8 @@ export class ListFilterModel {
           "o_counter",
           "filesize",
           "file_mod_time",
+          "tag_count",
+          "performer_count",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
@@ -174,8 +181,10 @@ export class ListFilterModel {
           new ResolutionCriterionOption(),
           new ImageIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
           new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
+          ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
         ];
         break;
@@ -186,6 +195,7 @@ export class ListFilterModel {
           "height",
           "birthdate",
           "scenes_count",
+          "tag_count",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -210,6 +220,11 @@ export class ListFilterModel {
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
+          ListFilterModel.createCriterionOption("tag_count"),
+          ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
           ...numberCriteria
             .concat(stringCriteria)
             .map((c) => ListFilterModel.createCriterionOption(c)),
@@ -225,6 +240,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Movies:
@@ -235,6 +251,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           new StudiosCriterionOption(),
           new MovieIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Galleries:
@@ -243,6 +260,8 @@ export class ListFilterModel {
           "path",
           "file_mod_time",
           "images_count",
+          "tag_count",
+          "performer_count",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -254,9 +273,12 @@ export class ListFilterModel {
           new AverageResolutionCriterionOption(),
           new GalleryIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
           new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
+          ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -344,7 +366,7 @@ export class ListFilterModel {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      this.searchTerm = params.q;
+      this.searchTerm = params.q.trim();
     }
     if (params.p) {
       this.currentPage = Number.parseInt(params.p, 10);
@@ -558,11 +580,27 @@ export class ListFilterModel {
           };
           break;
         }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "performer_count": {
+          const performerCountCrit = criterion as NumberCriterion;
+          result.performer_count = {
+            value: performerCountCrit.value,
+            modifier: performerCountCrit.modifier,
           };
           break;
         }
@@ -579,6 +617,14 @@ export class ListFilterModel {
           result.movies = {
             value: movCrit.value.map((movie) => movie.id),
             modifier: movCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }
@@ -690,9 +736,50 @@ export class ListFilterModel {
           };
           break;
         }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
+
     return result;
   }
 
@@ -818,6 +905,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
         case "performerTags": {
           const performerTagsCrit = criterion as TagsCriterion;
           result.performer_tags = {
@@ -831,6 +926,14 @@ export class ListFilterModel {
           result.performers = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "performer_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.performer_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
           };
           break;
         }
@@ -868,6 +971,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
         case "movieIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
@@ -885,6 +996,14 @@ export class ListFilterModel {
           result.parents = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }
@@ -977,6 +1096,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
         case "performerTags": {
           const performerTagsCrit = criterion as TagsCriterion;
           result.performer_tags = {
@@ -993,11 +1120,27 @@ export class ListFilterModel {
           };
           break;
         }
+        case "performer_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.performer_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
         case "studios": {
           const studCrit = criterion as StudiosCriterion;
           result.studios = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }

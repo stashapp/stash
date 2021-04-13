@@ -23,7 +23,6 @@ import (
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
-	stashConfig "github.com/stashapp/stash/pkg/manager/config"
 )
 
 // Timeout for the scrape http request. Includes transfer time. May want to make this
@@ -52,7 +51,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !stashConfig.GetScraperCertCheck()},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
 		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to 20
@@ -70,7 +69,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 		return nil, err
 	}
 
-	userAgent := globalConfig.UserAgent
+	userAgent := globalConfig.GetScraperUserAgent()
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
@@ -123,14 +122,15 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	act := context.Background()
 
 	// if scraperCDPPath is a remote address, then allocate accordingly
-	if globalConfig.CDPPath != "" {
+	cdpPath := globalConfig.GetScraperCDPPath()
+	if cdpPath != "" {
 		var cancelAct context.CancelFunc
 
-		if globalConfig.isCDPPathHTTP() || globalConfig.isCDPPathWS() {
-			remote := globalConfig.CDPPath
+		if isCDPPathHTTP(globalConfig) || isCDPPathWS(globalConfig) {
+			remote := cdpPath
 
 			// if CDPPath is http(s) then we need to get the websocket URL
-			if globalConfig.isCDPPathHTTP() {
+			if isCDPPathHTTP(globalConfig) {
 				var err error
 				remote, err = getRemoteCDPWSAddress(remote)
 				if err != nil {
@@ -149,7 +149,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 
 			opts := append(chromedp.DefaultExecAllocatorOptions[:],
 				chromedp.UserDataDir(dir),
-				chromedp.ExecPath(globalConfig.CDPPath),
+				chromedp.ExecPath(cdpPath),
 			)
 			act, cancelAct = chromedp.NewExecAllocator(act, opts...)
 		}

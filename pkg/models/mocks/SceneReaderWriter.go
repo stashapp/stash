@@ -438,6 +438,30 @@ func (_m *SceneReaderWriter) FindMany(ids []int) ([]*models.Scene, error) {
 	return r0, r1
 }
 
+// FindDuplicates provides a mock function with given fields: distance
+func (_m *SceneReaderWriter) FindDuplicates(distance int) ([][]*models.Scene, error) {
+	ret := _m.Called(distance)
+
+	var r0 [][]*models.Scene
+	if rf, ok := ret.Get(0).(func(int) [][]*models.Scene); ok {
+		r0 = rf(distance)
+
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(distance)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCover provides a mock function with given fields: sceneID
 func (_m *SceneReaderWriter) GetCover(sceneID int) ([]byte, error) {
 	ret := _m.Called(sceneID)
