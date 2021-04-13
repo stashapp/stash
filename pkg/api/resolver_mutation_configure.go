@@ -219,6 +219,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.Language, *input.Language)
 	}
 
+	if input.SlideshowDelay != nil {
+		c.Set(config.SlideshowDelay, *input.SlideshowDelay)
+	}
+
 	css := ""
 
 	if input.CSS != nil {

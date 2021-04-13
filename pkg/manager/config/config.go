@@ -118,6 +118,7 @@ const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
+const SlideshowDelay = "slideshow_delay"
 
 // Logging options
 const LogFile = "logFile"
@@ -558,6 +559,11 @@ func (i *Instance) GetAutostartVideo() bool {
 func (i *Instance) GetShowStudioAsText() bool {
 	viper.SetDefault(ShowStudioAsText, false)
 	return viper.GetBool(ShowStudioAsText)
+}
+
+func (i *Instance) GetSlideshowDelay() int {
+	viper.SetDefault(SlideshowDelay, 5000)
+	return viper.GetInt(SlideshowDelay)
 }
 
 func (i *Instance) GetCSSPath() string {

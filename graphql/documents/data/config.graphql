@@ -2,7 +2,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes {
     path
     excludeVideo
-    excludeImage 
+    excludeImage
   }
   databasePath
   generatedPath
@@ -52,6 +52,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   css
   cssEnabled
   language
+  slideshowDelay
 }
 
 fragment ConfigData on ConfigResult {
