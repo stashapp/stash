@@ -66,7 +66,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
-  const [mouseDownTargetId, setMouseDownTargetId] = useState<string>();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -185,11 +184,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { nodeName } = e.target as Node;
-    if (mouseDownTargetId === "delay-input") {
-      setMouseDownTargetId(undefined);
-      return;
-    }
-
     if (nodeName === "DIV" || nodeName === "PICTURE") close();
   };
 
@@ -365,9 +359,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   };
 
   const currentIndex = index.current === null ? initialIndex : index.current;
-  const handleInputMouseDown = (e: React.MouseEvent<HTMLInputElement>) => {
-    setMouseDownTargetId(e.currentTarget.id);
-  };
 
   const DelayForm: React.FC<{}> = () => (
     <>
@@ -381,7 +372,6 @@ export const LightboxComponent: React.FC<IProps> = ({
           min={1}
           value={displayedSlideshowInterval ?? 0}
           onChange={onDelayChange}
-          onMouseDown={handleInputMouseDown}
           size="sm"
           id="delay-input"
         />
@@ -405,7 +395,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       className={CLASSNAME}
       role="presentation"
       ref={containerRef}
-      onClick={handleClose}
+      onMouseDown={handleClose}
     >
       {images.length > 0 && !isLoading && !isSwitchingPage ? (
         <>
