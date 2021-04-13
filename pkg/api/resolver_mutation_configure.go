@@ -220,7 +220,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 	}
 
 	if input.SlideshowDelay != nil {
-		config.Set(config.SlideshowDelay, *input.SlideshowDelay)
+		c.Set(config.SlideshowDelay, *input.SlideshowDelay)
 	}
 
 	css := ""
