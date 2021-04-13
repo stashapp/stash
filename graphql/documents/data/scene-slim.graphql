@@ -68,6 +68,7 @@ fragment SlimSceneData on Scene {
   performers {
     id
     name
+    gender
     favorite
     image_path
   }
