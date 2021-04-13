@@ -21,6 +21,10 @@ import (
 )
 
 const (
+	spacedSceneTitle = "zzz yyy xxx"
+)
+
+const (
 	sceneIdxWithMovie = iota
 	sceneIdxWithGallery
 	sceneIdxWithPerformer
@@ -33,6 +37,7 @@ const (
 	sceneIdxWithMarker
 	sceneIdxWithPerformerTag
 	sceneIdxWithPerformerTwoTags
+	sceneIdxWithSpacedName
 	// new indexes above
 	lastSceneIdx
 
@@ -452,6 +457,15 @@ func getSceneNullStringValue(index int, field string) sql.NullString {
 	return getPrefixedNullStringValue("scene", index, field)
 }
 
+func getSceneTitle(index int) string {
+	switch index {
+	case sceneIdxWithSpacedName:
+		return spacedSceneTitle
+	default:
+		return getSceneStringValue(index, titleField)
+	}
+}
+
 func getRating(index int) sql.NullInt64 {
 	rating := index % 6
 	return sql.NullInt64{Int64: int64(rating), Valid: rating > 0}
@@ -493,7 +507,7 @@ func createScenes(sqb models.SceneReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		scene := models.Scene{
 			Path:     getSceneStringValue(i, pathField),
-			Title:    sql.NullString{String: getSceneStringValue(i, titleField), Valid: true},
+			Title:    sql.NullString{String: getSceneTitle(i), Valid: true},
 			Checksum: sql.NullString{String: getSceneStringValue(i, checksumField), Valid: true},
 			Details:  sql.NullString{String: getSceneStringValue(i, "Details"), Valid: true},
 			URL:      getSceneNullStringValue(i, urlField),
