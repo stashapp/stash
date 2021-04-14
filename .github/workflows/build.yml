@@ -8,6 +8,9 @@ on:
   release:
     types: [ published ]
 
+env:
+  COMPILER_IMAGE: stashapp/compiler:4
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -17,44 +20,32 @@ jobs:
     - name: Checkout
       run: git fetch --prune --unshallow --tags
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.13
+    - name: Pull compiler image
+      run: docker pull $COMPILER_IMAGE
 
-    - name: Set up Node
-      uses: actions/setup-node@v2
-      with:
-        node-version: '12'
-    
     - name: Cache node modules
       uses: actions/cache@v2
       env:
         cache-name: cache-node_modules
       with:
         path: ui/v2.5/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
 
     - name: Pre-install
-      run: make pre-ui
+      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make pre-ui"
 
     - name: Generate
-      run: make generate
+      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make generate"
     
+    # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
     - name: Validate
-      run: make ui-validate fmt-check vet it
+      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make ui-validate fmt-check vet it"
 
     - name: Build UI
-      run: make ui-only
+      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make ui-only"
 
-    - name: Cross Compile
-      run: |
-        docker pull stashapp/compiler:4
-        ./scripts/cross-compile.sh
+    - name: Compile for all supported platforms
+      run: ./scripts/cross-compile.sh
 
     - name: Generate checksums
       run: |

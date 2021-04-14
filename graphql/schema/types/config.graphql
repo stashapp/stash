@@ -188,6 +188,8 @@ input ConfigInterfaceInput {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
 }
 
 type ConfigInterfaceResult {
@@ -210,6 +212,8 @@ type ConfigInterfaceResult {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
 }
 
 """All configuration settings"""
