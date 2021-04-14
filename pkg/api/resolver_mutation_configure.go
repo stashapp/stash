@@ -25,11 +25,21 @@ func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInpu
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	c := config.GetInstance()
+	existingPaths := c.GetStashPaths()
 	if len(input.Stashes) > 0 {
 		for _, s := range input.Stashes {
-			exists, err := utils.DirExists(s.Path)
-			if !exists {
-				return makeConfigGeneralResult(), err
+			// Only validate existence of new paths
+			isNew := true
+			for _, path := range existingPaths {
+				if path.Path == s.Path {
+					isNew = false
+				}
+			}
+			if isNew {
+				exists, err := utils.DirExists(s.Path)
+				if !exists {
+					return makeConfigGeneralResult(), err
+				}
 			}
 		}
 		c.Set(config.Stash, input.Stashes)
