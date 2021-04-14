@@ -33,6 +33,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 			for _, path := range existingPaths {
 				if path.Path == s.Path {
 					isNew = false
+					break
 				}
 			}
 			if isNew {
