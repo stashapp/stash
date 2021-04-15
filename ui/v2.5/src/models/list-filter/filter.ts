@@ -239,7 +239,7 @@ export class ListFilterModel {
           "scenes_count",
           "images_count",
           "galleries_count",
-          "random"
+          "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
