@@ -12,6 +12,8 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
       pageCallback: state.pageCallback,
       initialIndex: state.initialIndex,
       pageHeader: state.pageHeader,
+      slideshowEnabled: state.slideshowEnabled,
+      onClose: state.onClose,
     });
   }, [
     setLightboxState,
@@ -20,13 +22,16 @@ export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
     state.pageCallback,
     state.initialIndex,
     state.pageHeader,
+    state.slideshowEnabled,
+    state.onClose,
   ]);
 
   const show = useCallback(
-    (index?: number) => {
+    (index?: number, slideshowEnabled = false) => {
       setLightboxState({
         initialIndex: index,
         isVisible: true,
+        slideshowEnabled,
       });
     },
     [setLightboxState]

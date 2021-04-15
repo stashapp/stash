@@ -1,9 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { FormattedPlural } from "react-intl";
 import { NavUtils } from "src/utils";
 import { BasicCard, TruncatedText } from "src/components/Shared";
+import { ButtonGroup } from "react-bootstrap";
+import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -51,6 +52,57 @@ export const StudioCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
+  function maybeRenderScenesPopoverButton() {
+    if (!studio.scene_count) return;
+
+    return (
+      <PopoverCountButton
+        type="scene"
+        count={studio.scene_count}
+        url={NavUtils.makeStudioScenesUrl(studio)}
+      />
+    );
+  }
+
+  function maybeRenderImagesPopoverButton() {
+    if (!studio.image_count) return;
+
+    return (
+      <PopoverCountButton
+        type="image"
+        count={studio.image_count}
+        url={NavUtils.makeStudioImagesUrl(studio)}
+      />
+    );
+  }
+
+  function maybeRenderGalleriesPopoverButton() {
+    if (!studio.gallery_count) return;
+
+    return (
+      <PopoverCountButton
+        type="gallery"
+        count={studio.gallery_count}
+        url={NavUtils.makeStudioGalleriesUrl(studio)}
+      />
+    );
+  }
+
+  function maybeRenderPopoverButtonGroup() {
+    if (studio.scene_count || studio.image_count || studio.gallery_count) {
+      return (
+        <>
+          <hr />
+          <ButtonGroup className="card-popovers">
+            {maybeRenderScenesPopoverButton()}
+            {maybeRenderImagesPopoverButton()}
+            {maybeRenderGalleriesPopoverButton()}
+          </ButtonGroup>
+        </>
+      );
+    }
+  }
+
   return (
     <BasicCard
       className="studio-card"
@@ -68,17 +120,9 @@ export const StudioCard: React.FC<IProps> = ({
           <h5>
             <TruncatedText text={studio.name} />
           </h5>
-          <span>
-            {studio.scene_count}&nbsp;
-            <FormattedPlural
-              value={studio.scene_count ?? 0}
-              one="scene"
-              other="scenes"
-            />
-            .
-          </span>
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
+          {maybeRenderPopoverButtonGroup()}
         </>
       }
       selected={selected}

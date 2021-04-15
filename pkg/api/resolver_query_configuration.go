@@ -93,6 +93,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
+	slideshowDelay := config.GetSlideshowDelay()
 
 	return &models.ConfigInterfaceResult{
 		MenuItems:           menuItems,
@@ -105,5 +106,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
 		Language:            &language,
+		SlideshowDelay:      &slideshowDelay,
 	}
 }

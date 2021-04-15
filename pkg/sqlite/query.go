@@ -33,6 +33,19 @@ func (qb queryBuilder) executeFind() ([]int, int, error) {
 	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
 }
 
+func (qb queryBuilder) executeCount() (int, error) {
+	if qb.err != nil {
+		return 0, qb.err
+	}
+
+	body := qb.body
+	body += qb.joins.toSQL()
+
+	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	countQuery := qb.repository.buildCountQuery(body)
+	return qb.repository.runCountQuery(countQuery, qb.args)
+}
+
 func (qb *queryBuilder) addWhere(clauses ...string) {
 	for _, clause := range clauses {
 		if len(clause) > 0 {
