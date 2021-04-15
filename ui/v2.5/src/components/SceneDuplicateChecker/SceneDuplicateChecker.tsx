@@ -127,7 +127,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                 })
               }
               defaultValue={distance ?? 0}
-              className="ml-4"
+              className="input-control ml-4"
             >
               <option value={0}>Exact</option>
               <option value={4}>High</option>
