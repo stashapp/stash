@@ -20,13 +20,15 @@ import {
   ErrorMessage,
   HoverPopover,
   Icon,
+  TagLink,
 } from "src/components/Shared";
 import { Pagination } from "src/components/List/Pagination";
 import { TextUtils } from "src/utils";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
+import { sortPerformers } from "src/core/performers";
 import { EditScenesDialog } from "../Scenes/EditScenesDialog";
 
-const CLASSNAME = "DuplicateChecker";
+const CLASSNAME = "duplicate-checker";
 
 export const SceneDuplicateChecker: React.FC = () => {
   const history = useHistory();
@@ -158,8 +160,51 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
   }
 
+  const renderTags = (tags: GQL.Tag[]) =>
+    tags.map((tag) => <TagLink key={tag.id} tag={tag} />);
+
+  const renderPerformers = (performers: Partial<GQL.Performer>[]) => {
+    const sorted = sortPerformers(performers);
+    return sorted.map((performer) => (
+      <div className="performer-tag-container row" key={performer.id}>
+        <TagLink key={performer.id} performer={performer} className="d-block" />
+      </div>
+    ));
+  };
+
+  const renderMovies = (scene: GQL.SlimSceneDataFragment) =>
+    scene.movies.map((sceneMovie) => (
+      <div className="movie-tag-container row" key="movie">
+        <TagLink
+          key={sceneMovie.movie.id}
+          movie={sceneMovie.movie}
+          className="d-block"
+        />
+      </div>
+    ));
+
+  function maybeRenderSceneMarkerPopoverButton(
+    scene: GQL.SlimSceneDataFragment
+  ) {
+    if (scene.scene_markers.length <= 0) return;
+
+    const popoverContent = scene.scene_markers.map((marker) => {
+      const markerPopover = { ...marker, scene: { id: scene.id } };
+      return <TagLink key={marker.id} marker={markerPopover} />;
+    });
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="map-marker-alt" />
+          <span>{scene.scene_markers.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   return (
-    <Card id="scene-duplicate-checker" className="col col-sm-9 mx-auto">
+    <Card id="scene-duplicate-checker" className="col col-xl-10 mx-auto">
       <div className={CLASSNAME}>
         {deletingScenes && selectedScenes && (
           <DeleteScenesDialog
@@ -246,7 +291,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             <option value={80}>80</option>
           </Form.Control>
         </div>
-        <Table striped className={`${CLASSNAME}-table`}>
+        <Table responsive striped className={`${CLASSNAME}-table`}>
           <colgroup>
             <col className={`${CLASSNAME}-checkbox`} />
             <col className={`${CLASSNAME}-sprite`} />
@@ -262,7 +307,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             <tr>
               <th> </th>
               <th> </th>
-              <th>Title</th>
+              <th>Details</th>
               <th>Duration</th>
               <th>Filesize</th>
               <th>Resolution</th>
@@ -297,9 +342,18 @@ export const SceneDuplicateChecker: React.FC = () => {
                     </HoverPopover>
                   </td>
                   <td className="text-left">
-                    <Link to={`/scenes/${scene.id}`}>
-                      {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-                    </Link>
+                    <p>
+                      <Link to={`/scenes/${scene.id}`}>
+                        {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+                      </Link>
+                    </p>
+                    <p className="scene-path">{scene.path}</p>
+                    <p className="scene-metadata">
+                      {renderPerformers(scene.performers)}
+                      {renderTags(scene.tags)}
+                      {renderMovies(scene)}
+                      {maybeRenderSceneMarkerPopoverButton(scene)}
+                    </p>
                   </td>
                   <td>
                     {scene.file.duration &&
