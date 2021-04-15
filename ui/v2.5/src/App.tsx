@@ -22,6 +22,7 @@ import { Settings } from "./components/Settings/Settings";
 import { Stats } from "./components/Stats";
 import Studios from "./components/Studios/Studios";
 import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
+import { SceneDuplicateChecker } from "./components/SceneDuplicateChecker/SceneDuplicateChecker";
 import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
 import Images from "./components/Images/Images";
@@ -103,6 +104,7 @@ export const App: React.FC = () => {
         <Route path="/movies" component={Movies} />
         <Route path="/settings" component={Settings} />
         <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
+        <Route path="/sceneDuplicateChecker" component={SceneDuplicateChecker} />
         <Route path="/setup" component={Setup} />
         <Route path="/migrate" component={Migrate} />
         <Route component={PageNotFound} />

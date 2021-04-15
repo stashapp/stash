@@ -9,13 +9,13 @@ export const SettingsToolsPanel: React.FC = () => {
 
       <Form.Group>
         <Link to="/sceneFilenameParser">
-          <Button variant="secondary">Scene Filename Parser</Button>
+          Scene Filename Parser
         </Link>
       </Form.Group>
 
       <Form.Group>
-        <Link to="/settings?tab=duplicates">
-          <Button variant="secondary">Scene Duplicate Checker</Button>
+        <Link to="/sceneDuplicateChecker">
+          Scene Duplicate Checker
         </Link>
       </Form.Group>
     </>

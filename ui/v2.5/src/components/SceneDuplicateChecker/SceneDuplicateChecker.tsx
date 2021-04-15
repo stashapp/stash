@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Col, Form, Row, Table } from "react-bootstrap";
+import { Button, Card, Col, Form, Row, Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { FormattedNumber } from "react-intl";
 import querystring from "query-string";
@@ -16,7 +16,7 @@ import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
 
 const CLASSNAME = "DuplicateChecker";
 
-export const SettingsDuplicatePanel: React.FC = () => {
+export const SceneDuplicateChecker: React.FC = () => {
   const history = useHistory();
   const { page, size, distance } = querystring.parse(history.location.search);
   const currentPage = Number.parseInt(
@@ -102,6 +102,7 @@ export const SettingsDuplicatePanel: React.FC = () => {
   };
 
   return (
+    <Card id="scene-duplicate-checker" className="col col-sm-9 mx-auto">
     <div className={CLASSNAME}>
       {deletingScene && (
         <DeleteScenesDialog
@@ -266,5 +267,6 @@ export const SettingsDuplicatePanel: React.FC = () => {
         </h4>
       )}
     </div>
+    </Card>
   );
 };
