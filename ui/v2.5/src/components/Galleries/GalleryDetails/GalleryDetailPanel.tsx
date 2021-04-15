@@ -6,6 +6,7 @@ import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { sortPerformers } from "src/core/performers";
 
 interface IGalleryDetailProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -38,7 +39,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
   function renderPerformers() {
     if (!props.gallery.performers || props.gallery.performers.length === 0)
       return;
-    const cards = props.gallery.performers.map((performer) => (
+    const performers = sortPerformers(props.gallery.performers);
+    const cards = performers.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}

@@ -66,19 +66,19 @@ export const Settings: React.FC = () => {
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="tools">
+              <Tab.Pane eventKey="tools" unmountOnExit>
                 <SettingsToolsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="scrapers">
+              <Tab.Pane eventKey="scrapers" unmountOnExit>
                 <SettingsScrapersPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="plugins">
+              <Tab.Pane eventKey="plugins" unmountOnExit>
                 <SettingsPluginsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="logs">
+              <Tab.Pane eventKey="logs" unmountOnExit>
                 <SettingsLogsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="about">
+              <Tab.Pane eventKey="about" unmountOnExit>
                 <SettingsAboutPanel />
               </Tab.Pane>
             </Tab.Content>
