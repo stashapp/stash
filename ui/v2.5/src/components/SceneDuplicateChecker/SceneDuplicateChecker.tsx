@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Button, Card, Col, Form, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  Col,
+  Form,
+  OverlayTrigger,
+  Row,
+  Table,
+  Tooltip,
+} from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { FormattedNumber } from "react-intl";
 import querystring from "query-string";
@@ -14,6 +24,7 @@ import {
 import { Pagination } from "src/components/List/Pagination";
 import { TextUtils } from "src/utils";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
+import { EditScenesDialog } from "../Scenes/EditScenesDialog";
 
 const CLASSNAME = "DuplicateChecker";
 
@@ -33,6 +44,8 @@ export const SceneDuplicateChecker: React.FC = () => {
     10
   );
   const [isMultiDelete, setIsMultiDelete] = useState(false);
+  const [deletingScenes, setDeletingScenes] = useState(false);
+  const [editingScenes, setEditingScenes] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState<Record<string, boolean>>(
     {}
   );
@@ -51,7 +64,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     },
   });
 
-  const [deletingScene, setDeletingScene] = useState<
+  const [selectedScenes, setSelectedScenes] = useState<
     GQL.SlimSceneDataFragment[] | null
   >(null);
 
@@ -77,8 +90,9 @@ export const SceneDuplicateChecker: React.FC = () => {
   };
 
   function onDeleteDialogClosed(deleted: boolean) {
-    setDeletingScene(null);
+    setDeletingScenes(false);
     if (deleted) {
+      setSelectedScenes(null);
       refetch();
       if (isMultiDelete) setCheckedScenes({});
     }
@@ -89,14 +103,21 @@ export const SceneDuplicateChecker: React.FC = () => {
   };
 
   const handleDeleteChecked = () => {
-    setDeletingScene(scenes.flat().filter((s) => checkedScenes[s.id]));
+    setSelectedScenes(scenes.flat().filter((s) => checkedScenes[s.id]));
+    setDeletingScenes(true);
     setIsMultiDelete(true);
   };
 
   const handleDeleteScene = (scene: GQL.SlimSceneDataFragment) => {
-    setDeletingScene([scene]);
+    setSelectedScenes([scene]);
+    setDeletingScenes(true);
     setIsMultiDelete(false);
   };
+
+  function onEdit() {
+    setSelectedScenes(scenes.flat().filter((s) => checkedScenes[s.id]));
+    setEditingScenes(true);
+  }
 
   const renderFilesize = (filesize: string | null | undefined) => {
     const { size: parsedSize, unit } = TextUtils.fileSize(
@@ -126,15 +147,27 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
   }
 
+  function maybeRenderEdit() {
+    if (editingScenes && selectedScenes) {
+      return (
+        <EditScenesDialog
+          selected={selectedScenes}
+          onClose={() => setEditingScenes(false)}
+        />
+      );
+    }
+  }
+
   return (
     <Card id="scene-duplicate-checker" className="col col-sm-9 mx-auto">
       <div className={CLASSNAME}>
-        {deletingScene && (
+        {deletingScenes && selectedScenes && (
           <DeleteScenesDialog
-            selected={deletingScene}
+            selected={selectedScenes}
             onClose={onDeleteDialogClosed}
           />
         )}
+        {maybeRenderEdit()}
         <h4>Duplicate Scenes</h4>
         <Form.Group>
           <Row noGutters>
@@ -172,13 +205,18 @@ export const SceneDuplicateChecker: React.FC = () => {
             {scenes.length} sets of duplicates found.
           </h6>
           {checkCount > 0 && (
-            <Button
-              className="edit-button"
-              variant="danger"
-              onClick={handleDeleteChecked}
-            >
-              Delete {checkCount} scene{checkCount > 1 && "s"}
-            </Button>
+            <ButtonGroup>
+              <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+                <Button variant="secondary" onClick={onEdit}>
+                  <Icon icon="pencil-alt" />
+                </Button>
+              </OverlayTrigger>
+              <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+                <Button variant="danger" onClick={handleDeleteChecked}>
+                  <Icon icon="trash" />
+                </Button>
+              </OverlayTrigger>
+            </ButtonGroup>
           )}
           <Pagination
             itemsPerPage={pageSize}
