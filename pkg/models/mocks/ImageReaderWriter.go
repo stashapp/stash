@@ -370,6 +370,27 @@ func (_m *ImageReaderWriter) Query(imageFilter *models.ImageFilterType, findFilt
 	return r0, r1, r2
 }
 
+// QueryCount provides a mock function with given fields: imageFilter, findFilter
+func (_m *ImageReaderWriter) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(imageFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*models.ImageFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(imageFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*models.ImageFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(imageFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ResetOCounter provides a mock function with given fields: id
 func (_m *ImageReaderWriter) ResetOCounter(id int) (int, error) {
 	ret := _m.Called(id)

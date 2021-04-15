@@ -11,6 +11,7 @@ type GalleryReader interface {
 	Count() (int, error)
 	All() ([]*Gallery, error)
 	Query(galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)
+	QueryCount(galleryFilter *GalleryFilterType, findFilter *FindFilterType) (int, error)
 	GetPerformerIDs(galleryID int) ([]int, error)
 	GetTagIDs(galleryID int) ([]int, error)
 	GetSceneIDs(galleryID int) ([]int, error)

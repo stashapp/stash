@@ -17,6 +17,7 @@ type ImageReader interface {
 	// CountByTagID(tagID int) (int, error)
 	All() ([]*Image, error)
 	Query(imageFilter *ImageFilterType, findFilter *FindFilterType) ([]*Image, int, error)
+	QueryCount(imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
 	GetGalleryIDs(imageID int) ([]int, error)
 	GetTagIDs(imageID int) ([]int, error)
 	GetPerformerIDs(imageID int) ([]int, error)
