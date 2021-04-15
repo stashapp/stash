@@ -153,8 +153,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.birthdate, props.scraped.birthdate)
   );
-  const [deathdate, setDeathdate] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.deathdate, props.scraped.deathdate)
+  const [deathDate, setDeathDate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.death_date,
+      props.scraped.death_date
+    )
   );
   const [ethnicity, setEthnicity] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.ethnicity, props.scraped.ethnicity)
@@ -175,7 +178,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     new ScrapeResult<string>(props.performer.height, props.scraped.height)
   );
   const [weight, setWeight] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.weight, props.scraped.weight)
+    new ScrapeResult<string>(
+      props.performer.weight?.toString(),
+      props.scraped.weight
+    )
   );
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -297,7 +303,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     image,
     tags,
     details,
-    deathdate,
+    deathDate,
     hairColor,
     weight,
   ];
@@ -368,7 +374,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       }),
       image: image.getNewValue(),
       details: details.getNewValue(),
-      deathdate: deathdate.getNewValue(),
+      death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),
       weight: weight.getNewValue(),
     };
@@ -394,9 +400,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setBirthdate(value)}
         />
         <ScrapedInputGroupRow
-          title="Deathdate"
-          result={deathdate}
-          onChange={(value) => setDeathdate(value)}
+          title="Death Date"
+          result={deathDate}
+          onChange={(value) => setDeathDate(value)}
         />
         <ScrapedInputGroupRow
           title="Ethnicity"

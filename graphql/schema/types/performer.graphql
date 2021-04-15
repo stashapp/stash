@@ -34,9 +34,9 @@ type Performer {
   scenes: [Scene!]!
   stash_ids: [StashID!]!
   details: String
-  deathdate: String
+  death_date: String
   hair_color: String
-  weight: String
+  weight: Int
 }
 
 input PerformerCreateInput {
@@ -62,9 +62,9 @@ input PerformerCreateInput {
   image: String
   stash_ids: [StashIDInput!]
   details: String
-  deathdate: String
+  death_date: String
   hair_color: String
-  weight: String
+  weight: Int
 }
 
 input PerformerUpdateInput {
@@ -91,9 +91,9 @@ input PerformerUpdateInput {
   image: String
   stash_ids: [StashIDInput!]
   details: String
-  deathdate: String
+  death_date: String
   hair_color: String
-  weight: String
+  weight: Int
 }
 
 input BulkPerformerUpdateInput {
@@ -117,9 +117,9 @@ input BulkPerformerUpdateInput {
   favorite: Boolean
   tag_ids: BulkUpdateIds
   details: String
-  deathdate: String
+  death_date: String
   hair_color: String
-  weight: String
+  weight: Int
 }
 
 input PerformerDestroyInput {

@@ -30,7 +30,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 }) => {
   const age = TextUtils.age(
     performer.birthdate,
-    ageFromDate ?? performer.deathdate
+    ageFromDate ?? performer.death_date
   );
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 

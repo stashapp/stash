@@ -89,6 +89,7 @@ export function makeCriteria(type: CriterionType = "none") {
       return new GalleriesCriterion();
     case "birth_year":
     case "death_year":
+    case "weight":
       return new NumberCriterion(type, type);
     case "age":
       return new MandatoryNumberCriterion(type, type);
@@ -99,7 +100,6 @@ export function makeCriteria(type: CriterionType = "none") {
     case "hair_color":
     case "eye_color":
     case "height":
-    case "weight":
     case "measurements":
     case "fake_tits":
     case "career_length":

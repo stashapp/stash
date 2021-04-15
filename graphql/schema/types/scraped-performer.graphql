@@ -22,7 +22,7 @@ type ScrapedPerformer {
   """This should be a base64 encoded data URL"""
   image: String
   details: String
-  deathdate: String
+  death_date: String
   hair_color: String
   weight: String
 }
@@ -48,7 +48,7 @@ input ScrapedPerformerInput {
   # not including tags for the input
   # not including image for the input
   details: String
-  deathdate: String
+  death_date: String
   hair_color: String
   weight: String
 }

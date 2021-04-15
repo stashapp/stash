@@ -86,10 +86,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
             />
           </div>
           <div className="row no-gutters">
-            <strong className="col-6">Deathdate:</strong>
+            <strong className="col-6">Death Date:</strong>
             <TruncatedText
               className="col-6"
-              text={performer.deathdate ?? "Unknown"}
+              text={performer.death_date ?? "Unknown"}
             />
           </div>
           <div className="row no-gutters">

@@ -699,7 +699,7 @@ URL
 Twitter
 Instagram
 Birthdate
-Deathdate
+DeathDate
 Ethnicity
 Country
 HairColor

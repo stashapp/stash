@@ -20,9 +20,9 @@ mutation PerformerCreate(
   $stash_ids: [StashIDInput!],
   $image: String
   $details: String,
-  $deathdate: String,
+  $death_date: String,
   $hair_color: String,
-  $weight: String) {
+  $weight: Int) {
 
   performerCreate(input: {
                             name: $name,
@@ -46,7 +46,7 @@ mutation PerformerCreate(
                             stash_ids: $stash_ids,
                             image: $image
                             details: $details,
-                            deathdate: $deathdate,
+                            death_date: $death_date,
                             hair_color: $hair_color,
                             weight: $weight
                           }) {

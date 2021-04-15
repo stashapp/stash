@@ -110,9 +110,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
     details: yup.string().optional(),
-    deathdate: yup.string().optional(),
+    death_date: yup.string().optional(),
     hair_color: yup.string().optional(),
-    weight: yup.string().optional(),
+    weight: yup.number().optional(),
   });
 
   const initialValues = {
@@ -136,7 +136,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
     details: performer.details ?? "",
-    deathdate: performer.deathdate ?? "",
+    death_date: performer.death_date ?? "",
     hair_color: performer.hair_color ?? "",
     weight: performer.weight ?? "",
   };
@@ -317,8 +317,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.details) {
       formik.setFieldValue("details", state.details);
     }
-    if (state.deathdate) {
-      formik.setFieldValue("deathdate", state.deathdate);
+    if (state.death_date) {
+      formik.setFieldValue("death_date", state.death_date);
     }
     if (state.hair_color) {
       formik.setFieldValue("hair_color", state.hair_color);
@@ -419,6 +419,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     > = {
       ...values,
       gender: stringToGender(values.gender),
+      weight: Number(values.weight),
     };
 
     if (!isNew) {
@@ -570,6 +571,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...formik.values,
       gender: stringToGender(formik.values.gender),
       image: formik.values.image ?? performer.image_path,
+      weight: Number(formik.values.weight),
     };
 
     return (
@@ -826,7 +828,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         </Form.Group>
 
         {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
-        {renderTextField("deathdate", "Deathdate", "YYYY-MM-DD")}
+        {renderTextField("death_date", "Death Date", "YYYY-MM-DD")}
         {renderTextField("country", "Country")}
         {renderTextField("ethnicity", "Ethnicity")}
         {renderTextField("hair_color", "Hair Color")}

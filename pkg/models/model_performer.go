@@ -30,9 +30,9 @@ type Performer struct {
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Details      sql.NullString  `db:"details" json:"details"`
-	Deathdate    SQLiteDate      `db:"deathdate" json:"deathdate"`
+	DeathDate    SQLiteDate      `db:"death_date" json:"death_date"`
 	HairColor    sql.NullString  `db:"hair_color" json:"hair_color"`
-	Weight       sql.NullString  `db:"weight" json:"weight"`
+	Weight       sql.NullInt64   `db:"weight" json:"weight"`
 }
 
 type PerformerPartial struct {
@@ -58,9 +58,9 @@ type PerformerPartial struct {
 	CreatedAt    *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Details      *sql.NullString  `db:"details" json:"details"`
-	Deathdate    *SQLiteDate      `db:"deathdate" json:"deathdate"`
+	DeathDate    *SQLiteDate      `db:"death_date" json:"death_date"`
 	HairColor    *sql.NullString  `db:"hair_color" json:"hair_color"`
-	Weight       *sql.NullString  `db:"weight" json:"weight"`
+	Weight       *sql.NullInt64   `db:"weight" json:"weight"`
 }
 
 func NewPerformer(name string) *Performer {

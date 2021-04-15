@@ -38,7 +38,7 @@ const (
 	twitter       = "twitter"
 	details       = "details"
 	hairColor     = "hairColor"
-	weight        = "weight"
+	weight        = 60
 )
 
 var imageBytes = []byte("imageBytes")
@@ -87,9 +87,12 @@ func createFullPerformer(id int, name string) *models.Performer {
 			Timestamp: updateTime,
 		},
 		Details:   models.NullString(details),
-		Deathdate: deathDate,
+		DeathDate: deathDate,
 		HairColor: models.NullString(hairColor),
-		Weight:    models.NullString(weight),
+		Weight: sql.NullInt64{
+			Int64: weight,
+			Valid: true,
+		},
 	}
 }
 
@@ -132,7 +135,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		},
 		Image:     image,
 		Details:   details,
-		Deathdate: deathDate.String,
+		DeathDate: deathDate.String,
 		HairColor: hairColor,
 		Weight:    weight,
 	}

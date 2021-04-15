@@ -52,7 +52,7 @@ url
 twitter  
 instagram  
 birthdate  
-deathdate  
+death_date  
 ethnicity  
 country  
 hair_color  
@@ -234,8 +234,8 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
       "description": "Birthdate of the performer. Format is YYYY-MM-DD",
       "type": "string"
     },
-    "deathdate": {
-      "description": "Deathdate of the performer. Format is YYYY-MM-DD",
+    "death_date": {
+      "description": "Death date of the performer. Format is YYYY-MM-DD",
       "type": "string"
     },
     "ethnicity": {

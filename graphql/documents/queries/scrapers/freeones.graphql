@@ -16,7 +16,7 @@ query ScrapeFreeones($performer_name: String!) {
     piercings
     aliases
     details
-    deathdate
+    death_date
     hair_color
     weight
   }

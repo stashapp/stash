@@ -20,7 +20,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   }
   image
   details
-  deathdate
+  death_date
   hair_color
   weight
 }
@@ -49,7 +49,7 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   remote_site_id
   images
   details
-  deathdate
+  death_date
   hair_color
   weight
 }

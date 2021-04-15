@@ -30,7 +30,7 @@ fragment PerformerData on Performer {
     endpoint
   }
   details
-  deathdate
+  death_date
   hair_color
   weight
 }

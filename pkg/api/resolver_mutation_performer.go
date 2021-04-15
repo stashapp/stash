@@ -87,12 +87,14 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if input.Details != nil {
 		newPerformer.Details = sql.NullString{String: *input.Details, Valid: true}
 	}
-	if input.Deathdate != nil {
-		newPerformer.Deathdate = models.SQLiteDate{String: *input.Deathdate, Valid: true}
+	if input.DeathDate != nil {
+		newPerformer.DeathDate = models.SQLiteDate{String: *input.DeathDate, Valid: true}
 
-		if *input.Deathdate != "" {
-			if utils.IfDateHigherThanAnotherDate(*input.Birthdate, *input.Deathdate) {
-				return nil, errors.New("The date of Death should be higher than the date of Birth")
+		if *input.DeathDate != "" {
+			err = validateDeathDate(*input.Birthdate, *input.DeathDate)
+
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -100,7 +102,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		newPerformer.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
 	}
 	if input.Weight != nil {
-		newPerformer.Weight = sql.NullString{String: *input.Weight, Valid: true}
+		weight := int64(*input.Weight)
+		newPerformer.Weight = sql.NullInt64{Int64: weight, Valid: true}
 	}
 
 	// Start the transaction and save the performer
@@ -172,9 +175,13 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		updatedPerformer.Checksum = &checksum
 	}
 
-	if *input.Deathdate != "" {
-		if utils.IfDateHigherThanAnotherDate(*input.Birthdate, *input.Deathdate) {
-			return nil, errors.New("The date of Death should be higher than the date of Birth")
+	if input.DeathDate != nil {
+		if *input.DeathDate != "" {
+			err = validateDeathDate(*input.Birthdate, *input.DeathDate)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -203,9 +210,9 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
-	updatedPerformer.Deathdate = translator.sqliteDate(input.Deathdate, "deathdate")
+	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
-	updatedPerformer.Weight = translator.nullString(input.Weight, "weight")
+	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
@@ -294,9 +301,9 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
-	updatedPerformer.Deathdate = translator.sqliteDate(input.Deathdate, "deathdate")
+	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
-	updatedPerformer.Weight = translator.nullString(input.Weight, "weight")
+	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
 
 	if translator.hasField("gender") {
 		if input.Gender != nil {
@@ -306,9 +313,13 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 		}
 	}
 
-	if *input.Deathdate != "" {
-		if utils.IfDateHigherThanAnotherDate(*input.Birthdate, *input.Deathdate) {
-			return nil, errors.New("The date of Death should be higher than the date of Birth")
+	if input.DeathDate != nil {
+		if *input.DeathDate != "" {
+			err = validateDeathDate(*input.Birthdate, *input.DeathDate)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -382,4 +393,15 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 		return false, err
 	}
 	return true, nil
+}
+
+func validateDeathDate(fromDate string, toDate string) error {
+	f, _ := utils.ParseDateStringAsTime(fromDate)
+	t, _ := utils.ParseDateStringAsTime(toDate)
+
+	if f.After(t) {
+		return errors.New("the date of death should be higher than the date of birth")
+	}
+
+	return nil
 }

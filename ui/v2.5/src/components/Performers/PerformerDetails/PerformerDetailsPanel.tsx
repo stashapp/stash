@@ -81,6 +81,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     });
   };
 
+  const formatWeight = (weight?: number | null) => {
+    if (!weight) {
+      return "";
+    }
+    return intl.formatNumber(weight, {
+      style: "unit",
+      unit: "kilogram",
+      unitDisplay: "narrow",
+    });
+  };
+
   return (
     <>
       <TextField
@@ -92,15 +103,15 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
       />
       <TextField
-        name="Deathdate"
-        value={TextUtils.formatDate(intl, performer.deathdate ?? undefined)}
+        name="Death Date"
+        value={TextUtils.formatDate(intl, performer.death_date ?? undefined)}
       />
       <TextField name="Ethnicity" value={performer.ethnicity} />
       <TextField name="Hair Color" value={performer.hair_color} />
       <TextField name="Eye Color" value={performer.eye_color} />
       <TextField name="Country" value={performer.country} />
       <TextField name="Height" value={formatHeight(performer.height)} />
-      <TextField name="Weight" value={performer.weight} />
+      <TextField name="Weight" value={formatWeight(performer.weight)} />
       <TextField name="Measurements" value={performer.measurements} />
       <TextField name="Fake Tits" value={performer.fake_tits} />
       <TextField name="Career Length" value={performer.career_length} />

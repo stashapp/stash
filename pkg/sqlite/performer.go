@@ -214,7 +214,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	}
 
 	if deathYear := performerFilter.DeathYear; deathYear != nil {
-		clauses, thisArgs := getYearFilterClause(deathYear.Modifier, deathYear.Value, "deathdate")
+		clauses, thisArgs := getYearFilterClause(deathYear.Modifier, deathYear.Value, "death_date")
 		query.addWhere(clauses...)
 		query.addArg(thisArgs...)
 	}
@@ -353,7 +353,7 @@ func getAgeFilterClause(criterionModifier models.CriterionModifier, value int) (
 			clause = " < ?"
 		}
 
-		clauses = append(clauses, "cast(IFNULL(strftime('%Y.%m%d', performers.deathdate), strftime('%Y.%m%d', 'now') - strftime('%Y.%m%d', performers.birthdate)) as int)"+clause)
+		clauses = append(clauses, "cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now') - strftime('%Y.%m%d', performers.birthdate)) as int)"+clause)
 		args = append(args, value)
 	}
 

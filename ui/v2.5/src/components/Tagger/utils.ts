@@ -57,7 +57,7 @@ export interface IStashBoxPerformer {
   aliases?: string;
   images: string[];
   details?: string;
-  deathdate?: string;
+  death_date?: string;
   hair_color?: string;
   weight?: string;
 }
@@ -131,9 +131,8 @@ const selectPerformers = (
     aliases: p.aliases ?? undefined,
     images: p.images ?? [],
     details: p.details ?? undefined,
-    deathdate: p.deathdate ?? undefined,
+    death_date: p.death_date ?? undefined,
     hair_color: p.hair_color ?? undefined,
-    weight: p.weight ?? undefined,
   }));
 
 export const selectScenes = (

@@ -76,7 +76,7 @@ fragment PerformerFragment on Performer {
     ...BodyModificationFragment
   }
   details
-  deathdate {
+  death_date {
     ...FuzzyDateFragment
   }
   weight
