@@ -159,7 +159,7 @@ func (qb *galleryQueryBuilder) All() ([]*models.Gallery, error) {
 	return qb.queryGalleries(selectAll("galleries")+qb.getGallerySort(nil), nil)
 }
 
-func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
+func (qb *galleryQueryBuilder) makeQuery(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) queryBuilder {
 	if galleryFilter == nil {
 		galleryFilter = &models.GalleryFilterType{}
 	}
@@ -198,6 +198,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
 	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
+	query.handleStringCriterionInput(galleryFilter.URL, "galleries.url")
 	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
 
 	if Organized := galleryFilter.Organized; Organized != nil {
@@ -238,6 +239,16 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		query.addHaving(havingClause)
 	}
 
+	if tagCountFilter := galleryFilter.TagCount; tagCountFilter != nil {
+		clause, count := getCountCriterionClause(galleryTable, galleriesTagsTable, galleryIDColumn, *tagCountFilter)
+
+		if count == 1 {
+			query.addArg(tagCountFilter.Value)
+		}
+
+		query.addWhere(clause)
+	}
+
 	if performersFilter := galleryFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
 		for _, performerID := range performersFilter.Value {
 			query.addArg(performerID)
@@ -247,6 +258,16 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_galleries", "gallery_id", "performer_id", performersFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
+	}
+
+	if performerCountFilter := galleryFilter.PerformerCount; performerCountFilter != nil {
+		clause, count := getCountCriterionClause(galleryTable, performersGalleriesTable, galleryIDColumn, *performerCountFilter)
+
+		if count == 1 {
+			query.addArg(performerCountFilter.Value)
+		}
+
+		query.addWhere(clause)
 	}
 
 	if studiosFilter := galleryFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
@@ -262,6 +283,13 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	handleGalleryPerformerTagsCriterion(&query, galleryFilter.PerformerTags)
 
 	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)
+
+	return query
+}
+
+func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
+	query := qb.makeQuery(galleryFilter, findFilter)
+
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -278,6 +306,12 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	}
 
 	return galleries, countResult, nil
+}
+
+func (qb *galleryQueryBuilder) QueryCount(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (int, error) {
+	query := qb.makeQuery(galleryFilter, findFilter)
+
+	return query.executeCount()
 }
 
 func (qb *galleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder, resolutionFilter *models.ResolutionEnum) {
@@ -381,7 +415,15 @@ func (qb *galleryQueryBuilder) getGallerySort(findFilter *models.FindFilterType)
 		sort = findFilter.GetSort("path")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "galleries")
+
+	switch sort {
+	case "tag_count":
+		return getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
+	case "performer_count":
+		return getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
+	default:
+		return getSort(sort, direction, "galleries")
+	}
 }
 
 func (qb *galleryQueryBuilder) queryGallery(query string, args []interface{}) (*models.Gallery, error) {

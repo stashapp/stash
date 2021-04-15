@@ -9,6 +9,7 @@ import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapersPanel } from "./SettingsScrapersPanel";
+import { SettingsDuplicatePanel } from "./SettingsDuplicatePanel";
 
 export const Settings: React.FC = () => {
   const location = useLocation();
@@ -46,6 +47,9 @@ export const Settings: React.FC = () => {
                 <Nav.Link eventKey="logs">Logs</Nav.Link>
               </Nav.Item>
               <Nav.Item>
+                <Nav.Link eventKey="duplicates">Dupe Checker</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
                 <Nav.Link eventKey="about">About</Nav.Link>
               </Nav.Item>
               <hr className="d-sm-none" />
@@ -62,16 +66,19 @@ export const Settings: React.FC = () => {
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="scrapers">
+              <Tab.Pane eventKey="scrapers" unmountOnExit>
                 <SettingsScrapersPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="plugins">
+              <Tab.Pane eventKey="plugins" unmountOnExit>
                 <SettingsPluginsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="logs">
+              <Tab.Pane eventKey="logs" unmountOnExit>
                 <SettingsLogsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="about">
+              <Tab.Pane eventKey="duplicates" unmountOnExit>
+                <SettingsDuplicatePanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="about" unmountOnExit>
                 <SettingsAboutPanel />
               </Tab.Pane>
             </Tab.Content>

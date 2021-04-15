@@ -19,6 +19,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   const { data, error, loading } = useConfiguration();
 
   const [sprites, setSprites] = useState(true);
+  const [phashes, setPhashes] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
@@ -60,6 +61,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
     try {
       await mutateMetadataGenerate({
         sprites,
+        phashes,
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
@@ -242,6 +244,12 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
             checked={transcodes}
             label="Transcodes (MP4 conversions of unsupported video formats)"
             onChange={() => setTranscodes(!transcodes)}
+          />
+          <Form.Check
+            id="phash-task"
+            checked={phashes}
+            label="Perceptual hashes (for deduplication)"
+            onChange={() => setPhashes(!phashes)}
           />
 
           <hr />

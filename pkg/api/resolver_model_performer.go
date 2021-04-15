@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -153,6 +155,30 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 	var res int
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		res, err = repo.Scene().CountByPerformerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = image.CountByPerformerID(repo.Image(), obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = gallery.CountByPerformerID(repo.Gallery(), obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

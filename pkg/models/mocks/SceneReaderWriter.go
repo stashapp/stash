@@ -415,6 +415,29 @@ func (_m *SceneReaderWriter) FindByPerformerID(performerID int) ([]*models.Scene
 	return r0, r1
 }
 
+// FindDuplicates provides a mock function with given fields: distance
+func (_m *SceneReaderWriter) FindDuplicates(distance int) ([][]*models.Scene, error) {
+	ret := _m.Called(distance)
+
+	var r0 [][]*models.Scene
+	if rf, ok := ret.Get(0).(func(int) [][]*models.Scene); ok {
+		r0 = rf(distance)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(distance)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ids
 func (_m *SceneReaderWriter) FindMany(ids []int) ([]*models.Scene, error) {
 	ret := _m.Called(ids)
@@ -625,29 +648,6 @@ func (_m *SceneReaderWriter) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	return r0, r1, r2
-}
-
-// QueryForAutoTag provides a mock function with given fields: regex, pathPrefixes
-func (_m *SceneReaderWriter) QueryForAutoTag(regex string, pathPrefixes []string) ([]*models.Scene, error) {
-	ret := _m.Called(regex, pathPrefixes)
-
-	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(string, []string) []*models.Scene); ok {
-		r0 = rf(regex, pathPrefixes)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Scene)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, []string) error); ok {
-		r1 = rf(regex, pathPrefixes)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // ResetOCounter provides a mock function with given fields: id

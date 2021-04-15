@@ -70,3 +70,56 @@
     list-style: none;
   }
 }
+
+.DuplicateChecker {
+  min-width: 768px;
+
+  .filter-container {
+    margin: 0;
+  }
+
+  .duplicate-group {
+    border-top: 50px solid #30404d;
+
+    &:first-child {
+      border-top: none;
+    }
+  }
+
+  &-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  &-checkbox {
+    width: 10px;
+  }
+
+  &-sprite {
+    width: 110px;
+  }
+
+  &-duration {
+    width: 80px;
+  }
+
+  &-filesize {
+    width: 90px;
+  }
+
+  &-resolution {
+    width: 100px;
+  }
+
+  &-bitrate {
+    width: 100px;
+  }
+
+  &-codec {
+    width: 70px;
+  }
+
+  &-operations {
+    width: 70px;
+  }
+}

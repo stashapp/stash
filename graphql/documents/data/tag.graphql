@@ -4,5 +4,7 @@ fragment TagData on Tag {
   image_path
   scene_count
   scene_marker_count
+  image_count
+  gallery_count
   performer_count
 }

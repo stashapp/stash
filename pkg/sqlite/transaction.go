@@ -29,6 +29,10 @@ func (t *transaction) Begin() error {
 		return errors.New("transaction already begun")
 	}
 
+	if err := database.Ready(); err != nil {
+		return err
+	}
+
 	var err error
 	t.tx, err = database.DB.BeginTxx(t.Ctx, nil)
 	if err != nil {
@@ -124,6 +128,10 @@ func (t *transaction) Tag() models.TagReaderWriter {
 type ReadTransaction struct{}
 
 func (t *ReadTransaction) Begin() error {
+	if err := database.Ready(); err != nil {
+		return err
+	}
+
 	return nil
 }
 

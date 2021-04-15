@@ -119,6 +119,71 @@ func TestMovieQueryStudio(t *testing.T) {
 	})
 }
 
+func TestMovieQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	movieURL := getMovieStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    movieURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.MovieFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(n *models.Movie) {
+		t.Helper()
+		verifyNullString(t, n.URL, urlCriterion)
+	}
+
+	verifyMovieQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyMovieQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "movie_.*1_URL"
+	verifyMovieQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyMovieQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyMovieQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyMovieQuery(t, filter, verifyFn)
+}
+
+func verifyMovieQuery(t *testing.T, filter models.MovieFilterType, verifyFn func(s *models.Movie)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Movie()
+
+		movies := queryMovie(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(movies), 0)
+
+		for _, m := range movies {
+			verifyFn(m)
+		}
+
+		return nil
+	})
+}
+
+func queryMovie(t *testing.T, sqb models.MovieReader, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) []*models.Movie {
+	movies, _, err := sqb.Query(movieFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying movie: %s", err.Error())
+	}
+
+	return movies
+}
+
 func TestMovieUpdateMovieImages(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		mqb := r.Movie()

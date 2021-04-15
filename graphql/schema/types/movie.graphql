@@ -28,8 +28,9 @@ input MovieCreateInput {
   director: String
   synopsis: String
   url: String
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   front_image: String
+  """This should be a URL or a base64 encoded data URL"""
   back_image: String
 }
 
@@ -44,8 +45,9 @@ input MovieUpdateInput {
   director: String
   synopsis: String
   url: String
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   front_image: String
+  """This should be a URL or a base64 encoded data URL"""
   back_image: String
 }
 

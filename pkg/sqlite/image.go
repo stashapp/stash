@@ -216,7 +216,7 @@ func (qb *imageQueryBuilder) All() ([]*models.Image, error) {
 	return qb.queryImages(selectAll(imageTable)+qb.getImageSort(nil), nil)
 }
 
-func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
+func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) queryBuilder {
 	if imageFilter == nil {
 		imageFilter = &models.ImageFilterType{}
 	}
@@ -328,6 +328,16 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		query.addHaving(havingClause)
 	}
 
+	if tagCountFilter := imageFilter.TagCount; tagCountFilter != nil {
+		clause, count := getCountCriterionClause(imageTable, imagesTagsTable, imageIDColumn, *tagCountFilter)
+
+		if count == 1 {
+			query.addArg(tagCountFilter.Value)
+		}
+
+		query.addWhere(clause)
+	}
+
 	if galleriesFilter := imageFilter.Galleries; galleriesFilter != nil && len(galleriesFilter.Value) > 0 {
 		for _, galleryID := range galleriesFilter.Value {
 			query.addArg(galleryID)
@@ -350,6 +360,16 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		query.addHaving(havingClause)
 	}
 
+	if performerCountFilter := imageFilter.PerformerCount; performerCountFilter != nil {
+		clause, count := getCountCriterionClause(imageTable, performersImagesTable, imageIDColumn, *performerCountFilter)
+
+		if count == 1 {
+			query.addArg(performerCountFilter.Value)
+		}
+
+		query.addWhere(clause)
+	}
+
 	if studiosFilter := imageFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
 		for _, studioID := range studiosFilter.Value {
 			query.addArg(studioID)
@@ -363,6 +383,13 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 	handleImagePerformerTagsCriterion(&query, imageFilter.PerformerTags)
 
 	query.sortAndPagination = qb.getImageSort(findFilter) + getPagination(findFilter)
+
+	return query
+}
+
+func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
+	query := qb.makeQuery(imageFilter, findFilter)
+
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -379,6 +406,12 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 	}
 
 	return images, countResult, nil
+}
+
+func (qb *imageQueryBuilder) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {
+	query := qb.makeQuery(imageFilter, findFilter)
+
+	return query.executeCount()
 }
 
 func handleImagePerformerTagsCriterion(query *queryBuilder, performerTagsFilter *models.MultiCriterionInput) {
@@ -412,7 +445,15 @@ func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) str
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	return getSort(sort, direction, "images")
+
+	switch sort {
+	case "tag_count":
+		return getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
+	case "performer_count":
+		return getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
+	default:
+		return getSort(sort, direction, "images")
+	}
 }
 
 func (qb *imageQueryBuilder) queryImage(query string, args []interface{}) (*models.Image, error) {

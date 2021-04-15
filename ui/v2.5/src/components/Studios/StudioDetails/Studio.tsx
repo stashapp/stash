@@ -260,7 +260,7 @@ export const Studio: React.FC = () => {
   function onClearImage() {
     setImage(null);
     setImagePreview(
-      studio.image_path ? `${studio.image_path}?default=true` : undefined
+      studio.image_path ? `${studio.image_path}&default=true` : undefined
     );
   }
 

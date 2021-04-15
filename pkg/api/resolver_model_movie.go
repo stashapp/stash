@@ -89,6 +89,24 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (
 }
 
 func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
+	// don't return any thing if there is no back image
+	var img []byte
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		var err error
+		img, err = repo.Movie().GetBackImage(obj.ID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if img == nil {
+		return nil, nil
+	}
+
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	backimagePath := urlbuilders.NewMovieURLBuilder(baseURL, obj).GetMovieBackImageURL()
 	return &backimagePath, nil

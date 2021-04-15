@@ -38,6 +38,7 @@ fragment SlimImageData on Image {
   performers {
     id
     name
+    gender
     favorite
     image_path
   }

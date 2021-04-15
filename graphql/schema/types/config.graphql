@@ -1,3 +1,13 @@
+input SetupInput {
+  """Empty to indicate $HOME/.stash/config.yml default"""
+  configLocation: String!
+  stashes: [StashConfigInput!]!
+  """Empty to indicate default"""
+  databaseFile: String!
+  """Empty to indicate default"""
+  generatedLocation: String!
+}
+
 enum StreamingResolutionEnum {
   "240p", LOW
   "480p", STANDARD
@@ -120,6 +130,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """API Key"""
+  apiKey: String!
   """Username"""
   username: String!
   """Password"""
@@ -176,6 +188,8 @@ input ConfigInterfaceInput {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
 }
 
 type ConfigInterfaceResult {
@@ -198,6 +212,8 @@ type ConfigInterfaceResult {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
 }
 
 """All configuration settings"""
@@ -224,4 +240,8 @@ type StashConfig {
   path: String!
   excludeVideo: Boolean!
   excludeImage: Boolean!
+}
+
+input GenerateAPIKeyInput {
+  clear: Boolean
 }

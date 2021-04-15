@@ -534,6 +534,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newFilter = _.cloneDeep(filter);
     newFilter.currentPage = page;
     updateQueryParams(newFilter);
+    window.scrollTo(0, 0);
   };
 
   const renderFilter = !options.filterHook

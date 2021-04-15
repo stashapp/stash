@@ -283,6 +283,44 @@ func TestStudioStashIDs(t *testing.T) {
 	}
 }
 
+func TestStudioQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	studioURL := getStudioStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    studioURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.StudioFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(g *models.Studio) {
+		t.Helper()
+		verifyNullString(t, g.URL, urlCriterion)
+	}
+
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "studio_.*1_URL"
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyStudioQuery(t, filter, verifyFn)
+}
+
 func TestStudioQueryRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{
@@ -351,6 +389,15 @@ func TestStudioQueryIsMissingRating(t *testing.T) {
 
 		return nil
 	})
+}
+
+func queryStudio(t *testing.T, sqb models.StudioReader, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
+	studios, _, err := sqb.Query(studioFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying studio: %s", err.Error())
+	}
+
+	return studios
 }
 
 // TODO Create

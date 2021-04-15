@@ -10,6 +10,7 @@ fragment SlimSceneData on Scene {
   o_counter
   organized
   path
+  phash
 
   file {
     size
@@ -29,6 +30,7 @@ fragment SlimSceneData on Scene {
     webp
     vtt
     chapters_vtt
+    sprite
   }
 
   scene_markers {
@@ -66,6 +68,7 @@ fragment SlimSceneData on Scene {
   performers {
     id
     name
+    gender
     favorite
     image_path
   }

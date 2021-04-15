@@ -7,6 +7,8 @@ import (
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 type EditDetails interface {
@@ -15,6 +17,13 @@ type EditDetails interface {
 
 type EditTarget interface {
 	IsEditTarget()
+}
+
+type ActivateNewUserInput struct {
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	ActivationKey string `json:"activation_key"`
+	Password      string `json:"password"`
 }
 
 type ApplyEditInput struct {
@@ -58,11 +67,15 @@ type Edit struct {
 	Target     EditTarget     `json:"target"`
 	TargetType TargetTypeEnum `json:"target_type"`
 	// Objects to merge with the target. Only applicable to merges
-	MergeSources []EditTarget   `json:"merge_sources"`
-	Operation    OperationEnum  `json:"operation"`
-	Details      EditDetails    `json:"details"`
-	Comments     []*EditComment `json:"comments"`
-	Votes        []*VoteComment `json:"votes"`
+	MergeSources []EditTarget  `json:"merge_sources"`
+	Operation    OperationEnum `json:"operation"`
+	Details      EditDetails   `json:"details"`
+	// Previous state of fields being modified - null if operation is create or delete.
+	OldDetails EditDetails `json:"old_details"`
+	// Entity specific options
+	Options  *PerformerEditOptions `json:"options"`
+	Comments []*EditComment        `json:"comments"`
+	Votes    []*VoteComment        `json:"votes"`
 	//  = Accepted - Rejected
 	VoteCount int            `json:"vote_count"`
 	Status    VoteStatusEnum `json:"status"`
@@ -115,11 +128,6 @@ type EditVoteInput struct {
 	Type    VoteTypeEnum `json:"type"`
 }
 
-type EthnicityCriterionInput struct {
-	Value    *EthnicityEnum    `json:"value"`
-	Modifier CriterionModifier `json:"modifier"`
-}
-
 type EyeColorCriterionInput struct {
 	Value    *EyeColorEnum     `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -157,6 +165,11 @@ type FuzzyDateInput struct {
 	Accuracy DateAccuracyEnum `json:"accuracy"`
 }
 
+type GrantInviteInput struct {
+	UserID string `json:"user_id"`
+	Amount int    `json:"amount"`
+}
+
 type HairColorCriterionInput struct {
 	Value    *HairColorEnum    `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -170,12 +183,13 @@ type IDCriterionInput struct {
 type Image struct {
 	ID     string `json:"id"`
 	URL    string `json:"url"`
-	Width  *int   `json:"width"`
-	Height *int   `json:"height"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
 }
 
 type ImageCreateInput struct {
-	URL string `json:"url"`
+	URL  *string         `json:"url"`
+	File *graphql.Upload `json:"file"`
 }
 
 type ImageDestroyInput struct {
@@ -183,8 +197,8 @@ type ImageDestroyInput struct {
 }
 
 type ImageUpdateInput struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+	ID  string  `json:"id"`
+	URL *string `json:"url"`
 }
 
 type IntCriterionInput struct {
@@ -211,6 +225,11 @@ type MultiIDCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type NewUserInput struct {
+	Email     string  `json:"email"`
+	InviteKey *string `json:"invite_key"`
+}
+
 type Performer struct {
 	ID             string         `json:"id"`
 	Name           string         `json:"name"`
@@ -234,6 +253,8 @@ type Performer struct {
 	Piercings       []*BodyModification `json:"piercings"`
 	Images          []*Image            `json:"images"`
 	Deleted         bool                `json:"deleted"`
+	Edits           []*Edit             `json:"edits"`
+	SceneCount      int                 `json:"scene_count"`
 }
 
 func (Performer) IsEditTarget() {}
@@ -276,21 +297,25 @@ type PerformerDestroyInput struct {
 }
 
 type PerformerEdit struct {
-	Name           *string        `json:"name"`
-	Disambiguation *string        `json:"disambiguation"`
-	AddedAliases   []string       `json:"added_aliases"`
-	RemovedAliases []string       `json:"removed_aliases"`
-	Gender         *GenderEnum    `json:"gender"`
-	AddedUrls      []*URL         `json:"added_urls"`
-	RemovedUrls    []*URL         `json:"removed_urls"`
-	Birthdate      *FuzzyDate     `json:"birthdate"`
-	Ethnicity      *EthnicityEnum `json:"ethnicity"`
-	Country        *string        `json:"country"`
-	EyeColor       *EyeColorEnum  `json:"eye_color"`
-	HairColor      *HairColorEnum `json:"hair_color"`
+	Name              *string        `json:"name"`
+	Disambiguation    *string        `json:"disambiguation"`
+	AddedAliases      []string       `json:"added_aliases"`
+	RemovedAliases    []string       `json:"removed_aliases"`
+	Gender            *GenderEnum    `json:"gender"`
+	AddedUrls         []*URL         `json:"added_urls"`
+	RemovedUrls       []*URL         `json:"removed_urls"`
+	Birthdate         *string        `json:"birthdate"`
+	BirthdateAccuracy *string        `json:"birthdate_accuracy"`
+	Ethnicity         *EthnicityEnum `json:"ethnicity"`
+	Country           *string        `json:"country"`
+	EyeColor          *EyeColorEnum  `json:"eye_color"`
+	HairColor         *HairColorEnum `json:"hair_color"`
 	// Height in cm
 	Height           *int                `json:"height"`
-	Measurements     *Measurements       `json:"measurements"`
+	CupSize          *string             `json:"cup_size"`
+	BandSize         *int                `json:"band_size"`
+	WaistSize        *int                `json:"waist_size"`
+	HipSize          *int                `json:"hip_size"`
 	BreastType       *BreastTypeEnum     `json:"breast_type"`
 	CareerStartYear  *int                `json:"career_start_year"`
 	CareerEndYear    *int                `json:"career_end_year"`
@@ -329,6 +354,22 @@ type PerformerEditInput struct {
 	Edit *EditInput `json:"edit"`
 	// Not required for destroy type
 	Details *PerformerEditDetailsInput `json:"details"`
+	// Controls aliases modification for merges and name modifications
+	Options *PerformerEditOptionsInput `json:"options"`
+}
+
+type PerformerEditOptions struct {
+	//  Set performer alias on scenes without alias to old name if name is changed
+	SetModifyAliases bool `json:"set_modify_aliases"`
+	//  Set performer alias on scenes attached to merge sources to old name
+	SetMergeAliases bool `json:"set_merge_aliases"`
+}
+
+type PerformerEditOptionsInput struct {
+	//  Set performer alias on scenes without alias to old name if name is changed
+	SetModifyAliases *bool `json:"set_modify_aliases"`
+	//  Set performer alias on scenes attached to merge sources to old name
+	SetMergeAliases *bool `json:"set_merge_aliases"`
 }
 
 type PerformerFilterType struct {
@@ -339,13 +380,13 @@ type PerformerFilterType struct {
 	// Search aliases only - assumes like query unless quoted
 	Alias          *string               `json:"alias"`
 	Disambiguation *StringCriterionInput `json:"disambiguation"`
-	Gender         *GenderEnum           `json:"gender"`
+	Gender         *GenderFilterEnum     `json:"gender"`
 	// Filter to search urls - assumes like query unless quoted
 	URL             *string                         `json:"url"`
 	Birthdate       *DateCriterionInput             `json:"birthdate"`
 	BirthYear       *IntCriterionInput              `json:"birth_year"`
 	Age             *IntCriterionInput              `json:"age"`
-	Ethnicity       *EthnicityCriterionInput        `json:"ethnicity"`
+	Ethnicity       *EthnicityFilterEnum            `json:"ethnicity"`
 	Country         *StringCriterionInput           `json:"country"`
 	EyeColor        *EyeColorCriterionInput         `json:"eye_color"`
 	HairColor       *HairColorCriterionInput        `json:"hair_color"`
@@ -410,6 +451,11 @@ type QueryStudiosResultType struct {
 	Studios []*Studio `json:"studios"`
 }
 
+type QueryTagCategoriesResultType struct {
+	Count         int            `json:"count"`
+	TagCategories []*TagCategory `json:"tag_categories"`
+}
+
 type QueryTagsResultType struct {
 	Count int    `json:"count"`
 	Tags  []*Tag `json:"tags"`
@@ -418,6 +464,15 @@ type QueryTagsResultType struct {
 type QueryUsersResultType struct {
 	Count int     `json:"count"`
 	Users []*User `json:"users"`
+}
+
+type ResetPasswordInput struct {
+	Email string `json:"email"`
+}
+
+type RevokeInviteInput struct {
+	UserID string `json:"user_id"`
+	Amount int    `json:"amount"`
 }
 
 type RoleCriterionInput struct {
@@ -515,6 +570,8 @@ type SceneFilterType struct {
 	Date *DateCriterionInput `json:"date"`
 	// Filter to only include scenes with this studio
 	Studios *MultiIDCriterionInput `json:"studios"`
+	// Filter to only include scenes with this studio as primary or parent
+	ParentStudio *string `json:"parentStudio"`
 	// Filter to only include scenes with these tags
 	Tags *MultiIDCriterionInput `json:"tags"`
 	// Filter to only include scenes with these performers
@@ -598,9 +655,12 @@ type StudioEditInput struct {
 type StudioFilterType struct {
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name"`
+	// Filter to search studio and parent studio name - assumes like query unless quoted
+	Names *string `json:"names"`
 	// Filter to search url - assumes like query unless quoted
-	URL    *string           `json:"url"`
-	Parent *IDCriterionInput `json:"parent"`
+	URL       *string           `json:"url"`
+	Parent    *IDCriterionInput `json:"parent"`
+	HasParent *bool             `json:"has_parent"`
 }
 
 type StudioUpdateInput struct {
@@ -613,20 +673,46 @@ type StudioUpdateInput struct {
 }
 
 type Tag struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description *string  `json:"description"`
-	Aliases     []string `json:"aliases"`
-	Deleted     bool     `json:"deleted"`
-	Edits       []*Edit  `json:"edits"`
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Description *string      `json:"description"`
+	Aliases     []string     `json:"aliases"`
+	Deleted     bool         `json:"deleted"`
+	Edits       []*Edit      `json:"edits"`
+	Category    *TagCategory `json:"category"`
 }
 
 func (Tag) IsEditTarget() {}
+
+type TagCategory struct {
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	Group       TagGroupEnum `json:"group"`
+	Description *string      `json:"description"`
+}
+
+type TagCategoryCreateInput struct {
+	Name        string       `json:"name"`
+	Group       TagGroupEnum `json:"group"`
+	Description *string      `json:"description"`
+}
+
+type TagCategoryDestroyInput struct {
+	ID string `json:"id"`
+}
+
+type TagCategoryUpdateInput struct {
+	ID          string        `json:"id"`
+	Name        *string       `json:"name"`
+	Group       *TagGroupEnum `json:"group"`
+	Description *string       `json:"description"`
+}
 
 type TagCreateInput struct {
 	Name        string   `json:"name"`
 	Description *string  `json:"description"`
 	Aliases     []string `json:"aliases"`
+	CategoryID  *string  `json:"category_id"`
 }
 
 type TagDestroyInput struct {
@@ -638,6 +724,7 @@ type TagEdit struct {
 	Description    *string  `json:"description"`
 	AddedAliases   []string `json:"added_aliases"`
 	RemovedAliases []string `json:"removed_aliases"`
+	CategoryID     *string  `json:"category_id"`
 }
 
 func (TagEdit) IsEditDetails() {}
@@ -646,6 +733,7 @@ type TagEditDetailsInput struct {
 	Name        *string  `json:"name"`
 	Description *string  `json:"description"`
 	Aliases     []string `json:"aliases"`
+	CategoryID  *string  `json:"category_id"`
 }
 
 type TagEditInput struct {
@@ -661,6 +749,8 @@ type TagFilterType struct {
 	Names *string `json:"names"`
 	// Filter to search name - assumes like query unless quoted
 	Name *string `json:"name"`
+	// Filter to category ID
+	CategoryID *string `json:"category_id"`
 }
 
 type TagUpdateInput struct {
@@ -668,6 +758,7 @@ type TagUpdateInput struct {
 	Name        *string  `json:"name"`
 	Description *string  `json:"description"`
 	Aliases     []string `json:"aliases"`
+	CategoryID  *string  `json:"category_id"`
 }
 
 type URL struct {
@@ -695,21 +786,26 @@ type User struct {
 	// Votes on unsuccessful edits
 	UnsuccessfulVotes int `json:"unsuccessful_votes"`
 	// Calls to the API from this user over a configurable time period
-	APICalls int `json:"api_calls"`
+	APICalls          int      `json:"api_calls"`
+	InvitedBy         *User    `json:"invited_by"`
+	InviteTokens      *int     `json:"invite_tokens"`
+	ActiveInviteCodes []string `json:"active_invite_codes"`
 }
 
 type UserChangePasswordInput struct {
 	// Password in plain text
-	ExistingPassword string `json:"existing_password"`
-	NewPassword      string `json:"new_password"`
+	ExistingPassword *string `json:"existing_password"`
+	NewPassword      string  `json:"new_password"`
+	ResetKey         *string `json:"reset_key"`
 }
 
 type UserCreateInput struct {
 	Name string `json:"name"`
 	// Password in plain text
-	Password string     `json:"password"`
-	Roles    []RoleEnum `json:"roles"`
-	Email    string     `json:"email"`
+	Password    string     `json:"password"`
+	Roles       []RoleEnum `json:"roles"`
+	Email       string     `json:"email"`
+	InvitedByID *string    `json:"invited_by_id"`
 }
 
 type UserDestroyInput struct {
@@ -735,6 +831,8 @@ type UserFilterType struct {
 	UnsuccessfulVotes *IntCriterionInput `json:"unsuccessful_votes"`
 	// Filter by number of API calls
 	APICalls *IntCriterionInput `json:"api_calls"`
+	// Filter by user that invited
+	InvitedBy *string `json:"invited_by"`
 }
 
 type UserUpdateInput struct {
@@ -960,6 +1058,61 @@ func (e EthnicityEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type EthnicityFilterEnum string
+
+const (
+	EthnicityFilterEnumUnknown       EthnicityFilterEnum = "UNKNOWN"
+	EthnicityFilterEnumCaucasian     EthnicityFilterEnum = "CAUCASIAN"
+	EthnicityFilterEnumBlack         EthnicityFilterEnum = "BLACK"
+	EthnicityFilterEnumAsian         EthnicityFilterEnum = "ASIAN"
+	EthnicityFilterEnumIndian        EthnicityFilterEnum = "INDIAN"
+	EthnicityFilterEnumLatin         EthnicityFilterEnum = "LATIN"
+	EthnicityFilterEnumMiddleEastern EthnicityFilterEnum = "MIDDLE_EASTERN"
+	EthnicityFilterEnumMixed         EthnicityFilterEnum = "MIXED"
+	EthnicityFilterEnumOther         EthnicityFilterEnum = "OTHER"
+)
+
+var AllEthnicityFilterEnum = []EthnicityFilterEnum{
+	EthnicityFilterEnumUnknown,
+	EthnicityFilterEnumCaucasian,
+	EthnicityFilterEnumBlack,
+	EthnicityFilterEnumAsian,
+	EthnicityFilterEnumIndian,
+	EthnicityFilterEnumLatin,
+	EthnicityFilterEnumMiddleEastern,
+	EthnicityFilterEnumMixed,
+	EthnicityFilterEnumOther,
+}
+
+func (e EthnicityFilterEnum) IsValid() bool {
+	switch e {
+	case EthnicityFilterEnumUnknown, EthnicityFilterEnumCaucasian, EthnicityFilterEnumBlack, EthnicityFilterEnumAsian, EthnicityFilterEnumIndian, EthnicityFilterEnumLatin, EthnicityFilterEnumMiddleEastern, EthnicityFilterEnumMixed, EthnicityFilterEnumOther:
+		return true
+	}
+	return false
+}
+
+func (e EthnicityFilterEnum) String() string {
+	return string(e)
+}
+
+func (e *EthnicityFilterEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = EthnicityFilterEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid EthnicityFilterEnum", str)
+	}
+	return nil
+}
+
+func (e EthnicityFilterEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type EyeColorEnum string
 
 const (
@@ -1014,16 +1167,18 @@ type FingerprintAlgorithm string
 const (
 	FingerprintAlgorithmMd5    FingerprintAlgorithm = "MD5"
 	FingerprintAlgorithmOshash FingerprintAlgorithm = "OSHASH"
+	FingerprintAlgorithmPhash  FingerprintAlgorithm = "PHASH"
 )
 
 var AllFingerprintAlgorithm = []FingerprintAlgorithm{
 	FingerprintAlgorithmMd5,
 	FingerprintAlgorithmOshash,
+	FingerprintAlgorithmPhash,
 }
 
 func (e FingerprintAlgorithm) IsValid() bool {
 	switch e {
-	case FingerprintAlgorithmMd5, FingerprintAlgorithmOshash:
+	case FingerprintAlgorithmMd5, FingerprintAlgorithmOshash, FingerprintAlgorithmPhash:
 		return true
 	}
 	return false
@@ -1094,6 +1249,55 @@ func (e *GenderEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e GenderEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type GenderFilterEnum string
+
+const (
+	GenderFilterEnumUnknown           GenderFilterEnum = "UNKNOWN"
+	GenderFilterEnumMale              GenderFilterEnum = "MALE"
+	GenderFilterEnumFemale            GenderFilterEnum = "FEMALE"
+	GenderFilterEnumTransgenderMale   GenderFilterEnum = "TRANSGENDER_MALE"
+	GenderFilterEnumTransgenderFemale GenderFilterEnum = "TRANSGENDER_FEMALE"
+	GenderFilterEnumIntersex          GenderFilterEnum = "INTERSEX"
+)
+
+var AllGenderFilterEnum = []GenderFilterEnum{
+	GenderFilterEnumUnknown,
+	GenderFilterEnumMale,
+	GenderFilterEnumFemale,
+	GenderFilterEnumTransgenderMale,
+	GenderFilterEnumTransgenderFemale,
+	GenderFilterEnumIntersex,
+}
+
+func (e GenderFilterEnum) IsValid() bool {
+	switch e {
+	case GenderFilterEnumUnknown, GenderFilterEnumMale, GenderFilterEnumFemale, GenderFilterEnumTransgenderMale, GenderFilterEnumTransgenderFemale, GenderFilterEnumIntersex:
+		return true
+	}
+	return false
+}
+
+func (e GenderFilterEnum) String() string {
+	return string(e)
+}
+
+func (e *GenderFilterEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GenderFilterEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GenderFilterEnum", str)
+	}
+	return nil
+}
+
+func (e GenderFilterEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -1205,6 +1409,10 @@ const (
 	RoleEnumEdit   RoleEnum = "EDIT"
 	RoleEnumModify RoleEnum = "MODIFY"
 	RoleEnumAdmin  RoleEnum = "ADMIN"
+	// May generate invites without tokens
+	RoleEnumInvite RoleEnum = "INVITE"
+	// May grant and rescind invite tokens and resind invite keys
+	RoleEnumManageInvites RoleEnum = "MANAGE_INVITES"
 )
 
 var AllRoleEnum = []RoleEnum{
@@ -1213,11 +1421,13 @@ var AllRoleEnum = []RoleEnum{
 	RoleEnumEdit,
 	RoleEnumModify,
 	RoleEnumAdmin,
+	RoleEnumInvite,
+	RoleEnumManageInvites,
 }
 
 func (e RoleEnum) IsValid() bool {
 	switch e {
-	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin:
+	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites:
 		return true
 	}
 	return false
@@ -1282,6 +1492,49 @@ func (e *SortDirectionEnum) UnmarshalGQL(v interface{}) error {
 }
 
 func (e SortDirectionEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TagGroupEnum string
+
+const (
+	TagGroupEnumPeople TagGroupEnum = "PEOPLE"
+	TagGroupEnumScene  TagGroupEnum = "SCENE"
+	TagGroupEnumAction TagGroupEnum = "ACTION"
+)
+
+var AllTagGroupEnum = []TagGroupEnum{
+	TagGroupEnumPeople,
+	TagGroupEnumScene,
+	TagGroupEnumAction,
+}
+
+func (e TagGroupEnum) IsValid() bool {
+	switch e {
+	case TagGroupEnumPeople, TagGroupEnumScene, TagGroupEnumAction:
+		return true
+	}
+	return false
+}
+
+func (e TagGroupEnum) String() string {
+	return string(e)
+}
+
+func (e *TagGroupEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TagGroupEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TagGroupEnum", str)
+	}
+	return nil
+}
+
+func (e TagGroupEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

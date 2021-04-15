@@ -76,6 +76,14 @@ export const queryFindScenes = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindScenesByID = (sceneIDs: number[]) =>
+  client.query<GQL.FindScenesQuery>({
+    query: GQL.FindScenesDocument,
+    variables: {
+      scene_ids: sceneIDs,
+    },
+  });
+
 export const useFindSceneMarkers = (filter: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
     variables: {
@@ -273,6 +281,20 @@ export const useLatestVersion = () =>
   });
 
 export const useConfiguration = () => GQL.useConfigurationQuery();
+export const mutateSetup = (input: GQL.SetupInput) =>
+  client.mutate<GQL.SetupMutation>({
+    mutation: GQL.SetupDocument,
+    variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const mutateMigrate = (input: GQL.MigrateInput) =>
+  client.mutate<GQL.MigrateMutation>({
+    mutation: GQL.MigrateDocument,
+    variables: { input },
+  });
+
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
@@ -594,9 +616,8 @@ export const movieMutationImpactedQueries = [
   GQL.AllMoviesForFilterDocument,
 ];
 
-export const useMovieCreate = (input: GQL.MovieCreateInput) =>
+export const useMovieCreate = () =>
   GQL.useMovieCreateMutation({
-    variables: input,
     update: deleteCache([
       GQL.FindMoviesDocument,
       GQL.AllMoviesForFilterDocument,
@@ -673,9 +694,26 @@ export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useGenerateAPIKey = () =>
+  GQL.useGenerateApiKeyMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
+
+export const querySystemStatus = () =>
+  client.query<GQL.SystemStatusQuery>({
+    query: GQL.SystemStatusDocument,
+    fetchPolicy: "no-cache",
+  });
+
+export const useSystemStatus = () =>
+  GQL.useSystemStatusQuery({
+    fetchPolicy: "no-cache",
+  });
 
 export const useLogs = () =>
   GQL.useLogsQuery({

@@ -31,6 +31,8 @@ type Performer {
 
   image_path: String # Resolver
   scene_count: Int # Resolver
+  image_count: Int # Resolver
+  gallery_count: Int # Resolver
   scenes: [Scene!]!
   stash_ids: [StashID!]!
   rating: Int
@@ -55,7 +57,7 @@ input PerformerCreateInput {
   instagram: String
   favorite: Boolean
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
   rating: Int
@@ -81,7 +83,7 @@ input PerformerUpdateInput {
   instagram: String
   favorite: Boolean
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
   rating: Int

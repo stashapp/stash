@@ -5,6 +5,7 @@ import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { sortPerformers } from "src/core/performers";
 
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
@@ -26,7 +27,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
 
   function renderPerformers() {
     if (props.image.performers.length === 0) return;
-    const cards = props.image.performers.map((performer) => (
+    const performers = sortPerformers(props.image.performers);
+    const cards = performers.map((performer) => (
       <PerformerCard key={performer.id} performer={performer} />
     ));
 

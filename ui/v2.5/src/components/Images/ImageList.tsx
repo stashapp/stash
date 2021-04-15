@@ -17,6 +17,7 @@ import {
   showWhenSelected,
   PersistanceLevel,
 } from "src/hooks/ListHook";
+
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -36,34 +37,57 @@ const ImageWall: React.FC<IImageWallProps> = ({
   currentPage,
   pageCount,
 }) => {
+  const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
   const handleLightBoxPage = useCallback(
     (direction: number) => {
       if (direction === -1) {
         if (currentPage === 1) return false;
         onChangePage(currentPage - 1);
       } else {
-        if (currentPage === pageCount) return false;
+        if (currentPage === pageCount) {
+          // if the slideshow is running
+          // return to the first page
+          if (slideshowRunning) {
+            onChangePage(0);
+            return true;
+          }
+          return false;
+        }
         onChangePage(currentPage + 1);
       }
       return direction === -1 || direction === 1;
     },
-    [onChangePage, currentPage, pageCount]
+    [onChangePage, currentPage, pageCount, slideshowRunning]
   );
+
+  const handleClose = useCallback(() => {
+    setSlideshowRunning(false);
+  }, [setSlideshowRunning]);
 
   const showLightbox = useLightbox({
     images,
     showNavigation: false,
     pageCallback: handleLightBoxPage,
     pageHeader: `Page ${currentPage} / ${pageCount}`,
+    slideshowEnabled: slideshowRunning,
+    onClose: handleClose,
   });
+
+  const handleImageOpen = useCallback(
+    (index) => {
+      setSlideshowRunning(true);
+      showLightbox(index, true);
+    },
+    [showLightbox]
+  );
 
   const thumbs = images.map((image, index) => (
     <div
       role="link"
       tabIndex={index}
       key={image.id}
-      onClick={() => showLightbox(index)}
-      onKeyPress={() => showLightbox(index)}
+      onClick={() => handleImageOpen(index)}
+      onKeyPress={() => handleImageOpen(index)}
     >
       <img
         src={image.paths.thumbnail ?? ""}
