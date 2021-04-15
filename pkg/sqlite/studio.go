@@ -166,11 +166,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	}
 
 	if rating := studioFilter.Rating; rating != nil {
-		whereClause, count := getIntCriterionWhereClause("studios.rating", *studioFilter.Rating)
-		whereClauses = appendClause(whereClauses, whereClause)
-		if count == 1 {
-			args = append(args, studioFilter.Rating.Value)
-		}
+		query.handleIntCriterionInput(studioFilter.Rating, "studios.rating")
 	}
 
 	query.handleStringCriterionInput(studioFilter.URL, "studios.url")

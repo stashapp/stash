@@ -346,6 +346,24 @@ func TestStudioQueryRating(t *testing.T) {
 	verifyStudiosRating(t, ratingCriterion)
 }
 
+func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(s *models.Studio)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			verifyFn(studio)
+		}
+
+		return nil
+	})
+}
+
 func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Studio()
