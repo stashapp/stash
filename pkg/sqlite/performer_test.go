@@ -353,6 +353,67 @@ func TestPerformerStashIDs(t *testing.T) {
 		t.Error(err.Error())
 	}
 }
+func TestPerformerQueryRating(t *testing.T) {
+	const rating = 3
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformersRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformersRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformersRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformersRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyPerformersRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyPerformersRating(t, ratingCriterion)
+}
+
+func verifyPerformersRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			Rating: &ratingCriterion,
+		}
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		for _, performer := range performers {
+			verifyInt64(t, performer.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryIsMissingRating(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+		isMissing := "rating"
+		performerFilter := models.PerformerFilterType{
+			IsMissing: &isMissing,
+		}
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.True(t, len(performers) > 0)
+
+		for _, performer := range performers {
+			assert.True(t, !performer.Rating.Valid)
+		}
+
+		return nil
+	})
+}
 
 // TODO Update
 // TODO Destroy

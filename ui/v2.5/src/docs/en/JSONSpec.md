@@ -64,6 +64,7 @@ piercings
 image (base64 encoding of the image file)  
 created_at  
 updated_at
+rating (integer)
 ```
 
 ## Studio
@@ -72,7 +73,8 @@ name
 url  
 image (base64 encoding of the image file)  
 created_at  
-updated_at  
+updated_at
+rating (integer)  
 ```
 
 ## Scene

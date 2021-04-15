@@ -182,3 +182,11 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 
 	return ret, nil
 }
+
+func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {
+	if obj.Rating.Valid {
+		rating := int(obj.Rating.Int64)
+		return &rating, nil
+	}
+	return nil, nil
+}

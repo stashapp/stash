@@ -29,6 +29,7 @@ type Performer struct {
 	Favorite     sql.NullBool    `db:"favorite" json:"favorite"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Rating       sql.NullInt64   `db:"rating" json:"rating"`
 }
 
 type PerformerPartial struct {
@@ -53,6 +54,7 @@ type PerformerPartial struct {
 	Favorite     *sql.NullBool    `db:"favorite" json:"favorite"`
 	CreatedAt    *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Rating       *sql.NullInt64   `db:"rating" json:"rating"`
 }
 
 func NewPerformer(name string) *Performer {

@@ -86,6 +86,21 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     }
   }
 
+  function maybeRenderRatingBanner() {
+    if (!performer.rating) {
+      return;
+    }
+    return (
+      <div
+        className={`rating-banner ${
+          performer.rating ? `rating-${performer.rating}` : ""
+        }`}
+      >
+        RATING: {performer.rating}
+      </div>
+    );
+  }
+
   return (
     <BasicCard
       className="performer-card"
@@ -98,6 +113,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             src={performer.image_path ?? ""}
           />
           {maybeRenderFavoriteBanner()}
+          {maybeRenderRatingBanner()}
         </>
       }
       details={

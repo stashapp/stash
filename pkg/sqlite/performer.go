@@ -254,6 +254,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.CareerLength, tableName+".career_length")
 	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
 	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
+	query.handleIntCriterionInput(performerFilter.Rating, tableName+".rating")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")

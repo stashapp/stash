@@ -42,6 +42,12 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		newStudio.ParentID = sql.NullInt64{Int64: parentID, Valid: true}
 	}
 
+	if input.Rating != nil {
+		newStudio.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+	} else {
+		newStudio.Rating = sql.NullInt64{Valid: false}
+	}
+
 	// Start the transaction and save the studio
 	var studio *models.Studio
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
@@ -110,6 +116,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	updatedStudio.URL = translator.nullString(input.URL, "url")
 	updatedStudio.ParentID = translator.nullInt64FromString(input.ParentID, "parent_id")
+	updatedStudio.Rating = translator.nullInt64(input.Rating, "rating")
 
 	// Start the transaction and save the studio
 	var studio *models.Studio

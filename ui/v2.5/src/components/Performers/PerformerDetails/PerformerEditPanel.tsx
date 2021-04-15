@@ -36,6 +36,7 @@ import { ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 
@@ -62,7 +63,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
-
+  const [rating, setRating] = useState<number>(performer?.rating ?? NaN);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -109,6 +110,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: yup.array(yup.string().required()).optional(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
+    rating: yup.number().optional(),
   });
 
   const initialValues = {
@@ -131,6 +133,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
+    rating: performer.rating ?? undefined,
   };
 
   type InputValues = typeof initialValues;
@@ -359,6 +362,30 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         });
       }
 
+      // numeric keypresses get caught by jwplayer, so blur the element
+      // if the rating sequence is started
+      Mousetrap.bind("r", () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        Mousetrap.bind("0", () => setRating(NaN));
+        Mousetrap.bind("1", () => setRating(1));
+        Mousetrap.bind("2", () => setRating(2));
+        Mousetrap.bind("3", () => setRating(3));
+        Mousetrap.bind("4", () => setRating(4));
+        Mousetrap.bind("5", () => setRating(5));
+
+        setTimeout(() => {
+          Mousetrap.unbind("0");
+          Mousetrap.unbind("1");
+          Mousetrap.unbind("2");
+          Mousetrap.unbind("3");
+          Mousetrap.unbind("4");
+          Mousetrap.unbind("5");
+        }, 1000);
+      });
+
       return () => {
         Mousetrap.unbind("s s");
 
@@ -399,6 +426,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     > = {
       ...values,
       gender: stringToGender(values.gender),
+      rating: rating ?? null,
     };
 
     if (!isNew) {
@@ -863,6 +891,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTextField("instagram", "Instagram")}
 
         {renderTagsField()}
+
+        <Form.Group controlId="rating" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Rating
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <RatingStars
+              value={rating}
+              onSetRating={(value) => setRating(value ?? NaN)}
+            />
+          </Col>
+        </Form.Group>
         {renderStashIDs()}
 
         {renderButtons()}

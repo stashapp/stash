@@ -90,3 +90,11 @@ func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) (ret 
 
 	return ret, nil
 }
+
+func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, error) {
+	if obj.Rating.Valid {
+		rating := int(obj.Rating.Int64)
+		return &rating, nil
+	}
+	return nil, nil
+}

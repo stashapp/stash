@@ -66,6 +66,9 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 	if performer.Favorite.Valid {
 		newPerformerJSON.Favorite = performer.Favorite.Bool
 	}
+	if performer.Rating.Valid {
+		newPerformerJSON.Rating = int(performer.Rating.Int64)
+	}
 
 	image, err := reader.GetImage(performer.ID)
 	if err != nil {

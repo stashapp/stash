@@ -187,6 +187,7 @@ export class ListFilterModel {
           "birthdate",
           "scenes_count",
           "random",
+          "rating",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 
@@ -210,6 +211,7 @@ export class ListFilterModel {
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          new RatingCriterionOption(),
           ...numberCriteria
             .concat(stringCriteria)
             .map((c) => ListFilterModel.createCriterionOption(c)),
@@ -219,12 +221,13 @@ export class ListFilterModel {
       }
       case FilterMode.Studios:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortByOptions = ["name", "rating", "scenes_count"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
+          new RatingCriterionOption(),
         ];
         break;
       case FilterMode.Movies:
@@ -679,6 +682,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
@@ -874,6 +885,14 @@ export class ListFilterModel {
           result.parents = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
           };
           break;
         }

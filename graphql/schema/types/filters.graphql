@@ -63,6 +63,8 @@ input PerformerFilterType {
   tags: MultiCriterionInput
   """Filter by StashID"""
   stash_id: String
+  """Filter by rating"""
+  rating: IntCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -125,6 +127,8 @@ input StudioFilterType {
   stash_id: String
   """Filter to only include studios missing this property"""
   is_missing: String
+  """Filter by rating"""
+  rating: IntCriterionInput
 }
 
 input GalleryFilterType {

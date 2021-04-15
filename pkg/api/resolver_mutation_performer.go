@@ -83,6 +83,11 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	} else {
 		newPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
 	}
+	if input.Rating != nil {
+		newPerformer.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+	} else {
+		newPerformer.Rating = sql.NullInt64{Valid: false}
+	}
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
@@ -177,6 +182,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating")
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
@@ -264,6 +270,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating")
 
 	if translator.hasField("gender") {
 		if input.Gender != nil {

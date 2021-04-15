@@ -165,6 +165,14 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		args = append(args, stashIDFilter)
 	}
 
+	if rating := studioFilter.Rating; rating != nil {
+		whereClause, count := getIntCriterionWhereClause("studios.rating", *studioFilter.Rating)
+		whereClauses = appendClause(whereClauses, whereClause)
+		if count == 1 {
+			args = append(args, studioFilter.Rating.Value)
+		}
+	}
+
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "image":
