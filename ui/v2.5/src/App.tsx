@@ -104,7 +104,10 @@ export const App: React.FC = () => {
         <Route path="/movies" component={Movies} />
         <Route path="/settings" component={Settings} />
         <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
-        <Route path="/sceneDuplicateChecker" component={SceneDuplicateChecker} />
+        <Route
+          path="/sceneDuplicateChecker"
+          component={SceneDuplicateChecker}
+        />
         <Route path="/setup" component={Setup} />
         <Route path="/migrate" component={Migrate} />
         <Route component={PageNotFound} />
