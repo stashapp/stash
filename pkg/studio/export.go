@@ -23,6 +23,10 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		newStudioJSON.URL = studio.URL.String
 	}
 
+	if studio.Details.Valid {
+		newStudioJSON.Details = studio.Details.String
+	}
+
 	if studio.ParentID.Valid {
 		parent, err := reader.Find(int(studio.ParentID.Int64))
 		if err != nil {

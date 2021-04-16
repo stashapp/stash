@@ -201,12 +201,18 @@ export class ListFilterModel {
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 
-        const numberCriteria: CriterionType[] = ["birth_year", "age"];
+        const numberCriteria: CriterionType[] = [
+          "birth_year",
+          "death_year",
+          "age",
+        ];
         const stringCriteria: CriterionType[] = [
           "ethnicity",
           "country",
+          "hair_color",
           "eye_color",
           "height",
+          "weight",
           "measurements",
           "fake_tits",
           "career_length",
@@ -653,6 +659,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "death_year": {
+          const dyCrit = criterion as NumberCriterion;
+          result.death_year = {
+            value: dyCrit.value,
+            modifier: dyCrit.modifier,
+          };
+          break;
+        }
         case "age": {
           const ageCrit = criterion as NumberCriterion;
           result.age = { value: ageCrit.value, modifier: ageCrit.modifier };
@@ -674,6 +688,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "hair_color": {
+          const hcCrit = criterion as StringCriterion;
+          result.hair_color = {
+            value: hcCrit.value,
+            modifier: hcCrit.modifier,
+          };
+          break;
+        }
         case "eye_color": {
           const ecCrit = criterion as StringCriterion;
           result.eye_color = { value: ecCrit.value, modifier: ecCrit.modifier };
@@ -682,6 +704,11 @@ export class ListFilterModel {
         case "height": {
           const hCrit = criterion as StringCriterion;
           result.height = { value: hCrit.value, modifier: hCrit.modifier };
+          break;
+        }
+        case "weight": {
+          const wCrit = criterion as StringCriterion;
+          result.weight = { value: wCrit.value, modifier: wCrit.modifier };
           break;
         }
         case "measurements": {

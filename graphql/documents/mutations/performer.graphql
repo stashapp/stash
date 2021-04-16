@@ -1,49 +1,7 @@
 mutation PerformerCreate(
-  $name: String!,
-  $url: String,
-  $gender: GenderEnum,
-  $birthdate: String,
-  $ethnicity: String,
-  $country: String,
-  $eye_color: String,
-  $height: String,
-  $measurements: String,
-  $fake_tits: String,
-  $career_length: String,
-  $tattoos: String,
-  $piercings: String,
-  $aliases: String,
-  $twitter: String,
-  $instagram: String,
-  $favorite: Boolean,
-  $tag_ids: [ID!],
-  $stash_ids: [StashIDInput!],
-  $image: String,
-  $rating: Int) {
+  $input: PerformerCreateInput!) {
 
-  performerCreate(input: {
-                            name: $name,
-                            url: $url,
-                            gender: $gender,
-                            birthdate: $birthdate,
-                            ethnicity: $ethnicity,
-                            country: $country,
-                            eye_color: $eye_color,
-                            height: $height,
-                            measurements: $measurements,
-                            fake_tits: $fake_tits,
-                            career_length: $career_length,
-                            tattoos: $tattoos,
-                            piercings: $piercings,
-                            aliases: $aliases,
-                            twitter: $twitter,
-                            instagram: $instagram,
-                            favorite: $favorite,
-                            tag_ids: $tag_ids,
-                            stash_ids: $stash_ids,
-                            image: $image,
-                            rating: $rating
-                          }) {
+  performerCreate(input: $input) {
       ...PerformerData
   }
 }

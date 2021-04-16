@@ -222,6 +222,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 stash_id: stashID,
               },
             ],
+            details: performer.data.details,
+            death_date: performer.data.death_date,
+            hair_color: performer.data.hair_color,
+            weight: Number(performer.data.weight),
           };
 
           const res = await createPerformer(performerInput, stashID);

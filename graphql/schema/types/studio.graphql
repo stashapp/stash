@@ -12,6 +12,7 @@ type Studio {
   gallery_count: Int # Resolver
   stash_ids: [StashID!]!
   rating: Int
+  details: String
 }
 
 input StudioCreateInput {
@@ -22,6 +23,7 @@ input StudioCreateInput {
   image: String
   stash_ids: [StashIDInput!]
   rating: Int
+  details: String
 }
 
 input StudioUpdateInput {
@@ -33,6 +35,7 @@ input StudioUpdateInput {
   image: String
   stash_ids: [StashIDInput!]
   rating: Int
+  details: String
 }
 
 input StudioDestroyInput {

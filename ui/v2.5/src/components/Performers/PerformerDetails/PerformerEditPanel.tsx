@@ -111,6 +111,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
     rating: yup.number().optional(),
+    details: yup.string().optional(),
+    death_date: yup.string().optional(),
+    hair_color: yup.string().optional(),
+    weight: yup.number().optional(),
   });
 
   const initialValues = {
@@ -134,6 +138,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
     rating: performer.rating ?? undefined,
+    details: performer.details ?? "",
+    death_date: performer.death_date ?? "",
+    hair_color: performer.hair_color ?? "",
+    weight: performer.weight ?? "",
   };
 
   type InputValues = typeof initialValues;
@@ -309,6 +317,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       formik.setFieldValue("image", imageStr ?? undefined);
     }
+    if (state.details) {
+      formik.setFieldValue("details", state.details);
+    }
+    if (state.death_date) {
+      formik.setFieldValue("death_date", state.death_date);
+    }
+    if (state.hair_color) {
+      formik.setFieldValue("hair_color", state.hair_color);
+    }
+    if (state.weight) {
+      formik.setFieldValue("weight", state.weight);
+    }
   }
 
   function onImageLoad(imageData: string) {
@@ -337,7 +357,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         history.push(`/performers/${performer.id}`);
       } else {
         const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput,
+          variables: { input: performerInput as GQL.PerformerCreateInput },
         });
         if (result.data?.performerCreate) {
           history.push(`/performers/${result.data.performerCreate.id}`);
@@ -427,6 +447,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...values,
       gender: stringToGender(values.gender),
       rating: rating ?? null,
+      weight: Number(values.weight),
     };
 
     if (!isNew) {
@@ -578,6 +599,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...formik.values,
       gender: stringToGender(formik.values.gender),
       image: formik.values.image ?? performer.image_path,
+      weight: Number(formik.values.weight),
     };
 
     return (
@@ -834,10 +856,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         </Form.Group>
 
         {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
+        {renderTextField("death_date", "Death Date", "YYYY-MM-DD")}
         {renderTextField("country", "Country")}
         {renderTextField("ethnicity", "Ethnicity")}
+        {renderTextField("hair_color", "Hair Color")}
         {renderTextField("eye_color", "Eye Color")}
         {renderTextField("height", "Height (cm)")}
+        {renderTextField("weight", "Weight (kg)")}
         {renderTextField("measurements", "Measurements")}
         {renderTextField("fake_tits", "Fake Tits")}
 
@@ -889,7 +914,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderTextField("twitter", "Twitter")}
         {renderTextField("instagram", "Instagram")}
-
+        <Form.Group controlId="details" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Details
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <Form.Control
+              as="textarea"
+              className="text-input"
+              placeholder="Details"
+              {...formik.getFieldProps("details")}
+            />
+          </Col>
+        </Form.Group>
         {renderTagsField()}
 
         <Form.Group controlId="rating" as={Row}>

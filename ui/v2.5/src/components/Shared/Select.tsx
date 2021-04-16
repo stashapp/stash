@@ -381,7 +381,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 
   const onCreate = async (name: string) => {
     const result = await createPerformer({
-      variables: { name },
+      variables: { input: { name } },
     });
     return {
       item: result.data!.performerCreate!,
@@ -415,7 +415,11 @@ export const StudioSelect: React.FC<
   );
 
   const onCreate = async (name: string) => {
-    const result = await createStudio({ variables: { name } });
+    const result = await createStudio({
+      variables: {
+        input: { name },
+      },
+    });
     return { item: result.data!.studioCreate!, message: "Created studio" };
   };
 

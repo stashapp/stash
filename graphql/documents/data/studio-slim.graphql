@@ -9,5 +9,6 @@ fragment SlimStudioData on Studio {
   parent_studio {
     id
   }
+  details
   rating
 }

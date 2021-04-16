@@ -31,5 +31,6 @@ fragment StudioData on Studio {
     stash_id
     endpoint
   }
+  details
   rating
 }
