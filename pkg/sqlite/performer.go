@@ -341,20 +341,22 @@ func getAgeFilterClause(criterionModifier models.CriterionModifier, value int) (
 	var args []interface{}
 	var clause string
 
-	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
-		switch modifier {
-		case "EQUALS":
+	if criterionModifier.IsValid() {
+		switch criterionModifier {
+		case models.CriterionModifierEquals:
 			clause = " == ?"
-		case "NOT_EQUALS":
+		case models.CriterionModifierNotEquals:
 			clause = " != ?"
-		case "GREATER_THAN":
+		case models.CriterionModifierGreaterThan:
 			clause = " > ?"
-		case "LESS_THAN":
+		case models.CriterionModifierLessThan:
 			clause = " < ?"
 		}
 
-		clauses = append(clauses, "cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now') - strftime('%Y.%m%d', performers.birthdate)) as int)"+clause)
-		args = append(args, value)
+		if clause != "" {
+			clauses = append(clauses, "cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)"+clause)
+			args = append(args, value)
+		}
 	}
 
 	return clauses, args
