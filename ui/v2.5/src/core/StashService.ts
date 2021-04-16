@@ -933,7 +933,7 @@ export const stringGenderMap = new Map<string, GQL.GenderEnum>([
   ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
 
-export const genderToString = (value?: GQL.GenderEnum) => {
+export const genderToString = (value?: GQL.GenderEnum | string) => {
   if (!value) {
     return undefined;
   }
@@ -947,7 +947,10 @@ export const genderToString = (value?: GQL.GenderEnum) => {
   }
 };
 
-export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
+export const stringToGender = (
+  value?: string | null,
+  caseInsensitive?: boolean
+) => {
   if (!value) {
     return undefined;
   }
