@@ -21,12 +21,13 @@ import {
   HoverPopover,
   Icon,
   TagLink,
+  SweatDrops,
 } from "src/components/Shared";
 import { Pagination } from "src/components/List/Pagination";
 import { TextUtils } from "src/utils";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
-import { sortPerformers } from "src/core/performers";
 import { EditScenesDialog } from "../Scenes/EditScenesDialog";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -160,21 +161,44 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
   }
 
-  const renderTags = (tags: GQL.Tag[]) =>
-    tags.map((tag) => <TagLink key={tag.id} tag={tag} />);
+  function maybeRenderTagPopoverButton(scene: GQL.SlimSceneDataFragment) {
+    if (scene.tags.length <= 0) return;
 
-  const renderPerformers = (performers: Partial<GQL.Performer>[]) => {
-    const sorted = sortPerformers(performers);
-    return sorted.map((performer) => (
-      <div className="performer-tag-container row" key={performer.id}>
-        <TagLink key={performer.id} performer={performer} className="d-block" />
-      </div>
+    const popoverContent = scene.tags.map((tag) => (
+      <TagLink key={tag.id} tag={tag} />
     ));
-  };
 
-  const renderMovies = (scene: GQL.SlimSceneDataFragment) =>
-    scene.movies.map((sceneMovie) => (
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="tag" />
+          <span>{scene.tags.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderPerformerPopoverButton(scene: GQL.SlimSceneDataFragment) {
+    if (scene.performers.length <= 0) return;
+
+    return <PerformerPopoverButton performers={scene.performers} />;
+  }
+
+  function maybeRenderMoviePopoverButton(scene: GQL.SlimSceneDataFragment) {
+    if (scene.movies.length <= 0) return;
+
+    const popoverContent = scene.movies.map((sceneMovie) => (
       <div className="movie-tag-container row" key="movie">
+        <Link
+          to={`/movies/${sceneMovie.movie.id}`}
+          className="movie-tag col m-auto zoom-2"
+        >
+          <img
+            className="image-thumbnail"
+            alt={sceneMovie.movie.name ?? ""}
+            src={sceneMovie.movie.front_image_path ?? ""}
+          />
+        </Link>
         <TagLink
           key={sceneMovie.movie.id}
           movie={sceneMovie.movie}
@@ -182,6 +206,20 @@ export const SceneDuplicateChecker: React.FC = () => {
         />
       </div>
     ));
+
+    return (
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        className="tag-tooltip"
+      >
+        <Button className="minimal">
+          <Icon icon="film" />
+          <span>{scene.movies.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
 
   function maybeRenderSceneMarkerPopoverButton(
     scene: GQL.SlimSceneDataFragment
@@ -201,6 +239,76 @@ export const SceneDuplicateChecker: React.FC = () => {
         </Button>
       </HoverPopover>
     );
+  }
+
+  function maybeRenderOCounter(scene: GQL.SlimSceneDataFragment) {
+    if (scene.o_counter) {
+      return (
+        <div>
+          <Button className="minimal">
+            <span className="fa-icon">
+              <SweatDrops />
+            </span>
+            <span>{scene.o_counter}</span>
+          </Button>
+        </div>
+      );
+    }
+  }
+
+  function maybeRenderGallery(scene: GQL.SlimSceneDataFragment) {
+    if (scene.galleries.length <= 0) return;
+
+    const popoverContent = scene.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="images" />
+          <span>{scene.galleries.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderOrganized(scene: GQL.SlimSceneDataFragment) {
+    if (scene.organized) {
+      return (
+        <div>
+          <Button className="minimal">
+            <Icon icon="box" />
+          </Button>
+        </div>
+      );
+    }
+  }
+
+  function maybeRenderPopoverButtonGroup(scene: GQL.SlimSceneDataFragment) {
+    if (
+      scene.tags.length > 0 ||
+      scene.performers.length > 0 ||
+      scene.movies.length > 0 ||
+      scene.scene_markers.length > 0 ||
+      scene?.o_counter ||
+      scene.galleries.length > 0 ||
+      scene.organized
+    ) {
+      return (
+        <>
+          <ButtonGroup className="flex-wrap">
+            {maybeRenderTagPopoverButton(scene)}
+            {maybeRenderPerformerPopoverButton(scene)}
+            {maybeRenderMoviePopoverButton(scene)}
+            {maybeRenderSceneMarkerPopoverButton(scene)}
+            {maybeRenderOCounter(scene)}
+            {maybeRenderGallery(scene)}
+            {maybeRenderOrganized(scene)}
+          </ButtonGroup>
+        </>
+      );
+    }
   }
 
   return (
@@ -296,6 +404,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             <col className={`${CLASSNAME}-checkbox`} />
             <col className={`${CLASSNAME}-sprite`} />
             <col className={`${CLASSNAME}-title`} />
+            <col className={`${CLASSNAME}-details`} />
             <col className={`${CLASSNAME}-duration`} />
             <col className={`${CLASSNAME}-filesize`} />
             <col className={`${CLASSNAME}-resolution`} />
@@ -308,6 +417,7 @@ export const SceneDuplicateChecker: React.FC = () => {
               <th> </th>
               <th> </th>
               <th>Details</th>
+              <th> </th>
               <th>Duration</th>
               <th>Filesize</th>
               <th>Resolution</th>
@@ -348,12 +458,9 @@ export const SceneDuplicateChecker: React.FC = () => {
                       </Link>
                     </p>
                     <p className="scene-path">{scene.path}</p>
-                    <p className="scene-metadata">
-                      {renderPerformers(scene.performers)}
-                      {renderTags(scene.tags)}
-                      {renderMovies(scene)}
-                      {maybeRenderSceneMarkerPopoverButton(scene)}
-                    </p>
+                  </td>
+                  <td className="scene-details">
+                    {maybeRenderPopoverButtonGroup(scene)}
                   </td>
                   <td>
                     {scene.file.duration &&
