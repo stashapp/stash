@@ -103,7 +103,7 @@ xPathScrapers:
         selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
         fixed: "Female"
-      Details: //div[@data-test="biography"]/text()
+      Details: //div[@data-test="biography"]
       DeathDate:
         selector: //div[contains(text(),'Passed away on')]
         postProcess:
