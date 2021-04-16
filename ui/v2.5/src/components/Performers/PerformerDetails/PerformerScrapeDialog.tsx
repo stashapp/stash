@@ -153,17 +153,35 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.birthdate, props.scraped.birthdate)
   );
+  const [deathDate, setDeathDate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.death_date,
+      props.scraped.death_date
+    )
+  );
   const [ethnicity, setEthnicity] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.ethnicity, props.scraped.ethnicity)
   );
   const [country, setCountry] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.country, props.scraped.country)
   );
+  const [hairColor, setHairColor] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.hair_color,
+      props.scraped.hair_color
+    )
+  );
   const [eyeColor, setEyeColor] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.eye_color, props.scraped.eye_color)
   );
   const [height, setHeight] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.height, props.scraped.height)
+  );
+  const [weight, setWeight] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      props.performer.weight?.toString(),
+      props.scraped.weight
+    )
   );
   const [measurements, setMeasurements] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -200,6 +218,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       genderToString(props.performer.gender ?? undefined),
       translateScrapedGender(props.scraped.gender)
     )
+  );
+  const [details, setDetails] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(props.performer.details, props.scraped.details)
   );
 
   const [createTag] = useTagCreate({ name: "" });
@@ -281,6 +302,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     gender,
     image,
     tags,
+    details,
+    deathDate,
+    hairColor,
+    weight,
   ];
   // don't show the dialog if nothing was scraped
   if (allFields.every((r) => !r.scraped)) {
@@ -348,6 +373,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
         };
       }),
       image: image.getNewValue(),
+      details: details.getNewValue(),
+      death_date: deathDate.getNewValue(),
+      hair_color: hairColor.getNewValue(),
+      weight: weight.getNewValue(),
     };
   }
 
@@ -371,6 +400,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setBirthdate(value)}
         />
         <ScrapedInputGroupRow
+          title="Death Date"
+          result={deathDate}
+          onChange={(value) => setDeathDate(value)}
+        />
+        <ScrapedInputGroupRow
           title="Ethnicity"
           result={ethnicity}
           onChange={(value) => setEthnicity(value)}
@@ -381,9 +415,19 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setCountry(value)}
         />
         <ScrapedInputGroupRow
+          title="Hair Color"
+          result={hairColor}
+          onChange={(value) => setHairColor(value)}
+        />
+        <ScrapedInputGroupRow
           title="Eye Color"
           result={eyeColor}
           onChange={(value) => setEyeColor(value)}
+        />
+        <ScrapedInputGroupRow
+          title="Weight"
+          result={weight}
+          onChange={(value) => setWeight(value)}
         />
         <ScrapedInputGroupRow
           title="Height"
@@ -429,6 +473,11 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           title="Instagram"
           result={instagram}
           onChange={(value) => setInstagram(value)}
+        />
+        <ScrapedTextAreaRow
+          title="Details"
+          result={details}
+          onChange={(value) => setDetails(value)}
         />
         {renderScrapedTagsRow(
           tags,

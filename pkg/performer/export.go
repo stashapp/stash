@@ -66,6 +66,18 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 	if performer.Favorite.Valid {
 		newPerformerJSON.Favorite = performer.Favorite.Bool
 	}
+	if performer.Details.Valid {
+		newPerformerJSON.Details = performer.Details.String
+	}
+	if performer.DeathDate.Valid {
+		newPerformerJSON.DeathDate = utils.GetYMDFromDatabaseDate(performer.DeathDate.String)
+	}
+	if performer.HairColor.Valid {
+		newPerformerJSON.HairColor = performer.HairColor.String
+	}
+	if performer.Weight.Valid {
+		newPerformerJSON.Weight = int(performer.Weight.Int64)
+	}
 
 	image, err := reader.GetImage(performer.ID)
 	if err != nil {

@@ -273,8 +273,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     try {
       const result = await createStudio({
         variables: {
-          name: toCreate.name,
-          url: toCreate.url,
+          input: {
+            name: toCreate.name,
+            url: toCreate.url,
+          },
         },
       });
 
@@ -299,7 +301,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     try {
       performerInput = Object.assign(performerInput, toCreate);
       const result = await createPerformer({
-        variables: performerInput,
+        variables: { input: performerInput },
       });
 
       // add the new performer to the new performers value

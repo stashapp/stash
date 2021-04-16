@@ -55,7 +55,7 @@ export const useCreatePerformer = () => {
 
   const handleCreate = (performer: GQL.PerformerCreateInput, stashID: string) =>
     createPerformer({
-      variables: performer,
+      variables: { input: performer },
       update: (store, newPerformer) => {
         if (!newPerformer?.data?.performerCreate) return;
 
@@ -159,7 +159,7 @@ export const useCreateStudio = () => {
 
   const handleCreate = (studio: GQL.StudioCreateInput, stashID: string) =>
     createStudio({
-      variables: studio,
+      variables: { input: studio },
       update: (store, result) => {
         if (!result?.data?.studioCreate) return;
 

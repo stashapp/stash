@@ -336,8 +336,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     try {
       const result = await createStudio({
         variables: {
-          name: toCreate.name,
-          url: toCreate.url,
+          input: {
+            name: toCreate.name,
+            url: toCreate.url,
+          },
         },
       });
 
@@ -362,7 +364,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     try {
       performerInput = Object.assign(performerInput, toCreate);
       const result = await createPerformer({
-        variables: performerInput,
+        variables: { input: performerInput },
       });
 
       // add the new performer to the new performers value
