@@ -354,7 +354,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         history.push(`/performers/${performer.id}`);
       } else {
         const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput,
+          variables: { input: performerInput as GQL.PerformerCreateInput },
         });
         if (result.data?.performerCreate) {
           history.push(`/performers/${result.data.performerCreate.id}`);
