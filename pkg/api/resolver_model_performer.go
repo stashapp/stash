@@ -213,8 +213,8 @@ func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (
 	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)
 		return &rating, nil
-  }
-  return nil, nil
+	}
+	return nil, nil
 }
 
 func (r *performerResolver) Details(ctx context.Context, obj *models.Performer) (*string, error) {

@@ -89,7 +89,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		newPerformer.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
 	} else {
 		newPerformer.Rating = sql.NullInt64{Valid: false}
-  }
+	}
 	if input.Details != nil {
 		newPerformer.Details = sql.NullString{String: *input.Details, Valid: true}
 	}

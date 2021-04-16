@@ -25,10 +25,10 @@ const (
 )
 
 const (
-	studioName = "testStudio"
-	url        = "url"
-	details    = "details"
-  rating     = 5
+	studioName       = "testStudio"
+	url              = "url"
+	details          = "details"
+	rating           = 5
 	parentStudioName = "parentStudio"
 )
 

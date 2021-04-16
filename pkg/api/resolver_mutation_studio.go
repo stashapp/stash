@@ -46,7 +46,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		newStudio.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
 	} else {
 		newStudio.Rating = sql.NullInt64{Valid: false}
-  }
+	}
 	if input.Details != nil {
 		newStudio.Details = sql.NullString{String: *input.Details, Valid: true}
 	}

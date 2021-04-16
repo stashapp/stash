@@ -68,7 +68,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 	}
 	if performer.Rating.Valid {
 		newPerformerJSON.Rating = int(performer.Rating.Int64)
-  }
+	}
 	if performer.Details.Valid {
 		newPerformerJSON.Details = performer.Details.String
 	}

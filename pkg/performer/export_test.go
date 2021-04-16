@@ -87,7 +87,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		UpdatedAt: models.SQLiteTimestamp{
 			Timestamp: updateTime,
 		},
-		Rating: models.NullInt64(rating),
+		Rating:    models.NullInt64(rating),
 		Details:   models.NullString(details),
 		DeathDate: deathDate,
 		HairColor: models.NullString(hairColor),
@@ -135,7 +135,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		UpdatedAt: models.JSONTime{
 			Time: updateTime,
 		},
-		Rating: rating,
+		Rating:    rating,
 		Image:     image,
 		Details:   details,
 		DeathDate: deathDate.String,

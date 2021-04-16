@@ -121,8 +121,8 @@ func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, 
 	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)
 		return &rating, nil
-  }
-  return nil, nil
+	}
+	return nil, nil
 }
 
 func (r *studioResolver) Details(ctx context.Context, obj *models.Studio) (*string, error) {

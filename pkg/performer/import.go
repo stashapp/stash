@@ -226,8 +226,8 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	}
 	if performerJSON.Rating != 0 {
 		newPerformer.Rating = sql.NullInt64{Int64: int64(performerJSON.Rating), Valid: true}
-  }
-  if performerJSON.Details != "" {
+	}
+	if performerJSON.Details != "" {
 		newPerformer.Details = sql.NullString{String: performerJSON.Details, Valid: true}
 	}
 	if performerJSON.DeathDate != "" {
