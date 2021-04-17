@@ -14,8 +14,10 @@ import {
   useStudioCreate,
   usePerformerCreate,
   useTagCreate,
+  stringToGender,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { filterData } from "src/utils";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -297,11 +299,37 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   }
 
   async function createNewPerformer(toCreate: GQL.ScrapedScenePerformer) {
-    let performerInput: GQL.PerformerCreateInput = { name: "" };
+    const input: GQL.PerformerCreateInput = {
+      name: toCreate.name,
+      url: toCreate.url,
+      gender: stringToGender(toCreate.gender),
+      birthdate: toCreate.birthdate,
+      ethnicity: toCreate.ethnicity,
+      country: toCreate.country,
+      eye_color: toCreate.eye_color,
+      height: toCreate.height,
+      measurements: toCreate.measurements,
+      fake_tits: toCreate.fake_tits,
+      career_length: toCreate.career_length,
+      tattoos: toCreate.tattoos,
+      piercings: toCreate.piercings,
+      aliases: toCreate.aliases,
+      twitter: toCreate.twitter,
+      instagram: toCreate.instagram,
+      tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
+      image:
+        (toCreate.images ?? []).length > 0
+          ? (toCreate.images ?? [])[0]
+          : undefined,
+      details: toCreate.details,
+      death_date: toCreate.death_date,
+      hair_color: toCreate.hair_color,
+      weight: toCreate.weight ? Number(toCreate.weight) : undefined,
+    };
+
     try {
-      performerInput = Object.assign(performerInput, toCreate);
       const result = await createPerformer({
-        variables: { input: performerInput },
+        variables: { input },
       });
 
       // add the new performer to the new performers value
