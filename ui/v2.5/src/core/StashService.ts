@@ -5,6 +5,7 @@ import {
   getQueryDefinition,
   getOperationName,
 } from "@apollo/client/utilities";
+import { filterData } from "../utils";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
@@ -971,6 +972,39 @@ export const stringToGender = (
 };
 
 export const getGenderStrings = () => Array.from(stringGenderMap.keys());
+
+export const makePerformerCreateInput = (
+  toCreate: GQL.ScrapedScenePerformer
+) => {
+  const input: GQL.PerformerCreateInput = {
+    name: toCreate.name,
+    url: toCreate.url,
+    gender: stringToGender(toCreate.gender),
+    birthdate: toCreate.birthdate,
+    ethnicity: toCreate.ethnicity,
+    country: toCreate.country,
+    eye_color: toCreate.eye_color,
+    height: toCreate.height,
+    measurements: toCreate.measurements,
+    fake_tits: toCreate.fake_tits,
+    career_length: toCreate.career_length,
+    tattoos: toCreate.tattoos,
+    piercings: toCreate.piercings,
+    aliases: toCreate.aliases,
+    twitter: toCreate.twitter,
+    instagram: toCreate.instagram,
+    tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
+    image:
+      (toCreate.images ?? []).length > 0
+        ? (toCreate.images ?? [])[0]
+        : undefined,
+    details: toCreate.details,
+    death_date: toCreate.death_date,
+    hair_color: toCreate.hair_color,
+    weight: toCreate.weight ? Number(toCreate.weight) : undefined,
+  };
+  return input;
+};
 
 export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
   client?.query<
