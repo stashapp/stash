@@ -14,6 +14,7 @@ import {
   useStudioCreate,
   usePerformerCreate,
   useTagCreate,
+  makePerformerCreateInput,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
@@ -297,11 +298,11 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   }
 
   async function createNewPerformer(toCreate: GQL.ScrapedScenePerformer) {
-    let performerInput: GQL.PerformerCreateInput = { name: "" };
+    const input = makePerformerCreateInput(toCreate);
+
     try {
-      performerInput = Object.assign(performerInput, toCreate);
       const result = await createPerformer({
-        variables: { input: performerInput },
+        variables: { input },
       });
 
       // add the new performer to the new performers value
