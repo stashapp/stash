@@ -142,8 +142,10 @@ func (s *singleton) PostInit() error {
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
 	if s.Config.GetGeneratedPath() != "" {
+		logger.Info("Please wait. Deleting temporary files...")
 		utils.EmptyDir(instance.Paths.Generated.Downloads)
 		utils.EmptyDir(instance.Paths.Generated.Tmp)
+		logger.Info("Temporary files deleted.")
 	}
 
 	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {

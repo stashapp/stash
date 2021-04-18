@@ -236,12 +236,20 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 
 			if err != nil {
 				logger.Errorf("Error encountered scanning files: %s", err.Error())
+				wg.Wait()                              // running tasks should finish and
+				instance.Paths.Generated.EmptyTmpDir() // tmp emptied
+				elapsed := time.Since(start)
+				logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 				return
 			}
 		}
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
+			wg.Wait() // make sure that current tasks are finished and then exit
+			instance.Paths.Generated.EmptyTmpDir()
+			elapsed := time.Since(start)
+			logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 			return
 		}
 
@@ -464,7 +472,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		}
 		setGeneratePreviewOptionsInput(generatePreviewOptions)
 
-		// Start measuring how long the scan has taken. (consider moving this up)
+		// Start measuring how long the generate has taken. (consider moving this up)
 		start := time.Now()
 		instance.Paths.Generated.EnsureTmpDir()
 
@@ -472,6 +480,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
+				wg.Wait()
+				instance.Paths.Generated.EmptyTmpDir()
 				return
 			}
 
@@ -540,6 +550,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			s.Status.setProgress(lenScenes+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
+				wg.Wait()
+				instance.Paths.Generated.EmptyTmpDir()
+				elapsed := time.Since(start)
+				logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 				return
 			}
 
@@ -616,7 +630,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 
 		wg.Wait()
 
-		logger.Infof("Generate finished")
+		logger.Infof("Generate Screenshot finished")
 	}()
 }
 

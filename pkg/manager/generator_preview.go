@@ -59,7 +59,8 @@ func (g *PreviewGenerator) Generate() error {
 
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 
-	if err := g.generateConcatFile(); err != nil {
+	tmpFiles, err := g.generateConcatFile()
+	if err != nil {
 		return err
 	}
 
@@ -67,9 +68,13 @@ func (g *PreviewGenerator) Generate() error {
 		if err := g.generateVideo(&encoder, false); err != nil {
 			logger.Warnf("[generator] failed generating scene preview, trying fallback")
 			if err := g.generateVideo(&encoder, true); err != nil {
+				//remove intermediate files
+				removeFiles(tmpFiles)
 				return err
 			}
 		}
+		//remove intermediate files
+		removeFiles(tmpFiles)
 	}
 	if g.GenerateImage {
 		if err := g.generateImage(&encoder); err != nil {
@@ -79,20 +84,26 @@ func (g *PreviewGenerator) Generate() error {
 	return nil
 }
 
-func (g *PreviewGenerator) generateConcatFile() error {
+func (g *PreviewGenerator) generateConcatFile() (*[]string, error) {
 	f, err := os.Create(g.getConcatFilePath())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
+
+	var fileList []string
+	fileList = append(fileList, g.getConcatFilePath()) // add concat file to fileList
 
 	w := bufio.NewWriter(f)
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		num := fmt.Sprintf("%.3d", i)
 		filename := "preview_" + g.VideoChecksum + "_" + num + ".mp4"
 		_, _ = w.WriteString(fmt.Sprintf("file '%s'\n", filename))
+		filename = instance.Paths.Generated.GetTmpPath(filename) // make filename absolute
+		fileList = append(fileList, filename)                    // and add it to fileList
 	}
-	return w.Flush()
+	err = w.Flush()
+	return &fileList, err
 }
 
 func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool) error {
@@ -104,6 +115,12 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 
 	stepSize, offset := g.Info.getStepSizeAndOffset()
 
+	durationSegment := g.Info.ChunkDuration
+	if durationSegment < 0.75 { // a very short duration can create files without a video stream
+		durationSegment = 0.75 // use 0.75 in that case
+		logger.Warnf("[generator] Segment duration (%f) too small.Using 0.75 instead.", g.Info.ChunkDuration)
+	}
+
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		time := offset + (float64(i) * stepSize)
 		num := fmt.Sprintf("%.3d", i)
@@ -112,7 +129,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 
 		options := ffmpeg.ScenePreviewChunkOptions{
 			StartTime:  time,
-			Duration:   g.Info.ChunkDuration,
+			Duration:   durationSegment,
 			Width:      640,
 			OutputPath: chunkOutputPath,
 		}
@@ -151,4 +168,15 @@ func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 
 func (g *PreviewGenerator) getConcatFilePath() string {
 	return instance.Paths.Generated.GetTmpPath(fmt.Sprintf("files_%s.txt", g.VideoChecksum))
+}
+
+func removeFiles(list *[]string) {
+	if list != nil {
+		for _, f := range *list {
+			if err := os.Remove(f); err != nil {
+				logger.Warnf("[generator] Delete error: %s", err)
+			}
+		}
+	}
+
 }
