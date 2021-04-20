@@ -427,65 +427,78 @@ export const SceneDuplicateChecker: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredScenes.map((group) =>
+            {filteredScenes.map((group, groupIndex) =>
               group.map((scene, i) => (
-                <tr className={i === 0 ? "duplicate-group" : ""} key={scene.id}>
-                  <td>
-                    <Form.Check
-                      onChange={(e) =>
-                        handleCheck(e.currentTarget.checked, scene.id)
-                      }
-                    />
-                  </td>
-                  <td>
-                    <HoverPopover
-                      content={
+                <>
+                  {i === 0 && groupIndex !== 0 ? (
+                    <tr className="separator" />
+                  ) : undefined}
+                  <tr
+                    className={i === 0 ? "duplicate-group" : ""}
+                    key={scene.id}
+                  >
+                    <td>
+                      <Form.Check
+                        onChange={(e) =>
+                          handleCheck(e.currentTarget.checked, scene.id)
+                        }
+                      />
+                    </td>
+                    <td>
+                      <HoverPopover
+                        content={
+                          <img
+                            src={scene.paths.sprite ?? ""}
+                            alt=""
+                            width={600}
+                          />
+                        }
+                        placement="right"
+                      >
                         <img
                           src={scene.paths.sprite ?? ""}
                           alt=""
-                          width={600}
+                          width={100}
                         />
-                      }
-                      placement="right"
-                    >
-                      <img src={scene.paths.sprite ?? ""} alt="" width={100} />
-                    </HoverPopover>
-                  </td>
-                  <td className="text-left">
-                    <p>
-                      <Link to={`/scenes/${scene.id}`}>
-                        {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-                      </Link>
-                    </p>
-                    <p className="scene-path">{scene.path}</p>
-                  </td>
-                  <td className="scene-details">
-                    {maybeRenderPopoverButtonGroup(scene)}
-                  </td>
-                  <td>
-                    {scene.file.duration &&
-                      TextUtils.secondsToTimestamp(scene.file.duration)}
-                  </td>
-                  <td>{renderFilesize(scene.file.size)}</td>
-                  <td>{`${scene.file.width}x${scene.file.height}`}</td>
-                  <td>
-                    <FormattedNumber
-                      value={(scene.file.bitrate ?? 0) / 1000000}
-                      maximumFractionDigits={2}
-                    />
-                    &nbsp;mbps
-                  </td>
-                  <td>{scene.file.video_codec}</td>
-                  <td>
-                    <Button
-                      className="edit-button"
-                      variant="danger"
-                      onClick={() => handleDeleteScene(scene)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
+                      </HoverPopover>
+                    </td>
+                    <td className="text-left">
+                      <p>
+                        <Link to={`/scenes/${scene.id}`}>
+                          {scene.title ??
+                            TextUtils.fileNameFromPath(scene.path)}
+                        </Link>
+                      </p>
+                      <p className="scene-path">{scene.path}</p>
+                    </td>
+                    <td className="scene-details">
+                      {maybeRenderPopoverButtonGroup(scene)}
+                    </td>
+                    <td>
+                      {scene.file.duration &&
+                        TextUtils.secondsToTimestamp(scene.file.duration)}
+                    </td>
+                    <td>{renderFilesize(scene.file.size)}</td>
+                    <td>{`${scene.file.width}x${scene.file.height}`}</td>
+                    <td>
+                      <FormattedNumber
+                        value={(scene.file.bitrate ?? 0) / 1000000}
+                        maximumFractionDigits={2}
+                      />
+                      &nbsp;mbps
+                    </td>
+                    <td>{scene.file.video_codec}</td>
+                    <td>
+                      <Button
+                        className="edit-button"
+                        variant="danger"
+                        onClick={() => handleDeleteScene(scene)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                </>
               ))
             )}
           </tbody>
