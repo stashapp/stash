@@ -12,6 +12,9 @@ type TagReader interface {
 	FindByNames(names []string, nocase bool) ([]*Tag, error)
 	Count() (int, error)
 	All() ([]*Tag, error)
+	// TODO - this interface is temporary until the filter schema can fully
+	// support the query needed
+	QueryForAutoTag(words []string) ([]*Tag, error)
 	Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(tagID int) ([]byte, error)
 }
