@@ -51,7 +51,7 @@ func TestPerformerScenes(t *testing.T) {
 		mockSceneReader.On("UpdatePerformers", sceneID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerScenes(&performer, mockSceneReader)
+	err := PerformerScenes(&performer, nil, mockSceneReader)
 
 	assert := assert.New(t)
 

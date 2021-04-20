@@ -22,6 +22,9 @@ func getPathQueryRegex(name string) string {
 }
 
 func nameMatchesPath(name, path string) bool {
+	name = strings.ToLower(name)
+	path = strings.ToLower(path)
+
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
@@ -33,20 +36,30 @@ func nameMatchesPath(name, path string) bool {
 }
 
 func getPathWords(path string) []string {
-	ret := path
+	retStr := path
 
 	// remove the extension
-	ext := filepath.Ext(ret)
+	ext := filepath.Ext(retStr)
 	if ext != "" {
-		ret = strings.TrimSuffix(ret, ext)
+		retStr = strings.TrimSuffix(retStr, ext)
 	}
 
 	// handle path separators
 	const separator = `(?:_|[^\w\d])+`
 	re := regexp.MustCompile(separator)
-	ret = re.ReplaceAllString(ret, " ")
+	retStr = re.ReplaceAllString(retStr, " ")
 
-	return strings.Split(ret, " ")
+	words := strings.Split(retStr, " ")
+
+	// remove any single letter words
+	var ret []string
+	for _, w := range words {
+		if len(w) > 1 {
+			ret = append(ret, w)
+		}
+	}
+
+	return ret
 }
 
 type tagger struct {
@@ -131,8 +144,8 @@ func (t *tagger) tagTags(tagReader models.TagReader, addFunc addLinkFunc) error 
 	return nil
 }
 
-func (t *tagger) tagScenes(sceneReader models.SceneReader, addFunc addLinkFunc) error {
-	others, err := getMatchingScenes(t.Name, sceneReader)
+func (t *tagger) tagScenes(paths []string, sceneReader models.SceneReader, addFunc addLinkFunc) error {
+	others, err := getMatchingScenes(t.Name, paths, sceneReader)
 	if err != nil {
 		return err
 	}

@@ -54,7 +54,7 @@ func TestStudioScenes(t *testing.T) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioScenes(&studio, mockSceneReader)
+	err := StudioScenes(&studio, nil, mockSceneReader)
 
 	assert := assert.New(t)
 

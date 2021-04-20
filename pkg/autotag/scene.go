@@ -2,12 +2,46 @@ package autotag
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-func getMatchingScenes(name string, sceneReader models.SceneReader) ([]*models.Scene, error) {
+func pathsFilter(paths []string) *models.SceneFilterType {
+	if paths == nil {
+		return nil
+	}
+
+	sep := string(filepath.Separator)
+
+	var ret *models.SceneFilterType
+	var or *models.SceneFilterType
+	for _, p := range paths {
+		newOr := &models.SceneFilterType{}
+		if or != nil {
+			or.Or = newOr
+		} else {
+			ret = newOr
+		}
+
+		or = newOr
+
+		if !strings.HasSuffix(p, sep) {
+			p = p + sep
+		}
+
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	return ret
+}
+
+func getMatchingScenes(name string, paths []string, sceneReader models.SceneReader) ([]*models.Scene, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.SceneFilterType{
@@ -17,6 +51,8 @@ func getMatchingScenes(name string, sceneReader models.SceneReader) ([]*models.S
 		},
 		Organized: &organized,
 	}
+
+	filter.And = pathsFilter(paths)
 
 	pp := 0
 	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{

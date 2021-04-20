@@ -31,10 +31,10 @@ func getPerformerTagger(p *models.Performer) tagger {
 	}
 }
 
-func PerformerScenes(p *models.Performer, rw models.SceneReaderWriter) error {
+func PerformerScenes(p *models.Performer, paths []string, rw models.SceneReaderWriter) error {
 	t := getPerformerTagger(p)
 
-	return t.tagScenes(rw, func(subjectID, otherID int) (bool, error) {
+	return t.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
 		return scene.AddPerformer(rw, otherID, subjectID)
 	})
 }

@@ -25,6 +25,16 @@ func getMatchingStudios(path string, reader models.StudioReader) ([]*models.Stud
 }
 
 func addSceneStudio(sceneWriter models.SceneReaderWriter, sceneID, studioID int) (bool, error) {
+	// don't set if already set
+	scene, err := sceneWriter.Find(sceneID)
+	if err != nil {
+		return false, err
+	}
+
+	if scene.StudioID.Valid {
+		return false, nil
+	}
+
 	// set the studio id
 	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
 	scenePartial := models.ScenePartial{
@@ -46,10 +56,10 @@ func getStudioTagger(p *models.Studio) tagger {
 	}
 }
 
-func StudioScenes(p *models.Studio, rw models.SceneReaderWriter) error {
+func StudioScenes(p *models.Studio, paths []string, rw models.SceneReaderWriter) error {
 	t := getStudioTagger(p)
 
-	return t.tagScenes(rw, func(subjectID, otherID int) (bool, error) {
+	return t.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
 		return addSceneStudio(rw, otherID, subjectID)
 	})
 }

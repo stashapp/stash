@@ -31,10 +31,10 @@ func getTagTagger(p *models.Tag) tagger {
 	}
 }
 
-func TagScenes(p *models.Tag, rw models.SceneReaderWriter) error {
+func TagScenes(p *models.Tag, paths []string, rw models.SceneReaderWriter) error {
 	t := getTagTagger(p)
 
-	return t.tagScenes(rw, func(subjectID, otherID int) (bool, error) {
+	return t.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
 		return scene.AddTag(rw, otherID, subjectID)
 	})
 }
