@@ -115,4 +115,20 @@ These options are typically not exposed in the UI and must be changed manually i
 
 | Field | Remarks |
 |-------|---------|
+| `custom_served_folders` | A map of URLs to file system folders. See below. |
+| `custom_ui_location` | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
 | `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
+
+### Custom served folders
+
+Custom served folders are served when the server handles a request with the `/custom` URL prefix. The following is an example configuration:
+
+```
+custom_served_folders:
+  /: D:\stash\static
+  /foo: D:\bar
+```
+
+With the above configuration, a request for `/custom/foo/bar.png` would serve `D:\bar\bar.png`. 
+
+The `/` entry matches anything that is not otherwise mapped by the other entries. For example, `/custom/baz/xyz.png` would serve `D:\stash\static\baz\xyz.png`.
