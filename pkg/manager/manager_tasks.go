@@ -696,8 +696,16 @@ func (s *singleton) autoTagScenes(paths []string, performers, studios, tags bool
 				return err
 			}
 
+			if processed == 0 {
+				logger.Infof("Starting autotag of %d scenes", total)
+			}
+
 			for _, ss := range scenes {
-				var wg sync.WaitGroup
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
 				t := autoTagSceneTask{
 					txnManager: s.TxnManager,
 					scene:      ss,
@@ -706,6 +714,8 @@ func (s *singleton) autoTagScenes(paths []string, performers, studios, tags bool
 					tags:       tags,
 				}
 
+				var wg sync.WaitGroup
+				wg.Add(1)
 				go t.Start(&wg)
 				wg.Wait()
 
@@ -724,6 +734,8 @@ func (s *singleton) autoTagScenes(paths []string, performers, studios, tags bool
 	}); err != nil {
 		logger.Error(err.Error())
 	}
+
+	logger.Info("Finished autotag")
 }
 
 func (s *singleton) autoTagSpecific(input models.AutoTagMetadataInput) {
@@ -770,12 +782,20 @@ func (s *singleton) autoTagSpecific(input models.AutoTagMetadataInput) {
 	total := performerCount + studioCount + tagCount
 	s.Status.setProgress(0, total)
 
+	logger.Infof("Starting autotag of %d performers, %d studios, %d tags", performerCount, studioCount, tagCount)
+
 	s.autoTagPerformers(input.Paths, performerIds)
 	s.autoTagStudios(input.Paths, studioIds)
 	s.autoTagTags(input.Paths, tagIds)
+
+	logger.Info("Finished autotag")
 }
 
 func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
+	if s.Status.stopping {
+		return
+	}
+
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
 
@@ -806,6 +826,11 @@ func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
 			}
 
 			for _, performer := range performers {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 					return autotag.PerformerScenes(performer, paths, r.Scene())
 				}); err != nil {
@@ -824,6 +849,10 @@ func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
 }
 
 func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
+	if s.Status.stopping {
+		return
+	}
+
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
 
@@ -854,6 +883,11 @@ func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
 			}
 
 			for _, studio := range studios {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 					return autotag.StudioScenes(studio, paths, r.Scene())
 				}); err != nil {
@@ -872,6 +906,10 @@ func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
 }
 
 func (s *singleton) autoTagTags(paths []string, tagIds []string) {
+	if s.Status.stopping {
+		return
+	}
+
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
 		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
@@ -896,6 +934,11 @@ func (s *singleton) autoTagTags(paths []string, tagIds []string) {
 			}
 
 			for _, tag := range tags {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 					return autotag.TagScenes(tag, paths, r.Scene())
 				}); err != nil {
