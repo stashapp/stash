@@ -6,7 +6,8 @@ import (
 )
 
 func getMatchingPerformers(path string, performerReader models.PerformerReader) ([]*models.Performer, error) {
-	performers, _, err := performerReader.Query(nil, nil)
+	words := getPathWords(path)
+	performers, err := performerReader.QueryForAutoTag(words)
 
 	if err != nil {
 		return nil, err
@@ -20,18 +21,6 @@ func getMatchingPerformers(path string, performerReader models.PerformerReader) 
 	}
 
 	return ret, nil
-}
-
-func getPerformerFilter(path string) models.PerformerFilterType {
-	//words := getPathWords(path)
-
-	// TODO - fix this with ors
-	return models.PerformerFilterType{
-		Aliases: &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    path,
-		},
-	}
 }
 
 func getPerformerTagger(p *models.Performer) tagger {

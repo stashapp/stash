@@ -6,7 +6,8 @@ import (
 )
 
 func getMatchingTags(path string, tagReader models.TagReader) ([]*models.Tag, error) {
-	tags, _, err := tagReader.Query(nil, nil)
+	words := getPathWords(path)
+	tags, err := tagReader.QueryForAutoTag(words)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,8 @@ import (
 )
 
 func getMatchingStudios(path string, reader models.StudioReader) ([]*models.Studio, error) {
-	candidates, _, err := reader.Query(nil, nil)
+	words := getPathWords(path)
+	candidates, err := reader.QueryForAutoTag(words)
 
 	if err != nil {
 		return nil, err
