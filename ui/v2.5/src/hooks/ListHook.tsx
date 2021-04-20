@@ -88,6 +88,7 @@ export enum PersistanceLevel {
 interface IListHookOptions<T, E> {
   persistState?: PersistanceLevel;
   persistanceKey?: string;
+  defaultSort?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -431,7 +432,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const persistanceKey = options.persistanceKey ?? options.filterMode;
 
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(options.filterMode, queryString.parse(location.search))
+    new ListFilterModel(
+      options.filterMode,
+      queryString.parse(location.search),
+      options.defaultSort
+    )
   );
 
   const updateInterfaceConfig = useCallback(

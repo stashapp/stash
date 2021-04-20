@@ -23,11 +23,13 @@ import { SceneCardsGrid } from "./SceneCardsGrid";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  defaultSort?: string;
   persistState?: PersistanceLevel.ALL;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
   filterHook,
+  defaultSort,
   persistState,
 }) => {
   const history = useHistory();
@@ -83,6 +85,7 @@ export const SceneList: React.FC<ISceneList> = ({
     zoomable: true,
     selectable: true,
     otherOperations,
+    defaultSort,
     renderContent,
     renderEditDialog: renderEditScenesDialog,
     renderDeleteDialog,
