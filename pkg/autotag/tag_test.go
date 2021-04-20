@@ -51,7 +51,7 @@ func TestTagScenes(t *testing.T) {
 		mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagScenes(&tag, mockSceneReader)
+	err := TagScenes(&tag, nil, mockSceneReader)
 
 	assert := assert.New(t)
 
