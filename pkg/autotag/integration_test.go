@@ -1,6 +1,6 @@
 // +build integration
 
-package manager
+package autotag
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -22,48 +21,11 @@ import (
 )
 
 const testName = "Foo's Bar"
-const testExtension = ".mp4"
 const existingStudioName = "ExistingStudio"
 
-const existingStudioSceneName = testName + ".dontChangeStudio" + testExtension
+const existingStudioSceneName = testName + ".dontChangeStudio.mp4"
 
 var existingStudioID int
-
-var testSeparators = []string{
-	".",
-	"-",
-	"_",
-	" ",
-}
-
-var testEndSeparators = []string{
-	"{",
-	"}",
-	"(",
-	")",
-	",",
-}
-
-func generateNamePatterns(name, separator string) []string {
-	var ret []string
-	ret = append(ret, fmt.Sprintf("%s%saaa"+testExtension, name, separator))
-	ret = append(ret, fmt.Sprintf("aaa%s%s"+testExtension, separator, name))
-	ret = append(ret, fmt.Sprintf("aaa%s%s%sbbb"+testExtension, separator, name, separator))
-	ret = append(ret, fmt.Sprintf("dir/%s%saaa"+testExtension, name, separator))
-	ret = append(ret, fmt.Sprintf("dir\\%s%saaa"+testExtension, name, separator))
-	ret = append(ret, fmt.Sprintf("%s%saaa/dir/bbb"+testExtension, name, separator))
-	ret = append(ret, fmt.Sprintf("%s%saaa\\dir\\bbb"+testExtension, name, separator))
-	ret = append(ret, fmt.Sprintf("dir/%s%s/aaa"+testExtension, name, separator))
-	ret = append(ret, fmt.Sprintf("dir\\%s%s\\aaa"+testExtension, name, separator))
-
-	return ret
-}
-
-func generateFalseNamePattern(name string, separator string) string {
-	splitted := strings.Split(name, " ")
-
-	return fmt.Sprintf("%s%saaa%s%s"+testExtension, splitted[0], separator, separator, splitted[1])
-}
 
 func testTeardown(databaseFile string) {
 	err := database.DB.Close()
@@ -126,7 +88,7 @@ func createStudio(qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
 	studio := models.Studio{
 		Checksum: name,
-		Name:     sql.NullString{Valid: true, String: testName},
+		Name:     sql.NullString{Valid: true, String: name},
 	}
 
 	return qb.Create(studio)
@@ -278,16 +240,13 @@ func TestParsePerformers(t *testing.T) {
 		return
 	}
 
-	task := AutoTagPerformerTask{
-		AutoTagTask: AutoTagTask{
-			txnManager: sqlite.NewTransactionManager(),
-		},
-		performer: performers[0],
+	for _, p := range performers {
+		if err := withTxn(func(r models.Repository) error {
+			return PerformerScenes(p, nil, r.Scene())
+		}); err != nil {
+			t.Errorf("Error auto-tagging performers: %s", err)
+		}
 	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
 	withTxn(func(r models.Repository) error {
@@ -328,16 +287,13 @@ func TestParseStudios(t *testing.T) {
 		return
 	}
 
-	task := AutoTagStudioTask{
-		AutoTagTask: AutoTagTask{
-			txnManager: sqlite.NewTransactionManager(),
-		},
-		studio: studios[0],
+	for _, s := range studios {
+		if err := withTxn(func(r models.Repository) error {
+			return StudioScenes(s, nil, r.Scene())
+		}); err != nil {
+			t.Errorf("Error auto-tagging performers: %s", err)
+		}
 	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
 	withTxn(func(r models.Repository) error {
@@ -354,9 +310,14 @@ func TestParseStudios(t *testing.T) {
 				}
 			} else {
 				// title is only set on scenes where we expect studio to be set
-				if scene.Title.String == scene.Path && scene.StudioID.Int64 != int64(studios[0].ID) {
-					t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-				} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[0].ID) {
+				if scene.Title.String == scene.Path {
+					if !scene.StudioID.Valid {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
+					} else if scene.StudioID.Int64 != int64(studios[1].ID) {
+						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID.Int64, scene.Path)
+					}
+
+				} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[1].ID) {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
 				}
 			}
@@ -377,16 +338,13 @@ func TestParseTags(t *testing.T) {
 		return
 	}
 
-	task := AutoTagTagTask{
-		AutoTagTask: AutoTagTask{
-			txnManager: sqlite.NewTransactionManager(),
-		},
-		tag: tags[0],
+	for _, s := range tags {
+		if err := withTxn(func(r models.Repository) error {
+			return TagScenes(s, nil, r.Scene())
+		}); err != nil {
+			t.Errorf("Error auto-tagging performers: %s", err)
+		}
 	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
 	withTxn(func(r models.Repository) error {
