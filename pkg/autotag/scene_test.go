@@ -41,10 +41,27 @@ func generateNamePatterns(name, separator string) []string {
 	return ret
 }
 
-func generateFalseNamePattern(name string, separator string) string {
+func generateSplitNamePatterns(name, separator string) []string {
+	var ret []string
+	splitted := strings.Split(name, " ")
+	// only do this for names that are split into two
+	if len(splitted) == 2 {
+		ret = append(ret, fmt.Sprintf("%s%s%s.mp4", splitted[0], separator, splitted[1]))
+	}
+
+	return ret
+}
+
+func generateFalseNamePatterns(name string, separator string) []string {
 	splitted := strings.Split(name, " ")
 
-	return fmt.Sprintf("%s%saaa%s%s.mp4", splitted[0], separator, separator, splitted[1])
+	var ret []string
+	// only do this for names that are split into two
+	if len(splitted) == 2 {
+		ret = append(ret, fmt.Sprintf("%s%saaa%s%s.mp4", splitted[0], separator, separator, splitted[1]))
+	}
+
+	return ret
 }
 
 func generateScenePaths(testName string) (scenePatterns []string, falseScenePatterns []string) {
@@ -53,7 +70,33 @@ func generateScenePaths(testName string) (scenePatterns []string, falseScenePatt
 	for _, separator := range separators {
 		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator)...)
 		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator)...)
-		falseScenePatterns = append(falseScenePatterns, generateFalseNamePattern(testName, separator))
+		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ReplaceAll(testName, " ", ""), separator)...)
+		falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, separator)...)
+	}
+
+	// add test cases for intra-name separators
+	for _, separator := range testSeparators {
+		if separator != " " {
+			scenePatterns = append(scenePatterns, generateNamePatterns(strings.Replace(testName, " ", separator, -1), separator)...)
+		}
+	}
+
+	// add basic false scenarios
+	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("aaa%s.mp4", testName))
+	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("%saaa.mp4", testName))
+
+	// add path separator false scenarios
+	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "/")...)
+	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "\\")...)
+
+	// split patterns only valid for ._- and whitespace
+	for _, separator := range testSeparators {
+		scenePatterns = append(scenePatterns, generateSplitNamePatterns(testName, separator)...)
+	}
+
+	// false patterns for other separators
+	for _, separator := range testEndSeparators {
+		falseScenePatterns = append(falseScenePatterns, generateSplitNamePatterns(testName, separator)...)
 	}
 
 	return
@@ -75,7 +118,7 @@ func generateTestTable(testName string) []pathTestTable {
 	for _, separator := range separators {
 		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator)...)
 		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator)...)
-		falseScenePatterns = append(falseScenePatterns, generateFalseNamePattern(testName, separator))
+		falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, separator)...)
 	}
 
 	for _, p := range scenePatterns {
