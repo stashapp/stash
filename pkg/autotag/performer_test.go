@@ -9,10 +9,31 @@ import (
 )
 
 func TestPerformerScenes(t *testing.T) {
+	type test struct {
+		performerName string
+		expectedRegex string
+	}
+
+	performerNames := []test{
+		{
+			"performer name",
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+		{
+			"performer + name",
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+	}
+
+	for _, p := range performerNames {
+		testPerformerScenes(t, p.performerName, p.expectedRegex)
+	}
+}
+
+func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
 	const performerID = 2
-	const performerName = "performer name"
 
 	var scenes []*models.Scene
 	matchingPaths, falsePaths := generateScenePaths(performerName)
@@ -34,7 +55,7 @@ func TestPerformerScenes(t *testing.T) {
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,
 		Path: &models.StringCriterionInput{
-			Value:    `(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			Value:    expectedRegex,
 			Modifier: models.CriterionModifierMatchesRegex,
 		},
 	}

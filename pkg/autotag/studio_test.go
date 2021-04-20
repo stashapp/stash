@@ -9,10 +9,31 @@ import (
 )
 
 func TestStudioScenes(t *testing.T) {
+	type test struct {
+		studioName    string
+		expectedRegex string
+	}
+
+	studioNames := []test{
+		{
+			"studio name",
+			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+		{
+			"studio + name",
+			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+	}
+
+	for _, p := range studioNames {
+		testStudioScenes(t, p.studioName, p.expectedRegex)
+	}
+}
+
+func testStudioScenes(t *testing.T, studioName, expectedRegex string) {
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
 	const studioID = 2
-	const studioName = "studio name"
 
 	var scenes []*models.Scene
 	matchingPaths, falsePaths := generateScenePaths(studioName)
@@ -34,7 +55,7 @@ func TestStudioScenes(t *testing.T) {
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,
 		Path: &models.StringCriterionInput{
-			Value:    `(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+			Value:    expectedRegex,
 			Modifier: models.CriterionModifierMatchesRegex,
 		},
 	}
@@ -47,6 +68,7 @@ func TestStudioScenes(t *testing.T) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
+		mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()
 		expectedStudioID := models.NullInt64(studioID)
 		mockSceneReader.On("Update", models.ScenePartial{
 			ID:       sceneID,

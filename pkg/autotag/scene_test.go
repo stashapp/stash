@@ -169,6 +169,7 @@ func TestSceneStudios(t *testing.T) {
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 
 		if test.Matches {
+			mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()
 			expectedStudioID := models.NullInt64(studioID)
 			mockSceneReader.On("Update", models.ScenePartial{
 				ID:       sceneID,

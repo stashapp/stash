@@ -12,7 +12,23 @@ import (
 
 const separatorChars = `.\-_ `
 
+// fixes #1292
+func escapePathRegex(name string) string {
+	ret := name
+
+	chars := `+*?()|[]{}^$`
+	for _, c := range chars {
+		cStr := string(c)
+		ret = strings.ReplaceAll(ret, cStr, `\`+cStr)
+	}
+
+	return ret
+}
+
 func getPathQueryRegex(name string) string {
+	// escape specific regex characters
+	name = escapePathRegex(name)
+
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
@@ -22,6 +38,9 @@ func getPathQueryRegex(name string) string {
 }
 
 func nameMatchesPath(name, path string) bool {
+	// escape specific regex characters
+	name = escapePathRegex(name)
+
 	name = strings.ToLower(name)
 	path = strings.ToLower(path)
 

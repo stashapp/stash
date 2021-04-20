@@ -9,10 +9,31 @@ import (
 )
 
 func TestTagScenes(t *testing.T) {
+	type test struct {
+		tagName       string
+		expectedRegex string
+	}
+
+	tagNames := []test{
+		{
+			"tag name",
+			`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+		{
+			"tag + name",
+			`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+	}
+
+	for _, p := range tagNames {
+		testTagScenes(t, p.tagName, p.expectedRegex)
+	}
+}
+
+func testTagScenes(t *testing.T, tagName, expectedRegex string) {
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
 	const tagID = 2
-	const tagName = "tag name"
 
 	var scenes []*models.Scene
 	matchingPaths, falsePaths := generateScenePaths(tagName)
@@ -34,7 +55,7 @@ func TestTagScenes(t *testing.T) {
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,
 		Path: &models.StringCriterionInput{
-			Value:    `(?i)(?:^|_|[^\w\d])tag[.\-_ ]*name(?:$|_|[^\w\d])`,
+			Value:    expectedRegex,
 			Modifier: models.CriterionModifierMatchesRegex,
 		},
 	}
