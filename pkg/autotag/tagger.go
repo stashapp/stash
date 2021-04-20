@@ -1,3 +1,16 @@
+// Package autotag provides methods to auto-tag scenes with performers,
+// studios and tags.
+//
+// The autotag engine tags scenes with performers/studios/tags if the scene's
+// path matches the performer/studio/tag name. A scene's path is considered
+// a match if it contains the performer/studio/tag's full name, ignoring any
+// '.', '-', '_' characters in the path.
+//
+// For example, for a performer "foo bar", the following paths would be
+// considered a match: "foo bar.mp4", "foobar.mp4", "foo.bar.mp4",
+// "foo-bar.mp4", "aaa.foo bar.bbb.mp4".
+// The following would not be considered a match:
+// "aafoo bar.mp4", "foo barbb.mp4", "foo/bar.mp4"
 package autotag
 
 import (

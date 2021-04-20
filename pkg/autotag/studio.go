@@ -56,6 +56,7 @@ func getStudioTagger(p *models.Studio) tagger {
 	}
 }
 
+// StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
 func StudioScenes(p *models.Studio, paths []string, rw models.SceneReaderWriter) error {
 	t := getStudioTagger(p)
 

@@ -32,6 +32,7 @@ func getPerformerTagger(p *models.Performer) tagger {
 	}
 }
 
+// PerformerScenes searches for scenes whose path matches the provided performer name and tags the scene with the performer.
 func PerformerScenes(p *models.Performer, paths []string, rw models.SceneReaderWriter) error {
 	t := getPerformerTagger(p)
 

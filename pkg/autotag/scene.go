@@ -82,6 +82,7 @@ func getSceneFileTagger(s *models.Scene) tagger {
 	}
 }
 
+// ScenePerformers tags the provided scene with performers whose name matches the scene's path.
 func ScenePerformers(s *models.Scene, rw models.SceneReaderWriter, performerReader models.PerformerReader) error {
 	t := getSceneFileTagger(s)
 
@@ -90,6 +91,9 @@ func ScenePerformers(s *models.Scene, rw models.SceneReaderWriter, performerRead
 	})
 }
 
+// SceneStudios tags the provided scene with the first studio whose name matches the scene's path.
+//
+// Scenes will not be tagged if studio is already set.
 func SceneStudios(s *models.Scene, rw models.SceneReaderWriter, studioReader models.StudioReader) error {
 	if s.StudioID.Valid {
 		// don't modify
@@ -103,6 +107,7 @@ func SceneStudios(s *models.Scene, rw models.SceneReaderWriter, studioReader mod
 	})
 }
 
+// SceneTags tags the provided scene with tags whose name matches the scene's path.
 func SceneTags(s *models.Scene, rw models.SceneReaderWriter, tagReader models.TagReader) error {
 	t := getSceneFileTagger(s)
 

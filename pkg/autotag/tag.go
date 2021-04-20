@@ -31,6 +31,7 @@ func getTagTagger(p *models.Tag) tagger {
 	}
 }
 
+// TagScenes searches for scenes whose path matches the provided tag name and tags the scene with the tag.
 func TagScenes(p *models.Tag, paths []string, rw models.SceneReaderWriter) error {
 	t := getTagTagger(p)
 
