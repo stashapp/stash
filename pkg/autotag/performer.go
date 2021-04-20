@@ -15,7 +15,8 @@ func getMatchingPerformers(path string, performerReader models.PerformerReader) 
 
 	var ret []*models.Performer
 	for _, p := range performers {
-		if nameMatchesPath(p.Name.String, path) {
+		// TODO - commenting out alias handling until both sides work correctly
+		if nameMatchesPath(p.Name.String, path) { // || nameMatchesPath(p.Aliases.String, path) {
 			ret = append(ret, p)
 		}
 	}
