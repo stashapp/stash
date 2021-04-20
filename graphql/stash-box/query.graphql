@@ -75,6 +75,11 @@ fragment PerformerFragment on Performer {
   piercings {
     ...BodyModificationFragment
   }
+  details
+  death_date {
+    ...FuzzyDateFragment
+  }
+  weight
 }
 
 fragment PerformerAppearanceFragment on PerformerAppearance {

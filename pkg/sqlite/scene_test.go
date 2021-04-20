@@ -558,10 +558,10 @@ func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) {
 		assert.NotEqual(criterion.Value, value)
 	}
 	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value > criterion.Value)
+		assert.Greater(value, criterion.Value)
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value < criterion.Value)
+		assert.Less(value, criterion.Value)
 	}
 }
 

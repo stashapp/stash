@@ -35,9 +35,9 @@ Run the executable (double click the exe on windows or run `./stash-osx` / `./st
 
 If stash is unable to find or download FFMPEG then download it yourself from the link for your platform:
 
-* [macOS](https://ffmpeg.zeranoe.com/builds/macos64/static/ffmpeg-4.0-macos64-static.zip)
-* [Windows](https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.0-win64-static.zip)
-* [Linux](https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz)
+* [macOS ffmpeg](https://evermeet.cx/ffmpeg/ffmpeg-4.3.1.zip), [macOS ffprobe](https://evermeet.cx/ffmpeg/ffprobe-4.3.1.zip)
+* [Windows](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip)
+* [Linux](https://www.johnvansickle.com/ffmpeg/)
 
 The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows.
 

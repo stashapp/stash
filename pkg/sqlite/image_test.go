@@ -126,7 +126,7 @@ func TestImageQueryPath(t *testing.T) {
 	verifyImagePath(t, pathCriterion, totalImages-1)
 
 	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-	pathCriterion.Value = "image_.*1_Path"
+	pathCriterion.Value = "image_.*01_Path"
 	verifyImagePath(t, pathCriterion, 1) // TODO - 2 if zip path is included
 
 	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex

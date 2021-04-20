@@ -74,12 +74,21 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 		req.Header.Set("User-Agent", userAgent)
 	}
 
+	if driverOptions != nil { // setting the Headers after the UA allows us to override it from inside the scraper
+		for _, h := range driverOptions.Headers {
+			if h.Key != "" {
+				req.Header.Set(h.Key, h.Value)
+				logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+			}
+		}
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("http error %d", resp.StatusCode)
+		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
 	defer resp.Body.Close()
@@ -156,10 +165,13 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	defer cancel()
 
 	var res string
+	headers := cdpHeaders(driverOptions)
+
 	err := chromedp.Run(ctx,
 		network.Enable(),
 		setCDPCookies(driverOptions),
 		printCDPCookies(driverOptions, "Cookies found"),
+		network.SetExtraHTTPHeaders(network.Headers(headers)),
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
@@ -240,4 +252,17 @@ func cdpNetwork(enable bool) chromedp.Action {
 		}
 		return nil
 	})
+}
+
+func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {
+	headers := map[string]interface{}{}
+	if driverOptions.Headers != nil {
+		for _, h := range driverOptions.Headers {
+			if h.Key != "" {
+				headers[h.Key] = h.Value
+				logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+			}
+		}
+	}
+	return headers
 }
