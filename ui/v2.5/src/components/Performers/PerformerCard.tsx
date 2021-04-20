@@ -12,6 +12,7 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -28,7 +29,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   selected,
   onSelectedChanged,
 }) => {
-  const age = TextUtils.age(performer.birthdate, ageFromDate);
+  const age = TextUtils.age(
+    performer.birthdate,
+    ageFromDate ?? performer.death_date
+  );
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 
   function maybeRenderFavoriteBanner() {
@@ -46,12 +50,35 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     if (!performer.scene_count) return;
 
     return (
-      <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-        <Button className="minimal">
-          <Icon icon="play-circle" />
-          <span>{performer.scene_count}</span>
-        </Button>
-      </Link>
+      <PopoverCountButton
+        type="scene"
+        count={performer.scene_count}
+        url={NavUtils.makePerformerScenesUrl(performer)}
+      />
+    );
+  }
+
+  function maybeRenderImagesPopoverButton() {
+    if (!performer.image_count) return;
+
+    return (
+      <PopoverCountButton
+        type="image"
+        count={performer.image_count}
+        url={NavUtils.makePerformerImagesUrl(performer)}
+      />
+    );
+  }
+
+  function maybeRenderGalleriesPopoverButton() {
+    if (!performer.gallery_count) return;
+
+    return (
+      <PopoverCountButton
+        type="gallery"
+        count={performer.gallery_count}
+        url={NavUtils.makePerformerGalleriesUrl(performer)}
+      />
     );
   }
 
@@ -73,12 +100,19 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (performer.scene_count || performer.tags.length > 0) {
+    if (
+      performer.scene_count ||
+      performer.image_count ||
+      performer.gallery_count ||
+      performer.tags.length > 0
+    ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
+            {maybeRenderImagesPopoverButton()}
+            {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
           </ButtonGroup>
         </>

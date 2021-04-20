@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -82,6 +84,25 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		newPerformer.Favorite = sql.NullBool{Bool: *input.Favorite, Valid: true}
 	} else {
 		newPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
+	}
+	if input.Details != nil {
+		newPerformer.Details = sql.NullString{String: *input.Details, Valid: true}
+	}
+	if input.DeathDate != nil {
+		newPerformer.DeathDate = models.SQLiteDate{String: *input.DeathDate, Valid: true}
+	}
+	if input.HairColor != nil {
+		newPerformer.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
+	}
+	if input.Weight != nil {
+		weight := int64(*input.Weight)
+		newPerformer.Weight = sql.NullInt64{Int64: weight, Valid: true}
+	}
+
+	if err := performer.ValidateDeathDate(nil, input.Birthdate, input.DeathDate); err != nil {
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Start the transaction and save the performer
@@ -177,33 +198,52 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Details = translator.nullString(input.Details, "details")
+	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
+	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
+	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
 
-	// Start the transaction and save the performer
-	var performer *models.Performer
+	// Start the transaction and save the p
+	var p *models.Performer
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Performer()
 
-		var err error
-		performer, err = qb.Update(updatedPerformer)
+		// need to get existing performer
+		existing, err := qb.Find(updatedPerformer.ID)
+		if err != nil {
+			return err
+		}
+
+		if existing == nil {
+			return fmt.Errorf("performer with id %d not found", updatedPerformer.ID)
+		}
+
+		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
+			if err != nil {
+				return err
+			}
+		}
+
+		p, err = qb.Update(updatedPerformer)
 		if err != nil {
 			return err
 		}
 
 		// Save the tags
 		if translator.hasField("tag_ids") {
-			if err := r.updatePerformerTags(qb, performer.ID, input.TagIds); err != nil {
+			if err := r.updatePerformerTags(qb, p.ID, input.TagIds); err != nil {
 				return err
 			}
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+			if err := qb.UpdateImage(p.ID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(performer.ID); err != nil {
+			if err := qb.DestroyImage(p.ID); err != nil {
 				return err
 			}
 		}
@@ -221,7 +261,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	return performer, nil
+	return p, nil
 }
 
 func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, performerID int, tagsIDs []string) error {
@@ -264,6 +304,10 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Details = translator.nullString(input.Details, "details")
+	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
+	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
+	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
 
 	if translator.hasField("gender") {
 		if input.Gender != nil {
@@ -281,6 +325,20 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 
 		for _, performerID := range performerIDs {
 			updatedPerformer.ID = performerID
+
+			// need to get existing performer
+			existing, err := qb.Find(performerID)
+			if err != nil {
+				return err
+			}
+
+			if existing == nil {
+				return fmt.Errorf("performer with id %d not found", performerID)
+			}
+
+			if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
+				return err
+			}
 
 			performer, err := qb.Update(updatedPerformer)
 			if err != nil {

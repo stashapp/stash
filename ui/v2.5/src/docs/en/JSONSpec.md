@@ -52,10 +52,13 @@ url
 twitter  
 instagram  
 birthdate  
+death_date  
 ethnicity  
 country  
+hair_color  
 eye_color  
 height  
+weight  
 measurements  
 fake_tits  
 career_length  
@@ -64,6 +67,7 @@ piercings
 image (base64 encoding of the image file)  
 created_at  
 updated_at
+details
 ```
 
 ## Studio
@@ -72,7 +76,8 @@ name
 url  
 image (base64 encoding of the image file)  
 created_at  
-updated_at  
+updated_at
+details  
 ```
 
 ## Scene
@@ -229,6 +234,10 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
       "description": "Birthdate of the performer. Format is YYYY-MM-DD",
       "type": "string"
     },
+    "death_date": {
+      "description": "Death date of the performer. Format is YYYY-MM-DD",
+      "type": "string"
+    },
     "ethnicity": {
       "description": "Ethnicity of the Performer. Possible values are black, white, asian or hispanic",
       "type": "string"
@@ -237,12 +246,20 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
       "description": "Country of the performer",
       "type": "string"
     },
+    "hair_color": {
+      "description": "Hair color of the performer",
+      "type": "string"
+    },
     "eye_color": {
       "description": "Eye color of the performer",
       "type": "string"
     },
     "height": {
       "description": "Height of the performer in centimeters",
+      "type": "string"
+    },
+    "weight": {
+      "description": "Weight of the performer in kilograms",
       "type": "string"
     },
     "measurements": {
@@ -275,6 +292,10 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
     },
     "updated_at": {
       "description": "The time this performers data was last changed in the database. Format is YYYY-MM-DDThh:mm:ssTZD",
+      "type": "string"
+    },
+    "details": {
+      "description": "Description of the performer",
       "type": "string"
     }
   },
@@ -311,6 +332,10 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
     },
     "updated_at": {
       "description": "The time this studios data was last changed in the database. Format is YYYY-MM-DDThh:mm:ssTZD",
+      "type": "string"
+    },
+    "details": {
+      "description": "Description of the studio",
       "type": "string"
     }
   },

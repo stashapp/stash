@@ -45,6 +45,7 @@ export const Studio: React.FC = () => {
   const [name, setName] = useState<string>();
   const [url, setUrl] = useState<string>();
   const [parentStudioId, setParentStudioId] = useState<string>();
+  const [details, setDetails] = useState<string>();
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
@@ -63,6 +64,7 @@ export const Studio: React.FC = () => {
     setName(state.name);
     setUrl(state.url ?? undefined);
     setParentStudioId(state?.parent_studio?.id ?? undefined);
+    setDetails(state.details ?? undefined);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -117,6 +119,7 @@ export const Studio: React.FC = () => {
       name,
       url,
       image,
+      details,
       parent_id: parentStudioId ?? null,
     };
 
@@ -300,6 +303,12 @@ export const Studio: React.FC = () => {
               value: url,
               isEditing: !!isEditing,
               onChange: setUrl,
+            })}
+            {TableUtils.renderTextArea({
+              title: "Details",
+              value: details,
+              isEditing: !!isEditing,
+              onChange: setDetails,
             })}
             <tr>
               <td>Parent Studio</td>

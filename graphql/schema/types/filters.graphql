@@ -73,6 +73,12 @@ input PerformerFilterType {
   stash_id: String
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by hair color"""
+  hair_color: StringCriterionInput
+  """Filter by weight"""
+  weight: StringCriterionInput
+  """Filter by death year"""
+  death_year: IntCriterionInput
 }
 
 input SceneMarkerFilterType {

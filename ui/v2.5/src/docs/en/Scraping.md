@@ -544,6 +544,24 @@ When developing a scraper you can have a look at the cookies set by a site by ad
 
 and having a look at the log / console in debug mode.
 
+### Headers
+
+Sending request headers is possible when using a scraper.
+Headers can be set in the `driver` section and are supported for plain, CDP enabled and JSON scrapers.
+They consist of a Key and a Value. If the the Key is empty or not defined then the header is ignored.
+
+```yaml
+driver:
+  headers:
+    - Key: User-Agent
+      Value: My Stash Scraper
+    - Key: Authorization
+      Value: Bearer ds3sdfcFdfY17p4qBkTVF03zscUU2glSjWF17bZyoe8
+```
+
+* headers are set after stash's `User-Agent` configuration option is applied.
+This means setting a `User-Agent` header from the scraper overrides the one in the configuration settings.
+
 ### XPath scraper example
 
 A performer and scene xpath scraper is shown as an example below:
@@ -614,31 +632,42 @@ A performer and scene scraper for ThePornDB is shown below:
 name: ThePornDB
 performerByName:
   action: scrapeJson
-  queryURL: https://metadataapi.net/api/performers?q={}
+  queryURL: https://api.metadataapi.net/performers?q={}
   scraper: performerSearch
 performerByURL:
   - action: scrapeJson
     url:
-      - https://metadataapi.net/api/performers/
+      - https://api.metadataapi.net/performers/
     scraper: performerScraper
 sceneByURL:
   - action: scrapeJson
     url:
-      - https://metadataapi.net/api/scenes/
+      - https://api.metadataapi.net/scenes/
     scraper: sceneScraper
 sceneByFragment:
   action: scrapeJson
-  queryURL: https://metadataapi.net/api/scenes?parse={filename}&limit=1
+  queryURL: https://api.metadataapi.net/scenes?parse={filename}&hash={oshash}&limit=1
   scraper: sceneQueryScraper
+  queryURLReplace:
+    filename:
+      - regex: "[^a-zA-Z\\d\\-._~]" # clean filename so that it can contruct a valid url
+        with: "." # "%20"
+      - regex: HEVC
+        with:
+      - regex: x265
+        with:
+      - regex: \.+
+        with: "."
 jsonScrapers:
   performerSearch:
     performer:
       Name: data.#.name
       URL:
         selector: data.#.id
-        replace:
-          - regex: ^
-            with: https://metadataapi.net/api/performers/
+        postProcess:
+          - replace:
+              - regex: ^
+                with: https://api.metadataapi.net/performers/
 
   performerScraper:
     common:
@@ -648,7 +677,12 @@ jsonScrapers:
       Gender: $extras.gender
       Birthdate: $extras.birthday
       Ethnicity: $extras.ethnicity
-      Height: $extras.height
+      Height:
+        selector: $extras.height
+        postProcess:
+          - replace:
+              - regex: cm
+                with:
       Measurements: $extras.measurements
       Tattoos: $extras.tattoos
       Piercings: $extras.piercings
@@ -670,7 +704,7 @@ jsonScrapers:
         Name: data.site.name
       Tags:
         Name: data.tags.#.tag
-  
+
   sceneQueryScraper:
     common:
       $data: data.0
@@ -686,7 +720,14 @@ jsonScrapers:
       Studio:
         Name: $data.site.name
       Tags:
-        Name: $data.tags.#.tag  
+        Name: $data.tags.#.tag
+driver:
+  headers:
+    - Key: User-Agent
+      Value: Stash JSON Scraper
+    - Key: Authorization
+      Value: Bearer lPdwFdfY17p4qBkTVF03zscUU2glSjdf17bZyoe  # use an actual API Key here
+# Last Updated April 7, 2021
 ```
 
 ## Object fields
@@ -699,10 +740,13 @@ URL
 Twitter
 Instagram
 Birthdate
+DeathDate
 Ethnicity
 Country
+HairColor
 EyeColor
 Height
+Weight
 Measurements
 FakeTits
 CareerLength
@@ -711,6 +755,7 @@ Piercings
 Aliases
 Tags (see Tag fields)
 Image
+Details
 ```
 
 *Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).

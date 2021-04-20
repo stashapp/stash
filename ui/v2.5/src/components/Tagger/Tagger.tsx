@@ -290,7 +290,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       (s) =>
         s.stash_ids.length === 0 &&
         ((s.checksum && fingerprints[s.checksum]) ||
-          (s.oshash && fingerprints[s.oshash]))
+          (s.oshash && fingerprints[s.oshash]) ||
+          (s.phash && fingerprints[s.phash]))
     ).length;
   };
 
@@ -320,6 +321,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       const fingerprintMatch =
         fingerprints[scene.checksum ?? ""] ??
         fingerprints[scene.oshash ?? ""] ??
+        fingerprints[scene.phash ?? ""] ??
         null;
       const isTagged = taggedScenes[scene.id];
       const hasStashIDs = scene.stash_ids.length > 0;
