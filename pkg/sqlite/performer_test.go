@@ -234,10 +234,16 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 
 		now := time.Now()
 		for _, performer := range performers {
+			cd := now
+
+			if performer.DeathDate.Valid {
+				cd, _ = time.Parse("2006-01-02", performer.DeathDate.String)
+			}
+
 			bd := performer.Birthdate.String
 			d, _ := time.Parse("2006-01-02", bd)
-			age := now.Year() - d.Year()
-			if now.YearDay() < d.YearDay() {
+			age := cd.Year() - d.Year()
+			if cd.YearDay() < d.YearDay() {
 				age = age - 1
 			}
 

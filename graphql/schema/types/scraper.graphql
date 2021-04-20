@@ -49,6 +49,10 @@ type ScrapedScenePerformer {
 
   remote_site_id: String
   images: [String!]
+  details: String
+  death_date: String
+  hair_color: String
+  weight: String
 }
 
 type ScrapedSceneMovie {

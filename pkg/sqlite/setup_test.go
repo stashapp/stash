@@ -657,6 +657,19 @@ func getPerformerBirthdate(index int) string {
 	return birthdate.Format("2006-01-02")
 }
 
+func getPerformerDeathDate(index int) models.SQLiteDate {
+	if index != 5 {
+		return models.SQLiteDate{}
+	}
+
+	deathDate := time.Now()
+	deathDate = deathDate.AddDate(-index+1, -1, -1)
+	return models.SQLiteDate{
+		String: deathDate.Format("2006-01-02"),
+		Valid:  true,
+	}
+}
+
 func getPerformerCareerLength(index int) *string {
 	if index%5 == 0 {
 		return nil
@@ -691,6 +704,8 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 				String: getPerformerBirthdate(i),
 				Valid:  true,
 			},
+			DeathDate: getPerformerDeathDate(i),
+			Details:   sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
 		}
 
 		careerLength := getPerformerCareerLength(i)

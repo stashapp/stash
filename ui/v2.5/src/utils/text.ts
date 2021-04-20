@@ -83,7 +83,7 @@ const stringToDate = (dateString: string) => {
   return new Date(year, monthIndex, day, 0, 0, 0, 0);
 };
 
-const getAge = (dateString?: string | null, fromDateString?: string) => {
+const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
   const birthdate = stringToDate(dateString);

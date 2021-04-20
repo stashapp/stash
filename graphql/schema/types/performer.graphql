@@ -35,6 +35,10 @@ type Performer {
   gallery_count: Int # Resolver
   scenes: [Scene!]!
   stash_ids: [StashID!]!
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input PerformerCreateInput {
@@ -59,6 +63,10 @@ input PerformerCreateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input PerformerUpdateInput {
@@ -84,6 +92,10 @@ input PerformerUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input BulkPerformerUpdateInput {
@@ -106,6 +118,10 @@ input BulkPerformerUpdateInput {
   instagram: String
   favorite: Boolean
   tag_ids: BulkUpdateIds
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input PerformerDestroyInput {

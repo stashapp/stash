@@ -103,7 +103,23 @@ xPathScrapers:
         selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
         fixed: "Female"
-# Last updated March 24, 2021
+      Details: //div[@data-test="biography"]
+      DeathDate:
+        selector: //div[contains(text(),'Passed away on')]
+        postProcess:
+          - replace:
+              - regex: Passed away on (.+) at the age of \d+
+                with: $1
+          - parseDate: January 2, 2006
+      HairColor: //span[text()='Hair Color']/following-sibling::span/a
+      Weight:
+        selector: //span[text()='Weight']/following-sibling::span/a
+        postProcess:
+        - replace:
+            - regex: \D+[\s\S]+
+              with: ""
+
+# Last updated April 13, 2021
 `
 
 func getFreeonesScraper() config {

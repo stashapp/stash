@@ -53,8 +53,10 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "instagram",
     "ethnicity",
     "country",
+    "hair_color",
     "eye_color",
     "height",
+    "weight",
     "measurements",
     "fake_tits",
     "career_length",
@@ -65,6 +67,7 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "scenes",
     "image",
     "stash_id",
+    "details",
   ];
 }
 
@@ -104,7 +107,7 @@ export class TagIsMissingCriterionOption implements ICriterionOption {
 
 export class StudioIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "studioIsMissing";
-  public options: string[] = ["image", "stash_id"];
+  public options: string[] = ["image", "stash_id", "details"];
 }
 
 export class StudioIsMissingCriterionOption implements ICriterionOption {

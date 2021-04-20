@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -51,6 +52,17 @@ func TestImporterPreImport(t *testing.T) {
 	err = i.PreImport()
 
 	assert.Nil(t, err)
+
+	i.Input = *createFullJSONStudio(studioName, image)
+	i.Input.ParentStudio = ""
+
+	err = i.PreImport()
+
+	assert.Nil(t, err)
+	expectedStudio := createFullStudio(0, 0)
+	expectedStudio.ParentID.Valid = false
+	expectedStudio.Checksum = utils.MD5FromString(studioName)
+	assert.Equal(t, expectedStudio, i.studio)
 }
 
 func TestImporterPreImportWithParent(t *testing.T) {
