@@ -240,12 +240,21 @@ export class ListFilterModel {
       }
       case FilterMode.Studios:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count", "random"];
+        this.sortByOptions = [
+          "name",
+          "scenes_count",
+          "images_count",
+          "galleries_count",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
           ListFilterModel.createCriterionOption("url"),
         ];
         break;
@@ -1034,8 +1043,34 @@ export class ListFilterModel {
           };
           break;
         }
-        case "studioIsMissing":
+        case "studioIsMissing": {
           result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        }
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
