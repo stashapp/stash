@@ -311,9 +311,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
     // overwrite if not new since it came from a dialog
-    // otherwise follow existing behaviour
+    // overwrite if image was cleared (`null`)
+    // otherwise follow existing behaviour (`undefined`)
     if (
-      (!isNew || formik.values.image === undefined) &&
+      (!isNew || [null, undefined].includes(formik.values.image)) &&
       state.image !== undefined
     ) {
       const imageStr = state.image;
