@@ -1,6 +1,12 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -520,26 +526,34 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     options.persistState,
   ]);
 
-  function updateQueryParams(listFilter: ListFilterModel) {
-    setFilter(listFilter);
-    const newLocation = { ...location };
-    newLocation.search = listFilter.makeQueryParameters();
-    history.replace(newLocation);
-    if (options.persistState) {
-      updateInterfaceConfig(listFilter, options.persistState);
-    }
-  }
+  const updateQueryParams = useCallback(
+    (listFilter: ListFilterModel) => {
+      setFilter(listFilter);
+      const newLocation = { ...location };
+      newLocation.search = listFilter.makeQueryParameters();
+      history.replace(newLocation);
+      if (options.persistState) {
+        updateInterfaceConfig(listFilter, options.persistState);
+      }
+    },
+    [setFilter, history, location, options.persistState, updateInterfaceConfig]
+  );
 
-  const onChangePage = (page: number) => {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.currentPage = page;
-    updateQueryParams(newFilter);
-    window.scrollTo(0, 0);
-  };
+  const onChangePage = useCallback(
+    (page: number) => {
+      const newFilter = _.cloneDeep(filter);
+      newFilter.currentPage = page;
+      updateQueryParams(newFilter);
+      window.scrollTo(0, 0);
+    },
+    [filter, updateQueryParams]
+  );
 
-  const renderFilter = !options.filterHook
-    ? filter
-    : options.filterHook(_.cloneDeep(filter));
+  const renderFilter = useMemo(() => {
+    return !options.filterHook
+      ? filter
+      : options.filterHook(_.cloneDeep(filter));
+  }, [filter, options]);
 
   const { contentTemplate, onSelectChange } = RenderList({
     ...options,
