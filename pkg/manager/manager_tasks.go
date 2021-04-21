@@ -192,11 +192,12 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 
 		i := 0
 		stoppingErr := errors.New("stopping")
+		var err error
 
 		var galleries []string
 
 		for _, sp := range paths {
-			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 				if total != nil {
 					s.Status.setProgress(i, *total)
 					i++
@@ -231,33 +232,24 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 			})
 
 			if err == stoppingErr {
+				logger.Info("Stopping due to user request")
 				break
 			}
 
 			if err != nil {
 				logger.Errorf("Error encountered scanning files: %s", err.Error())
-				wg.Wait()                              // running tasks should finish and
-				instance.Paths.Generated.EmptyTmpDir() // tmp emptied
-				elapsed := time.Since(start)
-				logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
-				return
+				break
 			}
-		}
-
-		if s.Status.stopping {
-			logger.Info("Stopping due to user request")
-			wg.Wait() // make sure that current tasks are finished and then exit
-			instance.Paths.Generated.EmptyTmpDir()
-			elapsed := time.Since(start)
-			logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
-			return
 		}
 
 		wg.Wait()
 		instance.Paths.Generated.EmptyTmpDir()
-
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+		if s.Status.stopping || err != nil {
+			return
+		}
 
 		for _, path := range galleries {
 			wg.Add()
@@ -630,7 +622,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 
 		wg.Wait()
 
-		logger.Infof("Generate Screenshot finished")
+		logger.Infof("Generate screenshot finished")
 	}()
 }
 
