@@ -103,7 +103,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 
 	var tmpFiles []string                              // a list of tmp files used during the preview generation
 	tmpFiles = append(tmpFiles, g.getConcatFilePath()) // add concat filename to tmpFiles
-	defer removeFiles(&tmpFiles)                       // remove tmpFiles when done
+	defer func() { removeFiles(tmpFiles) }()           // remove tmpFiles when done
 
 	stepSize, offset := g.Info.getStepSizeAndOffset()
 
@@ -162,12 +162,10 @@ func (g *PreviewGenerator) getConcatFilePath() string {
 	return instance.Paths.Generated.GetTmpPath(fmt.Sprintf("files_%s.txt", g.VideoChecksum))
 }
 
-func removeFiles(list *[]string) {
-	if list != nil {
-		for _, f := range *list {
-			if err := os.Remove(f); err != nil {
-				logger.Warnf("[generator] Delete error: %s", err)
-			}
+func removeFiles(list []string) {
+	for _, f := range list {
+		if err := os.Remove(f); err != nil {
+			logger.Warnf("[generator] Delete error: %s", err)
 		}
 	}
 }
