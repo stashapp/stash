@@ -143,22 +143,16 @@ func (s *singleton) PostInit() error {
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
 	if s.Config.GetGeneratedPath() != "" {
-		const deleteTimeout = 5 * time.Second
-		done := make(chan struct{})
+		const deleteTimeout = 1 * time.Second
 
-		go func() {
+		utils.Timeout(func() {
 			utils.EmptyDir(instance.Paths.Generated.Downloads)
 			utils.EmptyDir(instance.Paths.Generated.Tmp)
-			done <- struct{}{}
-		}()
-
-		select {
-		case <-done: // tmp dirs deleted on time, just exit from select
-		case <-time.After(deleteTimeout): // deletion took more than deleteTimout
+		}, deleteTimeout, func(done chan struct{}) {
 			logger.Info("Please wait. Deleting temporary files...") // print
 			<-done                                                  // and wait for deletion
 			logger.Info("Temporary files deleted.")
-		}
+		})
 	}
 
 	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {
