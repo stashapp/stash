@@ -120,8 +120,8 @@ export const SceneList: React.FC<ISceneList> = ({
       if (queryResults.data.findScenes.scenes.length > index) {
         const { id } = queryResults!.data!.findScenes!.scenes[index];
         // navigate to the image player page
-        const queue = SceneQueue.fromListFilterModel(filterCopy, index);
-        queue.playScene(history, id, { autoPlay: true });
+        const queue = SceneQueue.fromListFilterModel(filterCopy);
+        queue.playScene(history, id, { sceneIndex: index, autoPlay: true });
       }
     }
   }
@@ -138,15 +138,6 @@ export const SceneList: React.FC<ISceneList> = ({
   async function onExportAll() {
     setIsExportAll(true);
     setIsExportDialogOpen(true);
-  }
-
-  async function sceneClicked(
-    sceneId: string,
-    sceneIndex: number,
-    filter: ListFilterModel
-  ) {
-    const queue = SceneQueue.fromListFilterModel(filter, sceneIndex);
-    queue.playScene(history, sceneId);
   }
 
   function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
@@ -204,24 +195,31 @@ export const SceneList: React.FC<ISceneList> = ({
     if (!result.data || !result.data.findScenes) {
       return;
     }
+
+    const queue = SceneQueue.fromListFilterModel(filter);
+
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <SceneCardsGrid
           scenes={result.data.findScenes.scenes}
+          queue={queue}
           zoomIndex={zoomIndex}
           selectedIds={selectedIds}
           onSelectChange={(id, selected, shiftKey) =>
             listData.onSelectChange(id, selected, shiftKey)
           }
-          onSceneClick={(id, index) => sceneClicked(id, index, filter)}
         />
       );
     }
     if (filter.displayMode === DisplayMode.List) {
-      return <SceneListTable scenes={result.data.findScenes.scenes} />;
+      return (
+        <SceneListTable scenes={result.data.findScenes.scenes} queue={queue} />
+      );
     }
     if (filter.displayMode === DisplayMode.Wall) {
-      return <WallPanel scenes={result.data.findScenes.scenes} />;
+      return (
+        <WallPanel scenes={result.data.findScenes.scenes} sceneQueue={queue} />
+      );
     }
     if (filter.displayMode === DisplayMode.Tagger) {
       return <Tagger scenes={result.data.findScenes.scenes} />;
