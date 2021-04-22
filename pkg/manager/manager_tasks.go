@@ -192,11 +192,12 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 
 		i := 0
 		stoppingErr := errors.New("stopping")
+		var err error
 
 		var galleries []string
 
 		for _, sp := range paths {
-			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 				if total != nil {
 					s.Status.setProgress(i, *total)
 					i++
@@ -231,25 +232,24 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 			})
 
 			if err == stoppingErr {
+				logger.Info("Stopping due to user request")
 				break
 			}
 
 			if err != nil {
 				logger.Errorf("Error encountered scanning files: %s", err.Error())
-				return
+				break
 			}
-		}
-
-		if s.Status.stopping {
-			logger.Info("Stopping due to user request")
-			return
 		}
 
 		wg.Wait()
 		instance.Paths.Generated.EmptyTmpDir()
-
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+		if s.Status.stopping || err != nil {
+			return
+		}
 
 		for _, path := range galleries {
 			wg.Add()
@@ -464,7 +464,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		}
 		setGeneratePreviewOptionsInput(generatePreviewOptions)
 
-		// Start measuring how long the scan has taken. (consider moving this up)
+		// Start measuring how long the generate has taken. (consider moving this up)
 		start := time.Now()
 		instance.Paths.Generated.EnsureTmpDir()
 
@@ -472,6 +472,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
+				wg.Wait()
+				instance.Paths.Generated.EmptyTmpDir()
 				return
 			}
 
@@ -540,6 +542,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			s.Status.setProgress(lenScenes+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
+				wg.Wait()
+				instance.Paths.Generated.EmptyTmpDir()
+				elapsed := time.Since(start)
+				logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 				return
 			}
 
@@ -616,7 +622,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 
 		wg.Wait()
 
-		logger.Infof("Generate finished")
+		logger.Infof("Generate screenshot finished")
 	}()
 }
 

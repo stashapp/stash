@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -142,8 +143,16 @@ func (s *singleton) PostInit() error {
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
 	if s.Config.GetGeneratedPath() != "" {
-		utils.EmptyDir(instance.Paths.Generated.Downloads)
-		utils.EmptyDir(instance.Paths.Generated.Tmp)
+		const deleteTimeout = 1 * time.Second
+
+		utils.Timeout(func() {
+			utils.EmptyDir(instance.Paths.Generated.Downloads)
+			utils.EmptyDir(instance.Paths.Generated.Tmp)
+		}, deleteTimeout, func(done chan struct{}) {
+			logger.Info("Please wait. Deleting temporary files...") // print
+			<-done                                                  // and wait for deletion
+			logger.Info("Temporary files deleted.")
+		})
 	}
 
 	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {
