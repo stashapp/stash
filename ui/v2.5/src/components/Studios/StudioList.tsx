@@ -12,6 +12,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindStudios, useStudiosDestroy } from "src/core/StashService";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
+import { StudioListFilterOptions } from "src/models/list-filter/studios";
 import { StudioCard } from "./StudioCard";
 
 interface IStudioList {
@@ -126,6 +127,7 @@ export const StudioList: React.FC<IStudioList> = ({
   );
 
   const listData = useStudiosList({
+    filterOptions: new StudioListFilterOptions(),
     renderContent,
     filterHook,
     addKeybinds,

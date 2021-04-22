@@ -9,6 +9,7 @@ import { useSceneMarkersList } from "src/hooks";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { SceneMarkerListFilterOptions } from "src/models/list-filter/scene-markers";
 import { WallPanel } from "../Wall/WallPanel";
 
 interface ISceneMarkerList {
@@ -38,6 +39,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   };
 
   const listData = useSceneMarkersList({
+    filterOptions: new SceneMarkerListFilterOptions(),
     otherOperations,
     renderContent,
     filterHook,

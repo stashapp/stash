@@ -44,6 +44,7 @@ import {
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
+import { ListFilterOptions } from "src/models/list-filter/filter-options";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -92,6 +93,7 @@ export enum PersistanceLevel {
 }
 
 interface IListHookOptions<T, E> {
+  filterOptions: ListFilterOptions;
   persistState?: PersistanceLevel;
   persistanceKey?: string;
   defaultSort?: string;
@@ -141,6 +143,7 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
 
 interface IRenderListProps {
   filter: ListFilterModel;
+  filterOptions: ListFilterOptions;
   onChangePage: (page: number) => void;
   updateQueryParams: (filter: ListFilterModel) => void;
 }
@@ -151,6 +154,7 @@ const RenderList = <
 >({
   defaultZoomIndex,
   filter,
+  filterOptions,
   onChangePage,
   addKeybinds,
   useData,
@@ -400,6 +404,7 @@ const RenderList = <
         onEdit={renderEditDialog ? onEdit : undefined}
         onDelete={renderDeleteDialog ? onDelete : undefined}
         filter={filter}
+        filterOptions={filterOptions}
       />
       {isEditDialogOpen &&
         renderEditDialog &&
@@ -439,9 +444,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
-      options.filterMode,
       queryString.parse(location.search),
-      options.defaultSort
+      options.defaultSort ?? options.filterOptions.defaultSortBy
     )
   );
 
@@ -503,7 +507,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         }
       : activeFilter;
 
-    const newFilter = new ListFilterModel(options.filterMode, query);
+    const newFilter = new ListFilterModel(query);
 
     // Compare constructed filter with current filter.
     // If different it's the result of navigation, and we update the filter.

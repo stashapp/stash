@@ -18,6 +18,7 @@ import {
   PersistanceLevel,
 } from "src/hooks/ListHook";
 
+import { ImageListFilterOptions } from "src/models/list-filter/images";
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -152,6 +153,7 @@ export const ImageList: React.FC<IImageList> = ({
   };
 
   const { template, onSelectChange } = useImagesList({
+    filterOptions: new ImageListFilterOptions(),
     zoomable: true,
     selectable: true,
     otherOperations,

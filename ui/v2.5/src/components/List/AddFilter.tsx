@@ -12,13 +12,13 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
-import { ListFilterModel } from "src/models/list-filter/filter";
+import { ListFilterOptions } from "src/models/list-filter/filter-options";
 
 interface IAddFilterProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onAddCriterion: (criterion: Criterion<any>, oldId?: string) => void;
   onCancel: () => void;
-  filter: ListFilterModel;
+  filterOptions: ListFilterOptions;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   editingCriterion?: Criterion<any>;
 }
@@ -237,7 +237,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           value={criterion.type}
           className="btn-secondary"
         >
-          {props.filter.criterionOptions.map((c) => (
+          {props.filterOptions.criterionOptions.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
             </option>

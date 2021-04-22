@@ -15,7 +15,6 @@ import {
 import { stringToGender } from "src/core/StashService";
 import {
   Criterion,
-  ICriterionOption,
   CriterionType,
   CriterionOption,
   NumberCriterion,
@@ -23,56 +22,22 @@ import {
   DurationCriterion,
   MandatoryStringCriterion,
 } from "./criteria/criterion";
-import {
-  FavoriteCriterion,
-  FavoriteCriterionOption,
-} from "./criteria/favorite";
-import {
-  OrganizedCriterion,
-  OrganizedCriterionOption,
-} from "./criteria/organized";
-import {
-  HasMarkersCriterion,
-  HasMarkersCriterionOption,
-} from "./criteria/has-markers";
-import {
-  IsMissingCriterion,
-  PerformerIsMissingCriterionOption,
-  SceneIsMissingCriterionOption,
-  GalleryIsMissingCriterionOption,
-  TagIsMissingCriterionOption,
-  StudioIsMissingCriterionOption,
-  MovieIsMissingCriterionOption,
-  ImageIsMissingCriterionOption,
-} from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
-import {
-  PerformersCriterion,
-  PerformersCriterionOption,
-} from "./criteria/performers";
-import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
+import { FavoriteCriterion } from "./criteria/favorite";
+import { OrganizedCriterion } from "./criteria/organized";
+import { HasMarkersCriterion } from "./criteria/has-markers";
+import { IsMissingCriterion } from "./criteria/is-missing";
+import { PerformersCriterion } from "./criteria/performers";
+import { RatingCriterion } from "./criteria/rating";
 import {
   AverageResolutionCriterion,
-  AverageResolutionCriterionOption,
   ResolutionCriterion,
-  ResolutionCriterionOption,
 } from "./criteria/resolution";
-import {
-  StudiosCriterion,
-  StudiosCriterionOption,
-  ParentStudiosCriterion,
-  ParentStudiosCriterionOption,
-} from "./criteria/studios";
-import {
-  PerformerTagsCriterionOption,
-  SceneTagsCriterionOption,
-  TagsCriterion,
-  TagsCriterionOption,
-} from "./criteria/tags";
+import { StudiosCriterion, ParentStudiosCriterion } from "./criteria/studios";
+import { TagsCriterion } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
-import { DisplayMode, FilterMode } from "./types";
-import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
-import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
+import { DisplayMode } from "./types";
+import { GenderCriterion } from "./criteria/gender";
+import { MoviesCriterion } from "./criteria/movies";
 import { GalleriesCriterion } from "./criteria/galleries";
 
 interface IQueryParameters {
@@ -94,16 +59,12 @@ const DEFAULT_PARAMS = {
 
 // TODO: handle customCriteria
 export class ListFilterModel {
-  public filterMode: FilterMode = FilterMode.Scenes;
   public searchTerm?: string;
   public currentPage = DEFAULT_PARAMS.currentPage;
   public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
   public sortDirection: SortDirectionEnum = SortDirectionEnum.Asc;
   public sortBy?: string;
-  public sortByOptions: string[] = [];
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
-  public displayModeOptions: DisplayMode[] = [];
-  public criterionOptions: ICriterionOption[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public criteria: Array<Criterion<any>> = [];
   public randomSeed = -1;
@@ -112,267 +73,9 @@ export class ListFilterModel {
     return new CriterionOption(Criterion.getLabel(criterion), criterion);
   }
 
-  public constructor(
-    filterMode: FilterMode,
-    rawParms?: ParsedQuery<string>,
-    defaultSort?: string
-  ) {
+  public constructor(rawParms?: ParsedQuery<string>, defaultSort?: string) {
     const params = rawParms as IQueryParameters;
-    switch (filterMode) {
-      case FilterMode.Scenes:
-        this.sortBy = defaultSort ?? "date";
-        this.sortByOptions = [
-          "title",
-          "path",
-          "rating",
-          "organized",
-          "o_counter",
-          "date",
-          "filesize",
-          "file_mod_time",
-          "duration",
-          "framerate",
-          "bitrate",
-          "tag_count",
-          "performer_count",
-          "random",
-          "movie_scene_number",
-        ];
-        this.displayModeOptions = [
-          DisplayMode.Grid,
-          DisplayMode.List,
-          DisplayMode.Wall,
-          DisplayMode.Tagger,
-        ];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          ListFilterModel.createCriterionOption("path"),
-          new RatingCriterionOption(),
-          new OrganizedCriterionOption(),
-          ListFilterModel.createCriterionOption("o_counter"),
-          new ResolutionCriterionOption(),
-          ListFilterModel.createCriterionOption("duration"),
-          new HasMarkersCriterionOption(),
-          new SceneIsMissingCriterionOption(),
-          new TagsCriterionOption(),
-          ListFilterModel.createCriterionOption("tag_count"),
-          new PerformerTagsCriterionOption(),
-          new PerformersCriterionOption(),
-          ListFilterModel.createCriterionOption("performer_count"),
-          new StudiosCriterionOption(),
-          new MoviesCriterionOption(),
-          ListFilterModel.createCriterionOption("url"),
-          ListFilterModel.createCriterionOption("stash_id"),
-        ];
-        break;
-      case FilterMode.Images:
-        this.sortBy = defaultSort ?? "path";
-        this.sortByOptions = [
-          "title",
-          "path",
-          "rating",
-          "o_counter",
-          "filesize",
-          "file_mod_time",
-          "tag_count",
-          "performer_count",
-          "random",
-        ];
-        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          ListFilterModel.createCriterionOption("path"),
-          new RatingCriterionOption(),
-          new OrganizedCriterionOption(),
-          ListFilterModel.createCriterionOption("o_counter"),
-          new ResolutionCriterionOption(),
-          new ImageIsMissingCriterionOption(),
-          new TagsCriterionOption(),
-          ListFilterModel.createCriterionOption("tag_count"),
-          new PerformerTagsCriterionOption(),
-          new PerformersCriterionOption(),
-          ListFilterModel.createCriterionOption("performer_count"),
-          new StudiosCriterionOption(),
-        ];
-        break;
-      case FilterMode.Performers: {
-        this.sortBy = defaultSort ?? "name";
-        this.sortByOptions = [
-          "name",
-          "height",
-          "birthdate",
-          "scenes_count",
-          "tag_count",
-          "random",
-          "rating",
-        ];
-        this.displayModeOptions = [
-          DisplayMode.Grid,
-          DisplayMode.List,
-          DisplayMode.Tagger,
-        ];
-
-        const numberCriteria: CriterionType[] = [
-          "birth_year",
-          "death_year",
-          "age",
-          "weight",
-        ];
-        const stringCriteria: CriterionType[] = [
-          "ethnicity",
-          "country",
-          "hair_color",
-          "eye_color",
-          "height",
-          "measurements",
-          "fake_tits",
-          "career_length",
-          "tattoos",
-          "piercings",
-          "aliases",
-          "stash_id",
-        ];
-
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          new FavoriteCriterionOption(),
-          new GenderCriterionOption(),
-          new PerformerIsMissingCriterionOption(),
-          new TagsCriterionOption(),
-          new RatingCriterionOption(),
-          ListFilterModel.createCriterionOption("url"),
-          ListFilterModel.createCriterionOption("tag_count"),
-          ListFilterModel.createCriterionOption("scene_count"),
-          ListFilterModel.createCriterionOption("image_count"),
-          ListFilterModel.createCriterionOption("gallery_count"),
-          ...numberCriteria
-            .concat(stringCriteria)
-            .map((c) => ListFilterModel.createCriterionOption(c)),
-        ];
-
-        break;
-      }
-      case FilterMode.Studios:
-        this.sortBy = defaultSort ?? "name";
-        this.sortByOptions = [
-          "name",
-          "scenes_count",
-          "images_count",
-          "galleries_count",
-          "random",
-          "rating",
-        ];
-        this.displayModeOptions = [DisplayMode.Grid];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          new ParentStudiosCriterionOption(),
-          new StudioIsMissingCriterionOption(),
-          new RatingCriterionOption(),
-          ListFilterModel.createCriterionOption("scene_count"),
-          ListFilterModel.createCriterionOption("image_count"),
-          ListFilterModel.createCriterionOption("gallery_count"),
-          ListFilterModel.createCriterionOption("url"),
-          ListFilterModel.createCriterionOption("stash_id"),
-        ];
-        break;
-      case FilterMode.Movies:
-        this.sortBy = defaultSort ?? "name";
-        this.sortByOptions = ["name", "scenes_count", "random"];
-        this.displayModeOptions = [DisplayMode.Grid];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          new StudiosCriterionOption(),
-          new MovieIsMissingCriterionOption(),
-          ListFilterModel.createCriterionOption("url"),
-        ];
-        break;
-      case FilterMode.Galleries:
-        this.sortBy = defaultSort ?? "path";
-        this.sortByOptions = [
-          "date",
-          "path",
-          "file_mod_time",
-          "images_count",
-          "tag_count",
-          "performer_count",
-          "title",
-          "random",
-        ];
-        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          ListFilterModel.createCriterionOption("path"),
-          new RatingCriterionOption(),
-          new OrganizedCriterionOption(),
-          new AverageResolutionCriterionOption(),
-          new GalleryIsMissingCriterionOption(),
-          new TagsCriterionOption(),
-          ListFilterModel.createCriterionOption("tag_count"),
-          new PerformerTagsCriterionOption(),
-          new PerformersCriterionOption(),
-          ListFilterModel.createCriterionOption("performer_count"),
-          ListFilterModel.createCriterionOption("image_count"),
-          new StudiosCriterionOption(),
-          ListFilterModel.createCriterionOption("url"),
-        ];
-        this.displayModeOptions = [
-          DisplayMode.Grid,
-          DisplayMode.List,
-          DisplayMode.Wall,
-        ];
-        break;
-      case FilterMode.SceneMarkers:
-        this.sortBy = defaultSort ?? "title";
-        this.sortByOptions = [
-          "title",
-          "seconds",
-          "scene_id",
-          "random",
-          "scenes_updated_at",
-        ];
-        this.displayModeOptions = [DisplayMode.Wall];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          new TagsCriterionOption(),
-          new SceneTagsCriterionOption(),
-          new PerformersCriterionOption(),
-        ];
-        break;
-      case FilterMode.Tags:
-        this.sortBy = defaultSort ?? "name";
-        // scene markers count has been disabled for now due to performance
-        // issues
-        this.sortByOptions = [
-          "name",
-          "scenes_count",
-          "images_count",
-          "galleries_count",
-          "performers_count",
-          "random",
-          /* "scene_markers_count" */
-        ];
-        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-          new TagIsMissingCriterionOption(),
-          ListFilterModel.createCriterionOption("scene_count"),
-          ListFilterModel.createCriterionOption("image_count"),
-          ListFilterModel.createCriterionOption("gallery_count"),
-          ListFilterModel.createCriterionOption("performer_count"),
-          // marker count has been disabled for now due to performance issues
-          // ListFilterModel.createCriterionOption("marker_count"),
-        ];
-        break;
-      default:
-        this.sortByOptions = [];
-        this.displayModeOptions = [];
-        this.criterionOptions = [new NoneCriterionOption()];
-        break;
-    }
-    if (!!this.displayMode === false) {
-      this.displayMode = this.displayModeOptions[0];
-    }
-    this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
+    this.sortBy = defaultSort;
     if (params) this.configureFromQueryParameters(params);
   }
 

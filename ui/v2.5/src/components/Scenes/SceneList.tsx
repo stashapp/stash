@@ -13,6 +13,7 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
 import { SceneQueue } from "src/models/sceneQueue";
+import { SceneListFilterOptions } from "src/models/list-filter/scenes";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
@@ -82,6 +83,7 @@ export const SceneList: React.FC<ISceneList> = ({
   ) => <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />;
 
   const listData = useScenesList({
+    filterOptions: new SceneListFilterOptions(),
     zoomable: true,
     selectable: true,
     otherOperations,

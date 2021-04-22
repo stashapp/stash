@@ -20,6 +20,7 @@ import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
+import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
@@ -38,6 +39,7 @@ interface IListFilterProps {
   onDelete?: () => void;
   otherOperations?: IListFilterOperation[];
   filter: ListFilterModel;
+  filterOptions: ListFilterOptions;
   itemsSelected?: boolean;
 }
 
@@ -70,17 +72,17 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
     Mousetrap.bind("r", () => onReshuffleRandomSort());
     Mousetrap.bind("v g", () => {
-      if (props.filter.displayModeOptions.includes(DisplayMode.Grid)) {
+      if (props.filterOptions.displayModeOptions.includes(DisplayMode.Grid)) {
         onChangeDisplayMode(DisplayMode.Grid);
       }
     });
     Mousetrap.bind("v l", () => {
-      if (props.filter.displayModeOptions.includes(DisplayMode.List)) {
+      if (props.filterOptions.displayModeOptions.includes(DisplayMode.List)) {
         onChangeDisplayMode(DisplayMode.List);
       }
     });
     Mousetrap.bind("v w", () => {
-      if (props.filter.displayModeOptions.includes(DisplayMode.Wall)) {
+      if (props.filterOptions.displayModeOptions.includes(DisplayMode.Wall)) {
         onChangeDisplayMode(DisplayMode.Wall);
       }
     });
@@ -240,7 +242,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
-    return props.filter.sortByOptions.map((option) => (
+    return props.filterOptions.sortByOptions.map((option) => (
       <Dropdown.Item
         onClick={onChangeSortBy}
         key={option}
@@ -277,7 +279,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
       }
     }
 
-    return props.filter.displayModeOptions.map((option) => (
+    return props.filterOptions.displayModeOptions.map((option) => (
       <OverlayTrigger
         key={option}
         overlay={
@@ -470,7 +472,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
               <InputGroup.Append>
                 <AddFilter
-                  filter={props.filter}
+                  filterOptions={props.filterOptions}
                   onAddCriterion={onAddCriterion}
                   onCancel={onCancelAddCriterion}
                   editingCriterion={editingCriterion}
