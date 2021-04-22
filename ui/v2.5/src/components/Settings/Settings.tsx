@@ -9,7 +9,7 @@ import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapersPanel } from "./SettingsScrapersPanel";
-import { SettingsDuplicatePanel } from "./SettingsDuplicatePanel";
+import { SettingsToolsPanel } from "./SettingsToolsPanel";
 
 export const Settings: React.FC = () => {
   const location = useLocation();
@@ -38,6 +38,9 @@ export const Settings: React.FC = () => {
                 <Nav.Link eventKey="tasks">Tasks</Nav.Link>
               </Nav.Item>
               <Nav.Item>
+                <Nav.Link eventKey="tools">Tools</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
                 <Nav.Link eventKey="scrapers">Scrapers</Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -45,9 +48,6 @@ export const Settings: React.FC = () => {
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="logs">Logs</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="duplicates">Dupe Checker</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="about">About</Nav.Link>
@@ -66,6 +66,9 @@ export const Settings: React.FC = () => {
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
               </Tab.Pane>
+              <Tab.Pane eventKey="tools" unmountOnExit>
+                <SettingsToolsPanel />
+              </Tab.Pane>
               <Tab.Pane eventKey="scrapers" unmountOnExit>
                 <SettingsScrapersPanel />
               </Tab.Pane>
@@ -74,9 +77,6 @@ export const Settings: React.FC = () => {
               </Tab.Pane>
               <Tab.Pane eventKey="logs" unmountOnExit>
                 <SettingsLogsPanel />
-              </Tab.Pane>
-              <Tab.Pane eventKey="duplicates" unmountOnExit>
-                <SettingsDuplicatePanel />
               </Tab.Pane>
               <Tab.Pane eventKey="about" unmountOnExit>
                 <SettingsAboutPanel />
