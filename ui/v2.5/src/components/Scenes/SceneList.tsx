@@ -222,7 +222,7 @@ export const SceneList: React.FC<ISceneList> = ({
       );
     }
     if (filter.displayMode === DisplayMode.Tagger) {
-      return <Tagger scenes={result.data.findScenes.scenes} />;
+      return <Tagger scenes={result.data.findScenes.scenes} queue={queue} />;
     }
   }
 
