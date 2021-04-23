@@ -265,6 +265,147 @@ func TestStudioDestroyStudioImage(t *testing.T) {
 	}
 }
 
+func TestStudioQuerySceneCount(t *testing.T) {
+	const sceneCount = 1
+	sceneCountCriterion := models.IntCriterionInput{
+		Value:    sceneCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+}
+
+func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			SceneCount: &sceneCountCriterion,
+		}
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			sceneCount, err := r.Scene().CountByStudioID(studio.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, sceneCount, sceneCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioQueryImageCount(t *testing.T) {
+	const imageCount = 1
+	imageCountCriterion := models.IntCriterionInput{
+		Value:    imageCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosImageCount(t, imageCountCriterion)
+}
+
+func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			ImageCount: &imageCountCriterion,
+		}
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			pp := 0
+
+			_, count, err := r.Image().Query(&models.ImageFilterType{
+				Studios: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(studio.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioQueryGalleryCount(t *testing.T) {
+	const galleryCount = 1
+	galleryCountCriterion := models.IntCriterionInput{
+		Value:    galleryCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+}
+
+func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			GalleryCount: &galleryCountCriterion,
+		}
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			pp := 0
+
+			_, count, err := r.Gallery().Query(&models.GalleryFilterType{
+				Studios: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(studio.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, galleryCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func TestStudioStashIDs(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Studio()

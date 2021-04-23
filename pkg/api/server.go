@@ -234,9 +234,21 @@ func Start() {
 		})
 	}
 
+	customUILocation := c.GetCustomUILocation()
+
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
+
+		if customUILocation != "" {
+			if r.URL.Path == "index.html" || ext == "" {
+				r.URL.Path = "/"
+			}
+
+			http.FileServer(http.Dir(customUILocation)).ServeHTTP(w, r)
+			return
+		}
+
 		if ext == ".html" || ext == "" {
 			data, _ := uiBox.Find("index.html")
 			_, _ = w.Write(data)

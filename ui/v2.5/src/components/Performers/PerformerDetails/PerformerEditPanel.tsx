@@ -148,7 +148,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const formik = useFormik({
     initialValues,
     validationSchema: schema,
-    onSubmit: (values) => onSave(getPerformerInput(values)),
+    onSubmit: (values) => onSave(values),
   });
 
   function setRating(v: number) {
@@ -164,7 +164,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
     // try to translate from enum values first
     const upperGender = scrapedGender?.toUpperCase();
-    const asEnum = genderToString(upperGender as GQL.GenderEnum);
+    const asEnum = genderToString(upperGender);
     if (asEnum) {
       retEnum = stringToGender(asEnum);
     } else {
@@ -220,9 +220,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         variables: tagInput,
       });
 
+      if (!result.data?.tagCreate) {
+        Toast.error(new Error("Failed to create tag"));
+        return;
+      }
+
       // add the new tag to the new tags value
       const newTagIds = formik.values.tag_ids.concat([
-        result.data!.tagCreate!.id,
+        result.data.tagCreate.id,
       ]);
       formik.setFieldValue("tag_ids", newTagIds);
 
@@ -304,7 +309,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.tags) {
       // map tags to their ids and filter out those not found
       const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
-      formik.setFieldValue("tag_ids", newTagIds as string[]);
+      formik.setFieldValue("tag_ids", newTagIds);
 
       setNewTags(state.tags.filter((t) => !t.stored_id));
     }
@@ -312,12 +317,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
     // overwrite if not new since it came from a dialog
-    // otherwise follow existing behaviour
+    // overwrite if image was cleared (`null`)
+    // otherwise follow existing behaviour (`undefined`)
     if (
-      (!isNew || formik.values.image === undefined) &&
-      (state as GQL.ScrapedPerformerDataFragment).image !== undefined
+      (!isNew || [null, undefined].includes(formik.values.image)) &&
+      state.image !== undefined
     ) {
-      const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
+      const imageStr = state.image;
       formik.setFieldValue("image", imageStr ?? undefined);
     }
     if (state.details) {
@@ -338,29 +344,30 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     formik.setFieldValue("image", imageData);
   }
 
-  async function onSave(
-    performerInput:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) {
+  async function onSave(performerInput: InputValues) {
     setIsLoading(true);
     try {
       if (!isNew) {
+        const input = getUpdateValues(performerInput);
+
         await updatePerformer({
           variables: {
             input: {
-              ...performerInput,
+              ...input,
               stash_ids: performerInput?.stash_ids?.map((s) => ({
                 endpoint: s.endpoint,
                 stash_id: s.stash_id,
               })),
-            } as GQL.PerformerUpdateInput,
+            },
           },
         });
         history.push(`/performers/${performer.id}`);
       } else {
+        const input = getCreateValues(performerInput);
         const result = await createPerformer({
-          variables: { input: performerInput as GQL.PerformerCreateInput },
+          variables: {
+            input,
+          },
         });
         if (result.data?.performerCreate) {
           history.push(`/performers/${result.data.performerCreate.id}`);
@@ -376,7 +383,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        onSave?.(getPerformerInput(formik.values));
+        onSave?.(formik.values);
       });
 
       if (!isNew) {
@@ -443,20 +450,22 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   if (isLoading) return <LoadingIndicator />;
 
-  function getPerformerInput(values: InputValues) {
-    const performerInput: Partial<
-      GQL.PerformerCreateInput | GQL.PerformerUpdateInput
-    > = {
+  function getUpdateValues(values: InputValues): GQL.PerformerUpdateInput {
+    return {
       ...values,
       gender: stringToGender(values.gender),
       rating: values.rating ?? null,
       weight: Number(values.weight),
+      id: performer.id ?? "",
     };
+  }
 
-    if (!isNew) {
-      (performerInput as GQL.PerformerUpdateInput).id = performer.id!;
-    }
-    return performerInput;
+  function getCreateValues(values: InputValues): GQL.PerformerCreateInput {
+    return {
+      ...values,
+      gender: stringToGender(values.gender),
+      weight: Number(values.weight),
+    };
   }
 
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {

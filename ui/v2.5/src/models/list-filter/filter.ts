@@ -111,11 +111,15 @@ export class ListFilterModel {
     return new CriterionOption(Criterion.getLabel(criterion), criterion);
   }
 
-  public constructor(filterMode: FilterMode, rawParms?: ParsedQuery<string>) {
+  public constructor(
+    filterMode: FilterMode,
+    rawParms?: ParsedQuery<string>,
+    defaultSort?: string
+  ) {
     const params = rawParms as IQueryParameters;
     switch (filterMode) {
       case FilterMode.Scenes:
-        this.sortBy = "date";
+        this.sortBy = defaultSort ?? "date";
         this.sortByOptions = [
           "title",
           "path",
@@ -131,6 +135,7 @@ export class ListFilterModel {
           "tag_count",
           "performer_count",
           "random",
+          "movie_scene_number",
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -159,7 +164,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.Images:
-        this.sortBy = "path";
+        this.sortBy = defaultSort ?? "path";
         this.sortByOptions = [
           "title",
           "path",
@@ -189,7 +194,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.Performers: {
-        this.sortBy = "name";
+        this.sortBy = defaultSort ?? "name";
         this.sortByOptions = [
           "name",
           "height",
@@ -243,17 +248,28 @@ export class ListFilterModel {
       case FilterMode.Studios:
         this.sortBy = "name";
         this.sortByOptions = ["name", "random", "rating", "scenes_count"];
+        this.sortBy = defaultSort ?? "name";
+        this.sortByOptions = [
+          "name",
+          "scenes_count",
+          "images_count",
+          "galleries_count",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
           new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
           ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Movies:
-        this.sortBy = "name";
+        this.sortBy = defaultSort ?? "name";
         this.sortByOptions = ["name", "scenes_count", "random"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
@@ -264,7 +280,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.Galleries:
-        this.sortBy = "path";
+        this.sortBy = defaultSort ?? "path";
         this.sortByOptions = [
           "path",
           "file_mod_time",
@@ -296,7 +312,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.SceneMarkers:
-        this.sortBy = "title";
+        this.sortBy = defaultSort ?? "title";
         this.sortByOptions = [
           "title",
           "seconds",
@@ -313,7 +329,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.Tags:
-        this.sortBy = "name";
+        this.sortBy = defaultSort ?? "name";
         // scene markers count has been disabled for now due to performance
         // issues
         this.sortByOptions = [
@@ -1053,8 +1069,34 @@ export class ListFilterModel {
           };
           break;
         }
-        case "studioIsMissing":
+        case "studioIsMissing": {
           result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        }
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });

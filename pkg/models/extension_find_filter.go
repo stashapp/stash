@@ -35,17 +35,19 @@ func (ff FindFilterType) GetPage() int {
 
 func (ff FindFilterType) GetPageSize() int {
 	const defaultPerPage = 25
-	const minPerPage = 1
+	const minPerPage = 0
 	const maxPerPage = 1000
 
 	if ff.PerPage == nil {
 		return defaultPerPage
 	}
 
-	if *ff.PerPage > 1000 {
+	if *ff.PerPage > maxPerPage {
 		return maxPerPage
-	} else if *ff.PerPage < 0 {
-		// PerPage == 0 -> no limit
+	} else if *ff.PerPage < minPerPage {
+		// negative page sizes should return all results
+		// this is a sanity check in case GetPageSize is
+		// called with a negative page size.
 		return minPerPage
 	}
 
@@ -53,5 +55,5 @@ func (ff FindFilterType) GetPageSize() int {
 }
 
 func (ff FindFilterType) IsGetAll() bool {
-	return ff.PerPage != nil && *ff.PerPage == 0
+	return ff.PerPage != nil && *ff.PerPage < 0
 }

@@ -153,6 +153,12 @@ input StudioFilterType {
   is_missing: String
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by scene count"""
+  scene_count: IntCriterionInput
+  """Filter by image count"""
+  image_count: IntCriterionInput
+  """Filter by gallery count"""
+  gallery_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
 }

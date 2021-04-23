@@ -106,6 +106,10 @@ const Language = "language"
 // this should be manually configured only
 const CustomServedFolders = "custom_served_folders"
 
+// UI directory. Overrides to serve the UI from a specific location
+// rather than use the embedded UI.
+const CustomUILocation = "custom_ui_location"
+
 // Interface options
 const MenuItems = "menu_items"
 
@@ -521,6 +525,10 @@ func (i *Instance) GetMaxSessionAge() int {
 // filesystem locations
 func (i *Instance) GetCustomServedFolders() URLMap {
 	return viper.GetStringMapString(CustomServedFolders)
+}
+
+func (i *Instance) GetCustomUILocation() string {
+	return viper.GetString(CustomUILocation)
 }
 
 // Interface options
