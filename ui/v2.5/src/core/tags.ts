@@ -1,5 +1,8 @@
 import * as GQL from "src/core/generated-graphql";
-import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import {
+  TagsCriterion,
+  TagsCriterionOption,
+} from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 
 export const tagFilterHook = (tag: GQL.TagDataFragment) => {
@@ -7,7 +10,7 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
-      return c.type === "tags";
+      return c.criterionOption.value === "tags";
     }) as TagsCriterion;
 
     if (
@@ -27,7 +30,7 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
-      tagCriterion = new TagsCriterion("tags");
+      tagCriterion = new TagsCriterion(new TagsCriterionOption());
       tagCriterion.value = [tagValue];
       filter.criteria.push(tagCriterion);
     }

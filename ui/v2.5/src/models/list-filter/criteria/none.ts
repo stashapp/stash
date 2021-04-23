@@ -1,6 +1,11 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import { Criterion, CriterionType, CriterionOption } from "./criterion";
 
+export class NoneCriterionOption extends CriterionOption {
+  constructor() {
+    super("none", "none");
+  }
+}
 export class NoneCriterion extends Criterion<string> {
   public type: CriterionType = "none";
   public parameterName: string = "";
@@ -9,13 +14,12 @@ export class NoneCriterion extends Criterion<string> {
   public options: undefined;
   public value: string = "none";
 
+  constructor() {
+    super(new NoneCriterionOption());
+  }
+
   // eslint-disable-next-line class-methods-use-this
   public getLabelValue(): string {
     return "";
   }
-}
-
-export class NoneCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("none");
-  public value: CriterionType = "none";
 }

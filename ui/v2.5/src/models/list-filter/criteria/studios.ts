@@ -2,14 +2,12 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import {
   Criterion,
+  CriterionOption,
   CriterionType,
-  ICriterionOption,
   ILabeledIdCriterion,
 } from "./criterion";
 
-export class StudiosCriterion extends ILabeledIdCriterion {
-  public type: CriterionType = "studios";
-  public parameterName: string = "studios";
+abstract class AbstractStudiosCriterion extends ILabeledIdCriterion {
   public modifier = CriterionModifier.Includes;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.Includes),
@@ -25,17 +23,27 @@ export class StudiosCriterion extends ILabeledIdCriterion {
   }
 }
 
-export class StudiosCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("studios");
-  public value: CriterionType = "studios";
+export class StudiosCriterionOption extends CriterionOption {
+  constructor() {
+    super("studios", "studios");
+  }
+}
+export class StudiosCriterion extends AbstractStudiosCriterion {
+  constructor() {
+    super(new StudiosCriterionOption());
+  }
 }
 
-export class ParentStudiosCriterion extends StudiosCriterion {
+export class ParentStudiosCriterionOption extends CriterionOption {
+  constructor() {
+    super("parent_studios", "parent_studios");
+  }
+}
+export class ParentStudiosCriterion extends AbstractStudiosCriterion {
   public type: CriterionType = "parent_studios";
   public parameterName: string = "parents";
-}
 
-export class ParentStudiosCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("parent_studios");
-  public value: CriterionType = "parent_studios";
+  constructor() {
+    super(new ParentStudiosCriterionOption());
+  }
 }

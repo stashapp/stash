@@ -3,9 +3,15 @@ import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import {
   Criterion,
   CriterionType,
-  ICriterionOption,
+  CriterionOption,
   ILabeledIdCriterion,
 } from "./criterion";
+
+export class PerformersCriterionOption extends CriterionOption {
+  constructor() {
+    super("performers", "performers");
+  }
+}
 
 export class PerformersCriterion extends ILabeledIdCriterion {
   public type: CriterionType = "performers";
@@ -19,14 +25,13 @@ export class PerformersCriterion extends ILabeledIdCriterion {
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
+  constructor() {
+    super(new PerformersCriterionOption());
+  }
+
   public encodeValue() {
     return this.value.map((o) => {
       return encodeILabeledId(o);
     });
   }
-}
-
-export class PerformersCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("performers");
-  public value: CriterionType = "performers";
 }

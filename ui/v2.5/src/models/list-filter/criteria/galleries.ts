@@ -1,15 +1,14 @@
 import * as GQL from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-  ILabeledIdCriterion,
-} from "./criterion";
+import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
+
+export class GalleriesCriterionOption extends CriterionOption {
+  constructor() {
+    super("galleries", "galleries");
+  }
+}
 
 export class GalleriesCriterion extends ILabeledIdCriterion {
-  public type: CriterionType = "galleries";
-  public parameterName: string = "galleries";
   public modifier = GQL.CriterionModifier.IncludesAll;
   public modifierOptions = [
     Criterion.getModifierOption(GQL.CriterionModifier.IncludesAll),
@@ -19,14 +18,13 @@ export class GalleriesCriterion extends ILabeledIdCriterion {
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
+  constructor() {
+    super(new GalleriesCriterionOption());
+  }
+
   public encodeValue() {
     return this.value.map((o) => {
       return encodeILabeledId(o);
     });
   }
-}
-
-export class GalleriesCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("galleries");
-  public value: CriterionType = "galleries";
 }

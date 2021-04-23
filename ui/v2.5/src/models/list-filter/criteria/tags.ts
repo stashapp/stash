@@ -1,15 +1,8 @@
 import * as GQL from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-  ILabeledIdCriterion,
-} from "./criterion";
+import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
 
 export class TagsCriterion extends ILabeledIdCriterion {
-  public type: CriterionType;
-  public parameterName: string;
   public modifier = GQL.CriterionModifier.IncludesAll;
   public modifierOptions = [
     Criterion.getModifierOption(GQL.CriterionModifier.IncludesAll),
@@ -19,18 +12,6 @@ export class TagsCriterion extends ILabeledIdCriterion {
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
-  constructor(type: "tags" | "sceneTags" | "performerTags") {
-    super();
-    this.type = type;
-    this.parameterName = type;
-    if (type === "sceneTags") {
-      this.parameterName = "scene_tags";
-    }
-    if (type === "performerTags") {
-      this.parameterName = "performer_tags";
-    }
-  }
-
   public encodeValue() {
     return this.value.map((o) => {
       return encodeILabeledId(o);
@@ -38,17 +19,20 @@ export class TagsCriterion extends ILabeledIdCriterion {
   }
 }
 
-export class TagsCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("tags");
-  public value: CriterionType = "tags";
+export class TagsCriterionOption extends CriterionOption {
+  constructor() {
+    super("tags", "tags");
+  }
 }
 
-export class SceneTagsCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("sceneTags");
-  public value: CriterionType = "sceneTags";
+export class SceneTagsCriterionOption extends CriterionOption {
+  constructor() {
+    super("sceneTags", "sceneTags", "scene_tags");
+  }
 }
 
-export class PerformerTagsCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("performerTags");
-  public value: CriterionType = "performerTags";
+export class PerformerTagsCriterionOption extends CriterionOption {
+  constructor() {
+    super("performerTags", "performerTags", "performer_tags");
+  }
 }

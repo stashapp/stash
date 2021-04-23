@@ -1,17 +1,13 @@
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-  StringCriterion,
-} from "./criterion";
+import { CriterionOption, StringCriterion } from "./criterion";
 
-export class CountryCriterion extends StringCriterion {
+export class CountryCriterionOption extends CriterionOption {
   constructor() {
     super("country", "country");
   }
 }
 
-export class CountryCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("performers");
-  public value: CriterionType = "country";
+export class CountryCriterion extends StringCriterion {
+  constructor() {
+    super(new CountryCriterionOption());
+  }
 }

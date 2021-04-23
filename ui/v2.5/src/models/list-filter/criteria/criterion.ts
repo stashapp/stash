@@ -1,6 +1,10 @@
 /* eslint-disable consistent-return */
 
-import { CriterionModifier } from "src/core/generated-graphql";
+import { IntlShape } from "react-intl";
+import {
+  CriterionModifier,
+  MultiCriterionInput,
+} from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import { ILabeledId, ILabeledValue, IOptionType } from "../types";
 
@@ -58,7 +62,9 @@ export type CriterionType =
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
 
-export abstract class Criterion<T extends CriterionValue> {
+// V = criterion value type
+// I = criterion input type
+export abstract class Criterion<V extends CriterionValue> {
   public static getLabel(type: CriterionType = "none") {
     switch (type) {
       case "none":
@@ -191,17 +197,20 @@ export abstract class Criterion<T extends CriterionValue> {
     }
   }
 
-  public abstract type: CriterionType;
-  public abstract parameterName: string;
+  public criterionOption: CriterionOption;
   public abstract modifier: CriterionModifier;
   public abstract modifierOptions: ILabeledValue[];
   public abstract options: Option[] | undefined;
-  public abstract value: T;
+  public abstract value: V;
   public inputType: "number" | "text" | undefined;
 
   public abstract getLabelValue(): string;
 
-  public getLabel(): string {
+  constructor(type: CriterionOption) {
+    this.criterionOption = type;
+  }
+
+  public getLabel(intl: IntlShape): string {
     let modifierString: string;
     switch (this.modifier) {
       case CriterionModifier.Equals:
@@ -250,36 +259,60 @@ export abstract class Criterion<T extends CriterionValue> {
       valueString = this.getLabelValue();
     }
 
-    return `${Criterion.getLabel(this.type)} ${modifierString} ${valueString}`;
+    return `${intl.formatMessage({
+      id: this.criterionOption.messageID,
+    })} ${modifierString} ${valueString}`;
   }
 
   public getId(): string {
-    return `${this.parameterName}-${this.modifier.toString()}`; // TODO add values?
+    return `${this.criterionOption.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
-  public encodeValue(): T {
+  public encodeValue(): V {
     return this.value;
   }
+
+  public toJSON() {
+    const encodedCriterion = {
+      type: this.criterionOption.value,
+      // #394 - the presence of a # symbol results in the query URL being
+      // malformed. We could set encode: true in the queryString.stringify
+      // call below, but this results in a URL that gets pretty long and ugly.
+      // Instead, we'll encode the criteria values.
+      value: this.encodeValue(),
+      modifier: this.modifier,
+    };
+    return JSON.stringify(encodedCriterion);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public apply(outputFilter: Record<string, any>) {
+    // eslint-disable-next-line no-param-reassign
+    outputFilter[this.criterionOption.parameterName] = this.toCriterionInput();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected toCriterionInput(): any {
+    return {
+      value: this.value,
+      modifier: this.modifier,
+    };
+  }
 }
 
-export interface ICriterionOption {
-  label: string;
-  value: CriterionType;
-}
-
-export class CriterionOption implements ICriterionOption {
-  public label: string;
+export class CriterionOption {
+  public messageID: string;
   public value: CriterionType;
+  public parameterName: string;
 
-  constructor(label: string, value: CriterionType) {
-    this.label = label;
+  constructor(messageID: string, value: CriterionType, parameterName?: string) {
+    this.messageID = messageID;
     this.value = value;
+    this.parameterName = parameterName ?? value;
   }
 }
 
 export class StringCriterion extends Criterion<string> {
-  public type: CriterionType;
-  public parameterName: string;
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [
     StringCriterion.getModifierOption(CriterionModifier.Equals),
@@ -310,18 +343,11 @@ export class StringCriterion extends Criterion<string> {
     return str.replaceAll(c, encodeURIComponent(c));
   }
 
-  constructor(type: CriterionType, parameterName?: string, options?: string[]) {
-    super();
+  constructor(type: CriterionOption, options?: string[]) {
+    super(type);
 
-    this.type = type;
     this.options = options;
     this.inputType = "text";
-
-    if (parameterName) {
-      this.parameterName = parameterName;
-    } else {
-      this.parameterName = type;
-    }
   }
 }
 
@@ -340,14 +366,16 @@ export class BooleanCriterion extends StringCriterion {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
 
-  constructor(type: CriterionType, parameterName?: string) {
-    super(type, parameterName, [true.toString(), false.toString()]);
+  constructor(type: CriterionOption) {
+    super(type, [true.toString(), false.toString()]);
+  }
+
+  protected toCriterionInput(): boolean {
+    return this.value === "true";
   }
 }
 
 export class NumberCriterion extends Criterion<number> {
-  public type: CriterionType;
-  public parameterName: string;
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.Equals),
@@ -364,18 +392,24 @@ export class NumberCriterion extends Criterion<number> {
     return this.value.toString();
   }
 
-  constructor(type: CriterionType, parameterName?: string, options?: number[]) {
-    super();
+  constructor(type: CriterionOption, options?: number[]) {
+    super(type);
 
-    this.type = type;
     this.options = options;
     this.inputType = "number";
+  }
+}
 
-    if (parameterName) {
-      this.parameterName = parameterName;
-    } else {
-      this.parameterName = type;
-    }
+export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+  public getLabelValue(): string {
+    return this.value.map((v) => v.label).join(", ");
+  }
+
+  protected toCriterionInput(): MultiCriterionInput {
+    return {
+      value: this.value.map((v) => v.id),
+      modifier: this.modifier,
+    };
   }
 }
 
@@ -395,8 +429,6 @@ export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
 }
 
 export class DurationCriterion extends Criterion<number> {
-  public type: CriterionType;
-  public parameterName: string;
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.Equals),
@@ -407,12 +439,10 @@ export class DurationCriterion extends Criterion<number> {
   public options: number[] | undefined;
   public value: number = 0;
 
-  constructor(type: CriterionType, parameterName?: string, options?: number[]) {
-    super();
+  constructor(type: CriterionOption, options?: number[]) {
+    super(type);
 
-    this.type = type;
     this.options = options;
-    this.parameterName = parameterName ?? type;
   }
 
   public getLabelValue() {

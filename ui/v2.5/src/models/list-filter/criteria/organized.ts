@@ -1,17 +1,13 @@
-import {
-  BooleanCriterion,
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { BooleanCriterion, CriterionOption } from "./criterion";
 
-export class OrganizedCriterion extends BooleanCriterion {
+export class OrganizedCriterionOption extends CriterionOption {
   constructor() {
     super("organized", "organized");
   }
 }
 
-export class OrganizedCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("organized");
-  public value: CriterionType = "organized";
+export class OrganizedCriterion extends BooleanCriterion {
+  constructor() {
+    super(new OrganizedCriterionOption());
+  }
 }

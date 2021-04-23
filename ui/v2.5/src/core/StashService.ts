@@ -47,7 +47,7 @@ export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      gallery_filter: filter.makeGalleryFilter(),
+      gallery_filter: filter.makeFilter(),
     },
   });
 
@@ -56,7 +56,7 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     query: GQL.FindGalleriesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      gallery_filter: filter.makeImageFilter(),
+      gallery_filter: filter.makeFilter(),
     },
   });
 
@@ -64,7 +64,7 @@ export const useFindScenes = (filter: ListFilterModel) =>
   GQL.useFindScenesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      scene_filter: filter.makeSceneFilter(),
+      scene_filter: filter.makeFilter(),
     },
   });
 
@@ -73,7 +73,7 @@ export const queryFindScenes = (filter: ListFilterModel) =>
     query: GQL.FindScenesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      scene_filter: filter.makeSceneFilter(),
+      scene_filter: filter.makeFilter(),
     },
   });
 
@@ -89,7 +89,7 @@ export const useFindSceneMarkers = (filter: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      scene_marker_filter: filter.makeSceneMarkerFilter(),
+      scene_marker_filter: filter.makeFilter(),
     },
   });
 
@@ -98,7 +98,7 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
     query: GQL.FindSceneMarkersDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      scene_marker_filter: filter.makeSceneMarkerFilter(),
+      scene_marker_filter: filter.makeFilter(),
     },
   });
 
@@ -106,7 +106,7 @@ export const useFindImages = (filter: ListFilterModel) =>
   GQL.useFindImagesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      image_filter: filter.makeImageFilter(),
+      image_filter: filter.makeFilter(),
     },
   });
 
@@ -115,7 +115,7 @@ export const queryFindImages = (filter: ListFilterModel) =>
     query: GQL.FindImagesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      image_filter: filter.makeImageFilter(),
+      image_filter: filter.makeFilter(),
     },
   });
 
@@ -123,7 +123,7 @@ export const useFindStudios = (filter: ListFilterModel) =>
   GQL.useFindStudiosQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      studio_filter: filter.makeStudioFilter(),
+      studio_filter: filter.makeFilter(),
     },
   });
 
@@ -132,7 +132,7 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     query: GQL.FindStudiosDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      studio_filter: filter.makeStudioFilter(),
+      studio_filter: filter.makeFilter(),
     },
   });
 
@@ -140,7 +140,7 @@ export const useFindMovies = (filter: ListFilterModel) =>
   GQL.useFindMoviesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      movie_filter: filter.makeMovieFilter(),
+      movie_filter: filter.makeFilter(),
     },
   });
 
@@ -149,7 +149,7 @@ export const queryFindMovies = (filter: ListFilterModel) =>
     query: GQL.FindMoviesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      movie_filter: filter.makeMovieFilter(),
+      movie_filter: filter.makeFilter(),
     },
   });
 
@@ -157,7 +157,7 @@ export const useFindPerformers = (filter: ListFilterModel) =>
   GQL.useFindPerformersQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      performer_filter: filter.makePerformerFilter(),
+      performer_filter: filter.makeFilter(),
     },
   });
 
@@ -165,7 +165,7 @@ export const useFindTags = (filter: ListFilterModel) =>
   GQL.useFindTagsQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      tag_filter: filter.makeTagFilter(),
+      tag_filter: filter.makeFilter(),
     },
   });
 
@@ -174,7 +174,7 @@ export const queryFindTags = (filter: ListFilterModel) =>
     query: GQL.FindTagsDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      tag_filter: filter.makeTagFilter(),
+      tag_filter: filter.makeFilter(),
     },
   });
 
@@ -183,7 +183,7 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     query: GQL.FindPerformersDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      performer_filter: filter.makePerformerFilter(),
+      performer_filter: filter.makeFilter(),
     },
   });
 

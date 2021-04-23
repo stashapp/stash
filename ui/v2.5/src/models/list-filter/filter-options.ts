@@ -2,7 +2,6 @@ import {
   Criterion,
   CriterionOption,
   CriterionType,
-  ICriterionOption,
 } from "./criteria/criterion";
 import { DisplayMode } from "./types";
 
@@ -10,8 +9,7 @@ export class ListFilterOptions {
   public defaultSortBy: string = "";
   public sortByOptions: string[] = [];
   public displayModeOptions: DisplayMode[] = [];
-  public criterionOptions: ICriterionOption[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public criterionOptions: CriterionOption[] = [];
 
   protected static createCriterionOption(criterion: CriterionType) {
     return new CriterionOption(Criterion.getLabel(criterion), criterion);
@@ -21,10 +19,10 @@ export class ListFilterOptions {
     defaultSortBy: string,
     sortByOptions: string[],
     displayModeOptions: DisplayMode[],
-    criterionOptions: ICriterionOption[]
+    criterionOptions: CriterionOption[]
   ) {
     this.defaultSortBy = defaultSortBy;
-    this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
+    this.sortByOptions = [...sortByOptions, "created_at", "updated_at"];
     this.displayModeOptions = displayModeOptions;
     this.criterionOptions = criterionOptions;
   }

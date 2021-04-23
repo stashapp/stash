@@ -1,7 +1,10 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import {
+  TagsCriterion,
+  TagsCriterionOption,
+} from "src/models/list-filter/criteria/tags";
 import { SceneMarkerList } from "src/components/Scenes/SceneMarkerList";
 
 interface ITagMarkersPanel {
@@ -13,7 +16,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
     const tagValue = { id: tag.id!, label: tag.name! };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
-      return c.type === "tags";
+      return c.criterionOption.value === "tags";
     }) as TagsCriterion;
 
     if (
@@ -33,7 +36,7 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
       tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
-      tagCriterion = new TagsCriterion("tags");
+      tagCriterion = new TagsCriterion(new TagsCriterionOption());
       tagCriterion.value = [tagValue];
       filter.criteria.push(tagCriterion);
     }

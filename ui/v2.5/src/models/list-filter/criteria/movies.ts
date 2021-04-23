@@ -1,11 +1,6 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, encodeILabeledId } from "../types";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-  ILabeledIdCriterion,
-} from "./criterion";
+import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
 
 interface IOptionType {
   id: string;
@@ -13,9 +8,13 @@ interface IOptionType {
   image_path?: string;
 }
 
+export class MoviesCriterionOption extends CriterionOption {
+  constructor() {
+    super("movies", "movies");
+  }
+}
+
 export class MoviesCriterion extends ILabeledIdCriterion {
-  public type: CriterionType = "movies";
-  public parameterName: string = "movies";
   public modifier = CriterionModifier.Includes;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.Includes),
@@ -24,14 +23,13 @@ export class MoviesCriterion extends ILabeledIdCriterion {
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
+  constructor() {
+    super(new MoviesCriterionOption());
+  }
+
   public encodeValue() {
     return this.value.map((o) => {
       return encodeILabeledId(o);
     });
   }
-}
-
-export class MoviesCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("movies");
-  public value: CriterionType = "movies";
 }

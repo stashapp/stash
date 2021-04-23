@@ -1,17 +1,13 @@
-import {
-  BooleanCriterion,
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { BooleanCriterion, CriterionOption } from "./criterion";
 
-export class HasMarkersCriterion extends BooleanCriterion {
+export class HasMarkersCriterionOption extends CriterionOption {
   constructor() {
-    super("hasMarkers", "has_markers");
+    super("hasMarkers", "hasMarkers", "has_markers");
   }
 }
 
-export class HasMarkersCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("hasMarkers");
-  public value: CriterionType = "hasMarkers";
+export class HasMarkersCriterion extends BooleanCriterion {
+  constructor() {
+    super(new HasMarkersCriterionOption());
+  }
 }

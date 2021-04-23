@@ -1,17 +1,13 @@
-import {
-  BooleanCriterion,
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { BooleanCriterion, CriterionOption } from "./criterion";
 
-export class FavoriteCriterion extends BooleanCriterion {
+export class FavoriteCriterionOption extends CriterionOption {
   constructor() {
-    super("favorite", "filter_favorites");
+    super("favourite", "favorite", "filter_favorites");
   }
 }
 
-export class FavoriteCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("favorite");
-  public value: CriterionType = "favorite";
+export class FavoriteCriterion extends BooleanCriterion {
+  constructor() {
+    super(new FavoriteCriterionOption());
+  }
 }

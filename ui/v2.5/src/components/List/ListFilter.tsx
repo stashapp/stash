@@ -21,6 +21,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import { useIntl } from "react-intl";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
@@ -63,6 +64,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Criterion<any> | undefined
   >(undefined);
+
+  const intl = useIntl();
 
   useEffect(() => {
     Mousetrap.bind("/", (e) => {
@@ -305,7 +308,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
         key={criterion.getId()}
         onClick={() => onClickCriterionTag(criterion)}
       >
-        {criterion.getLabel()}
+        {criterion.getLabel(intl)}
         <Button
           variant="secondary"
           onClick={() => onRemoveCriterionTag(criterion)}

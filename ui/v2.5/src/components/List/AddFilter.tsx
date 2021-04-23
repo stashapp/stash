@@ -13,6 +13,7 @@ import {
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import { useIntl } from "react-intl";
 
 interface IAddFilterProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,6 +36,8 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   );
 
   const valueStage = useRef<CriterionValue>(criterion.value);
+
+  const intl = useIntl();
 
   // configure keyboard shortcuts
   useEffect(() => {
@@ -119,7 +122,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   }
 
   const maybeRenderFilterPopoverContents = () => {
-    if (criterion.type === "none") {
+    if (criterion.criterionOption.value === "none") {
       return;
     }
 
@@ -154,19 +157,19 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
       if (Array.isArray(criterion.value)) {
         if (
-          criterion.type !== "performers" &&
-          criterion.type !== "studios" &&
-          criterion.type !== "parent_studios" &&
-          criterion.type !== "tags" &&
-          criterion.type !== "sceneTags" &&
-          criterion.type !== "performerTags" &&
-          criterion.type !== "movies"
+          criterion.criterionOption.value !== "performers" &&
+          criterion.criterionOption.value !== "studios" &&
+          criterion.criterionOption.value !== "parent_studios" &&
+          criterion.criterionOption.value !== "tags" &&
+          criterion.criterionOption.value !== "sceneTags" &&
+          criterion.criterionOption.value !== "performerTags" &&
+          criterion.criterionOption.value !== "movies"
         )
           return;
 
         return (
           <FilterSelect
-            type={criterion.type}
+            type={criterion.criterionOption.value}
             isMulti
             onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);
@@ -228,18 +231,28 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     if (props.editingCriterion) {
       return;
     }
+
+    const options = props.filterOptions.criterionOptions
+      .map((c) => {
+        return {
+          value: c.value,
+          text: intl.formatMessage({ id: c.messageID }),
+        };
+      })
+      .sort((a, b) => a.text.localeCompare(b.text));
+
     return (
       <Form.Group controlId="filter">
         <Form.Label>Filter</Form.Label>
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
-          value={criterion.type}
+          value={criterion.criterionOption.value}
           className="btn-secondary"
         >
-          {props.filterOptions.criterionOptions.map((c) => (
+          {options.map((c) => (
             <option key={c.value} value={c.value}>
-              {c.label}
+              {c.text}
             </option>
           ))}
         </Form.Control>
@@ -268,7 +281,10 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={onAddFilter} disabled={criterion.type === "none"}>
+          <Button
+            onClick={onAddFilter}
+            disabled={criterion.criterionOption.value === "none"}
+          >
             {title}
           </Button>
         </Modal.Footer>
