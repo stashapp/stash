@@ -6,7 +6,12 @@ import {
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
-import { CriterionType, ILabeledId, ILabeledValue, IOptionType } from "../types";
+import {
+  CriterionType,
+  ILabeledId,
+  ILabeledValue,
+  IOptionType,
+} from "../types";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];

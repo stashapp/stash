@@ -1,10 +1,6 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import {
-  Criterion,
-  CriterionOption,
-  ILabeledIdCriterion,
-} from "./criterion";
+import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
 
 abstract class AbstractStudiosCriterion extends ILabeledIdCriterion {
   public modifier = CriterionModifier.Includes;

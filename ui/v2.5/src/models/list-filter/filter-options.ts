@@ -1,6 +1,4 @@
-import {
-  CriterionOption,
-} from "./criteria/criterion";
+import { CriterionOption } from "./criteria/criterion";
 import { CriterionType, DisplayMode } from "./types";
 
 export class ListFilterOptions {
