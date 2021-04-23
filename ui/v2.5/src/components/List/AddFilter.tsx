@@ -6,7 +6,6 @@ import { Icon, FilterSelect, DurationInput } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   Criterion,
-  CriterionType,
   DurationCriterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
@@ -14,6 +13,7 @@ import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
+import { CriterionType } from "src/models/list-filter/types";
 
 interface IAddFilterProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

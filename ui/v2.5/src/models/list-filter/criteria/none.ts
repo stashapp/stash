@@ -1,5 +1,5 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, CriterionOption } from "./criterion";
+import { Criterion, CriterionOption } from "./criterion";
 
 export class NoneCriterionOption extends CriterionOption {
   constructor() {
@@ -7,8 +7,6 @@ export class NoneCriterionOption extends CriterionOption {
   }
 }
 export class NoneCriterion extends Criterion<string> {
-  public type: CriterionType = "none";
-  public parameterName: string = "";
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
   public options: undefined;

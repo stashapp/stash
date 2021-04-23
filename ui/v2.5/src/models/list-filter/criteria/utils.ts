@@ -1,6 +1,5 @@
 /* eslint-disable consistent-return, default-case */
 import {
-  CriterionType,
   StringCriterion,
   NumberCriterion,
   DurationCriterion,
@@ -29,6 +28,7 @@ import { TagsCriterion } from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
 import { GalleriesCriterion } from "./galleries";
+import { CriterionType } from "../types";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {

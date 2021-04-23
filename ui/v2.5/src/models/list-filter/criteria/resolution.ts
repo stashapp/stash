@@ -1,5 +1,5 @@
 import { CriterionModifier, ResolutionEnum } from "src/core/generated-graphql";
-import { CriterionType, CriterionOption, StringCriterion } from "./criterion";
+import { CriterionOption, StringCriterion } from "./criterion";
 
 abstract class AbstractResolutionCriterion extends StringCriterion {
   public modifier = CriterionModifier.Equals;
@@ -76,9 +76,6 @@ export class AverageResolutionCriterionOption extends CriterionOption {
 }
 
 export class AverageResolutionCriterion extends AbstractResolutionCriterion {
-  public type: CriterionType = "average_resolution";
-  public parameterName: string = "average_resolution";
-
   constructor() {
     super(new AverageResolutionCriterionOption());
   }

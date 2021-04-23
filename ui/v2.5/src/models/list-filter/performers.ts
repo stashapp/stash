@@ -1,11 +1,10 @@
-import { CriterionType } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
-import { DisplayMode } from "./types";
+import { CriterionType, DisplayMode } from "./types";
 
 export class PerformerListFilterOptions extends ListFilterOptions {
   public static readonly defaultSortBy = "name";

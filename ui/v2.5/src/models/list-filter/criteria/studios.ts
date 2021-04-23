@@ -3,7 +3,6 @@ import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import {
   Criterion,
   CriterionOption,
-  CriterionType,
   ILabeledIdCriterion,
 } from "./criterion";
 
@@ -40,9 +39,6 @@ export class ParentStudiosCriterionOption extends CriterionOption {
   }
 }
 export class ParentStudiosCriterion extends AbstractStudiosCriterion {
-  public type: CriterionType = "parent_studios";
-  public parameterName: string = "parents";
-
   constructor() {
     super(new ParentStudiosCriterionOption());
   }

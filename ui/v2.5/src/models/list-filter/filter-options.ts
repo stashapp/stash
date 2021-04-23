@@ -1,9 +1,7 @@
 import {
-  Criterion,
   CriterionOption,
-  CriterionType,
 } from "./criteria/criterion";
-import { DisplayMode } from "./types";
+import { CriterionType, DisplayMode } from "./types";
 
 export class ListFilterOptions {
   public defaultSortBy: string = "";
@@ -11,8 +9,8 @@ export class ListFilterOptions {
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: CriterionOption[] = [];
 
-  protected static createCriterionOption(criterion: CriterionType) {
-    return new CriterionOption(Criterion.getLabel(criterion), criterion);
+  protected static createCriterionOption(value: CriterionType) {
+    return new CriterionOption(value, value);
   }
 
   constructor(

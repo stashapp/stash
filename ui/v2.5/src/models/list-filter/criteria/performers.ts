@@ -2,7 +2,6 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import {
   Criterion,
-  CriterionType,
   CriterionOption,
   ILabeledIdCriterion,
 } from "./criterion";
@@ -14,8 +13,6 @@ export class PerformersCriterionOption extends CriterionOption {
 }
 
 export class PerformersCriterion extends ILabeledIdCriterion {
-  public type: CriterionType = "performers";
-  public parameterName: string = "performers";
   public modifier = CriterionModifier.IncludesAll;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.IncludesAll),
