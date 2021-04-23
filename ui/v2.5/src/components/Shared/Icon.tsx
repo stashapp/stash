@@ -1,6 +1,6 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp, library } from "@fortawesome/fontawesome-svg-core";
+import { IconProp, SizeProp, library } from "@fortawesome/fontawesome-svg-core";
 import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 
@@ -11,13 +11,15 @@ interface IIcon {
   icon: IconProp;
   className?: string;
   color?: string;
+  size?: SizeProp;
 }
 
-const Icon: React.FC<IIcon> = ({ icon, className, color }) => (
+const Icon: React.FC<IIcon> = ({ icon, className, color, size }) => (
   <FontAwesomeIcon
     icon={icon}
     className={`fa-icon ${className}`}
     color={color}
+    size={size}
   />
 );
 

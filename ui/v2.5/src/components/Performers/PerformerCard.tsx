@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
@@ -40,8 +39,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       return;
     }
     return (
-      <div className="rating-banner rating-5">
-        <FormattedMessage id="favourite" defaultMessage="Favourite" />
+      <div className="favourite">
+        <Icon icon="heart" size="2x" />
       </div>
     );
   }

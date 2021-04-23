@@ -63,7 +63,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
-  const [rating, setRating] = useState<number>(performer?.rating ?? NaN);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -110,7 +109,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: yup.array(yup.string().required()).optional(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
-    rating: yup.number().optional(),
+    rating: yup.number().optional().nullable(),
     details: yup.string().optional(),
     death_date: yup.string().optional(),
     hair_color: yup.string().optional(),
@@ -151,6 +150,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     validationSchema: schema,
     onSubmit: (values) => onSave(getPerformerInput(values)),
   });
+
+  function setRating(v: number) {
+    formik.setFieldValue("rating", v);
+  }
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -446,7 +449,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     > = {
       ...values,
       gender: stringToGender(values.gender),
-      rating: rating ?? null,
+      rating: values.rating ?? null,
       weight: Number(values.weight),
     };
 
@@ -935,8 +938,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <RatingStars
-              value={rating}
-              onSetRating={(value) => setRating(value ?? NaN)}
+              value={formik.values.rating ?? undefined}
+              onSetRating={(value) => formik.setFieldValue("rating", value)}
             />
           </Col>
         </Form.Group>
