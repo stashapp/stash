@@ -10,7 +10,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
-import { makeCriteria } from "src/models/list-filter/criteria/utils";
+import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
 import { CriterionType } from "src/models/list-filter/types";
