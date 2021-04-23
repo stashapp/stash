@@ -1,7 +1,7 @@
 import queryString, { ParsedQuery } from "query-string";
 import { FindFilterType, SortDirectionEnum } from "src/core/generated-graphql";
 import { Criterion } from "./criteria/criterion";
-import { makeCriteria } from "./criteria/utils";
+import { makeCriteria } from "./criteria/factory";
 import { DisplayMode } from "./types";
 
 interface IQueryParameters {
