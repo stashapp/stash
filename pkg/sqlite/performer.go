@@ -260,8 +260,8 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
 	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
 	query.handleStringCriterionInput(performerFilter.HairColor, tableName+".hair_color")
-	query.handleStringCriterionInput(performerFilter.Weight, tableName+".weight")
 	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
+	query.handleIntCriterionInput(performerFilter.Weight, tableName+".weight")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")

@@ -89,6 +89,7 @@ export function makeCriteria(type: CriterionType = "none") {
       return new GalleriesCriterion();
     case "birth_year":
     case "death_year":
+    case "weight":
       return new NumberCriterion(type, type);
     case "age":
       return new MandatoryNumberCriterion(type, type);
@@ -106,7 +107,6 @@ export function makeCriteria(type: CriterionType = "none") {
     case "piercings":
     case "aliases":
     case "url":
-    case "weight":
       return new StringCriterion(type, type);
   }
 }
