@@ -6,6 +6,7 @@ import (
 	"math"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -73,7 +74,11 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result := attrConfig.concatenateResults(found)
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
-			return attrConfig.splitString(result)
+			results := attrConfig.splitString(result)
+			if attrConfig.Distinct {
+				results = attrConfig.distinctResults(results)
+			}
+			return results
 		}
 
 		ret = []string{result}
@@ -85,6 +90,9 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 			}
 
 			ret = append(ret, text)
+		}
+		if attrConfig.Distinct {
+			ret = attrConfig.distinctResults(ret)
 		}
 	}
 
@@ -525,6 +533,7 @@ type mappedScraperAttrConfig struct {
 	PostProcess []mappedPostProcessAction `yaml:"postProcess"`
 	Concat      string                    `yaml:"concat"`
 	Split       string                    `yaml:"split"`
+	Distinct    bool                      `yaml:"distinct"`
 
 	postProcessActions []postProcessAction
 
@@ -616,6 +625,19 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	}
 
 	return strings.Join(result, separator)
+}
+
+func (c mappedScraperAttrConfig) distinctResults(nodes []string) []string {
+	distinctValues := make(map[string]struct{})
+	var ret []string
+	for _, v := range nodes {
+		distinctValues[v] = struct{}{}
+	}
+	for k, _ := range distinctValues {
+		ret = append(ret, k)
+	}
+	sort.Sort(sort.StringSlice(ret))
+	return ret
 }
 
 func (c mappedScraperAttrConfig) splitString(value string) []string {
