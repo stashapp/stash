@@ -183,10 +183,12 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.addArg(stashIDFilter)
 	}
 
+	if rating := studioFilter.Rating; rating != nil {
+		query.handleIntCriterionInput(studioFilter.Rating, "studios.rating")
+	}
 	query.handleCountCriterion(studioFilter.SceneCount, studioTable, sceneTable, studioIDColumn)
 	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
 	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
-
 	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
 
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {

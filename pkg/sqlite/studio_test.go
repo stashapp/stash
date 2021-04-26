@@ -482,18 +482,88 @@ func TestStudioQueryURL(t *testing.T) {
 	verifyStudioQuery(t, filter, verifyFn)
 }
 
+func TestStudioQueryRating(t *testing.T) {
+	const rating = 3
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyStudiosRating(t, ratingCriterion)
+}
+
 func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(s *models.Studio)) {
 	withTxn(func(r models.Repository) error {
 		t.Helper()
 		sqb := r.Studio()
 
-		galleries := queryStudio(t, sqb, &filter, nil)
+		studios := queryStudio(t, sqb, &filter, nil)
 
 		// assume it should find at least one
-		assert.Greater(t, len(galleries), 0)
+		assert.Greater(t, len(studios), 0)
 
-		for _, studio := range galleries {
+		for _, studio := range studios {
 			verifyFn(studio)
+		}
+
+		return nil
+	})
+}
+
+func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			Rating: &ratingCriterion,
+		}
+
+		studios, _, err := sqb.Query(&studioFilter, nil)
+
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
+
+		for _, studio := range studios {
+			verifyInt64(t, studio.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioQueryIsMissingRating(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		isMissing := "rating"
+		studioFilter := models.StudioFilterType{
+			IsMissing: &isMissing,
+		}
+
+		studios, _, err := sqb.Query(&studioFilter, nil)
+
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
+
+		assert.True(t, len(studios) > 0)
+
+		for _, studio := range studios {
+			assert.True(t, !studio.Rating.Valid)
 		}
 
 		return nil

@@ -279,6 +279,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.CareerLength, tableName+".career_length")
 	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
 	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
+	query.handleIntCriterionInput(performerFilter.Rating, tableName+".rating")
 	query.handleStringCriterionInput(performerFilter.HairColor, tableName+".hair_color")
 	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
 	query.handleIntCriterionInput(performerFilter.Weight, tableName+".weight")

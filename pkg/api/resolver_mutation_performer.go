@@ -85,6 +85,11 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	} else {
 		newPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
 	}
+	if input.Rating != nil {
+		newPerformer.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+	} else {
+		newPerformer.Rating = sql.NullInt64{Valid: false}
+	}
 	if input.Details != nil {
 		newPerformer.Details = sql.NullString{String: *input.Details, Valid: true}
 	}
@@ -198,6 +203,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
@@ -304,6 +310,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")

@@ -10,4 +10,5 @@ fragment SlimStudioData on Studio {
     id
   }
   details
+  rating
 }

@@ -36,6 +36,7 @@ import { ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 
@@ -62,7 +63,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
-
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -109,6 +109,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: yup.array(yup.string().required()).optional(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
+    rating: yup.number().optional().nullable(),
     details: yup.string().optional(),
     death_date: yup.string().optional(),
     hair_color: yup.string().optional(),
@@ -135,6 +136,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
+    rating: performer.rating ?? undefined,
     details: performer.details ?? "",
     death_date: performer.death_date ?? "",
     hair_color: performer.hair_color ?? "",
@@ -148,6 +150,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     validationSchema: schema,
     onSubmit: (values) => onSave(values),
   });
+
+  function setRating(v: number) {
+    formik.setFieldValue("rating", v);
+  }
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -386,6 +392,30 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         });
       }
 
+      // numeric keypresses get caught by jwplayer, so blur the element
+      // if the rating sequence is started
+      Mousetrap.bind("r", () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        Mousetrap.bind("0", () => setRating(NaN));
+        Mousetrap.bind("1", () => setRating(1));
+        Mousetrap.bind("2", () => setRating(2));
+        Mousetrap.bind("3", () => setRating(3));
+        Mousetrap.bind("4", () => setRating(4));
+        Mousetrap.bind("5", () => setRating(5));
+
+        setTimeout(() => {
+          Mousetrap.unbind("0");
+          Mousetrap.unbind("1");
+          Mousetrap.unbind("2");
+          Mousetrap.unbind("3");
+          Mousetrap.unbind("4");
+          Mousetrap.unbind("5");
+        }, 1000);
+      });
+
       return () => {
         Mousetrap.unbind("s s");
 
@@ -424,6 +454,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return {
       ...values,
       gender: stringToGender(values.gender),
+      rating: values.rating ?? null,
       weight: Number(values.weight),
       id: performer.id ?? "",
     };
@@ -909,6 +940,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
         {renderTagsField()}
+
+        <Form.Group controlId="rating" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Rating
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <RatingStars
+              value={formik.values.rating ?? undefined}
+              onSetRating={(value) => formik.setFieldValue("rating", value)}
+            />
+          </Col>
+        </Form.Group>
         {renderStashIDs()}
 
         {renderButtons()}

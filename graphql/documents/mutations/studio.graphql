@@ -1,14 +1,10 @@
-mutation StudioCreate(
-  $input: StudioCreateInput!) {
-
+mutation StudioCreate($input: StudioCreateInput!) {
   studioCreate(input: $input) {
     ...StudioData
   }
 }
 
-mutation StudioUpdate(
-  $input: StudioUpdateInput!) {
-
+mutation StudioUpdate($input: StudioUpdateInput!) {
   studioUpdate(input: $input) {
     ...StudioData
   }
