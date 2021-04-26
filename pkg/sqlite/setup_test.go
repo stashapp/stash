@@ -599,6 +599,7 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 			Path:     models.NullString(getGalleryStringValue(i, pathField)),
 			URL:      getGalleryNullStringValue(i, urlField),
 			Checksum: getGalleryStringValue(i, checksumField),
+			Rating:   getRating(i),
 		}
 
 		created, err := gqb.Create(gallery)

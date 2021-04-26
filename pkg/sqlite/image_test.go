@@ -155,6 +155,143 @@ func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, ex
 	})
 }
 
+func TestImageQueryPathOr(t *testing.T) {
+	const image1Idx = 1
+	const image2Idx = 2
+
+	image1Path := getImageStringValue(image1Idx, "Path")
+	image2Path := getImageStringValue(image2Idx, "Path")
+
+	imageFilter := models.ImageFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    image1Path,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.ImageFilterType{
+			Path: &models.StringCriterionInput{
+				Value:    image2Path,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+
+		assert.Len(t, images, 2)
+		assert.Equal(t, image1Path, images[0].Path)
+		assert.Equal(t, image2Path, images[1].Path)
+
+		return nil
+	})
+}
+
+func TestImageQueryPathAndRating(t *testing.T) {
+	const imageIdx = 1
+	imagePath := getImageStringValue(imageIdx, "Path")
+	imageRating := getRating(imageIdx)
+
+	imageFilter := models.ImageFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    imagePath,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.ImageFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(imageRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+
+		assert.Len(t, images, 1)
+		assert.Equal(t, imagePath, images[0].Path)
+		assert.Equal(t, imageRating.Int64, images[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestImageQueryPathNotRating(t *testing.T) {
+	const imageIdx = 1
+
+	imageRating := getRating(imageIdx)
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    "image_.*1_Path",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(imageRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	imageFilter := models.ImageFilterType{
+		Path: &pathCriterion,
+		Not: &models.ImageFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+
+		for _, image := range images {
+			verifyString(t, image.Path, pathCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, image.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestImageIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const imageIdx = 1
+	subFilter := models.ImageFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    getImageStringValue(imageIdx, "Path"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	imageFilter := &models.ImageFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		_, _, err := sqb.Query(imageFilter, nil)
+		assert.NotNil(err)
+
+		imageFilter.Or = nil
+		imageFilter.Not = &subFilter
+		_, _, err = sqb.Query(imageFilter, nil)
+		assert.NotNil(err)
+
+		imageFilter.And = nil
+		imageFilter.Or = &subFilter
+		_, _, err = sqb.Query(imageFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func TestImageQueryRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{
