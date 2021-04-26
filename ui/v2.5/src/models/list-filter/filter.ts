@@ -209,6 +209,7 @@ export class ListFilterModel {
           "birth_year",
           "death_year",
           "age",
+          "weight",
         ];
         const stringCriteria: CriterionType[] = [
           "ethnicity",
@@ -216,7 +217,6 @@ export class ListFilterModel {
           "hair_color",
           "eye_color",
           "height",
-          "weight",
           "measurements",
           "fake_tits",
           "career_length",
@@ -718,7 +718,7 @@ export class ListFilterModel {
           break;
         }
         case "weight": {
-          const wCrit = criterion as StringCriterion;
+          const wCrit = criterion as NumberCriterion;
           result.weight = { value: wCrit.value, modifier: wCrit.modifier };
           break;
         }

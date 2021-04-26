@@ -76,7 +76,7 @@ input PerformerFilterType {
   """Filter by hair color"""
   hair_color: StringCriterionInput
   """Filter by weight"""
-  weight: StringCriterionInput
+  weight: IntCriterionInput
   """Filter by death year"""
   death_year: IntCriterionInput
 }
