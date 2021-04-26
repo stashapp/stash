@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, ProgressBar } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   useJobStatus,
   useMetadataUpdate,
@@ -493,12 +492,6 @@ export const SettingsTasksPanel: React.FC = () => {
         <Form.Text className="text-muted">
           Auto-tag content based on filenames.
         </Form.Text>
-      </Form.Group>
-
-      <Form.Group>
-        <Link to="/sceneFilenameParser">
-          <Button variant="secondary">Scene Filename Parser</Button>
-        </Link>
       </Form.Group>
 
       <hr />
