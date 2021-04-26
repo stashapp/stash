@@ -54,7 +54,7 @@ func getMatchingScenes(name string, paths []string, sceneReader models.SceneRead
 
 	filter.And = pathsFilter(paths)
 
-	pp := 0
+	pp := models.PerPageAll
 	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{
 		PerPage: &pp,
 	})

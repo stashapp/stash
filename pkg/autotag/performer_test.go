@@ -50,7 +50,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	organized := false
-	perPage := 0
+	perPage := models.PerPageAll
 
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,

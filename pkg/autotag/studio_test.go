@@ -50,7 +50,7 @@ func testStudioScenes(t *testing.T, studioName, expectedRegex string) {
 	}
 
 	organized := false
-	perPage := 0
+	perPage := models.PerPageAll
 
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,

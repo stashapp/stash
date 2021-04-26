@@ -1,5 +1,9 @@
 package models
 
+// PerPageAll is the value used for perPage to indicate all results should be
+// returned.
+const PerPageAll = -1
+
 func (ff FindFilterType) GetSort(defaultSort string) string {
 	var sort string
 	if ff.Sort == nil {
