@@ -100,6 +100,26 @@ func TestPerformerFindByNames(t *testing.T) {
 	})
 }
 
+func TestPerformerQueryForAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		tqb := r.Performer()
+
+		name := performerNames[performerIdxWithScene] // find a performer by name
+
+		performers, err := tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding performers: %s", err.Error())
+		}
+
+		assert.Len(t, performers, 2)
+		assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[0].Name.String))
+		assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[1].Name.String))
+
+		return nil
+	})
+}
+
 func TestPerformerUpdatePerformerImage(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Performer()

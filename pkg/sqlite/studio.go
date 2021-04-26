@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -119,6 +120,23 @@ func (qb *studioQueryBuilder) Count() (int, error) {
 
 func (qb *studioQueryBuilder) All() ([]*models.Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil)
+}
+
+func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(studioTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryStudios(query+" WHERE "+where, args)
 }
 
 func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {

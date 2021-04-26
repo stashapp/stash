@@ -70,6 +70,26 @@ func TestTagFindByName(t *testing.T) {
 	})
 }
 
+func TestTagQueryForAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		tqb := r.Tag()
+
+		name := tagNames[tagIdxWithScene] // find a tag by name
+
+		tags, err := tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 2)
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
+
+		return nil
+	})
+}
+
 func TestTagFindByNames(t *testing.T) {
 	var names []string
 

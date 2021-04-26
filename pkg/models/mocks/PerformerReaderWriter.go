@@ -388,6 +388,29 @@ func (_m *PerformerReaderWriter) Query(performerFilter *models.PerformerFilterTy
 	return r0, r1, r2
 }
 
+// QueryForAutoTag provides a mock function with given fields: words
+func (_m *PerformerReaderWriter) QueryForAutoTag(words []string) ([]*models.Performer, error) {
+	ret := _m.Called(words)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func([]string) []*models.Performer); ok {
+		r0 = rf(words)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string) error); ok {
+		r1 = rf(words)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: updatedPerformer
 func (_m *PerformerReaderWriter) Update(updatedPerformer models.PerformerPartial) (*models.Performer, error) {
 	ret := _m.Called(updatedPerformer)

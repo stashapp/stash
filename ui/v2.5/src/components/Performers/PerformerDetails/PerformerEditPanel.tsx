@@ -140,7 +140,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     details: performer.details ?? "",
     death_date: performer.death_date ?? "",
     hair_color: performer.hair_color ?? "",
-    weight: performer.weight ?? "",
+    weight: performer.weight ?? undefined,
   };
 
   type InputValues = typeof initialValues;
