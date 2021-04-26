@@ -105,7 +105,7 @@ const htmlDoc1 = `
 								<b>Weight:</b>
 							</td>
 							<td class="paramvalue">
-								57
+								126
 							</td>
 						</tr>
 						<tr>
@@ -212,7 +212,6 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	config.mappedConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:") + "/comment()")
 	config.mappedConfig["Details"] = makeSimpleAttrConfig(makeCommonXPath("Details:"))
 	config.mappedConfig["HairColor"] = makeSimpleAttrConfig(makeCommonXPath("Hair Color:"))
-	config.mappedConfig["Weight"] = makeSimpleAttrConfig(makeCommonXPath("Weight:"))
 
 	// special handling for birthdate
 	birthdateAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Date of Birth:"))
@@ -252,7 +251,7 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 
 	config.mappedConfig["Gender"] = genderConfig
 
-	// use fixed for height
+	// use fixed for Country
 	config.mappedConfig["Country"] = mappedScraperAttrConfig{
 		Fixed: "United States",
 	}
@@ -263,6 +262,13 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 		&heightConvAction,
 	}
 	config.mappedConfig["Height"] = heightConfig
+
+	weightConfig := makeSimpleAttrConfig(makeCommonXPath("Weight:"))
+	weightConvAction := postProcessLbToKg(true)
+	weightConfig.postProcessActions = []postProcessAction{
+		&weightConvAction,
+	}
+	config.mappedConfig["Weight"] = weightConfig
 
 	return config
 }
@@ -317,10 +323,10 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const tattoos = "None"
 	const piercings = "<!-- None -->"
 	const gender = "Female"
-	const height = "170"
+	const height = "170" //	5ft7
 	const details = "Some girls are so damn hot that they can get you bent out of shape, and you will not even be mad at them for doing so. Well, tawny blonde Mia Malkova can bend her body into any shape she pleases, and that’s sure to satisfy all of the horny cocks and wet pussies out there. This girl has acrobatic and contortionist abilities that could even twist a pretzel into a new knot, which can be very helpful in the ... arrow_drop_down Some girls are so damn hot that they can get you bent out of shape, and you will not even be mad at them for doing so. Well, tawny blonde Mia Malkova can bend her body into any shape she pleases, and that’s sure to satisfy all of the horny cocks and wet pussies out there. This girl has acrobatic and contortionist abilities that could even twist a pretzel into a new knot, which can be very helpful in the VR Porn movies – trust us. Ankles behind her neck and feet over her back so she can kiss her toes, turned, twisted and gyrating, she can fuck any which way she wants (and that ass!), will surely make you fall in love with this hot Virtual Reality Porn slut, as she is one of the finest of them all. Talking about perfection, maybe it’s all the acrobatic work that keeps it in such gorgeous shape? Who cares really, because you just want to take a big bite out of it and never let go. But it’s not all about the body. Mia’s also got a great smile, which might not sound kinky, but believe us, it is a smile that will heat up your innards and drop your pants. Is it her golden skin, her innocent pink lips or that heart-shaped face? There is just too much good stuff going on with Mia Malkova, which is maybe why these past few years have heaped awards upon awards on this Southern California native. Mia came to VR Bangers for her first VR Porn video, so you know she’s only going for top-notch scenes with top-game performers, men, and women. Better hit up that yoga studio if you ever dream of being able to bang a flexible and talented chick like lady Malkova."
 	const hairColor = "Blonde"
-	const weight = "57"
+	const weight = "57" // 126 lb
 
 	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, gender, performer.Gender, "Gender")
