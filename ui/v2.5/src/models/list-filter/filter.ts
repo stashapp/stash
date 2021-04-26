@@ -282,11 +282,13 @@ export class ListFilterModel {
       case FilterMode.Galleries:
         this.sortBy = defaultSort ?? "path";
         this.sortByOptions = [
+          "date",
           "path",
           "file_mod_time",
           "images_count",
           "tag_count",
           "performer_count",
+          "title",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -464,7 +466,7 @@ export class ListFilterModel {
         this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage
           ? this.itemsPerPage
           : undefined,
-      sortby: this.sortBy !== "date" ? this.getSortBy() : undefined,
+      sortby: this.getSortBy() ?? undefined,
       sortdir:
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp:
