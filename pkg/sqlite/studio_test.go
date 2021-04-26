@@ -45,6 +45,26 @@ func TestStudioFindByName(t *testing.T) {
 	})
 }
 
+func TestStudioQueryForAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		tqb := r.Studio()
+
+		name := studioNames[studioIdxWithScene] // find a studio by name
+
+		studios, err := tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
+
+		assert.Len(t, studios, 2)
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[0].Name.String))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[1].Name.String))
+
+		return nil
+	})
+}
+
 func TestStudioQueryParent(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Studio()

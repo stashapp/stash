@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -190,6 +191,23 @@ func (qb *tagQueryBuilder) Count() (int, error) {
 
 func (qb *tagQueryBuilder) All() ([]*models.Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getDefaultTagSort(), nil)
+}
+
+func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(tagTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryTags(query+" WHERE "+where, args)
 }
 
 func (qb *tagQueryBuilder) validateFilter(tagFilter *models.TagFilterType) error {
