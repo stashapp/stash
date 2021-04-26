@@ -34,12 +34,12 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   );
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 
-  function maybeRenderFavoriteBanner() {
+  function maybeRenderFavoriteIcon() {
     if (performer.favorite === false) {
       return;
     }
     return (
-      <div className="favourite">
+      <div className="favorite">
         <Icon icon="heart" size="2x" />
       </div>
     );
@@ -145,7 +145,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-          {maybeRenderFavoriteBanner()}
+          {maybeRenderFavoriteIcon()}
           {maybeRenderRatingBanner()}
         </>
       }
