@@ -107,8 +107,6 @@ func (t *autoTagFilesTask) makeGalleryFilter() *models.GalleryFilterType {
 
 	organized := false
 	ret.Organized = &organized
-	zip := true
-	ret.IsZip = &zip
 
 	return ret
 }
