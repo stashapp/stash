@@ -304,6 +304,7 @@ export class ListFilterModel {
           new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
           ListFilterModel.createCriterionOption("performer_count"),
+          ListFilterModel.createCriterionOption("image_count"),
           new StudiosCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
         ];
@@ -1213,6 +1214,14 @@ export class ListFilterModel {
         case "performer_count": {
           const countCrit = criterion as NumberCriterion;
           result.performer_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
           };
