@@ -14,6 +14,7 @@ import {
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 
+import { SceneQueue } from "src/models/sceneQueue";
 import StashSearchResult from "./StashSearchResult";
 import Config from "./Config";
 import {
@@ -141,6 +142,7 @@ function prepareQueryString(
 
 interface ITaggerListProps {
   scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
   selectedEndpoint: { endpoint: string; index: number };
   config: ITaggerConfig;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
@@ -149,6 +151,7 @@ interface ITaggerListProps {
 
 const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
+  queue,
   selectedEndpoint,
   config,
   queueFingerprintSubmission,
@@ -304,8 +307,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     setHideUnmatched(!hideUnmatched);
   };
 
+  function generateSceneLink(scene: GQL.SlimSceneDataFragment, index: number) {
+    return queue
+      ? queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+  }
+
   const renderScenes = () =>
-    scenes.map((scene) => {
+    scenes.map((scene, index) => {
+      const sceneLink = generateSceneLink(scene, index);
       const { paths, file, ext } = parsePath(scene.path);
       const originalDir = scene.path.slice(
         0,
@@ -376,7 +386,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           <div className="d-flex flex-column text-right">
             <h5>Scene successfully tagged:</h5>
             <h6>
-              <Link className="bold" to={`/scenes/${scene.id}`}>
+              <Link className="bold" to={sceneLink}>
                 {taggedScenes[scene.id].title}
               </Link>
             </h6>
@@ -476,7 +486,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           <div className="row">
             <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
               <div className="scene-card mr-3">
-                <Link to={`/scenes/${scene.id}`}>
+                <Link to={sceneLink}>
                   <ScenePreview
                     image={scene.paths.screenshot ?? undefined}
                     video={scene.paths.preview ?? undefined}
@@ -485,10 +495,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                   />
                 </Link>
               </div>
-              <Link
-                to={`/scenes/${scene.id}`}
-                className="scene-link overflow-hidden"
-              >
+              <Link to={sceneLink} className="scene-link overflow-hidden">
                 <TruncatedText
                   text={`${originalDir}\u200B${file}${ext}`}
                   lineCount={2}
@@ -548,9 +555,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
 }
 
-export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
+export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   const stashConfig = useConfiguration();
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
@@ -620,6 +628,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
             <Config config={config} setConfig={setConfig} show={showConfig} />
             <TaggerList
               scenes={scenes}
+              queue={queue}
               config={config}
               selectedEndpoint={{
                 endpoint: selectedEndpoint.endpoint,
