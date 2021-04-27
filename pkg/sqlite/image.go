@@ -369,9 +369,9 @@ func imageTagCountCriterionHandler(qb *imageQueryBuilder, tagCount *models.IntCr
 func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.galleriesRepository().join(f, "galleries_join", "images.id")
-		f.addJoin(galleryTable, "", "galleries_join.tag_id = galleries.id")
+		f.addJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
 	}
-	h := qb.getMultiCriterionHandlerBuilder(galleryTable, performersGalleriesTable, galleryIDColumn, addJoinsFunc)
+	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 
 	return h.handler(galleries)
 }

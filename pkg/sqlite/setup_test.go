@@ -48,6 +48,9 @@ const (
 
 const (
 	imageIdxWithGallery = iota
+	imageIdx1WithGallery
+	imageIdx2WithGallery
+	imageIdxWithTwoGalleries
 	imageIdxWithPerformer
 	imageIdx1WithPerformer
 	imageIdx2WithPerformer
@@ -102,6 +105,9 @@ const (
 const (
 	galleryIdxWithScene = iota
 	galleryIdxWithImage
+	galleryIdx1WithImage
+	galleryIdx2WithImage
+	galleryIdxWithTwoImages
 	galleryIdxWithPerformer
 	galleryIdx1WithPerformer
 	galleryIdx2WithPerformer
@@ -230,6 +236,10 @@ var (
 var (
 	imageGalleryLinks = [][2]int{
 		{imageIdxWithGallery, galleryIdxWithImage},
+		{imageIdx1WithGallery, galleryIdxWithTwoImages},
+		{imageIdx2WithGallery, galleryIdxWithTwoImages},
+		{imageIdxWithTwoGalleries, galleryIdx1WithImage},
+		{imageIdxWithTwoGalleries, galleryIdx2WithImage},
 	}
 	imageStudioLinks = [][2]int{
 		{imageIdxWithStudio, studioIdxWithImage},

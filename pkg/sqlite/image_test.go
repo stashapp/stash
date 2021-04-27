@@ -586,6 +586,70 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 	})
 }
 
+func TestImageQueryGallery(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		galleryCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(galleryIDs[galleryIdxWithImage]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		imageFilter := models.ImageFilterType{
+			Galleries: &galleryCriterion,
+		}
+
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+
+		assert.Len(t, images, 1)
+
+		// ensure ids are correct
+		for _, image := range images {
+			assert.True(t, image.ID == imageIDs[imageIdxWithGallery])
+		}
+
+		galleryCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(galleryIDs[galleryIdx1WithImage]),
+				strconv.Itoa(galleryIDs[galleryIdx2WithImage]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		images, _, err = sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithTwoGalleries], images[0].ID)
+
+		galleryCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[galleryIdx1WithImage]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getImageStringValue(imageIdxWithTwoGalleries, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
 func TestImageQueryPerformers(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
