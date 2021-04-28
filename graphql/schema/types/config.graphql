@@ -95,6 +95,10 @@ input ConfigGeneralInput {
   scraperCertCheck: Boolean!
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBoxInput!]!
+  """True if DLNA service should be enabled by default"""
+  dlnaEnabled: Boolean
+  """List of IPs whitelisted for DLNA service"""
+  dlnaWhitelistedIPs: [String!]
 }
 
 type ConfigGeneralResult {
@@ -166,6 +170,10 @@ type ConfigGeneralResult {
   scraperCertCheck: Boolean!
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBox!]!
+  """True if DLNA service should be enabled by default"""
+  dlnaEnabled: Boolean!
+  """List of IPs whitelisted for DLNA service"""
+  dlnaWhitelistedIPs: [String!]!
 }
 
 input ConfigInterfaceInput {

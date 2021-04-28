@@ -1,0 +1,31 @@
+
+
+type DLNAAllowedIP {
+    ipAddress: String!
+    allowedUntil: Time
+}
+
+type DLNAStatus {
+    running: Boolean!
+    runningUntil: Time
+    recentIPAddresses: [String!]!
+    allowedIPAddresses: [DLNAAllowedIP!]!
+}
+
+input EnableDLNAInput {
+    until: Time
+}
+ 
+input DisableDLNAInput {
+    until: Time
+}
+
+input AllowDLNAIPInput {
+    address: String!
+    until: Time
+}
+
+input DisallowDLNAIPInput {
+    address: String!
+    until: Time
+}

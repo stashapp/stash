@@ -109,6 +109,8 @@ type Query {
   systemStatus: SystemStatus!
   jobStatus: MetadataUpdateStatus!
 
+  dlnaStatus: DLNAStatus!
+
   # Get everything
 
   allPerformers: [Performer!]!
@@ -234,6 +236,11 @@ type Mutation {
 
   """Backup the database. Optionally returns a link to download the database file"""
   backupDatabase(input: BackupDatabaseInput!): String
+
+  enableDLNA(input: EnableDLNAInput!): Boolean!
+  disableDLNA(input: DisableDLNAInput!): Boolean!
+  allowDLNAIP(input: AllowDLNAIPInput!): Boolean!
+  disallowDLNAIP(input: DisallowDLNAIPInput!): Boolean!
 }
 
 type Subscription {
