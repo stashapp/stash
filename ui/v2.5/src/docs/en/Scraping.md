@@ -390,7 +390,6 @@ Replaces `2001 to 2003` with `2001-2003`.
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
 * `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
-* `distinct`: if set to `true` makes sure that returned elements are unique
 
 Example:
 ```yaml
@@ -398,14 +397,13 @@ Tags:
   Name:
     selector: //span[@class="list_attributes"]
     split: ","
-    distinct: true
 ```
-Splits a comma separated list of tags located in the span and returns the distinct values of the tags.
+Splits a comma separated list of tags located in the span and returns the tags.
 
 
 For backwards compatibility, `replace`, `subscraper` and `parseDate` are also allowed as keys for the attribute.
 
-Post-processing on attribute post-process is done in the following order: `concat`, `replace`, `subscraper`, `parseDate`, `split` and then `distinct`.
+Post-processing on attribute post-process is done in the following order: `concat`, `replace`, `subscraper`, `parseDate` and then `split`.
 
 ### XPath resources:
 
