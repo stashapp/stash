@@ -6,7 +6,7 @@ enum SortDirectionEnum {
 input FindFilterType {
   q: String
   page: Int
-  """use per_page = 0 to indicate all results. Defaults to 25."""
+  """use per_page = -1 to indicate all results. Defaults to 25."""
   per_page: Int
   sort: String
   direction: SortDirectionEnum
@@ -71,12 +71,14 @@ input PerformerFilterType {
   gallery_count: IntCriterionInput
   """Filter by StashID"""
   stash_id: String
+  """Filter by rating"""
+  rating: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
   """Filter by hair color"""
   hair_color: StringCriterionInput
   """Filter by weight"""
-  weight: StringCriterionInput
+  weight: IntCriterionInput
   """Filter by death year"""
   death_year: IntCriterionInput
 }
@@ -149,6 +151,8 @@ input StudioFilterType {
   stash_id: String
   """Filter to only include studios missing this property"""
   is_missing: String
+  """Filter by rating"""
+  rating: IntCriterionInput
   """Filter by scene count"""
   scene_count: IntCriterionInput
   """Filter by image count"""

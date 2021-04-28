@@ -45,6 +45,21 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
+function maybeRenderRatingBanner(studio: GQL.StudioDataFragment) {
+  if (!studio.rating) {
+    return;
+  }
+  return (
+    <div
+      className={`rating-banner ${
+        studio.rating ? `rating-${studio.rating}` : ""
+      }`}
+    >
+      RATING: {studio.rating}
+    </div>
+  );
+}
+
 export const StudioCard: React.FC<IProps> = ({
   studio,
   hideParent,
@@ -122,6 +137,7 @@ export const StudioCard: React.FC<IProps> = ({
           </h5>
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
+          {maybeRenderRatingBanner(studio)}
           {maybeRenderPopoverButtonGroup()}
         </>
       }

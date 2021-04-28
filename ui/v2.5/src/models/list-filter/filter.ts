@@ -202,6 +202,7 @@ export class ListFilterModel {
           "scenes_count",
           "tag_count",
           "random",
+          "rating",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 
@@ -209,6 +210,7 @@ export class ListFilterModel {
           "birth_year",
           "death_year",
           "age",
+          "weight",
         ];
         const stringCriteria: CriterionType[] = [
           "ethnicity",
@@ -216,7 +218,6 @@ export class ListFilterModel {
           "hair_color",
           "eye_color",
           "height",
-          "weight",
           "measurements",
           "fake_tits",
           "career_length",
@@ -231,6 +232,7 @@ export class ListFilterModel {
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
           ListFilterModel.createCriterionOption("tag_count"),
           ListFilterModel.createCriterionOption("scene_count"),
@@ -244,6 +246,8 @@ export class ListFilterModel {
         break;
       }
       case FilterMode.Studios:
+        this.sortBy = "name";
+        this.sortByOptions = ["name", "random", "rating", "scenes_count"];
         this.sortBy = defaultSort ?? "name";
         this.sortByOptions = [
           "name",
@@ -257,6 +261,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
+          new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("scene_count"),
           ListFilterModel.createCriterionOption("image_count"),
           ListFilterModel.createCriterionOption("gallery_count"),
@@ -718,7 +723,7 @@ export class ListFilterModel {
           break;
         }
         case "weight": {
-          const wCrit = criterion as StringCriterion;
+          const wCrit = criterion as NumberCriterion;
           result.weight = { value: wCrit.value, modifier: wCrit.modifier };
           break;
         }
@@ -774,6 +779,14 @@ export class ListFilterModel {
           result.tags = {
             value: tagsCrit.value.map((tag) => tag.id),
             modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
           };
           break;
         }
@@ -1037,6 +1050,14 @@ export class ListFilterModel {
           result.parents = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
           };
           break;
         }

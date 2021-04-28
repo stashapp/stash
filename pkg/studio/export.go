@@ -38,6 +38,10 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		}
 	}
 
+	if studio.Rating.Valid {
+		newStudioJSON.Rating = int(studio.Rating.Int64)
+	}
+
 	image, err := reader.GetImage(studio.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio image: %s", err.Error())

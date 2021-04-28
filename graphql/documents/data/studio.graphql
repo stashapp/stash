@@ -32,4 +32,5 @@ fragment StudioData on Studio {
     endpoint
   }
   details
+  rating
 }

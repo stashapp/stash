@@ -31,6 +31,7 @@ fragment PerformerData on Performer {
     stash_id
     endpoint
   }
+  rating
   details
   death_date
   hair_color

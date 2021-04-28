@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
@@ -35,13 +34,13 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   );
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 
-  function maybeRenderFavoriteBanner() {
+  function maybeRenderFavoriteIcon() {
     if (performer.favorite === false) {
       return;
     }
     return (
-      <div className="rating-banner rating-5">
-        <FormattedMessage id="favourite" defaultMessage="Favourite" />
+      <div className="favorite">
+        <Icon icon="heart" size="2x" />
       </div>
     );
   }
@@ -120,6 +119,21 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     }
   }
 
+  function maybeRenderRatingBanner() {
+    if (!performer.rating) {
+      return;
+    }
+    return (
+      <div
+        className={`rating-banner ${
+          performer.rating ? `rating-${performer.rating}` : ""
+        }`}
+      >
+        RATING: {performer.rating}
+      </div>
+    );
+  }
+
   return (
     <BasicCard
       className="performer-card"
@@ -131,7 +145,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-          {maybeRenderFavoriteBanner()}
+          {maybeRenderFavoriteIcon()}
+          {maybeRenderRatingBanner()}
         </>
       }
       details={

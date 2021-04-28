@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
@@ -30,6 +31,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
               <TagLink key={tag.id} tagType="performer" tag={tag} />
             ))}
           </ul>
+        </dd>
+      </dl>
+    );
+  }
+
+  function renderRating() {
+    if (!performer.rating) {
+      return null;
+    }
+
+    return (
+      <dl className="row mb-0">
+        <dt className="col-3 col-xl-2">Rating:</dt>
+        <dd className="col-9 col-xl-10">
+          <RatingStars value={performer.rating} />
         </dd>
       </dl>
     );
@@ -139,6 +155,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           TextUtils.instagramURL
         )}
       />
+      {renderRating()}
       {renderTagsField()}
       {renderStashIDs()}
     </>

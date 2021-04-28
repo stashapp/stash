@@ -346,19 +346,29 @@ The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="in
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
 * `feetToCm`: converts a string containing feet and inches numbers into centimetres. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimetres.
+* `lbToKg`: converts a string containing lbs to kg.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
 
 Example:
 ```yaml
 performer:
   Gender:
-    selector: //div[class="example element"]
+    selector: //div[@class="example element"]
     postProcess:
       - map:
           F: Female
           M: Male
+  Height:
+    selector: //span[@id="height"]
+    postProcess:
+      - feetToCm: true
+  Weight:
+    selector: //span[@id="weight"]
+    postProcess:
+      - lbToKg: true
 ```
 Gets the contents of the selected div element, and sets the returned value to `Female` if the scraped value is `F`; `Male` if the scraped value is `M`.
+Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
 
 * `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them.
 

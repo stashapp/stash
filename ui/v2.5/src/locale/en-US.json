@@ -1,6 +1,7 @@
 {
   "developmentVersion": "Development Version",
   "images": "Images",
+  "images-size": "Images size",
   "galleries": "Galleries",
   "library-size": "Library size",
   "markers": "Markers",
@@ -9,6 +10,7 @@
   "organized": "Organized",
   "performers": "Performers",
   "scenes": "Scenes",
+  "scenes-size": "Scenes size",
   "studios": "Studios",
   "tags": "Tags",
   "up-dir": "Up a directory",

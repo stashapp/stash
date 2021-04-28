@@ -72,6 +72,14 @@
     right: 1rem;
     width: 3rem;
   }
+
+  .favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    position: absolute;
+    right: 5px;
+    top: 10px;
+  }
 }
 
 .card {

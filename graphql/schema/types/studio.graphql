@@ -11,6 +11,7 @@ type Studio {
   image_count: Int # Resolver
   gallery_count: Int # Resolver
   stash_ids: [StashID!]!
+  rating: Int
   details: String
 }
 
@@ -21,6 +22,7 @@ input StudioCreateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
+  rating: Int
   details: String
 }
 
@@ -32,6 +34,7 @@ input StudioUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
+  rating: Int
   details: String
 }
 

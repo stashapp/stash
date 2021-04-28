@@ -15,6 +15,7 @@ type Studio struct {
 	Image        string          `json:"image,omitempty"`
 	CreatedAt    models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt    models.JSONTime `json:"updated_at,omitempty"`
+	Rating       int             `json:"rating,omitempty"`
 	Details      string          `json:"details,omitempty"`
 }
 

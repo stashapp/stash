@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -172,6 +173,25 @@ func (qb *performerQueryBuilder) All() ([]*models.Performer, error) {
 	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil)
 }
 
+func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Performer, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(performerTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+		whereClauses = append(whereClauses, "aliases like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryPerformers(query+" WHERE "+where, args)
+}
+
 func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
@@ -259,9 +279,10 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.CareerLength, tableName+".career_length")
 	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
 	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
+	query.handleIntCriterionInput(performerFilter.Rating, tableName+".rating")
 	query.handleStringCriterionInput(performerFilter.HairColor, tableName+".hair_color")
-	query.handleStringCriterionInput(performerFilter.Weight, tableName+".weight")
 	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
+	query.handleIntCriterionInput(performerFilter.Weight, tableName+".weight")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")

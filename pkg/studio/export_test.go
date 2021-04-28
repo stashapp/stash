@@ -25,10 +25,10 @@ const (
 )
 
 const (
-	studioName = "testStudio"
-	url        = "url"
-	details    = "details"
-
+	studioName       = "testStudio"
+	url              = "url"
+	details          = "details"
+	rating           = 5
 	parentStudioName = "parentStudio"
 )
 
@@ -55,6 +55,7 @@ func createFullStudio(id int, parentID int) models.Studio {
 		UpdatedAt: models.SQLiteTimestamp{
 			Timestamp: updateTime,
 		},
+		Rating: models.NullInt64(rating),
 	}
 
 	if parentID != 0 {
@@ -89,6 +90,7 @@ func createFullJSONStudio(parentStudio, image string) *jsonschema.Studio {
 		},
 		ParentStudio: parentStudio,
 		Image:        image,
+		Rating:       rating,
 	}
 }
 
