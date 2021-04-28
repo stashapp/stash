@@ -62,6 +62,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const performerInput = useRef<HTMLTextAreaElement | null>(null);
   const [doBatchQuery] = GQL.useStashBoxBatchPerformerTagMutation();
 
+  const [error, setError] = useState<
+    Record<string, { message?: string; details?: string } | undefined>
+  >({});
   const [loadingUpdate, setLoadingUpdate] = useState<string | undefined>();
   const [modalPerformer, setModalPerformer] = useState<
     IStashBoxPerformer | undefined
@@ -103,6 +106,10 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     endpointIndex: number
   ) => {
     setLoadingUpdate(stashID);
+    setError({
+      ...error,
+      [performerID]: undefined,
+    });
     stashBoxPerformerQuery(stashID, endpointIndex)
       .then((queryData) => {
         const data = selectPerformers(
@@ -176,13 +183,25 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     if (performerData?.id) {
       const filteredData = filterPerformer(performerData, excludedFields);
 
-      await updatePerformer({
+      const res = await updatePerformer({
         ...filteredData,
         image: excludedFields.includes("image")
           ? undefined
           : performerData.images[imageIndex],
         id: performerData.id,
       });
+      if (!res.data?.performerUpdate)
+        setError({
+          ...error,
+          [performerData.id]: {
+            message: `Failed to save performer "${performerData.name}"`,
+            details:
+              res?.errors?.[0].message ===
+              "UNIQUE constraint failed: performers.checksum"
+                ? "Name already exists"
+                : res?.errors?.[0].message,
+          },
+        });
     }
     setModalPerformer(undefined);
   };
@@ -272,25 +291,36 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             -1;
 
           return (
-            <InputGroup>
-              <InputGroup.Text>{link}</InputGroup.Text>
-              <InputGroup.Append>
-                {endpoint !== -1 && (
-                  <Button
-                    onClick={() =>
-                      doBoxUpdate(performer.id, stashID.stash_id, endpoint)
-                    }
-                    disabled={!!loadingUpdate}
-                  >
-                    {loadingUpdate === stashID.stash_id ? (
-                      <LoadingIndicator inline small message="" />
-                    ) : (
-                      "Refresh"
-                    )}
-                  </Button>
-                )}
-              </InputGroup.Append>
-            </InputGroup>
+            <div>
+              <InputGroup className="PerformerTagger-box-link">
+                <InputGroup.Text>{link}</InputGroup.Text>
+                <InputGroup.Append>
+                  {endpoint !== -1 && (
+                    <Button
+                      onClick={() =>
+                        doBoxUpdate(performer.id, stashID.stash_id, endpoint)
+                      }
+                      disabled={!!loadingUpdate}
+                    >
+                      {loadingUpdate === stashID.stash_id ? (
+                        <LoadingIndicator inline small message="" />
+                      ) : (
+                        "Refresh"
+                      )}
+                    </Button>
+                  )}
+                </InputGroup.Append>
+              </InputGroup>
+              {error[performer.id] && (
+                <div className="text-danger mt-1">
+                  <strong>
+                    <span className="mr-2">Error:</span>
+                    {error[performer.id]?.message}
+                  </strong>
+                  <div>{error[performer.id]?.details}</div>
+                </div>
+              )}
+            </div>
           );
         });
         subContent = <>{stashLinks}</>;

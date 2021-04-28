@@ -181,6 +181,14 @@
     height: 40px;
     margin-right: 10px;
   }
+
+  &-box-link {
+    margin-bottom: 5px;
+
+    .input-group-text {
+      font-family: monospace;
+    }
+  }
 }
 
 .FieldSelect {

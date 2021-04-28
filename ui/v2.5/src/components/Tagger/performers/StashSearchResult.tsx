@@ -50,10 +50,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         id: performer.id,
       });
 
-      if (!res.data?.performerUpdate)
+      if (!res?.data?.performerUpdate)
         setError({
           message: `Failed to save performer "${performer.name}"`,
-          details: res?.errors?.[0].message,
+          details:
+            res?.errors?.[0].message ===
+            "UNIQUE constraint failed: performers.checksum"
+              ? "Name already exists"
+              : res?.errors?.[0].message,
         });
       else onPerformerTagged(performer);
       setSaveState("");
@@ -89,12 +93,13 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       <div className="PerformerTagger-performer-search">{performers}</div>
       <div className="row no-gutters mt-2 align-items-center justify-content-end">
         {error.message && (
-          <strong className="mt-1 mr-2 text-danger text-right">
-            <abbr title={error.details} className="mr-2">
-              Error:
-            </abbr>
-            {error.message}
-          </strong>
+          <div className="text-right text-danger mt-1">
+            <strong>
+              <span className="mr-2">Error:</span>
+              {error.message}
+            </strong>
+            <div>{error.details}</div>
+          </div>
         )}
         {saveState && (
           <strong className="col-4 mt-1 mr-2 text-right">{saveState}</strong>

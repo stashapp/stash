@@ -51,6 +51,7 @@ export const useUpdatePerformerStashID = () => {
 export const useUpdatePerformer = () => {
   const [updatePerformer] = GQL.usePerformerUpdateMutation({
     onError: (errors) => errors,
+    errorPolicy: "all",
   });
 
   const updatePerformerHandler = (input: GQL.PerformerUpdateInput) =>
