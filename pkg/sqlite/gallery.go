@@ -401,7 +401,7 @@ func galleryAverageResolutionCriterionHandler(qb *galleryQueryBuilder, resolutio
 	return func(f *filterBuilder) {
 		if resolution != nil && resolution.IsValid() {
 			qb.imagesRepository().join(f, "images_join", "galleries.id")
-			f.addJoin("images", "images_join", "images_join.image_id = images.id")
+			f.addJoin("images", "", "images_join.image_id = images.id")
 
 			min := resolution.GetMinResolution()
 			max := resolution.GetMaxResolution()
@@ -431,6 +431,8 @@ func (qb *galleryQueryBuilder) getGallerySort(findFilter *models.FindFilterType)
 	}
 
 	switch sort {
+	case "images_count":
+		return getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
 	case "tag_count":
 		return getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
 	case "performer_count":

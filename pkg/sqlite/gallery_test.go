@@ -849,6 +849,22 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 	})
 }
 
+func TestGalleryQueryAverageResolution(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Gallery()
+		resolution := models.ResolutionEnumLow
+		galleryFilter := models.GalleryFilterType{
+			AverageResolution: &resolution,
+		}
+
+		// not verifying average - just ensure we get at least one
+		galleries := queryGallery(t, qb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), 0)
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO All
 // TODO Query

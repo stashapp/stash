@@ -41,7 +41,7 @@ type ImagePartial struct {
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 }
 
-// GetTitle returns the title of the scene. If the Title field is empty,
+// GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
 func (s Image) GetTitle() string {
 	if s.Title.String != "" {

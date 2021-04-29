@@ -523,6 +523,14 @@ func getHeight(index int) sql.NullInt64 {
 	}
 }
 
+func getWidth(index int) sql.NullInt64 {
+	height := getHeight(index)
+	return sql.NullInt64{
+		Int64: height.Int64 * 2,
+		Valid: height.Valid,
+	}
+}
+
 func getSceneDate(index int) models.SQLiteDate {
 	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
@@ -581,6 +589,7 @@ func createImages(qb models.ImageReaderWriter, n int) error {
 			Rating:   getRating(i),
 			OCounter: getOCounter(i),
 			Height:   getHeight(i),
+			Width:    getWidth(i),
 		}
 
 		created, err := qb.Create(image)
