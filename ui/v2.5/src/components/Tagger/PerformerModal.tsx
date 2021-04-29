@@ -126,8 +126,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         <div className="col-7">
           {renderField("name", performer.name)}
           {renderField("gender", genderToString(performer.gender))}
-          {renderField("birthdate", performer.birthdate ?? "Unknown")}
-          {renderField("death_date", performer.death_date ?? "Unknown")}
+          {renderField("birthdate", performer.birthdate)}
+          {renderField("death_date", performer.death_date)}
           {renderField("ethnicity", performer.ethnicity)}
           {renderField("country", performer.country)}
           {renderField("hair_color", performer.hair_color)}

@@ -31,7 +31,10 @@ export const useUpdatePerformerStashID = () => {
           query: GQL.FindPerformersDocument,
           variables: {
             performer_filter: {
-              stash_id: newStashID,
+              stash_id: {
+                value: newStashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {
@@ -70,7 +73,10 @@ export const useUpdatePerformer = () => {
             query: GQL.FindPerformersDocument,
             variables: {
               performer_filter: {
-                stash_id: id.stash_id,
+                stash_id: {
+                  value: id.stash_id,
+                  modifier: GQL.CriterionModifier.Equals,
+                },
               },
             },
             data: {
@@ -131,7 +137,10 @@ export const useCreatePerformer = () => {
           query: GQL.FindPerformersDocument,
           variables: {
             performer_filter: {
-              stash_id: stashID,
+              stash_id: {
+                value: stashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {

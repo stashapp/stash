@@ -70,7 +70,7 @@ input PerformerFilterType {
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: String
+  stash_id: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by url"""

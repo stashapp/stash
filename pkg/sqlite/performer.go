@@ -258,16 +258,9 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 			query.body += `left join performers_image on performers_image.performer_id = performers.id
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
-		case "stash_id":
-			query.addWhere("performer_stash_ids.performer_id IS NULL")
 		default:
 			query.addWhere("(performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = '')")
 		}
-	}
-
-	if stashIDFilter := performerFilter.StashID; stashIDFilter != nil {
-		query.addWhere("performer_stash_ids.stash_id = ?")
-		query.addArg(stashIDFilter)
 	}
 
 	query.handleStringCriterionInput(performerFilter.Ethnicity, tableName+".ethnicity")
@@ -283,6 +276,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.HairColor, tableName+".hair_color")
 	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
 	query.handleIntCriterionInput(performerFilter.Weight, tableName+".weight")
+	query.handleStringCriterionInput(performerFilter.StashID, "performer_stash_ids.stash_id")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")

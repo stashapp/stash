@@ -39,7 +39,10 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     {
       variables: {
         performer_filter: {
-          stash_id: performer.stash_id,
+          stash_id: {
+            value: performer.stash_id,
+            modifier: GQL.CriterionModifier.Equals,
+          },
         },
       },
     }

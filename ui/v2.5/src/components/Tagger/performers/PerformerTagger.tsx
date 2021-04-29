@@ -48,15 +48,28 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const [searchErrors, setSearchErrors] = useState<
     Record<string, string | undefined>
   >({});
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [taggedPerformers, setTaggedPerformers] = useState<
     Record<string, Partial<GQL.SlimPerformerDataFragment>>
   >({});
   const [queries, setQueries] = useState<Record<string, string>>({});
   const [queryAll, setQueryAll] = useState(false);
 
-  const { data: allPerformers } = GQL.useAllPerformersForFilterQuery();
   const [refresh, setRefresh] = useState(false);
+  const { data: allPerformers } = GQL.useFindPerformersQuery({
+    variables: {
+      performer_filter: {
+        stash_id: {
+          value: "",
+          modifier: refresh
+            ? GQL.CriterionModifier.NotNull
+            : GQL.CriterionModifier.IsNull,
+        },
+      },
+      filter: {
+        per_page: 0,
+      },
+    },
+  });
   const [showBatchAdd, setShowBatchAdd] = useState(false);
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
   const performerInput = useRef<HTMLTextAreaElement | null>(null);
@@ -448,8 +461,10 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         </Form.Group>
         <b>{`${
           queryAll
-            ? allPerformers?.allPerformers.length ?? 0
-            : performers.length
+            ? allPerformers?.findPerformers.count
+            : performers.filter((p) =>
+                refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
+              ).length
         } performers will be processed`}</b>
       </Modal>
       <Modal

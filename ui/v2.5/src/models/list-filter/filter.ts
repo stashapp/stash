@@ -228,6 +228,7 @@ export class ListFilterModel {
           "tattoos",
           "piercings",
           "aliases",
+          "stash_id",
         ];
 
         this.criterionOptions = [
@@ -831,6 +832,14 @@ export class ListFilterModel {
           result.gallery_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
           };
           break;
         }
