@@ -34,7 +34,10 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   } = GQL.useFindStudiosQuery({
     variables: {
       studio_filter: {
-        stash_id: studio?.stash_id,
+        stash_id: {
+          value: studio?.stash_id ?? "no-stashid",
+          modifier: GQL.CriterionModifier.Equals,
+        },
       },
     },
   });

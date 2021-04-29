@@ -184,7 +184,10 @@ export const useUpdateStudioStashID = () => {
           query: GQL.FindStudiosDocument,
           variables: {
             studio_filter: {
-              stash_id: newStashID,
+              stash_id: {
+                value: newStashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {
@@ -238,7 +241,10 @@ export const useCreateStudio = () => {
           query: GQL.FindStudiosDocument,
           variables: {
             studio_filter: {
-              stash_id: stashID,
+              stash_id: {
+                value: stashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {
