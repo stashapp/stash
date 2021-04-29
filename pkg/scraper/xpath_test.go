@@ -163,6 +163,8 @@ const htmlDoc1 = `
 							</td>
 							<td class="paramvalue">
 								<ul id="socialmedia">
+									<!-- Adding twitter twice to verify distict post-processing -->
+									<li class="twitter"><a href="https://twitter.com/MiaMalkova" target="_blank" alt="Mia Malkova Twitter" title="Mia Malkova Twitter">Twitter</a></li>
 									<li class="twitter"><a href="https://twitter.com/MiaMalkova" target="_blank" alt="Mia Malkova Twitter" title="Mia Malkova Twitter">Twitter</a></li>
 									<li class="facebook"><a href="https://www.facebook.com/MiaMalcove" target="_blank" alt="Mia Malkova Facebook" title="Mia Malkova Facebook">Facebook</a></li>
 									<li class="youtube"><a href="https://www.youtube.com/channel/UCEPR0sZKa_ScMoyhemfB7nA" target="_blank" alt="Mia Malkova YouTube" title="Mia Malkova YouTube">YouTube</a></li>
@@ -270,6 +272,12 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	}
 	config.mappedConfig["Weight"] = weightConfig
 
+	tagConfig := mappedScraperAttrConfig{
+		Selector: `//ul[@id="socialmedia"]//a`,
+	}
+	config.Tags = make(mappedConfig)
+	config.Tags["Name"] = tagConfig
+
 	return config
 }
 
@@ -348,6 +356,16 @@ func TestScrapePerformerXPath(t *testing.T) {
 	verifyField(t, details, performer.Details, "Details")
 	verifyField(t, hairColor, performer.HairColor, "HairColor")
 	verifyField(t, weight, performer.Weight, "Weight")
+
+	expectedTagNames := []string{
+		"Twitter",
+		"Facebook",
+		"YouTube",
+		"Instagram",
+	}
+	for i, expected := range expectedTagNames {
+		verifyField(t, expected, &performer.Tags[i].Name, "TagName")
+	}
 }
 
 func TestConcatXPath(t *testing.T) {
