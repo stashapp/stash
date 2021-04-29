@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -643,15 +644,7 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 }
 
 func (c mappedScraperAttrConfig) distinctResults(nodes []string) []string {
-	distinctValues := make(map[string]struct{})
-	var ret []string
-	for _, v := range nodes {
-		if _, exists := distinctValues[v]; !exists {
-			distinctValues[v] = struct{}{}
-			ret = append(ret, v)
-		}
-	}
-	return ret
+	return utils.StrUnique(nodes)
 }
 
 func (c mappedScraperAttrConfig) splitString(value string) []string {
