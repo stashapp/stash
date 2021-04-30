@@ -95,10 +95,6 @@ input ConfigGeneralInput {
   scraperCertCheck: Boolean!
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBoxInput!]!
-  """True if DLNA service should be enabled by default"""
-  dlnaEnabled: Boolean
-  """List of IPs whitelisted for DLNA service"""
-  dlnaWhitelistedIPs: [String!]
 }
 
 type ConfigGeneralResult {
@@ -170,10 +166,6 @@ type ConfigGeneralResult {
   scraperCertCheck: Boolean!
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBox!]!
-  """True if DLNA service should be enabled by default"""
-  dlnaEnabled: Boolean!
-  """List of IPs whitelisted for DLNA service"""
-  dlnaWhitelistedIPs: [String!]!
 }
 
 input ConfigInterfaceInput {
@@ -224,10 +216,25 @@ type ConfigInterfaceResult {
   slideshowDelay: Int
 }
 
+input ConfigDLNAInput {
+  """True if DLNA service should be enabled by default"""
+  dlnaEnabled: Boolean
+  """List of IPs whitelisted for DLNA service"""
+  dlnaWhitelistedIPs: [String!]
+}
+
+type ConfigDLNAResult {
+  """True if DLNA service should be enabled by default"""
+  dlnaEnabled: Boolean!
+  """List of IPs whitelisted for DLNA service"""
+  dlnaWhitelistedIPs: [String!]!
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
+  dlna: ConfigDLNAResult!
 }
 
 """Directory structure of a path"""

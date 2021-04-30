@@ -39,8 +39,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     endpoint
     api_key
   }
-  dlnaEnabled
-  dlnaWhitelistedIPs
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
@@ -57,11 +55,19 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   slideshowDelay
 }
 
+fragment ConfigDLNAData on ConfigDLNAResult {
+  dlnaEnabled
+  dlnaWhitelistedIPs
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
   }
   interface {
     ...ConfigInterfaceData
+  }
+  dlna {
+    ...ConfigDLNAData
   }
 }

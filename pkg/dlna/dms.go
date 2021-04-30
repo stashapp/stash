@@ -483,7 +483,9 @@ func (server *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) 
 			continue
 		}
 		b, _ := ioutil.ReadAll(resp.Body)
-		logger.Debug(string(b))
+		if len(b) > 0 {
+			logger.Debug(string(b))
+		}
 		resp.Body.Close()
 	}
 }

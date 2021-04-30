@@ -65,7 +65,8 @@ func (s *Service) init() {
 				}
 			}
 			if err != nil {
-				logger.Fatal(err)
+				logger.Error(err.Error())
+				return
 			}
 			var tmp []net.Interface
 			for _, if_ := range ifs {
@@ -80,7 +81,7 @@ func (s *Service) init() {
 		HTTPConn: func() net.Listener {
 			conn, err := net.Listen("tcp", dmsConfig.Http)
 			if err != nil {
-				logger.Fatal(err)
+				logger.Error(err.Error())
 			}
 			return conn
 		}(),
@@ -141,7 +142,6 @@ func NewService(txnManager models.TransactionManager, cfg *config.Instance, scen
 		mutex:       sync.Mutex{},
 	}
 
-	ret.init()
 	return ret
 }
 
@@ -152,10 +152,12 @@ func (s *Service) Start(duration *time.Duration) {
 	defer s.mutex.Unlock()
 
 	if !s.running {
+		s.init()
+
 		go func() {
 			logger.Info("Starting DLNA")
 			if err := s.server.Serve(); err != nil {
-				logger.Fatal(err)
+				logger.Error(err)
 			}
 		}()
 		s.running = true
@@ -190,7 +192,7 @@ func (s *Service) Stop(duration *time.Duration) {
 		logger.Info("Stopping DLNA")
 		err := s.server.Close()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Error(err)
 		}
 		s.running = false
 
@@ -219,4 +221,14 @@ func (s *Service) IsRunning() bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return s.running
+}
+
+func (s *Service) Status() *models.DLNAStatus {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	return &models.DLNAStatus{
+		Running: s.running,
+		// TODO - others
+	}
 }

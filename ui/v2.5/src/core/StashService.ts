@@ -701,6 +701,13 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useConfigureDLNA = (input: GQL.ConfigDlnaInput) =>
+  GQL.useConfigureDlnaMutation({
+    variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
@@ -729,6 +736,11 @@ export const useJobStatus = () =>
 export const mutateStopJob = () =>
   client.mutate<GQL.StopJobMutation>({
     mutation: GQL.StopJobDocument,
+  });
+
+export const useDLNAStatus = () =>
+  GQL.useDlnaStatusQuery({
+    fetchPolicy: "no-cache",
   });
 
 export const queryScrapeFreeones = (performerName: string) =>

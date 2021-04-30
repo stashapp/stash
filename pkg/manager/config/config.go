@@ -125,8 +125,8 @@ const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
 
 // DLNA options
-const DLNADefaultEnabled = "dlna_default_enabled"
-const DLNADefaultIPWhitelist = "dlna_default_whitelist"
+const DLNADefaultEnabled = "dlna.default_enabled"
+const DLNADefaultIPWhitelist = "dlna.default_whitelist"
 
 // Logging options
 const LogFile = "logFile"
