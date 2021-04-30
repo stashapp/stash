@@ -15,7 +15,7 @@ https://stashapp.cc
 
 You can [watch a demo video](https://vimeo.com/275537038) to see it in action (password is stashapp).
 
-For further information you can [read the in-app manual](tree/develop/ui/v2.5/src/docs/en).
+For further information you can [read the in-app manual](tree/ui/v2.5/src/docs/en).
 
 # Installing stash
 
@@ -73,7 +73,7 @@ Once you have a certificate and key file name them `stash.crt` and `stash.key` a
 ## Themes and CSS Customization
 There is a [directory of community-created themes](https://github.com/stashapp/stash/wiki/Themes) on our Wiki, along with instructions on how to install them.
 
-You canalso make Stash interface fit your desired style with [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
+You can also make Stash interface fit your desired style with [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
 
 # Support (FAQ)
 
