@@ -13,19 +13,23 @@ type DLNAStatus {
 }
 
 input EnableDLNAInput {
-    until: Time
+    """Duration to enable, in minutes. 0 or null for indefinite."""
+    duration: Int
 }
  
 input DisableDLNAInput {
-    until: Time
+    """Duration to enable, in minutes. 0 or null for indefinite."""
+    duration: Int
 }
 
 input AllowDLNAIPInput {
     address: String!
-    until: Time
+    """Duration to enable, in minutes. 0 or null for indefinite."""
+    duration: Int
 }
 
 input DisallowDLNAIPInput {
     address: String!
-    until: Time
+    """Duration to enable, in minutes. 0 or null for indefinite."""
+    duration: Int
 }

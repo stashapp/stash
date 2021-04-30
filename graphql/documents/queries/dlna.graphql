@@ -1,0 +1,11 @@
+query DLNAStatus {
+  dlnaStatus {
+    running
+    runningUntil
+    recentIPAddresses
+    allowedIPAddresses {
+      ipAddress
+      allowedUntil
+    }
+  }
+}

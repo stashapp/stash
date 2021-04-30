@@ -184,6 +184,19 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.StashBoxes, input.StashBoxes)
 	}
 
+	currentDLNAEnabled := c.GetDLNADefaultEnabled()
+	if input.DlnaEnabled != nil && *input.DlnaEnabled != currentDLNAEnabled {
+		c.Set(config.DLNADefaultEnabled, *input.DlnaEnabled)
+
+		// start/stop the DLNA service as needed
+		dlnaService := manager.GetInstance().DLNAService
+		if !*input.DlnaEnabled && dlnaService.IsRunning() {
+			dlnaService.Stop(nil)
+		} else if *input.DlnaEnabled && !dlnaService.IsRunning() {
+			dlnaService.Start(nil)
+		}
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}

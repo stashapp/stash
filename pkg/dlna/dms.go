@@ -48,10 +48,7 @@ import (
 	"github.com/anacrolix/dms/upnp"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -254,7 +251,8 @@ type Server struct {
 	// Time interval between SSPD announces
 	NotifyInterval time.Duration
 
-	txnManager models.TransactionManager
+	txnManager  models.TransactionManager
+	sceneServer sceneServer
 }
 
 // UPnP SOAP service.
@@ -433,8 +431,7 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filepath := manager.GetInstance().Paths.Scene.GetThumbnailScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
-	utils.ServeFileNoCache(w, r, filepath)
+	me.sceneServer.ServeScreenshot(scene, w, r)
 }
 
 func (server *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
@@ -568,10 +565,7 @@ func (server *Server) initMux(mux *http.ServeMux) {
 			return
 		}
 
-		filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
-		manager.RegisterStream(filepath, &w)
-		http.ServeFile(w, r, filepath)
-		manager.WaitAndDeregisterStream(filepath, &w, r)
+		server.sceneServer.StreamSceneDirect(scene, w, r)
 	})
 	mux.HandleFunc(rootDescPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", `text/xml; charset="utf-8"`)

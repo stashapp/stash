@@ -124,6 +124,10 @@ const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
 
+// DLNA options
+const DLNADefaultEnabled = "dlna_default_enabled"
+const DLNADefaultIPWhitelist = "dlna_default_whitelist"
+
 // Logging options
 const LogFile = "logFile"
 const LogOut = "logOut"
@@ -611,6 +615,17 @@ func (i *Instance) SetCSS(css string) {
 
 func (i *Instance) GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
+}
+
+// GetDLNADefaultEnabled returns true if the DLNA is enabled by default.
+func (i *Instance) GetDLNADefaultEnabled() bool {
+	return viper.GetBool(DLNADefaultEnabled)
+}
+
+// GetDLNADefaultIPWhitelist returns a list of IP addresses/wildcards that
+// are allowed to use the DLNA service.
+func (i *Instance) GetDLNADefaultIPWhitelist() []string {
+	return viper.GetStringSlice(DLNADefaultIPWhitelist)
 }
 
 // GetLogFile returns the filename of the file to output logs to.

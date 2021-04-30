@@ -3,7 +3,6 @@ package main
 
 import (
 	"github.com/stashapp/stash/pkg/api"
-	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/manager"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -13,7 +12,6 @@ import (
 func main() {
 	manager.Initialize()
 	api.Start()
-	dlna.Start()
 	blockForever()
 }
 

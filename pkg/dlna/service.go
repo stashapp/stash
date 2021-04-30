@@ -2,11 +2,14 @@ package dlna
 
 import (
 	"net"
+	"net/http"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type dmsConfig struct {
@@ -19,10 +22,25 @@ type dmsConfig struct {
 	NotifyInterval      time.Duration
 }
 
-var dmsServer *Server
-var dmsStarted bool
+type sceneServer interface {
+	StreamSceneDirect(scene *models.Scene, w http.ResponseWriter, r *http.Request)
+	ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request)
+}
 
-func initDMS() {
+type Service struct {
+	txnManager  models.TransactionManager
+	config      *config.Instance
+	sceneServer sceneServer
+
+	server  *Server
+	running bool
+	mutex   sync.Mutex
+
+	startTimer *time.Timer
+	stopTimer  *time.Timer
+}
+
+func (s *Service) init() {
 	var dmsConfig = &dmsConfig{
 		Path:           "",
 		IfName:         "",
@@ -32,8 +50,9 @@ func initDMS() {
 		NotifyInterval: 30 * time.Second,
 	}
 
-	dmsServer = &Server{
-		txnManager: manager.GetInstance().TxnManager,
+	s.server = &Server{
+		txnManager:  s.txnManager,
+		sceneServer: s.sceneServer,
 		Interfaces: func(ifName string) (ifs []net.Interface) {
 			var err error
 			if ifName == "" {
@@ -113,26 +132,91 @@ func initDMS() {
 // 	return bytes.NewReader(buff.Bytes())
 // }
 
-func Start() {
-	initDMS()
-	go func() {
-		logger.Info("Starting DLNA")
-		if err := dmsServer.Serve(); err != nil {
+// NewService initialises and returns a new DLNA service.
+func NewService(txnManager models.TransactionManager, cfg *config.Instance, sceneServer sceneServer) *Service {
+	ret := &Service{
+		txnManager:  txnManager,
+		sceneServer: sceneServer,
+		config:      cfg,
+		mutex:       sync.Mutex{},
+	}
+
+	ret.init()
+	return ret
+}
+
+// Start starts the DLNA service. If duration is provided, then the service
+// is stopped after the duration has elapsed.
+func (s *Service) Start(duration *time.Duration) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if !s.running {
+		go func() {
+			logger.Info("Starting DLNA")
+			if err := s.server.Serve(); err != nil {
+				logger.Fatal(err)
+			}
+		}()
+		s.running = true
+
+		if s.startTimer != nil {
+			s.startTimer.Stop()
+			s.startTimer = nil
+		}
+	}
+
+	if duration != nil {
+		// clear the existing stop timer
+		if s.stopTimer != nil {
+			s.stopTimer.Stop()
+		}
+
+		if s.stopTimer == nil {
+			s.stopTimer = time.AfterFunc(*duration, func() {
+				s.Stop(nil)
+			})
+		}
+	}
+}
+
+// Stop stops the DLNA service. If duration is provided, then the service
+// is started after the duration has elapsed.
+func (s *Service) Stop(duration *time.Duration) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.running {
+		logger.Info("Stopping DLNA")
+		err := s.server.Close()
+		if err != nil {
 			logger.Fatal(err)
 		}
-	}()
-	dmsStarted = true
-}
+		s.running = false
 
-func Stop() {
-	logger.Info("Stopping DLNA")
-	err := dmsServer.Close()
-	if err != nil {
-		logger.Fatal(err)
+		if s.stopTimer != nil {
+			s.stopTimer.Stop()
+			s.stopTimer = nil
+		}
 	}
-	dmsStarted = false
+
+	if duration != nil {
+		// clear the existing stop timer
+		if s.startTimer != nil {
+			s.startTimer.Stop()
+		}
+
+		if s.startTimer == nil {
+			s.startTimer = time.AfterFunc(*duration, func() {
+				s.Start(nil)
+			})
+		}
+	}
 }
 
-func IsStarted() bool {
-	return dmsStarted
+// IsRunning returns true if the DLNA service is running.
+func (s *Service) IsRunning() bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return s.running
 }

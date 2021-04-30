@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -33,6 +34,8 @@ type singleton struct {
 	ScraperCache *scraper.Cache
 
 	DownloadStore *DownloadStore
+
+	DLNAService *dlna.Service
 
 	TxnManager models.TransactionManager
 }
@@ -65,6 +68,11 @@ func Initialize() *singleton {
 			TxnManager: sqlite.NewTransactionManager(),
 		}
 
+		sceneServer := SceneServer{
+			TXNManager: instance.TxnManager,
+		}
+		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+
 		cfgFile := cfg.GetConfigFile()
 		if cfgFile != "" {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -85,6 +93,11 @@ func Initialize() *singleton {
 		}
 
 		initFFMPEG()
+
+		// if DLNA is enabled, start it now
+		if instance.Config.GetDLNADefaultEnabled() {
+			instance.DLNAService.Start(nil)
+		}
 	})
 
 	return instance

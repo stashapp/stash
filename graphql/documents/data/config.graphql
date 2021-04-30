@@ -39,6 +39,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     endpoint
     api_key
   }
+  dlnaEnabled
+  dlnaWhitelistedIPs
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
