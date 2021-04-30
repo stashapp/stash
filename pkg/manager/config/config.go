@@ -687,12 +687,25 @@ func (i *Instance) Validate() error {
 	return nil
 }
 
-func setDefaultValues() {
+func (i *Instance) setDefaultValues() {
 	viper.SetDefault(ParallelTasks, parallelTasksDefault)
 	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+
+	// #1356 - only set these defaults once config file exists
+	if i.GetConfigFile() != "" {
+		viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
+
+		// Set generated to the metadata path for backwards compat
+		viper.SetDefault(Generated, viper.GetString(Metadata))
+
+		// Set default scrapers and plugins paths
+		viper.SetDefault(ScrapersPath, i.GetDefaultScrapersPath())
+		viper.SetDefault(PluginsPath, i.GetDefaultPluginsPath())
+		viper.WriteConfig()
+	}
 }
 
 // SetInitialConfig fills in missing required config fields
@@ -710,5 +723,5 @@ func (i *Instance) SetInitialConfig() {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	setDefaultValues()
+	i.setDefaultValues()
 }
