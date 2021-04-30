@@ -973,6 +973,10 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			Title: sql.NullString{
+				String: utils.GetNameFromPath(path, false),
+				Valid:  true,
+			},
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)
