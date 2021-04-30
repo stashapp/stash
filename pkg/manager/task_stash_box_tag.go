@@ -170,12 +170,14 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				return err
 			})
 		} else if t.name != nil {
+			currentTime := time.Now()
 			newPerformer := models.Performer{
 				Aliases:      getNullString(performer.Aliases),
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getNullString(performer.CareerLength),
 				Checksum:     utils.MD5FromString(performer.Name),
 				Country:      getNullString(performer.Country),
+				CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 				Ethnicity:    getNullString(performer.Ethnicity),
 				EyeColor:     getNullString(performer.EyeColor),
 				FakeTits:     getNullString(performer.FakeTits),
@@ -189,6 +191,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				Tattoos:      getNullString(performer.Tattoos),
 				Twitter:      getNullString(performer.Twitter),
 				URL:          getNullString(performer.URL),
+				UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 			}
 			err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				createdPerformer, err := r.Performer().Create(newPerformer)
