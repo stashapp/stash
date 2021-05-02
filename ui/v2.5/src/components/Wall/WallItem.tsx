@@ -4,9 +4,12 @@ import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
 import { TextUtils, NavUtils } from "src/utils";
 import cx from "classnames";
+import { SceneQueue } from "src/models/sceneQueue";
 
 interface IWallItemProps {
+  index?: number;
   scene?: GQL.SlimSceneDataFragment;
+  sceneQueue?: SceneQueue;
   sceneMarker?: GQL.SceneMarkerDataFragment;
   image?: GQL.SlimImageDataFragment;
   clickHandler?: (
@@ -161,7 +164,9 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   let linkSrc: string = "#";
   if (!props.clickHandler) {
     if (props.scene) {
-      linkSrc = `/scenes/${props.scene.id}`;
+      linkSrc = props.sceneQueue
+        ? props.sceneQueue.makeLink(props.scene.id, { sceneIndex: props.index })
+        : `/scenes/${props.scene.id}`;
     } else if (props.sceneMarker) {
       linkSrc = NavUtils.makeSceneMarkerUrl(props.sceneMarker);
     } else if (props.image) {

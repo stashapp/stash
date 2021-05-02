@@ -44,6 +44,8 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
     if (!blacklistRef.current) return;
 
     const input = blacklistRef.current.value;
+    if (input.length === 0) return;
+
     setConfig({
       ...config,
       blacklist: [...config.blacklist, input],

@@ -25,31 +25,46 @@ const getDurationStatus = (
   scene: IStashBoxScene,
   stashDuration: number | undefined | null
 ) => {
-  const fingerprintDuration =
-    scene.fingerprints.map((f) => f.duration)?.[0] ?? null;
-  const sceneDuration = scene.duration || fingerprintDuration;
-  if (!sceneDuration || !stashDuration) return "";
-  const diff = Math.abs(sceneDuration - stashDuration);
-  if (diff < 5) {
+  if (!stashDuration) return "";
+
+  const durations = scene.fingerprints
+    .map((f) => f.duration)
+    .map((d) => Math.abs(d - stashDuration));
+  const matchCount = durations.filter((duration) => duration <= 5).length;
+
+  let match;
+  if (matchCount > 0)
+    match = `Duration matches ${matchCount}/${durations.length} fingerprints`;
+  else if (Math.abs(scene.duration - stashDuration) < 5)
+    match = "Duration is a match";
+
+  if (match)
     return (
       <div className="font-weight-bold">
         <SuccessIcon className="mr-2" />
-        Duration is a match
+        {match}
       </div>
     );
-  }
-  return <div>Duration off by {Math.floor(diff)}s</div>;
+
+  const minDiff = Math.min(scene.duration, ...durations);
+  return <div>Duration off by at least {Math.floor(minDiff)}s</div>;
 };
 
 const getFingerprintStatus = (
   scene: IStashBoxScene,
-  stashChecksum?: string
+  stashScene: GQL.SlimSceneDataFragment
 ) => {
-  if (scene.fingerprints.some((f) => f.hash === stashChecksum))
+  const checksumMatch = scene.fingerprints.some(
+    (f) => f.hash === stashScene.checksum || f.hash === stashScene.oshash
+  );
+  const phashMatch = scene.fingerprints.some(
+    (f) => f.hash === stashScene.phash
+  );
+  if (checksumMatch || phashMatch)
     return (
       <div className="font-weight-bold">
         <SuccessIcon className="mr-2" />
-        Checksum is a match
+        {phashMatch ? "PHash" : "Checksum"} is a match
       </div>
     );
 };
@@ -171,6 +186,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       studioID = res.data.studioUpdate.id;
     } else if (studio.type === "existing") {
       studioID = studio.data.id;
+    } else if (studio.type === "skip") {
+      studioID = stashScene.studio?.id;
     }
 
     setSaveState("Saving performers");
@@ -217,6 +234,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 stash_id: stashID,
               },
             ],
+            details: performer.data.details,
+            death_date: performer.data.death_date,
+            hair_color: performer.data.hair_color,
+            weight: Number(performer.data.weight),
           };
 
           const res = await createPerformer(performerInput, stashID);
@@ -287,6 +308,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         updatedTags = uniq(newTagIDs);
       }
 
+      const performer_ids = performerIDs.filter(
+        (id) => id !== "Skip"
+      ) as string[];
+
       const sceneUpdateResult = await updateScene({
         variables: {
           input: {
@@ -294,9 +319,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             title: scene.title,
             details: scene.details,
             date: scene.date,
-            performer_ids: performerIDs.filter(
-              (id) => id !== "Skip"
-            ) as string[],
+            performer_ids:
+              performer_ids.length === 0
+                ? stashScene.performers.map((p) => p.id)
+                : performer_ids,
             studio_id: studioID,
             cover_image: imgData,
             url: scene.url,
@@ -374,10 +400,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               Performers: {scene?.performers?.map((p) => p.name).join(", ")}
             </div>
             {getDurationStatus(scene, stashScene.file?.duration)}
-            {getFingerprintStatus(
-              scene,
-              stashScene.checksum ?? stashScene.oshash ?? undefined
-            )}
+            {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>
       </div>

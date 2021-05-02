@@ -10,6 +10,7 @@ fragment SceneData on Scene {
   o_counter
   organized
   path
+  phash
 
   file {
     size

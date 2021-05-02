@@ -6,6 +6,14 @@
     padding-left: 15px;
     padding-right: 15px;
     transition: none;
+
+    &:first-child {
+      border-left: none;
+    }
+
+    &:last-child {
+      border-right: none;
+    }
   }
 }
 

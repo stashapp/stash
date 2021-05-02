@@ -159,7 +159,7 @@ func (qb *galleryQueryBuilder) All() ([]*models.Gallery, error) {
 	return qb.queryGalleries(selectAll("galleries")+qb.getGallerySort(nil), nil)
 }
 
-func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
+func (qb *galleryQueryBuilder) makeQuery(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) queryBuilder {
 	if galleryFilter == nil {
 		galleryFilter = &models.GalleryFilterType{}
 	}
@@ -199,6 +199,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
 	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
 	query.handleStringCriterionInput(galleryFilter.URL, "galleries.url")
+	query.handleCountCriterion(galleryFilter.ImageCount, galleryTable, galleriesImagesTable, galleryIDColumn)
 	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
 
 	if Organized := galleryFilter.Organized; Organized != nil {
@@ -283,6 +284,13 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	handleGalleryPerformerTagsCriterion(&query, galleryFilter.PerformerTags)
 
 	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)
+
+	return query
+}
+
+func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
+	query := qb.makeQuery(galleryFilter, findFilter)
+
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -299,6 +307,12 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	}
 
 	return galleries, countResult, nil
+}
+
+func (qb *galleryQueryBuilder) QueryCount(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (int, error) {
+	query := qb.makeQuery(galleryFilter, findFilter)
+
+	return query.executeCount()
 }
 
 func (qb *galleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder, resolutionFilter *models.ResolutionEnum) {

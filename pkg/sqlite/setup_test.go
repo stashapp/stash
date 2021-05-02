@@ -21,6 +21,10 @@ import (
 )
 
 const (
+	spacedSceneTitle = "zzz yyy xxx"
+)
+
+const (
 	sceneIdxWithMovie = iota
 	sceneIdxWithGallery
 	sceneIdxWithPerformer
@@ -30,9 +34,12 @@ const (
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
 	sceneIdxWithStudio
+	sceneIdx1WithStudio
+	sceneIdx2WithStudio
 	sceneIdxWithMarker
 	sceneIdxWithPerformerTag
 	sceneIdxWithPerformerTwoTags
+	sceneIdxWithSpacedName
 	// new indexes above
 	lastSceneIdx
 
@@ -48,6 +55,8 @@ const (
 	imageIdxWithTag
 	imageIdxWithTwoTags
 	imageIdxWithStudio
+	imageIdx1WithStudio
+	imageIdx2WithStudio
 	imageIdxInZip // TODO - not implemented
 	imageIdxWithPerformerTag
 	imageIdxWithPerformerTwoTags
@@ -100,6 +109,8 @@ const (
 	galleryIdxWithTag
 	galleryIdxWithTwoTags
 	galleryIdxWithStudio
+	galleryIdx1WithStudio
+	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
 	galleryIdxWithPerformerTwoTags
 	// new indexes above
@@ -135,11 +146,14 @@ const (
 
 const (
 	studioIdxWithScene = iota
+	studioIdxWithTwoScenes
 	studioIdxWithMovie
 	studioIdxWithChildStudio
 	studioIdxWithParentStudio
 	studioIdxWithImage
+	studioIdxWithTwoImages
 	studioIdxWithGallery
+	studioIdxWithTwoGalleries
 	// new indexes above
 	// studios with dup names start from the end
 	studioIdxWithDupName
@@ -208,6 +222,8 @@ var (
 
 	sceneStudioLinks = [][2]int{
 		{sceneIdxWithStudio, studioIdxWithScene},
+		{sceneIdx1WithStudio, studioIdxWithTwoScenes},
+		{sceneIdx2WithStudio, studioIdxWithTwoScenes},
 	}
 )
 
@@ -217,6 +233,8 @@ var (
 	}
 	imageStudioLinks = [][2]int{
 		{imageIdxWithStudio, studioIdxWithImage},
+		{imageIdx1WithStudio, studioIdxWithTwoImages},
+		{imageIdx2WithStudio, studioIdxWithTwoImages},
 	}
 	imageTagLinks = [][2]int{
 		{imageIdxWithTag, tagIdxWithImage},
@@ -243,6 +261,12 @@ var (
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
 		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
+	}
+
+	galleryStudioLinks = [][2]int{
+		{galleryIdxWithStudio, studioIdxWithGallery},
+		{galleryIdx1WithStudio, studioIdxWithTwoGalleries},
+		{galleryIdx2WithStudio, studioIdxWithTwoGalleries},
 	}
 
 	galleryTagLinks = [][2]int{
@@ -408,8 +432,8 @@ func populateDB() error {
 			return fmt.Errorf("error linking gallery tags: %s", err.Error())
 		}
 
-		if err := linkGalleryStudio(r.Gallery(), galleryIdxWithStudio, studioIdxWithGallery); err != nil {
-			return fmt.Errorf("error linking gallery studio: %s", err.Error())
+		if err := linkGalleryStudios(r.Gallery()); err != nil {
+			return fmt.Errorf("error linking gallery studios: %s", err.Error())
 		}
 
 		if err := createMarker(r.SceneMarker(), sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
@@ -450,6 +474,15 @@ func getSceneStringValue(index int, field string) string {
 
 func getSceneNullStringValue(index int, field string) sql.NullString {
 	return getPrefixedNullStringValue("scene", index, field)
+}
+
+func getSceneTitle(index int) string {
+	switch index {
+	case sceneIdxWithSpacedName:
+		return spacedSceneTitle
+	default:
+		return getSceneStringValue(index, titleField)
+	}
 }
 
 func getRating(index int) sql.NullInt64 {
@@ -493,7 +526,7 @@ func createScenes(sqb models.SceneReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		scene := models.Scene{
 			Path:     getSceneStringValue(i, pathField),
-			Title:    sql.NullString{String: getSceneStringValue(i, titleField), Valid: true},
+			Title:    sql.NullString{String: getSceneTitle(i), Valid: true},
 			Checksum: sql.NullString{String: getSceneStringValue(i, checksumField), Valid: true},
 			Details:  sql.NullString{String: getSceneStringValue(i, "Details"), Valid: true},
 			URL:      getSceneNullStringValue(i, urlField),
@@ -643,6 +676,19 @@ func getPerformerBirthdate(index int) string {
 	return birthdate.Format("2006-01-02")
 }
 
+func getPerformerDeathDate(index int) models.SQLiteDate {
+	if index != 5 {
+		return models.SQLiteDate{}
+	}
+
+	deathDate := time.Now()
+	deathDate = deathDate.AddDate(-index+1, -1, -1)
+	return models.SQLiteDate{
+		String: deathDate.Format("2006-01-02"),
+		Valid:  true,
+	}
+}
+
 func getPerformerCareerLength(index int) *string {
 	if index%5 == 0 {
 		return nil
@@ -677,6 +723,8 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 				String: getPerformerBirthdate(i),
 				Valid:  true,
 			},
+			DeathDate: getPerformerDeathDate(i),
+			Details:   sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
 		}
 
 		careerLength := getPerformerCareerLength(i)
@@ -988,7 +1036,7 @@ func linkImagePerformers(qb models.ImageReaderWriter) error {
 
 func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
 	return doLinks(galleryPerformerLinks, func(galleryIndex, performerIndex int) error {
-		galleryID := imageIDs[galleryIndex]
+		galleryID := galleryIDs[galleryIndex]
 		performers, err := qb.GetPerformerIDs(galleryID)
 		if err != nil {
 			return err
@@ -1000,17 +1048,29 @@ func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
 	})
 }
 
-func linkGalleryTags(iqb models.GalleryReaderWriter) error {
+func linkGalleryStudios(qb models.GalleryReaderWriter) error {
+	return doLinks(galleryStudioLinks, func(galleryIndex, studioIndex int) error {
+		gallery := models.GalleryPartial{
+			ID:       galleryIDs[galleryIndex],
+			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+		}
+		_, err := qb.UpdatePartial(gallery)
+
+		return err
+	})
+}
+
+func linkGalleryTags(qb models.GalleryReaderWriter) error {
 	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
-		galleryID := imageIDs[galleryIndex]
-		tags, err := iqb.GetTagIDs(galleryID)
+		galleryID := galleryIDs[galleryIndex]
+		tags, err := qb.GetTagIDs(galleryID)
 		if err != nil {
 			return err
 		}
 
 		tags = append(tags, tagIDs[tagIndex])
 
-		return iqb.UpdateTags(galleryID, tags)
+		return qb.UpdateTags(galleryID, tags)
 	})
 }
 
@@ -1040,14 +1100,4 @@ func linkStudiosParent(qb models.StudioWriter) error {
 
 func addTagImage(qb models.TagWriter, tagIndex int) error {
 	return qb.UpdateImage(tagIDs[tagIndex], models.DefaultTagImage)
-}
-
-func linkGalleryStudio(qb models.GalleryWriter, galleryIndex, studioIndex int) error {
-	gallery := models.GalleryPartial{
-		ID:       galleryIDs[galleryIndex],
-		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-	}
-	_, err := qb.UpdatePartial(gallery)
-
-	return err
 }

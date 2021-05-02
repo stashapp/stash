@@ -95,6 +95,12 @@ func imageQueryQ(t *testing.T, sqb models.ImageReader, q string, expectedImageId
 	image := images[0]
 	assert.Equal(t, imageIDs[expectedImageIdx], image.ID)
 
+	count, err := sqb.QueryCount(nil, &filter)
+	if err != nil {
+		t.Errorf("Error querying image: %s", err.Error())
+	}
+	assert.Equal(t, len(images), count)
+
 	// no Q should return all results
 	filter.Q = nil
 	images, _, err = sqb.Query(nil, &filter)
@@ -120,7 +126,7 @@ func TestImageQueryPath(t *testing.T) {
 	verifyImagePath(t, pathCriterion, totalImages-1)
 
 	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-	pathCriterion.Value = "image_.*1_Path"
+	pathCriterion.Value = "image_.*01_Path"
 	verifyImagePath(t, pathCriterion, 1) // TODO - 2 if zip path is included
 
 	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex

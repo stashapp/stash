@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, ProgressBar } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import {
   useJobStatus,
   useMetadataUpdate,
@@ -42,6 +41,9 @@ export const SettingsTasksPanel: React.FC = () => {
     false
   );
   const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
+    false
+  );
+  const [scanGeneratePhashes, setScanGeneratePhashes] = useState<boolean>(
     false
   );
   const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
@@ -113,9 +115,13 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onImport() {
     setIsImportAlertOpen(false);
-    mutateMetadataImport().then(() => {
-      jobStatus.refetch();
-    });
+    mutateMetadataImport()
+      .then(() => {
+        jobStatus.refetch();
+      })
+      .catch((e) => {
+        Toast.error(e);
+      });
   }
 
   function renderImportAlert() {
@@ -206,6 +212,7 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGeneratePreviews,
         scanGenerateImagePreviews,
         scanGenerateSprites,
+        scanGeneratePhashes,
       });
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
@@ -414,6 +421,12 @@ export const SettingsTasksPanel: React.FC = () => {
           label="Generate sprites during scan (for the scene scrubber)"
           onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
         />
+        <Form.Check
+          id="scan-generate-phashes"
+          checked={scanGeneratePhashes}
+          label="Generate phashes during scan (for deduplication and scene identification)"
+          onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
+        />
       </Form.Group>
       <Form.Group>
         <Button
@@ -481,12 +494,6 @@ export const SettingsTasksPanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
 
-      <Form.Group>
-        <Link to="/sceneFilenameParser">
-          <Button variant="secondary">Scene Filename Parser</Button>
-        </Link>
-      </Form.Group>
-
       <hr />
 
       <h5>Generated Content</h5>
@@ -525,9 +532,11 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="secondary"
           type="submit"
           onClick={() =>
-            mutateMetadataExport().then(() => {
-              jobStatus.refetch();
-            })
+            mutateMetadataExport()
+              .then(() => {
+                jobStatus.refetch();
+              })
+              .catch((e) => Toast.error(e))
           }
         >
           Full Export

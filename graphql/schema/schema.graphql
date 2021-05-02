@@ -9,6 +9,9 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  """ Returns any groups of scenes that are perceptual duplicates within the queried distance """
+  findDuplicateScenes(distance: Int): [[Scene!]!]!
+
   """Return valid stream paths"""
   sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
@@ -103,7 +106,7 @@ type Query {
   directory(path: String): Directory!
 
   # Metadata
-
+  systemStatus: SystemStatus!
   jobStatus: MetadataUpdateStatus!
 
   # Get everything
@@ -123,6 +126,9 @@ type Query {
 }
 
 type Mutation {
+  setup(input: SetupInput!): Boolean!
+  migrate(input: MigrateInput!): Boolean!
+
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!

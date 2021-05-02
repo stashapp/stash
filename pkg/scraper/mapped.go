@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -73,7 +74,9 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result := attrConfig.concatenateResults(found)
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
-			return attrConfig.splitString(result)
+			results := attrConfig.splitString(result)
+			results = attrConfig.distinctResults(results)
+			return results
 		}
 
 		ret = []string{result}
@@ -86,6 +89,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 
 			ret = append(ret, text)
 		}
+		ret = attrConfig.distinctResults(ret)
 	}
 
 	return ret
@@ -462,12 +466,25 @@ func (p *postProcessFeetToCm) Apply(value string, q mappedQuery) string {
 	return strconv.Itoa(int(math.Round(centimeters)))
 }
 
+type postProcessLbToKg bool
+
+func (p *postProcessLbToKg) Apply(value string, q mappedQuery) string {
+	const lb_in_kg = 0.45359237
+	w, err := strconv.ParseFloat(value, 64)
+	if err == nil {
+		w = w * lb_in_kg
+		value = strconv.Itoa(int(math.Round(w)))
+	}
+	return value
+}
+
 type mappedPostProcessAction struct {
 	ParseDate  string                   `yaml:"parseDate"`
 	Replace    mappedRegexConfigs       `yaml:"replace"`
 	SubScraper *mappedScraperAttrConfig `yaml:"subScraper"`
 	Map        map[string]string        `yaml:"map"`
 	FeetToCm   bool                     `yaml:"feetToCm"`
+	LbToKg     bool                     `yaml:"lbToKg"`
 }
 
 func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
@@ -509,6 +526,14 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		}
 		found = "feetToCm"
 		action := postProcessFeetToCm(a.FeetToCm)
+		ret = &action
+	}
+	if a.LbToKg {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "lbToKg")
+		}
+		found = "lbToKg"
+		action := postProcessLbToKg(a.LbToKg)
 		ret = &action
 	}
 
@@ -616,6 +641,10 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	}
 
 	return strings.Join(result, separator)
+}
+
+func (c mappedScraperAttrConfig) distinctResults(nodes []string) []string {
+	return utils.StrUnique(nodes)
 }
 
 func (c mappedScraperAttrConfig) splitString(value string) []string {

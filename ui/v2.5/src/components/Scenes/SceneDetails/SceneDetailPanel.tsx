@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
+import { sortPerformers } from "src/core/performers";
 import { RatingStars } from "./RatingStars";
 
 interface ISceneDetailProps {
@@ -37,7 +38,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
 
   function renderPerformers() {
     if (props.scene.performers.length === 0) return;
-    const cards = props.scene.performers.map((performer) => (
+    const performers = sortPerformers(props.scene.performers);
+    const cards = performers.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}

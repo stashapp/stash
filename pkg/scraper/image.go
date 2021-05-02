@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	stashConfig "github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -87,7 +86,7 @@ func setMovieBackImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error 
 func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !stashConfig.GetScraperCertCheck()}},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()}},
 		Timeout: imageGetTimeout,
 	}
 
@@ -96,7 +95,7 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 		return nil, err
 	}
 
-	userAgent := globalConfig.UserAgent
+	userAgent := globalConfig.GetScraperUserAgent()
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}

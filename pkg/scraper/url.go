@@ -24,7 +24,6 @@ import (
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
-	stashConfig "github.com/stashapp/stash/pkg/manager/config"
 )
 
 // Timeout for the scrape http request. Includes transfer time. May want to make this
@@ -89,7 +88,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !stashConfig.GetScraperCertCheck()},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
 		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to 20
@@ -107,9 +106,18 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 		return nil, err
 	}
 
-	userAgent := globalConfig.UserAgent
+	userAgent := globalConfig.GetScraperUserAgent()
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
+	}
+
+	if driverOptions != nil { // setting the Headers after the UA allows us to override it from inside the scraper
+		for _, h := range driverOptions.Headers {
+			if h.Key != "" {
+				req.Header.Set(h.Key, h.Value)
+				logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+			}
+		}
 	}
 
 	resp, err := client.Do(req)
@@ -117,7 +125,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 		return nil, err
 	}
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("http error %d", resp.StatusCode)
+		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
 	defer resp.Body.Close()
@@ -151,14 +159,15 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	act := context.Background()
 
 	// if scraperCDPPath is a remote address, then allocate accordingly
-	if globalConfig.CDPPath != "" {
+	cdpPath := globalConfig.GetScraperCDPPath()
+	if cdpPath != "" {
 		var cancelAct context.CancelFunc
 
-		if globalConfig.isCDPPathHTTP() || globalConfig.isCDPPathWS() {
-			remote := globalConfig.CDPPath
+		if isCDPPathHTTP(globalConfig) || isCDPPathWS(globalConfig) {
+			remote := cdpPath
 
 			// if CDPPath is http(s) then we need to get the websocket URL
-			if globalConfig.isCDPPathHTTP() {
+			if isCDPPathHTTP(globalConfig) {
 				var err error
 				remote, err = getRemoteCDPWSAddress(remote)
 				if err != nil {
@@ -177,7 +186,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 
 			opts := append(chromedp.DefaultExecAllocatorOptions[:],
 				chromedp.UserDataDir(dir),
-				chromedp.ExecPath(globalConfig.CDPPath),
+				chromedp.ExecPath(cdpPath),
 			)
 			act, cancelAct = chromedp.NewExecAllocator(act, opts...)
 		}
@@ -193,10 +202,13 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	defer cancel()
 
 	var res string
+	headers := cdpHeaders(driverOptions)
+
 	err := chromedp.Run(ctx,
 		network.Enable(),
 		setCDPCookies(driverOptions),
 		printCDPCookies(driverOptions, "Cookies found"),
+		network.SetExtraHTTPHeaders(network.Headers(headers)),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			var err error
 			_, err = page.AddScriptToEvaluateOnNewDocument(bypassScript).Do(ctx)
@@ -285,4 +297,17 @@ func cdpNetwork(enable bool) chromedp.Action {
 		}
 		return nil
 	})
+}
+
+func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {
+	headers := map[string]interface{}{}
+	if driverOptions.Headers != nil {
+		for _, h := range driverOptions.Headers {
+			if h.Key != "" {
+				headers[h.Key] = h.Value
+				logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+			}
+		}
+	}
+	return headers
 }

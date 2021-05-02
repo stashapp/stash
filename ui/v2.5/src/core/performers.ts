@@ -37,3 +37,38 @@ export const performerFilterHook = (
     return filter;
   };
 };
+
+interface IPerformerFragment {
+  name?: GQL.Maybe<string>;
+  gender?: GQL.Maybe<GQL.GenderEnum>;
+}
+
+export function sortPerformers<T extends IPerformerFragment>(performers: T[]) {
+  const ret = performers.slice();
+  ret.sort((a, b) => {
+    if (a.gender === b.gender) {
+      // sort by name
+      return (a.name ?? "").localeCompare(b.name ?? "");
+    }
+
+    // TODO - may want to customise gender order
+    const genderOrder = [
+      GQL.GenderEnum.Female,
+      GQL.GenderEnum.TransgenderFemale,
+      GQL.GenderEnum.Male,
+      GQL.GenderEnum.TransgenderMale,
+      GQL.GenderEnum.Intersex,
+      GQL.GenderEnum.NonBinary,
+    ];
+
+    const aIndex = a.gender
+      ? genderOrder.indexOf(a.gender)
+      : genderOrder.length;
+    const bIndex = b.gender
+      ? genderOrder.indexOf(b.gender)
+      : genderOrder.length;
+    return aIndex - bIndex;
+  });
+
+  return ret;
+}

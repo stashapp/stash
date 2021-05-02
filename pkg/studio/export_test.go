@@ -24,10 +24,13 @@ const (
 	errParentStudioID = 12
 )
 
-const studioName = "testStudio"
-const url = "url"
-
-const parentStudioName = "parentStudio"
+const (
+	studioName       = "testStudio"
+	url              = "url"
+	details          = "details"
+	rating           = 5
+	parentStudioName = "parentStudio"
+)
 
 var parentStudio models.Studio = models.Studio{
 	Name: models.NullString(parentStudioName),
@@ -37,22 +40,29 @@ var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
 
 func createFullStudio(id int, parentID int) models.Studio {
-	return models.Studio{
-		ID:       id,
-		Name:     models.NullString(studioName),
-		URL:      models.NullString(url),
-		ParentID: models.NullInt64(int64(parentID)),
+	ret := models.Studio{
+		ID:      id,
+		Name:    models.NullString(studioName),
+		URL:     models.NullString(url),
+		Details: models.NullString(details),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
 		UpdatedAt: models.SQLiteTimestamp{
 			Timestamp: updateTime,
 		},
+		Rating: models.NullInt64(rating),
 	}
+
+	if parentID != 0 {
+		ret.ParentID = models.NullInt64(int64(parentID))
+	}
+
+	return ret
 }
 
 func createEmptyStudio(id int) models.Studio {
@@ -69,8 +79,9 @@ func createEmptyStudio(id int) models.Studio {
 
 func createFullJSONStudio(parentStudio, image string) *jsonschema.Studio {
 	return &jsonschema.Studio{
-		Name: studioName,
-		URL:  url,
+		Name:    studioName,
+		URL:     url,
+		Details: details,
 		CreatedAt: models.JSONTime{
 			Time: createTime,
 		},
@@ -79,6 +90,7 @@ func createFullJSONStudio(parentStudio, image string) *jsonschema.Studio {
 		},
 		ParentStudio: parentStudio,
 		Image:        image,
+		Rating:       rating,
 	}
 }
 

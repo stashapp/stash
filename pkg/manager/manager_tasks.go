@@ -5,12 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/remeh/sizedwaitgroup"
 
+	"github.com/stashapp/stash/pkg/autotag"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -18,17 +21,17 @@ import (
 )
 
 func isGallery(pathname string) bool {
-	gExt := config.GetGalleryExtensions()
+	gExt := config.GetInstance().GetGalleryExtensions()
 	return matchExtension(pathname, gExt)
 }
 
 func isVideo(pathname string) bool {
-	vidExt := config.GetVideoExtensions()
+	vidExt := config.GetInstance().GetVideoExtensions()
 	return matchExtension(pathname, vidExt)
 }
 
 func isImage(pathname string) bool {
-	imgExt := config.GetImageExtensions()
+	imgExt := config.GetInstance().GetImageExtensions()
 	return matchExtension(pathname, imgExt)
 }
 
@@ -84,7 +87,7 @@ func (t *TaskStatus) updated() {
 
 func getScanPaths(inputPaths []string) []*models.StashConfig {
 	if len(inputPaths) == 0 {
-		return config.GetStashPaths()
+		return config.GetInstance().GetStashPaths()
 	}
 
 	var ret []*models.StashConfig
@@ -181,6 +184,7 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 		}
 
 		start := time.Now()
+		config := config.GetInstance()
 		parallelTasks := config.GetParallelTasksWithAutoDetection()
 		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 		wg := sizedwaitgroup.New(parallelTasks)
@@ -191,11 +195,12 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 
 		i := 0
 		stoppingErr := errors.New("stopping")
+		var err error
 
 		var galleries []string
 
 		for _, sp := range paths {
-			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 				if total != nil {
 					s.Status.setProgress(i, *total)
 					i++
@@ -222,6 +227,7 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 					GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
 					GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
 					GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
+					GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
 				}
 				go task.Start(&wg)
 
@@ -229,25 +235,24 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 			})
 
 			if err == stoppingErr {
+				logger.Info("Stopping due to user request")
 				break
 			}
 
 			if err != nil {
 				logger.Errorf("Error encountered scanning files: %s", err.Error())
-				return
+				break
 			}
-		}
-
-		if s.Status.stopping {
-			logger.Info("Stopping due to user request")
-			return
 		}
 
 		wg.Wait()
 		instance.Paths.Generated.EmptyTmpDir()
-
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+		if s.Status.stopping || err != nil {
+			return
+		}
 
 		for _, path := range galleries {
 			wg.Add()
@@ -263,9 +268,15 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 	}()
 }
 
-func (s *singleton) Import() {
+func (s *singleton) Import() error {
+	config := config.GetInstance()
+	metadataPath := config.GetMetadataPath()
+	if metadataPath == "" {
+		return errors.New("metadata path must be set in config")
+	}
+
 	if s.Status.Status != Idle {
-		return
+		return nil
 	}
 	s.Status.SetStatus(Import)
 	s.Status.indefiniteProgress()
@@ -275,9 +286,10 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
+
 		task := ImportTask{
 			txnManager:          s.TxnManager,
-			BaseDir:             config.GetMetadataPath(),
+			BaseDir:             metadataPath,
 			Reset:               true,
 			DuplicateBehaviour:  models.ImportDuplicateEnumFail,
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
@@ -286,11 +298,19 @@ func (s *singleton) Import() {
 		go task.Start(&wg)
 		wg.Wait()
 	}()
+
+	return nil
 }
 
-func (s *singleton) Export() {
+func (s *singleton) Export() error {
+	config := config.GetInstance()
+	metadataPath := config.GetMetadataPath()
+	if metadataPath == "" {
+		return errors.New("metadata path must be set in config")
+	}
+
 	if s.Status.Status != Idle {
-		return
+		return nil
 	}
 	s.Status.SetStatus(Export)
 	s.Status.indefiniteProgress()
@@ -308,6 +328,8 @@ func (s *singleton) Export() {
 		go task.Start(&wg)
 		wg.Wait()
 	}()
+
+	return nil
 }
 
 func (s *singleton) RunSingleTask(t Task) (*sync.WaitGroup, error) {
@@ -331,6 +353,7 @@ func (s *singleton) RunSingleTask(t Task) (*sync.WaitGroup, error) {
 }
 
 func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {
+	config := config.GetInstance()
 	if optionsInput.PreviewSegments == nil {
 		val := config.GetPreviewSegments()
 		optionsInput.PreviewSegments = &val
@@ -408,6 +431,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			return
 		}
 
+		config := config.GetInstance()
 		parallelTasks := config.GetParallelTasksWithAutoDetection()
 
 		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
@@ -427,7 +451,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			logger.Infof("Taking too long to count content. Skipping...")
 			logger.Infof("Generating content")
 		} else {
-			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
+			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
 		}
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
@@ -443,7 +467,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		}
 		setGeneratePreviewOptionsInput(generatePreviewOptions)
 
-		// Start measuring how long the scan has taken. (consider moving this up)
+		// Start measuring how long the generate has taken. (consider moving this up)
 		start := time.Now()
 		instance.Paths.Generated.EnsureTmpDir()
 
@@ -451,6 +475,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
+				wg.Wait()
+				instance.Paths.Generated.EmptyTmpDir()
 				return
 			}
 
@@ -501,6 +527,16 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 				}
 				go task.Start(&wg)
 			}
+
+			if input.Phashes {
+				task := GeneratePhashTask{
+					Scene:               *scene,
+					fileNamingAlgorithm: fileNamingAlgo,
+					txnManager:          s.TxnManager,
+				}
+				wg.Add()
+				go task.Start(&wg)
+			}
 		}
 
 		wg.Wait()
@@ -509,6 +545,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			s.Status.setProgress(lenScenes+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
+				wg.Wait()
+				instance.Paths.Generated.EmptyTmpDir()
+				elapsed := time.Since(start)
+				logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 				return
 			}
 
@@ -576,7 +616,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 			txnManager:          s.TxnManager,
 			Scene:               *scene,
 			ScreenshotAt:        at,
-			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
+			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
 		}
 
 		var wg sync.WaitGroup
@@ -585,8 +625,17 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 
 		wg.Wait()
 
-		logger.Infof("Generate finished")
+		logger.Infof("Generate screenshot finished")
 	}()
+}
+
+func (s *singleton) isFileBasedAutoTag(input models.AutoTagMetadataInput) bool {
+	const wildcard = "*"
+	performerIds := input.Performers
+	studioIds := input.Studios
+	tagIds := input.Tags
+
+	return (len(performerIds) == 0 || performerIds[0] == wildcard) && (len(studioIds) == 0 || studioIds[0] == wildcard) && (len(tagIds) == 0 || tagIds[0] == wildcard)
 }
 
 func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
@@ -599,58 +648,160 @@ func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
 	go func() {
 		defer s.returnToIdleState()
 
-		performerIds := input.Performers
-		studioIds := input.Studios
-		tagIds := input.Tags
-
-		// calculate work load
-		performerCount := len(performerIds)
-		studioCount := len(studioIds)
-		tagCount := len(tagIds)
-
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			performerQuery := r.Performer()
-			studioQuery := r.Studio()
-			tagQuery := r.Tag()
-
-			const wildcard = "*"
-			var err error
-			if performerCount == 1 && performerIds[0] == wildcard {
-				performerCount, err = performerQuery.Count()
-				if err != nil {
-					return fmt.Errorf("Error getting performer count: %s", err.Error())
-				}
-			}
-			if studioCount == 1 && studioIds[0] == wildcard {
-				studioCount, err = studioQuery.Count()
-				if err != nil {
-					return fmt.Errorf("Error getting studio count: %s", err.Error())
-				}
-			}
-			if tagCount == 1 && tagIds[0] == wildcard {
-				tagCount, err = tagQuery.Count()
-				if err != nil {
-					return fmt.Errorf("Error getting tag count: %s", err.Error())
-				}
-			}
-
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			return
+		if s.isFileBasedAutoTag(input) {
+			// doing file-based auto-tag
+			s.autoTagScenes(input.Paths, len(input.Performers) > 0, len(input.Studios) > 0, len(input.Tags) > 0)
+		} else {
+			// doing specific performer/studio/tag auto-tag
+			s.autoTagSpecific(input)
 		}
-
-		total := performerCount + studioCount + tagCount
-		s.Status.setProgress(0, total)
-
-		s.autoTagPerformers(input.Paths, performerIds)
-		s.autoTagStudios(input.Paths, studioIds)
-		s.autoTagTags(input.Paths, tagIds)
 	}()
 }
 
+func (s *singleton) autoTagScenes(paths []string, performers, studios, tags bool) {
+	if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		ret := &models.SceneFilterType{}
+		or := ret
+		sep := string(filepath.Separator)
+
+		for _, p := range paths {
+			if !strings.HasSuffix(p, sep) {
+				p = p + sep
+			}
+
+			if ret.Path == nil {
+				or = ret
+			} else {
+				newOr := &models.SceneFilterType{}
+				or.Or = newOr
+				or = newOr
+			}
+
+			or.Path = &models.StringCriterionInput{
+				Modifier: models.CriterionModifierEquals,
+				Value:    p + "%",
+			}
+		}
+
+		organized := false
+		ret.Organized = &organized
+
+		// batch process scenes
+		batchSize := 1000
+		page := 1
+		findFilter := &models.FindFilterType{
+			PerPage: &batchSize,
+			Page:    &page,
+		}
+
+		more := true
+		processed := 0
+		for more {
+			scenes, total, err := r.Scene().Query(ret, findFilter)
+			if err != nil {
+				return err
+			}
+
+			if processed == 0 {
+				logger.Infof("Starting autotag of %d scenes", total)
+			}
+
+			for _, ss := range scenes {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
+				t := autoTagSceneTask{
+					txnManager: s.TxnManager,
+					scene:      ss,
+					performers: performers,
+					studios:    studios,
+					tags:       tags,
+				}
+
+				var wg sync.WaitGroup
+				wg.Add(1)
+				go t.Start(&wg)
+				wg.Wait()
+
+				processed++
+				s.Status.setProgress(processed, total)
+			}
+
+			if len(scenes) != batchSize {
+				more = false
+			} else {
+				page++
+			}
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
+	}
+
+	logger.Info("Finished autotag")
+}
+
+func (s *singleton) autoTagSpecific(input models.AutoTagMetadataInput) {
+	performerIds := input.Performers
+	studioIds := input.Studios
+	tagIds := input.Tags
+
+	performerCount := len(performerIds)
+	studioCount := len(studioIds)
+	tagCount := len(tagIds)
+
+	if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		performerQuery := r.Performer()
+		studioQuery := r.Studio()
+		tagQuery := r.Tag()
+
+		const wildcard = "*"
+		var err error
+		if performerCount == 1 && performerIds[0] == wildcard {
+			performerCount, err = performerQuery.Count()
+			if err != nil {
+				return fmt.Errorf("error getting performer count: %s", err.Error())
+			}
+		}
+		if studioCount == 1 && studioIds[0] == wildcard {
+			studioCount, err = studioQuery.Count()
+			if err != nil {
+				return fmt.Errorf("error getting studio count: %s", err.Error())
+			}
+		}
+		if tagCount == 1 && tagIds[0] == wildcard {
+			tagCount, err = tagQuery.Count()
+			if err != nil {
+				return fmt.Errorf("error getting tag count: %s", err.Error())
+			}
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	total := performerCount + studioCount + tagCount
+	s.Status.setProgress(0, total)
+
+	logger.Infof("Starting autotag of %d performers, %d studios, %d tags", performerCount, studioCount, tagCount)
+
+	s.autoTagPerformers(input.Paths, performerIds)
+	s.autoTagStudios(input.Paths, studioIds)
+	s.autoTagTags(input.Paths, tagIds)
+
+	logger.Info("Finished autotag")
+}
+
 func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
-	var wg sync.WaitGroup
+	if s.Status.stopping {
+		return
+	}
+
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
 
@@ -661,19 +812,38 @@ func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
 				var err error
 				performers, err = performerQuery.All()
 				if err != nil {
-					return fmt.Errorf("Error querying performers: %s", err.Error())
+					return fmt.Errorf("error querying performers: %s", err.Error())
 				}
 			} else {
 				performerIdInt, err := strconv.Atoi(performerId)
 				if err != nil {
-					return fmt.Errorf("Error parsing performer id %s: %s", performerId, err.Error())
+					return fmt.Errorf("error parsing performer id %s: %s", performerId, err.Error())
 				}
 
 				performer, err := performerQuery.Find(performerIdInt)
 				if err != nil {
-					return fmt.Errorf("Error finding performer id %s: %s", performerId, err.Error())
+					return fmt.Errorf("error finding performer id %s: %s", performerId, err.Error())
+				}
+
+				if performer == nil {
+					return fmt.Errorf("performer with id %s not found", performerId)
 				}
 				performers = append(performers, performer)
+			}
+
+			for _, performer := range performers {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
+				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+					return autotag.PerformerScenes(performer, paths, r.Scene())
+				}); err != nil {
+					return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name.String, err.Error())
+				}
+
+				s.Status.incrementProgress()
 			}
 
 			return nil
@@ -681,26 +851,14 @@ func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
 			logger.Error(err.Error())
 			continue
 		}
-
-		for _, performer := range performers {
-			wg.Add(1)
-			task := AutoTagPerformerTask{
-				AutoTagTask: AutoTagTask{
-					txnManager: s.TxnManager,
-					paths:      paths,
-				},
-				performer: performer,
-			}
-			go task.Start(&wg)
-			wg.Wait()
-
-			s.Status.incrementProgress()
-		}
 	}
 }
 
 func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
-	var wg sync.WaitGroup
+	if s.Status.stopping {
+		return
+	}
+
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
 
@@ -710,19 +868,39 @@ func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
 				var err error
 				studios, err = studioQuery.All()
 				if err != nil {
-					return fmt.Errorf("Error querying studios: %s", err.Error())
+					return fmt.Errorf("error querying studios: %s", err.Error())
 				}
 			} else {
 				studioIdInt, err := strconv.Atoi(studioId)
 				if err != nil {
-					return fmt.Errorf("Error parsing studio id %s: %s", studioId, err.Error())
+					return fmt.Errorf("error parsing studio id %s: %s", studioId, err.Error())
 				}
 
 				studio, err := studioQuery.Find(studioIdInt)
 				if err != nil {
-					return fmt.Errorf("Error finding studio id %s: %s", studioId, err.Error())
+					return fmt.Errorf("error finding studio id %s: %s", studioId, err.Error())
 				}
+
+				if studio == nil {
+					return fmt.Errorf("studio with id %s not found", studioId)
+				}
+
 				studios = append(studios, studio)
+			}
+
+			for _, studio := range studios {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
+				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+					return autotag.StudioScenes(studio, paths, r.Scene())
+				}); err != nil {
+					return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name.String, err.Error())
+				}
+
+				s.Status.incrementProgress()
 			}
 
 			return nil
@@ -730,26 +908,14 @@ func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
 			logger.Error(err.Error())
 			continue
 		}
-
-		for _, studio := range studios {
-			wg.Add(1)
-			task := AutoTagStudioTask{
-				AutoTagTask: AutoTagTask{
-					txnManager: s.TxnManager,
-					paths:      paths,
-				},
-				studio: studio,
-			}
-			go task.Start(&wg)
-			wg.Wait()
-
-			s.Status.incrementProgress()
-		}
 	}
 }
 
 func (s *singleton) autoTagTags(paths []string, tagIds []string) {
-	var wg sync.WaitGroup
+	if s.Status.stopping {
+		return
+	}
+
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
 		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
@@ -758,40 +924,40 @@ func (s *singleton) autoTagTags(paths []string, tagIds []string) {
 				var err error
 				tags, err = tagQuery.All()
 				if err != nil {
-					return fmt.Errorf("Error querying tags: %s", err.Error())
+					return fmt.Errorf("error querying tags: %s", err.Error())
 				}
 			} else {
 				tagIdInt, err := strconv.Atoi(tagId)
 				if err != nil {
-					return fmt.Errorf("Error parsing tag id %s: %s", tagId, err.Error())
+					return fmt.Errorf("error parsing tag id %s: %s", tagId, err.Error())
 				}
 
 				tag, err := tagQuery.Find(tagIdInt)
 				if err != nil {
-					return fmt.Errorf("Error finding tag id %s: %s", tagId, err.Error())
+					return fmt.Errorf("error finding tag id %s: %s", tagId, err.Error())
 				}
 				tags = append(tags, tag)
+			}
+
+			for _, tag := range tags {
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+
+				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+					return autotag.TagScenes(tag, paths, r.Scene())
+				}); err != nil {
+					return fmt.Errorf("error auto-tagging tag '%s': %s", tag.Name, err.Error())
+				}
+
+				s.Status.incrementProgress()
 			}
 
 			return nil
 		}); err != nil {
 			logger.Error(err.Error())
 			continue
-		}
-
-		for _, tag := range tags {
-			wg.Add(1)
-			task := AutoTagTagTask{
-				AutoTagTask: AutoTagTask{
-					txnManager: s.TxnManager,
-					paths:      paths,
-				},
-				tag: tag,
-			}
-			go task.Start(&wg)
-			wg.Wait()
-
-			s.Status.incrementProgress()
 		}
 	}
 }
@@ -851,7 +1017,7 @@ func (s *singleton) Clean(input models.CleanMetadataInput) {
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
 		total := len(scenes) + len(images) + len(galleries)
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -933,7 +1099,7 @@ func (s *singleton) MigrateHash() {
 	go func() {
 		defer s.returnToIdleState()
 
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
@@ -992,6 +1158,7 @@ type totalsGenerate struct {
 	imagePreviews int64
 	markers       int64
 	transcodes    int64
+	phashes       int64
 }
 
 func (s *singleton) neededGenerate(scenes []*models.Scene, input models.GenerateMetadataInput) *totalsGenerate {
@@ -1008,7 +1175,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 		chTimeout <- struct{}{}
 	}()
 
-	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	overwrite := false
 	if input.Overwrite != nil {
 		overwrite = *input.Overwrite
@@ -1063,6 +1230,17 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 				if task.isTranscodeNeeded() {
 					totals.transcodes++
+				}
+			}
+
+			if input.Phashes {
+				task := GeneratePhashTask{
+					Scene:               *scene,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
+
+				if task.shouldGenerate() {
+					totals.phashes++
 				}
 			}
 		}

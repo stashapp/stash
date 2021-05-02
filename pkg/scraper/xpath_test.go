@@ -102,6 +102,14 @@ const htmlDoc1 = `
 						</tr>
 						<tr>
 							<td class="paramname">
+								<b>Weight:</b>
+							</td>
+							<td class="paramvalue">
+								126
+							</td>
+						</tr>
+						<tr>
+							<td class="paramname">
 								<b>Measurements:</b>
 							</td>
 							<td class="paramvalue">
@@ -143,10 +151,20 @@ const htmlDoc1 = `
 						</tr>
 						<tr>
 							<td class="paramname">
+								<b>Details:</b>
+							</td>
+							<td class="paramvalue">
+								Some girls are so damn hot that they can get you bent out of shape, and you will not even be mad at them for doing so. Well, tawny blonde Mia Malkova can bend her body into any shape she pleases, and that’s sure to satisfy all of the horny cocks and wet pussies out there. This girl has acrobatic and contortionist abilities that could even twist a pretzel into a new knot, which can be very helpful in the ... arrow_drop_down Some girls are so damn hot that they can get you bent out of shape, and you will not even be mad at them for doing so. Well, tawny blonde Mia Malkova can bend her body into any shape she pleases, and that’s sure to satisfy all of the horny cocks and wet pussies out there. This girl has acrobatic and contortionist abilities that could even twist a pretzel into a new knot, which can be very helpful in the VR Porn movies – trust us. Ankles behind her neck and feet over her back so she can kiss her toes, turned, twisted and gyrating, she can fuck any which way she wants (and that ass!), will surely make you fall in love with this hot Virtual Reality Porn slut, as she is one of the finest of them all. Talking about perfection, maybe it’s all the acrobatic work that keeps it in such gorgeous shape? Who cares really, because you just want to take a big bite out of it and never let go. But it’s not all about the body. Mia’s also got a great smile, which might not sound kinky, but believe us, it is a smile that will heat up your innards and drop your pants. Is it her golden skin, her innocent pink lips or that heart-shaped face? There is just too much good stuff going on with Mia Malkova, which is maybe why these past few years have heaped awards upon awards on this Southern California native. Mia came to VR Bangers for her first VR Porn video, so you know she’s only going for top-notch scenes with top-game performers, men, and women. Better hit up that yoga studio if you ever dream of being able to bang a flexible and talented chick like lady Malkova.
+							</td>
+						</tr>
+						<tr>
+							<td class="paramname">
 								<div><b>Social Network Links:</b></div>
 							</td>
 							<td class="paramvalue">
 								<ul id="socialmedia">
+									<!-- Adding twitter twice to verify distict post-processing -->
+									<li class="twitter"><a href="https://twitter.com/MiaMalkova" target="_blank" alt="Mia Malkova Twitter" title="Mia Malkova Twitter">Twitter</a></li>
 									<li class="twitter"><a href="https://twitter.com/MiaMalkova" target="_blank" alt="Mia Malkova Twitter" title="Mia Malkova Twitter">Twitter</a></li>
 									<li class="facebook"><a href="https://www.facebook.com/MiaMalcove" target="_blank" alt="Mia Malkova Facebook" title="Mia Malkova Facebook">Facebook</a></li>
 									<li class="youtube"><a href="https://www.youtube.com/channel/UCEPR0sZKa_ScMoyhemfB7nA" target="_blank" alt="Mia Malkova YouTube" title="Mia Malkova YouTube">YouTube</a></li>
@@ -194,6 +212,8 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	config.mappedConfig["FakeTits"] = makeSimpleAttrConfig(makeCommonXPath("Fake boobs:"))
 	config.mappedConfig["Tattoos"] = makeSimpleAttrConfig(makeCommonXPath("Tattoos:"))
 	config.mappedConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:") + "/comment()")
+	config.mappedConfig["Details"] = makeSimpleAttrConfig(makeCommonXPath("Details:"))
+	config.mappedConfig["HairColor"] = makeSimpleAttrConfig(makeCommonXPath("Hair Color:"))
 
 	// special handling for birthdate
 	birthdateAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Date of Birth:"))
@@ -233,7 +253,7 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 
 	config.mappedConfig["Gender"] = genderConfig
 
-	// use fixed for height
+	// use fixed for Country
 	config.mappedConfig["Country"] = mappedScraperAttrConfig{
 		Fixed: "United States",
 	}
@@ -244,6 +264,19 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 		&heightConvAction,
 	}
 	config.mappedConfig["Height"] = heightConfig
+
+	weightConfig := makeSimpleAttrConfig(makeCommonXPath("Weight:"))
+	weightConvAction := postProcessLbToKg(true)
+	weightConfig.postProcessActions = []postProcessAction{
+		&weightConvAction,
+	}
+	config.mappedConfig["Weight"] = weightConfig
+
+	tagConfig := mappedScraperAttrConfig{
+		Selector: `//ul[@id="socialmedia"]//a`,
+	}
+	config.Tags = make(mappedConfig)
+	config.Tags["Name"] = tagConfig
 
 	return config
 }
@@ -298,7 +331,10 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const tattoos = "None"
 	const piercings = "<!-- None -->"
 	const gender = "Female"
-	const height = "170"
+	const height = "170" //	5ft7
+	const details = "Some girls are so damn hot that they can get you bent out of shape, and you will not even be mad at them for doing so. Well, tawny blonde Mia Malkova can bend her body into any shape she pleases, and that’s sure to satisfy all of the horny cocks and wet pussies out there. This girl has acrobatic and contortionist abilities that could even twist a pretzel into a new knot, which can be very helpful in the ... arrow_drop_down Some girls are so damn hot that they can get you bent out of shape, and you will not even be mad at them for doing so. Well, tawny blonde Mia Malkova can bend her body into any shape she pleases, and that’s sure to satisfy all of the horny cocks and wet pussies out there. This girl has acrobatic and contortionist abilities that could even twist a pretzel into a new knot, which can be very helpful in the VR Porn movies – trust us. Ankles behind her neck and feet over her back so she can kiss her toes, turned, twisted and gyrating, she can fuck any which way she wants (and that ass!), will surely make you fall in love with this hot Virtual Reality Porn slut, as she is one of the finest of them all. Talking about perfection, maybe it’s all the acrobatic work that keeps it in such gorgeous shape? Who cares really, because you just want to take a big bite out of it and never let go. But it’s not all about the body. Mia’s also got a great smile, which might not sound kinky, but believe us, it is a smile that will heat up your innards and drop your pants. Is it her golden skin, her innocent pink lips or that heart-shaped face? There is just too much good stuff going on with Mia Malkova, which is maybe why these past few years have heaped awards upon awards on this Southern California native. Mia came to VR Bangers for her first VR Porn video, so you know she’s only going for top-notch scenes with top-game performers, men, and women. Better hit up that yoga studio if you ever dream of being able to bang a flexible and talented chick like lady Malkova."
+	const hairColor = "Blonde"
+	const weight = "57" // 126 lb
 
 	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, gender, performer.Gender, "Gender")
@@ -317,6 +353,19 @@ func TestScrapePerformerXPath(t *testing.T) {
 	verifyField(t, tattoos, performer.Tattoos, "Tattoos")
 	verifyField(t, piercings, performer.Piercings, "Piercings")
 	verifyField(t, height, performer.Height, "Height")
+	verifyField(t, details, performer.Details, "Details")
+	verifyField(t, hairColor, performer.HairColor, "HairColor")
+	verifyField(t, weight, performer.Weight, "Weight")
+
+	expectedTagNames := []string{
+		"Twitter",
+		"Facebook",
+		"YouTube",
+		"Instagram",
+	}
+	for i, expected := range expectedTagNames {
+		verifyField(t, expected, &performer.Tags[i].Name, "TagName")
+	}
 }
 
 func TestConcatXPath(t *testing.T) {
@@ -758,6 +807,24 @@ func TestLoadInvalidXPath(t *testing.T) {
 	config.process(q, nil)
 }
 
+type mockGlobalConfig struct{}
+
+func (mockGlobalConfig) GetScraperUserAgent() string {
+	return ""
+}
+
+func (mockGlobalConfig) GetScrapersPath() string {
+	return ""
+}
+
+func (mockGlobalConfig) GetScraperCDPPath() string {
+	return ""
+}
+
+func (mockGlobalConfig) GetScraperCertCheck() bool {
+	return false
+}
+
 func TestSubScrape(t *testing.T) {
 	retHTML := `
 	<div>
@@ -805,7 +872,7 @@ xPathScrapers:
 		return
 	}
 
-	globalConfig := GlobalConfig{}
+	globalConfig := mockGlobalConfig{}
 
 	performer, err := c.ScrapePerformerURL(ts.URL, nil, globalConfig)
 

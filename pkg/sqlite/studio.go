@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -121,6 +122,23 @@ func (qb *studioQueryBuilder) All() ([]*models.Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil)
 }
 
+func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(studioTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryStudios(query+" WHERE "+where, args)
+}
+
 func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
@@ -133,7 +151,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 
 	query.body = selectDistinctIDs("studios")
 	query.body += `
-		left join scenes on studios.id = scenes.studio_id		
+		left join scenes on studios.id = scenes.studio_id
 		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
 
@@ -165,6 +183,12 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.addArg(stashIDFilter)
 	}
 
+	if rating := studioFilter.Rating; rating != nil {
+		query.handleIntCriterionInput(studioFilter.Rating, "studios.rating")
+	}
+	query.handleCountCriterion(studioFilter.SceneCount, studioTable, sceneTable, studioIDColumn)
+	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
+	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
 	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
 
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
@@ -209,7 +233,15 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "studios")
+
+	switch sort {
+	case "images_count":
+		return getCountSort(studioTable, imageTable, studioIDColumn, direction)
+	case "galleries_count":
+		return getCountSort(studioTable, galleryTable, studioIDColumn, direction)
+	default:
+		return getSort(sort, direction, "studios")
+	}
 }
 
 func (qb *studioQueryBuilder) queryStudio(query string, args []interface{}) (*models.Studio, error) {
