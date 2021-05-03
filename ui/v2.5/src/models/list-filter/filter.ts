@@ -252,8 +252,6 @@ export class ListFilterModel {
         break;
       }
       case FilterMode.Studios:
-        this.sortBy = "name";
-        this.sortByOptions = ["name", "random", "rating", "scenes_count"];
         this.sortBy = defaultSort ?? "name";
         this.sortByOptions = [
           "name",
@@ -261,6 +259,7 @@ export class ListFilterModel {
           "images_count",
           "galleries_count",
           "random",
+          "rating",
         ];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
@@ -289,11 +288,13 @@ export class ListFilterModel {
       case FilterMode.Galleries:
         this.sortBy = defaultSort ?? "path";
         this.sortByOptions = [
+          "date",
           "path",
           "file_mod_time",
           "images_count",
           "tag_count",
           "performer_count",
+          "title",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -309,6 +310,7 @@ export class ListFilterModel {
           new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
           ListFilterModel.createCriterionOption("performer_count"),
+          ListFilterModel.createCriterionOption("image_count"),
           new StudiosCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
         ];
@@ -471,7 +473,7 @@ export class ListFilterModel {
         this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage
           ? this.itemsPerPage
           : undefined,
-      sortby: this.sortBy !== "date" ? this.getSortBy() : undefined,
+      sortby: this.getSortBy() ?? undefined,
       sortdir:
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp:
@@ -1242,6 +1244,14 @@ export class ListFilterModel {
         case "performer_count": {
           const countCrit = criterion as NumberCriterion;
           result.performer_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
           };

@@ -165,18 +165,22 @@ export const sortScenesByDuration = (
   targetDuration?: number
 ) =>
   scenes.sort((a, b) => {
-    const adur =
-      a?.duration || (a?.fingerprints.map((f) => f.duration)?.[0] ?? null);
-    const bdur =
-      b?.duration || (b?.fingerprints.map((f) => f.duration)?.[0] ?? null);
-    if (!adur && !bdur) return 0;
-    if (adur && !bdur) return -1;
-    if (!adur && bdur) return 1;
-
     if (!targetDuration) return 0;
 
-    const aDiff = Math.abs((adur ?? 0) - targetDuration);
-    const bDiff = Math.abs((bdur ?? 0) - targetDuration);
+    const aDur = [
+      a.duration,
+      ...a.fingerprints.map((f) => f.duration),
+    ].map((d) => Math.abs(d - targetDuration));
+    const bDur = [
+      b.duration,
+      ...b.fingerprints.map((f) => f.duration),
+    ].map((d) => Math.abs(d - targetDuration));
+
+    if (aDur.length > 0 && bDur.length === 0) return -1;
+    if (aDur.length === 0 && bDur.length > 0) return 1;
+
+    const aDiff = Math.min(...aDur);
+    const bDiff = Math.min(...bDur);
 
     if (aDiff < bDiff) return -1;
     if (aDiff > bDiff) return 1;

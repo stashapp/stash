@@ -712,6 +712,56 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 	})
 }
 
+func TestGalleryQueryImageCount(t *testing.T) {
+	const imageCount = 0
+	imageCountCriterion := models.IntCriterionInput{
+		Value:    imageCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesImageCount(t, imageCountCriterion)
+}
+
+func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		galleryFilter := models.GalleryFilterType{
+			ImageCount: &imageCountCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), -1)
+
+		for _, gallery := range galleries {
+			pp := 0
+
+			_, count, err := r.Image().Query(&models.ImageFilterType{
+				Galleries: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(gallery.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO All
 // TODO Query

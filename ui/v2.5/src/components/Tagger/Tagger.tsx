@@ -171,12 +171,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [selectedResult, setSelectedResult] = useState<
     Record<string, number>
   >();
+  const [selectedFingerprintResult, setSelectedFingerprintResult] = useState<
+    Record<string, number>
+  >();
   const [taggedScenes, setTaggedScenes] = useState<
     Record<string, Partial<GQL.SlimSceneDataFragment>>
   >({});
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
   const [fingerprints, setFingerprints] = useState<
-    Record<string, IStashBoxScene>
+    Record<string, IStashBoxScene[]>
   >({});
   const [hideUnmatched, setHideUnmatched] = useState(false);
   const fingerprintQueue =
@@ -269,7 +272,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
     selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
       scene.fingerprints?.forEach((f) => {
-        newFingerprints[f.hash] = scene;
+        newFingerprints[f.hash] = newFingerprints[f.hash]
+          ? [...newFingerprints[f.hash], scene]
+          : [scene];
       });
     });
 
@@ -428,21 +433,30 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
       let searchResult;
       if (fingerprintMatch && !isTagged && !hasStashIDs) {
-        searchResult = (
+        searchResult = sortScenesByDuration(
+          fingerprintMatch,
+          scene.file.duration ?? 0
+        ).map((match, i) => (
           <StashSearchResult
             showMales={config.showMales}
             stashScene={scene}
-            isActive
-            setActive={() => {}}
+            isActive={(selectedFingerprintResult?.[scene.id] ?? 0) === i}
+            setActive={() =>
+              setSelectedFingerprintResult({
+                ...selectedFingerprintResult,
+                [scene.id]: i,
+              })
+            }
             setScene={handleTaggedScene}
-            scene={fingerprintMatch}
+            scene={match}
             setCoverImage={config.setCoverImage}
             setTags={config.setTags}
             tagOperation={config.tagOperation}
             endpoint={selectedEndpoint.endpoint}
             queueFingerprintSubmission={queueFingerprintSubmission}
+            key={match.stash_id}
           />
-        );
+        ));
       } else if (
         searchResults[scene.id]?.length > 0 &&
         !isTagged &&
