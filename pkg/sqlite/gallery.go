@@ -216,6 +216,7 @@ func (qb *galleryQueryBuilder) makeFilter(galleryFilter *models.GalleryFilterTyp
 	query.handleCriterionFunc(galleryStudioCriterionHandler(qb, galleryFilter.Studios))
 	query.handleCriterionFunc(galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterionFunc(galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
+	query.handleCriterionFunc(galleryImageCountCriterionHandler(qb, galleryFilter.ImageCount))
 
 	return query
 }
@@ -357,6 +358,16 @@ func galleryPerformerCountCriterionHandler(qb *galleryQueryBuilder, performerCou
 	}
 
 	return h.handler(performerCount)
+}
+
+func galleryImageCountCriterionHandler(qb *galleryQueryBuilder, imageCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		joinTable:    galleriesImagesTable,
+		primaryFK:    galleryIDColumn,
+	}
+
+	return h.handler(imageCount)
 }
 
 func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
