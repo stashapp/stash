@@ -196,3 +196,45 @@ func (t *tagger) tagScenes(paths []string, sceneReader models.SceneReader, addFu
 
 	return nil
 }
+
+func (t *tagger) tagImages(paths []string, imageReader models.ImageReader, addFunc addLinkFunc) error {
+	others, err := getMatchingImages(t.Name, paths, imageReader)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range others {
+		added, err := addFunc(t.ID, p.ID)
+
+		if err != nil {
+			return t.addError("image", p.GetTitle(), err)
+		}
+
+		if added {
+			t.addLog("image", p.GetTitle())
+		}
+	}
+
+	return nil
+}
+
+func (t *tagger) tagGalleries(paths []string, galleryReader models.GalleryReader, addFunc addLinkFunc) error {
+	others, err := getMatchingGalleries(t.Name, paths, galleryReader)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range others {
+		added, err := addFunc(t.ID, p.ID)
+
+		if err != nil {
+			return t.addError("gallery", p.GetTitle(), err)
+		}
+
+		if added {
+			t.addLog("gallery", p.GetTitle())
+		}
+	}
+
+	return nil
+}

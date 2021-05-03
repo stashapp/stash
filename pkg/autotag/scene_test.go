@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const sceneExt = "mp4"
+
 var testSeparators = []string{
 	".",
 	"-",
@@ -26,88 +28,88 @@ var testEndSeparators = []string{
 	",",
 }
 
-func generateNamePatterns(name, separator string) []string {
+func generateNamePatterns(name, separator, ext string) []string {
 	var ret []string
-	ret = append(ret, fmt.Sprintf("%s%saaa.mp4", name, separator))
-	ret = append(ret, fmt.Sprintf("aaa%s%s.mp4", separator, name))
-	ret = append(ret, fmt.Sprintf("aaa%s%s%sbbb.mp4", separator, name, separator))
-	ret = append(ret, fmt.Sprintf("dir/%s%saaa.mp4", name, separator))
-	ret = append(ret, fmt.Sprintf("dir\\%s%saaa.mp4", name, separator))
-	ret = append(ret, fmt.Sprintf("%s%saaa/dir/bbb.mp4", name, separator))
-	ret = append(ret, fmt.Sprintf("%s%saaa\\dir\\bbb.mp4", name, separator))
-	ret = append(ret, fmt.Sprintf("dir/%s%s/aaa.mp4", name, separator))
-	ret = append(ret, fmt.Sprintf("dir\\%s%s\\aaa.mp4", name, separator))
+	ret = append(ret, fmt.Sprintf("%s%saaa.%s", name, separator, ext))
+	ret = append(ret, fmt.Sprintf("aaa%s%s.%s", separator, name, ext))
+	ret = append(ret, fmt.Sprintf("aaa%s%s%sbbb.%s", separator, name, separator, ext))
+	ret = append(ret, fmt.Sprintf("dir/%s%saaa.%s", name, separator, ext))
+	ret = append(ret, fmt.Sprintf("dir\\%s%saaa.%s", name, separator, ext))
+	ret = append(ret, fmt.Sprintf("%s%saaa/dir/bbb.%s", name, separator, ext))
+	ret = append(ret, fmt.Sprintf("%s%saaa\\dir\\bbb.%s", name, separator, ext))
+	ret = append(ret, fmt.Sprintf("dir/%s%s/aaa.%s", name, separator, ext))
+	ret = append(ret, fmt.Sprintf("dir\\%s%s\\aaa.%s", name, separator, ext))
 
 	return ret
 }
 
-func generateSplitNamePatterns(name, separator string) []string {
+func generateSplitNamePatterns(name, separator, ext string) []string {
 	var ret []string
 	splitted := strings.Split(name, " ")
 	// only do this for names that are split into two
 	if len(splitted) == 2 {
-		ret = append(ret, fmt.Sprintf("%s%s%s.mp4", splitted[0], separator, splitted[1]))
+		ret = append(ret, fmt.Sprintf("%s%s%s.%s", splitted[0], separator, splitted[1], ext))
 	}
 
 	return ret
 }
 
-func generateFalseNamePatterns(name string, separator string) []string {
+func generateFalseNamePatterns(name string, separator, ext string) []string {
 	splitted := strings.Split(name, " ")
 
 	var ret []string
 	// only do this for names that are split into two
 	if len(splitted) == 2 {
-		ret = append(ret, fmt.Sprintf("%s%saaa%s%s.mp4", splitted[0], separator, separator, splitted[1]))
+		ret = append(ret, fmt.Sprintf("%s%saaa%s%s.%s", splitted[0], separator, separator, splitted[1], ext))
 	}
 
 	return ret
 }
 
-func generateScenePaths(testName string) (scenePatterns []string, falseScenePatterns []string) {
+func generateTestPaths(testName, ext string) (scenePatterns []string, falseScenePatterns []string) {
 	separators := append(testSeparators, testEndSeparators...)
 
 	for _, separator := range separators {
-		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator)...)
-		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator)...)
-		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ReplaceAll(testName, " ", ""), separator)...)
-		falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, separator)...)
+		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator, ext)...)
+		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator, ext)...)
+		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ReplaceAll(testName, " ", ""), separator, ext)...)
+		falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, separator, ext)...)
 	}
 
 	// add test cases for intra-name separators
 	for _, separator := range testSeparators {
 		if separator != " " {
-			scenePatterns = append(scenePatterns, generateNamePatterns(strings.Replace(testName, " ", separator, -1), separator)...)
+			scenePatterns = append(scenePatterns, generateNamePatterns(strings.Replace(testName, " ", separator, -1), separator, ext)...)
 		}
 	}
 
 	// add basic false scenarios
-	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("aaa%s.mp4", testName))
-	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("%saaa.mp4", testName))
+	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("aaa%s.%s", testName, ext))
+	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("%saaa.%s", testName, ext))
 
 	// add path separator false scenarios
-	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "/")...)
-	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "\\")...)
+	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "/", ext)...)
+	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "\\", ext)...)
 
 	// split patterns only valid for ._- and whitespace
 	for _, separator := range testSeparators {
-		scenePatterns = append(scenePatterns, generateSplitNamePatterns(testName, separator)...)
+		scenePatterns = append(scenePatterns, generateSplitNamePatterns(testName, separator, ext)...)
 	}
 
 	// false patterns for other separators
 	for _, separator := range testEndSeparators {
-		falseScenePatterns = append(falseScenePatterns, generateSplitNamePatterns(testName, separator)...)
+		falseScenePatterns = append(falseScenePatterns, generateSplitNamePatterns(testName, separator, ext)...)
 	}
 
 	return
 }
 
 type pathTestTable struct {
-	ScenePath string
-	Matches   bool
+	Path    string
+	Matches bool
 }
 
-func generateTestTable(testName string) []pathTestTable {
+func generateTestTable(testName, ext string) []pathTestTable {
 	var ret []pathTestTable
 
 	var scenePatterns []string
@@ -116,15 +118,15 @@ func generateTestTable(testName string) []pathTestTable {
 	separators := append(testSeparators, testEndSeparators...)
 
 	for _, separator := range separators {
-		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator)...)
-		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator)...)
-		falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, separator)...)
+		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator, ext)...)
+		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator, ext)...)
+		falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, separator, ext)...)
 	}
 
 	for _, p := range scenePatterns {
 		t := pathTestTable{
-			ScenePath: p,
-			Matches:   true,
+			Path:    p,
+			Matches: true,
 		}
 
 		ret = append(ret, t)
@@ -132,8 +134,8 @@ func generateTestTable(testName string) []pathTestTable {
 
 	for _, p := range falseScenePatterns {
 		t := pathTestTable{
-			ScenePath: p,
-			Matches:   false,
+			Path:    p,
+			Matches: false,
 		}
 
 		ret = append(ret, t)
@@ -158,7 +160,7 @@ func TestScenePerformers(t *testing.T) {
 		Name: models.NullString(reversedPerformerName),
 	}
 
-	testTables := generateTestTable(performerName)
+	testTables := generateTestTable(performerName, sceneExt)
 
 	assert := assert.New(t)
 
@@ -175,7 +177,7 @@ func TestScenePerformers(t *testing.T) {
 
 		scene := models.Scene{
 			ID:   sceneID,
-			Path: test.ScenePath,
+			Path: test.Path,
 		}
 		err := ScenePerformers(&scene, mockSceneReader, mockPerformerReader)
 
@@ -201,7 +203,7 @@ func TestSceneStudios(t *testing.T) {
 		Name: models.NullString(reversedStudioName),
 	}
 
-	testTables := generateTestTable(studioName)
+	testTables := generateTestTable(studioName, sceneExt)
 
 	assert := assert.New(t)
 
@@ -222,7 +224,7 @@ func TestSceneStudios(t *testing.T) {
 
 		scene := models.Scene{
 			ID:   sceneID,
-			Path: test.ScenePath,
+			Path: test.Path,
 		}
 		err := SceneStudios(&scene, mockSceneReader, mockStudioReader)
 
@@ -248,7 +250,7 @@ func TestSceneTags(t *testing.T) {
 		Name: reversedTagName,
 	}
 
-	testTables := generateTestTable(tagName)
+	testTables := generateTestTable(tagName, sceneExt)
 
 	assert := assert.New(t)
 
@@ -265,7 +267,7 @@ func TestSceneTags(t *testing.T) {
 
 		scene := models.Scene{
 			ID:   sceneID,
-			Path: test.ScenePath,
+			Path: test.Path,
 		}
 		err := SceneTags(&scene, mockSceneReader, mockTagReader)
 

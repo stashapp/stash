@@ -36,7 +36,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	const performerID = 2
 
 	var scenes []*models.Scene
-	matchingPaths, falsePaths := generateScenePaths(performerName)
+	matchingPaths, falsePaths := generateTestPaths(performerName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
 			ID:   i + 1,
@@ -78,4 +78,148 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 
 	assert.Nil(err)
 	mockSceneReader.AssertExpectations(t)
+}
+
+func TestPerformerImages(t *testing.T) {
+	type test struct {
+		performerName string
+		expectedRegex string
+	}
+
+	performerNames := []test{
+		{
+			"performer name",
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+		{
+			"performer + name",
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+	}
+
+	for _, p := range performerNames {
+		testPerformerImages(t, p.performerName, p.expectedRegex)
+	}
+}
+
+func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
+	mockImageReader := &mocks.ImageReaderWriter{}
+
+	const performerID = 2
+
+	var images []*models.Image
+	matchingPaths, falsePaths := generateTestPaths(performerName, imageExt)
+	for i, p := range append(matchingPaths, falsePaths...) {
+		images = append(images, &models.Image{
+			ID:   i + 1,
+			Path: p,
+		})
+	}
+
+	performer := models.Performer{
+		ID:   performerID,
+		Name: models.NullString(performerName),
+	}
+
+	organized := false
+	perPage := models.PerPageAll
+
+	expectedImageFilter := &models.ImageFilterType{
+		Organized: &organized,
+		Path: &models.StringCriterionInput{
+			Value:    expectedRegex,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+	}
+
+	expectedFindFilter := &models.FindFilterType{
+		PerPage: &perPage,
+	}
+
+	mockImageReader.On("Query", expectedImageFilter, expectedFindFilter).Return(images, len(images), nil).Once()
+
+	for i := range matchingPaths {
+		imageID := i + 1
+		mockImageReader.On("GetPerformerIDs", imageID).Return(nil, nil).Once()
+		mockImageReader.On("UpdatePerformers", imageID, []int{performerID}).Return(nil).Once()
+	}
+
+	err := PerformerImages(&performer, nil, mockImageReader)
+
+	assert := assert.New(t)
+
+	assert.Nil(err)
+	mockImageReader.AssertExpectations(t)
+}
+
+func TestPerformerGalleries(t *testing.T) {
+	type test struct {
+		performerName string
+		expectedRegex string
+	}
+
+	performerNames := []test{
+		{
+			"performer name",
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+		{
+			"performer + name",
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+	}
+
+	for _, p := range performerNames {
+		testPerformerGalleries(t, p.performerName, p.expectedRegex)
+	}
+}
+
+func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
+	mockGalleryReader := &mocks.GalleryReaderWriter{}
+
+	const performerID = 2
+
+	var galleries []*models.Gallery
+	matchingPaths, falsePaths := generateTestPaths(performerName, galleryExt)
+	for i, p := range append(matchingPaths, falsePaths...) {
+		galleries = append(galleries, &models.Gallery{
+			ID:   i + 1,
+			Path: models.NullString(p),
+		})
+	}
+
+	performer := models.Performer{
+		ID:   performerID,
+		Name: models.NullString(performerName),
+	}
+
+	organized := false
+	perPage := models.PerPageAll
+
+	expectedGalleryFilter := &models.GalleryFilterType{
+		Organized: &organized,
+		Path: &models.StringCriterionInput{
+			Value:    expectedRegex,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+	}
+
+	expectedFindFilter := &models.FindFilterType{
+		PerPage: &perPage,
+	}
+
+	mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+
+	for i := range matchingPaths {
+		galleryID := i + 1
+		mockGalleryReader.On("GetPerformerIDs", galleryID).Return(nil, nil).Once()
+		mockGalleryReader.On("UpdatePerformers", galleryID, []int{performerID}).Return(nil).Once()
+	}
+
+	err := PerformerGalleries(&performer, nil, mockGalleryReader)
+
+	assert := assert.New(t)
+
+	assert.Nil(err)
+	mockGalleryReader.AssertExpectations(t)
 }
