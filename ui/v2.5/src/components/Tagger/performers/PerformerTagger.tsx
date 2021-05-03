@@ -480,6 +480,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         disabled={!isIdle}
       >
         <Form.Control
+          className="text-input"
           as="textarea"
           ref={performerInput}
           placeholder="Performer names separated by comma"
