@@ -205,6 +205,7 @@ func (s *Service) Stop(duration *time.Duration) {
 		if s.stopTimer != nil {
 			s.stopTimer.Stop()
 			s.stopTimer = nil
+			s.stopTime = nil
 		}
 	}
 

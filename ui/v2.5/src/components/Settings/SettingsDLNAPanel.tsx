@@ -32,13 +32,9 @@ export const SettingsDLNAPanel: React.FC = () => {
     dlnaEnabled: enabled,
   });
 
-  const [enableDLNA] = useEnableDLNA({
-    duration: enableUntilRestart ? undefined : enableDuration,
-  });
+  const [enableDLNA] = useEnableDLNA();
 
-  const [disableDLNA] = useDisableDLNA({
-    duration: enableUntilRestart ? undefined : enableDuration,
-  });
+  const [disableDLNA] = useDisableDLNA();
 
   useEffect(() => {
     if (data?.configuration.dlna) {
@@ -60,12 +56,20 @@ export const SettingsDLNAPanel: React.FC = () => {
   }
 
   async function onTempEnable() {
+    const input = {
+      variables: {
+        input: {
+          duration: enableUntilRestart ? undefined : enableDuration,
+        },
+      },
+    };
+
     try {
       if (enableDisable) {
-        await enableDLNA();
+        await enableDLNA(input);
         Toast.success({ content: "Enabled DLNA temporarily" });
       } else {
-        await disableDLNA();
+        await disableDLNA(input);
         Toast.success({ content: "Disabled DLNA temporarily" });
       }
     } catch (e) {
@@ -82,28 +86,87 @@ export const SettingsDLNAPanel: React.FC = () => {
     }
 
     const { dlnaStatus } = status.data;
-    return dlnaStatus.running ? "running" : "not running";
+    const runningText = dlnaStatus.running ? "running" : "not running";
+    let untilText = "";
+
+    if (dlnaStatus.until) {
+      const deadline = new Date(dlnaStatus.until);
+      untilText = `until ${deadline.toLocaleString()}`;
+    }
+
+    return `${runningText} ${untilText}`;
   }
 
   function renderEnableButton() {
-    if (!status.data?.dlnaStatus) {
-      return "";
+    if (!data?.configuration.dlna) {
+      return;
     }
 
     // if enabled by default, then show the disable temporarily
     // if disabled by default, then show enable temporarily
     // TODO - also show a cancel button
-    if (status.data?.dlnaStatus.running) {
+    if (data?.configuration.dlna.dlnaEnabled) {
       return (
-        <Button onClick={() => setEnableDisable(false)}>
+        <Button onClick={() => setEnableDisable(false)} className="mr-1">
           Disable temporarily...
         </Button>
       );
-    } 
-    
+    }
+
     return (
-      <Button onClick={() => setEnableDisable(true)}>
+      <Button onClick={() => setEnableDisable(true)} className="mr-1">
         Enable temporarily...
+      </Button>
+    );
+  }
+
+  function canCancel() {
+    if (!status.data || !data) {
+      return false;
+    }
+
+    const { dlnaStatus } = status.data;
+    const { dlnaEnabled } = data.configuration.dlna;
+
+    return dlnaStatus.until || dlnaStatus.running !== dlnaEnabled;
+  }
+
+  async function cancelTempBehaviour() {
+    if (!canCancel()) {
+      return;
+    }
+
+    const running = status.data?.dlnaStatus.running;
+
+    const input = {
+      variables: {
+        input: {},
+      },
+    };
+
+    try {
+      if (!running) {
+        await enableDLNA(input);
+      } else {
+        await disableDLNA(input);
+      }
+      Toast.success({ content: "Successfully cancelled temporary behaviour" });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setEnableDisable(undefined);
+      status.refetch();
+    }
+  }
+
+  function renderTempCancelButton() {
+    if (!canCancel()) {
+      return;
+    }
+
+    return (
+      <Button onClick={() => cancelTempBehaviour()} variant="danger">
+        Cancel temporary behaviour
       </Button>
     );
   }
@@ -122,7 +185,10 @@ export const SettingsDLNAPanel: React.FC = () => {
           variant: "primary",
           onClick: onTempEnable,
         }}
-        cancel={{ onClick: () => setEnableDisable(undefined) }}
+        cancel={{
+          onClick: () => setEnableDisable(undefined),
+          variant: "secondary",
+        }}
       >
         <h4>{capitalised} temporarily</h4>
         <Form.Group>
@@ -161,6 +227,7 @@ export const SettingsDLNAPanel: React.FC = () => {
         <h5>Actions</h5>
 
         {renderEnableButton()}
+        {renderTempCancelButton()}
       </Form.Group>
 
       <Form.Group>
