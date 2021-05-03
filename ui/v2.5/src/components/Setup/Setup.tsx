@@ -225,6 +225,10 @@ export const Setup: React.FC = () => {
       return <code>&lt;current working directory&gt;/config.yml</code>;
     }
 
+    if (configLocation === "") {
+      return <code>$HOME/.stash/config.yml</code>;
+    }
+
     return <code>{configLocation}</code>;
   }
 
