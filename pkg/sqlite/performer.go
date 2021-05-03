@@ -258,16 +258,9 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 			query.body += `left join performers_image on performers_image.performer_id = performers.id
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
-		case "stash_id":
-			query.addWhere("performer_stash_ids.performer_id IS NULL")
 		default:
 			query.addWhere("(performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = '')")
 		}
-	}
-
-	if stashIDFilter := performerFilter.StashID; stashIDFilter != nil {
-		query.addWhere("performer_stash_ids.stash_id = ?")
-		query.addArg(stashIDFilter)
 	}
 
 	query.handleStringCriterionInput(performerFilter.Ethnicity, tableName+".ethnicity")
@@ -283,6 +276,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.HairColor, tableName+".hair_color")
 	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
 	query.handleIntCriterionInput(performerFilter.Weight, tableName+".weight")
+	query.handleStringCriterionInput(performerFilter.StashID, "performer_stash_ids.stash_id")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
@@ -469,4 +463,24 @@ func (qb *performerQueryBuilder) GetStashIDs(performerID int) ([]*models.StashID
 
 func (qb *performerQueryBuilder) UpdateStashIDs(performerID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(performerID, stashIDs)
+}
+
+func (qb *performerQueryBuilder) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
+	`
+
+	if hasStashID {
+		query += `
+			WHERE performer_stash_ids.stash_id IS NOT NULL
+			AND performer_stash_ids.endpoint = ?
+		`
+	} else {
+		query += `
+			WHERE performer_stash_ids.stash_id IS NULL
+		`
+	}
+
+	args := []interface{}{stashboxEndpoint}
+	return qb.queryPerformers(query, args)
 }

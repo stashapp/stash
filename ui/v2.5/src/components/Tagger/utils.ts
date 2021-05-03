@@ -107,7 +107,7 @@ const selectTags = (tags: GQL.ScrapedSceneTag[]): IStashBoxTag[] =>
     name: t.name ?? "",
   }));
 
-const selectPerformers = (
+export const selectPerformers = (
   performers: GQL.ScrapedScenePerformer[]
 ): IStashBoxPerformer[] =>
   performers.map((p) => ({
@@ -186,3 +186,63 @@ export const sortScenesByDuration = (
     if (aDiff > bDiff) return 1;
     return 0;
   });
+
+export const filterPerformer = (
+  performer: IStashBoxPerformer,
+  excludedFields: string[]
+) => {
+  const {
+    name,
+    aliases,
+    gender,
+    birthdate,
+    ethnicity,
+    country,
+    eye_color,
+    height,
+    measurements,
+    fake_tits,
+    career_length,
+    tattoos,
+    piercings,
+  } = performer;
+  return {
+    name: !excludedFields.includes("name") && name ? name : undefined,
+    aliases:
+      !excludedFields.includes("aliases") && aliases ? aliases : undefined,
+    gender: !excludedFields.includes("gender") && gender ? gender : undefined,
+    birthdate:
+      !excludedFields.includes("birthdate") && birthdate
+        ? birthdate
+        : undefined,
+    ethnicity:
+      !excludedFields.includes("ethnicity") && ethnicity
+        ? ethnicity
+        : undefined,
+    country:
+      !excludedFields.includes("country") && country ? country : undefined,
+    eye_color:
+      !excludedFields.includes("eye_color") && eye_color
+        ? eye_color
+        : undefined,
+    height: !excludedFields.includes("height") && height ? height : undefined,
+    measurements:
+      !excludedFields.includes("measurements") && measurements
+        ? measurements
+        : undefined,
+    fake_tits:
+      !excludedFields.includes("fake_tits") && fake_tits
+        ? fake_tits
+        : undefined,
+    career_length:
+      !excludedFields.includes("career_length") && career_length
+        ? career_length
+        : undefined,
+    tattoos:
+      !excludedFields.includes("tattoos") && tattoos ? tattoos : undefined,
+    piercings:
+      !excludedFields.includes("piercings") && piercings
+        ? piercings
+        : undefined,
+  };
+};

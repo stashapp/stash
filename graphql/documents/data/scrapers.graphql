@@ -197,3 +197,10 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
     ...ScrapedSceneMovieData
   }
 }
+
+fragment ScrapedStashBoxPerformerData on StashBoxPerformerQueryResult {
+  query
+  results {
+    ...ScrapedScenePerformerData
+  }
+}

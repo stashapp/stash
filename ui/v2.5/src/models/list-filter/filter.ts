@@ -161,6 +161,7 @@ export class ListFilterModel {
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
+          ListFilterModel.createCriterionOption("stash_id"),
         ];
         break;
       case FilterMode.Images:
@@ -204,7 +205,11 @@ export class ListFilterModel {
           "random",
           "rating",
         ];
-        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.displayModeOptions = [
+          DisplayMode.Grid,
+          DisplayMode.List,
+          DisplayMode.Tagger,
+        ];
 
         const numberCriteria: CriterionType[] = [
           "birth_year",
@@ -224,6 +229,7 @@ export class ListFilterModel {
           "tattoos",
           "piercings",
           "aliases",
+          "stash_id",
         ];
 
         this.criterionOptions = [
@@ -265,6 +271,7 @@ export class ListFilterModel {
           ListFilterModel.createCriterionOption("image_count"),
           ListFilterModel.createCriterionOption("gallery_count"),
           ListFilterModel.createCriterionOption("url"),
+          ListFilterModel.createCriterionOption("stash_id"),
         ];
         break;
       case FilterMode.Movies:
@@ -655,6 +662,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
@@ -829,6 +844,14 @@ export class ListFilterModel {
           result.gallery_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
           };
           break;
         }
@@ -1096,6 +1119,14 @@ export class ListFilterModel {
           result.gallery_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
           };
           break;
         }

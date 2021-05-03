@@ -1209,3 +1209,109 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	}
 	return &totals
 }
+
+func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerformerTagInput) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(StashBoxBatchPerformer)
+	s.Status.indefiniteProgress()
+
+	go func() {
+		defer s.returnToIdleState()
+		logger.Infof("Initiating stash-box batch performer tag")
+
+		boxes := config.GetInstance().GetStashBoxes()
+		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
+			logger.Error(fmt.Errorf("invalid stash_box_index %d", input.Endpoint))
+			return
+		}
+		box := boxes[input.Endpoint]
+
+		var tasks []StashBoxPerformerTagTask
+
+		if len(input.PerformerIds) > 0 {
+			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				performerQuery := r.Performer()
+
+				for _, performerID := range input.PerformerIds {
+					if id, err := strconv.Atoi(performerID); err == nil {
+						performer, err := performerQuery.Find(id)
+						if err == nil {
+							tasks = append(tasks, StashBoxPerformerTagTask{
+								txnManager:      s.TxnManager,
+								performer:       performer,
+								refresh:         input.Refresh,
+								box:             box,
+								excluded_fields: input.ExcludeFields,
+							})
+						} else {
+							return err
+						}
+					}
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+			}
+		} else if len(input.PerformerNames) > 0 {
+			for i := range input.PerformerNames {
+				if len(input.PerformerNames[i]) > 0 {
+					tasks = append(tasks, StashBoxPerformerTagTask{
+						txnManager:      s.TxnManager,
+						name:            &input.PerformerNames[i],
+						refresh:         input.Refresh,
+						box:             box,
+						excluded_fields: input.ExcludeFields,
+					})
+				}
+			}
+		} else {
+			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				performerQuery := r.Performer()
+				var performers []*models.Performer
+				var err error
+				if input.Refresh {
+					performers, err = performerQuery.FindByStashIDStatus(true, box.Endpoint)
+				} else {
+					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
+				}
+				if err != nil {
+					return fmt.Errorf("Error querying performers: %s", err.Error())
+				}
+
+				for _, performer := range performers {
+					tasks = append(tasks, StashBoxPerformerTagTask{
+						txnManager:      s.TxnManager,
+						performer:       performer,
+						refresh:         input.Refresh,
+						box:             box,
+						excluded_fields: input.ExcludeFields,
+					})
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		if len(tasks) == 0 {
+			s.returnToIdleState()
+			return
+		}
+
+		s.Status.setProgress(0, len(tasks))
+
+		logger.Infof("Starting stash-box batch operation for %d performers", len(tasks))
+
+		var wg sync.WaitGroup
+		for _, task := range tasks {
+			wg.Add(1)
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}()
+}

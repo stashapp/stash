@@ -107,6 +107,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "piercings":
     case "aliases":
     case "url":
+    case "stash_id":
       return new StringCriterion(type, type);
   }
 }
