@@ -164,6 +164,10 @@ input StudioFilterType {
 }
 
 input GalleryFilterType {
+  AND: GalleryFilterType
+  OR: GalleryFilterType
+  NOT: GalleryFilterType
+
   """Filter by path"""
   path: StringCriterionInput
   """Filter to only include galleries missing this property"""
@@ -219,6 +223,10 @@ input TagFilterType {
 }
 
 input ImageFilterType {
+  AND: ImageFilterType
+  OR: ImageFilterType
+  NOT: ImageFilterType
+
   """Filter by path"""
   path: StringCriterionInput
   """Filter by rating"""

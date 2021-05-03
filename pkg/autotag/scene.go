@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-func pathsFilter(paths []string) *models.SceneFilterType {
+func scenePathsFilter(paths []string) *models.SceneFilterType {
 	if paths == nil {
 		return nil
 	}
@@ -52,7 +52,7 @@ func getMatchingScenes(name string, paths []string, sceneReader models.SceneRead
 		Organized: &organized,
 	}
 
-	filter.And = pathsFilter(paths)
+	filter.And = scenePathsFilter(paths)
 
 	pp := models.PerPageAll
 	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{
