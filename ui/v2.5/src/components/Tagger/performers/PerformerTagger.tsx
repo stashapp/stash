@@ -234,9 +234,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       } else if (!isTagged && !hasStashIDs) {
         mainContent = (
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text>Query</InputGroup.Text>
-            </InputGroup.Prepend>
             <Form.Control
               className="text-input"
               defaultValue={performer.name ?? ""}
@@ -380,7 +377,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           <Card className="performer-card p-0 m-0">
             <img src={performer.image_path ?? ""} alt="" />
           </Card>
-          <div className="flex-grow-1 ml-3">
+          <div className={`${CLASSNAME}-details`}>
             <Link
               to={`/performers/${performer.id}`}
               className={`${CLASSNAME}-header`}

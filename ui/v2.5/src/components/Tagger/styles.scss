@@ -133,9 +133,9 @@
 }
 
 .PerformerTagger {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   max-width: 1600px;
 
   &-header {
@@ -150,6 +150,8 @@
     background-color: #495b68;
     border-radius: 3px;
     display: flex;
+    margin: 1rem;
+    max-width: 100%;
     padding: 1rem;
 
     .performer-card {
@@ -163,6 +165,12 @@
         object-position: top;
       }
     }
+  }
+
+  &-details {
+    flex-grow: 1;
+    margin-left: 1rem;
+    width: 24rem;
   }
 
   &-performer-search {
