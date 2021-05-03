@@ -1,15 +1,18 @@
 
 
-type DLNAAllowedIP {
+type DLNAIP {
     ipAddress: String!
-    allowedUntil: Time
+    """Time until IP will be no longer allowed/disallowed"""
+    until: Time
 }
 
 type DLNAStatus {
     running: Boolean!
-    runningUntil: Time
+    """If not currently running, time until it will be started. If running, time until it will be stopped"""
+    until: Time
     recentIPAddresses: [String!]!
-    allowedIPAddresses: [DLNAAllowedIP!]!
+    allowedIPAddresses: [DLNAIP!]!
+    disallowedIPAddresses: [DLNAIP!]!
 }
 
 input EnableDLNAInput {

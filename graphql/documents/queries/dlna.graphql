@@ -1,11 +1,11 @@
 query DLNAStatus {
   dlnaStatus {
     running
-    runningUntil
+    until
     recentIPAddresses
     allowedIPAddresses {
       ipAddress
-      allowedUntil
+      until
     }
   }
 }

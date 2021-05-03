@@ -37,7 +37,9 @@ type Service struct {
 	mutex   sync.Mutex
 
 	startTimer *time.Timer
+	startTime  *time.Time
 	stopTimer  *time.Timer
+	stopTime   *time.Time
 }
 
 func (s *Service) init() {
@@ -165,6 +167,7 @@ func (s *Service) Start(duration *time.Duration) {
 		if s.startTimer != nil {
 			s.startTimer.Stop()
 			s.startTimer = nil
+			s.startTime = nil
 		}
 	}
 
@@ -172,12 +175,15 @@ func (s *Service) Start(duration *time.Duration) {
 		// clear the existing stop timer
 		if s.stopTimer != nil {
 			s.stopTimer.Stop()
+			s.stopTime = nil
 		}
 
 		if s.stopTimer == nil {
 			s.stopTimer = time.AfterFunc(*duration, func() {
 				s.Stop(nil)
 			})
+			t := time.Now().Add(*duration)
+			s.stopTime = &t
 		}
 	}
 }
@@ -212,6 +218,8 @@ func (s *Service) Stop(duration *time.Duration) {
 			s.startTimer = time.AfterFunc(*duration, func() {
 				s.Start(nil)
 			})
+			t := time.Now().Add(*duration)
+			s.startTime = &t
 		}
 	}
 }
@@ -227,8 +235,20 @@ func (s *Service) Status() *models.DLNAStatus {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	return &models.DLNAStatus{
+	ret := &models.DLNAStatus{
 		Running: s.running,
 		// TODO - others
 	}
+
+	if s.startTime != nil {
+		t := *s.startTime
+		ret.Until = &t
+	}
+
+	if s.stopTime != nil {
+		t := *s.stopTime
+		ret.Until = &t
+	}
+
+	return ret
 }

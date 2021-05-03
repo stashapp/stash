@@ -70,3 +70,7 @@
     list-style: none;
   }
 }
+
+#temp-enable-duration .duration-control:disabled {
+  opacity: 0.5;
+}

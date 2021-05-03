@@ -708,6 +708,16 @@ export const useConfigureDLNA = (input: GQL.ConfigDlnaInput) =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useEnableDLNA = (input: GQL.EnableDlnaInput) =>
+  GQL.useEnableDlnaMutation({
+    variables: { input },
+  });
+
+export const useDisableDLNA = (input: GQL.DisableDlnaInput) =>
+  GQL.useDisableDlnaMutation({
+    variables: { input },
+  });
+
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
