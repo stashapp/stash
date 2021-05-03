@@ -15,7 +15,7 @@ https://stashapp.cc
 
 You can [watch a demo video](https://vimeo.com/275537038) to see it in action (password is stashapp).
 
-For further information you can [read the in-app manual](tree/ui/v2.5/src/docs/en).
+For further information you can [read the in-app manual](ui/v2.5/src/docs/en).
 
 # Installing stash
 
