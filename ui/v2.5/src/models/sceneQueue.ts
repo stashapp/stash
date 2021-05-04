@@ -13,6 +13,7 @@ interface IQueryParameters {
 }
 
 export interface IPlaySceneOptions {
+  sceneIndex?: number;
   newPage?: number;
   autoPlay?: boolean;
 }
@@ -20,11 +21,10 @@ export interface IPlaySceneOptions {
 export class SceneQueue {
   public query?: ListFilterModel;
   public sceneIDs?: number[];
+  private originalQueryPage?: number;
+  private originalQueryPageSize?: number;
 
-  public static fromListFilterModel(
-    filter: ListFilterModel,
-    currentSceneIndex?: number
-  ) {
+  public static fromListFilterModel(filter: ListFilterModel) {
     const ret = new SceneQueue();
 
     const filterCopy = Object.assign(
@@ -33,13 +33,8 @@ export class SceneQueue {
     );
     filterCopy.itemsPerPage = 40;
 
-    // adjust page to be correct for the index
-    const filterIndex =
-      currentSceneIndex !== undefined
-        ? currentSceneIndex + (filter.currentPage - 1) * filter.itemsPerPage
-        : 0;
-    const newPage = Math.floor(filterIndex / filterCopy.itemsPerPage) + 1;
-    filterCopy.currentPage = newPage;
+    ret.originalQueryPage = filter.currentPage;
+    ret.originalQueryPageSize = filter.itemsPerPage;
 
     ret.query = filterCopy;
     return ret;
@@ -51,7 +46,7 @@ export class SceneQueue {
     return ret;
   }
 
-  private makeQueryParameters(page?: number) {
+  private makeQueryParameters(sceneIndex?: number, page?: number) {
     if (this.query) {
       const queryParams = this.query.getQueryParameters();
       const translatedParams = {
@@ -64,6 +59,17 @@ export class SceneQueue {
 
       if (page !== undefined) {
         translatedParams.qfp = page;
+      } else if (
+        sceneIndex !== undefined &&
+        this.originalQueryPage !== undefined &&
+        this.originalQueryPageSize !== undefined
+      ) {
+        // adjust page to be correct for the index
+        const filterIndex =
+          sceneIndex +
+          (this.originalQueryPage - 1) * this.originalQueryPageSize;
+        const newPage = Math.floor(filterIndex / this.query.itemsPerPage) + 1;
+        translatedParams.qfp = newPage;
       }
 
       return queryString.stringify(translatedParams, { encode: false });
@@ -109,8 +115,15 @@ export class SceneQueue {
     sceneID: string,
     options?: IPlaySceneOptions
   ) {
-    const paramStr = this.makeQueryParameters(options?.newPage);
+    history.push(this.makeLink(sceneID, options));
+  }
+
+  public makeLink(sceneID: string, options?: IPlaySceneOptions) {
+    const paramStr = this.makeQueryParameters(
+      options?.sceneIndex,
+      options?.newPage
+    );
     const autoplayParam = options?.autoPlay ? "&autoplay=true" : "";
-    history.push(`/scenes/${sceneID}?${paramStr}${autoplayParam}`);
+    return `/scenes/${sceneID}?${paramStr}${autoplayParam}`;
   }
 }

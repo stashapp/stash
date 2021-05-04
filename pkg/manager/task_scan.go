@@ -240,6 +240,10 @@ func (t *ScanTask) scanGallery() {
 						Timestamp: fileModTime,
 						Valid:     true,
 					},
+					Title: sql.NullString{
+						String: utils.GetNameFromPath(t.FilePath, t.StripFileExtension),
+						Valid:  true,
+					},
 					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				}
@@ -853,6 +857,9 @@ func (t *ScanTask) scanImage() {
 				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			}
+			newImage.Title.String = image.GetFilename(&newImage, t.StripFileExtension)
+			newImage.Title.Valid = true
+
 			if err := image.SetFileDetails(&newImage); err != nil {
 				logger.Error(err.Error())
 				return
@@ -966,6 +973,10 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			Title: sql.NullString{
+				String: utils.GetNameFromPath(path, false),
+				Valid:  true,
+			},
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)

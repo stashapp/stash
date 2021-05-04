@@ -178,11 +178,6 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.addHaving(havingClause)
 	}
 
-	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
-		query.addWhere("studio_stash_ids.stash_id = ?")
-		query.addArg(stashIDFilter)
-	}
-
 	if rating := studioFilter.Rating; rating != nil {
 		query.handleIntCriterionInput(studioFilter.Rating, "studios.rating")
 	}
@@ -190,6 +185,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
 	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
 	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
+	query.handleStringCriterionInput(studioFilter.StashID, "studio_stash_ids.stash_id")
 
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {

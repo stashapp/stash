@@ -20,7 +20,6 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
     "movie",
     "performers",
     "tags",
-    "stash_id",
   ];
 }
 
@@ -66,7 +65,6 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "gender",
     "scenes",
     "image",
-    "stash_id",
     "details",
   ];
 }
@@ -107,7 +105,7 @@ export class TagIsMissingCriterionOption implements ICriterionOption {
 
 export class StudioIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "studioIsMissing";
-  public options: string[] = ["image", "stash_id", "details"];
+  public options: string[] = ["image", "details"];
 }
 
 export class StudioIsMissingCriterionOption implements ICriterionOption {

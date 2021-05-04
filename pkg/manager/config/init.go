@@ -51,26 +51,9 @@ func initConfig(flags flagStruct) error {
 	err := viper.ReadInConfig() // Find and read the config file
 	// continue, but set an error to be handled by caller
 
-	postInitConfig()
 	instance.SetInitialConfig()
 
 	return err
-}
-
-func postInitConfig() {
-	c := instance
-	if c.GetConfigFile() != "" {
-		viper.SetDefault(Database, c.GetDefaultDatabaseFilePath())
-	}
-
-	// Set generated to the metadata path for backwards compat
-	viper.SetDefault(Generated, viper.GetString(Metadata))
-
-	// Set default scrapers and plugins paths
-	viper.SetDefault(ScrapersPath, c.GetDefaultScrapersPath())
-	viper.SetDefault(PluginsPath, c.GetDefaultPluginsPath())
-
-	viper.WriteConfig()
 }
 
 func initFlags() flagStruct {

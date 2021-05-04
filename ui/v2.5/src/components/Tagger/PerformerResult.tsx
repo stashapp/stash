@@ -5,7 +5,7 @@ import cx from "classnames";
 import { SuccessIcon, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
-import { IStashBoxPerformer } from "./utils";
+import { IStashBoxPerformer, filterPerformer } from "./utils";
 
 import PerformerModal from "./PerformerModal";
 
@@ -18,11 +18,13 @@ export type PerformerOperation =
 interface IPerformerResultProps {
   performer: IStashBoxPerformer;
   setPerformer: (data: PerformerOperation) => void;
+  endpoint: string;
 }
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({
   performer,
   setPerformer,
+  endpoint,
 }) => {
   const [selectedPerformer, setSelectedPerformer] = useState<string | null>();
   const [selectedSource, setSelectedSource] = useState<
@@ -37,7 +39,10 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     {
       variables: {
         performer_filter: {
-          stash_id: performer.stash_id,
+          stash_id: {
+            value: performer.stash_id,
+            modifier: GQL.CriterionModifier.Equals,
+          },
         },
       },
     }
@@ -74,14 +79,20 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     }
   };
 
-  const handlePerformerCreate = (imageIndex: number) => {
+  const handlePerformerCreate = (
+    imageIndex: number,
+    excludedFields: string[]
+  ) => {
     const selectedImage = performer.images[imageIndex];
     const images = selectedImage ? [selectedImage] : [];
+
     setSelectedSource("create");
     setPerformer({
       type: "create",
       data: {
-        ...performer,
+        ...filterPerformer(performer, excludedFields),
+        name: performer.name,
+        stash_id: performer.stash_id,
         images,
       },
     });
@@ -117,10 +128,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   return (
     <div className="row no-gutters align-items-center mt-2">
       <PerformerModal
-        showModal={showModal}
+        closeModal={() => showModal(false)}
         modalVisible={modalVisible}
         performer={performer}
         handlePerformerCreate={handlePerformerCreate}
+        icon="star"
+        header="Create Performer"
+        create
+        endpoint={endpoint}
       />
       <div className="entity-name">
         Performer:

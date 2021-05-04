@@ -52,7 +52,8 @@ export type CriterionType =
   | "gallery_count"
   | "performer_count"
   | "death_year"
-  | "url";
+  | "url"
+  | "stash_id";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -150,6 +151,8 @@ export abstract class Criterion {
         return "Performer Count";
       case "url":
         return "URL";
+      case "stash_id":
+        return "StashID";
     }
   }
 

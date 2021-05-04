@@ -139,6 +139,18 @@ query SearchScene($term: String!) {
   }
 }
 
+query SearchPerformer($term: String!) {
+  searchPerformer(term: $term) {
+    ...PerformerFragment
+  }
+}
+
+query FindPerformerByID($id: ID!) {
+  findPerformer(id: $id) {
+    ...PerformerFragment
+  }
+}
+
 mutation SubmitFingerprint($input: FingerprintSubmission!) {
   submitFingerprint(input: $input)
 }

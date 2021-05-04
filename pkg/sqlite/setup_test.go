@@ -48,6 +48,9 @@ const (
 
 const (
 	imageIdxWithGallery = iota
+	imageIdx1WithGallery
+	imageIdx2WithGallery
+	imageIdxWithTwoGalleries
 	imageIdxWithPerformer
 	imageIdx1WithPerformer
 	imageIdx2WithPerformer
@@ -102,6 +105,9 @@ const (
 const (
 	galleryIdxWithScene = iota
 	galleryIdxWithImage
+	galleryIdx1WithImage
+	galleryIdx2WithImage
+	galleryIdxWithTwoImages
 	galleryIdxWithPerformer
 	galleryIdx1WithPerformer
 	galleryIdx2WithPerformer
@@ -230,6 +236,10 @@ var (
 var (
 	imageGalleryLinks = [][2]int{
 		{imageIdxWithGallery, galleryIdxWithImage},
+		{imageIdx1WithGallery, galleryIdxWithTwoImages},
+		{imageIdx2WithGallery, galleryIdxWithTwoImages},
+		{imageIdxWithTwoGalleries, galleryIdx1WithImage},
+		{imageIdxWithTwoGalleries, galleryIdx2WithImage},
 	}
 	imageStudioLinks = [][2]int{
 		{imageIdxWithStudio, studioIdxWithImage},
@@ -513,6 +523,14 @@ func getHeight(index int) sql.NullInt64 {
 	}
 }
 
+func getWidth(index int) sql.NullInt64 {
+	height := getHeight(index)
+	return sql.NullInt64{
+		Int64: height.Int64 * 2,
+		Valid: height.Valid,
+	}
+}
+
 func getSceneDate(index int) models.SQLiteDate {
 	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
@@ -571,6 +589,7 @@ func createImages(qb models.ImageReaderWriter, n int) error {
 			Rating:   getRating(i),
 			OCounter: getOCounter(i),
 			Height:   getHeight(i),
+			Width:    getWidth(i),
 		}
 
 		created, err := qb.Create(image)
@@ -599,6 +618,7 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 			Path:     models.NullString(getGalleryStringValue(i, pathField)),
 			URL:      getGalleryNullStringValue(i, urlField),
 			Checksum: getGalleryStringValue(i, checksumField),
+			Rating:   getRating(i),
 		}
 
 		created, err := gqb.Create(gallery)

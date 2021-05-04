@@ -43,12 +43,6 @@ type singleton struct {
 var instance *singleton
 var once sync.Once
 
-type flagStruct struct {
-	configFilePath string
-}
-
-var flags = flagStruct{}
-
 func GetInstance() *singleton {
 	Initialize()
 	return instance
@@ -147,6 +141,8 @@ func initPluginCache() *plugin.Cache {
 // configuration has been set. Should only be called if the configuration
 // is valid.
 func (s *singleton) PostInit() error {
+	s.Config.SetInitialConfig()
+
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	s.PluginCache = initPluginCache()
 	s.ScraperCache = instance.initScraperCache()

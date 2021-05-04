@@ -832,6 +832,20 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
     },
   });
 
+export const queryStashBoxPerformer = (
+  stashBoxIndex: number,
+  performerID: string
+) =>
+  client.query<GQL.QueryStashBoxPerformerQuery>({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: {
+      input: {
+        stash_box_index: stashBoxIndex,
+        performer_ids: [performerID],
+      },
+    },
+  });
+
 export const queryScrapeGallery = (
   scraperId: string,
   gallery: GQL.GalleryUpdateInput
@@ -1025,7 +1039,7 @@ export const makePerformerCreateInput = (
   return input;
 };
 
-export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
+export const stashBoxSceneQuery = (searchVal: string, stashBoxIndex: number) =>
   client?.query<
     GQL.QueryStashBoxSceneQuery,
     GQL.QueryStashBoxSceneQueryVariables
@@ -1034,7 +1048,22 @@ export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
     variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
   });
 
-export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
+export const stashBoxPerformerQuery = (
+  searchVal: string,
+  stashBoxIndex: number
+) =>
+  client?.query<
+    GQL.QueryStashBoxPerformerQuery,
+    GQL.QueryStashBoxPerformerQueryVariables
+  >({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
+  });
+
+export const stashBoxSceneBatchQuery = (
+  sceneIds: string[],
+  stashBoxIndex: number
+) =>
   client?.query<
     GQL.QueryStashBoxSceneQuery,
     GQL.QueryStashBoxSceneQueryVariables
@@ -1042,5 +1071,19 @@ export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
     query: GQL.QueryStashBoxSceneDocument,
     variables: {
       input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
+    },
+  });
+
+export const stashBoxPerformerBatchQuery = (
+  performerIds: string[],
+  stashBoxIndex: number
+) =>
+  client?.query<
+    GQL.QueryStashBoxPerformerQuery,
+    GQL.QueryStashBoxPerformerQueryVariables
+  >({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: {
+      input: { performer_ids: performerIds, stash_box_index: stashBoxIndex },
     },
   });
