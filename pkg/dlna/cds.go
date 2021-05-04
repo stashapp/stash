@@ -42,7 +42,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var pageSize int = 100
+var pageSize = 100
 
 type browse struct {
 	ObjectID       string
@@ -72,7 +72,7 @@ func formatDurationSexagesimal(d time.Duration) string {
 	return ret
 }
 
-func (cds *contentDirectoryService) updateIDString() string {
+func (me *contentDirectoryService) updateIDString() string {
 	return fmt.Sprintf("%d", uint32(os.Getpid()))
 }
 

@@ -430,7 +430,7 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 	me.sceneServer.ServeScreenshot(scene, w, r)
 }
 
-func (server *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
+func (me *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
 	body := xmlMarshalOrPanic(upnp.PropertySet{
 		Properties: []upnp.Property{
 			{
@@ -486,8 +486,8 @@ func (server *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) 
 	}
 }
 
-func (server *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http.Request) {
-	if server.StallEventSubscribe {
+func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http.Request) {
+	if me.StallEventSubscribe {
 		// I have an LG TV that doesn't like my eventing implementation.
 		// Returning unimplemented (501?) errors, results in repeat subscribe
 		// attempts which hits some kind of error count limit on the TV
@@ -510,7 +510,7 @@ func (server *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *
 	// The following code is a work in progress. It partially implements
 	// the spec on eventing but hasn't been completed as I have nothing to
 	// test it with.
-	service := server.services["ContentDirectory"]
+	service := me.services["ContentDirectory"]
 	if r.Method == "SUBSCRIBE" && r.Header.Get("SID") == "" {
 		urls := upnp.ParseCallbackURLs(r.Header.Get("CALLBACK"))
 		var timeout int
@@ -522,7 +522,7 @@ func (server *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *
 		w.WriteHeader(http.StatusOK)
 		go func() {
 			time.Sleep(100 * time.Millisecond)
-			server.contentDirectoryInitialEvent(urls, sid)
+			me.contentDirectoryInitialEvent(urls, sid)
 		}()
 	} else if r.Method == "SUBSCRIBE" {
 		http.Error(w, "meh", http.StatusPreconditionFailed)
@@ -531,7 +531,7 @@ func (server *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *
 	}
 }
 
-func (server *Server) initMux(mux *http.ServeMux) {
+func (me *Server) initMux(mux *http.ServeMux) {
 	mux.HandleFunc("/", func(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("content-type", "text/html")
 		err := rootTmpl.Execute(resp, struct {
@@ -539,18 +539,18 @@ func (server *Server) initMux(mux *http.ServeMux) {
 			Path     string
 		}{
 			true,
-			server.RootObjectPath,
+			me.RootObjectPath,
 		})
 		if err != nil {
 			logger.Errorf(err.Error())
 		}
 	})
-	mux.HandleFunc(contentDirectoryEventSubURL, server.contentDirectoryEventSubHandler)
-	mux.HandleFunc(iconPath, server.serveIcon)
+	mux.HandleFunc(contentDirectoryEventSubURL, me.contentDirectoryEventSubHandler)
+	mux.HandleFunc(iconPath, me.serveIcon)
 	mux.HandleFunc(resPath, func(w http.ResponseWriter, r *http.Request) {
 		sceneId := r.URL.Query().Get("scene")
 		var scene *models.Scene
-		server.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+		me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
 			sceneIdInt, err := strconv.Atoi(sceneId)
 			if err != nil {
 				return nil
@@ -563,18 +563,18 @@ func (server *Server) initMux(mux *http.ServeMux) {
 			return
 		}
 
-		server.sceneServer.StreamSceneDirect(scene, w, r)
+		me.sceneServer.StreamSceneDirect(scene, w, r)
 	})
 	mux.HandleFunc(rootDescPath, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", `text/xml; charset="utf-8"`)
-		w.Header().Set("content-length", fmt.Sprint(len(server.rootDescXML)))
+		w.Header().Set("content-length", fmt.Sprint(len(me.rootDescXML)))
 		w.Header().Set("server", serverField)
-		w.Write(server.rootDescXML)
+		w.Write(me.rootDescXML)
 	})
 	handleSCPDs(mux)
-	mux.HandleFunc(serviceControlURL, server.serviceControlHandler)
+	mux.HandleFunc(serviceControlURL, me.serviceControlHandler)
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
-	for i, di := range server.Icons {
+	for i, di := range me.Icons {
 		mux.HandleFunc(fmt.Sprintf("%s/%d", deviceIconPath, i), func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", di.Mimetype)
 			http.ServeContent(w, r, "", time.Time{}, di.ReadSeeker)
@@ -582,32 +582,32 @@ func (server *Server) initMux(mux *http.ServeMux) {
 	}
 }
 
-func (s *Server) initServices() {
-	s.services = map[string]UPnPService{
+func (me *Server) initServices() {
+	me.services = map[string]UPnPService{
 		"ContentDirectory": &contentDirectoryService{
-			Server:     s,
-			txnManager: s.txnManager,
+			Server:     me,
+			txnManager: me.txnManager,
 		},
 		"ConnectionManager": &connectionManagerService{
-			Server: s,
+			Server: me,
 		},
 		"X_MS_MediaReceiverRegistrar": &mediaReceiverRegistrarService{
-			Server: s,
+			Server: me,
 		},
 	}
 }
 
-func (srv *Server) Serve() (err error) {
-	srv.initServices()
-	srv.closed = make(chan struct{})
-	srv.FriendlyName = getDefaultFriendlyName()
-	if srv.HTTPConn == nil {
-		srv.HTTPConn, err = net.Listen("tcp", "")
+func (me *Server) Serve() (err error) {
+	me.initServices()
+	me.closed = make(chan struct{})
+	me.FriendlyName = getDefaultFriendlyName()
+	if me.HTTPConn == nil {
+		me.HTTPConn, err = net.Listen("tcp", "")
 		if err != nil {
 			return
 		}
 	}
-	if srv.Interfaces == nil {
+	if me.Interfaces == nil {
 		ifs, err := net.Interfaces()
 		if err != nil {
 			logger.Errorf(err.Error())
@@ -619,19 +619,19 @@ func (srv *Server) Serve() (err error) {
 			}
 			tmp = append(tmp, if_)
 		}
-		srv.Interfaces = tmp
+		me.Interfaces = tmp
 	}
-	srv.httpServeMux = http.NewServeMux()
-	srv.rootDeviceUUID = makeDeviceUuid(srv.FriendlyName)
-	srv.rootDescXML, err = xml.MarshalIndent(
+	me.httpServeMux = http.NewServeMux()
+	me.rootDeviceUUID = makeDeviceUuid(me.FriendlyName)
+	me.rootDescXML, err = xml.MarshalIndent(
 		upnp.DeviceDesc{
 			SpecVersion: upnp.SpecVersion{Major: 1, Minor: 0},
 			Device: upnp.Device{
 				DeviceType:   rootDeviceType,
-				FriendlyName: srv.FriendlyName,
-				Manufacturer: srv.FriendlyName,
+				FriendlyName: me.FriendlyName,
+				Manufacturer: me.FriendlyName,
 				ModelName:    rootDeviceModelName,
-				UDN:          srv.rootDeviceUUID,
+				UDN:          me.rootDeviceUUID,
 				ServiceList: func() (ss []upnp.Service) {
 					for _, s := range services {
 						ss = append(ss, s.Service)
@@ -639,7 +639,7 @@ func (srv *Server) Serve() (err error) {
 					return
 				}(),
 				IconList: func() (ret []upnp.Icon) {
-					for i, di := range srv.Icons {
+					for i, di := range me.Icons {
 						ret = append(ret, upnp.Icon{
 							Height:   di.Height,
 							Width:    di.Width,
@@ -656,21 +656,21 @@ func (srv *Server) Serve() (err error) {
 	if err != nil {
 		return
 	}
-	srv.rootDescXML = append([]byte(`<?xml version="1.0"?>`), srv.rootDescXML...)
-	logger.Debugf("HTTP srv on", srv.HTTPConn.Addr())
-	srv.initMux(srv.httpServeMux)
-	srv.ssdpStopped = make(chan struct{})
+	me.rootDescXML = append([]byte(`<?xml version="1.0"?>`), me.rootDescXML...)
+	logger.Debug("HTTP srv on", me.HTTPConn.Addr())
+	me.initMux(me.httpServeMux)
+	me.ssdpStopped = make(chan struct{})
 	go func() {
-		srv.doSSDP()
-		close(srv.ssdpStopped)
+		me.doSSDP()
+		close(me.ssdpStopped)
 	}()
-	return srv.serveHTTP()
+	return me.serveHTTP()
 }
 
-func (srv *Server) Close() (err error) {
-	close(srv.closed)
-	err = srv.HTTPConn.Close()
-	<-srv.ssdpStopped
+func (me *Server) Close() (err error) {
+	close(me.closed)
+	err = me.HTTPConn.Close()
+	<-me.ssdpStopped
 	return
 }
 
