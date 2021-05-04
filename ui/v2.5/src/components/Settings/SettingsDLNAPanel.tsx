@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useFormik } from "formik";
 import { Button, Form } from "react-bootstrap";
+import { Prompt } from "react-router";
+import * as yup from "yup";
 import {
   useConfiguration,
   useConfigureDLNA,
@@ -10,15 +13,27 @@ import {
   useRemoveTempDLNAIP,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { DurationInput, Icon, Modal } from "../Shared";
+import { DurationInput, Icon, LoadingIndicator, Modal } from "../Shared";
 import { StringListInput } from "../Shared/StringListInput";
 
 export const SettingsDLNAPanel: React.FC = () => {
   const Toast = useToast();
 
   // settings
-  const [enabled, setEnabled] = useState<boolean>(false);
-  const [defaultIPWhitelist, setDefaultIPWhitelist] = useState<string[]>([]);
+  const schema = yup.object({
+    dlnaEnabled: yup.boolean().required(),
+    dlnaWhitelistedIPs: yup.array(yup.string().required()).required(),
+  });
+
+  interface IConfigValues {
+    dlnaEnabled: boolean;
+    dlnaWhitelistedIPs: string[];
+  }
+
+  const initialValues: IConfigValues = {
+    dlnaEnabled: false,
+    dlnaWhitelistedIPs: [],
+  };
 
   // undefined to hide dialog, true for enable, false for disable
   const [enableDisable, setEnableDisable] = useState<boolean | undefined>(
@@ -34,29 +49,22 @@ export const SettingsDLNAPanel: React.FC = () => {
   const [tempIP, setTempIP] = useState<string | undefined>();
 
   const { data } = useConfiguration();
-  const { data: statusData, refetch: statusRefetch } = useDLNAStatus();
+  const { data: statusData, loading, refetch: statusRefetch } = useDLNAStatus();
 
-  const [updateDLNAConfig] = useConfigureDLNA({
-    dlnaEnabled: enabled,
-    dlnaWhitelistedIPs: defaultIPWhitelist,
-  });
+  const [updateDLNAConfig] = useConfigureDLNA();
 
   const [enableDLNA] = useEnableDLNA();
   const [disableDLNA] = useDisableDLNA();
   const [addTempDLANIP] = useAddTempDLNAIP();
   const [removeTempDLNAIP] = useRemoveTempDLNAIP();
 
-  useEffect(() => {
-    if (data?.configuration.dlna) {
-      const { dlnaEnabled, dlnaWhitelistedIPs } = data.configuration.dlna;
-      setEnabled(dlnaEnabled);
-      setDefaultIPWhitelist(dlnaWhitelistedIPs);
-    }
-  }, [data]);
-
-  async function onSave() {
+  async function onSave(input: IConfigValues) {
     try {
-      await updateDLNAConfig();
+      await updateDLNAConfig({
+        variables: {
+          input,
+        },
+      });
       Toast.success({ content: "Updated config" });
     } catch (e) {
       Toast.error(e);
@@ -64,6 +72,20 @@ export const SettingsDLNAPanel: React.FC = () => {
       statusRefetch();
     }
   }
+
+  const formik = useFormik({
+    initialValues,
+    validationSchema: schema,
+    onSubmit: (values) => onSave(values),
+  });
+
+  useEffect(() => {
+    if (data?.configuration.dlna) {
+      const { dlnaEnabled, dlnaWhitelistedIPs } = data.configuration.dlna;
+      formik.setFieldValue("dlnaEnabled", dlnaEnabled);
+      formik.setFieldValue("dlnaWhitelistedIPs", dlnaWhitelistedIPs);
+    }
+  }, [data, formik]);
 
   async function onTempEnable() {
     const input = {
@@ -393,10 +415,17 @@ export const SettingsDLNAPanel: React.FC = () => {
     );
   }
 
+  if (loading) return <LoadingIndicator />;
+
   return (
     <div id="settings-dlna">
       {renderTempEnableDialog()}
       {renderTempWhitelistDialog()}
+
+      <Prompt
+        when={formik.dirty}
+        message="Unsaved changes. Are you sure you want to leave?"
+      />
 
       <h4>DLNA</h4>
 
@@ -417,43 +446,48 @@ export const SettingsDLNAPanel: React.FC = () => {
         <Form.Group>
           <h6>Recent IP addresses</h6>
           <Form.Group>{renderRecentIPs()}</Form.Group>
-          {/* TODO - omitted refresh button since refetch doesn't seem to work */}
           <Form.Group>
             <Button onClick={() => statusRefetch()}>Refresh</Button>
           </Form.Group>
         </Form.Group>
       </Form.Group>
 
-      <Form.Group>
-        <h5>Settings</h5>
+      <Form noValidate onSubmit={formik.handleSubmit}>
         <Form.Group>
-          <Form.Check
-            checked={enabled}
-            label="Enabled by default"
-            onChange={() => setEnabled(!enabled)}
-          />
+          <h5>Settings</h5>
+          <Form.Group>
+            <Form.Check
+              checked={formik.values.dlnaEnabled}
+              label="Enabled by default"
+              onChange={() =>
+                formik.setFieldValue("dlnaEnabled", !formik.values.dlnaEnabled)
+              }
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <h6>Default IP Whitelist</h6>
+            <StringListInput
+              value={formik.values.dlnaWhitelistedIPs}
+              setValue={(value) =>
+                formik.setFieldValue("dlnaWhitelistedIPs", value)
+              }
+              defaultNewValue="*"
+              className="ip-whitelist-input"
+            />
+            <Form.Text className="text-muted">
+              Default IP addresses allow to access DLNA. Use <code>*</code> to
+              allow all IP addresses.
+            </Form.Text>
+          </Form.Group>
         </Form.Group>
 
-        <Form.Group>
-          <h6>Default IP Whitelist</h6>
-          <StringListInput
-            value={defaultIPWhitelist}
-            setValue={setDefaultIPWhitelist}
-            defaultNewValue="*"
-            className="ip-whitelist-input"
-          />
-          <Form.Text className="text-muted">
-            Default IP addresses allow to access DLNA. Use <code>*</code> to
-            allow all IP addresses.
-          </Form.Text>
-        </Form.Group>
-      </Form.Group>
+        <hr />
 
-      <hr />
-
-      <Button variant="primary" onClick={() => onSave()}>
-        Save
-      </Button>
+        <Button variant="primary" onClick={() => formik.submitForm()}>
+          Save
+        </Button>
+      </Form>
     </div>
   );
 };

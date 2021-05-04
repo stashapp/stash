@@ -701,9 +701,8 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
-export const useConfigureDLNA = (input: GQL.ConfigDlnaInput) =>
+export const useConfigureDLNA = () =>
   GQL.useConfigureDlnaMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });

@@ -22,7 +22,7 @@ export const Settings: React.FC = () => {
   return (
     <Card className="col col-lg-9 mx-auto">
       <Tab.Container
-        defaultActiveKey={defaultTab}
+        activeKey={defaultTab}
         id="configuration-tabs"
         onSelect={(tab) => tab && onSelect(tab)}
       >
