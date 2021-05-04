@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useFormik } from "formik";
+import React, { useState } from "react";
+import { Formik, useFormikContext } from "formik";
 import { Button, Form } from "react-bootstrap";
 import { Prompt } from "react-router";
 import * as yup from "yup";
@@ -18,22 +18,6 @@ import { StringListInput } from "../Shared/StringListInput";
 
 export const SettingsDLNAPanel: React.FC = () => {
   const Toast = useToast();
-
-  // settings
-  const schema = yup.object({
-    dlnaEnabled: yup.boolean().required(),
-    dlnaWhitelistedIPs: yup.array(yup.string().required()).required(),
-  });
-
-  interface IConfigValues {
-    dlnaEnabled: boolean;
-    dlnaWhitelistedIPs: string[];
-  }
-
-  const initialValues: IConfigValues = {
-    dlnaEnabled: false,
-    dlnaWhitelistedIPs: [],
-  };
 
   // undefined to hide dialog, true for enable, false for disable
   const [enableDisable, setEnableDisable] = useState<boolean | undefined>(
@@ -58,6 +42,27 @@ export const SettingsDLNAPanel: React.FC = () => {
   const [addTempDLANIP] = useAddTempDLNAIP();
   const [removeTempDLNAIP] = useRemoveTempDLNAIP();
 
+  if (loading) return <LoadingIndicator />;
+
+  // settings
+  const schema = yup.object({
+    serverName: yup.string(),
+    enabled: yup.boolean().required(),
+    whitelistedIPs: yup.array(yup.string().required()).required(),
+  });
+
+  interface IConfigValues {
+    serverName: string;
+    enabled: boolean;
+    whitelistedIPs: string[];
+  }
+
+  const initialValues: IConfigValues = {
+    serverName: data?.configuration.dlna.serverName ?? "",
+    enabled: data?.configuration.dlna.enabled ?? false,
+    whitelistedIPs: data?.configuration.dlna.whitelistedIPs ?? [],
+  };
+
   async function onSave(input: IConfigValues) {
     try {
       await updateDLNAConfig({
@@ -72,20 +77,6 @@ export const SettingsDLNAPanel: React.FC = () => {
       statusRefetch();
     }
   }
-
-  const formik = useFormik({
-    initialValues,
-    validationSchema: schema,
-    onSubmit: (values) => onSave(values),
-  });
-
-  useEffect(() => {
-    if (data?.configuration.dlna) {
-      const { dlnaEnabled, dlnaWhitelistedIPs } = data.configuration.dlna;
-      formik.setFieldValue("dlnaEnabled", dlnaEnabled);
-      formik.setFieldValue("dlnaWhitelistedIPs", dlnaWhitelistedIPs);
-    }
-  }, [data, formik]);
 
   async function onTempEnable() {
     const input = {
@@ -183,7 +174,7 @@ export const SettingsDLNAPanel: React.FC = () => {
 
     // if enabled by default, then show the disable temporarily
     // if disabled by default, then show enable temporarily
-    if (data?.configuration.dlna.dlnaEnabled) {
+    if (data?.configuration.dlna.enabled) {
       return (
         <Button onClick={() => setEnableDisable(false)} className="mr-1">
           Disable temporarily...
@@ -204,9 +195,9 @@ export const SettingsDLNAPanel: React.FC = () => {
     }
 
     const { dlnaStatus } = statusData;
-    const { dlnaEnabled } = data.configuration.dlna;
+    const { enabled } = data.configuration.dlna;
 
-    return dlnaStatus.until || dlnaStatus.running !== dlnaEnabled;
+    return dlnaStatus.until || dlnaStatus.running !== enabled;
   }
 
   async function cancelTempBehaviour() {
@@ -415,17 +406,74 @@ export const SettingsDLNAPanel: React.FC = () => {
     );
   }
 
-  if (loading) return <LoadingIndicator />;
+  const DLNASettingsForm: React.FC = () => {
+    const {
+      handleSubmit,
+      values,
+      setFieldValue,
+      submitForm,
+      dirty,
+    } = useFormikContext<IConfigValues>();
+
+    return (
+      <Form noValidate onSubmit={handleSubmit}>
+        <Prompt
+          when={dirty}
+          message="Unsaved changes. Are you sure you want to leave?"
+        />
+
+        <Form.Group>
+          <h5>Settings</h5>
+          <Form.Group>
+            <Form.Label>Server Display Name</Form.Label>
+            <Form.Control
+              className="text-input server-name"
+              value={values.serverName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFieldValue("serverName", e.currentTarget.value)
+              }
+            />
+            <Form.Text className="text-muted">
+              Display name for the DLNA server. Defaults to <code>stash</code>{" "}
+              if empty.
+            </Form.Text>
+          </Form.Group>
+          <Form.Group>
+            <Form.Check
+              checked={values.enabled}
+              label="Enabled by default"
+              onChange={() => setFieldValue("enabled", !values.enabled)}
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <h6>Default IP Whitelist</h6>
+            <StringListInput
+              value={values.whitelistedIPs}
+              setValue={(value) => setFieldValue("whitelistedIPs", value)}
+              defaultNewValue="*"
+              className="ip-whitelist-input"
+            />
+            <Form.Text className="text-muted">
+              Default IP addresses allow to access DLNA. Use <code>*</code> to
+              allow all IP addresses.
+            </Form.Text>
+          </Form.Group>
+        </Form.Group>
+
+        <hr />
+
+        <Button variant="primary" onClick={() => submitForm()}>
+          Save
+        </Button>
+      </Form>
+    );
+  };
 
   return (
     <div id="settings-dlna">
       {renderTempEnableDialog()}
       {renderTempWhitelistDialog()}
-
-      <Prompt
-        when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
-      />
 
       <h4>DLNA</h4>
 
@@ -452,42 +500,15 @@ export const SettingsDLNAPanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
-      <Form noValidate onSubmit={formik.handleSubmit}>
-        <Form.Group>
-          <h5>Settings</h5>
-          <Form.Group>
-            <Form.Check
-              checked={formik.values.dlnaEnabled}
-              label="Enabled by default"
-              onChange={() =>
-                formik.setFieldValue("dlnaEnabled", !formik.values.dlnaEnabled)
-              }
-            />
-          </Form.Group>
+      <hr />
 
-          <Form.Group>
-            <h6>Default IP Whitelist</h6>
-            <StringListInput
-              value={formik.values.dlnaWhitelistedIPs}
-              setValue={(value) =>
-                formik.setFieldValue("dlnaWhitelistedIPs", value)
-              }
-              defaultNewValue="*"
-              className="ip-whitelist-input"
-            />
-            <Form.Text className="text-muted">
-              Default IP addresses allow to access DLNA. Use <code>*</code> to
-              allow all IP addresses.
-            </Form.Text>
-          </Form.Group>
-        </Form.Group>
-
-        <hr />
-
-        <Button variant="primary" onClick={() => formik.submitForm()}>
-          Save
-        </Button>
-      </Form>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={schema}
+        onSubmit={(values) => onSave(values)}
+      >
+        <DLNASettingsForm />
+      </Formik>
     </div>
   );
 };

@@ -272,10 +272,6 @@ func init() {
 	startTime = time.Now()
 }
 
-func getDefaultFriendlyName() string {
-	return "stash"
-}
-
 func xmlMarshalOrPanic(value interface{}) []byte {
 	ret, err := xml.MarshalIndent(value, "", "  ")
 	if err != nil {
@@ -600,7 +596,6 @@ func (me *Server) initServices() {
 func (me *Server) Serve() (err error) {
 	me.initServices()
 	me.closed = make(chan struct{})
-	me.FriendlyName = getDefaultFriendlyName()
 	if me.HTTPConn == nil {
 		me.HTTPConn, err = net.Listen("tcp", "")
 		if err != nil {

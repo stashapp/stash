@@ -44,11 +44,16 @@ type Service struct {
 }
 
 func (s *Service) init() {
+	friendlyName := s.config.GetDLNAServerName()
+	if friendlyName == "" {
+		friendlyName = "stash"
+	}
+
 	var dmsConfig = &dmsConfig{
 		Path:           "",
 		IfName:         "",
 		Http:           ":1338",
-		FriendlyName:   "",
+		FriendlyName:   friendlyName,
 		LogHeaders:     false,
 		NotifyInterval: 30 * time.Second,
 	}

@@ -125,6 +125,7 @@ const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
 
 // DLNA options
+const DLNAServerName = "dlna.server_name"
 const DLNADefaultEnabled = "dlna.default_enabled"
 const DLNADefaultIPWhitelist = "dlna.default_whitelist"
 
@@ -615,6 +616,12 @@ func (i *Instance) SetCSS(css string) {
 
 func (i *Instance) GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
+}
+
+// GetDLNAServerName returns the visible name of the DLNA server. If empty,
+// "stash" will be used.
+func (i *Instance) GetDLNAServerName() string {
+	return viper.GetString(DLNAServerName)
 }
 
 // GetDLNADefaultEnabled returns true if the DLNA is enabled by default.

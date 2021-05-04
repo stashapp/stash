@@ -115,7 +115,8 @@ func makeConfigDLNAResult() *models.ConfigDLNAResult {
 	config := config.GetInstance()
 
 	return &models.ConfigDLNAResult{
-		DlnaEnabled:        config.GetDLNADefaultEnabled(),
-		DlnaWhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
+		ServerName:     config.GetDLNAServerName(),
+		Enabled:        config.GetDLNADefaultEnabled(),
+		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
 	}
 }

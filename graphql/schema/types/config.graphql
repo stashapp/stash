@@ -217,17 +217,19 @@ type ConfigInterfaceResult {
 }
 
 input ConfigDLNAInput {
+  serverName: String
   """True if DLNA service should be enabled by default"""
-  dlnaEnabled: Boolean
+  enabled: Boolean
   """List of IPs whitelisted for DLNA service"""
-  dlnaWhitelistedIPs: [String!]
+  whitelistedIPs: [String!]
 }
 
 type ConfigDLNAResult {
+  serverName: String!
   """True if DLNA service should be enabled by default"""
-  dlnaEnabled: Boolean!
+  enabled: Boolean!
   """List of IPs whitelisted for DLNA service"""
-  dlnaWhitelistedIPs: [String!]!
+  whitelistedIPs: [String!]!
 }
 
 """All configuration settings"""

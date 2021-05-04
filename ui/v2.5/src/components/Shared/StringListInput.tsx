@@ -35,7 +35,8 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
       <Form.Group>
         {props.value &&
           props.value.map((v, i) => (
-            <InputGroup className={props.className}>
+            // eslint-disable-next-line react/no-array-index-key
+            <InputGroup className={props.className} key={i}>
               <Form.Control
                 className="text-input"
                 value={v}

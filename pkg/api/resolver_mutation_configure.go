@@ -256,17 +256,21 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.ConfigDLNAInput) (*models.ConfigDLNAResult, error) {
 	c := config.GetInstance()
 
-	c.Set(config.DLNADefaultIPWhitelist, input.DlnaWhitelistedIPs)
+	if input.ServerName != nil {
+		c.Set(config.DLNAServerName, *input.ServerName)
+	}
+
+	c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
 
 	currentDLNAEnabled := c.GetDLNADefaultEnabled()
-	if input.DlnaEnabled != nil && *input.DlnaEnabled != currentDLNAEnabled {
-		c.Set(config.DLNADefaultEnabled, *input.DlnaEnabled)
+	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
+		c.Set(config.DLNADefaultEnabled, *input.Enabled)
 
 		// start/stop the DLNA service as needed
 		dlnaService := manager.GetInstance().DLNAService
-		if !*input.DlnaEnabled && dlnaService.IsRunning() {
+		if !*input.Enabled && dlnaService.IsRunning() {
 			dlnaService.Stop(nil)
-		} else if *input.DlnaEnabled && !dlnaService.IsRunning() {
+		} else if *input.Enabled && !dlnaService.IsRunning() {
 			dlnaService.Start(nil)
 		}
 	}
