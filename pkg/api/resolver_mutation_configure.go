@@ -255,6 +255,9 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.ConfigDLNAInput) (*models.ConfigDLNAResult, error) {
 	c := config.GetInstance()
+
+	c.Set(config.DLNADefaultIPWhitelist, input.DlnaWhitelistedIPs)
+
 	currentDLNAEnabled := c.GetDLNADefaultEnabled()
 	if input.DlnaEnabled != nil && *input.DlnaEnabled != currentDLNAEnabled {
 		c.Set(config.DLNADefaultEnabled, *input.DlnaEnabled)

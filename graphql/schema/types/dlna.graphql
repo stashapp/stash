@@ -12,7 +12,6 @@ type DLNAStatus {
     until: Time
     recentIPAddresses: [String!]!
     allowedIPAddresses: [DLNAIP!]!
-    disallowedIPAddresses: [DLNAIP!]!
 }
 
 input EnableDLNAInput {
@@ -25,14 +24,12 @@ input DisableDLNAInput {
     duration: Int
 }
 
-input AllowDLNAIPInput {
+input AddTempDLNAIPInput {
     address: String!
     """Duration to enable, in minutes. 0 or null for indefinite."""
     duration: Int
 }
 
-input DisallowDLNAIPInput {
+input RemoveTempDLNAIPInput {
     address: String!
-    """Duration to enable, in minutes. 0 or null for indefinite."""
-    duration: Int
 }

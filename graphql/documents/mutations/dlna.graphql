@@ -6,10 +6,10 @@ mutation DisableDLNA($input: DisableDLNAInput!) {
   disableDLNA(input: $input)
 }
 
-mutation AllowDLNAIP($input: AllowDLNAIPInput!) {
-  allowDLNAIP(input: $input)
+mutation AddTempDLNAIP($input: AddTempDLNAIPInput!) {
+  addTempDLNAIP(input: $input)
 }
 
-mutation DisableDLNAIP($input: DisallowDLNAIPInput!) {
-  disallowDLNAIP(input: $input)
+mutation RemoveTempDLNAIP($input: RemoveTempDLNAIPInput!) {
+  removeTempDLNAIP(input: $input)
 }

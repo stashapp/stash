@@ -251,8 +251,9 @@ type Server struct {
 	// Time interval between SSPD announces
 	NotifyInterval time.Duration
 
-	txnManager  models.TransactionManager
-	sceneServer sceneServer
+	txnManager         models.TransactionManager
+	sceneServer        sceneServer
+	ipWhitelistManager *ipWhitelistManager
 }
 
 // UPnP SOAP service.
@@ -363,23 +364,18 @@ func (me *Server) soapActionResponse(sa upnp.SoapAction, actionRequestXML []byte
 
 // Handle a service control HTTP request.
 func (me *Server) serviceControlHandler(w http.ResponseWriter, r *http.Request) {
-	// clientIp, _, _ := net.SplitHostPort(r.RemoteAddr)
-	// Add IP to recents
-	// isKnownIp := funk.ContainsString(config.RecentIPAddresses, net.ParseIP(clientIp).String())
-	// if !isKnownIp {
-	// 	config.RecentIPAddresses = append(config.RecentIPAddresses, net.ParseIP(clientIp).String())
-	// }
+	clientIp, _, _ := net.SplitHostPort(r.RemoteAddr)
 
-	// // Check if IP is allowed
-	// found := true
-	// if len(config.Config.Interfaces.DLNA.AllowedIP) > 0 {
-	// 	found = funk.ContainsString(config.Config.Interfaces.DLNA.AllowedIP, net.ParseIP(clientIp).String())
-	// 	if !found {
-	// 		log.Printf("not allowed client %s, %+v", clientIp, config.Config.Interfaces.DLNA.AllowedIP)
-	// 		http.Error(w, "forbidden", http.StatusForbidden)
-	// 		return
-	// 	}
-	// }
+	ip := net.ParseIP(clientIp).String()
+	if !me.ipWhitelistManager.ipAllowed(ip) {
+		// only log if we haven't seen it
+		if !me.ipWhitelistManager.addRecent(ip) {
+			logger.Infof("not allowed client %s", clientIp)
+		}
+
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
 
 	soapActionString := r.Header.Get("SOAPACTION")
 	soapAction, err := upnp.ParseActionHTTPHeader(soapActionString)

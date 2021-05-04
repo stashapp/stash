@@ -28,9 +28,10 @@ type sceneServer interface {
 }
 
 type Service struct {
-	txnManager  models.TransactionManager
-	config      *config.Instance
-	sceneServer sceneServer
+	txnManager     models.TransactionManager
+	config         *config.Instance
+	sceneServer    sceneServer
+	ipWhitelistMgr *ipWhitelistManager
 
 	server  *Server
 	running bool
@@ -53,8 +54,9 @@ func (s *Service) init() {
 	}
 
 	s.server = &Server{
-		txnManager:  s.txnManager,
-		sceneServer: s.sceneServer,
+		txnManager:         s.txnManager,
+		sceneServer:        s.sceneServer,
+		ipWhitelistManager: s.ipWhitelistMgr,
 		Interfaces: func(ifName string) (ifs []net.Interface) {
 			var err error
 			if ifName == "" {
@@ -141,7 +143,10 @@ func NewService(txnManager models.TransactionManager, cfg *config.Instance, scen
 		txnManager:  txnManager,
 		sceneServer: sceneServer,
 		config:      cfg,
-		mutex:       sync.Mutex{},
+		ipWhitelistMgr: &ipWhitelistManager{
+			config: cfg,
+		},
+		mutex: sync.Mutex{},
 	}
 
 	return ret
@@ -237,8 +242,9 @@ func (s *Service) Status() *models.DLNAStatus {
 	defer s.mutex.Unlock()
 
 	ret := &models.DLNAStatus{
-		Running: s.running,
-		// TODO - others
+		Running:            s.running,
+		RecentIPAddresses:  s.ipWhitelistMgr.getRecent(),
+		AllowedIPAddresses: s.ipWhitelistMgr.getTempAllowed(),
 	}
 
 	if s.startTime != nil {
@@ -252,4 +258,12 @@ func (s *Service) Status() *models.DLNAStatus {
 	}
 
 	return ret
+}
+
+func (s *Service) AddTempDLNAIP(pattern string, duration *time.Duration) {
+	s.ipWhitelistMgr.allowPattern(pattern, duration)
+}
+
+func (s *Service) RemoveTempDLNAIP(pattern string) bool {
+	return s.ipWhitelistMgr.removePattern(pattern)
 }

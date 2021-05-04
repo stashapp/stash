@@ -242,10 +242,10 @@ type Mutation {
   enableDLNA(input: EnableDLNAInput!): Boolean!
   """Disables DLNA for an optional duration. Has no effect if DLNA is disabled by default"""
   disableDLNA(input: DisableDLNAInput!): Boolean!
-  """Enables an IP address for DLNA for an optional duration."""
-  allowDLNAIP(input: AllowDLNAIPInput!): Boolean!
-  """Disables an IP address for DLNA for an optional duration."""
-  disallowDLNAIP(input: DisallowDLNAIPInput!): Boolean!
+  """Enables an IP address for DLNA for an optional duration"""
+  addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean!
+  """Removes an IP address from the temporary DLNA whitelist"""
+  removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean!
 }
 
 type Subscription {

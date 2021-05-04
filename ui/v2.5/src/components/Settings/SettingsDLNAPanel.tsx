@@ -6,14 +6,19 @@ import {
   useDisableDLNA,
   useDLNAStatus,
   useEnableDLNA,
+  useAddTempDLNAIP,
+  useRemoveTempDLNAIP,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { DurationInput, Modal } from "../Shared";
+import { DurationInput, Icon, Modal } from "../Shared";
+import { StringListInput } from "../Shared/StringListInput";
 
 export const SettingsDLNAPanel: React.FC = () => {
   const Toast = useToast();
 
+  // settings
   const [enabled, setEnabled] = useState<boolean>(false);
+  const [defaultIPWhitelist, setDefaultIPWhitelist] = useState<string[]>([]);
 
   // undefined to hide dialog, true for enable, false for disable
   const [enableDisable, setEnableDisable] = useState<boolean | undefined>(
@@ -25,22 +30,27 @@ export const SettingsDLNAPanel: React.FC = () => {
     undefined
   );
 
+  const [ipEntry, setIPEntry] = useState<string>("");
+  const [tempIP, setTempIP] = useState<string | undefined>();
+
   const { data } = useConfiguration();
-  const status = useDLNAStatus();
+  const { data: statusData, refetch: statusRefetch } = useDLNAStatus();
 
   const [updateDLNAConfig] = useConfigureDLNA({
     dlnaEnabled: enabled,
+    dlnaWhitelistedIPs: defaultIPWhitelist,
   });
 
   const [enableDLNA] = useEnableDLNA();
-
   const [disableDLNA] = useDisableDLNA();
+  const [addTempDLANIP] = useAddTempDLNAIP();
+  const [removeTempDLNAIP] = useRemoveTempDLNAIP();
 
   useEffect(() => {
     if (data?.configuration.dlna) {
-      const { dlnaEnabled } = data.configuration.dlna;
+      const { dlnaEnabled, dlnaWhitelistedIPs } = data.configuration.dlna;
       setEnabled(dlnaEnabled);
-      // TODO - whitelist
+      setDefaultIPWhitelist(dlnaWhitelistedIPs);
     }
   }, [data]);
 
@@ -51,7 +61,7 @@ export const SettingsDLNAPanel: React.FC = () => {
     } catch (e) {
       Toast.error(e);
     } finally {
-      status.refetch();
+      statusRefetch();
     }
   }
 
@@ -76,25 +86,72 @@ export const SettingsDLNAPanel: React.FC = () => {
       Toast.error(e);
     } finally {
       setEnableDisable(undefined);
-      status.refetch();
+      statusRefetch();
     }
   }
 
+  async function onAllowTempIP() {
+    if (!tempIP) {
+      return;
+    }
+
+    const input = {
+      variables: {
+        input: {
+          duration: enableUntilRestart ? undefined : enableDuration,
+          address: tempIP,
+        },
+      },
+    };
+
+    try {
+      await addTempDLANIP(input);
+      Toast.success({ content: "Allowed IP temporarily" });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setTempIP(undefined);
+      statusRefetch();
+    }
+  }
+
+  async function onDisallowTempIP(address: string) {
+    const input = {
+      variables: {
+        input: {
+          address,
+        },
+      },
+    };
+
+    try {
+      await removeTempDLNAIP(input);
+      Toast.success({ content: "Disallowed IP" });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      statusRefetch();
+    }
+  }
+
+  function renderDeadline(until?: string) {
+    if (until) {
+      const deadline = new Date(until);
+      return `until ${deadline.toLocaleString()}`;
+    }
+
+    return "";
+  }
+
   function renderStatus() {
-    if (!status.data?.dlnaStatus) {
+    if (!statusData) {
       return "";
     }
 
-    const { dlnaStatus } = status.data;
+    const { dlnaStatus } = statusData;
     const runningText = dlnaStatus.running ? "running" : "not running";
-    let untilText = "";
 
-    if (dlnaStatus.until) {
-      const deadline = new Date(dlnaStatus.until);
-      untilText = `until ${deadline.toLocaleString()}`;
-    }
-
-    return `${runningText} ${untilText}`;
+    return `${runningText} ${renderDeadline(dlnaStatus.until)}`;
   }
 
   function renderEnableButton() {
@@ -104,7 +161,6 @@ export const SettingsDLNAPanel: React.FC = () => {
 
     // if enabled by default, then show the disable temporarily
     // if disabled by default, then show enable temporarily
-    // TODO - also show a cancel button
     if (data?.configuration.dlna.dlnaEnabled) {
       return (
         <Button onClick={() => setEnableDisable(false)} className="mr-1">
@@ -121,11 +177,11 @@ export const SettingsDLNAPanel: React.FC = () => {
   }
 
   function canCancel() {
-    if (!status.data || !data) {
+    if (!statusData || !data) {
       return false;
     }
 
-    const { dlnaStatus } = status.data;
+    const { dlnaStatus } = statusData;
     const { dlnaEnabled } = data.configuration.dlna;
 
     return dlnaStatus.until || dlnaStatus.running !== dlnaEnabled;
@@ -136,7 +192,7 @@ export const SettingsDLNAPanel: React.FC = () => {
       return;
     }
 
-    const running = status.data?.dlnaStatus.running;
+    const running = statusData?.dlnaStatus.running;
 
     const input = {
       variables: {
@@ -155,7 +211,7 @@ export const SettingsDLNAPanel: React.FC = () => {
       Toast.error(e);
     } finally {
       setEnableDisable(undefined);
-      status.refetch();
+      statusRefetch();
     }
   }
 
@@ -213,9 +269,134 @@ export const SettingsDLNAPanel: React.FC = () => {
     );
   }
 
+  function renderTempWhitelistDialog() {
+    return (
+      <Modal
+        show={tempIP !== undefined}
+        header={`Allow ${tempIP}`}
+        icon="clock"
+        accept={{
+          text: "Allow",
+          variant: "primary",
+          onClick: onAllowTempIP,
+        }}
+        cancel={{
+          onClick: () => setTempIP(undefined),
+          variant: "secondary",
+        }}
+      >
+        <h4>{`Allow ${tempIP} temporarily`}</h4>
+        <Form.Group>
+          <Form.Check
+            checked={enableUntilRestart}
+            label="until restart"
+            onChange={() => setEnableUntilRestart(!enableUntilRestart)}
+          />
+        </Form.Group>
+
+        <Form.Group id="temp-enable-duration">
+          <DurationInput
+            numericValue={enableDuration ?? 0}
+            onValueChange={(v) => setEnableDuration(v ?? 0)}
+            disabled={enableUntilRestart}
+          />
+          <Form.Text className="text-muted">
+            Duration to allow for - in minutes.
+          </Form.Text>
+        </Form.Group>
+      </Modal>
+    );
+  }
+
+  function renderAllowedIPs() {
+    if (!statusData || statusData.dlnaStatus.allowedIPAddresses.length === 0) {
+      return;
+    }
+
+    const { allowedIPAddresses } = statusData.dlnaStatus;
+    return (
+      <Form.Group>
+        <h6>Allowed IP addresses</h6>
+
+        <ul className="addresses">
+          {allowedIPAddresses.map((a) => (
+            <li key={a.ipAddress}>
+              <div className="address">
+                <code>{a.ipAddress}</code>
+                <br />
+                <span className="deadline">{renderDeadline(a.until)}</span>
+              </div>
+
+              <div className="buttons">
+                <Button
+                  size="sm"
+                  title="Disallow"
+                  variant="danger"
+                  onClick={() => onDisallowTempIP(a.ipAddress)}
+                >
+                  <Icon icon="times" />
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Form.Group>
+    );
+  }
+
+  function renderRecentIPs() {
+    if (!statusData) {
+      return;
+    }
+
+    const { recentIPAddresses } = statusData.dlnaStatus;
+    return (
+      <ul className="addresses">
+        {recentIPAddresses.map((a) => (
+          <li key={a}>
+            <div className="address">
+              <code>{a}</code>
+            </div>
+            <div>
+              <Button
+                size="sm"
+                title="Allow temporarily"
+                onClick={() => setTempIP(a)}
+              >
+                <Icon icon="user-clock" />
+              </Button>
+            </div>
+          </li>
+        ))}
+        <li>
+          <div className="address">
+            <Form.Control
+              className="text-input"
+              value={ipEntry}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setIPEntry(e.currentTarget.value)
+              }
+            />
+          </div>
+          <div className="buttons">
+            <Button
+              size="sm"
+              title="Allow temporarily"
+              onClick={() => setTempIP(ipEntry)}
+              disabled={!ipEntry}
+            >
+              <Icon icon="user-clock" />
+            </Button>
+          </div>
+        </li>
+      </ul>
+    );
+  }
+
   return (
-    <>
+    <div id="settings-dlna">
       {renderTempEnableDialog()}
+      {renderTempWhitelistDialog()}
 
       <h4>DLNA</h4>
 
@@ -226,19 +407,46 @@ export const SettingsDLNAPanel: React.FC = () => {
       <Form.Group>
         <h5>Actions</h5>
 
-        {renderEnableButton()}
-        {renderTempCancelButton()}
+        <Form.Group>
+          {renderEnableButton()}
+          {renderTempCancelButton()}
+        </Form.Group>
+
+        {renderAllowedIPs()}
+
+        <Form.Group>
+          <h6>Recent IP addresses</h6>
+          <Form.Group>{renderRecentIPs()}</Form.Group>
+          {/* TODO - omitted refresh button since refetch doesn't seem to work */}
+          <Form.Group>
+            <Button onClick={() => statusRefetch()}>Refresh</Button>
+          </Form.Group>
+        </Form.Group>
       </Form.Group>
 
       <Form.Group>
         <h5>Settings</h5>
-        <Form.Check
-          checked={enabled}
-          label="Enabled by default"
-          onChange={() => setEnabled(!enabled)}
-        />
+        <Form.Group>
+          <Form.Check
+            checked={enabled}
+            label="Enabled by default"
+            onChange={() => setEnabled(!enabled)}
+          />
+        </Form.Group>
 
-        {/* TODO - default IP whitelist */}
+        <Form.Group>
+          <h6>Default IP Whitelist</h6>
+          <StringListInput
+            value={defaultIPWhitelist}
+            setValue={setDefaultIPWhitelist}
+            defaultNewValue="*"
+            className="ip-whitelist-input"
+          />
+          <Form.Text className="text-muted">
+            Default IP addresses allow to access DLNA. Use <code>*</code> to
+            allow all IP addresses.
+          </Form.Text>
+        </Form.Group>
       </Form.Group>
 
       <hr />
@@ -246,6 +454,6 @@ export const SettingsDLNAPanel: React.FC = () => {
       <Button variant="primary" onClick={() => onSave()}>
         Save
       </Button>
-    </>
+    </div>
   );
 };

@@ -9,31 +9,31 @@ import (
 )
 
 func (r *mutationResolver) EnableDlna(ctx context.Context, input models.EnableDLNAInput) (bool, error) {
-	var duration *time.Duration
-	if input.Duration != nil {
-		d := time.Duration(*input.Duration) * time.Minute
-		duration = &d
-	}
-
-	manager.GetInstance().DLNAService.Start(duration)
+	manager.GetInstance().DLNAService.Start(parseMinutes(input.Duration))
 	return true, nil
 }
 
 func (r *mutationResolver) DisableDlna(ctx context.Context, input models.DisableDLNAInput) (bool, error) {
-	var duration *time.Duration
-	if input.Duration != nil {
-		d := time.Duration(*input.Duration) * time.Minute
-		duration = &d
-	}
-
-	manager.GetInstance().DLNAService.Stop(duration)
+	manager.GetInstance().DLNAService.Stop(parseMinutes(input.Duration))
 	return true, nil
 }
 
-func (r *mutationResolver) AllowDlnaip(ctx context.Context, input models.AllowDLNAIPInput) (bool, error) {
-	panic("not implemented")
+func (r *mutationResolver) AddTempDlnaip(ctx context.Context, input models.AddTempDLNAIPInput) (bool, error) {
+	manager.GetInstance().DLNAService.AddTempDLNAIP(input.Address, parseMinutes(input.Duration))
+	return true, nil
 }
 
-func (r *mutationResolver) DisallowDlnaip(ctx context.Context, input models.DisallowDLNAIPInput) (bool, error) {
-	panic("not implemented")
+func (r *mutationResolver) RemoveTempDlnaip(ctx context.Context, input models.RemoveTempDLNAIPInput) (bool, error) {
+	ret := manager.GetInstance().DLNAService.RemoveTempDLNAIP(input.Address)
+	return ret, nil
+}
+
+func parseMinutes(minutes *int) *time.Duration {
+	var ret *time.Duration
+	if minutes != nil {
+		d := time.Duration(*minutes) * time.Minute
+		ret = &d
+	}
+
+	return ret
 }

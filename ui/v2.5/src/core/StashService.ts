@@ -712,6 +712,10 @@ export const useEnableDLNA = () => GQL.useEnableDlnaMutation();
 
 export const useDisableDLNA = () => GQL.useDisableDlnaMutation();
 
+export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
+
+export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
+
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
