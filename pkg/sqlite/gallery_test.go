@@ -193,6 +193,143 @@ func verifyGalleriesPath(t *testing.T, sqb models.GalleryReader, pathCriterion m
 	}
 }
 
+func TestGalleryQueryPathOr(t *testing.T) {
+	const gallery1Idx = 1
+	const gallery2Idx = 2
+
+	gallery1Path := getGalleryStringValue(gallery1Idx, "Path")
+	gallery2Path := getGalleryStringValue(gallery2Idx, "Path")
+
+	galleryFilter := models.GalleryFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    gallery1Path,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.GalleryFilterType{
+			Path: &models.StringCriterionInput{
+				Value:    gallery2Path,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 2)
+		assert.Equal(t, gallery1Path, galleries[0].Path.String)
+		assert.Equal(t, gallery2Path, galleries[1].Path.String)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryPathAndRating(t *testing.T) {
+	const galleryIdx = 1
+	galleryPath := getGalleryStringValue(galleryIdx, "Path")
+	galleryRating := getRating(galleryIdx)
+
+	galleryFilter := models.GalleryFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    galleryPath,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.GalleryFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(galleryRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryPath, galleries[0].Path.String)
+		assert.Equal(t, galleryRating.Int64, galleries[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryPathNotRating(t *testing.T) {
+	const galleryIdx = 1
+
+	galleryRating := getRating(galleryIdx)
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    "gallery_.*1_Path",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(galleryRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	galleryFilter := models.GalleryFilterType{
+		Path: &pathCriterion,
+		Not: &models.GalleryFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+
+		for _, gallery := range galleries {
+			verifyNullString(t, gallery.Path, pathCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, gallery.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestGalleryIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const galleryIdx = 1
+	subFilter := models.GalleryFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    getGalleryStringValue(galleryIdx, "Path"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	galleryFilter := &models.GalleryFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+
+		_, _, err := sqb.Query(galleryFilter, nil)
+		assert.NotNil(err)
+
+		galleryFilter.Or = nil
+		galleryFilter.Not = &subFilter
+		_, _, err = sqb.Query(galleryFilter, nil)
+		assert.NotNil(err)
+
+		galleryFilter.And = nil
+		galleryFilter.Or = &subFilter
+		_, _, err = sqb.Query(galleryFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func TestGalleryQueryURL(t *testing.T) {
 	const sceneIdx = 1
 	galleryURL := getGalleryStringValue(sceneIdx, urlField)
@@ -706,6 +843,72 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 				return err
 			}
 			verifyInt(t, len(ids), performerCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestGalleryQueryAverageResolution(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Gallery()
+		resolution := models.ResolutionEnumLow
+		galleryFilter := models.GalleryFilterType{
+			AverageResolution: &resolution,
+		}
+
+		// not verifying average - just ensure we get at least one
+		galleries := queryGallery(t, qb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), 0)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryImageCount(t *testing.T) {
+	const imageCount = 0
+	imageCountCriterion := models.IntCriterionInput{
+		Value:    imageCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesImageCount(t, imageCountCriterion)
+}
+
+func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		galleryFilter := models.GalleryFilterType{
+			ImageCount: &imageCountCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Greater(t, len(galleries), -1)
+
+		for _, gallery := range galleries {
+			pp := 0
+
+			_, count, err := r.Image().Query(&models.ImageFilterType{
+				Galleries: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(gallery.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, imageCountCriterion)
 		}
 
 		return nil

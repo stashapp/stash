@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"path/filepath"
 )
 
 type Gallery struct {
@@ -37,6 +38,20 @@ type GalleryPartial struct {
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+}
+
+// GetTitle returns the title of the scene. If the Title field is empty,
+// then the base filename is returned.
+func (s Gallery) GetTitle() string {
+	if s.Title.String != "" {
+		return s.Title.String
+	}
+
+	if s.Path.Valid {
+		return filepath.Base(s.Path.String)
+	}
+
+	return ""
 }
 
 const DefaultGthumbWidth int = 640

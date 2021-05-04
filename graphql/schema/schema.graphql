@@ -91,7 +91,8 @@ type Query {
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
   """Query StashBox for scenes"""
-  queryStashBoxScene(input: StashBoxQueryInput!): [ScrapedScene!]!
+  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]!
+  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]!
 
   # Plugins
   """List loaded plugins"""
@@ -234,6 +235,9 @@ type Mutation {
 
   """Backup the database. Optionally returns a link to download the database file"""
   backupDatabase(input: BackupDatabaseInput!): String
+
+  """Run batch performer tag task. Returns the job ID."""
+  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
 }
 
 type Subscription {

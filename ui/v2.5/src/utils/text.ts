@@ -186,6 +186,11 @@ const formatDate = (intl: IntlShape, date?: string) => {
   return intl.formatDate(date, { format: "long", timeZone: "utc" });
 };
 
+const capitalize = (val: string) =>
+  val
+    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
+    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
+
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
@@ -200,6 +205,7 @@ const TextUtils = {
   twitterURL,
   instagramURL,
   formatDate,
+  capitalize,
 };
 
 export default TextUtils;

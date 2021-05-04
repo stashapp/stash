@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -650,7 +648,7 @@ func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
 
 		if s.isFileBasedAutoTag(input) {
 			// doing file-based auto-tag
-			s.autoTagScenes(input.Paths, len(input.Performers) > 0, len(input.Studios) > 0, len(input.Tags) > 0)
+			s.autoTagFiles(input.Paths, len(input.Performers) > 0, len(input.Studios) > 0, len(input.Tags) > 0)
 		} else {
 			// doing specific performer/studio/tag auto-tag
 			s.autoTagSpecific(input)
@@ -658,90 +656,17 @@ func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
 	}()
 }
 
-func (s *singleton) autoTagScenes(paths []string, performers, studios, tags bool) {
-	if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		ret := &models.SceneFilterType{}
-		or := ret
-		sep := string(filepath.Separator)
-
-		for _, p := range paths {
-			if !strings.HasSuffix(p, sep) {
-				p = p + sep
-			}
-
-			if ret.Path == nil {
-				or = ret
-			} else {
-				newOr := &models.SceneFilterType{}
-				or.Or = newOr
-				or = newOr
-			}
-
-			or.Path = &models.StringCriterionInput{
-				Modifier: models.CriterionModifierEquals,
-				Value:    p + "%",
-			}
-		}
-
-		organized := false
-		ret.Organized = &organized
-
-		// batch process scenes
-		batchSize := 1000
-		page := 1
-		findFilter := &models.FindFilterType{
-			PerPage: &batchSize,
-			Page:    &page,
-		}
-
-		more := true
-		processed := 0
-		for more {
-			scenes, total, err := r.Scene().Query(ret, findFilter)
-			if err != nil {
-				return err
-			}
-
-			if processed == 0 {
-				logger.Infof("Starting autotag of %d scenes", total)
-			}
-
-			for _, ss := range scenes {
-				if s.Status.stopping {
-					logger.Info("Stopping due to user request")
-					return nil
-				}
-
-				t := autoTagSceneTask{
-					txnManager: s.TxnManager,
-					scene:      ss,
-					performers: performers,
-					studios:    studios,
-					tags:       tags,
-				}
-
-				var wg sync.WaitGroup
-				wg.Add(1)
-				go t.Start(&wg)
-				wg.Wait()
-
-				processed++
-				s.Status.setProgress(processed, total)
-			}
-
-			if len(scenes) != batchSize {
-				more = false
-			} else {
-				page++
-			}
-		}
-
-		return nil
-	}); err != nil {
-		logger.Error(err.Error())
+func (s *singleton) autoTagFiles(paths []string, performers, studios, tags bool) {
+	t := autoTagFilesTask{
+		paths:      paths,
+		performers: performers,
+		studios:    studios,
+		tags:       tags,
+		txnManager: s.TxnManager,
+		status:     &s.Status,
 	}
 
-	logger.Info("Finished autotag")
+	t.process()
 }
 
 func (s *singleton) autoTagSpecific(input models.AutoTagMetadataInput) {
@@ -838,7 +763,17 @@ func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
 				}
 
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					return autotag.PerformerScenes(performer, paths, r.Scene())
+					if err := autotag.PerformerScenes(performer, paths, r.Scene()); err != nil {
+						return err
+					}
+					if err := autotag.PerformerImages(performer, paths, r.Image()); err != nil {
+						return err
+					}
+					if err := autotag.PerformerGalleries(performer, paths, r.Gallery()); err != nil {
+						return err
+					}
+
+					return nil
 				}); err != nil {
 					return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name.String, err.Error())
 				}
@@ -895,7 +830,17 @@ func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
 				}
 
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					return autotag.StudioScenes(studio, paths, r.Scene())
+					if err := autotag.StudioScenes(studio, paths, r.Scene()); err != nil {
+						return err
+					}
+					if err := autotag.StudioImages(studio, paths, r.Image()); err != nil {
+						return err
+					}
+					if err := autotag.StudioGalleries(studio, paths, r.Gallery()); err != nil {
+						return err
+					}
+
+					return nil
 				}); err != nil {
 					return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name.String, err.Error())
 				}
@@ -946,7 +891,17 @@ func (s *singleton) autoTagTags(paths []string, tagIds []string) {
 				}
 
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					return autotag.TagScenes(tag, paths, r.Scene())
+					if err := autotag.TagScenes(tag, paths, r.Scene()); err != nil {
+						return err
+					}
+					if err := autotag.TagImages(tag, paths, r.Image()); err != nil {
+						return err
+					}
+					if err := autotag.TagGalleries(tag, paths, r.Gallery()); err != nil {
+						return err
+					}
+
+					return nil
 				}); err != nil {
 					return fmt.Errorf("error auto-tagging tag '%s': %s", tag.Name, err.Error())
 				}
@@ -1253,4 +1208,110 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 
 	}
 	return &totals
+}
+
+func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerformerTagInput) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(StashBoxBatchPerformer)
+	s.Status.indefiniteProgress()
+
+	go func() {
+		defer s.returnToIdleState()
+		logger.Infof("Initiating stash-box batch performer tag")
+
+		boxes := config.GetInstance().GetStashBoxes()
+		if input.Endpoint < 0 || input.Endpoint >= len(boxes) {
+			logger.Error(fmt.Errorf("invalid stash_box_index %d", input.Endpoint))
+			return
+		}
+		box := boxes[input.Endpoint]
+
+		var tasks []StashBoxPerformerTagTask
+
+		if len(input.PerformerIds) > 0 {
+			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				performerQuery := r.Performer()
+
+				for _, performerID := range input.PerformerIds {
+					if id, err := strconv.Atoi(performerID); err == nil {
+						performer, err := performerQuery.Find(id)
+						if err == nil {
+							tasks = append(tasks, StashBoxPerformerTagTask{
+								txnManager:      s.TxnManager,
+								performer:       performer,
+								refresh:         input.Refresh,
+								box:             box,
+								excluded_fields: input.ExcludeFields,
+							})
+						} else {
+							return err
+						}
+					}
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+			}
+		} else if len(input.PerformerNames) > 0 {
+			for i := range input.PerformerNames {
+				if len(input.PerformerNames[i]) > 0 {
+					tasks = append(tasks, StashBoxPerformerTagTask{
+						txnManager:      s.TxnManager,
+						name:            &input.PerformerNames[i],
+						refresh:         input.Refresh,
+						box:             box,
+						excluded_fields: input.ExcludeFields,
+					})
+				}
+			}
+		} else {
+			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				performerQuery := r.Performer()
+				var performers []*models.Performer
+				var err error
+				if input.Refresh {
+					performers, err = performerQuery.FindByStashIDStatus(true, box.Endpoint)
+				} else {
+					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
+				}
+				if err != nil {
+					return fmt.Errorf("Error querying performers: %s", err.Error())
+				}
+
+				for _, performer := range performers {
+					tasks = append(tasks, StashBoxPerformerTagTask{
+						txnManager:      s.TxnManager,
+						performer:       performer,
+						refresh:         input.Refresh,
+						box:             box,
+						excluded_fields: input.ExcludeFields,
+					})
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		if len(tasks) == 0 {
+			s.returnToIdleState()
+			return
+		}
+
+		s.Status.setProgress(0, len(tasks))
+
+		logger.Infof("Starting stash-box batch operation for %d performers", len(tasks))
+
+		var wg sync.WaitGroup
+		for _, task := range tasks {
+			wg.Add(1)
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}()
 }

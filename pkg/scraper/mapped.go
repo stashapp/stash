@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -73,7 +74,9 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result := attrConfig.concatenateResults(found)
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
-			return attrConfig.splitString(result)
+			results := attrConfig.splitString(result)
+			results = attrConfig.distinctResults(results)
+			return results
 		}
 
 		ret = []string{result}
@@ -86,6 +89,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 
 			ret = append(ret, text)
 		}
+		ret = attrConfig.distinctResults(ret)
 	}
 
 	return ret
@@ -637,6 +641,10 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	}
 
 	return strings.Join(result, separator)
+}
+
+func (c mappedScraperAttrConfig) distinctResults(nodes []string) []string {
+	return utils.StrUnique(nodes)
 }
 
 func (c mappedScraperAttrConfig) splitString(value string) []string {

@@ -92,7 +92,7 @@
 
 .performer-create-modal {
   font-size: 1.2rem;
-  max-width: 768px;
+  max-width: 800px;
 
   .image-selection {
     height: 450px;
@@ -100,6 +100,13 @@
 
     .performer-image {
       height: 85%;
+      position: relative;
+
+      &-exclude {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+      }
     }
 
     img {
@@ -110,5 +117,90 @@
 
   .LoadingIndicator {
     height: 100%;
+  }
+
+  &-field {
+    margin-bottom: 5px;
+
+    .btn {
+      margin-right: 5px;
+    }
+
+    .fa-icon {
+      width: 12px;
+    }
+  }
+}
+
+.PerformerTagger {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1600px;
+
+  &-header {
+    color: white;
+
+    &:hover {
+      color: white;
+    }
+  }
+
+  &-performer {
+    background-color: #495b68;
+    border-radius: 3px;
+    display: flex;
+    margin: 1rem;
+    max-width: 100%;
+    padding: 1rem;
+
+    .performer-card {
+      flex-shrink: 0;
+      width: 12rem;
+
+      img {
+        height: 100%;
+        max-height: 18rem;
+        object-fit: cover;
+        object-position: top;
+      }
+    }
+  }
+
+  &-details {
+    flex-grow: 1;
+    margin-left: 1rem;
+    width: 24rem;
+  }
+
+  &-performer-search {
+    display: flex;
+    flex-wrap: wrap;
+
+    &-item {
+      align-items: center;
+      align-text: left;
+      display: flex;
+      overflow: hidden;
+    }
+  }
+
+  &-thumb {
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  &-box-link {
+    margin-bottom: 5px;
+
+    .input-group-text {
+      font-family: monospace;
+    }
+  }
+}
+
+.FieldSelect {
+  .fa-icon {
+    width: 12px;
   }
 }
