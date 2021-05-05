@@ -13,7 +13,7 @@ https://stashapp.cc
 * You can tag videos and find them later.
 * It provides statistics about performers, tags, studios and other things.
 
-You can [watch a demo video](https://vimeo.com/275537038) to see it in action (password is stashapp).
+You can [watch a SFW demo video](https://vimeo.com/545323354) to see it in action.
 
 For further information you can [read the in-app manual](ui/v2.5/src/docs/en).
 
