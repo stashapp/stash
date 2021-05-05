@@ -1,7 +1,7 @@
 package ffmpeg
 
 import (
-	"fmt"
+	"bytes"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -62,7 +62,7 @@ func KillRunningEncoders(path string) {
 
 	for _, process := range processes {
 		// assume it worked, don't check for error
-		fmt.Printf("Killing encoder process for file: %s", path)
+		logger.Infof("Killing encoder process for file: %s", path)
 		process.Kill()
 
 		// wait for the process to die before returning
@@ -82,7 +82,8 @@ func KillRunningEncoders(path string) {
 	}
 }
 
-func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
+// FFmpeg runner with progress output, used for transcodes
+func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, error) {
 	cmd := exec.Command(e.Path, args...)
 
 	stderr, err := cmd.StderrPipe()
@@ -136,4 +137,27 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	return stdoutString, nil
+}
+
+func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
+	cmd := exec.Command(e.Path, args...)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Start(); err != nil {
+		return "", err
+	}
+
+	registerRunningEncoder(probeResult.Path, cmd.Process)
+	err := waitAndDeregister(probeResult.Path, cmd)
+
+	if err != nil {
+		// error message should be in the stderr stream
+		logger.Errorf("ffmpeg error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderr.String())
+		return stdout.String(), err
+	}
+
+	return stdout.String(), nil
 }
