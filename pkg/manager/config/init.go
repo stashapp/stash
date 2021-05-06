@@ -16,14 +16,17 @@ var once sync.Once
 
 type flagStruct struct {
 	configFilePath string
+	cpuProfilePath string
 }
 
 func Initialize() (*Instance, error) {
 	var err error
 	once.Do(func() {
-		instance = &Instance{}
-
 		flags := initFlags()
+		instance = &Instance{
+			cpuProfilePath: flags.cpuProfilePath,
+		}
+
 		err = initConfig(flags)
 		initEnvs()
 	})
@@ -31,6 +34,7 @@ func Initialize() (*Instance, error) {
 }
 
 func initConfig(flags flagStruct) error {
+
 	// The config file is called config.  Leave off the file extension.
 	viper.SetConfigName("config")
 
@@ -62,6 +66,7 @@ func initFlags() flagStruct {
 	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	pflag.Int("port", 9999, "port to serve from")
 	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
+	pflag.StringVar(&flags.cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
 
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {

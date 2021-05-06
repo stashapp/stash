@@ -141,7 +141,9 @@ func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
 }
 
-type Instance struct{}
+type Instance struct {
+	cpuProfilePath string
+}
 
 var instance *Instance
 
@@ -154,6 +156,13 @@ func GetInstance() *Instance {
 
 func (i *Instance) SetConfigFile(fn string) {
 	viper.SetConfigFile(fn)
+}
+
+// GetCPUProfilePath returns the path to the CPU profile file to output
+// profiling info to. This is set only via a commandline flag. Returns an
+// empty string if not set.
+func (i *Instance) GetCPUProfilePath() string {
+	return i.cpuProfilePath
 }
 
 func (i *Instance) Set(key string, value interface{}) {
