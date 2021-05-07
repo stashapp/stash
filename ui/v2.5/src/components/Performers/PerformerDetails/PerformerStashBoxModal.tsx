@@ -4,31 +4,39 @@ import { Button, Form } from "react-bootstrap";
 
 import * as GQL from "src/core/generated-graphql";
 import { Modal, LoadingIndicator } from "src/components/Shared";
-import { useScrapePerformerList } from "src/core/StashService";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
 
+export interface IStashBox extends GQL.StashBox {
+  index: number;
+}
+
 interface IProps {
-  scraper: GQL.Scraper;
+  instance: IStashBox;
   onHide: () => void;
-  onSelectPerformer: (
-    performer: GQL.ScrapedPerformerDataFragment,
-    scraper: GQL.Scraper
-  ) => void;
+  onSelectPerformer: (performer: GQL.ScrapedScenePerformer) => void;
   name?: string;
 }
-const PerformerScrapeModal: React.FC<IProps> = ({
-  scraper,
+const PerformerStashBoxModal: React.FC<IProps> = ({
+  instance,
   name,
   onHide,
   onSelectPerformer,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string>(name ?? "");
-  const { data, loading } = useScrapePerformerList(scraper.id, query);
+  const { data, loading } = GQL.useQueryStashBoxPerformerQuery({
+    variables: {
+      input: {
+        stash_box_index: instance.index,
+        q: query,
+      },
+    },
+    skip: query === "",
+  });
 
-  const performers = data?.scrapePerformerList ?? [];
+  const performers = data?.queryStashBoxPerformer?.[0].results ?? [];
 
   const onInputChange = debounce((input: string) => {
     setQuery(input);
@@ -40,7 +48,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
     <Modal
       show
       onHide={onHide}
-      header={`Scrape performer from ${scraper.name}`}
+      header={`Scrape performer from ${instance.name ?? "Stash-Box"}`}
       accept={{ text: "Cancel", onClick: onHide, variant: "secondary" }}
     >
       <div className={CLASSNAME}>
@@ -55,23 +63,22 @@ const PerformerScrapeModal: React.FC<IProps> = ({
           <div className="m-4 text-center">
             <LoadingIndicator inline />
           </div>
-        ) : (
+        ) : performers.length > 0 ? (
           <ul className={CLASSNAME_LIST}>
             {performers.map((p) => (
               <li key={p.url}>
-                <Button
-                  variant="link"
-                  onClick={() => onSelectPerformer(p, scraper)}
-                >
+                <Button variant="link" onClick={() => onSelectPerformer(p)}>
                   {p.name}
                 </Button>
               </li>
             ))}
           </ul>
+        ) : (
+          query !== "" && <h5 className="text-center">No results found.</h5>
         )}
       </div>
     </Modal>
   );
 };
 
-export default PerformerScrapeModal;
+export default PerformerStashBoxModal;
