@@ -341,11 +341,17 @@ func galleryTagCountCriterionHandler(qb *galleryQueryBuilder, tagCount *models.I
 }
 
 func galleryPerformersCriterionHandler(qb *galleryQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		qb.performersRepository().join(f, "performers_join", "galleries.id")
-		f.addJoin(performerTable, "", "performers_join.performer_id = performers.id")
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		joinTable:    performersGalleriesTable,
+		joinAs:       "performers_join",
+		primaryFK:    galleryIDColumn,
+		foreignFK:    performerIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.performersRepository().join(f, "performers_join", "galleries.id")
+		},
 	}
-	h := qb.getMultiCriterionHandlerBuilder(performerTable, performersGalleriesTable, performerIDColumn, addJoinsFunc)
 
 	return h.handler(performers)
 }

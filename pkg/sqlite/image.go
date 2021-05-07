@@ -377,11 +377,17 @@ func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.Mul
 }
 
 func imagePerformersCriterionHandler(qb *imageQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		qb.performersRepository().join(f, "performers_join", "images.id")
-		f.addJoin(performerTable, "", "performers_join.performer_id = performers.id")
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    performersImagesTable,
+		joinAs:       "performers_join",
+		primaryFK:    imageIDColumn,
+		foreignFK:    performerIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.performersRepository().join(f, "performers_join", "images.id")
+		},
 	}
-	h := qb.getMultiCriterionHandlerBuilder(performerTable, performersImagesTable, performerIDColumn, addJoinsFunc)
 
 	return h.handler(performers)
 }
