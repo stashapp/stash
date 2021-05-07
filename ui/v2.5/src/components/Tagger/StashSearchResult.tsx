@@ -46,7 +46,10 @@ const getDurationStatus = (
       </div>
     );
 
-  const minDiff = Math.min(scene.duration, ...durations);
+  const minDiff = Math.min(
+    Math.abs(scene.duration - stashDuration),
+    ...durations
+  );
   return <div>Duration off by at least {Math.floor(minDiff)}s</div>;
 };
 

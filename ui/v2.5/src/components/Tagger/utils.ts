@@ -179,6 +179,15 @@ export const sortScenesByDuration = (
     if (aDur.length > 0 && bDur.length === 0) return -1;
     if (aDur.length === 0 && bDur.length > 0) return 1;
 
+    const aMatches = aDur.filter((match) => match <= 5);
+    const bMatches = bDur.filter((match) => match <= 5);
+
+    if (aMatches.length > 0 || bMatches.length > 0) {
+      if (aMatches.length > bMatches.length) return -1;
+      if (aMatches.length < bMatches.length) return 1;
+      return 0;
+    }
+
     const aDiff = Math.min(...aDur);
     const bDiff = Math.min(...bDur);
 
