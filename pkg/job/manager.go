@@ -7,9 +7,12 @@ import (
 	"golang.org/x/net/context"
 )
 
+const maxGraveyardSize = 10
+
 // Manager maintains a queue of jobs. Jobs are executed one at a time.
 type Manager struct {
-	queue []*Job
+	queue     []*Job
+	graveyard []*Job
 
 	mutex    sync.Mutex
 	notEmpty *sync.Cond
@@ -98,8 +101,8 @@ func (m *Manager) dispatcher() {
 		}
 
 		// remove the job from the queue
-		// TODO - probably still want to store it somewhere
 		m.queue = m.queue[1:]
+		m.addFinishedJob(j)
 
 		// process next job
 	}
@@ -143,9 +146,17 @@ func (m *Manager) onJobFinish(job *Job) {
 	job.EndTime = &t
 }
 
-func (m *Manager) getJob(id int) (index int, job *Job) {
+func (m *Manager) addFinishedJob(job *Job) {
 	// assumes lock held
-	for i, j := range m.queue {
+	m.graveyard = append(m.graveyard, job)
+	if len(m.graveyard) > maxGraveyardSize {
+		m.graveyard = m.graveyard[1:]
+	}
+}
+
+func (m *Manager) getJob(list []*Job, id int) (index int, job *Job) {
+	// assumes lock held
+	for i, j := range list {
 		if j.ID == id {
 			index = i
 			job = j
@@ -164,13 +175,15 @@ func (m *Manager) CancelJob(id int) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	index, j := m.getJob(id)
+	index, j := m.getJob(m.queue, id)
 	if j != nil {
 		j.cancel()
 
 		if j.Status == StatusCancelled {
 			// remove from the queue
 			m.queue = append(m.queue[:index], m.queue[index+1:]...)
+			// add to graveyard
+			m.addFinishedJob(j)
 		}
 	}
 }
@@ -189,6 +202,8 @@ func (m *Manager) CancelAll() {
 
 		if j.Status != StatusCancelled {
 			newQueue = append(newQueue, j)
+			// add to graveyard
+			m.addFinishedJob(j)
 		}
 	}
 
@@ -201,7 +216,8 @@ func (m *Manager) GetJob(id int) *Job {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	_, j := m.getJob(id)
+	// get from the queue or graveyard
+	_, j := m.getJob(append(m.queue, m.graveyard...), id)
 	if j != nil {
 		// make a copy of the job and return the pointer
 		jCopy := *j
