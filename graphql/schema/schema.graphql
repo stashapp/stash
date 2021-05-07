@@ -228,7 +228,8 @@ type Mutation {
   runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
   reloadPlugins: Boolean!
 
-  stopJob: Boolean!
+  stopJob(job_id: ID!): Boolean!
+  stopAllJobs: Boolean!
 
   """Submit fingerprints to stash-box instance"""
   submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
