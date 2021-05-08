@@ -56,12 +56,12 @@ func StrAppendUniques(vs []string, toAdd []string) []string {
 	return vs
 }
 
-// StrUnique returns the vs string slice with non-unique values removed.
+// StrUnique returns the vs string slice with non-unique and null values removed.
 func StrUnique(vs []string) []string {
 	distinctValues := make(map[string]struct{})
 	var ret []string
 	for _, v := range vs {
-		if _, exists := distinctValues[v]; !exists {
+		if _, exists := distinctValues[v]; v != "" && !exists {
 			distinctValues[v] = struct{}{}
 			ret = append(ret, v)
 		}
