@@ -5,7 +5,7 @@ import { Link, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import {
   FindGalleriesQueryResult,
-  GallerySlimDataFragment,
+  SlimGalleryDataFragment,
 } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { TextUtils } from "src/utils";
@@ -130,7 +130,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   }
 
   function renderEditGalleriesDialog(
-    selectedImages: GallerySlimDataFragment[],
+    selectedImages: SlimGalleryDataFragment[],
     onClose: (applied: boolean) => void
   ) {
     return (
@@ -141,7 +141,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   }
 
   function renderDeleteGalleriesDialog(
-    selectedImages: GallerySlimDataFragment[],
+    selectedImages: SlimGalleryDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return (

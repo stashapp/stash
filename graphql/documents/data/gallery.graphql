@@ -15,16 +15,16 @@ fragment GalleryData on Gallery {
     ...SlimImageData
   }
   studio {
-    ...StudioData
+    ...SlimStudioData
   }
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   performers {
     ...PerformerData
   }
   scenes {
-    ...SceneData
+    ...SlimSceneData
   }
 }

@@ -3,7 +3,7 @@ import * as GQL from "src/core/generated-graphql";
 import { GalleryCard } from "src/components/Galleries/GalleryCard";
 
 interface ISceneGalleriesPanelProps {
-  galleries: GQL.GallerySlimDataFragment[];
+  galleries: GQL.SlimGalleryDataFragment[];
 }
 
 export const SceneGalleriesPanel: React.FC<ISceneGalleriesPanelProps> = ({

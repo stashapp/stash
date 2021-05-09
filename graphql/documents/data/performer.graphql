@@ -24,7 +24,7 @@ fragment PerformerData on Performer {
   gallery_count
 
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   stash_ids {
