@@ -190,6 +190,8 @@ input ConfigInterfaceInput {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Handy Connection Key"""
+  handyKey: String
 }
 
 type ConfigInterfaceResult {
@@ -214,6 +216,8 @@ type ConfigInterfaceResult {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Handy Connection Key"""
+  handyKey: String
 }
 
 """All configuration settings"""

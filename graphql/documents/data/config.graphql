@@ -53,6 +53,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   cssEnabled
   language
   slideshowDelay
+  handyKey
 }
 
 fragment ConfigData on ConfigResult {

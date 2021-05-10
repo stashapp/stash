@@ -34,6 +34,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("en");
+  const [handyKey, setHandyKey] = useState<string>();
 
   const [updateInterfaceConfig] = useConfigureInterface({
     menuItems: menuItemIds,
@@ -47,6 +48,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     cssEnabled,
     language,
     slideshowDelay,
+    handyKey,
   });
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setCSSEnabled(iCfg?.cssEnabled ?? false);
     setLanguage(iCfg?.language ?? "en-US");
     setSlideshowDelay(iCfg?.slideshowDelay ?? 5000);
+    setHandyKey(iCfg?.handyKey ?? "")
   }, [config]);
 
   async function onSave() {
@@ -231,6 +234,20 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <h5>Handy Connection Key</h5>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          value={handyKey}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setHandyKey(e.currentTarget.value);
+          }}
+        />
+        <Form.Text className="text-muted">
+          Handy connection key to use for interactive scenes.
         </Form.Text>
       </Form.Group>
 

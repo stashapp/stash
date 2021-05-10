@@ -1,16 +1,15 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
-
-	"errors"
-	"io/ioutil"
-	"path/filepath"
-	"regexp"
 
 	"github.com/spf13/viper"
 
@@ -123,6 +122,7 @@ const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
+const HandyKey = "handy_key"
 
 // Logging options
 const LogFile = "logFile"
@@ -611,6 +611,10 @@ func (i *Instance) SetCSS(css string) {
 
 func (i *Instance) GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
+}
+
+func (i *Instance) GetHandyKey() string {
+	return viper.GetString(HandyKey)
 }
 
 // GetLogFile returns the filename of the file to output logs to.
