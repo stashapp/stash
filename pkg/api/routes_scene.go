@@ -37,6 +37,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
 		r.Get("/vtt/chapter", rs.ChapterVtt)
+		r.Get("/funscript", rs.Funscript)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -262,6 +263,13 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/vtt")
 	_, _ = w.Write([]byte(vtt))
+}
+
+func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	funscript := utils.GetFunscriptPath(scene.Path)
+	utils.ServeFileNoCache(w, r, funscript)
+	http.ServeFile(w, r, funscript)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
