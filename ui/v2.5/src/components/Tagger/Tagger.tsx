@@ -150,6 +150,9 @@ interface ITaggerListProps {
   clearSubmissionQueue: (endpoint: string) => void;
 }
 
+// Caches fingerprint lookups between page renders
+let fingerprintCache: Record<string, IStashBoxScene[]> = {};
+
 const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
   queue,
@@ -181,7 +184,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
   const [fingerprints, setFingerprints] = useState<
     Record<string, IStashBoxScene[]>
-  >({});
+  >(fingerprintCache);
   const [hideUnmatched, setHideUnmatched] = useState(false);
   const fingerprintQueue =
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
@@ -285,6 +288,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     });
 
     setFingerprints(newFingerprints);
+    fingerprintCache = newFingerprints;
     setLoadingFingerprints(false);
     setFingerprintError("");
   };

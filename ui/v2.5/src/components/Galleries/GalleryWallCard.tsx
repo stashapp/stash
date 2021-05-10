@@ -12,7 +12,7 @@ const CLASSNAME_IMG = `${CLASSNAME}-img`;
 const CLASSNAME_TITLE = `${CLASSNAME}-title`;
 
 interface IProps {
-  gallery: GQL.GallerySlimDataFragment;
+  gallery: GQL.SlimGalleryDataFragment;
 }
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
