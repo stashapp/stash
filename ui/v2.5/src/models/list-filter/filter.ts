@@ -74,6 +74,7 @@ import { DisplayMode, FilterMode } from "./types";
 import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
 import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
 import { GalleriesCriterion } from "./criteria/galleries";
+import {InteractiveCriterion, InteractiveCriterionOption} from "./criteria/interactive";
 
 interface IQueryParameters {
   perPage?: string;
@@ -136,6 +137,7 @@ export class ListFilterModel {
           "performer_count",
           "random",
           "movie_scene_number",
+          "interactive",
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -162,6 +164,7 @@ export class ListFilterModel {
           new MoviesCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
           ListFilterModel.createCriterionOption("stash_id"),
+          new InteractiveCriterionOption(),
         ];
         break;
       case FilterMode.Images:
@@ -668,6 +671,10 @@ export class ListFilterModel {
             value: stashIdCrit.value,
             modifier: stashIdCrit.modifier,
           };
+          break;
+        }
+        case "interactive": {
+          result.interactive = (criterion as InteractiveCriterion).value === "true";
           break;
         }
         // no default

@@ -133,6 +133,8 @@ input SceneFilterType {
   stash_id: StringCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by interactive"""
+  interactive: Boolean
 }
 
 input MovieFilterType {
