@@ -70,3 +70,34 @@
     list-style: none;
   }
 }
+
+.job-table {
+  ul {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  li > div {
+    align-items: center;
+    display: flex;
+  }
+
+  .job-status {
+    width: 100%;
+  }
+
+  .stop,
+  .stopping,
+  .cancelled {
+    color: $danger;
+  }
+
+  .running,
+  .finished {
+    color: $success;
+  }
+
+  .ready {
+    color: $warning;
+  }
+}

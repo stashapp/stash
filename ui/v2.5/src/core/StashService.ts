@@ -701,7 +701,7 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
-export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
+export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
@@ -721,14 +721,17 @@ export const useLogs = () =>
     fetchPolicy: "no-cache",
   });
 
-export const useJobStatus = () =>
-  GQL.useJobStatusQuery({
+export const useJobQueue = () =>
+  GQL.useJobQueueQuery({
     fetchPolicy: "no-cache",
   });
 
-export const mutateStopJob = () =>
+export const mutateStopJob = (jobID: string) =>
   client.mutate<GQL.StopJobMutation>({
     mutation: GQL.StopJobDocument,
+    variables: {
+      job_id: jobID,
+    },
   });
 
 export const queryScrapeFreeones = (performerName: string) =>
