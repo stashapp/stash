@@ -5,6 +5,8 @@ import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
 import { JWUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
+import { ScenePlayerInteractiveControls } from "./ScenePlayerInteractiveControls";
+import { Interactive } from "../../utils/interactive";
 
 interface IScenePlayerProps {
   className?: string;
@@ -22,12 +24,13 @@ interface IScenePlayerState {
   scrubberPosition: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: Record<string, any>;
+  interactiveClient: Interactive;
 }
-
 export class ScenePlayerImpl extends React.Component<
   IScenePlayerProps,
   IScenePlayerState
 > {
+
   private static isDirectStream(src?: string) {
     if (!src) {
       return false;
@@ -50,16 +53,15 @@ export class ScenePlayerImpl extends React.Component<
 
     this.onScrubberSeek = this.onScrubberSeek.bind(this);
     this.onScrubberScrolled = this.onScrubberScrolled.bind(this);
-
     this.state = {
       scrubberPosition: 0,
       config: this.makeJWPlayerConfig(props.scene),
+      interactiveClient: new Interactive(this.props.config?.handyKey || ""),
     };
 
     // Default back to Direct Streaming
     localStorage.removeItem("jwplayer.qualityLabel");
   }
-
   public UNSAFE_componentWillReceiveProps(props: IScenePlayerProps) {
     if (props.scene !== this.props.scene) {
       this.setState((state) => ({
@@ -88,8 +90,12 @@ export class ScenePlayerImpl extends React.Component<
     this.player.setPlaybackRate(1);
   }
   onPause() {
-    if (this.player.getState().paused) this.player.play();
-    else this.player.pause();
+    if (this.player.getState().paused) {
+      this.player.play();
+    }
+    else {
+      this.player.pause();
+    }
   }
 
   private onReady() {
@@ -126,6 +132,22 @@ export class ScenePlayerImpl extends React.Component<
         this.player.seek(this.props.timestamp);
       }
     });
+
+    this.player.on("play", () => {
+      if (this.props.scene.interactive) {
+        this.state.interactiveClient.play(this.player.getPosition());
+      }
+    });
+
+    this.player.on("pause", () => {
+      if (this.props.scene.interactive) {
+        this.state.interactiveClient.pause();
+      }
+    });
+
+    if (this.props.scene.interactive) {
+      this.state.interactiveClient.uploadScript(this.props.scene.paths.funscript || "");
+    }
   }
 
   private onSeeked() {
@@ -140,6 +162,9 @@ export class ScenePlayerImpl extends React.Component<
     if (difference > 1) {
       this.lastTime = position;
       this.setState({ scrubberPosition: position });
+      if (this.props.scene.interactive) {
+        this.state.interactiveClient.ensurePlaying(position)
+      }
     }
   }
 
@@ -322,6 +347,10 @@ export class ScenePlayerImpl extends React.Component<
           onSeek={this.onScrubberSeek}
           onScrolled={this.onScrubberScrolled}
         />
+        <ScenePlayerInteractiveControls
+          scene={this.props.scene}
+          interactive={this.state.interactiveClient}
+          />
       </div>
     );
   }
@@ -333,13 +362,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = (
   const config = useConfiguration();
 
   return (
-    <ScenePlayerImpl
-      {...props}
-      config={
-        config.data && config.data.configuration
-          ? config.data.configuration.interface
-          : undefined
-      }
-    />
+      <ScenePlayerImpl
+        {...props}
+        config={
+          config.data && config.data.configuration
+            ? config.data.configuration.interface
+            : undefined
+        }
+      />
   );
 };
