@@ -19,3 +19,7 @@ subscription LoggingSubscribe {
     ...LogEntryData
   }
 }
+
+subscription ScanCompleteSubscribe {
+  scanCompleteSubscribe
+}

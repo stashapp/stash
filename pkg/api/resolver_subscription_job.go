@@ -33,6 +33,7 @@ type updateThrottler struct {
 	output chan *models.JobStatusUpdate
 
 	updates []*throttledUpdate
+	closed  bool
 	mutex   sync.Mutex
 }
 
@@ -90,10 +91,19 @@ func (u *updateThrottler) updateJob(j *job.Job) {
 				u.mutex.Lock()
 				defer u.mutex.Unlock()
 
-				tu.broadcast(u.output)
+				if !u.closed {
+					tu.broadcast(u.output)
+				}
 			})
 		}
 	}
+}
+
+func (u *updateThrottler) close() {
+	u.mutex.Lock()
+	defer u.mutex.Unlock()
+
+	u.closed = true
 }
 
 func (r *subscriptionResolver) JobsSubscribe(ctx context.Context) (<-chan *models.JobStatusUpdate, error) {
@@ -124,6 +134,7 @@ func (r *subscriptionResolver) JobsSubscribe(ctx context.Context) (<-chan *model
 				// throttle updates to no more than one per second
 				throttler.updateJob(&j)
 			case <-ctx.Done():
+				throttler.close()
 				close(msg)
 				return
 			}
@@ -131,4 +142,8 @@ func (r *subscriptionResolver) JobsSubscribe(ctx context.Context) (<-chan *model
 	}()
 
 	return msg, nil
+}
+
+func (r *subscriptionResolver) ScanCompleteSubscribe(ctx context.Context) (<-chan bool, error) {
+	return manager.GetInstance().ScanSubscribe(ctx), nil
 }

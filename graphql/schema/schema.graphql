@@ -249,6 +249,8 @@ type Subscription {
   jobsSubscribe: JobStatusUpdate!
 
   loggingSubscribe: [LogEntry!]!
+
+  scanCompleteSubscribe: Boolean!
 }
 
 schema {

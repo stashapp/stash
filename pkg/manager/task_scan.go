@@ -26,8 +26,9 @@ import (
 )
 
 type ScanJob struct {
-	txnManager models.TransactionManager
-	input      models.ScanMetadataInput
+	txnManager    models.TransactionManager
+	input         models.ScanMetadataInput
+	subscriptions *subscriptionManager
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
@@ -138,6 +139,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 		logger.Info("Finished gallery association")
 	})
+
+	j.subscriptions.notify()
 }
 
 func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (total *int, newFiles *int) {

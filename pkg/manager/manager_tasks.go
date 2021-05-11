@@ -54,10 +54,17 @@ func getScanPaths(inputPaths []string) []*models.StashConfig {
 	return ret
 }
 
+// ScanSubscribe subscribes to a notification that is triggered when a
+// scan or clean is complete.
+func (s *singleton) ScanSubscribe(ctx context.Context) <-chan bool {
+	return s.scanSubs.subscribe(ctx)
+}
+
 func (s *singleton) Scan(input models.ScanMetadataInput) int {
 	scanJob := ScanJob{
-		txnManager: s.TxnManager,
-		input:      input,
+		txnManager:    s.TxnManager,
+		input:         input,
+		subscriptions: s.scanSubs,
 	}
 
 	return s.JobManager.Add("Scanning...", &scanJob)
@@ -508,6 +515,8 @@ func (s *singleton) Clean(input models.CleanMetadataInput) int {
 		}
 
 		logger.Info("Finished Cleaning")
+
+		s.scanSubs.notify()
 	})
 
 	return s.JobManager.Add("Cleaning...", j)

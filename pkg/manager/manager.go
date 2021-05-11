@@ -37,6 +37,8 @@ type singleton struct {
 	DownloadStore *DownloadStore
 
 	TxnManager models.TransactionManager
+
+	scanSubs *subscriptionManager
 }
 
 var instance *singleton
@@ -59,6 +61,8 @@ func Initialize() *singleton {
 			DownloadStore: NewDownloadStore(),
 
 			TxnManager: sqlite.NewTransactionManager(),
+
+			scanSubs: &subscriptionManager{},
 		}
 
 		cfgFile := cfg.GetConfigFile()
