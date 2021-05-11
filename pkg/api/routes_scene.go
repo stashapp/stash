@@ -269,7 +269,6 @@ func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	funscript := utils.GetFunscriptPath(scene.Path)
 	utils.ServeFileNoCache(w, r, funscript)
-	http.ServeFile(w, r, funscript)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
