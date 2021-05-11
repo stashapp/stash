@@ -67,7 +67,7 @@ export class Interactive {
       .uploadCsv(csvFile)
       .then((response) => response.url);
     this._connected = await this._handy
-      .syncPrepare(tempURL, fileName, csvFile.size)
+      .syncPrepare(encodeURI(tempURL), fileName, csvFile.size)
       .then((response) => response.connected);
   }
 
