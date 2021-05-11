@@ -57,14 +57,8 @@ type Job struct {
 	EndTime     *time.Time
 	AddTime     time.Time
 
-	exec          JobExec
-	cancelFunc    context.CancelFunc
-	lastSubtaskID int
-}
-
-func (j *Job) nextID() int {
-	j.lastSubtaskID += 1
-	return j.lastSubtaskID
+	exec       JobExec
+	cancelFunc context.CancelFunc
 }
 
 func (j *Job) cancel() {

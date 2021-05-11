@@ -10,8 +10,8 @@ type ManagerSubscription struct {
 	updatedJob chan Job
 }
 
-func newSubscription() ManagerSubscription {
-	ret := ManagerSubscription{
+func newSubscription() *ManagerSubscription {
+	ret := &ManagerSubscription{
 		newJob:     make(chan Job, 100),
 		removedJob: make(chan Job, 100),
 		updatedJob: make(chan Job, 100),

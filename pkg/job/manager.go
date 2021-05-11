@@ -19,7 +19,7 @@ type Manager struct {
 
 	lastID int
 
-	subscriptions []ManagerSubscription
+	subscriptions []*ManagerSubscription
 }
 
 // NewManager initialises and returns a new Manager.
@@ -297,7 +297,7 @@ func (m *Manager) GetQueue() []Job {
 	return ret
 }
 
-func (m *Manager) Subscribe(ctx context.Context) ManagerSubscription {
+func (m *Manager) Subscribe(ctx context.Context) *ManagerSubscription {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -311,6 +311,14 @@ func (m *Manager) Subscribe(ctx context.Context) ManagerSubscription {
 		defer m.mutex.Unlock()
 
 		ret.close()
+
+		// remove from the list
+		for i, s := range m.subscriptions {
+			if s == ret {
+				m.subscriptions = append(m.subscriptions[:i], m.subscriptions[i+1:]...)
+				break
+			}
+		}
 	}()
 
 	return ret
