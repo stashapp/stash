@@ -64,7 +64,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setCSSEnabled(iCfg?.cssEnabled ?? false);
     setLanguage(iCfg?.language ?? "en-US");
     setSlideshowDelay(iCfg?.slideshowDelay ?? 5000);
-    setHandyKey(iCfg?.handyKey ?? "")
+    setHandyKey(iCfg?.handyKey ?? "");
   }, [config]);
 
   async function onSave() {

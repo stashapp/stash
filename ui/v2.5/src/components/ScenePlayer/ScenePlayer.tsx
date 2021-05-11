@@ -29,7 +29,6 @@ export class ScenePlayerImpl extends React.Component<
   IScenePlayerProps,
   IScenePlayerState
 > {
-
   private static isDirectStream(src?: string) {
     if (!src) {
       return false;
@@ -91,8 +90,7 @@ export class ScenePlayerImpl extends React.Component<
   onPause() {
     if (this.player.getState().paused) {
       this.player.play();
-    }
-    else {
+    } else {
       this.player.pause();
     }
   }
@@ -145,7 +143,9 @@ export class ScenePlayerImpl extends React.Component<
     });
 
     if (this.props.scene.interactive) {
-      this.state.interactiveClient.uploadScript(this.props.scene.paths.funscript || "");
+      this.state.interactiveClient.uploadScript(
+        this.props.scene.paths.funscript || ""
+      );
     }
   }
 
@@ -162,7 +162,7 @@ export class ScenePlayerImpl extends React.Component<
       this.lastTime = position;
       this.setState({ scrubberPosition: position });
       if (this.props.scene.interactive) {
-        this.state.interactiveClient.ensurePlaying(position)
+        this.state.interactiveClient.ensurePlaying(position);
       }
     }
   }
@@ -357,13 +357,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = (
   const config = useConfiguration();
 
   return (
-      <ScenePlayerImpl
-        {...props}
-        config={
-          config.data && config.data.configuration
-            ? config.data.configuration.interface
-            : undefined
-        }
-      />
+    <ScenePlayerImpl
+      {...props}
+      config={
+        config.data && config.data.configuration
+          ? config.data.configuration.interface
+          : undefined
+      }
+    />
   );
 };

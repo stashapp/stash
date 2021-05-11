@@ -83,7 +83,9 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
 
   const _position = useRef(0);
   const onSeek = useMemo(() => debounce(props.onSeek, 1000), [props.onSeek]);
-  const onScrolled = useMemo(() => debounce(props.onScrolled, 1000), [props.onScrolled]);
+  const onScrolled = useMemo(() => debounce(props.onScrolled, 1000), [
+    props.onScrolled,
+  ]);
   const getPosition = useCallback(() => _position.current, []);
   const setPosition = useCallback(
     (newPostion: number, shouldEmit: boolean = true) => {

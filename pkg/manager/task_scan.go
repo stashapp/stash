@@ -495,7 +495,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				qb := r.Scene()
 				scenePartial := models.ScenePartial{
-					ID:   s.ID,
+					ID:          s.ID,
 					Interactive: &interactive,
 				}
 				_, err := qb.Update(scenePartial)
@@ -570,8 +570,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 		} else {
 			logger.Infof("%s already exists. Updating path...", t.FilePath)
 			scenePartial := models.ScenePartial{
-				ID:   s.ID,
-				Path: &t.FilePath,
+				ID:          s.ID,
+				Path:        &t.FilePath,
 				Interactive: &interactive,
 			}
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -602,8 +602,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 				Timestamp: fileModTime,
 				Valid:     true,
 			},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
 		}
 

@@ -12,13 +12,13 @@ interface IAction {
 // Copied from handy-js-sdk under MIT license, with modifications. (It's not published to npm)
 // Converting to CSV first instead of uploading Funscripts will reduce uploaded file size.
 function convertFunscriptToCSV(funscript: IFunscript) {
-  const lineTerminator = '\r\n'
+  const lineTerminator = "\r\n";
   if (funscript?.actions?.length > 0) {
     return funscript.actions.reduce((prev: string, curr: IAction) => {
       return `${prev}${curr.at},${curr.pos}${lineTerminator}`;
     }, `#Created by stash.app ${new Date().toUTCString()}\n`);
   }
-  throw new Error('Not a valid funscript');
+  throw new Error("Not a valid funscript");
 }
 
 // Interactive currently uses the Handy API, but could be expanded to use buttplug.io
@@ -41,47 +41,56 @@ export class Interactive {
 
   async uploadScript(funscriptPath: string) {
     if (!(this._handy.connectionKey && funscriptPath)) {
-      return
+      return;
     }
 
     if (!this._handy.serverTimeOffset) {
       const cachedOffset = localStorage.getItem("serverTimeOffset");
       if (cachedOffset !== null) {
-        this._handy.serverTimeOffset = parseInt(cachedOffset, 10)
+        this._handy.serverTimeOffset = parseInt(cachedOffset, 10);
       } else {
         // One time sync to get server time offset
         await this._handy.getServerTimeOffset();
-        localStorage.setItem("serverTimeOffset", this._handy.serverTimeOffset.toString())
+        localStorage.setItem(
+          "serverTimeOffset",
+          this._handy.serverTimeOffset.toString()
+        );
       }
     }
 
-    const csv = await fetch(funscriptPath).then(response => response.json()).then(
-      json => convertFunscriptToCSV(json)
-    )
-    const fileName = `${Math.round(Math.random()*100000000)  }.csv`
+    const csv = await fetch(funscriptPath)
+      .then((response) => response.json())
+      .then((json) => convertFunscriptToCSV(json));
+    const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
     const csvFile = new File([csv], fileName);
-    const tempURL = await this._handy.uploadCsv(csvFile).then(response => response.url)
-    this._connected = await this._handy.syncPrepare(tempURL, fileName, csvFile.size).then(response => response.connected)
-  };
+    const tempURL = await this._handy
+      .uploadCsv(csvFile)
+      .then((response) => response.url);
+    this._connected = await this._handy
+      .syncPrepare(tempURL, fileName, csvFile.size)
+      .then((response) => response.connected);
+  }
 
   async play(position: number) {
     if (!this._connected) {
-      return
+      return;
     }
-    this._playing = await this._handy.syncPlay(true, Math.round(position * 1000)).then(() => true)
+    this._playing = await this._handy
+      .syncPlay(true, Math.round(position * 1000))
+      .then(() => true);
   }
 
   async pause() {
     if (!this._connected) {
-      return
+      return;
     }
-    this._playing = await this._handy.syncPlay(false).then(() => false)
+    this._playing = await this._handy.syncPlay(false).then(() => false);
   }
 
   async ensurePlaying(position: number) {
     if (this._playing) {
-      return
+      return;
     }
-    await this.play(position)
+    await this.play(position);
   }
 }

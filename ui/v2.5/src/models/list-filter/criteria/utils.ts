@@ -28,7 +28,7 @@ import { TagsCriterion } from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
 import { GalleriesCriterion } from "./galleries";
-import {InteractiveCriterion} from "./interactive";
+import { InteractiveCriterion } from "./interactive";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {

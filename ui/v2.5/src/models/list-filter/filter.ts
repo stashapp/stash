@@ -74,7 +74,10 @@ import { DisplayMode, FilterMode } from "./types";
 import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
 import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
 import { GalleriesCriterion } from "./criteria/galleries";
-import {InteractiveCriterion, InteractiveCriterionOption} from "./criteria/interactive";
+import {
+  InteractiveCriterion,
+  InteractiveCriterionOption,
+} from "./criteria/interactive";
 
 interface IQueryParameters {
   perPage?: string;
@@ -674,7 +677,8 @@ export class ListFilterModel {
           break;
         }
         case "interactive": {
-          result.interactive = (criterion as InteractiveCriterion).value === "true";
+          result.interactive =
+            (criterion as InteractiveCriterion).value === "true";
           break;
         }
         // no default
