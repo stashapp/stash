@@ -23,7 +23,7 @@ func newTestExec(finish chan struct{}) *testExec {
 	}
 }
 
-func (e *testExec) Execute(ctx context.Context, updater StatusUpdater) {
+func (e *testExec) Execute(ctx context.Context, updater *Progress) {
 	close(e.started)
 
 	if e.finish != nil {

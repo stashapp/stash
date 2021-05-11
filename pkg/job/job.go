@@ -7,13 +7,13 @@ import (
 
 // JobExec represents the implementation of a Job to be executed.
 type JobExec interface {
-	Execute(ctx context.Context, updater StatusUpdater)
+	Execute(ctx context.Context, progress *Progress)
 }
 
-// StatusUpdater is used by JobExec objects to communicate their progress
+// ProgressUpdater is used by JobExec objects to communicate their progress
 // to the job manager.
-type StatusUpdater interface {
-	UpdateStatus(progress float64, details []string)
+type ProgressUpdater interface {
+	UpdateProgress(progress float64, details []string)
 }
 
 // Status is the status of a Job

@@ -163,10 +163,13 @@ func (m *Manager) dispatch(j *Job) (done chan struct{}) {
 
 	done = make(chan struct{})
 	go func() {
-		j.exec.Execute(ctx, &updater{
-			m:   m,
-			job: j,
-		})
+		progress := &Progress{
+			updater: &updater{
+				m:   m,
+				job: j,
+			},
+		}
+		j.exec.Execute(ctx, progress)
 
 		m.onJobFinish(j)
 
@@ -330,7 +333,7 @@ type updater struct {
 	job *Job
 }
 
-func (u *updater) UpdateStatus(progress float64, details []string) {
+func (u *updater) UpdateProgress(progress float64, details []string) {
 	u.m.mutex.Lock()
 	defer u.m.mutex.Unlock()
 
