@@ -5,7 +5,6 @@ import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
 import { JWUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { ScenePlayerInteractiveControls } from "./ScenePlayerInteractiveControls";
 import { Interactive } from "../../utils/interactive";
 
 interface IScenePlayerProps {
@@ -347,10 +346,6 @@ export class ScenePlayerImpl extends React.Component<
           onSeek={this.onScrubberSeek}
           onScrolled={this.onScrubberScrolled}
         />
-        <ScenePlayerInteractiveControls
-          scene={this.props.scene}
-          interactive={this.state.interactiveClient}
-          />
       </div>
     );
   }
