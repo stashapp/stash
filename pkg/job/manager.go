@@ -19,6 +19,8 @@ type Manager struct {
 	stop     chan struct{}
 
 	lastID int
+
+	subscriptions []ManagerSubscription
 }
 
 // NewManager initialises and returns a new Manager.
@@ -62,7 +64,41 @@ func (m *Manager) Add(description string, e JobExec) int {
 		m.notEmpty.Broadcast()
 	}
 
+	m.notifyNewJob(&j)
+
 	return j.ID
+}
+
+func (m *Manager) Start(description string, e JobExec) int {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	t := time.Now()
+
+	j := Job{
+		ID:          m.nextID(),
+		Status:      StatusReady,
+		Description: description,
+		AddTime:     t,
+		exec:        e,
+	}
+
+	m.queue = append(m.queue, &j)
+
+	m.dispatch(&j)
+
+	return j.ID
+}
+
+func (m *Manager) notifyNewJob(j *Job) {
+	// assumes lock held
+	for _, s := range m.subscriptions {
+		// don't block if channel is full
+		select {
+		case s.newJob <- *j:
+		default:
+		}
+	}
 }
 
 func (m *Manager) nextID() int {
@@ -70,12 +106,25 @@ func (m *Manager) nextID() int {
 	return m.lastID
 }
 
+func (m *Manager) getReadyJob() *Job {
+	// assumes lock held
+	for _, j := range m.queue {
+		if j.Status == StatusReady {
+			return j
+		}
+	}
+
+	return nil
+}
+
 func (m *Manager) dispatcher() {
 	m.mutex.Lock()
 
 	for {
 		// wait until we have something to process
-		for len(m.queue) == 0 {
+		j := m.getReadyJob()
+
+		for j == nil {
 			m.notEmpty.Wait()
 
 			// it's possible that we have been stopped - check here
@@ -85,24 +134,19 @@ func (m *Manager) dispatcher() {
 				return
 			default:
 				// keep going
+				j = m.getReadyJob()
 			}
 		}
 
-		// grab to top job from the queue
-		j := m.queue[0]
+		done := m.dispatch(j)
 
-		if j.Status != StatusCancelled {
-			done := m.dispatch(j)
-
-			// unlock the mutex and wait for the job to finish
-			m.mutex.Unlock()
-			<-done
-			m.mutex.Lock()
-		}
+		// unlock the mutex and wait for the job to finish
+		m.mutex.Unlock()
+		<-done
+		m.mutex.Lock()
 
 		// remove the job from the queue
-		m.queue = m.queue[1:]
-		m.addFinishedJob(j)
+		m.removeJob(j)
 
 		// process next job
 	}
@@ -146,11 +190,27 @@ func (m *Manager) onJobFinish(job *Job) {
 	job.EndTime = &t
 }
 
-func (m *Manager) addFinishedJob(job *Job) {
+func (m *Manager) removeJob(job *Job) {
 	// assumes lock held
+	index, _ := m.getJob(m.queue, job.ID)
+	if index == -1 {
+		return
+	}
+
+	m.queue = append(m.queue[:index], m.queue[index+1:]...)
+
 	m.graveyard = append(m.graveyard, job)
 	if len(m.graveyard) > maxGraveyardSize {
 		m.graveyard = m.graveyard[1:]
+	}
+
+	// notify job removed
+	for _, s := range m.subscriptions {
+		// don't block if channel is full
+		select {
+		case s.removedJob <- *job:
+		default:
+		}
 	}
 }
 
@@ -175,15 +235,13 @@ func (m *Manager) CancelJob(id int) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	index, j := m.getJob(m.queue, id)
+	_, j := m.getJob(m.queue, id)
 	if j != nil {
 		j.cancel()
 
 		if j.Status == StatusCancelled {
 			// remove from the queue
-			m.queue = append(m.queue[:index], m.queue[index+1:]...)
-			// add to graveyard
-			m.addFinishedJob(j)
+			m.removeJob(j)
 		}
 	}
 }
@@ -194,20 +252,15 @@ func (m *Manager) CancelAll() {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	var newQueue []*Job
-
 	// call cancel on all
 	for _, j := range m.queue {
 		j.cancel()
 
 		if j.Status != StatusCancelled {
-			newQueue = append(newQueue, j)
 			// add to graveyard
-			m.addFinishedJob(j)
+			m.removeJob(j)
 		}
 	}
-
-	m.queue = newQueue
 }
 
 // GetJob returns a copy of the Job for the provided id. Returns nil if the job
@@ -242,34 +295,47 @@ func (m *Manager) GetQueue() []*Job {
 	return ret
 }
 
+func (m *Manager) Subscribe(ctx context.Context) ManagerSubscription {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	ret := newSubscription()
+
+	m.subscriptions = append(m.subscriptions, ret)
+
+	go func() {
+		<-ctx.Done()
+		m.mutex.Lock()
+		defer m.mutex.Unlock()
+
+		ret.close()
+	}()
+
+	return ret
+}
+
+func (m *Manager) notifyJobUpdate(j *Job) {
+	// assumes lock held
+	for _, s := range m.subscriptions {
+		// don't block if channel is full
+		select {
+		case s.updatedJob <- *j:
+		default:
+		}
+	}
+}
+
 type updater struct {
 	m   *Manager
 	job *Job
 }
 
-func (u *updater) SetProgress(progress float64) {
+func (u *updater) UpdateStatus(progress float64, details []string) {
 	u.m.mutex.Lock()
 	defer u.m.mutex.Unlock()
 
 	u.job.Progress = progress
+	u.job.Details = details
 
-	// TODO need to notify
-}
-
-func (u *updater) AddSubTask(subtask string) int {
-	u.m.mutex.Lock()
-	defer u.m.mutex.Unlock()
-
-	// TODO need to notify
-
-	return u.job.addSubTask(subtask)
-}
-
-func (u *updater) RemoveSubTask(subtaskID int) {
-	u.m.mutex.Lock()
-	defer u.m.mutex.Unlock()
-
-	// TODO need to notify
-
-	u.job.removeSubTask(subtaskID)
+	u.m.notifyJobUpdate(u.job)
 }

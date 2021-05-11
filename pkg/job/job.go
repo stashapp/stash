@@ -13,9 +13,7 @@ type JobExec interface {
 // StatusUpdater is used by JobExec objects to communicate their progress
 // to the job manager.
 type StatusUpdater interface {
-	SetProgress(progress float64)
-	AddSubTask(subtask string) int
-	RemoveSubTask(subtaskID int)
+	UpdateStatus(progress float64, details []string)
 }
 
 // Status is the status of a Job
@@ -35,9 +33,10 @@ const (
 
 // Job represents the status of a queued or running job.
 type Job struct {
-	ID          int
-	Status      Status
-	SubTasks    []SubTask
+	ID     int
+	Status Status
+	// details of the current operations of the job
+	Details     []string
 	Description string
 	Progress    float64
 	StartTime   *time.Time
@@ -54,25 +53,6 @@ func (j *Job) nextID() int {
 	return j.lastSubtaskID
 }
 
-func (j *Job) addSubTask(subtask string) int {
-	s := SubTask{
-		id:          j.nextID(),
-		Description: subtask,
-	}
-
-	j.SubTasks = append(j.SubTasks, s)
-	return s.id
-}
-
-func (j *Job) removeSubTask(id int) {
-	for i, subtask := range j.SubTasks {
-		if subtask.id == id {
-			j.SubTasks = append(j.SubTasks[:i], j.SubTasks[i+1:]...)
-			return
-		}
-	}
-}
-
 func (j *Job) cancel() {
 	if j.Status == StatusReady {
 		j.Status = StatusCancelled
@@ -83,12 +63,6 @@ func (j *Job) cancel() {
 	if j.cancelFunc != nil {
 		j.cancelFunc()
 	}
-}
-
-// SubTask represents a unit of work within a Job.
-type SubTask struct {
-	id          int
-	Description string
 }
 
 // IsCancelled returns true if cancel has been called on the context.
