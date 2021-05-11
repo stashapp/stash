@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
@@ -23,11 +24,12 @@ import (
 type singleton struct {
 	Config *config.Instance
 
-	Status TaskStatus
-	Paths  *paths.Paths
+	Paths *paths.Paths
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	JobManager *job.Manager
 
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
@@ -53,7 +55,7 @@ func Initialize() *singleton {
 
 		instance = &singleton{
 			Config:        cfg,
-			Status:        TaskStatus{Status: Idle, Progress: -1},
+			JobManager:    job.NewManager(),
 			DownloadStore: NewDownloadStore(),
 
 			TxnManager: sqlite.NewTransactionManager(),

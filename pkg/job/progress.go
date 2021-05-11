@@ -56,6 +56,9 @@ func (p *Progress) calculatePercent() {
 		p.percent = -1
 	} else {
 		p.percent = float64(p.processed) / float64(p.total)
+		if p.percent > 1 {
+			p.percent = 1
+		}
 	}
 
 	p.updated()

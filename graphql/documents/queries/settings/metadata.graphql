@@ -1,11 +1,3 @@
-query JobStatus {
-  jobStatus {
-    progress
-    status
-    message
-  }
-}
-
 query SystemStatus {
   systemStatus {
     databaseSchema

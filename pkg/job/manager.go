@@ -1,10 +1,9 @@
 package job
 
 import (
+	"context"
 	"sync"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 const maxGraveyardSize = 10
@@ -284,15 +283,15 @@ func (m *Manager) GetJob(id int) *Job {
 }
 
 // GetQueue returns a copy of the current job queue.
-func (m *Manager) GetQueue() []*Job {
+func (m *Manager) GetQueue() []Job {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	var ret []*Job
+	var ret []Job
 
 	for _, j := range m.queue {
 		jCopy := *j
-		ret = append(ret, &jCopy)
+		ret = append(ret, jCopy)
 	}
 
 	return ret

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,12 +17,178 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type ScanJob struct {
+	txnManager models.TransactionManager
+	input      models.ScanMetadataInput
+}
+
+func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+	input := j.input
+	paths := getScanPaths(input.Paths)
+
+	var total *int
+	var newFiles *int
+	job.ExecuteTask(progress, "Counting files to scan...", func() {
+		total, newFiles = j.neededScan(ctx, paths)
+	})
+
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
+		return
+	}
+
+	if total == nil || newFiles == nil {
+		logger.Infof("Taking too long to count content. Skipping...")
+		logger.Infof("Starting scan")
+	} else {
+		logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
+	}
+
+	start := time.Now()
+	config := config.GetInstance()
+	parallelTasks := config.GetParallelTasksWithAutoDetection()
+	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
+	wg := sizedwaitgroup.New(parallelTasks)
+
+	if total != nil {
+		progress.SetTotal(*total)
+	}
+
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	calculateMD5 := config.IsCalculateMD5()
+
+	stoppingErr := errors.New("stopping")
+	var err error
+
+	var galleries []string
+
+	for _, sp := range paths {
+		err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			if job.IsCancelled(ctx) {
+				return stoppingErr
+			}
+
+			if isGallery(path) {
+				galleries = append(galleries, path)
+			}
+
+			instance.Paths.Generated.EnsureTmpDir()
+
+			wg.Add()
+			task := ScanTask{
+				TxnManager:           j.txnManager,
+				FilePath:             path,
+				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
+				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
+				fileNamingAlgorithm:  fileNamingAlgo,
+				calculateMD5:         calculateMD5,
+				GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
+				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
+				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
+				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+			}
+
+			go job.ExecuteTask(progress, "Scanning "+path, func() {
+				task.Start(&wg)
+				progress.Increment()
+			})
+
+			return nil
+		})
+
+		if err == stoppingErr {
+			logger.Info("Stopping due to user request")
+			break
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered scanning files: %s", err.Error())
+			break
+		}
+	}
+
+	wg.Wait()
+	instance.Paths.Generated.EmptyTmpDir()
+	elapsed := time.Since(start)
+	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+	if job.IsCancelled(ctx) || err != nil {
+		return
+	}
+
+	job.ExecuteTask(progress, "Associating galleries", func() {
+		for _, path := range galleries {
+			wg.Add()
+			task := ScanTask{
+				TxnManager:      j.txnManager,
+				FilePath:        path,
+				UseFileMetadata: false,
+			}
+
+			go task.associateGallery(&wg)
+			wg.Wait()
+		}
+		logger.Info("Finished gallery association")
+	})
+}
+
+func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (total *int, newFiles *int) {
+	const timeout = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
+	chTimeout := time.After(timeout)
+
+	logger.Infof("Counting files to scan...")
+
+	t := 0
+	n := 0
+
+	timeoutErr := errors.New("timed out")
+
+	for _, sp := range paths {
+		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			t++
+			task := ScanTask{FilePath: path, TxnManager: j.txnManager}
+			if !task.doesPathExist() {
+				n++
+			}
+
+			//check for timeout
+			select {
+			case <-chTimeout:
+				return timeoutErr
+			default:
+			}
+
+			// check stop
+			if job.IsCancelled(ctx) {
+				return timeoutErr
+			}
+
+			return nil
+		})
+
+		if err == timeoutErr {
+			// timeout should return nil counts
+			return nil, nil
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
+			return nil, nil
+		}
+	}
+
+	return &t, &n
+}
 
 type ScanTask struct {
 	TxnManager           models.TransactionManager

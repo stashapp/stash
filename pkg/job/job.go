@@ -10,6 +10,20 @@ type JobExec interface {
 	Execute(ctx context.Context, progress *Progress)
 }
 
+type jobExecImpl struct {
+	fn func(ctx context.Context, progress *Progress)
+}
+
+func (j *jobExecImpl) Execute(ctx context.Context, progress *Progress) {
+	j.fn(ctx, progress)
+}
+
+func MakeJobExec(fn func(ctx context.Context, progress *Progress)) JobExec {
+	return &jobExecImpl{
+		fn: fn,
+	}
+}
+
 // ProgressUpdater is used by JobExec objects to communicate their progress
 // to the job manager.
 type ProgressUpdater interface {

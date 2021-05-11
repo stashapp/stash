@@ -1,8 +1,16 @@
-subscription MetadataUpdate {
-  metadataUpdate {
-    progress
-    status
-    message
+subscription JobsSubscribe {
+  jobsSubscribe {
+    type
+    job {
+      id
+      status
+      subTasks
+      description
+      progress
+      startTime
+      endTime
+      addTime
+    }
   }
 }
 

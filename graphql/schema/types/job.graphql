@@ -12,7 +12,22 @@ type Job {
   subTasks: [String!]
   description: String!
   progress: Float
-  startTime: Time!
+  startTime: Time
   endTime: Time
   addTime: Time!
+}
+
+input FindJobInput {
+  id: ID!
+}
+
+enum JobStatusUpdateType {
+  ADD
+  REMOVE
+  UPDATE
+}
+
+type JobStatusUpdate {
+  type: JobStatusUpdateType!
+  job: Job!
 }
