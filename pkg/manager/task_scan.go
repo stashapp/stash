@@ -37,7 +37,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	var total *int
 	var newFiles *int
-	job.ExecuteTask(progress, "Counting files to scan...", func() {
+	progress.ExecuteTask("Counting files to scan...", func() {
 		total, newFiles = j.neededScan(ctx, paths)
 	})
 
@@ -97,7 +97,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
 			}
 
-			go job.ExecuteTask(progress, "Scanning "+path, func() {
+			go progress.ExecuteTask("Scanning "+path, func() {
 				task.Start(&wg)
 				progress.Increment()
 			})
@@ -125,7 +125,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		return
 	}
 
-	job.ExecuteTask(progress, "Associating galleries", func() {
+	progress.ExecuteTask("Associating galleries", func() {
 		for _, path := range galleries {
 			wg.Add()
 			task := ScanTask{

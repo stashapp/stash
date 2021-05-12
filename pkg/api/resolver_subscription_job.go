@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/job"
@@ -29,81 +28,11 @@ func (tu *throttledUpdate) broadcast(output chan *models.JobStatusUpdate) {
 	tu.pendingUpdate = nil
 }
 
-type updateThrottler struct {
-	output chan *models.JobStatusUpdate
-
-	updates []*throttledUpdate
-	closed  bool
-	mutex   sync.Mutex
-}
-
-func (u *updateThrottler) findJob(id int) *throttledUpdate {
-	for _, tu := range u.updates {
-		if tu.id == id {
-			return tu
-		}
+func makeJobStatusUpdate(t models.JobStatusUpdateType, j job.Job) *models.JobStatusUpdate {
+	return &models.JobStatusUpdate{
+		Type: t,
+		Job:  jobToJobModel(j),
 	}
-
-	return nil
-}
-
-func (u *updateThrottler) removeJob(id int) {
-	for i, tu := range u.updates {
-		if tu.id == id {
-			u.updates = append(u.updates[:i], u.updates[i+1:]...)
-			return
-		}
-	}
-}
-
-func (u *updateThrottler) makeKillTimer(tu *throttledUpdate) {
-	tu.killTimer = time.AfterFunc(time.Second, func() {
-		u.mutex.Lock()
-		defer u.mutex.Unlock()
-
-		if tu.pendingUpdate != nil || time.Since(tu.lastUpdate) > time.Second {
-			u.removeJob(tu.id)
-		} else {
-			u.makeKillTimer(tu)
-		}
-	})
-}
-
-func (u *updateThrottler) updateJob(j *job.Job) {
-	u.mutex.Lock()
-	defer u.mutex.Unlock()
-
-	tu := u.findJob(j.ID)
-	if tu == nil {
-		tu := &throttledUpdate{
-			id:            j.ID,
-			pendingUpdate: j,
-		}
-		u.updates = append(u.updates, tu)
-
-		tu.broadcast(u.output)
-		u.makeKillTimer(tu)
-	} else {
-		tu.pendingUpdate = j
-
-		if tu.broadcastTimer == nil {
-			tu.broadcastTimer = time.AfterFunc(time.Second-time.Since(tu.lastUpdate), func() {
-				u.mutex.Lock()
-				defer u.mutex.Unlock()
-
-				if !u.closed {
-					tu.broadcast(u.output)
-				}
-			})
-		}
-	}
-}
-
-func (u *updateThrottler) close() {
-	u.mutex.Lock()
-	defer u.mutex.Unlock()
-
-	u.closed = true
 }
 
 func (r *subscriptionResolver) JobsSubscribe(ctx context.Context) (<-chan *models.JobStatusUpdate, error) {
@@ -111,30 +40,16 @@ func (r *subscriptionResolver) JobsSubscribe(ctx context.Context) (<-chan *model
 
 	subscription := manager.GetInstance().JobManager.Subscribe(ctx)
 
-	throttler := updateThrottler{
-		output: msg,
-	}
-
 	go func() {
 		for {
 			select {
 			case j := <-subscription.NewJob:
-				u := models.JobStatusUpdate{
-					Type: models.JobStatusUpdateTypeAdd,
-					Job:  jobToJobModel(j),
-				}
-				msg <- &u
+				msg <- makeJobStatusUpdate(models.JobStatusUpdateTypeAdd, j)
 			case j := <-subscription.RemovedJob:
-				u := models.JobStatusUpdate{
-					Type: models.JobStatusUpdateTypeRemove,
-					Job:  jobToJobModel(j),
-				}
-				msg <- &u
+				msg <- makeJobStatusUpdate(models.JobStatusUpdateTypeRemove, j)
 			case j := <-subscription.UpdatedJob:
-				// throttle updates to no more than one per second
-				throttler.updateJob(&j)
+				msg <- makeJobStatusUpdate(models.JobStatusUpdateTypeUpdate, j)
 			case <-ctx.Done():
-				throttler.close()
 				close(msg)
 				return
 			}

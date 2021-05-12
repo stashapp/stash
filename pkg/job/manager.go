@@ -7,6 +7,7 @@ import (
 )
 
 const maxGraveyardSize = 10
+const defaultThrottleLimit = time.Second
 
 // Manager maintains a queue of jobs. Jobs are executed one at a time.
 type Manager struct {
@@ -19,15 +20,18 @@ type Manager struct {
 
 	lastID int
 
-	subscriptions []*ManagerSubscription
+	subscriptions       []*ManagerSubscription
+	updateThrottleLimit time.Duration
 }
 
 // NewManager initialises and returns a new Manager.
 func NewManager() *Manager {
-	ret := &Manager{}
+	ret := &Manager{
+		stop:                make(chan struct{}),
+		updateThrottleLimit: defaultThrottleLimit,
+	}
 
 	ret.notEmpty = sync.NewCond(&ret.mutex)
-	ret.stop = make(chan struct{})
 
 	go ret.dispatcher()
 
@@ -68,6 +72,8 @@ func (m *Manager) Add(description string, e JobExec) int {
 	return j.ID
 }
 
+// Start adds a job and starts it immediately, concurrently with any other
+// jobs.
 func (m *Manager) Start(description string, e JobExec) int {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -151,6 +157,16 @@ func (m *Manager) dispatcher() {
 	}
 }
 
+func (m *Manager) newProgress(j *Job) *Progress {
+	return &Progress{
+		updater: &updater{
+			m:   m,
+			job: j,
+		},
+		percent: ProgressIndefinite,
+	}
+}
+
 func (m *Manager) dispatch(j *Job) (done chan struct{}) {
 	// assumes lock held
 	t := time.Now()
@@ -162,18 +178,15 @@ func (m *Manager) dispatch(j *Job) (done chan struct{}) {
 
 	done = make(chan struct{})
 	go func() {
-		progress := &Progress{
-			updater: &updater{
-				m:   m,
-				job: j,
-			},
-		}
+		progress := m.newProgress(j)
 		j.exec.Execute(ctx, progress)
 
 		m.onJobFinish(j)
 
 		close(done)
 	}()
+
+	m.notifyJobUpdate(j)
 
 	return
 }
@@ -258,7 +271,7 @@ func (m *Manager) CancelAll() {
 	for _, j := range m.queue {
 		j.cancel()
 
-		if j.Status != StatusCancelled {
+		if j.Status == StatusCancelled {
 			// add to graveyard
 			m.removeJob(j)
 		}
@@ -297,6 +310,7 @@ func (m *Manager) GetQueue() []Job {
 	return ret
 }
 
+// Subscribe subscribes to changes to jobs in the manager queue.
 func (m *Manager) Subscribe(ctx context.Context) *ManagerSubscription {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -325,6 +339,12 @@ func (m *Manager) Subscribe(ctx context.Context) *ManagerSubscription {
 }
 
 func (m *Manager) notifyJobUpdate(j *Job) {
+	// don't update if job is finished or cancelled - these are handled
+	// by removeJob
+	if j.Status == StatusCancelled || j.Status == StatusFinished {
+		return
+	}
+
 	// assumes lock held
 	for _, s := range m.subscriptions {
 		// don't block if channel is full
@@ -336,16 +356,36 @@ func (m *Manager) notifyJobUpdate(j *Job) {
 }
 
 type updater struct {
-	m   *Manager
-	job *Job
+	m           *Manager
+	job         *Job
+	lastUpdate  time.Time
+	updateTimer *time.Timer
 }
 
-func (u *updater) UpdateProgress(progress float64, details []string) {
+func (u *updater) notifyUpdate() {
+	// assumes lock held
+	u.m.notifyJobUpdate(u.job)
+	u.lastUpdate = time.Now()
+	u.updateTimer = nil
+}
+
+func (u *updater) updateProgress(progress float64, details []string) {
 	u.m.mutex.Lock()
 	defer u.m.mutex.Unlock()
 
 	u.job.Progress = progress
 	u.job.Details = details
 
-	u.m.notifyJobUpdate(u.job)
+	if time.Since(u.lastUpdate) < u.m.updateThrottleLimit {
+		if u.updateTimer == nil {
+			u.updateTimer = time.AfterFunc(u.m.updateThrottleLimit-time.Since(u.lastUpdate), func() {
+				u.m.mutex.Lock()
+				defer u.m.mutex.Unlock()
+
+				u.notifyUpdate()
+			})
+		}
+	} else {
+		u.notifyUpdate()
+	}
 }

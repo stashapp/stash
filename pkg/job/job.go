@@ -18,16 +18,12 @@ func (j *jobExecImpl) Execute(ctx context.Context, progress *Progress) {
 	j.fn(ctx, progress)
 }
 
+// MakeJobExec returns a simple JobExec implementation using the provided
+// function.
 func MakeJobExec(fn func(ctx context.Context, progress *Progress)) JobExec {
 	return &jobExecImpl{
 		fn: fn,
 	}
-}
-
-// ProgressUpdater is used by JobExec objects to communicate their progress
-// to the job manager.
-type ProgressUpdater interface {
-	UpdateProgress(progress float64, details []string)
 }
 
 // Status is the status of a Job
@@ -35,7 +31,8 @@ type Status string
 
 const (
 	// StatusReady means that the Job is not yet started.
-	StatusReady   Status = "READY"
+	StatusReady Status = "READY"
+	// StatusRunning means that the job is currently running.
 	StatusRunning Status = "RUNNING"
 	// StatusStopping means that the job is cancelled but is still running.
 	StatusStopping Status = "STOPPING"
@@ -52,10 +49,11 @@ type Job struct {
 	// details of the current operations of the job
 	Details     []string
 	Description string
-	Progress    float64
-	StartTime   *time.Time
-	EndTime     *time.Time
-	AddTime     time.Time
+	// Progress in terms of 0 - 1.
+	Progress  float64
+	StartTime *time.Time
+	EndTime   *time.Time
+	AddTime   time.Time
 
 	exec       JobExec
 	cancelFunc context.CancelFunc

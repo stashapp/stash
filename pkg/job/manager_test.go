@@ -14,6 +14,7 @@ type testExec struct {
 	started   chan struct{}
 	finish    chan struct{}
 	cancelled bool
+	progress  *Progress
 }
 
 func newTestExec(finish chan struct{}) *testExec {
@@ -23,7 +24,8 @@ func newTestExec(finish chan struct{}) *testExec {
 	}
 }
 
-func (e *testExec) Execute(ctx context.Context, updater *Progress) {
+func (e *testExec) Execute(ctx context.Context, p *Progress) {
+	e.progress = p
 	close(e.started)
 
 	if e.finish != nil {
@@ -188,4 +190,146 @@ func TestCancel(t *testing.T) {
 
 	// expect job to have been cancelled via context
 	assert.True(exec1.cancelled)
+}
+
+func TestCancelAll(t *testing.T) {
+	m := NewManager()
+
+	// add two jobs
+	const jobName = "test job"
+	exec1 := newTestExec(make(chan struct{}))
+	jobID := m.Add(jobName, exec1)
+
+	const otherJobName = "other job"
+	exec2 := newTestExec(make(chan struct{}))
+	job2ID := m.Add(otherJobName, exec2)
+
+	// wait a tiny bit
+	time.Sleep(sleepTime)
+
+	m.CancelAll()
+
+	// allow first job to finish
+	close(exec1.finish)
+
+	// wait a tiny bit
+	time.Sleep(sleepTime)
+
+	// expect all jobs to be cancelled
+	assert := assert.New(t)
+	j := m.GetJob(job2ID)
+	assert.Equal(StatusCancelled, j.Status)
+
+	j = m.GetJob(jobID)
+	assert.Equal(StatusCancelled, j.Status)
+
+	// expect all jobs to be removed from the queue
+	assert.Len(m.GetQueue(), 0)
+
+	// expect job to have not have been started
+	select {
+	case <-exec2.started:
+		t.Error("cancelled exec was started")
+	default:
+	}
+}
+
+func TestSubscribe(t *testing.T) {
+	m := NewManager()
+
+	m.updateThrottleLimit = time.Millisecond * 100
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	s := m.Subscribe(ctx)
+
+	// add a job
+	const jobName = "test job"
+	exec1 := newTestExec(make(chan struct{}))
+	jobID := m.Add(jobName, exec1)
+
+	assert := assert.New(t)
+
+	select {
+	case newJob := <-s.NewJob:
+		assert.Equal(jobID, newJob.ID)
+		assert.Equal(jobName, newJob.Description)
+		assert.Equal(StatusReady, newJob.Status)
+	case <-time.After(time.Second):
+		t.Error("new job was not received")
+	}
+
+	// should receive an update when the job begins to run
+	select {
+	case updatedJob := <-s.UpdatedJob:
+		assert.Equal(jobID, updatedJob.ID)
+		assert.Equal(jobName, updatedJob.Description)
+		assert.Equal(StatusRunning, updatedJob.Status)
+	case <-time.After(time.Second):
+		t.Error("updated job was not received")
+	}
+
+	// test update throttling
+	exec1.progress.SetPercent(0.1)
+
+	// first update should be immediate
+	select {
+	case updatedJob := <-s.UpdatedJob:
+		assert.Equal(0.1, updatedJob.Progress)
+	case <-time.After(m.updateThrottleLimit):
+		t.Error("updated job was not received")
+	}
+
+	exec1.progress.SetPercent(0.2)
+	exec1.progress.SetPercent(0.3)
+
+	// should only receive a single update with the second status
+	select {
+	case updatedJob := <-s.UpdatedJob:
+		assert.Equal(0.3, updatedJob.Progress)
+	case <-time.After(time.Second):
+		t.Error("updated job was not received")
+	}
+
+	select {
+	case <-s.UpdatedJob:
+		t.Error("received an additional updatedJob")
+	default:
+	}
+
+	// allow job to finish
+	close(exec1.finish)
+
+	select {
+	case removedJob := <-s.RemovedJob:
+		assert.Equal(jobID, removedJob.ID)
+		assert.Equal(jobName, removedJob.Description)
+		assert.Equal(StatusFinished, removedJob.Status)
+	case <-time.After(time.Second):
+		t.Error("removed job was not received")
+	}
+
+	// should not receive another update
+	select {
+	case <-s.UpdatedJob:
+		t.Error("updated job was received after update")
+	case <-time.After(m.updateThrottleLimit):
+	}
+
+	// add another job and cancel it
+	exec2 := newTestExec(make(chan struct{}))
+	jobID = m.Add(jobName, exec2)
+
+	m.CancelJob(jobID)
+
+	select {
+	case removedJob := <-s.RemovedJob:
+		assert.Equal(jobID, removedJob.ID)
+		assert.Equal(jobName, removedJob.Description)
+		assert.Equal(StatusCancelled, removedJob.Status)
+	case <-time.After(time.Second):
+		t.Error("cancelled job was not received")
+	}
+
+	cancel()
 }

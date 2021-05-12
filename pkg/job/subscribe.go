@@ -1,8 +1,13 @@
 package job
 
+// ManagerSubscription is a collection of channels that will receive updates
+// from the job manager.
 type ManagerSubscription struct {
-	NewJob     <-chan Job
+	// new jobs are sent to this channel
+	NewJob <-chan Job
+	// removed jobs are sent to this channel
 	RemovedJob <-chan Job
+	// updated jobs are sent to this channel
 	UpdatedJob <-chan Job
 
 	newJob     chan Job
