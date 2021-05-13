@@ -104,8 +104,26 @@ const Task: React.FC<IJob> = ({ job }) => {
     }
   }
 
-  return (
+  function maybeRenderSubTasks() {
+    if (
+      job.status === GQL.JobStatus.Running ||
+      job.status === GQL.JobStatus.Stopping
+    ) {
+      return (
+        <div>
+          {/* eslint-disable react/no-array-index-key */}
+          {(job.subTasks ?? []).map((t, i) => (
+            <div className="job-subtask" key={i}>
+              {t}
+            </div>
+          ))}
+          {/* eslint-enable react/no-array-index-key */}
+        </div>
+      );
+    }
+  }
 
+  return (
     <li className={`job ${className}`}>
       <div>
         <Button
@@ -122,15 +140,7 @@ const Task: React.FC<IJob> = ({ job }) => {
             <span>{job.description}</span>
           </div>
           <div>{maybeRenderProgress()}</div>
-          <div>
-            {/* eslint-disable react/no-array-index-key */}
-            {(job.subTasks ?? []).map((t, i) => (
-              <div className="job-subtask" key={i}>
-                {t}
-              </div>
-            ))}
-            {/* eslint-enable react/no-array-index-key */}
-          </div>
+          {maybeRenderSubTasks()}
         </div>
       </div>
     </li>

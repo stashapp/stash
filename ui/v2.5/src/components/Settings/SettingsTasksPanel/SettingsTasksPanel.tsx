@@ -273,7 +273,7 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
 
-      <h4>Running Jobs</h4>
+      <h4>Job Queue</h4>
 
       <JobTable />
 

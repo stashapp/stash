@@ -95,12 +95,13 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
 				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+				progress:             progress,
 			}
 
-			go progress.ExecuteTask("Scanning "+path, func() {
+			go func() {
 				task.Start(&wg)
 				progress.Increment()
-			})
+			}()
 
 			return nil
 		})
@@ -205,40 +206,57 @@ type ScanTask struct {
 	GeneratePreview      bool
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
+	progress             *job.Progress
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	if isGallery(t.FilePath) {
-		t.scanGallery()
-	} else if isVideo(t.FilePath) {
-		s := t.scanScene()
+	defer wg.Done()
 
-		if s != nil {
-			iwg := sizedwaitgroup.New(2)
+	var s *models.Scene
 
-			if t.GenerateSprite {
-				iwg.Add()
+	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
+		if isGallery(t.FilePath) {
+			t.scanGallery()
+		} else if isVideo(t.FilePath) {
+			s = t.scanScene()
+		} else if isImage(t.FilePath) {
+			t.scanImage()
+		}
+	})
+
+	if s != nil {
+		iwg := sizedwaitgroup.New(2)
+
+		if t.GenerateSprite {
+			iwg.Add()
+
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", t.FilePath), func() {
 				taskSprite := GenerateSpriteTask{
 					Scene:               *s,
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				go taskSprite.Start(&iwg)
-			}
+				taskSprite.Start(&iwg)
+			})
+		}
 
-			if t.GeneratePhash {
-				iwg.Add()
+		if t.GeneratePhash {
+			iwg.Add()
+
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", t.FilePath), func() {
 				taskPhash := GeneratePhashTask{
 					Scene:               *s,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 					txnManager:          t.TxnManager,
 				}
-				go taskPhash.Start(&iwg)
-			}
+				taskPhash.Start(&iwg)
+			})
+		}
 
-			if t.GeneratePreview {
-				iwg.Add()
+		if t.GeneratePreview {
+			iwg.Add()
 
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", t.FilePath), func() {
 				config := config.GetInstance()
 				var previewSegmentDuration = config.GetPreviewSegmentDuration()
 				var previewSegments = config.GetPreviewSegments()
@@ -262,16 +280,12 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				go taskPreview.Start(&iwg)
-			}
-
-			iwg.Wait()
+				taskPreview.Start(wg)
+			})
 		}
-	} else if isImage(t.FilePath) {
-		t.scanImage()
-	}
 
-	wg.Done()
+		iwg.Wait()
+	}
 }
 
 func (t *ScanTask) scanGallery() {

@@ -212,6 +212,9 @@ func (m *Manager) removeJob(job *Job) {
 		return
 	}
 
+	// clear any subtasks
+	job.Details = nil
+
 	m.queue = append(m.queue[:index], m.queue[index+1:]...)
 
 	m.graveyard = append(m.graveyard, job)
