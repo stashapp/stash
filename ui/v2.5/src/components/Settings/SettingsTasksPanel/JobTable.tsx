@@ -15,6 +15,23 @@ interface IJob {
 
 const Task: React.FC<IJob> = ({ job }) => {
   const [stopping, setStopping] = useState(false);
+  const [className, setClassName] = useState("");
+
+  useEffect(() => {
+    setTimeout(() => setClassName("fade-in"));
+  }, []);
+
+  useEffect(() => {
+    if (
+      job.status === GQL.JobStatus.Cancelled ||
+      job.status === GQL.JobStatus.Finished
+    ) {
+      // fade out around 10 seconds
+      setTimeout(() => {
+        setClassName("fade-out");
+      }, 9800);
+    }
+  }, [job]);
 
   async function stopJob() {
     setStopping(true);
@@ -29,33 +46,45 @@ const Task: React.FC<IJob> = ({ job }) => {
     );
   }
 
+  function getStatusClass() {
+    switch (job.status) {
+      case GQL.JobStatus.Ready:
+        return "ready";
+      case GQL.JobStatus.Running:
+        return "running";
+      case GQL.JobStatus.Stopping:
+        return "stopping";
+      case GQL.JobStatus.Finished:
+        return "finished";
+      case GQL.JobStatus.Cancelled:
+        return "cancelled";
+    }
+  }
+
   function getStatusIcon() {
     let icon: IconProp = "circle";
-    let className = "";
+    let iconClass = "";
     switch (job.status) {
       case GQL.JobStatus.Ready:
         icon = "hourglass-start";
-        className = "ready";
         break;
       case GQL.JobStatus.Running:
         icon = "cog";
-        className = "fa-spin running";
+        iconClass = "fa-spin";
         break;
       case GQL.JobStatus.Stopping:
         icon = "cog";
-        className = "fa-spin stopping";
+        iconClass = "fa-spin";
         break;
       case GQL.JobStatus.Finished:
         icon = "check";
-        className = "finished";
         break;
       case GQL.JobStatus.Cancelled:
         icon = "ban";
-        className = "cancelled";
         break;
     }
 
-    return <Icon icon={icon} className={`fa-fw ${className}`} />;
+    return <Icon icon={icon} className={`fa-fw ${iconClass}`} />;
   }
 
   function maybeRenderProgress() {
@@ -76,7 +105,8 @@ const Task: React.FC<IJob> = ({ job }) => {
   }
 
   return (
-    <li className="job">
+
+    <li className={`job ${className}`}>
       <div>
         <Button
           className="minimal stop"
@@ -86,12 +116,21 @@ const Task: React.FC<IJob> = ({ job }) => {
         >
           <Icon icon="times" />
         </Button>
-        <div className="job-status">
+        <div className={`job-status ${getStatusClass()}`}>
           <div>
             {getStatusIcon()}
             <span>{job.description}</span>
           </div>
           <div>{maybeRenderProgress()}</div>
+          <div>
+            {/* eslint-disable react/no-array-index-key */}
+            {(job.subTasks ?? []).map((t, i) => (
+              <div className="job-subtask" key={i}>
+                {t}
+              </div>
+            ))}
+            {/* eslint-enable react/no-array-index-key */}
+          </div>
         </div>
       </div>
     </li>
@@ -145,18 +184,8 @@ export const JobTable: React.FC = () => {
     }
   }, [jobsSubscribe.data]);
 
-  function getCurrentJob() {
-    if (queue.length > 0) {
-      return queue[0].description;
-    }
-
-    return "Idle";
-  }
-
   return (
     <div className="job-table">
-      <h5>Currently running: {getCurrentJob()}</h5>
-
       <ul>
         {(queue ?? []).map((j) => (
           <Task job={j} key={j.id} />

@@ -7,9 +7,6 @@ subscription JobsSubscribe {
       subTasks
       description
       progress
-      startTime
-      endTime
-      addTime
     }
   }
 }

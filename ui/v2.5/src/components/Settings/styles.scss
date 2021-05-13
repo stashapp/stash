@@ -72,32 +72,49 @@
 }
 
 .job-table {
+  height: 10em;
+  overflow-y: auto;
+
   ul {
     list-style: none;
     padding-inline-start: 0;
   }
 
-  li > div {
-    align-items: center;
-    display: flex;
+  li {
+    opacity: 0;
+    transition: opacity 0.25s;
+
+    &.fade-in {
+      opacity: 1;
+    }
+
+    > div {
+      align-items: center;
+      display: flex;
+    }
   }
 
   .job-status {
     width: 100%;
   }
 
-  .stop,
-  .stopping,
-  .cancelled {
+  .stop:not(:disabled),
+  .stopping .fa-icon,
+  .cancelled .fa-icon {
     color: $danger;
   }
 
-  .running,
-  .finished {
+  .running .fa-icon,
+  .finished .fa-icon {
     color: $success;
   }
 
-  .ready {
+  .ready .fa-icon {
     color: $warning;
+  }
+
+  .cancelled,
+  .finished {
+    color: $text-muted;
   }
 }
