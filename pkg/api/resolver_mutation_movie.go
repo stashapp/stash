@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -19,21 +18,26 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	var backimageData []byte
 	var err error
 
-	if input.FrontImage == nil {
+	// HACK: if back image is being set, set the front image to the default.
+	// This is because we can't have a null front image with a non-null back image.
+	if input.FrontImage == nil && input.BackImage != nil {
 		input.FrontImage = &models.DefaultMovieImage
 	}
-	if input.BackImage == nil {
-		input.BackImage = &models.DefaultMovieImage
-	}
+
 	// Process the base 64 encoded image string
-	_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
-	if err != nil {
-		return nil, err
+	if input.FrontImage != nil {
+		frontimageData, err = utils.ProcessImageInput(*input.FrontImage)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	// Process the base 64 encoded image string
-	_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
-	if err != nil {
-		return nil, err
+	if input.BackImage != nil {
+		backimageData, err = utils.ProcessImageInput(*input.BackImage)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Populate a new movie from the input
@@ -80,24 +84,23 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	}
 
 	// Start the transaction and save the movie
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
-	movie, err := qb.Create(newMovie, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(frontimageData) > 0 {
-		if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+	var movie *models.Movie
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		movie, err = qb.Create(newMovie)
+		if err != nil {
+			return err
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// update image table
+		if len(frontimageData) > 0 {
+			if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -106,23 +109,32 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUpdateInput) (*models.Movie, error) {
 	// Populate movie from the input
-	movieID, _ := strconv.Atoi(input.ID)
+	movieID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	updatedMovie := models.MoviePartial{
 		ID:        movieID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	var frontimageData []byte
-	var err error
+	frontImageIncluded := translator.hasField("front_image")
 	if input.FrontImage != nil {
-		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
+		frontimageData, err = utils.ProcessImageInput(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
 	}
+	backImageIncluded := translator.hasField("back_image")
 	var backimageData []byte
 	if input.BackImage != nil {
-		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
+		backimageData, err = utils.ProcessImageInput(*input.BackImage)
 		if err != nil {
 			return nil, err
 		}
@@ -135,80 +147,59 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		updatedMovie.Checksum = &checksum
 	}
 
-	if input.Aliases != nil {
-		updatedMovie.Aliases = &sql.NullString{String: *input.Aliases, Valid: true}
-	}
-	if input.Duration != nil {
-		duration := int64(*input.Duration)
-		updatedMovie.Duration = &sql.NullInt64{Int64: duration, Valid: true}
-	}
-
-	if input.Date != nil {
-		updatedMovie.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
-	}
-
-	if input.Rating != nil {
-		rating := int64(*input.Rating)
-		updatedMovie.Rating = &sql.NullInt64{Int64: rating, Valid: true}
-	} else {
-		// rating must be nullable
-		updatedMovie.Rating = &sql.NullInt64{Valid: false}
-	}
-
-	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedMovie.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-	} else {
-		// studio must be nullable
-		updatedMovie.StudioID = &sql.NullInt64{Valid: false}
-	}
-
-	if input.Director != nil {
-		updatedMovie.Director = &sql.NullString{String: *input.Director, Valid: true}
-	}
-
-	if input.Synopsis != nil {
-		updatedMovie.Synopsis = &sql.NullString{String: *input.Synopsis, Valid: true}
-	}
-
-	if input.URL != nil {
-		updatedMovie.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
+	updatedMovie.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedMovie.Duration = translator.nullInt64(input.Duration, "duration")
+	updatedMovie.Date = translator.sqliteDate(input.Date, "date")
+	updatedMovie.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedMovie.Director = translator.nullString(input.Director, "director")
+	updatedMovie.Synopsis = translator.nullString(input.Synopsis, "synopsis")
+	updatedMovie.URL = translator.nullString(input.URL, "url")
 
 	// Start the transaction and save the movie
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
-	movie, err := qb.Update(updatedMovie, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
+	var movie *models.Movie
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		movie, err = qb.Update(updatedMovie)
+		if err != nil {
+			return err
+		}
 
-	// update image table
-	if len(frontimageData) > 0 || len(backimageData) > 0 {
-		if len(frontimageData) == 0 {
-			frontimageData, err = qb.GetFrontImage(updatedMovie.ID, tx)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
+		// update image table
+		if frontImageIncluded || backImageIncluded {
+			if !frontImageIncluded {
+				frontimageData, err = qb.GetFrontImage(updatedMovie.ID)
+				if err != nil {
+					return err
+				}
+			}
+			if !backImageIncluded {
+				backimageData, err = qb.GetBackImage(updatedMovie.ID)
+				if err != nil {
+					return err
+				}
+			}
+
+			if len(frontimageData) == 0 && len(backimageData) == 0 {
+				// both images are being nulled. Destroy them.
+				if err := qb.DestroyImages(movie.ID); err != nil {
+					return err
+				}
+			} else {
+				// HACK - if front image is null and back image is not null, then set the front image
+				// to the default image since we can't have a null front image and a non-null back image
+				if frontimageData == nil && backimageData != nil {
+					frontimageData, _ = utils.ProcessImageInput(models.DefaultMovieImage)
+				}
+
+				if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {
+					return err
+				}
 			}
 		}
-		if len(backimageData) == 0 {
-			backimageData, err = qb.GetBackImage(updatedMovie.ID, tx)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-		}
 
-		if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -216,13 +207,35 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 }
 
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieDestroyInput) (bool, error) {
-	qb := models.NewMovieQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Movie().Destroy(id)
+	}); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(movieIDs)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

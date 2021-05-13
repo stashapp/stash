@@ -81,19 +81,12 @@ export class SceneParserResult {
   public toSceneUpdateInput() {
     return {
       id: this.id,
-      details: this.scene.details,
-      url: this.scene.url,
-      rating: this.rating.isSet ? this.rating.value : this.scene.rating,
-      gallery_id: this.scene.gallery?.id,
-      title: this.title.isSet ? this.title.value : this.scene.title,
-      date: this.date.isSet ? this.date.value : this.scene.date,
-      studio_id: this.studio.isSet ? this.studio.value : this.scene.studio?.id,
-      performer_ids: this.performers.isSet
-        ? this.performers.value
-        : this.scene.performers.map((performer) => performer.id),
-      tag_ids: this.tags.isSet
-        ? this.tags.value
-        : this.scene.tags.map((tag) => tag.id),
+      rating: this.rating.isSet ? this.rating.value : undefined,
+      title: this.title.isSet ? this.title.value : undefined,
+      date: this.date.isSet ? this.date.value : undefined,
+      studio_id: this.studio.isSet ? this.studio.value : undefined,
+      performer_ids: this.performers.isSet ? this.performers.value : undefined,
+      tag_ids: this.tags.isSet ? this.tags.value : undefined,
     };
   }
 }
@@ -101,7 +94,6 @@ export class SceneParserResult {
 interface ISceneParserFieldProps<T> {
   parserResult: ParserResult<T>;
   className?: string;
-  fieldName: string;
   onSetChanged: (isSet: boolean) => void;
   onValueChanged: (value: T) => void;
   originalParserResult?: ParserResult<T>;
@@ -372,7 +364,6 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Title") && (
         <SceneParserStringField
           key="title"
-          fieldName="Title"
           className="parser-field-title input-control text-input"
           parserResult={props.scene.title}
           onSetChanged={(isSet) =>
@@ -386,7 +377,6 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Date") && (
         <SceneParserStringField
           key="date"
-          fieldName="Date"
           className="parser-field-date input-control text-input"
           parserResult={props.scene.date}
           onSetChanged={(isSet) =>
@@ -400,7 +390,6 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Rating") && (
         <SceneParserRatingField
           key="rating"
-          fieldName="Rating"
           className="parser-field-rating input-control text-input"
           parserResult={props.scene.rating}
           onSetChanged={(isSet) =>
@@ -414,7 +403,6 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Performers") && (
         <SceneParserPerformerField
           key="performers"
-          fieldName="Performers"
           className="parser-field-performers input-control text-input"
           parserResult={props.scene.performers}
           originalParserResult={props.scene.performers}
@@ -429,7 +417,6 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Tags") && (
         <SceneParserTagField
           key="tags"
-          fieldName="Tags"
           className="parser-field-tags input-control text-input"
           parserResult={props.scene.tags}
           originalParserResult={props.scene.tags}
@@ -444,7 +431,6 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Studio") && (
         <SceneParserStudioField
           key="studio"
-          fieldName="Studio"
           className="parser-field-studio input-control text-input"
           parserResult={props.scene.studio}
           originalParserResult={props.scene.studio}

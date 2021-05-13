@@ -5,16 +5,25 @@ type Studio {
   url: String
   parent_studio: Studio
   child_studios: [Studio!]!
+
   image_path: String # Resolver
   scene_count: Int # Resolver
+  image_count: Int # Resolver
+  gallery_count: Int # Resolver
+  stash_ids: [StashID!]!
+  rating: Int
+  details: String
 }
 
 input StudioCreateInput {
   name: String!
   url: String
   parent_id: ID
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
+  stash_ids: [StashIDInput!]
+  rating: Int
+  details: String
 }
 
 input StudioUpdateInput {
@@ -22,8 +31,11 @@ input StudioUpdateInput {
   name: String
   url: String
   parent_id: ID,
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
+  stash_ids: [StashIDInput!]
+  rating: Int
+  details: String
 }
 
 input StudioDestroyInput {

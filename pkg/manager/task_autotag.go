@@ -2,169 +2,424 @@ package manager
 
 import (
 	"context"
-	"database/sql"
+	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/autotag"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type AutoTagPerformerTask struct {
-	performer *models.Performer
+type autoTagFilesTask struct {
+	paths      []string
+	performers bool
+	studios    bool
+	tags       bool
+
+	txnManager models.TransactionManager
+	status     *TaskStatus
 }
 
-func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
+func (t *autoTagFilesTask) makeSceneFilter() *models.SceneFilterType {
+	ret := &models.SceneFilterType{}
+	or := ret
+	sep := string(filepath.Separator)
 
-	t.autoTagPerformer()
-}
+	for _, p := range t.paths {
+		if !strings.HasSuffix(p, sep) {
+			p = p + sep
+		}
 
-func getQueryRegex(name string) string {
-	const separatorChars = `.\-_ `
-	// handle path separators
-	const separator = `[` + separatorChars + `]`
+		if ret.Path == nil {
+			or = ret
+		} else {
+			newOr := &models.SceneFilterType{}
+			or.Or = newOr
+			or = newOr
+		}
 
-	ret := strings.Replace(name, " ", separator+"*", -1)
-	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	organized := false
+	ret.Organized = &organized
+
 	return ret
 }
 
-func (t *AutoTagPerformerTask) autoTagPerformer() {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+func (t *autoTagFilesTask) makeImageFilter() *models.ImageFilterType {
+	ret := &models.ImageFilterType{}
+	or := ret
+	sep := string(filepath.Separator)
 
-	regex := getQueryRegex(t.performer.Name.String)
+	for _, p := range t.paths {
+		if !strings.HasSuffix(p, sep) {
+			p = p + sep
+		}
 
-	scenes, err := qb.QueryAllByPathRegex(regex)
+		if ret.Path == nil {
+			or = ret
+		} else {
+			newOr := &models.ImageFilterType{}
+			or.Or = newOr
+			or = newOr
+		}
 
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	organized := false
+	ret.Organized = &organized
+
+	return ret
+}
+
+func (t *autoTagFilesTask) makeGalleryFilter() *models.GalleryFilterType {
+	ret := &models.GalleryFilterType{}
+	or := ret
+	sep := string(filepath.Separator)
+
+	for _, p := range t.paths {
+		if !strings.HasSuffix(p, sep) {
+			p = p + sep
+		}
+
+		if ret.Path == nil {
+			or = ret
+		} else {
+			newOr := &models.GalleryFilterType{}
+			or.Or = newOr
+			or = newOr
+		}
+
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	organized := false
+	ret.Organized = &organized
+
+	return ret
+}
+
+func (t *autoTagFilesTask) getCount(r models.ReaderRepository) (int, error) {
+	pp := 0
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	_, sceneCount, err := r.Scene().Query(t.makeSceneFilter(), findFilter)
 	if err != nil {
-		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
-		return
+		return 0, err
 	}
 
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	_, imageCount, err := r.Image().Query(t.makeImageFilter(), findFilter)
+	if err != nil {
+		return 0, err
+	}
 
-	for _, scene := range scenes {
-		added, err := jqb.AddPerformerScene(scene.ID, t.performer.ID, tx)
+	_, galleryCount, err := r.Gallery().Query(t.makeGalleryFilter(), findFilter)
+	if err != nil {
+		return 0, err
+	}
 
+	return sceneCount + imageCount + galleryCount, nil
+}
+
+func (t *autoTagFilesTask) batchFindFilter(batchSize int) *models.FindFilterType {
+	page := 1
+	return &models.FindFilterType{
+		PerPage: &batchSize,
+		Page:    &page,
+	}
+}
+
+func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
+	if t.status.stopping {
+		return nil
+	}
+
+	batchSize := 1000
+
+	findFilter := t.batchFindFilter(batchSize)
+	sceneFilter := t.makeSceneFilter()
+
+	more := true
+	for more {
+		scenes, _, err := r.Scene().Query(sceneFilter, findFilter)
 		if err != nil {
-			logger.Infof("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, scene.GetTitle(), err.Error())
-			tx.Rollback()
-			return
+			return err
 		}
 
-		if added {
-			logger.Infof("Added performer '%s' to scene '%s'", t.performer.Name.String, scene.GetTitle())
+		for _, ss := range scenes {
+			if t.status.stopping {
+				return nil
+			}
+
+			tt := autoTagSceneTask{
+				txnManager: t.txnManager,
+				scene:      ss,
+				performers: t.performers,
+				studios:    t.studios,
+				tags:       t.tags,
+			}
+
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go tt.Start(&wg)
+			wg.Wait()
+
+			t.status.incrementProgress()
+		}
+
+		if len(scenes) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		logger.Infof("Error adding performer to scene: %s", err.Error())
-		return
+	return nil
+}
+
+func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
+	if t.status.stopping {
+		return nil
 	}
+
+	batchSize := 1000
+
+	findFilter := t.batchFindFilter(batchSize)
+	imageFilter := t.makeImageFilter()
+
+	more := true
+	for more {
+		images, _, err := r.Image().Query(imageFilter, findFilter)
+		if err != nil {
+			return err
+		}
+
+		for _, ss := range images {
+			if t.status.stopping {
+				return nil
+			}
+
+			tt := autoTagImageTask{
+				txnManager: t.txnManager,
+				image:      ss,
+				performers: t.performers,
+				studios:    t.studios,
+				tags:       t.tags,
+			}
+
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go tt.Start(&wg)
+			wg.Wait()
+
+			t.status.incrementProgress()
+		}
+
+		if len(images) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
+		}
+	}
+
+	return nil
 }
 
-type AutoTagStudioTask struct {
-	studio *models.Studio
+func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
+	if t.status.stopping {
+		return nil
+	}
+
+	batchSize := 1000
+
+	findFilter := t.batchFindFilter(batchSize)
+	galleryFilter := t.makeGalleryFilter()
+
+	more := true
+	for more {
+		galleries, _, err := r.Gallery().Query(galleryFilter, findFilter)
+		if err != nil {
+			return err
+		}
+
+		for _, ss := range galleries {
+			if t.status.stopping {
+				return nil
+			}
+
+			tt := autoTagGalleryTask{
+				txnManager: t.txnManager,
+				gallery:    ss,
+				performers: t.performers,
+				studios:    t.studios,
+				tags:       t.tags,
+			}
+
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go tt.Start(&wg)
+			wg.Wait()
+
+			t.status.incrementProgress()
+		}
+
+		if len(galleries) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
+		}
+	}
+
+	return nil
 }
 
-func (t *AutoTagStudioTask) Start(wg *sync.WaitGroup) {
+func (t *autoTagFilesTask) process() {
+	if err := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		total, err := t.getCount(r)
+		if err != nil {
+			return err
+		}
+
+		t.status.total = total
+
+		logger.Infof("Starting autotag of %d files", total)
+
+		if err := t.processScenes(r); err != nil {
+			return err
+		}
+
+		if err := t.processImages(r); err != nil {
+			return err
+		}
+
+		if err := t.processGalleries(r); err != nil {
+			return err
+		}
+
+		if t.status.stopping {
+			logger.Info("Stopping due to user request")
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
+	}
+
+	logger.Info("Finished autotag")
+}
+
+type autoTagSceneTask struct {
+	txnManager models.TransactionManager
+	scene      *models.Scene
+
+	performers bool
+	studios    bool
+	tags       bool
+}
+
+func (t *autoTagSceneTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	t.autoTagStudio()
-}
-
-func (t *AutoTagStudioTask) autoTagStudio() {
-	qb := models.NewSceneQueryBuilder()
-
-	regex := getQueryRegex(t.studio.Name.String)
-
-	scenes, err := qb.QueryAllByPathRegex(regex)
-
-	if err != nil {
-		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
-		return
-	}
-
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, scene := range scenes {
-		// #306 - don't overwrite studio if already present
-		if scene.StudioID.Valid {
-			// don't modify
-			continue
+	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if t.performers {
+			if err := autotag.ScenePerformers(t.scene, r.Scene(), r.Performer()); err != nil {
+				return err
+			}
+		}
+		if t.studios {
+			if err := autotag.SceneStudios(t.scene, r.Scene(), r.Studio()); err != nil {
+				return err
+			}
+		}
+		if t.tags {
+			if err := autotag.SceneTags(t.scene, r.Scene(), r.Tag()); err != nil {
+				return err
+			}
 		}
 
-		logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.GetTitle())
-
-		// set the studio id
-		studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
-		scenePartial := models.ScenePartial{
-			ID:       scene.ID,
-			StudioID: &studioID,
-		}
-
-		_, err := qb.Update(scenePartial, tx)
-
-		if err != nil {
-			logger.Infof("Error adding studio to scene: %s", err.Error())
-			tx.Rollback()
-			return
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		logger.Infof("Error adding studio to scene: %s", err.Error())
-		return
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 }
 
-type AutoTagTagTask struct {
-	tag *models.Tag
+type autoTagImageTask struct {
+	txnManager models.TransactionManager
+	image      *models.Image
+
+	performers bool
+	studios    bool
+	tags       bool
 }
 
-func (t *AutoTagTagTask) Start(wg *sync.WaitGroup) {
+func (t *autoTagImageTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
+	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if t.performers {
+			if err := autotag.ImagePerformers(t.image, r.Image(), r.Performer()); err != nil {
+				return err
+			}
+		}
+		if t.studios {
+			if err := autotag.ImageStudios(t.image, r.Image(), r.Studio()); err != nil {
+				return err
+			}
+		}
+		if t.tags {
+			if err := autotag.ImageTags(t.image, r.Image(), r.Tag()); err != nil {
+				return err
+			}
+		}
 
-	t.autoTagTag()
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
+	}
 }
 
-func (t *AutoTagTagTask) autoTagTag() {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+type autoTagGalleryTask struct {
+	txnManager models.TransactionManager
+	gallery    *models.Gallery
 
-	regex := getQueryRegex(t.tag.Name)
+	performers bool
+	studios    bool
+	tags       bool
+}
 
-	scenes, err := qb.QueryAllByPathRegex(regex)
-
-	if err != nil {
-		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
-		return
-	}
-
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, scene := range scenes {
-		added, err := jqb.AddSceneTag(scene.ID, t.tag.ID, tx)
-
-		if err != nil {
-			logger.Infof("Error adding tag '%s' to scene '%s': %s", t.tag.Name, scene.GetTitle(), err.Error())
-			tx.Rollback()
-			return
+func (t *autoTagGalleryTask) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
+	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if t.performers {
+			if err := autotag.GalleryPerformers(t.gallery, r.Gallery(), r.Performer()); err != nil {
+				return err
+			}
+		}
+		if t.studios {
+			if err := autotag.GalleryStudios(t.gallery, r.Gallery(), r.Studio()); err != nil {
+				return err
+			}
+		}
+		if t.tags {
+			if err := autotag.GalleryTags(t.gallery, r.Gallery(), r.Tag()); err != nil {
+				return err
+			}
 		}
 
-		if added {
-			logger.Infof("Added tag '%s' to scene '%s'", t.tag.Name, scene.GetTitle())
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		logger.Infof("Error adding tag to scene: %s", err.Error())
-		return
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 }

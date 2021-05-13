@@ -16,15 +16,7 @@ const Units: Unit[] = [
   "terabyte",
   "petabyte",
 ];
-
-const truncate = (
-  value?: string,
-  limit: number = 100,
-  tail: string = "..."
-) => {
-  if (!value) return "";
-  return value.length > limit ? value.substring(0, limit) + tail : value;
-};
+const shortUnits = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 const fileSize = (bytes: number = 0) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
@@ -32,7 +24,7 @@ const fileSize = (bytes: number = 0) => {
 
   let unit = 0;
   let count = bytes;
-  while (count >= 1024) {
+  while (count >= 1024 && unit + 1 < Units.length) {
     count /= 1024;
     unit++;
   }
@@ -41,6 +33,21 @@ const fileSize = (bytes: number = 0) => {
     size: count,
     unit: Units[unit],
   };
+};
+
+const formatFileSizeUnit = (u: Unit) => {
+  const i = Units.indexOf(u);
+  return shortUnits[i];
+};
+
+// returns the number of fractional digits to use when displaying file sizes
+// returns 0 for MB and under, 1 for GB and over.
+const fileSizeFractionalDigits = (unit: Unit) => {
+  if (Units.indexOf(unit) >= 3) {
+    return 1;
+  }
+
+  return 0;
 };
 
 const secondsToTimestamp = (seconds: number) => {
@@ -62,17 +69,33 @@ const fileNameFromPath = (path: string) => {
   return path.replace(/^.*[\\/]/, "");
 };
 
-const getAge = (dateString?: string | null, fromDateString?: string) => {
+const stringToDate = (dateString: string) => {
+  if (!dateString) return null;
+
+  const parts = dateString.split("-");
+  // Invalid date string
+  if (parts.length !== 3) return null;
+
+  const year = Number(parts[0]);
+  const monthIndex = Math.max(0, Number(parts[1]) - 1);
+  const day = Number(parts[2]);
+
+  return new Date(year, monthIndex, day, 0, 0, 0, 0);
+};
+
+const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
-  const birthdate = new Date(dateString);
-  const fromDate = fromDateString ? new Date(fromDateString) : new Date();
+  const birthdate = stringToDate(dateString);
+  const fromDate = fromDateString ? stringToDate(fromDateString) : new Date();
+
+  if (!birthdate || !fromDate) return 0;
 
   let age = fromDate.getFullYear() - birthdate.getFullYear();
   if (
     birthdate.getMonth() > fromDate.getMonth() ||
     (birthdate.getMonth() >= fromDate.getMonth() &&
-      birthdate.getDay() > fromDate.getDay())
+      birthdate.getDate() > fromDate.getDate())
   ) {
     age -= 1;
   }
@@ -85,21 +108,46 @@ const bitRate = (bitrate: number) => {
   return `${megabits.toFixed(2)} megabits per second`;
 };
 
-const resolution = (height: number) => {
-  if (height >= 240 && height < 480) {
-    return "240p";
+const resolution = (width: number, height: number) => {
+  const number = width > height ? height : width;
+  if (number >= 4320) {
+    return "8K";
   }
-  if (height >= 480 && height < 720) {
-    return "480p";
+  if (number >= 3384) {
+    return "6K";
   }
-  if (height >= 720 && height < 1080) {
-    return "720p";
+  if (number >= 2880) {
+    return "5K";
   }
-  if (height >= 1080 && height < 2160) {
+  if (number >= 2160) {
+    return "4K";
+  }
+  if (number >= 1920) {
+    return "1920p";
+  }
+  if (number >= 1440) {
+    return "1440p";
+  }
+  if (number >= 1080) {
     return "1080p";
   }
-  if (height >= 2160) {
-    return "4K";
+  if (number >= 720) {
+    return "720p";
+  }
+  if (number >= 540) {
+    return "540p";
+  }
+  if (number >= 480) {
+    return "480p";
+  }
+  if (number >= 360) {
+    return "360p";
+  }
+  if (number >= 240) {
+    return "240p";
+  }
+  if (number >= 144) {
+    return "144p";
   }
 };
 
@@ -135,14 +183,21 @@ const formatDate = (intl: IntlShape, date?: string) => {
     return "";
   }
 
-  return intl.formatDate(date, { format: "long" });
+  return intl.formatDate(date, { format: "long", timeZone: "utc" });
 };
 
+const capitalize = (val: string) =>
+  val
+    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
+    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
+
 const TextUtils = {
-  truncate,
   fileSize,
+  formatFileSizeUnit,
+  fileSizeFractionalDigits,
   secondsToTimestamp,
   fileNameFromPath,
+  stringToDate,
   age: getAge,
   bitRate,
   resolution,
@@ -150,6 +205,7 @@ const TextUtils = {
   twitterURL,
   instagramURL,
   formatDate,
+  capitalize,
 };
 
 export default TextUtils;

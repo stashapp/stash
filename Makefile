@@ -41,12 +41,15 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
 # consider -trimpath in go build if we move to go 1.13+
 build-release: EXTRA_LDFLAGS := -s -w
 build-release: build
+
+build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release-static: build
 
 install:
 	packr2 install
@@ -59,6 +62,11 @@ clean:
 generate:
 	go generate -mod=vendor
 	cd ui/v2.5 && yarn run gqlgen
+
+# Regenerates stash-box client files
+.PHONY: generate-stash-box-client
+generate-stash-box-client:
+	go run -mod=vendor github.com/Yamashou/gqlgenc
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
@@ -88,6 +96,11 @@ test:
 .PHONY: it
 it:
 	go test -mod=vendor -tags=integration ./...
+
+# generates test mocks
+.PHONY: generate-test-mocks
+generate-test-mocks:
+	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
 
 # installs UI dependencies. Run when first cloning repository, or if UI 
 # dependencies have changed

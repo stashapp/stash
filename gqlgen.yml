@@ -16,6 +16,10 @@ struct_tag: gqlgen
 models:
   Gallery:
     model: github.com/stashapp/stash/pkg/models.Gallery
+  Image:
+    model: github.com/stashapp/stash/pkg/models.Image
+  ImageFileType:
+    model: github.com/stashapp/stash/pkg/models.ImageFileType
   Performer:
     model: github.com/stashapp/stash/pkg/models.Performer
   Scene:
@@ -44,3 +48,9 @@ models:
     model: github.com/stashapp/stash/pkg/models.ScrapedSceneTag
   SceneFileType:
     model: github.com/stashapp/stash/pkg/models.SceneFileType
+  ScrapedMovie:
+    model: github.com/stashapp/stash/pkg/models.ScrapedMovie
+  ScrapedMovieStudio:
+    model: github.com/stashapp/stash/pkg/models.ScrapedMovieStudio
+  StashID:
+    model: github.com/stashapp/stash/pkg/models.StashID

@@ -1,13 +1,16 @@
 fragment SceneData on Scene {
   id
   checksum
+  oshash
   title
   details
   url
   date
   rating
   o_counter
+  organized
   path
+  phash
 
   file {
     size
@@ -33,14 +36,12 @@ fragment SceneData on Scene {
     ...SceneMarkerData
   }
 
-  is_streamable
-
-  gallery {
-    ...GalleryData
+  galleries {
+    ...SlimGalleryData
   }
 
   studio {
-    ...StudioData
+    ...SlimStudioData
   }
   
   movies {
@@ -51,10 +52,15 @@ fragment SceneData on Scene {
   }
 
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   performers {
     ...PerformerData
+  }
+
+  stash_ids {
+    endpoint
+    stash_id
   }
 }

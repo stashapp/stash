@@ -1,12 +1,19 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useCallback, useState, useEffect } from "react";
-import { ApolloError } from "apollo-client";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
+import Mousetrap from "mousetrap";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
-  GalleryDataFragment,
+  SlimGalleryDataFragment,
   StudioDataFragment,
   PerformerDataFragment,
   FindScenesQueryResult,
@@ -18,17 +25,17 @@ import {
   MovieDataFragment,
   FindTagsQueryResult,
   TagDataFragment,
+  FindImagesQueryResult,
+  SlimImageDataFragment,
 } from "src/core/generated-graphql";
-import {
-  useInterfaceLocalForage,
-  IInterfaceConfig,
-} from "src/hooks/LocalForage";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import {
   useFindScenes,
   useFindSceneMarkers,
+  useFindImages,
   useFindMovies,
   useFindStudios,
   useFindGalleries,
@@ -38,41 +45,77 @@ import {
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
 
+const getSelectedData = <I extends IDataItem>(
+  result: I[],
+  selectedIds: Set<string>
+) => {
+  // find the selected items from the ids
+  const selectedResults: I[] = [];
+
+  selectedIds.forEach((id) => {
+    const item = result.find((s) => s.id === id);
+
+    if (item) {
+      selectedResults.push(item);
+    }
+  });
+
+  return selectedResults;
+};
+
 interface IListHookData {
   filter: ListFilterModel;
-  template: JSX.Element;
+  template: React.ReactElement;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onChangePage: (page: number) => void;
 }
 
-interface IListHookOperation<T> {
+export interface IListHookOperation<T> {
   text: string;
   onClick: (
     result: T,
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) => void;
+  isDisplayed?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => boolean;
+  postRefetch?: boolean;
+}
+
+export enum PersistanceLevel {
+  NONE,
+  ALL,
+  VIEW,
 }
 
 interface IListHookOptions<T, E> {
-  subComponent?: boolean;
+  persistState?: PersistanceLevel;
+  persistanceKey?: string;
+  defaultSort?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
+  selectable?: boolean;
   defaultZoomIndex?: number;
   otherOperations?: IListHookOperation<T>[];
   renderContent: (
     result: T,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number
-  ) => JSX.Element | undefined;
+    zoomIndex: number,
+    onChangePage: (page: number) => void,
+    pageCount: number
+  ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderDeleteDialog?: (
     selected: E[],
     onClose: (confirmed: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   addKeybinds?: (
     result: T,
     filter: ListFilterModel,
@@ -93,35 +136,45 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   filterMode: FilterMode;
   useData: (filter: ListFilterModel) => T;
   getData: (data: T) => T2[];
-  getSelectedData: (data: T, selectedIds: Set<string>) => T2[];
   getCount: (data: T) => number;
 }
 
-const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
-  options: IListHookOptions<QueryResult, QueryData> &
-    IQuery<QueryResult, QueryData>
-): IListHookData => {
-  const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
-  const [forageInitialised, setForageInitialised] = useState(false);
-  const history = useHistory();
-  const location = useLocation();
-  const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(
-      options.filterMode,
-      options.subComponent ? undefined : queryString.parse(location.search)
-    )
-  );
+interface IRenderListProps {
+  filter: ListFilterModel;
+  onChangePage: (page: number) => void;
+  updateQueryParams: (filter: ListFilterModel) => void;
+}
+
+const RenderList = <
+  QueryResult extends IQueryResult,
+  QueryData extends IDataItem
+>({
+  defaultZoomIndex,
+  filter,
+  onChangePage,
+  addKeybinds,
+  useData,
+  getCount,
+  getData,
+  otherOperations,
+  renderContent,
+  zoomable,
+  selectable,
+  renderEditDialog,
+  renderDeleteDialog,
+  updateQueryParams,
+}: IListHookOptions<QueryResult, QueryData> &
+  IQuery<QueryResult, QueryData> &
+  IRenderListProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
-  const [zoomIndex, setZoomIndex] = useState<number>(
-    options.defaultZoomIndex ?? 1
-  );
+  const [zoomIndex, setZoomIndex] = useState<number>(defaultZoomIndex ?? 1);
 
-  const result = options.useData(getFilter());
-  const totalCount = options.getCount(result);
-  const items = options.getData(result);
+  const result = useData(filter);
+  const totalCount = getCount(result);
+  const items = getData(result);
 
   useEffect(() => {
     Mousetrap.bind("right", () => {
@@ -135,7 +188,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         onChangePage(filter.currentPage - 1);
       }
     });
-
     Mousetrap.bind("shift+right", () => {
       const maxPage = totalCount / filter.itemsPerPage + 1;
       onChangePage(Math.min(maxPage, filter.currentPage + 10));
@@ -152,8 +204,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     });
 
     let unbindExtras: () => void;
-    if (options.addKeybinds) {
-      unbindExtras = options.addKeybinds(result, filter, selectedIds);
+    if (addKeybinds) {
+      unbindExtras = addKeybinds(result, filter, selectedIds);
     }
 
     return () => {
@@ -169,98 +221,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       }
     };
   });
-
-  const updateInterfaceConfig = useCallback(
-    (updatedFilter: ListFilterModel) => {
-      setInterfaceState((config) => {
-        const data = { ...config } as IInterfaceConfig;
-        data.queries = {
-          [options.filterMode]: {
-            filter: updatedFilter.makeQueryParameters(),
-            itemsPerPage: updatedFilter.itemsPerPage,
-            currentPage: updatedFilter.currentPage,
-          },
-        };
-        return data;
-      });
-    },
-    [options.filterMode, setInterfaceState]
-  );
-
-  useEffect(() => {
-    if (interfaceState.loading) return;
-    if (!forageInitialised) setForageInitialised(true);
-
-    // Don't use query parameters for sub-components
-    if (options.subComponent) return;
-
-    const storedQuery = interfaceState.data?.queries?.[options.filterMode];
-    if (!storedQuery) return;
-
-    const queryFilter = queryString.parse(history.location.search);
-    const storedFilter = queryString.parse(storedQuery.filter);
-    const query = history.location.search
-      ? {
-          sortby: storedFilter.sortby,
-          sortdir: storedFilter.sortdir,
-          disp: storedFilter.disp,
-          perPage: storedFilter.perPage,
-          ...queryFilter,
-        }
-      : storedFilter;
-
-    const newFilter = new ListFilterModel(options.filterMode, query);
-
-    // Compare constructed filter with current filter.
-    // If different it's the result of navigation, and we update the filter.
-    const newLocation = { ...history.location };
-    newLocation.search = newFilter.makeQueryParameters();
-    if (newLocation.search !== filter.makeQueryParameters()) {
-      setFilter(newFilter);
-      updateInterfaceConfig(newFilter);
-    }
-    // If constructed search is different from current, update it as well
-    if (newLocation.search !== location.search) {
-      newLocation.search = newFilter.makeQueryParameters();
-      history.replace(newLocation);
-    }
-  }, [
-    filter,
-    interfaceState.data,
-    interfaceState.loading,
-    history,
-    location.search,
-    options.subComponent,
-    options.filterMode,
-    forageInitialised,
-    updateInterfaceConfig,
-  ]);
-
-  function getFilter() {
-    if (!options.filterHook) {
-      return filter;
-    }
-
-    // make a copy of the filter and call the hook
-    const newFilter = _.cloneDeep(filter);
-    return options.filterHook(newFilter);
-  }
-
-  function updateQueryParams(listFilter: ListFilterModel) {
-    setFilter(listFilter);
-    if (!options.subComponent) {
-      const newLocation = { ...location };
-      newLocation.search = listFilter.makeQueryParameters();
-      history.replace(newLocation);
-      updateInterfaceConfig(listFilter);
-    }
-  }
-
-  function onChangePage(page: number) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.currentPage = page;
-    updateQueryParams(newFilter);
-  }
 
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
@@ -339,47 +299,28 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     setZoomIndex(newZoomIndex);
   }
 
-  const otherOperations = options.otherOperations
-    ? options.otherOperations.map((o) => {
-        return {
-          text: o.text,
-          onClick: () => {
-            o.onClick(result, filter, selectedIds);
-          },
-        };
-      })
-    : undefined;
-
-  function maybeRenderContent() {
-    if (!result.loading && !result.error) {
-      return options.renderContent(result, filter, selectedIds, zoomIndex);
+  async function onOperationClicked(o: IListHookOperation<QueryResult>) {
+    await o.onClick(result, filter, selectedIds);
+    if (o.postRefetch) {
+      result.refetch();
     }
   }
 
-  function maybeRenderPaginationIndex() {
-    if (!result.loading && !result.error) {
-      return (
-        <PaginationIndex
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-        />
-      );
-    }
-  }
+  const operations =
+    otherOperations &&
+    otherOperations.map((o) => ({
+      text: o.text,
+      onClick: () => {
+        onOperationClicked(o);
+      },
+      isDisplayed: () => {
+        if (o.isDisplayed) {
+          return o.isDisplayed(result, filter, selectedIds);
+        }
 
-  function maybeRenderPagination() {
-    if (!result.loading && !result.error) {
-      return (
-        <Pagination
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          onChangePage={onChangePage}
-        />
-      );
-    }
-  }
+        return true;
+      },
+    }));
 
   function onEdit() {
     setIsEditDialogOpen(true);
@@ -409,61 +350,235 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     result.refetch();
   }
 
-  const template = (
+  const renderPagination = () => (
+    <Pagination
+      itemsPerPage={filter.itemsPerPage}
+      currentPage={filter.currentPage}
+      totalItems={totalCount}
+      onChangePage={onChangePage}
+    />
+  );
+
+  function maybeRenderContent() {
+    if (result.loading || result.error) {
+      return;
+    }
+
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+    return (
+      <>
+        {renderPagination()}
+        {renderContent(
+          result,
+          filter,
+          selectedIds,
+          zoomIndex,
+          onChangePage,
+          pages
+        )}
+        <PaginationIndex
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+        />
+        {renderPagination()}
+      </>
+    );
+  }
+
+  const content = (
     <div>
       <ListFilter
-        subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        zoomIndex={options.zoomable ? zoomIndex : undefined}
-        onChangeZoom={options.zoomable ? onChangeZoom : undefined}
-        otherOperations={otherOperations}
+        onSelectAll={selectable ? onSelectAll : undefined}
+        onSelectNone={selectable ? onSelectNone : undefined}
+        zoomIndex={zoomable ? zoomIndex : undefined}
+        onChangeZoom={zoomable ? onChangeZoom : undefined}
+        otherOperations={operations}
         itemsSelected={selectedIds.size > 0}
-        onEdit={options.renderEditDialog ? onEdit : undefined}
-        onDelete={options.renderDeleteDialog ? onDelete : undefined}
+        onEdit={renderEditDialog ? onEdit : undefined}
+        onDelete={renderDeleteDialog ? onDelete : undefined}
         filter={filter}
       />
-      {isEditDialogOpen && options.renderEditDialog
-        ? options.renderEditDialog(
-            options.getSelectedData(result, selectedIds),
-            (applied) => onEditDialogClosed(applied)
-          )
-        : undefined}
-      {isDeleteDialogOpen && options.renderDeleteDialog
-        ? options.renderDeleteDialog(
-            options.getSelectedData(result, selectedIds),
-            (deleted) => onDeleteDialogClosed(deleted)
-          )
-        : undefined}
-      {(result.loading || !forageInitialised) && <LoadingIndicator />}
-      {result.error && <h1>{result.error.message}</h1>}
-      {maybeRenderPagination()}
+      {isEditDialogOpen &&
+        renderEditDialog &&
+        renderEditDialog(
+          getSelectedData(getData(result), selectedIds),
+          (applied) => onEditDialogClosed(applied)
+        )}
+      {isDeleteDialogOpen &&
+        renderDeleteDialog &&
+        renderDeleteDialog(
+          getSelectedData(getData(result), selectedIds),
+          (deleted) => onDeleteDialogClosed(deleted)
+        )}
+      {result.loading ? <LoadingIndicator /> : undefined}
+      {result.error ? <h1>{result.error.message}</h1> : undefined}
       {maybeRenderContent()}
-      {maybeRenderPaginationIndex()}
-      {maybeRenderPagination()}
     </div>
   );
 
-  return { filter, template, onSelectChange };
+  return { contentTemplate: content, onSelectChange };
 };
 
-const getSelectedData = <I extends IDataItem>(
-  result: I[],
-  selectedIds: Set<string>
-) => {
-  // find the selected items from the ids
-  const selectedResults: I[] = [];
+const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
+  options: IListHookOptions<QueryResult, QueryData> &
+    IQuery<QueryResult, QueryData>
+): IListHookData => {
+  const history = useHistory();
+  const location = useLocation();
+  const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
+  // If persistState is false we don't care about forage and consider it initialised
+  const [forageInitialised, setForageInitialised] = useState(
+    !options.persistState
+  );
+  // Store initial pathname to prevent hooks from operating outside this page
+  const originalPathName = useRef(location.pathname);
+  const persistanceKey = options.persistanceKey ?? options.filterMode;
 
-  selectedIds.forEach((id) => {
-    const item = result.find((s) => s.id === id);
+  const [filter, setFilter] = useState<ListFilterModel>(
+    new ListFilterModel(
+      options.filterMode,
+      queryString.parse(location.search),
+      options.defaultSort
+    )
+  );
 
-    if (item) {
-      selectedResults.push(item);
+  const updateInterfaceConfig = useCallback(
+    (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
+      setInterfaceState((prevState) => {
+        if (level === PersistanceLevel.VIEW) {
+          return {
+            [persistanceKey]: {
+              ...prevState[persistanceKey],
+              filter: queryString.stringify({
+                ...queryString.parse(prevState[persistanceKey]?.filter ?? ""),
+                disp: updatedFilter.displayMode,
+              }),
+            },
+          };
+        }
+        return {
+          [persistanceKey]: {
+            filter: updatedFilter.makeQueryParameters(),
+            itemsPerPage: updatedFilter.itemsPerPage,
+            currentPage: updatedFilter.currentPage,
+          },
+        };
+      });
+    },
+    [persistanceKey, setInterfaceState]
+  );
+
+  useEffect(() => {
+    if (
+      interfaceState.loading ||
+      // Only update query params on page the hook was mounted on
+      history.location.pathname !== originalPathName.current
+    )
+      return;
+
+    if (!forageInitialised) setForageInitialised(true);
+
+    if (!options.persistState) return;
+
+    const storedQuery = interfaceState.data?.[persistanceKey];
+    if (!storedQuery) return;
+
+    const queryFilter = queryString.parse(history.location.search);
+    const storedFilter = queryString.parse(storedQuery.filter);
+
+    const activeFilter =
+      options.persistState === PersistanceLevel.ALL
+        ? storedFilter
+        : { disp: storedFilter.disp };
+    const query = history.location.search
+      ? {
+          sortby: activeFilter.sortby,
+          sortdir: activeFilter.sortdir,
+          disp: activeFilter.disp,
+          perPage: activeFilter.perPage,
+          ...queryFilter,
+        }
+      : activeFilter;
+
+    const newFilter = new ListFilterModel(options.filterMode, query);
+
+    // Compare constructed filter with current filter.
+    // If different it's the result of navigation, and we update the filter.
+    const newLocation = { ...history.location };
+    newLocation.search = newFilter.makeQueryParameters();
+    if (newLocation.search !== filter.makeQueryParameters()) {
+      setFilter(newFilter);
+      updateInterfaceConfig(newFilter, options.persistState);
     }
+    // If constructed search is different from current, update it as well
+    if (newLocation.search !== location.search) {
+      newLocation.search = newFilter.makeQueryParameters();
+      history.replace(newLocation);
+    }
+  }, [
+    filter,
+    interfaceState.data,
+    interfaceState.loading,
+    history,
+    location.search,
+    options.filterMode,
+    persistanceKey,
+    forageInitialised,
+    updateInterfaceConfig,
+    options.persistState,
+  ]);
+
+  const updateQueryParams = useCallback(
+    (listFilter: ListFilterModel) => {
+      setFilter(listFilter);
+      const newLocation = { ...location };
+      newLocation.search = listFilter.makeQueryParameters();
+      history.replace(newLocation);
+      if (options.persistState) {
+        updateInterfaceConfig(listFilter, options.persistState);
+      }
+    },
+    [setFilter, history, location, options.persistState, updateInterfaceConfig]
+  );
+
+  const onChangePage = useCallback(
+    (page: number) => {
+      const newFilter = _.cloneDeep(filter);
+      newFilter.currentPage = page;
+      updateQueryParams(newFilter);
+      window.scrollTo(0, 0);
+    },
+    [filter, updateQueryParams]
+  );
+
+  const renderFilter = useMemo(() => {
+    return !options.filterHook
+      ? filter
+      : options.filterHook(_.cloneDeep(filter));
+  }, [filter, options]);
+
+  const { contentTemplate, onSelectChange } = RenderList({
+    ...options,
+    filter: renderFilter,
+    onChangePage,
+    updateQueryParams,
   });
 
-  return selectedResults;
+  const template = !forageInitialised ? (
+    <LoadingIndicator />
+  ) : (
+    <>{contentTemplate}</>
+  );
+
+  return {
+    filter,
+    template,
+    onSelectChange,
+    onChangePage,
+  };
 };
 
 export const useScenesList = (
@@ -477,10 +592,6 @@ export const useScenesList = (
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
-    getSelectedData: (
-      result: FindScenesQueryResult,
-      selectedIds: Set<string>
-    ) => getSelectedData(result?.data?.findScenes?.scenes ?? [], selectedIds),
   });
 
 export const useSceneMarkersList = (
@@ -494,20 +605,25 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0,
-    getSelectedData: (
-      result: FindSceneMarkersQueryResult,
-      selectedIds: Set<string>
-    ) =>
-      getSelectedData(
-        result?.data?.findSceneMarkers?.scene_markers ?? [],
-        selectedIds
-      ),
+  });
+
+export const useImagesList = (
+  props: IListHookOptions<FindImagesQueryResult, SlimImageDataFragment>
+) =>
+  useList<FindImagesQueryResult, SlimImageDataFragment>({
+    ...props,
+    filterMode: FilterMode.Images,
+    useData: useFindImages,
+    getData: (result: FindImagesQueryResult) =>
+      result?.data?.findImages?.images ?? [],
+    getCount: (result: FindImagesQueryResult) =>
+      result?.data?.findImages?.count ?? 0,
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
+  props: IListHookOptions<FindGalleriesQueryResult, SlimGalleryDataFragment>
 ) =>
-  useList<FindGalleriesQueryResult, GalleryDataFragment>({
+  useList<FindGalleriesQueryResult, SlimGalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: useFindGalleries,
@@ -515,14 +631,6 @@ export const useGalleriesList = (
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0,
-    getSelectedData: (
-      result: FindGalleriesQueryResult,
-      selectedIds: Set<string>
-    ) =>
-      getSelectedData(
-        result?.data?.findGalleries?.galleries ?? [],
-        selectedIds
-      ),
   });
 
 export const useStudiosList = (
@@ -536,10 +644,6 @@ export const useStudiosList = (
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.count ?? 0,
-    getSelectedData: (
-      result: FindStudiosQueryResult,
-      selectedIds: Set<string>
-    ) => getSelectedData(result?.data?.findStudios?.studios ?? [], selectedIds),
   });
 
 export const usePerformersList = (
@@ -553,14 +657,6 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0,
-    getSelectedData: (
-      result: FindPerformersQueryResult,
-      selectedIds: Set<string>
-    ) =>
-      getSelectedData(
-        result?.data?.findPerformers?.performers ?? [],
-        selectedIds
-      ),
   });
 
 export const useMoviesList = (
@@ -574,10 +670,6 @@ export const useMoviesList = (
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.count ?? 0,
-    getSelectedData: (
-      result: FindMoviesQueryResult,
-      selectedIds: Set<string>
-    ) => getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
   });
 
 export const useTagsList = (
@@ -591,6 +683,12 @@ export const useTagsList = (
       result?.data?.findTags?.tags ?? [],
     getCount: (result: FindTagsQueryResult) =>
       result?.data?.findTags?.count ?? 0,
-    getSelectedData: (result: FindTagsQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });
+
+export const showWhenSelected = <T extends IQueryResult>(
+  _result: T,
+  _filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size > 0;
+};

@@ -8,7 +8,8 @@ import { FilterSelect } from "./Select";
 type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
-  | GQL.SlimStudioDataFragment;
+  | GQL.SlimStudioDataFragment
+  | GQL.SlimMovieDataFragment;
 
 interface IMultiSetProps {
   type: "performers" | "studios" | "tags";
@@ -64,7 +65,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
       <InputGroup.Prepend>
         <Button
           size="sm"
-          variant="secondary"
+          variant="primary"
           onClick={() => props.onSetMode(nextMode())}
           title={getModeText()}
           disabled={props.disabled}

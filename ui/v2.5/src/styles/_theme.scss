@@ -62,7 +62,7 @@ hr {
   margin: 5px 0;
 }
 
-.dropdown-toggle::after {
+:not(.show-carat) > .dropdown-toggle::after {
   content: none;
 }
 
@@ -176,10 +176,14 @@ hr {
     color: $text-color;
   }
 
-  .modal-header,
-  .modal-body,
-  .modal-footer {
+  &-header,
+  &-body,
+  &-footer {
     background-color: #30404d;
     color: $text-color;
+  }
+
+  &-content {
+    background-color: transparent;
   }
 }

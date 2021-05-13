@@ -4,7 +4,7 @@
   ],
   "extends": "stylelint-config-prettier",
   "rules": {
-    "indentation": 2,
+    "indentation": null,
     "at-rule-empty-line-before": [ "always", {
       except: ["after-same-name", "first-nested" ],
       ignore: ["after-comment"],
@@ -86,7 +86,6 @@
     "string-quotes": "double",
     "time-min-milliseconds": 100,
     "value-list-comma-space-after": "always-single-line",
-    "value-list-comma-space-before": "never",
-    "value-no-vendor-prefix": true
+    "value-list-comma-space-before": "never"
   },
 }

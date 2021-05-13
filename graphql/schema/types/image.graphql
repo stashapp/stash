@@ -1,0 +1,71 @@
+type Image {
+  id: ID!
+  checksum: String
+  title: String
+  rating: Int
+  o_counter: Int
+  organized: Boolean!
+  path: String!
+
+  file: ImageFileType! # Resolver
+  paths: ImagePathsType! # Resolver
+
+  galleries: [Gallery!]!
+  studio: Studio
+  tags: [Tag!]!
+  performers: [Performer!]!
+}
+
+type ImageFileType {
+  size: Int
+  width: Int
+  height: Int
+}
+
+type ImagePathsType {
+  thumbnail: String # Resolver
+  image: String # Resolver
+}
+
+input ImageUpdateInput {
+  clientMutationId: String
+  id: ID!
+  title: String
+  rating: Int
+  organized: Boolean
+  
+  studio_id: ID
+  performer_ids: [ID!]
+  tag_ids: [ID!]
+  gallery_ids: [ID!]
+}
+
+input BulkImageUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  title: String
+  rating: Int
+  organized: Boolean
+  
+  studio_id: ID
+  performer_ids: BulkUpdateIds
+  tag_ids: BulkUpdateIds
+  gallery_ids: BulkUpdateIds
+}
+
+input ImageDestroyInput {
+  id: ID!
+  delete_file: Boolean
+  delete_generated: Boolean
+}
+
+input ImagesDestroyInput {
+  ids: [ID!]!
+  delete_file: Boolean
+  delete_generated: Boolean
+}
+
+type FindImagesResultType {
+  count: Int!
+  images: [Image!]!
+}

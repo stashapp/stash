@@ -6,19 +6,21 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-const freeonesScraperID = "builtin_freeones"
+// FreeonesScraperID is the scraper ID for the built-in Freeones scraper
+const FreeonesScraperID = "builtin_freeones"
 
 // 537: stolen from: https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/FreeonesCommunity.yml
 const freeonesScraperConfig = `
 name: Freeones
 performerByName:
   action: scrapeXPath
-  queryURL: https://www.freeones.xxx/babes?q={}&v=teasers&s=relevance&l=96&m%5BcanPreviewFeatures%5D=0
+  queryURL: https://www.freeones.com/babes?q={}&v=teasers&s=relevance&l=96&m%5BcanPreviewFeatures%5D=0
   scraper: performerSearch
 performerByURL:
   - action: scrapeXPath
     url:
-      - https://www.freeones.xxx
+      - freeones.xxx
+      - freeones.com
     scraper: performerScraper
 
 xPathScrapers:
@@ -27,86 +29,103 @@ xPathScrapers:
       Name: //div[@id="search-result"]//p[@data-test="subject-name"]/text()
       URL:
         selector: //div[@id="search-result"]//div[@data-test="teaser-subject"]/a/@href
-        replace:
-          - regex: ^
-            with: https://www.freeones.xxx
-          - regex: $
-            with: /profile
+        postProcess:
+          - replace:
+              - regex: ^
+                with: https://www.freeones.com
+              - regex: /feed$
+                with: /bio
 
   performerScraper:
     performer:
-      Name: //h1
-      URL:
-        selector: //a[span[text()="Profile"]]/@href
-        replace:
-          - regex: ^
-            with: https://www.freeones.xxx
-      Twitter: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center m-2 social-icons color-twitter']/@href
-      Instagram: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center m-2 social-icons color-telegram']/@href
+      Name:
+        selector: //h1
+        postProcess:
+          - replace:
+              - regex: \sBio\s*$
+                with: ""
+      URL: //link[@rel="alternate" and @hreflang="x-default"]/@href
+      Twitter: //a[contains(@href,'twitter.com/')]/@href
+      Instagram: //a[contains(@href,'instagram.com/')]/@href
       Birthdate:
-        selector: //div[p[text()='Personal Information']]//div//p/a/span[contains(text(),'Born On')]
-        replace:
-          - regex: Born On
-            with:
-          - regex: ","
-            with:
-        parseDate: January 2 2006
+        selector: //span[contains(text(),'Born On')]
+        postProcess:
+          - replace:
+              - regex: Born On
+                with:
+          - parseDate: January 2, 2006
       Ethnicity:
-        selector: //div[p[text()='Ethnicity']]//div//p[@class='mb-0 text-center']
-        replace:
-          - regex: Asian
-            with: "asian"
-          - regex: Caucasian
-            with: "white"
-          - regex: Black
-            with: "black"
-          - regex: Latin
-            with: "hispanic"
-      Country: //div[p[text()='Personal Information']]//div//p//a[@data-test="link-country"]
-      EyeColor: //span[@data-test="link_span_eye_color"]
+        selector: //a[@data-test="link_ethnicity"]/span/text()
+        postProcess:
+          - map:
+              Asian: Asian
+              Caucasian: White
+              Black: Black
+              Latin: Hispanic
+      Country: //a[@data-test="link-country"]/span/text()
+      EyeColor: //span[text()='Eye Color']/following-sibling::span/a
       Height:
-        selector: //span[@data-test="link_span_height"]
-        replace:
-          - regex: \D+[\s\S]+
-            with: ""
+        selector: //span[text()='Height']/following-sibling::span/a
+        postProcess:
+          - replace:
+              - regex: \D+[\s\S]+
+                with: ""
+          - map:
+              Unknown: ""
       Measurements:
-        selector: //span[@data-test="p-measurements"]//a/span
+        selector: //span[text()='Measurements']/following-sibling::span/span/a
         concat: " - "
-        replace:
-          - regex: Unknown
-            with:
+        postProcess:
+          - map:
+              Unknown: ""
       FakeTits:
-        selector: //span[@data-test='link_span_boobs']
-        replace:
-          - regex: Unknown
-            with:
-          - regex: Fake
-            with: "Yes"
-          - regex: Natural
-            with: "No"
+        selector: //span[text()='Boobs']/following-sibling::span/a
+        postProcess:
+          - map:
+              Unknown: ""
+              Fake: "Yes"
+              Natural: "No"
       CareerLength:
-        selector: //div[p[text()='career']]//div//div[@class='timeline-horizontal mb-3']//div//p[@class='m-0']
+        selector: //div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
         concat: "-"
-        replace:
-          - regex: -\w+-\w+-\w+-\w+-\w+$
-            with: ""
-      Aliases: //div[p[text()='Aliases']]//div//p[@class='mb-0 text-center']
-      Tattoos: //span[@data-test="p_has_tattoos"]|//span[@cdata-test="p_has_tattoos"]
-      Piercings: //span[@data-test="p_has_piercings"]
+      Aliases: //p[@data-test='p_aliases']/text()
+      Tattoos:
+        selector: //span[text()='Tattoos']/following-sibling::span/span
+        postProcess:
+          - map:
+              Unknown: ""
+      Piercings:
+        selector: //span[text()='Piercings']/following-sibling::span/span
+        postProcess:
+          - map:
+              Unknown: ""
       Image:
-        selector: //div[@class='profile-image-container']//a/img/@src
+        selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
-        selector: //meta[@name="language"]/@name
-        replace:
-          - regex: language
-            with: "Female"
-# Last updated June 15, 2020
+        fixed: "Female"
+      Details: //div[@data-test="biography"]
+      DeathDate:
+        selector: //div[contains(text(),'Passed away on')]
+        postProcess:
+          - replace:
+              - regex: Passed away on (.+) at the age of \d+
+                with: $1
+          - parseDate: January 2, 2006
+      HairColor: //span[text()='Hair Color']/following-sibling::span/a
+      Weight:
+        selector: //span[text()='Weight']/following-sibling::span/a
+        postProcess:
+        - replace:
+            - regex: \D+[\s\S]+
+              with: ""
+
+# Last updated April 13, 2021
 `
 
-func GetFreeonesScraper() scraperConfig {
+func getFreeonesScraper() config {
 	yml := freeonesScraperConfig
 
-	scraper, err := loadScraperFromYAML(freeonesScraperID, strings.NewReader(yml))
+	scraper, err := loadScraperFromYAML(FreeonesScraperID, strings.NewReader(yml))
 	if err != nil {
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}

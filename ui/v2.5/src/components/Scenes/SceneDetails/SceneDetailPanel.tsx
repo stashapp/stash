@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { FormattedDate } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { TagLink } from "src/components/Shared";
+import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
+import { sortPerformers } from "src/core/performers";
 import { RatingStars } from "./RatingStars";
 
 interface ISceneDetailProps {
@@ -37,7 +38,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
 
   function renderPerformers() {
     if (props.scene.performers.length === 0) return;
-    const cards = props.scene.performers.map((performer) => (
+    const performers = sortPerformers(props.scene.performers);
+    const cards = performers.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
@@ -63,14 +65,22 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       <div className="row">
         <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
           <div className="scene-header d-xl-none">
-            <h3 className="text-truncate">
-              {props.scene.title ??
-                TextUtils.fileNameFromPath(props.scene.path)}
+            <h3>
+              <TruncatedText
+                text={
+                  props.scene.title ??
+                  TextUtils.fileNameFromPath(props.scene.path)
+                }
+              />
             </h3>
           </div>
           {props.scene.date ? (
             <h5>
-              <FormattedDate value={props.scene.date} format="long" />
+              <FormattedDate
+                value={props.scene.date}
+                format="long"
+                timeZone="utc"
+              />
             </h5>
           ) : undefined}
           {props.scene.rating ? (
@@ -80,8 +90,14 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           ) : (
             ""
           )}
-          {props.scene.file.height && (
-            <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
+          {props.scene.file.width && props.scene.file.height && (
+            <h6>
+              Resolution:{" "}
+              {TextUtils.resolution(
+                props.scene.file.width,
+                props.scene.file.height
+              )}
+            </h6>
           )}
         </div>
         {props.scene.studio && (

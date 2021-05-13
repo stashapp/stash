@@ -20,19 +20,23 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
-  const [performerMode, setPerformerMode] = React.useState<
-    GQL.BulkUpdateIdMode
-  >(GQL.BulkUpdateIdMode.Set);
+  const [
+    performerMode,
+    setPerformerMode,
+  ] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
-    GQL.BulkUpdateIdMode.Set
+    GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
+  const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const checkboxRef = React.createRef<HTMLInputElement>();
 
   function makeBulkUpdateIds(
     ids: string[],
@@ -61,8 +65,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     if (rating === undefined) {
       // and all scenes have the same rating, then we are unsetting the rating.
       if (aggregateRating) {
-        // an undefined rating is ignored in the server, so set it to 0 instead
-        sceneInput.rating = 0;
+        // null rating unsets it
+        sceneInput.rating = null;
       }
       // otherwise not setting the rating
     } else {
@@ -75,8 +79,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       // and all scenes have the same studioId,
       // then unset the studioId, otherwise ignoring studioId
       if (aggregateStudioId) {
-        // an undefined studio_id is ignored in the server, so set it to empty string instead
-        sceneInput.studio_id = "";
+        // null studio_id unsets it
+        sceneInput.studio_id = null;
       }
     } else {
       // if studioId is set, then we are setting it
@@ -117,6 +121,10 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     } else {
       // if tagIds non-empty, then we are setting them
       sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
+    }
+
+    if (organized !== undefined) {
+      sceneInput.organized = organized;
     }
 
     return sceneInput;
@@ -217,6 +225,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
+    let updateOrganized: boolean | undefined;
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
@@ -233,6 +242,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         updatePerformerIds = scenePerformerIDs;
         updateTagIds = sceneTagIDs;
         first = false;
+        updateOrganized = scene.organized;
       } else {
         if (sceneRating !== updateRating) {
           updateRating = undefined;
@@ -246,6 +256,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         if (!_.isEqual(sceneTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (scene.organized !== updateOrganized) {
+          updateOrganized = undefined;
+        }
       }
     });
 
@@ -258,7 +271,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     if (tagMode === GQL.BulkUpdateIdMode.Set) {
       setTagIds(updateTagIds);
     }
+    setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = organized === undefined;
+    }
+  }, [organized, checkboxRef]);
 
   function renderMultiSelect(
     type: "performers" | "tags",
@@ -303,6 +323,16 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         mode={mode}
       />
     );
+  }
+
+  function cycleOrganized() {
+    if (organized) {
+      setOrganized(undefined);
+    } else if (organized === undefined) {
+      setOrganized(false);
+    } else {
+      setOrganized(true);
+    }
   }
 
   function render() {
@@ -353,9 +383,19 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
-          <Form.Group controlId="performers">
+          <Form.Group controlId="tags">
             <Form.Label>Tags</Form.Label>
             {renderMultiSelect("tags", tagIds)}
+          </Form.Group>
+
+          <Form.Group controlId="organized">
+            <Form.Check
+              type="checkbox"
+              label="Organized"
+              checked={organized}
+              ref={checkboxRef}
+              onChange={() => cycleOrganized()}
+            />
           </Form.Group>
         </Form>
       </Modal>

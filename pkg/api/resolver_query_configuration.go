@@ -34,35 +34,56 @@ func makeConfigResult() *models.ConfigResult {
 }
 
 func makeConfigGeneralResult() *models.ConfigGeneralResult {
+	config := config.GetInstance()
 	logFile := config.GetLogFile()
 
 	maxTranscodeSize := config.GetMaxTranscodeSize()
 	maxStreamingTranscodeSize := config.GetMaxStreamingTranscodeSize()
 
 	scraperUserAgent := config.GetScraperUserAgent()
+	scraperCDPPath := config.GetScraperCDPPath()
 
 	return &models.ConfigGeneralResult{
-		Stashes:                   config.GetStashPaths(),
-		DatabasePath:              config.GetDatabasePath(),
-		GeneratedPath:             config.GetGeneratedPath(),
-		CachePath:                 config.GetCachePath(),
-		MaxTranscodeSize:          &maxTranscodeSize,
-		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
-		ForceMkv:                  config.GetForceMKV(),
-		ForceHevc:                 config.GetForceHEVC(),
-		Username:                  config.GetUsername(),
-		Password:                  config.GetPasswordHash(),
-		MaxSessionAge:             config.GetMaxSessionAge(),
-		LogFile:                   &logFile,
-		LogOut:                    config.GetLogOut(),
-		LogLevel:                  config.GetLogLevel(),
-		LogAccess:                 config.GetLogAccess(),
-		Excludes:                  config.GetExcludes(),
-		ScraperUserAgent:          &scraperUserAgent,
+		Stashes:                    config.GetStashPaths(),
+		DatabasePath:               config.GetDatabasePath(),
+		GeneratedPath:              config.GetGeneratedPath(),
+		ConfigFilePath:             config.GetConfigFilePath(),
+		ScrapersPath:               config.GetScrapersPath(),
+		CachePath:                  config.GetCachePath(),
+		CalculateMd5:               config.IsCalculateMD5(),
+		VideoFileNamingAlgorithm:   config.GetVideoFileNamingAlgorithm(),
+		ParallelTasks:              config.GetParallelTasks(),
+		PreviewSegments:            config.GetPreviewSegments(),
+		PreviewSegmentDuration:     config.GetPreviewSegmentDuration(),
+		PreviewExcludeStart:        config.GetPreviewExcludeStart(),
+		PreviewExcludeEnd:          config.GetPreviewExcludeEnd(),
+		PreviewPreset:              config.GetPreviewPreset(),
+		MaxTranscodeSize:           &maxTranscodeSize,
+		MaxStreamingTranscodeSize:  &maxStreamingTranscodeSize,
+		APIKey:                     config.GetAPIKey(),
+		Username:                   config.GetUsername(),
+		Password:                   config.GetPasswordHash(),
+		MaxSessionAge:              config.GetMaxSessionAge(),
+		LogFile:                    &logFile,
+		LogOut:                     config.GetLogOut(),
+		LogLevel:                   config.GetLogLevel(),
+		LogAccess:                  config.GetLogAccess(),
+		VideoExtensions:            config.GetVideoExtensions(),
+		ImageExtensions:            config.GetImageExtensions(),
+		GalleryExtensions:          config.GetGalleryExtensions(),
+		CreateGalleriesFromFolders: config.GetCreateGalleriesFromFolders(),
+		Excludes:                   config.GetExcludes(),
+		ImageExcludes:              config.GetImageExcludes(),
+		ScraperUserAgent:           &scraperUserAgent,
+		ScraperCertCheck:           config.GetScraperCertCheck(),
+		ScraperCDPPath:             &scraperCDPPath,
+		StashBoxes:                 config.GetStashBoxes(),
 	}
 }
 
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	config := config.GetInstance()
+	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
@@ -72,8 +93,10 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
+	slideshowDelay := config.GetSlideshowDelay()
 
 	return &models.ConfigInterfaceResult{
+		MenuItems:           menuItems,
 		SoundOnPreview:      &soundOnPreview,
 		WallShowTitle:       &wallShowTitle,
 		WallPlayback:        &wallPlayback,
@@ -83,5 +106,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
 		Language:            &language,
+		SlideshowDelay:      &slideshowDelay,
 	}
 }

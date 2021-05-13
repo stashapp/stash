@@ -1,9 +1,8 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -22,11 +21,19 @@ import {
 import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
+import { TagImagesPanel } from "./TagImagesPanel";
+import { TagPerformersPanel } from "./TagPerformersPanel";
+import { TagGalleriesPanel } from "./TagGalleriesPanel";
+
+interface ITabParams {
+  id?: string;
+  tab?: string;
+}
 
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { tab = "scenes", id = "new" } = useParams<ITabParams>();
   const isNew = id === "new";
 
   // Editing state
@@ -34,17 +41,31 @@ export const Tag: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing tag state
-  const [image, setImage] = useState<string>();
+  const [image, setImage] = useState<string | null>();
   const [name, setName] = useState<string>();
 
   // Tag state
-  const [tag, setTag] = useState<Partial<GQL.TagDataFragment>>({});
+  const [tag, setTag] = useState<GQL.TagDataFragment | undefined>();
   const [imagePreview, setImagePreview] = useState<string>();
 
   const { data, error, loading } = useFindTag(id);
-  const [updateTag] = useTagUpdate(getTagInput() as GQL.TagUpdateInput);
+  const [updateTag] = useTagUpdate();
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
+
+  const activeTabKey =
+    tab === "markers" ||
+    tab === "images" ||
+    tab === "performers" ||
+    tab === "galleries"
+      ? tab
+      : "scenes";
+  const setActiveTabKey = (newTab: string | null) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
+      history.replace(`/tags/${id}${tabParam}`);
+    }
+  };
 
   // set up hotkeys
   useEffect(() => {
@@ -65,11 +86,11 @@ export const Tag: React.FC = () => {
     };
   });
 
-  function updateTagEditState(state: Partial<GQL.TagDataFragment>) {
+  function updateTagEditState(state: GQL.TagDataFragment) {
     setName(state.name);
   }
 
-  function updateTagData(tagData: Partial<GQL.TagDataFragment>) {
+  function updateTagData(tagData: GQL.TagDataFragment) {
     setImage(undefined);
     updateTagEditState(tagData);
     setImagePreview(tagData.image_path ?? undefined);
@@ -98,21 +119,27 @@ export const Tag: React.FC = () => {
   }
 
   function getTagInput() {
-    const input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
+    if (!isNew) {
+      return {
+        id,
+        name,
+        image,
+      };
+    }
+    return {
       name,
       image,
     };
-
-    if (!isNew) {
-      (input as GQL.TagUpdateInput).id = id;
-    }
-    return input;
   }
 
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateTag();
+        const result = await updateTag({
+          variables: {
+            input: getTagInput() as GQL.TagUpdateInput,
+          },
+        });
         if (result.data?.tagUpdate) {
           updateTagData(result.data.tagUpdate);
           setIsEditing(false);
@@ -130,7 +157,7 @@ export const Tag: React.FC = () => {
   }
 
   async function onAutoTag() {
-    if (!tag.id) return;
+    if (!tag?.id) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
       Toast.success({ content: "Started auto tagging" });
@@ -169,7 +196,16 @@ export const Tag: React.FC = () => {
 
   function onToggleEdit() {
     setIsEditing(!isEditing);
-    updateTagData(tag);
+    if (tag) {
+      updateTagData(tag);
+    }
+  }
+
+  function onClearImage() {
+    setImage(null);
+    setImagePreview(
+      tag?.image_path ? `${tag.image_path}&default=true` : undefined
+    );
   }
 
   return (
@@ -205,19 +241,36 @@ export const Tag: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG
         />
       </div>
-      {!isNew && (
+      {!isNew && tag && (
         <div className="col col-md-8">
-          <Tabs id="tag-tabs" mountOnEnter>
-            <Tab eventKey="tag-scenes-panel" title="Scenes">
+          <Tabs
+            id="tag-tabs"
+            mountOnEnter
+            activeKey={activeTabKey}
+            onSelect={setActiveTabKey}
+          >
+            <Tab eventKey="scenes" title="Scenes">
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="tag-markers-panel" title="Markers">
+            <Tab eventKey="images" title="Images">
+              <TagImagesPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="galleries" title="Galleries">
+              <TagGalleriesPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="performers" title="Performers">
+              <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>
         </div>

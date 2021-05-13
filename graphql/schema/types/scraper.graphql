@@ -20,12 +20,15 @@ type Scraper {
     performer: ScraperSpec
     """Details for scene scraper"""
     scene: ScraperSpec
+    """Details for gallery scraper"""
+    gallery: ScraperSpec
+    """Details for movie scraper"""
+    movie: ScraperSpec
 }
-
 
 type ScrapedScenePerformer {
   """Set if performer matched"""
-  id: ID
+  stored_id: ID
   name: String!
   gender: String
   url: String
@@ -42,11 +45,19 @@ type ScrapedScenePerformer {
   tattoos: String
   piercings: String
   aliases: String
+  tags: [ScrapedSceneTag!]
+
+  remote_site_id: String
+  images: [String!]
+  details: String
+  death_date: String
+  hair_color: String
+  weight: String
 }
 
 type ScrapedSceneMovie {
   """Set if movie matched"""
-  id: ID
+  stored_id: ID
   name: String!
   aliases: String
   duration: String
@@ -59,14 +70,16 @@ type ScrapedSceneMovie {
 
 type ScrapedSceneStudio {
   """Set if studio matched"""
-  id: ID
+  stored_id: ID
   name: String!
   url: String
+
+  remote_site_id: String
 }
 
 type ScrapedSceneTag {
   """Set if tag matched"""
-  id: ID
+  stored_id: ID
   name: String!
 }
 
@@ -76,7 +89,7 @@ type ScrapedScene {
   url: String
   date: String
 
-  """This should be base64 encoded"""
+  """This should be a base64 encoded data URL"""
   image: String
 
   file: SceneFileType # Resolver
@@ -85,4 +98,56 @@ type ScrapedScene {
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
   movies: [ScrapedSceneMovie!]
+
+  remote_site_id: String
+  duration: Int
+  fingerprints: [StashBoxFingerprint!]
+}
+
+type ScrapedGallery {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  studio: ScrapedSceneStudio
+  tags: [ScrapedSceneTag!]
+  performers: [ScrapedScenePerformer!]
+}
+
+input StashBoxSceneQueryInput {
+  """Index of the configured stash-box instance to use"""
+  stash_box_index: Int!
+  """Instructs query by scene fingerprints"""
+  scene_ids: [ID!]
+  """Query by query string"""
+  q: String
+}
+
+input StashBoxPerformerQueryInput {
+  """Index of the configured stash-box instance to use"""
+  stash_box_index: Int!
+  """Instructs query by scene fingerprints"""
+  performer_ids: [ID!]
+  """Query by query string"""
+  q: String
+}
+
+type StashBoxPerformerQueryResult {
+  query: String!
+  results: [ScrapedScenePerformer!]!
+}
+
+type StashBoxFingerprint {
+  algorithm: String!
+  hash: String!
+  duration: Int!
+}
+
+input StashBoxBatchPerformerTagInput {
+  endpoint: Int!
+  exclude_fields: [String!]
+  refresh: Boolean!
+  performer_ids: [ID!]
+  performer_names: [String!]
 }

@@ -13,6 +13,8 @@ const fuzzyDict: Record<string, string> = {
   "United Kingdom": "GB",
   Russia: "RU",
   "Slovak Republic": "SK",
+  Iran: "IR",
+  Moldova: "MD",
 };
 
 const getISOCountry = (country: string | null | undefined) => {
@@ -25,6 +27,12 @@ const getISOCountry = (country: string | null | undefined) => {
     code,
     name: Countries.getName(code, "en"),
   };
+};
+
+export const getCountryByISO = (iso: string | null | undefined) => {
+  if (!iso) return null;
+
+  return Countries.getName(iso, "en") ?? null;
 };
 
 export default getISOCountry;

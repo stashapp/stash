@@ -1,60 +1,16 @@
 mutation SceneUpdate(
-  $id: ID!,
-  $title: String,
-  $details: String,
-  $url: String,
-  $date: String,
-  $rating: Int,
-  $studio_id: ID,
-  $gallery_id: ID,
-  $performer_ids: [ID!] = [],
-  $movies: [SceneMovieInput!] = [],
-  $tag_ids: [ID!] = [],
-  $cover_image: String) {
+  $input: SceneUpdateInput!) {
 
-  sceneUpdate(input: {
-                        id: $id,
-                        title: $title,
-                        details: $details,
-                        url: $url,
-                        date: $date,
-                        rating: $rating,
-                        studio_id: $studio_id,
-                        gallery_id: $gallery_id,
-                        performer_ids: $performer_ids,
-                        movies: $movies,
-                        tag_ids: $tag_ids,
-                        cover_image: $cover_image
-                      }) {
-      ...SceneData
+  sceneUpdate(input: $input) {
+    ...SceneData
   }
 }
 
 mutation BulkSceneUpdate(
-  $ids: [ID!] = [],
-  $title: String,
-  $details: String,
-  $url: String,
-  $date: String,
-  $rating: Int,
-  $studio_id: ID,
-  $gallery_id: ID,
-  $performer_ids: BulkUpdateIds,
-  $tag_ids: BulkUpdateIds) {
+  $input: BulkSceneUpdateInput!) {
 
-  bulkSceneUpdate(input: {
-                        ids: $ids,
-                        title: $title,
-                        details: $details,
-                        url: $url,
-                        date: $date,
-                        rating: $rating,
-                        studio_id: $studio_id,
-                        gallery_id: $gallery_id,
-                        performer_ids: $performer_ids,
-                        tag_ids: $tag_ids
-                      }) {
-      ...SceneData
+  bulkSceneUpdate(input: $input) {
+    ...SceneData
   }
 }
 

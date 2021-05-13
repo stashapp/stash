@@ -76,11 +76,13 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
       </p>
       <Form>
         <Form.Check
+          id="delete-file"
           checked={deleteFile}
           label="Delete file"
           onChange={() => setDeleteFile(!deleteFile)}
         />
         <Form.Check
+          id="delete-generated"
           checked={deleteGenerated}
           label="Delete generated supporting files"
           onChange={() => setDeleteGenerated(!deleteGenerated)}

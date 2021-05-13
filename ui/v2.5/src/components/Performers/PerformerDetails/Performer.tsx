@@ -1,53 +1,85 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindPerformer,
   usePerformerUpdate,
-  usePerformerCreate,
   usePerformerDestroy,
 } from "src/core/StashService";
-import { CountryFlag, Icon, LoadingIndicator } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import {
+  CountryFlag,
+  ErrorMessage,
+  Icon,
+  LoadingIndicator,
+} from "src/components/Shared";
+import { useLightbox, useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import Lightbox from "react-images";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
+import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerEditPanel } from "./PerformerEditPanel";
+
+interface IPerformerParams {
+  id?: string;
+  tab?: string;
+}
 
 export const Performer: React.FC = () => {
   const Toast = useToast();
   const history = useHistory();
-  const { id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IPerformerParams>();
   const isNew = id === "new";
 
   // Performer state
-  const [performer, setPerformer] = useState<
-    Partial<GQL.PerformerDataFragment>
-  >({});
-  const [imagePreview, setImagePreview] = useState<string>();
+  const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-  const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
-  const activeImage = imagePreview ?? performer.image_path ?? "";
+  const { data, loading: performerLoading, error } = useFindPerformer(id);
+  const performer = data?.findPerformer || ({} as Partial<GQL.Performer>);
+
+  // if undefined then get the existing image
+  // if null then get the default (no) image
+  // otherwise get the set image
+  const activeImage =
+    imagePreview === undefined
+      ? performer.image_path ?? ""
+      : imagePreview ?? (isNew ? "" : `${performer.image_path}&default=true`);
+  const lightboxImages = useMemo(
+    () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
+    [activeImage]
+  );
+
+  const showLightbox = useLightbox({
+    images: lightboxImages,
+  });
 
   // Network state
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setIsLoading] = useState(false);
+  const isLoading = performerLoading || loading;
 
-  const [activeTabKey, setActiveTabKey] = useState("details");
-
-  const { data, error } = useFindPerformer(id);
   const [updatePerformer] = usePerformerUpdate();
-  const [createPerformer] = usePerformerCreate();
   const [deletePerformer] = usePerformerDestroy();
 
-  useEffect(() => {
-    setIsLoading(false);
-    if (data?.findPerformer) setPerformer(data.findPerformer);
-  }, [data]);
+  const activeTabKey =
+    tab === "scenes" ||
+    tab === "galleries" ||
+    tab === "images" ||
+    tab === "edit" ||
+    tab === "operations"
+      ? tab
+      : "details";
+  const setActiveTabKey = (newTab: string | null) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "details" ? "" : `/${newTab}`;
+      history.replace(`/performers/${id}${tabParam}`);
+    }
+  };
 
-  const onImageChange = (image?: string) => setImagePreview(image);
+  const onImageChange = (image?: string | null) => setImagePreview(image);
 
   const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
 
@@ -56,6 +88,7 @@ export const Performer: React.FC = () => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
     Mousetrap.bind("e", () => setActiveTabKey("edit"));
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
+    Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("o", () => setActiveTabKey("operations"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
 
@@ -68,42 +101,10 @@ export const Performer: React.FC = () => {
     };
   });
 
-  if ((!isNew && (!data || !data.findPerformer)) || isLoading)
-    return <LoadingIndicator />;
-
-  if (error) return <div>{error.message}</div>;
-
-  async function onSave(
-    performerInput:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) {
-    setIsLoading(true);
-    try {
-      if (!isNew) {
-        const result = await updatePerformer({
-          variables: performerInput as GQL.PerformerUpdateInput,
-        });
-        if (performerInput.image) {
-          // Refetch image to bust browser cache
-          await fetch(`/performer/${performer.id}/image`, { cache: "reload" });
-        }
-        if (result.data?.performerUpdate)
-          setPerformer(result.data?.performerUpdate);
-      } else {
-        const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput,
-        });
-        if (result.data?.performerCreate) {
-          setPerformer(result.data.performerCreate);
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-  }
+  if (isLoading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!performer.id && !isNew)
+    return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
   async function onDelete() {
     setIsLoading(true);
@@ -121,28 +122,28 @@ export const Performer: React.FC = () => {
   const renderTabs = () => (
     <Tabs
       activeKey={activeTabKey}
-      onSelect={(k: string) => setActiveTabKey(k)}
+      onSelect={setActiveTabKey}
       id="performer-details"
       unmountOnExit
     >
       <Tab eventKey="details" title="Details">
-        <PerformerDetailsPanel
-          performer={performer}
-          isEditing={false}
-          isVisible={activeTabKey === "details"}
-        />
+        <PerformerDetailsPanel performer={performer} />
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
       </Tab>
+      <Tab eventKey="galleries" title="Galleries">
+        <PerformerGalleriesPanel performer={performer} />
+      </Tab>
+      <Tab eventKey="images" title="Images">
+        <PerformerImagesPanel performer={performer} />
+      </Tab>
       <Tab eventKey="edit" title="Edit">
-        <PerformerDetailsPanel
+        <PerformerEditPanel
           performer={performer}
-          isEditing
           isVisible={activeTabKey === "edit"}
           isNew={isNew}
           onDelete={onDelete}
-          onSave={onSave}
           onImageChange={onImageChange}
           onImageEncoding={onImageEncoding}
         />
@@ -159,7 +160,9 @@ export const Performer: React.FC = () => {
       // provided by the server
       return (
         <div>
-          <span className="age">{TextUtils.age(performer.birthdate)}</span>
+          <span className="age">
+            {TextUtils.age(performer.birthdate, performer.death_date)}
+          </span>
           <span className="age-tail"> years old</span>
         </div>
       );
@@ -178,8 +181,16 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    performer.favorite = v;
-    onSave(performer);
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            favorite: v,
+          },
+        },
+      });
+    }
   }
 
   const renderIcons = () => (
@@ -243,23 +254,23 @@ export const Performer: React.FC = () => {
       return <LoadingIndicator message="Encoding image..." />;
     }
     if (activeImage) {
-      return <img className="photo" src={activeImage} alt="Performer" />;
+      return <img className="performer" src={activeImage} alt="Performer" />;
     }
   }
 
   if (isNew)
     return (
-      <div className="row new-view">
-        <div className="col-4">{renderPerformerImage()}</div>
-        <div className="col-6">
+      <div className="row new-view" id="performer-page">
+        <div className="performer-image-container col-md-4 text-center">
+          {renderPerformerImage()}
+        </div>
+        <div className="col-md-8">
           <h2>Create Performer</h2>
-          <PerformerDetailsPanel
+          <PerformerEditPanel
             performer={performer}
-            isEditing
             isVisible
-            isNew={isNew}
+            isNew
             onDelete={onDelete}
-            onSave={onSave}
             onImageChange={onImageChange}
             onImageEncoding={onImageEncoding}
           />
@@ -267,20 +278,22 @@ export const Performer: React.FC = () => {
       </div>
     );
 
-  const photos = [{ src: activeImage, caption: "Image" }];
+  if (!performer.id) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <div id="performer-page" className="row">
-      <div className="image-container col-md-4 text-center">
+      <div className="performer-image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
+          <Button variant="link" onClick={() => showLightbox()}>
             <img className="performer" src={activeImage} alt="Performer" />
           </Button>
         )}
       </div>
-      <div className="col col-md-8 col-lg-7 col-xl-6">
+      <div className="col-md-8">
         <div className="row">
           <div className="performer-head col">
             <h2>
@@ -296,14 +309,6 @@ export const Performer: React.FC = () => {
           <div className="performer-tabs">{renderTabs()}</div>
         </div>
       </div>
-      <Lightbox
-        images={photos}
-        onClose={() => setLightboxIsOpen(false)}
-        currentImage={0}
-        isOpen={lightboxIsOpen}
-        onClickImage={() => window.open(activeImage, "_blank")}
-        width={9999}
-      />
     </div>
   );
 };

@@ -3,63 +3,64 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
-	// Start the transaction and save the scene
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	ret, err := r.sceneUpdate(input, tx)
-
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
+func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (ret *models.Scene, err error) {
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	// Start the transaction and save the scene
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		ret, err = r.sceneUpdate(input, translator, repo)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) ([]*models.Scene, error) {
+func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) (ret []*models.Scene, err error) {
+	inputMaps := getUpdateInputMaps(ctx)
+
 	// Start the transaction and save the scene
-	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		for i, scene := range input {
+			translator := changesetTranslator{
+				inputMap: inputMaps[i],
+			}
 
-	var ret []*models.Scene
+			thisScene, err := r.sceneUpdate(*scene, translator, repo)
+			ret = append(ret, thisScene)
 
-	for _, scene := range input {
-		thisScene, err := r.sceneUpdate(*scene, tx)
-		ret = append(ret, thisScene)
-
-		if err != nil {
-			_ = tx.Rollback()
-			return nil, err
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.Tx) (*models.Scene, error) {
+func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Scene, error) {
 	// Populate scene from the input
-	sceneID, _ := strconv.Atoi(input.ID)
+	sceneID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	var coverImageData []byte
 
@@ -68,22 +69,18 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		ID:        sceneID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
-	if input.Title != nil {
-		updatedScene.Title = &sql.NullString{String: *input.Title, Valid: true}
-	}
-	if input.Details != nil {
-		updatedScene.Details = &sql.NullString{String: *input.Details, Valid: true}
-	}
-	if input.URL != nil {
-		updatedScene.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
-	if input.Date != nil {
-		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
-	}
+
+	updatedScene.Title = translator.nullString(input.Title, "title")
+	updatedScene.Details = translator.nullString(input.Details, "details")
+	updatedScene.URL = translator.nullString(input.URL, "url")
+	updatedScene.Date = translator.sqliteDate(input.Date, "date")
+	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedScene.Organized = input.Organized
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
-		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
+		coverImageData, err = utils.ProcessImageInput(*input.CoverImage)
 		if err != nil {
 			return nil, err
 		}
@@ -91,81 +88,85 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		// update the cover after updating the scene
 	}
 
-	if input.Rating != nil {
-		updatedScene.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-	} else {
-		// rating must be nullable
-		updatedScene.Rating = &sql.NullInt64{Valid: false}
-	}
-
-	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-	} else {
-		// studio must be nullable
-		updatedScene.StudioID = &sql.NullInt64{Valid: false}
-	}
-
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
-	scene, err := qb.Update(updatedScene, tx)
+	qb := repo.Scene()
+	scene, err := qb.Update(updatedScene)
 	if err != nil {
 		return nil, err
 	}
 
 	// update cover table
 	if len(coverImageData) > 0 {
-		if err := qb.UpdateSceneCover(sceneID, coverImageData, tx); err != nil {
-			return nil, err
-		}
-	}
-
-	// Clear the existing gallery value
-	gqb := models.NewGalleryQueryBuilder()
-	err = gqb.ClearGalleryId(sceneID, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	if input.GalleryID != nil {
-		// Save the gallery
-		galleryID, _ := strconv.Atoi(*input.GalleryID)
-		updatedGallery := models.Gallery{
-			ID:        galleryID,
-			SceneID:   sql.NullInt64{Int64: int64(sceneID), Valid: true},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
-		}
-		gqb := models.NewGalleryQueryBuilder()
-		_, err := gqb.Update(updatedGallery, tx)
-		if err != nil {
+		if err := qb.UpdateCover(sceneID, coverImageData); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the performers
-	var performerJoins []models.PerformersScenes
-	for _, pid := range input.PerformerIds {
-		performerID, _ := strconv.Atoi(pid)
-		performerJoin := models.PerformersScenes{
-			PerformerID: performerID,
-			SceneID:     sceneID,
+	if translator.hasField("performer_ids") {
+		if err := r.updateScenePerformers(qb, sceneID, input.PerformerIds); err != nil {
+			return nil, err
 		}
-		performerJoins = append(performerJoins, performerJoin)
-	}
-	if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
-		return nil, err
 	}
 
 	// Save the movies
+	if translator.hasField("movies") {
+		if err := r.updateSceneMovies(qb, sceneID, input.Movies); err != nil {
+			return nil, err
+		}
+	}
+
+	// Save the tags
+	if translator.hasField("tag_ids") {
+		if err := r.updateSceneTags(qb, sceneID, input.TagIds); err != nil {
+			return nil, err
+		}
+	}
+
+	// Save the galleries
+	if translator.hasField("gallery_ids") {
+		if err := r.updateSceneGalleries(qb, sceneID, input.GalleryIds); err != nil {
+			return nil, err
+		}
+	}
+
+	// Save the stash_ids
+	if translator.hasField("stash_ids") {
+		stashIDJoins := models.StashIDsFromInput(input.StashIds)
+		if err := qb.UpdateStashIDs(sceneID, stashIDJoins); err != nil {
+			return nil, err
+		}
+	}
+
+	// only update the cover image if provided and everything else was successful
+	if coverImageData != nil {
+		err = manager.SetSceneScreenshot(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scene, nil
+}
+
+func (r *mutationResolver) updateScenePerformers(qb models.SceneReaderWriter, sceneID int, performerIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdatePerformers(sceneID, ids)
+}
+
+func (r *mutationResolver) updateSceneMovies(qb models.SceneReaderWriter, sceneID int, movies []*models.SceneMovieInput) error {
 	var movieJoins []models.MoviesScenes
 
-	for _, movie := range input.Movies {
-
-		movieID, _ := strconv.Atoi(movie.MovieID)
+	for _, movie := range movies {
+		movieID, err := strconv.Atoi(movie.MovieID)
+		if err != nil {
+			return err
+		}
 
 		movieJoin := models.MoviesScenes{
 			MovieID: movieID,
-			SceneID: sceneID,
 		}
 
 		if movie.SceneIndex != nil {
@@ -177,154 +178,106 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 
 		movieJoins = append(movieJoins, movieJoin)
 	}
-	if err := jqb.UpdateMoviesScenes(sceneID, movieJoins, tx); err != nil {
-		return nil, err
-	}
 
-	// Save the tags
-	var tagJoins []models.ScenesTags
-	for _, tid := range input.TagIds {
-		tagID, _ := strconv.Atoi(tid)
-		tagJoin := models.ScenesTags{
-			SceneID: sceneID,
-			TagID:   tagID,
-		}
-		tagJoins = append(tagJoins, tagJoin)
-	}
-	if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
-		return nil, err
-	}
+	return qb.UpdateMovies(sceneID, movieJoins)
+}
 
-	// only update the cover image if provided and everything else was successful
-	if coverImageData != nil {
-		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
-		if err != nil {
-			return nil, err
-		}
+func (r *mutationResolver) updateSceneTags(qb models.SceneReaderWriter, sceneID int, tagsIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	if err != nil {
+		return err
 	}
+	return qb.UpdateTags(sceneID, ids)
+}
 
-	return scene, nil
+func (r *mutationResolver) updateSceneGalleries(qb models.SceneReaderWriter, sceneID int, galleryIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(galleryIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateGalleries(sceneID, ids)
 }
 
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.BulkSceneUpdateInput) ([]*models.Scene, error) {
+	sceneIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, err
+	}
+
 	// Populate scene from the input
 	updatedTime := time.Now()
 
-	// Start the transaction and save the scene marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
 
 	updatedScene := models.ScenePartial{
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
-	if input.Title != nil {
-		updatedScene.Title = &sql.NullString{String: *input.Title, Valid: true}
-	}
-	if input.Details != nil {
-		updatedScene.Details = &sql.NullString{String: *input.Details, Valid: true}
-	}
-	if input.URL != nil {
-		updatedScene.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
-	if input.Date != nil {
-		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
-	}
-	if input.Rating != nil {
-		// a rating of 0 means unset the rating
-		if *input.Rating == 0 {
-			updatedScene.Rating = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			updatedScene.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-		}
-	}
-	if input.StudioID != nil {
-		// empty string means unset the studio
-		if *input.StudioID == "" {
-			updatedScene.StudioID = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-			updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-		}
-	}
+
+	updatedScene.Title = translator.nullString(input.Title, "title")
+	updatedScene.Details = translator.nullString(input.Details, "details")
+	updatedScene.URL = translator.nullString(input.URL, "url")
+	updatedScene.Date = translator.sqliteDate(input.Date, "date")
+	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedScene.Organized = input.Organized
 
 	ret := []*models.Scene{}
 
-	for _, sceneIDStr := range input.Ids {
-		sceneID, _ := strconv.Atoi(sceneIDStr)
-		updatedScene.ID = sceneID
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
 
-		scene, err := qb.Update(updatedScene, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+		for _, sceneID := range sceneIDs {
+			updatedScene.ID = sceneID
 
-		ret = append(ret, scene)
-
-		if input.GalleryID != nil {
-			// Save the gallery
-			galleryID, _ := strconv.Atoi(*input.GalleryID)
-			updatedGallery := models.Gallery{
-				ID:        galleryID,
-				SceneID:   sql.NullInt64{Int64: int64(sceneID), Valid: true},
-				UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
-			}
-			gqb := models.NewGalleryQueryBuilder()
-			_, err := gqb.Update(updatedGallery, tx)
+			scene, err := qb.Update(updatedScene)
 			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-		}
-
-		// Save the performers
-		if wasFieldIncluded(ctx, "performer_ids") {
-			performerIDs, err := adjustScenePerformerIDs(tx, sceneID, *input.PerformerIds)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
+				return err
 			}
 
-			var performerJoins []models.PerformersScenes
-			for _, performerID := range performerIDs {
-				performerJoin := models.PerformersScenes{
-					PerformerID: performerID,
-					SceneID:     sceneID,
+			ret = append(ret, scene)
+
+			// Save the performers
+			if translator.hasField("performer_ids") {
+				performerIDs, err := adjustScenePerformerIDs(qb, sceneID, *input.PerformerIds)
+				if err != nil {
+					return err
 				}
-				performerJoins = append(performerJoins, performerJoin)
-			}
-			if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-		}
 
-		// Save the tags
-		if wasFieldIncluded(ctx, "tag_ids") {
-			tagIDs, err := adjustSceneTagIDs(tx, sceneID, *input.TagIds)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-
-			var tagJoins []models.ScenesTags
-			for _, tagID := range tagIDs {
-				tagJoin := models.ScenesTags{
-					SceneID: sceneID,
-					TagID:   tagID,
+				if err := qb.UpdatePerformers(sceneID, performerIDs); err != nil {
+					return err
 				}
-				tagJoins = append(tagJoins, tagJoin)
 			}
-			if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
+
+			// Save the tags
+			if translator.hasField("tag_ids") {
+				tagIDs, err := adjustTagIDs(qb, sceneID, *input.TagIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateTags(sceneID, tagIDs); err != nil {
+					return err
+				}
+			}
+
+			// Save the galleries
+			if translator.hasField("gallery_ids") {
+				galleryIDs, err := adjustSceneGalleryIDs(qb, sceneID, *input.GalleryIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateGalleries(sceneID, galleryIDs); err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -332,6 +285,17 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 }
 
 func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
+	// if we are setting the ids, just return the ids
+	if updateIDs.Mode == models.BulkUpdateIDModeSet {
+		existingIDs = []int{}
+		for _, idStr := range updateIDs.Ids {
+			id, _ := strconv.Atoi(idStr)
+			existingIDs = append(existingIDs, id)
+		}
+
+		return existingIDs
+	}
+
 	for _, idStr := range updateIDs.Ids {
 		id, _ := strconv.Atoi(idStr)
 
@@ -357,67 +321,70 @@ func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
 	return existingIDs
 }
 
-func adjustScenePerformerIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
-
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		performerJoins, err := jqb.GetScenePerformers(sceneID, tx)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, join := range performerJoins {
-			ret = append(ret, join.PerformerID)
-		}
+func adjustScenePerformerIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetPerformerIDs(sceneID)
+	if err != nil {
+		return nil, err
 	}
 
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustSceneTagIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
+type tagIDsGetter interface {
+	GetTagIDs(id int) ([]int, error)
+}
 
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		tagJoins, err := jqb.GetSceneTags(sceneID, tx)
+func adjustTagIDs(qb tagIDsGetter, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetTagIDs(sceneID)
+	if err != nil {
+		return nil, err
+	}
 
-		if err != nil {
-			return nil, err
-		}
+	return adjustIDs(ret, ids), nil
+}
 
-		for _, join := range tagJoins {
-			ret = append(ret, join.TagID)
-		}
+func adjustSceneGalleryIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetGalleryIDs(sceneID)
+	if err != nil {
+		return nil, err
 	}
 
 	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
-	qb := models.NewSceneQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	sceneID, _ := strconv.Atoi(input.ID)
-	scene, err := qb.Find(sceneID)
-	err = manager.DestroyScene(sceneID, tx)
-
+	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
-		tx.Rollback()
 		return false, err
 	}
 
-	if err := tx.Commit(); err != nil {
+	var scene *models.Scene
+	var postCommitFunc func()
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+		var err error
+		scene, err = qb.Find(sceneID)
+		if err != nil {
+			return err
+		}
+
+		if scene == nil {
+			return fmt.Errorf("scene with id %d not found", sceneID)
+		}
+
+		postCommitFunc, err = manager.DestroyScene(scene, repo)
+		return err
+	}); err != nil {
 		return false, err
 	}
+
+	// perform the post-commit actions
+	postCommitFunc()
 
 	// if delete generated is true, then delete the generated files
 	// for the scene
 	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedSceneFiles(scene)
+		manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
 	}
 
 	// if delete file is true, then delete the file as well
@@ -430,34 +397,41 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 }
 
 func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.ScenesDestroyInput) (bool, error) {
-	qb := models.NewSceneQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
 	var scenes []*models.Scene
-	for _, id := range input.Ids {
-		sceneID, _ := strconv.Atoi(id)
+	var postCommitFuncs []func()
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
 
-		scene, err := qb.Find(sceneID)
-		if scene != nil {
-			scenes = append(scenes, scene)
+		for _, id := range input.Ids {
+			sceneID, _ := strconv.Atoi(id)
+
+			scene, err := qb.Find(sceneID)
+			if scene != nil {
+				scenes = append(scenes, scene)
+			}
+			f, err := manager.DestroyScene(scene, repo)
+			if err != nil {
+				return err
+			}
+
+			postCommitFuncs = append(postCommitFuncs, f)
 		}
-		err = manager.DestroyScene(sceneID, tx)
 
-		if err != nil {
-			tx.Rollback()
-			return false, err
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return false, err
 	}
 
+	for _, f := range postCommitFuncs {
+		f()
+	}
+
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	for _, scene := range scenes {
 		// if delete generated is true, then delete the generated files
 		// for the scene
 		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedSceneFiles(scene)
+			manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
 		}
 
 		// if delete file is true, then delete the file as well
@@ -471,8 +445,16 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
-	primaryTagID, _ := strconv.Atoi(input.PrimaryTagID)
-	sceneID, _ := strconv.Atoi(input.SceneID)
+	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
 	currentTime := time.Now()
 	newSceneMarker := models.SceneMarker{
 		Title:        input.Title,
@@ -483,14 +465,31 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	return changeMarker(ctx, create, newSceneMarker, input.TagIds)
+	tagIDs, err := utils.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.changeMarker(ctx, create, newSceneMarker, tagIDs)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	// Populate scene marker from the input
-	sceneMarkerID, _ := strconv.Atoi(input.ID)
-	sceneID, _ := strconv.Atoi(input.SceneID)
-	primaryTagID, _ := strconv.Atoi(input.PrimaryTagID)
+	sceneMarkerID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
 	updatedSceneMarker := models.SceneMarker{
 		ID:           sceneMarkerID,
 		Title:        input.Title,
@@ -500,168 +499,151 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
-	return changeMarker(ctx, update, updatedSceneMarker, input.TagIds)
+	tagIDs, err := utils.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	markerID, _ := strconv.Atoi(id)
-	marker, err := qb.Find(markerID)
-
+	markerID, err := strconv.Atoi(id)
 	if err != nil {
 		return false, err
 	}
 
-	if err := qb.Destroy(id, tx); err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
-	if err := tx.Commit(); err != nil {
+	var postCommitFunc func()
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.SceneMarker()
+		sqb := repo.Scene()
+
+		marker, err := qb.Find(markerID)
+
+		if err != nil {
+			return err
+		}
+
+		if marker == nil {
+			return fmt.Errorf("scene marker with id %d not found", markerID)
+		}
+
+		scene, err := sqb.Find(int(marker.SceneID.Int64))
+		if err != nil {
+			return err
+		}
+
+		postCommitFunc, err = manager.DestroySceneMarker(scene, marker, qb)
+		return err
+	}); err != nil {
 		return false, err
 	}
 
-	// delete the preview for the marker
-	sqb := models.NewSceneQueryBuilder()
-	scene, _ := sqb.Find(int(marker.SceneID.Int64))
-
-	if scene != nil {
-		seconds := int(marker.Seconds)
-		manager.DeleteSceneMarkerFiles(scene, seconds)
-	}
+	postCommitFunc()
 
 	return true, nil
 }
 
-func changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIds []string) (*models.SceneMarker, error) {
-	// Start the transaction and save the scene marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneMarkerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
-
+func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIDs []int) (*models.SceneMarker, error) {
 	var existingMarker *models.SceneMarker
 	var sceneMarker *models.SceneMarker
-	var err error
-	switch changeType {
-	case create:
-		sceneMarker, err = qb.Create(changedMarker, tx)
-	case update:
-		// check to see if timestamp was changed
-		existingMarker, err = qb.Find(changedMarker.ID)
-		if err == nil {
-			sceneMarker, err = qb.Update(changedMarker, tx)
-		}
-	}
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
+	var scene *models.Scene
 
-	// Save the marker tags
-	var markerTagJoins []models.SceneMarkersTags
-	for _, tid := range tagIds {
-		tagID, _ := strconv.Atoi(tid)
-		if tagID == changedMarker.PrimaryTagID {
-			continue // If this tag is the primary tag, then let's not add it.
-		}
-		markerTag := models.SceneMarkersTags{
-			SceneMarkerID: sceneMarker.ID,
-			TagID:         tagID,
-		}
-		markerTagJoins = append(markerTagJoins, markerTag)
-	}
-	switch changeType {
-	case create:
-		if err := jqb.CreateSceneMarkersTags(markerTagJoins, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	case update:
-		if err := jqb.UpdateSceneMarkersTags(changedMarker.ID, markerTagJoins, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	}
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.SceneMarker()
+		sqb := repo.Scene()
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		var err error
+		switch changeType {
+		case create:
+			sceneMarker, err = qb.Create(changedMarker)
+		case update:
+			// check to see if timestamp was changed
+			existingMarker, err = qb.Find(changedMarker.ID)
+			if err != nil {
+				return err
+			}
+			sceneMarker, err = qb.Update(changedMarker)
+			if err != nil {
+				return err
+			}
+
+			scene, err = sqb.Find(int(existingMarker.SceneID.Int64))
+		}
+		if err != nil {
+			return err
+		}
+
+		// Save the marker tags
+		// If this tag is the primary tag, then let's not add it.
+		tagIDs = utils.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
+		return qb.UpdateTags(sceneMarker.ID, tagIDs)
+	}); err != nil {
 		return nil, err
 	}
 
 	// remove the marker preview if the timestamp was changed
-	if existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-		sqb := models.NewSceneQueryBuilder()
-
-		scene, _ := sqb.Find(int(existingMarker.SceneID.Int64))
-
-		if scene != nil {
-			seconds := int(existingMarker.Seconds)
-			manager.DeleteSceneMarkerFiles(scene, seconds)
-		}
+	if scene != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
+		seconds := int(existingMarker.Seconds)
+		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetInstance().GetVideoFileNamingAlgorithm())
 	}
 
 	return sceneMarker, nil
 }
 
-func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (int, error) {
-	sceneID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-
-	newVal, err := qb.IncrementOCounter(sceneID, tx)
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+
+		ret, err = qb.IncrementOCounter(sceneID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
-func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (int, error) {
-	sceneID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-
-	newVal, err := qb.DecrementOCounter(sceneID, tx)
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+
+		ret, err = qb.DecrementOCounter(sceneID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
-func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, error) {
-	sceneID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-
-	newVal, err := qb.ResetOCounter(sceneID, tx)
+func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+
+		ret, err = qb.ResetOCounter(sceneID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {

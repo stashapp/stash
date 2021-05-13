@@ -13,40 +13,35 @@ query AllTags {
 }
 
 query AllPerformersForFilter {
-  allPerformersSlim {
+  allPerformers {
     ...SlimPerformerData
   }
 }
 
 query AllStudiosForFilter {
-  allStudiosSlim {
+  allStudios {
     ...SlimStudioData
   }
 }
 query AllMoviesForFilter {
-  allMoviesSlim {
+  allMovies {
     ...SlimMovieData
   }
 }
 
 query AllTagsForFilter {
-  allTagsSlim {
+  allTags {
     id
     name
-  }
-}
-
-query ValidGalleriesForScene($scene_id: ID!) {
-  validGalleriesForScene(scene_id: $scene_id) {
-    id
-    path
   }
 }
 
 query Stats {
   stats {
     scene_count,
-    scene_size_count,
+    scenes_size,
+    image_count,
+    images_size,
     gallery_count,
     performer_count,
     studio_count,

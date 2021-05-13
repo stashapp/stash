@@ -1,0 +1,206 @@
+.tagger-container {
+  max-width: 1600px;
+
+  .scene-card-preview {
+    border-radius: 3px;
+    margin-bottom: 0;
+    max-height: 100px;
+    overflow: hidden;
+    width: 150px;
+
+    &-video {
+      background-color: #495b68;
+    }
+  }
+
+  .sub-content {
+    min-height: 1.5rem;
+  }
+}
+
+.tagger-table {
+  overflow: visible;
+}
+
+.search-item {
+  background-color: #495b68;
+  border-radius: 3px;
+  padding: 1rem;
+}
+
+.search-result {
+  background-color: rgba(61, 80, 92, 0.3);
+  padding: 1rem 0;
+
+  &:hover {
+    background-color: hsl(204, 20%, 30%);
+    cursor: pointer;
+  }
+}
+
+.selected-result {
+  background-color: hsl(204, 20%, 30%);
+  border-radius: 3px;
+
+  &:hover {
+    cursor: default;
+  }
+}
+
+.scene-select {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.scene-image {
+  max-height: 10rem;
+  max-width: 14rem;
+  min-width: 168px;
+  object-fit: contain;
+  padding: 0 1rem;
+}
+
+.scene-metadata {
+  margin-right: 1rem;
+  width: calc(100% - 17rem);
+}
+
+.select-existing {
+  width: 2rem;
+}
+
+.performer-select,
+.studio-select {
+  width: 14rem;
+
+  // stylelint-disable-next-line selector-class-pattern
+  &-active .react-select__control {
+    background-color: #137cbd;
+  }
+}
+
+.entity-name {
+  flex: 1;
+  margin-right: auto;
+}
+
+.scene-link {
+  color: $text-color;
+  font-weight: 500;
+}
+
+.performer-create-modal {
+  font-size: 1.2rem;
+  max-width: 800px;
+
+  .image-selection {
+    height: 450px;
+    text-align: center;
+
+    .performer-image {
+      height: 85%;
+      position: relative;
+
+      &-exclude {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+      }
+    }
+
+    img {
+      max-height: 100%;
+      max-width: 100%;
+    }
+  }
+
+  .LoadingIndicator {
+    height: 100%;
+  }
+
+  &-field {
+    margin-bottom: 5px;
+
+    .btn {
+      margin-right: 5px;
+    }
+
+    .fa-icon {
+      width: 12px;
+    }
+  }
+}
+
+.PerformerTagger {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1600px;
+
+  &-header {
+    color: white;
+
+    &:hover {
+      color: white;
+    }
+  }
+
+  &-performer {
+    background-color: #495b68;
+    border-radius: 3px;
+    display: flex;
+    margin: 1rem;
+    max-width: 100%;
+    padding: 1rem;
+
+    .performer-card {
+      flex-shrink: 0;
+      width: 12rem;
+
+      img {
+        height: 100%;
+        max-height: 18rem;
+        object-fit: cover;
+        object-position: top;
+      }
+    }
+  }
+
+  &-details {
+    flex-grow: 1;
+    margin-left: 1rem;
+    width: 24rem;
+  }
+
+  &-performer-search {
+    display: flex;
+    flex-wrap: wrap;
+
+    &-item {
+      align-items: center;
+      align-text: left;
+      display: flex;
+      overflow: hidden;
+    }
+  }
+
+  &-thumb {
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  &-box-link {
+    margin-bottom: 5px;
+
+    .input-group-text {
+      font-family: monospace;
+    }
+  }
+}
+
+.FieldSelect {
+  .fa-icon {
+    width: 12px;
+  }
+}

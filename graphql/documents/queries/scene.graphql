@@ -16,6 +16,12 @@ query FindScenesByPathRegex($filter: FindFilterType) {
   }
 }
 
+query FindDuplicateScenes($distance: Int) {
+  findDuplicateScenes(distance: $distance) {
+    ...SlimSceneData
+  }
+}
+
 query FindScene($id: ID!, $checksum: String) {
   findScene(id: $id, checksum: $checksum) {
     ...SceneData
@@ -45,12 +51,20 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
       date
       rating
       studio_id
-      gallery_id
+      gallery_ids
       movies {
         movie_id
       }
       performer_ids
       tag_ids
     }
+  }
+}
+
+query SceneStreams($id: ID!) {
+  sceneStreams(id: $id) {
+    url
+    mime_type
+    label
   }
 }

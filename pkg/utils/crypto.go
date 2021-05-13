@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"os"
 )
@@ -25,8 +26,12 @@ func MD5FromFilePath(filePath string) (string, error) {
 	}
 	defer f.Close()
 
+	return MD5FromReader(f)
+}
+
+func MD5FromReader(src io.Reader) (string, error) {
 	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
+	if _, err := io.Copy(h, src); err != nil {
 		return "", err
 	}
 	checksum := h.Sum(nil)
@@ -37,4 +42,10 @@ func GenerateRandomKey(l int) string {
 	b := make([]byte, l)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
+}
+
+func IntFromString(str string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(str))
+	return h.Sum64()
 }

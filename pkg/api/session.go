@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
 
 	"github.com/stashapp/stash/pkg/manager/config"
 
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
@@ -17,7 +19,7 @@ const userIDKey = "userID"
 
 const returnURLParam = "returnURL"
 
-var sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
+var sessionStore = sessions.NewCookieStore(config.GetInstance().GetSessionStoreKey())
 
 type loginTemplateData struct {
 	URL   string
@@ -25,7 +27,7 @@ type loginTemplateData struct {
 }
 
 func initSessionStore() {
-	sessionStore.MaxAge(config.GetMaxSessionAge())
+	sessionStore.MaxAge(config.GetInstance().GetMaxSessionAge())
 }
 
 func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string) {
@@ -43,7 +45,7 @@ func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string)
 }
 
 func getLoginHandler(w http.ResponseWriter, r *http.Request) {
-	if !config.HasCredentials() {
+	if !config.GetInstance().HasCredentials() {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
@@ -64,7 +66,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	// authenticate the user
-	if !config.ValidateCredentials(username, password) {
+	if !config.GetInstance().ValidateCredentials(username, password) {
 		// redirect back to the login page with an error
 		redirectToLogin(w, url, "Username or password is invalid")
 		return
@@ -124,4 +126,27 @@ func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	}
 
 	return "", nil
+}
+
+func getCurrentUserID(ctx context.Context) *string {
+	userCtxVal := ctx.Value(ContextUser)
+	if userCtxVal != nil {
+		currentUser := userCtxVal.(string)
+		return &currentUser
+	}
+
+	return nil
+}
+
+func createSessionCookie(username string) (*http.Cookie, error) {
+	session := sessions.NewSession(sessionStore, cookieName)
+	session.Values[userIDKey] = username
+
+	encoded, err := securecookie.EncodeMulti(session.Name(), session.Values,
+		sessionStore.Codecs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return sessions.NewCookie(session.Name(), encoded, session.Options), nil
 }

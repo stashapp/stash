@@ -2,4 +2,13 @@ fragment SlimStudioData on Studio {
   id
   name
   image_path
+  stash_ids {
+    endpoint
+    stash_id
+  }
+  parent_studio {
+    id
+  }
+  details
+  rating
 }

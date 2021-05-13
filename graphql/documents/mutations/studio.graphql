@@ -1,26 +1,19 @@
-mutation StudioCreate(
-  $name: String!,
-  $url: String,
-  $image: String
-  $parent_id: ID) {
-
-  studioCreate(input: { name: $name, url: $url, image: $image, parent_id: $parent_id }) {
+mutation StudioCreate($input: StudioCreateInput!) {
+  studioCreate(input: $input) {
     ...StudioData
   }
 }
 
-mutation StudioUpdate(
-  $id: ID!
-  $name: String,
-  $url: String,
-  $image: String
-  $parent_id: ID) {
-
-  studioUpdate(input: { id: $id, name: $name, url: $url, image: $image, parent_id: $parent_id }) {
+mutation StudioUpdate($input: StudioUpdateInput!) {
+  studioUpdate(input: $input) {
     ...StudioData
   }
 }
 
 mutation StudioDestroy($id: ID!) {
   studioDestroy(input: { id: $id })
+}
+
+mutation StudiosDestroy($ids: [ID!]!) {
+  studiosDestroy(ids: $ids)
 }

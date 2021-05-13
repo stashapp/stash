@@ -1,11 +1,74 @@
-import ApolloClient from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { WebSocketLink } from "apollo-link-ws";
-import { HttpLink } from "apollo-link-http";
-import { onError } from "apollo-link-error";
-import { ServerError } from "apollo-link-http-common";
-import { split, from } from "apollo-link";
-import { getMainDefinition } from "apollo-utilities";
+import {
+  ApolloClient,
+  InMemoryCache,
+  split,
+  from,
+  ServerError,
+  TypePolicies,
+} from "@apollo/client";
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { onError } from "@apollo/client/link/error";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { createUploadLink } from "apollo-upload-client";
+import * as GQL from "src/core/generated-graphql";
+
+// Policies that tell apollo what the type of the returned object will be.
+// In many cases this allows it to return from cache immediately rather than fetching.
+const typePolicies: TypePolicies = {
+  Query: {
+    fields: {
+      findImage: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Image",
+            id: args?.id,
+          }),
+      },
+      findPerformer: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Performer",
+            id: args?.id,
+          }),
+      },
+      findStudio: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Studio",
+            id: args?.id,
+          }),
+      },
+      findMovie: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Movie",
+            id: args?.id,
+          }),
+      },
+      findGallery: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Gallery",
+            id: args?.id,
+          }),
+      },
+      findScene: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Scene",
+            id: args?.id,
+          }),
+      },
+      findTag: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Tag",
+            id: args?.id,
+          }),
+      },
+    },
+  },
+};
 
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin);
@@ -36,7 +99,7 @@ export const createClient = () => {
   const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
   const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
 
-  const httpLink = new HttpLink({
+  const httpLink = createUploadLink({
     uri: url,
   });
 
@@ -51,7 +114,9 @@ export const createClient = () => {
     // handle unauthorized error by redirecting to the login page
     if (networkError && (networkError as ServerError).statusCode === 401) {
       // redirect to login page
-      window.location.href = "/login";
+      const newURL = new URL("/login", window.location.toString());
+      newURL.searchParams.append("returnURL", window.location.href);
+      window.location.href = newURL.toString();
     }
   });
 
@@ -64,16 +129,38 @@ export const createClient = () => {
       );
     },
     wsLink,
+    // @ts-ignore
     httpLink
   );
 
   const link = from([errorLink, splitLink]);
 
-  const cache = new InMemoryCache();
+  const cache = new InMemoryCache({ typePolicies });
   const client = new ApolloClient({
     link,
     cache,
   });
+
+  // Watch for scan/clean tasks and reset cache when they complete
+  let prevStatus = "Idle";
+  client
+    .subscribe<GQL.MetadataUpdateSubscription>({
+      query: GQL.MetadataUpdateDocument,
+    })
+    .subscribe({
+      next: (res) => {
+        const currentStatus = res.data?.metadataUpdate.status;
+        if (currentStatus) {
+          if (
+            currentStatus === "Idle" &&
+            (prevStatus === "Scan" || prevStatus === "Clean")
+          ) {
+            client.resetStore();
+          }
+          prevStatus = currentStatus;
+        }
+      },
+    });
 
   return {
     cache,

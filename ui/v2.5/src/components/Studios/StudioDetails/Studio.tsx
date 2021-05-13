@@ -1,9 +1,8 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -21,13 +20,21 @@ import {
   StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
+import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
+
+interface IStudioParams {
+  id?: string;
+  tab?: string;
+}
 
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
   // Editing state
@@ -35,19 +42,19 @@ export const Studio: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing studio state
-  const [image, setImage] = useState<string>();
+  const [image, setImage] = useState<string | null>();
   const [name, setName] = useState<string>();
   const [url, setUrl] = useState<string>();
   const [parentStudioId, setParentStudioId] = useState<string>();
+  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [details, setDetails] = useState<string>();
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
-  const [imagePreview, setImagePreview] = useState<string>();
+  const [imagePreview, setImagePreview] = useState<string | null>();
 
   const { data, error, loading } = useFindStudio(id);
-  const [updateStudio] = useStudioUpdate(
-    getStudioInput() as GQL.StudioUpdateInput
-  );
+  const [updateStudio] = useStudioUpdate();
   const [createStudio] = useStudioCreate(
     getStudioInput() as GQL.StudioCreateInput
   );
@@ -59,6 +66,8 @@ export const Studio: React.FC = () => {
     setName(state.name);
     setUrl(state.url ?? undefined);
     setParentStudioId(state?.parent_studio?.id ?? undefined);
+    setRating(state.rating ?? undefined);
+    setDetails(state.details ?? undefined);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -66,6 +75,7 @@ export const Studio: React.FC = () => {
     updateStudioEditState(studioData);
     setImagePreview(studioData.image_path ?? undefined);
     setStudio(studioData);
+    setRating(studioData.rating ?? undefined);
   }
 
   // set up hotkeys
@@ -76,6 +86,30 @@ export const Studio: React.FC = () => {
 
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
+
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
 
     return () => {
       if (isEditing) {
@@ -104,7 +138,7 @@ export const Studio: React.FC = () => {
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
-    if (!data?.findStudio || loading) return <LoadingIndicator />;
+    if (!data?.findStudio || loading || !studio.id) return <LoadingIndicator />;
     if (error) return <div>{error.message}</div>;
   }
 
@@ -112,8 +146,10 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
-      parent_id: parentStudioId,
       image,
+      details,
+      parent_id: parentStudioId ?? null,
+      rating: rating ?? null,
     };
 
     if (!isNew) {
@@ -125,7 +161,11 @@ export const Studio: React.FC = () => {
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateStudio();
+        const result = await updateStudio({
+          variables: {
+            input: getStudioInput() as GQL.StudioUpdateInput,
+          },
+        });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
@@ -180,9 +220,85 @@ export const Studio: React.FC = () => {
     );
   }
 
+  function renderStashIDs() {
+    if (!studio.stash_ids?.length) {
+      return;
+    }
+
+    return (
+      <tr>
+        <td>StashIDs</td>
+        <td>
+          <ul className="pl-0">
+            {studio.stash_ids.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  href={`${base}studios/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                stashID.stash_id
+              );
+              return (
+                <li key={stashID.stash_id} className="row no-gutters">
+                  {link}
+                </li>
+              );
+            })}
+          </ul>
+        </td>
+      </tr>
+    );
+  }
+
   function onToggleEdit() {
     setIsEditing(!isEditing);
     updateStudioData(studio);
+  }
+
+  function onClearImage() {
+    setImage(null);
+    setImagePreview(
+      studio.image_path ? `${studio.image_path}&default=true` : undefined
+    );
+  }
+
+  const activeTabKey =
+    tab === "childstudios" || tab === "images" || tab === "galleries"
+      ? tab
+      : "scenes";
+  const setActiveTabKey = (newTab: string | null) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
+      history.replace(`/studios/${id}${tabParam}`);
+    }
+  };
+
+  function renderStudio() {
+    if (isEditing || !parentStudioId) {
+      return (
+        <StudioSelect
+          onSelect={(items) =>
+            setParentStudioId(items.length > 0 ? items[0]?.id : undefined)
+          }
+          ids={parentStudioId ? [parentStudioId] : []}
+          isDisabled={!isEditing}
+          excludeIds={studio.id ? [studio.id] : []}
+        />
+      );
+    }
+
+    if (studio.parent_studio) {
+      return (
+        <Link to={`/studios/${studio.parent_studio.id}`}>
+          {studio.parent_studio.name}
+        </Link>
+      );
+    }
   }
 
   return (
@@ -197,8 +313,10 @@ export const Studio: React.FC = () => {
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
-          ) : (
+          ) : imagePreview ? (
             <img className="logo" alt={name} src={imagePreview} />
+          ) : (
+            ""
           )}
         </div>
         <Table>
@@ -215,20 +333,27 @@ export const Studio: React.FC = () => {
               isEditing: !!isEditing,
               onChange: setUrl,
             })}
+            {TableUtils.renderTextArea({
+              title: "Details",
+              value: details,
+              isEditing: !!isEditing,
+              onChange: setDetails,
+            })}
             <tr>
               <td>Parent Studio</td>
+              <td>{renderStudio()}</td>
+            </tr>
+            <tr>
+              <td>Rating:</td>
               <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setParentStudioId(
-                      items.length > 0 ? items[0]?.id : undefined
-                    )
-                  }
-                  ids={parentStudioId ? [parentStudioId] : []}
-                  isDisabled={!isEditing}
+                <RatingStars
+                  value={rating}
+                  disabled={!isEditing}
+                  onSetRating={(value) => setRating(value ?? NaN)}
                 />
               </td>
             </tr>
+            {!isEditing && renderStashIDs()}
           </tbody>
         </Table>
         <DetailsEditNavbar
@@ -238,6 +363,10 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onImageChangeURL={onImageLoad}
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG
@@ -245,11 +374,23 @@ export const Studio: React.FC = () => {
       </div>
       {!isNew && (
         <div className="col col-md-8">
-          <Tabs id="studio-tabs" mountOnEnter>
-            <Tab eventKey="studio-scenes-panel" title="Scenes">
+          <Tabs
+            id="studio-tabs"
+            mountOnEnter
+            unmountOnExit
+            activeKey={activeTabKey}
+            onSelect={setActiveTabKey}
+          >
+            <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="studio-children-panel" title="Child Studios">
+            <Tab eventKey="galleries" title="Galleries">
+              <StudioGalleriesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="images" title="Images">
+              <StudioImagesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="childstudios" title="Child Studios">
               <StudioChildrenPanel studio={studio} />
             </Tab>
           </Tabs>

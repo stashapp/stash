@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -37,15 +38,20 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 	}
 }
 
+func matchFileRegex(file string, fileRegexps []*regexp.Regexp) bool {
+	for _, regPattern := range fileRegexps {
+		if regPattern.MatchString(strings.ToLower(file)) {
+			return true
+		}
+	}
+	return false
+}
+
 func matchFile(file string, patterns []string) bool {
 	if patterns != nil {
 		fileRegexps := generateRegexps(patterns)
 
-		for _, regPattern := range fileRegexps {
-			if regPattern.MatchString(strings.ToLower(file)) {
-				return true
-			}
-		}
+		return matchFileRegex(file, fileRegexps)
 	}
 
 	return false
@@ -78,5 +84,16 @@ func matchFileSimple(file string, regExps []*regexp.Regexp) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func matchExtension(path string, extensions []string) bool {
+	ext := filepath.Ext(path)
+	for _, e := range extensions {
+		if strings.ToLower(ext) == strings.ToLower("."+e) {
+			return true
+		}
+	}
+
 	return false
 }

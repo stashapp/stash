@@ -1,16 +1,220 @@
-/* stylelint-disable selector-class-pattern */
-.react-photo-gallery--gallery {
-  img {
-    object-fit: contain;
+.gallery-image {
+  &:hover {
+    cursor: pointer;
   }
 }
-/* stylelint-enable selector-class-pattern */
+
+.gallery-header {
+  flex-basis: auto;
+  margin-top: 30px;
+}
+
+#gallery-details-container {
+  .tab-content {
+    min-height: 15rem;
+  }
+
+  .gallery-description {
+    width: 100%;
+  }
+}
 
 .gallery-card {
-  padding: 0.5rem;
+  &.card {
+    overflow: hidden;
+    padding: 0;
+    padding-bottom: 1rem;
+  }
+
+  .card-section {
+    margin-top: auto;
+
+    a:hover {
+      text-decoration: none;
+    }
+  }
+
+  .card-popovers {
+    margin-bottom: 0;
+  }
+
+  .card-section-title {
+    color: $text-color;
+  }
 
   &-image {
     object-fit: contain;
-    vertical-align: middle;
+  }
+}
+
+.gallery-tabs {
+  max-height: calc(100vh - 4rem);
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+$galleryTabWidth: 450px;
+
+@media (min-width: 1200px) {
+  .gallery-tabs {
+    flex: 0 0 $galleryTabWidth;
+    max-width: $galleryTabWidth;
+    overflow: auto;
+  }
+
+  .gallery-container {
+    flex: 0 0 calc(100% - #{$galleryTabWidth});
+    max-width: calc(100% - #{$galleryTabWidth});
+  }
+}
+
+.gallery-tabs,
+.gallery-container {
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  width: 100%;
+}
+
+.gallery-container {
+  height: calc(100vh - 4rem);
+  overflow: auto;
+}
+
+@media (min-width: 1200px), (max-width: 575px) {
+  .gallery-performers {
+    .performer-card {
+      width: 15rem;
+
+      &-gallery {
+        height: 22.5rem;
+      }
+
+      &-image {
+        height: 22.5rem;
+        width: 15rem;
+      }
+    }
+  }
+}
+
+#gallery-edit-details {
+  .rating-stars {
+    font-size: 1.3em;
+    height: calc(1.5em + 0.75rem + 2px);
+  }
+}
+
+.GalleryWall {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  width: 96vw;
+
+  /* Prevents last row from consuming all space and stretching images to oblivion */
+  &::after {
+    content: "";
+    flex: auto;
+    flex-grow: 9999;
+  }
+}
+
+.GalleryWallCard {
+  height: auto;
+  padding: 2px;
+  position: relative;
+
+  $width: 96vw;
+
+  &-landscape {
+    flex-grow: 2;
+    width: 96vw;
+  }
+
+  &-portrait {
+    flex-grow: 1;
+    width: 96vw;
+  }
+
+  @mixin galleryWidth($width) {
+    height: ($width / 3) * 2;
+
+    &-landscape {
+      width: $width;
+    }
+
+    &-portrait {
+      width: $width / 2;
+    }
+  }
+
+  @media (min-width: 576px) {
+    @include galleryWidth(96vw);
+  }
+  @media (min-width: 768px) {
+    @include galleryWidth(48vw);
+  }
+  @media (min-width: 1200px) {
+    @include galleryWidth(32vw);
+  }
+
+  &-img {
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    width: 100%;
+  }
+
+  &-title {
+    font-weight: bold;
+  }
+
+  &-footer {
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+    bottom: 0;
+    padding: 1rem;
+    position: absolute;
+    text-shadow: 1px 1px 3px black;
+    transition: 0s opacity;
+    width: 100%;
+
+    @media (min-width: 768px) {
+      opacity: 0;
+    }
+
+    &:hover {
+      .GalleryWallCard-title {
+        text-decoration: underline;
+      }
+    }
+
+    a {
+      color: white;
+    }
+  }
+
+  &:hover &-footer {
+    opacity: 1;
+    transition: 1s opacity;
+    transition-delay: 500ms;
+
+    a {
+      text-decoration: none;
+    }
+  }
+
+  .RatingStars {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+
+    &-unfilled {
+      display: none;
+    }
+
+    &-filled {
+      filter: drop-shadow(1px 1px 1px #222);
+    }
   }
 }

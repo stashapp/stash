@@ -2,12 +2,16 @@
 # ie from top=level stash:
 # docker build -t stash/build -f docker/build/x86_64/Dockerfile .
 
-FROM golang:1.11.13 as compiler
+FROM golang:1.13.15 as compiler
 
 RUN apt-get update && apt-get install -y apt-transport-https
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+
+# prevent caching of the key
+ADD https://dl.yarnpkg.com/debian/pubkey.gpg yarn.gpg
+RUN cat yarn.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    rm yarn.gpg
 
 RUN apt-get update && \
     apt-get install -y nodejs yarn xz-utils --no-install-recommends || exit 1; \
@@ -44,10 +48,12 @@ RUN make generate
 RUN make ui 
 RUN make build
 
-FROM ubuntu:19.10 as app
+FROM ubuntu:20.04 as app
 
 RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=compiler /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
+
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
 EXPOSE 9999
 CMD ["stash"]

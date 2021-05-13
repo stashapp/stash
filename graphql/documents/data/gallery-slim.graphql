@@ -1,0 +1,44 @@
+fragment SlimGalleryData on Gallery {
+  id
+  checksum
+  path
+  title
+  date
+  url
+  details
+  rating
+  organized
+  image_count
+  cover {
+    file {
+      size
+      width
+      height
+    }
+    
+    paths {
+      thumbnail
+    }
+  }
+  studio {
+    id
+    name
+    image_path
+  }
+  tags {
+    id
+    name
+  }
+  performers {
+    id
+    name
+    gender
+    favorite
+    image_path
+  }
+  scenes {
+    id
+    title
+    path
+  }
+}

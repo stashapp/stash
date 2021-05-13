@@ -42,7 +42,9 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
   }
 
   if (movie && movie.id) {
-    return <SceneList subComponent filterHook={filterHook} />;
+    return (
+      <SceneList filterHook={filterHook} defaultSort="movie_scene_number" />
+    );
   }
   return <></>;
 };

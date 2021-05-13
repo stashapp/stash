@@ -1,0 +1,161 @@
+.Lightbox {
+  background-color: rgba(20, 20, 20, 0.8);
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1040;
+
+  .fa-icon {
+    path {
+      fill: white;
+    }
+    opacity: 0.4;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  &-header {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    height: 4rem;
+
+    &-left-spacer {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+    }
+
+    &-indicator {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      margin-right: auto;
+      text-align: center;
+    }
+
+    &-delay {
+      display: flex;
+      flex-direction: column;
+      margin-left: 100px;
+      text-align: left;
+
+      &-icon {
+        display: inline-block;
+      }
+
+      &-inline {
+        display: none;
+      }
+
+      @media screen and (min-width: 1300px) {
+        &-icon {
+          display: none;
+        }
+
+        &-inline {
+          display: flex;
+        }
+      }
+    }
+
+    &-right {
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .fa-icon {
+      height: 1.5rem;
+      opacity: 1;
+      width: 1.5rem;
+    }
+  }
+
+  &-display {
+    display: flex;
+    height: 100%;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  &-carousel {
+    display: flex;
+    height: 100%;
+    position: absolute;
+    transition: left 400ms;
+
+    &-instant {
+      transition-duration: 0ms;
+    }
+
+    &-image {
+      content-visibility: auto;
+      display: flex;
+      height: 100%;
+      width: 100vw;
+
+      picture {
+        display: flex;
+        height: 100%;
+        margin: auto;
+      }
+
+      img {
+        margin: auto;
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+      }
+    }
+  }
+
+  &-navbutton {
+    z-index: 1045;
+
+    .fa-icon {
+      height: 4rem;
+      width: 4rem;
+    }
+
+    &:focus {
+      box-shadow: none;
+    }
+
+    &:hover {
+      filter: drop-shadow(2px 2px 2px black);
+    }
+  }
+
+  &-nav {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    height: 10rem;
+    margin: 0 auto 2rem 0;
+    padding: 0 10rem;
+    position: relative;
+    transition: left 400ms;
+
+    @media (max-height: 800px) {
+      display: none;
+    }
+
+    &-selected {
+      box-shadow: 0 0 0 6px white;
+    }
+
+    &-image {
+      cursor: pointer;
+      height: 100%;
+      margin-right: 1rem;
+    }
+  }
+}

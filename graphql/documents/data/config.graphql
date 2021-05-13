@@ -1,12 +1,23 @@
 fragment ConfigGeneralData on ConfigGeneralResult {
-  stashes
+  stashes {
+    path
+    excludeVideo
+    excludeImage
+  }
   databasePath
   generatedPath
   cachePath
+  calculateMD5
+  videoFileNamingAlgorithm
+  parallelTasks
+  previewSegments
+  previewSegmentDuration
+  previewExcludeStart
+  previewExcludeEnd
+  previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
-  forceMkv
-  forceHevc
+  apiKey
   username
   password
   maxSessionAge
@@ -14,11 +25,24 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
+  createGalleriesFromFolders
+  videoExtensions
+  imageExtensions
+  galleryExtensions
   excludes
+  imageExcludes
   scraperUserAgent
+  scraperCertCheck
+  scraperCDPPath
+  stashBoxes {
+    name
+    endpoint
+    api_key
+  }
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
+  menuItems
   soundOnPreview
   wallShowTitle
   wallPlayback
@@ -28,6 +52,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   css
   cssEnabled
   language
+  slideshowDelay
 }
 
 fragment ConfigData on ConfigResult {

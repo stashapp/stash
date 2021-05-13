@@ -1,32 +1,92 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { useVideoHover } from "src/hooks";
-import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
+import {
+  Icon,
+  TagLink,
+  HoverPopover,
+  SweatDrops,
+  TruncatedText,
+} from "src/components/Shared";
 import { TextUtils } from "src/utils";
+import { SceneQueue } from "src/models/sceneQueue";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+
+interface IScenePreviewProps {
+  isPortrait: boolean;
+  image?: string;
+  video?: string;
+  soundActive: boolean;
+}
+
+export const ScenePreview: React.FC<IScenePreviewProps> = ({
+  image,
+  video,
+  isPortrait,
+  soundActive,
+}) => {
+  const videoEl = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.intersectionRatio > 0)
+          // Catch is necessary due to DOMException if user hovers before clicking on page
+          videoEl.current?.play().catch(() => {});
+        else videoEl.current?.pause();
+      });
+    });
+
+    if (videoEl.current) observer.observe(videoEl.current);
+  });
+
+  useEffect(() => {
+    if (videoEl?.current?.volume)
+      videoEl.current.volume = soundActive ? 0.05 : 0;
+  }, [soundActive]);
+
+  return (
+    <div className={cx("scene-card-preview", { portrait: isPortrait })}>
+      <img className="scene-card-preview-image" src={image} alt="" />
+      <video
+        disableRemotePlayback
+        playsInline
+        className="scene-card-preview-video"
+        loop
+        preload="none"
+        ref={videoEl}
+        src={video}
+      />
+    </div>
+  );
+};
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  index?: number;
+  queue?: SceneQueue;
+  compact?: boolean;
   selecting?: boolean;
-  selected: boolean | undefined;
-  zoomIndex: number;
-  onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  selected?: boolean | undefined;
+  zoomIndex?: number;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
-  const [previewPath, setPreviewPath] = useState<string>();
-  const hoverHandler = useVideoHover({
-    resetOnMouseLeave: false,
-  });
-
   const config = useConfiguration();
+
+  // studio image is missing if it uses the default
+  const missingStudioImage = props.scene.studio?.image_path?.endsWith(
+    "?default=true"
+  );
   const showStudioAsText =
-    config?.data?.configuration.interface.showStudioAsText ?? false;
+    missingStudioImage ||
+    (config?.data?.configuration.interface.showStudioAsText ?? false);
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) {
@@ -46,10 +106,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderSceneSpecsOverlay() {
     return (
       <div className="scene-specs-overlay">
-        {props.scene.file.height ? (
+        {props.scene.file.width && props.scene.file.height ? (
           <span className="overlay-resolution">
             {" "}
-            {TextUtils.resolution(props.scene.file.height)}
+            {TextUtils.resolution(
+              props.scene.file.width,
+              props.scene.file.height
+            )}
           </span>
         ) : (
           ""
@@ -101,30 +164,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderPerformerPopoverButton() {
     if (props.scene.performers.length <= 0) return;
 
-    const popoverContent = props.scene.performers.map((performer) => (
-      <div className="performer-tag-container row" key="performer">
-        <Link
-          to={`/performers/${performer.id}`}
-          className="performer-tag col m-auto zoom-2"
-        >
-          <img
-            className="image-thumbnail"
-            alt={performer.name ?? ""}
-            src={performer.image_path ?? ""}
-          />
-        </Link>
-        <TagLink key={performer.id} performer={performer} className="d-block" />
-      </div>
-    ));
-
-    return (
-      <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal">
-          <Icon icon="user" />
-          <span>{props.scene.performers.length}</span>
-        </Button>
-      </HoverPopover>
-    );
+    return <PerformerPopoverButton performers={props.scene.performers} />;
   }
 
   function maybeRenderMoviePopoverButton() {
@@ -151,7 +191,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        className="tag-tooltip"
+      >
         <Button className="minimal">
           <Icon icon="film" />
           <span>{props.scene.movies.length}</span>
@@ -193,13 +237,45 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function maybeRenderGallery() {
+    if (props.scene.galleries.length <= 0) return;
+
+    const popoverContent = props.scene.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="images" />
+          <span>{props.scene.galleries.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderOrganized() {
+    if (props.scene.organized) {
+      return (
+        <div>
+          <Button className="minimal">
+            <Icon icon="box" />
+          </Button>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
-      props.scene.tags.length > 0 ||
-      props.scene.performers.length > 0 ||
-      props.scene.movies.length > 0 ||
-      props.scene.scene_markers.length > 0 ||
-      props.scene?.o_counter
+      !props.compact &&
+      (props.scene.tags.length > 0 ||
+        props.scene.performers.length > 0 ||
+        props.scene.movies.length > 0 ||
+        props.scene.scene_markers.length > 0 ||
+        props.scene?.o_counter ||
+        props.scene.galleries.length > 0 ||
+        props.scene.organized)
     ) {
       return (
         <>
@@ -210,22 +286,12 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderMoviePopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
             {maybeRenderOCounter()}
+            {maybeRenderGallery()}
+            {maybeRenderOrganized()}
           </ButtonGroup>
         </>
       );
     }
-  }
-
-  function onMouseEnter() {
-    if (!previewPath || previewPath === "") {
-      setPreviewPath(props.scene.paths.preview || "");
-    }
-    hoverHandler.onMouseEnter();
-  }
-
-  function onMouseLeave() {
-    hoverHandler.onMouseLeave();
-    setPreviewPath("");
   }
 
   function handleSceneClick(
@@ -233,7 +299,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   ) {
     const { shiftKey } = event;
 
-    if (props.selecting) {
+    if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
     }
@@ -250,7 +316,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     const ev = event;
     const shiftKey = false;
 
-    if (props.selecting && !props.selected) {
+    if (props.selecting && props.onSelectedChanged && !props.selected) {
       props.onSelectedChanged(true, shiftKey);
     }
 
@@ -265,19 +331,25 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     return height > width;
   }
 
+  function zoomIndex() {
+    if (!props.compact && props.zoomIndex !== undefined) {
+      return `zoom-${props.zoomIndex}`;
+    }
+  }
+
   let shiftKey = false;
 
+  const sceneLink = props.queue
+    ? props.queue.makeLink(props.scene.id, { sceneIndex: props.index })
+    : `/scenes/${props.scene.id}`;
+
   return (
-    <Card
-      className={`scene-card zoom-${props.zoomIndex}`}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
+    <Card className={`scene-card ${zoomIndex()}`}>
       <Form.Control
         type="checkbox"
         className="scene-card-check"
         checked={props.selected}
-        onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
+        onChange={() => props.onSelectedChanged?.(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
           // eslint-disable-next-line prefer-destructuring
           shiftKey = event.shiftKey;
@@ -285,36 +357,44 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      <Link
-        to={`/scenes/${props.scene.id}`}
-        className="scene-card-link"
-        onClick={handleSceneClick}
-        onDragStart={handleDrag}
-        onDragOver={handleDragOver}
-        draggable={props.selecting}
-      >
-        {maybeRenderRatingBanner()}
-        {maybeRenderSceneStudioOverlay()}
-        {maybeRenderSceneSpecsOverlay()}
-        <video
-          loop
-          className={cx("scene-card-video", { portrait: isPortrait() })}
-          poster={props.scene.paths.screenshot || ""}
-          ref={hoverHandler.videoEl}
+      <div className="video-section">
+        <Link
+          to={sceneLink}
+          className="scene-card-link"
+          onClick={handleSceneClick}
+          onDragStart={handleDrag}
+          onDragOver={handleDragOver}
+          draggable={props.selecting}
         >
-          {previewPath ? <source src={previewPath} /> : ""}
-        </video>
-      </Link>
+          <ScenePreview
+            image={props.scene.paths.screenshot ?? undefined}
+            video={props.scene.paths.preview ?? undefined}
+            isPortrait={isPortrait()}
+            soundActive={
+              config.data?.configuration?.interface?.soundOnPreview ?? false
+            }
+          />
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+        </Link>
+        {maybeRenderSceneStudioOverlay()}
+      </div>
       <div className="card-section">
         <h5 className="card-section-title">
-          {props.scene.title
-            ? props.scene.title
-            : TextUtils.fileNameFromPath(props.scene.path)}
+          <Link to={`/scenes/${props.scene.id}`}>
+            <TruncatedText
+              text={
+                props.scene.title
+                  ? props.scene.title
+                  : TextUtils.fileNameFromPath(props.scene.path)
+              }
+              lineCount={2}
+            />
+          </Link>
         </h5>
         <span>{props.scene.date}</span>
         <p>
-          {props.scene.details &&
-            TextUtils.truncate(props.scene.details, 100, "... (continued)")}
+          <TruncatedText text={props.scene.details} lineCount={3} />
         </p>
       </div>
 

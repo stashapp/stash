@@ -6,17 +6,26 @@ enum SortDirectionEnum {
 input FindFilterType {
   q: String
   page: Int
+  """use per_page = -1 to indicate all results. Defaults to 25."""
   per_page: Int
   sort: String
   direction: SortDirectionEnum
 }
 
 enum ResolutionEnum {
+  "144p", VERY_LOW
   "240p", LOW
+  "360p", R360P
   "480p", STANDARD
+  "540p", WEB_HD
   "720p", STANDARD_HD
   "1080p", FULL_HD
+  "1440p", QUAD_HD
+  "1920p", VR_HD
   "4k", FOUR_K
+  "5k", FIVE_K
+  "6k", SIX_K
+  "8k", EIGHT_K
 }
 
 input PerformerFilterType {
@@ -38,7 +47,7 @@ input PerformerFilterType {
   measurements: StringCriterionInput
   """Filter by fake tits value"""
   fake_tits: StringCriterionInput
-  """Filter by career length"""  
+  """Filter by career length"""
   career_length: StringCriterionInput
   """Filter by tattoos"""
   tattoos: StringCriterionInput
@@ -50,6 +59,28 @@ input PerformerFilterType {
   gender: GenderCriterionInput
   """Filter to only include performers missing this property"""
   is_missing: String
+  """Filter to only include performers with these tags"""
+  tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
+  """Filter by scene count"""
+  scene_count: IntCriterionInput
+  """Filter by image count"""
+  image_count: IntCriterionInput
+  """Filter by gallery count"""
+  gallery_count: IntCriterionInput
+  """Filter by StashID"""
+  stash_id: StringCriterionInput
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
+  """Filter by hair color"""
+  hair_color: StringCriterionInput
+  """Filter by weight"""
+  weight: IntCriterionInput
+  """Filter by death year"""
+  death_year: IntCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -64,8 +95,16 @@ input SceneMarkerFilterType {
 }
 
 input SceneFilterType {
+  AND: SceneFilterType
+  OR: SceneFilterType
+  NOT: SceneFilterType
+
+  """Filter by path"""
+  path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
   """Filter by resolution"""
@@ -82,34 +121,138 @@ input SceneFilterType {
   movies: MultiCriterionInput
   """Filter to only include scenes with these tags"""
   tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
+  """Filter to only include scenes with performers with these tags"""
+  performer_tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
+  """Filter by performer count"""
+  performer_count: IntCriterionInput
+  """Filter by StashID"""
+  stash_id: StringCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input MovieFilterType {
   """Filter to only include movies with this studio"""
   studios: MultiCriterionInput
+  """Filter to only include movies missing this property"""
+  is_missing: String
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input StudioFilterType {
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
+  """Filter by StashID"""
+  stash_id: StringCriterionInput
+  """Filter to only include studios missing this property"""
+  is_missing: String
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by scene count"""
+  scene_count: IntCriterionInput
+  """Filter by image count"""
+  image_count: IntCriterionInput
+  """Filter by gallery count"""
+  gallery_count: IntCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input GalleryFilterType {
+  AND: GalleryFilterType
+  OR: GalleryFilterType
+  NOT: GalleryFilterType
+
+  """Filter by path"""
+  path: StringCriterionInput
   """Filter to only include galleries missing this property"""
   is_missing: String
+  """Filter to include/exclude galleries that were created from zip"""
+  is_zip: Boolean
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
+  """Filter by average image resolution"""
+  average_resolution: ResolutionEnum
+  """Filter to only include galleries with this studio"""
+  studios: MultiCriterionInput
+  """Filter to only include galleries with these tags"""
+  tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
+  """Filter to only include galleries with performers with these tags"""
+  performer_tags: MultiCriterionInput
+  """Filter to only include galleries with these performers"""
+  performers: MultiCriterionInput
+  """Filter by performer count"""
+  performer_count: IntCriterionInput
+  """Filter by number of images in this gallery"""
+  image_count: IntCriterionInput
+  """Filter by url"""
+  url: StringCriterionInput
 }
 
 input TagFilterType {
+  AND: TagFilterType
+  OR: TagFilterType
+  NOT: TagFilterType
+
   """Filter to only include tags missing this property"""
   is_missing: String
 
   """Filter by number of scenes with this tag"""
   scene_count: IntCriterionInput
 
+  """Filter by number of images with this tag"""
+  image_count: IntCriterionInput
+
+  """Filter by number of galleries with this tag"""
+  gallery_count: IntCriterionInput
+
+  """Filter by number of performers with this tag"""
+  performer_count: IntCriterionInput
+
   """Filter by number of markers with this tag"""
   marker_count: IntCriterionInput
+}
+
+input ImageFilterType {
+  AND: ImageFilterType
+  OR: ImageFilterType
+  NOT: ImageFilterType
+
+  """Filter by path"""
+  path: StringCriterionInput
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
+  """Filter by o-counter"""
+  o_counter: IntCriterionInput
+  """Filter by resolution"""
+  resolution: ResolutionEnum
+  """Filter to only include images missing this property"""
+  is_missing: String
+  """Filter to only include images with this studio"""
+  studios: MultiCriterionInput
+  """Filter to only include images with these tags"""
+  tags: MultiCriterionInput
+  """Filter by tag count"""
+  tag_count: IntCriterionInput
+  """Filter to only include images with performers with these tags"""
+  performer_tags: MultiCriterionInput
+  """Filter to only include images with these performers"""
+  performers: MultiCriterionInput
+  """Filter by performer count"""
+  performer_count: IntCriterionInput
+  """Filter to only include images with these galleries"""
+  galleries: MultiCriterionInput
 }
 
 enum CriterionModifier {
@@ -129,6 +272,10 @@ enum CriterionModifier {
   INCLUDES_ALL,
   INCLUDES,
   EXCLUDES,
+  """MATCHES REGEX"""
+  MATCHES_REGEX,
+  """NOT MATCHES REGEX"""
+  NOT_MATCHES_REGEX,
 }
 
 input StringCriterionInput {

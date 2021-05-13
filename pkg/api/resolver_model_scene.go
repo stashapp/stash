@@ -4,10 +4,24 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *sceneResolver) Checksum(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Checksum.Valid {
+		return &obj.Checksum.String, nil
+	}
+	return nil, nil
+}
+
+func (r *sceneResolver) Oshash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.OSHash.Valid {
+		return &obj.OSHash.String, nil
+	}
+	return nil, nil
+}
 
 func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.Title.Valid {
@@ -65,11 +79,13 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
+	builder.APIKey = config.GetInstance().GetAPIKey()
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL()
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
+	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
@@ -78,68 +94,121 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Webp:        &webpPath,
 		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
+		Sprite:      &spritePath,
 	}, nil
 }
 
-func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bool, error) {
-	// ignore error
-	ret, _ := manager.IsStreamable(obj)
-	return ret, nil
-}
-
-func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
-}
-
-func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
-}
-
-func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
-	return qb.FindBySceneID(obj.ID)
-}
-
-func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
-	joinQB := models.NewJoinsQueryBuilder()
-	qb := models.NewMovieQueryBuilder()
-
-	sceneMovies, err := joinQB.GetSceneMovies(obj.ID, nil)
-	if err != nil {
+func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (ret []*models.SceneMarker, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.SceneMarker().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
-	var ret []*models.SceneMovie
-	for _, sm := range sceneMovies {
-		movie, err := qb.Find(sm.MovieID, nil)
+	return ret, nil
+}
+
+func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Gallery().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *models.Studio, err error) {
+	if !obj.StudioID.Valid {
+		return nil, nil
+	}
+
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*models.SceneMovie, err error) {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+		mqb := repo.Movie()
+
+		sceneMovies, err := qb.GetMovies(obj.ID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		sceneIdx := sm.SceneIndex
-		sceneMovie := &models.SceneMovie{
-			Movie: movie,
+		for _, sm := range sceneMovies {
+			movie, err := mqb.Find(sm.MovieID)
+			if err != nil {
+				return err
+			}
+
+			sceneIdx := sm.SceneIndex
+			sceneMovie := &models.SceneMovie{
+				Movie: movie,
+			}
+
+			if sceneIdx.Valid {
+				var idx int
+				idx = int(sceneIdx.Int64)
+				sceneMovie.SceneIndex = &idx
+			}
+
+			ret = append(ret, sceneMovie)
 		}
 
-		if sceneIdx.Valid {
-			var idx int
-			idx = int(sceneIdx.Int64)
-			sceneMovie.SceneIndex = &idx
-		}
-
-		ret = append(ret, sceneMovie)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 	return ret, nil
 }
 
-func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
+func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Tag().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.Performer, error) {
-	qb := models.NewPerformerQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
+func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Performer().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().GetStashIDs(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Phash.Valid {
+		hexval := utils.PhashToString(obj.Phash.Int64)
+		return &hexval, nil
+	}
+	return nil, nil
 }

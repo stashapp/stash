@@ -6,27 +6,38 @@ import { ILabeledId, ILabeledValue, IOptionType } from "../types";
 
 export type CriterionType =
   | "none"
+  | "path"
   | "rating"
+  | "organized"
   | "o_counter"
   | "resolution"
+  | "average_resolution"
   | "duration"
   | "favorite"
   | "hasMarkers"
   | "sceneIsMissing"
+  | "imageIsMissing"
   | "performerIsMissing"
   | "galleryIsMissing"
   | "tagIsMissing"
+  | "studioIsMissing"
+  | "movieIsMissing"
   | "tags"
   | "sceneTags"
+  | "performerTags"
+  | "tag_count"
   | "performers"
   | "studios"
   | "movies"
+  | "galleries"
   | "birth_year"
   | "age"
   | "ethnicity"
   | "country"
+  | "hair_color"
   | "eye_color"
   | "height"
+  | "weight"
   | "measurements"
   | "fake_tits"
   | "career_length"
@@ -36,7 +47,13 @@ export type CriterionType =
   | "gender"
   | "parent_studios"
   | "scene_count"
-  | "marker_count";
+  | "marker_count"
+  | "image_count"
+  | "gallery_count"
+  | "performer_count"
+  | "death_year"
+  | "url"
+  | "stash_id";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -46,12 +63,18 @@ export abstract class Criterion {
     switch (type) {
       case "none":
         return "None";
+      case "path":
+        return "Path";
       case "rating":
         return "Rating";
+      case "organized":
+        return "Organized";
       case "o_counter":
         return "O-Counter";
       case "resolution":
         return "Resolution";
+      case "average_resolution":
+        return "Average Resolution";
       case "duration":
         return "Duration";
       case "favorite":
@@ -59,32 +82,47 @@ export abstract class Criterion {
       case "hasMarkers":
         return "Has Markers";
       case "sceneIsMissing":
+      case "imageIsMissing":
       case "performerIsMissing":
       case "galleryIsMissing":
       case "tagIsMissing":
+      case "studioIsMissing":
+      case "movieIsMissing":
         return "Is Missing";
       case "tags":
         return "Tags";
       case "sceneTags":
         return "Scene Tags";
+      case "performerTags":
+        return "Performer Tags";
+      case "tag_count":
+        return "Tag Count";
       case "performers":
         return "Performers";
       case "studios":
         return "Studios";
       case "movies":
         return "Movies";
+      case "galleries":
+        return "Galleries";
       case "birth_year":
         return "Birth Year";
+      case "death_year":
+        return "Death Year";
       case "age":
         return "Age";
       case "ethnicity":
         return "Ethnicity";
       case "country":
         return "Country";
+      case "hair_color":
+        return "Hair Color";
       case "eye_color":
         return "Eye Color";
       case "height":
         return "Height";
+      case "weight":
+        return "Weight";
       case "measurements":
         return "Measurements";
       case "fake_tits":
@@ -105,6 +143,16 @@ export abstract class Criterion {
         return "Scene Count";
       case "marker_count":
         return "Marker Count";
+      case "image_count":
+        return "Image Count";
+      case "gallery_count":
+        return "Gallery Count";
+      case "performer_count":
+        return "Performer Count";
+      case "url":
+        return "URL";
+      case "stash_id":
+        return "StashID";
     }
   }
 
@@ -130,6 +178,16 @@ export abstract class Criterion {
         return { value: CriterionModifier.Includes, label: "Includes" };
       case CriterionModifier.Excludes:
         return { value: CriterionModifier.Excludes, label: "Excludes" };
+      case CriterionModifier.MatchesRegex:
+        return {
+          value: CriterionModifier.MatchesRegex,
+          label: "Matches Regex",
+        };
+      case CriterionModifier.NotMatchesRegex:
+        return {
+          value: CriterionModifier.NotMatchesRegex,
+          label: "Not Matches Regex",
+        };
     }
   }
 
@@ -177,6 +235,12 @@ export abstract class Criterion {
       case CriterionModifier.Excludes:
         modifierString = "excludes";
         break;
+      case CriterionModifier.MatchesRegex:
+        modifierString = "matches regex";
+        break;
+      case CriterionModifier.NotMatchesRegex:
+        modifierString = "not matches regex";
+        break;
       default:
         modifierString = "";
     }
@@ -197,18 +261,18 @@ export abstract class Criterion {
     return `${this.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
-  /*
-  public set(modifier: CriterionModifier, value: Value) {
-    this.modifier = modifier;
-    if (Array.isArray(this.value)) {
-      this.value.push(value);
-    } else {
-      this.value = value;
-    }
+  private static replaceSpecialCharacter(str: string, c: string) {
+    return str.replaceAll(c, encodeURIComponent(c));
   }
-  */
 
   public encodeValue(): CriterionValue {
+    // replace certain characters
+    if (typeof this.value === "string") {
+      let ret = this.value;
+      ret = Criterion.replaceSpecialCharacter(ret, "&");
+      ret = Criterion.replaceSpecialCharacter(ret, "+");
+      return ret;
+    }
     return this.value;
   }
 }
@@ -233,10 +297,14 @@ export class StringCriterion extends Criterion {
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.Equals),
-    Criterion.getModifierOption(CriterionModifier.NotEquals),
-    Criterion.getModifierOption(CriterionModifier.IsNull),
-    Criterion.getModifierOption(CriterionModifier.NotNull),
+    StringCriterion.getModifierOption(CriterionModifier.Equals),
+    StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+    StringCriterion.getModifierOption(CriterionModifier.Includes),
+    StringCriterion.getModifierOption(CriterionModifier.Excludes),
+    StringCriterion.getModifierOption(CriterionModifier.IsNull),
+    StringCriterion.getModifierOption(CriterionModifier.NotNull),
+    StringCriterion.getModifierOption(CriterionModifier.MatchesRegex),
+    StringCriterion.getModifierOption(CriterionModifier.NotMatchesRegex),
   ];
   public options: string[] | undefined;
   public value: string = "";
@@ -258,6 +326,17 @@ export class StringCriterion extends Criterion {
       this.parameterName = type;
     }
   }
+}
+
+export class MandatoryStringCriterion extends StringCriterion {
+  public modifierOptions = [
+    StringCriterion.getModifierOption(CriterionModifier.Equals),
+    StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+    StringCriterion.getModifierOption(CriterionModifier.Includes),
+    StringCriterion.getModifierOption(CriterionModifier.Excludes),
+    StringCriterion.getModifierOption(CriterionModifier.MatchesRegex),
+    StringCriterion.getModifierOption(CriterionModifier.NotMatchesRegex),
+  ];
 }
 
 export class NumberCriterion extends Criterion {
@@ -292,6 +371,15 @@ export class NumberCriterion extends Criterion {
       this.parameterName = type;
     }
   }
+}
+
+export class MandatoryNumberCriterion extends NumberCriterion {
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+  ];
 }
 
 export class DurationCriterion extends Criterion {

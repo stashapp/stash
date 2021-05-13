@@ -2,9 +2,9 @@ package jsonschema
 
 import (
 	"fmt"
-	"github.com/json-iterator/go"
 	"os"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -18,15 +18,16 @@ type SceneMarker struct {
 }
 
 type SceneFile struct {
-	Size       string `json:"size"`
-	Duration   string `json:"duration"`
-	VideoCodec string `json:"video_codec"`
-	AudioCodec string `json:"audio_codec"`
-	Format     string `json:"format"`
-	Width      int    `json:"width"`
-	Height     int    `json:"height"`
-	Framerate  string `json:"framerate"`
-	Bitrate    int    `json:"bitrate"`
+	ModTime    models.JSONTime `json:"mod_time,omitempty"`
+	Size       string          `json:"size"`
+	Duration   string          `json:"duration"`
+	VideoCodec string          `json:"video_codec"`
+	AudioCodec string          `json:"audio_codec"`
+	Format     string          `json:"format"`
+	Width      int             `json:"width"`
+	Height     int             `json:"height"`
+	Framerate  string          `json:"framerate"`
+	Bitrate    int             `json:"bitrate"`
 }
 
 type SceneMovie struct {
@@ -36,13 +37,17 @@ type SceneMovie struct {
 
 type Scene struct {
 	Title      string          `json:"title,omitempty"`
+	Checksum   string          `json:"checksum,omitempty"`
+	OSHash     string          `json:"oshash,omitempty"`
+	Phash      string          `json:"phash,omitempty"`
 	Studio     string          `json:"studio,omitempty"`
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`
 	Rating     int             `json:"rating,omitempty"`
+	Organized  bool            `json:"organized,omitempty"`
 	OCounter   int             `json:"o_counter,omitempty"`
 	Details    string          `json:"details,omitempty"`
-	Gallery    string          `json:"gallery,omitempty"`
+	Galleries  []string        `json:"galleries,omitempty"`
 	Performers []string        `json:"performers,omitempty"`
 	Movies     []SceneMovie    `json:"movies,omitempty"`
 	Tags       []string        `json:"tags,omitempty"`

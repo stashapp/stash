@@ -4,9 +4,12 @@ import { Card, Tab, Nav, Row, Col } from "react-bootstrap";
 import { useHistory, useLocation } from "react-router-dom";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
-import { SettingsInterfacePanel } from "./SettingsInterfacePanel";
+import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
+import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
+import { SettingsScrapersPanel } from "./SettingsScrapersPanel";
+import { SettingsToolsPanel } from "./SettingsToolsPanel";
 
 export const Settings: React.FC = () => {
   const location = useLocation();
@@ -20,7 +23,7 @@ export const Settings: React.FC = () => {
       <Tab.Container
         defaultActiveKey={defaultTab}
         id="configuration-tabs"
-        onSelect={onSelect}
+        onSelect={(tab) => tab && onSelect(tab)}
       >
         <Row>
           <Col sm={3} md={2}>
@@ -33,6 +36,15 @@ export const Settings: React.FC = () => {
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="tasks">Tasks</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="tools">Tools</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="scrapers">Scrapers</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="plugins">Plugins</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="logs">Logs</Nav.Link>
@@ -54,10 +66,19 @@ export const Settings: React.FC = () => {
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="logs">
+              <Tab.Pane eventKey="tools" unmountOnExit>
+                <SettingsToolsPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="scrapers" unmountOnExit>
+                <SettingsScrapersPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="plugins" unmountOnExit>
+                <SettingsPluginsPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="logs" unmountOnExit>
                 <SettingsLogsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="about">
+              <Tab.Pane eventKey="about" unmountOnExit>
                 <SettingsAboutPanel />
               </Tab.Pane>
             </Tab.Content>

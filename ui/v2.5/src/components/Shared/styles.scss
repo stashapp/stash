@@ -16,7 +16,14 @@
   }
 
   &.inline {
-    height: inherit;
+    display: inline;
+    height: auto;
+    margin-left: 0.5rem;
+  }
+
+  &.small .spinner-border {
+    height: 1rem;
+    width: 1rem;
   }
 }
 
@@ -86,7 +93,7 @@
 
     .btn-link {
       border: none;
-      color: black;
+      color: white;
       font-weight: 400;
       padding: 0;
     }
@@ -118,4 +125,74 @@
   max-height: calc(100vh - 14rem);
   overflow-y: auto;
   padding-right: 15px;
+}
+
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):focus,
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #f5f8fa;
+}
+
+.hover-popover-content {
+  max-width: 32rem;
+  text-align: center;
+}
+
+.ErrorMessage {
+  align-items: center;
+  height: 20rem;
+  justify-content: center;
+
+  &-content {
+    display: inline-block;
+  }
+}
+
+.card {
+  .card-check {
+    left: 0.5rem;
+    margin-top: -12px;
+    opacity: 0;
+    padding-left: 15px;
+    position: absolute;
+    top: 0.7rem;
+    width: 1.2rem;
+    z-index: 1;
+
+    &:checked {
+      opacity: 0.75;
+    }
+  }
+
+  &:hover .card-check {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
+}
+
+.TruncatedText {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+
+  &-tooltip .tooltip-inner {
+    max-width: 300px;
+  }
+}
+
+.RatingStars {
+  &-unfilled {
+    path {
+      fill: white;
+    }
+  }
+
+  &-filled {
+    path {
+      fill: gold;
+    }
+  }
 }

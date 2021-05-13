@@ -1,46 +1,131 @@
 package manager
 
 import (
+	"archive/zip"
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
+	"io"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/movie"
+	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
-	Mappings *jsonschema.Mappings
-	Scraped  []jsonschema.ScrapedItem
+	txnManager models.TransactionManager
+	json       jsonUtils
+
+	BaseDir             string
+	TmpZip              string
+	Reset               bool
+	DuplicateBehaviour  models.ImportDuplicateEnum
+	MissingRefBehaviour models.ImportMissingRefEnum
+
+	mappings            *jsonschema.Mappings
+	scraped             []jsonschema.ScrapedItem
+	fileNamingAlgorithm models.HashAlgorithm
+}
+
+func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (*ImportTask, error) {
+	baseDir, err := instance.Paths.Generated.TempDir("import")
+	if err != nil {
+		logger.Errorf("error creating temporary directory for import: %s", err.Error())
+		return nil, err
+	}
+
+	tmpZip := ""
+	if input.File.File != nil {
+		tmpZip = filepath.Join(baseDir, "import.zip")
+		out, err := os.Create(tmpZip)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = io.Copy(out, input.File.File)
+		out.Close()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &ImportTask{
+		txnManager:          GetInstance().TxnManager,
+		BaseDir:             baseDir,
+		TmpZip:              tmpZip,
+		Reset:               false,
+		DuplicateBehaviour:  input.DuplicateBehaviour,
+		MissingRefBehaviour: input.MissingRefBehaviour,
+		fileNamingAlgorithm: a,
+	}, nil
+}
+
+func (t *ImportTask) GetStatus() JobStatus {
+	return Import
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	t.Mappings, _ = instance.JSON.getMappings()
-	if t.Mappings == nil {
+	if t.TmpZip != "" {
+		defer func() {
+			err := utils.RemoveDir(t.BaseDir)
+			if err != nil {
+				logger.Errorf("error removing directory %s: %s", t.BaseDir, err.Error())
+			}
+		}()
+
+		if err := t.unzipFile(); err != nil {
+			logger.Errorf("error unzipping provided file for import: %s", err.Error())
+			return
+		}
+	}
+
+	t.json = jsonUtils{
+		json: *paths.GetJSONPaths(t.BaseDir),
+	}
+
+	// set default behaviour if not provided
+	if !t.DuplicateBehaviour.IsValid() {
+		t.DuplicateBehaviour = models.ImportDuplicateEnumFail
+	}
+	if !t.MissingRefBehaviour.IsValid() {
+		t.MissingRefBehaviour = models.ImportMissingRefEnumFail
+	}
+
+	t.mappings, _ = t.json.getMappings()
+	if t.mappings == nil {
 		logger.Error("missing mappings json")
 		return
 	}
-	scraped, _ := instance.JSON.getScraped()
+	scraped, _ := t.json.getScraped()
 	if scraped == nil {
 		logger.Warn("missing scraped json")
 	}
-	t.Scraped = scraped
+	t.scraped = scraped
 
-	err := database.Reset(config.GetDatabasePath())
+	if t.Reset {
+		err := database.Reset(config.GetInstance().GetDatabasePath())
 
-	if err != nil {
-		logger.Errorf("Error resetting database: %s", err.Error())
-		return
+		if err != nil {
+			logger.Errorf("Error resetting database: %s", err.Error())
+			return
+		}
 	}
 
 	ctx := context.TODO()
@@ -53,139 +138,118 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
+	t.ImportImages(ctx)
+}
+
+func (t *ImportTask) unzipFile() error {
+	defer func() {
+		err := os.Remove(t.TmpZip)
+		if err != nil {
+			logger.Errorf("error removing temporary zip file %s: %s", t.TmpZip, err.Error())
+		}
+	}()
+
+	// now we can read the zip file
+	r, err := zip.OpenReader(t.TmpZip)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		fn := filepath.Join(t.BaseDir, f.Name)
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fn, os.ModePerm)
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
+			return err
+		}
+
+		o, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return err
+		}
+
+		i, err := f.Open()
+		if err != nil {
+			o.Close()
+			return err
+		}
+
+		if _, err := io.Copy(o, i); err != nil {
+			o.Close()
+			i.Close()
+			return err
+		}
+
+		o.Close()
+		i.Close()
+	}
+
+	return nil
 }
 
 func (t *ImportTask) ImportPerformers(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
+	logger.Info("[performers] importing")
 
-	for i, mappingJSON := range t.Mappings.Performers {
+	for i, mappingJSON := range t.mappings.Performers {
 		index := i + 1
-		performerJSON, err := instance.JSON.getPerformer(mappingJSON.Checksum)
+		performerJSON, err := t.json.getPerformer(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[performers] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || performerJSON == nil {
-			return
-		}
 
-		logger.Progressf("[performers] %d of %d", index, len(t.Mappings.Performers))
+		logger.Progressf("[performers] %d of %d", index, len(t.mappings.Performers))
 
-		// generate checksum from performer name rather than image
-		checksum := utils.MD5FromString(performerJSON.Name)
-
-		// Process the base 64 encoded image string
-		_, imageData, err := utils.ProcessBase64Image(performerJSON.Image)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[performers] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Populate a new performer from the input
-		newPerformer := models.Performer{
-			Checksum:  checksum,
-			Favorite:  sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(performerJSON.CreatedAt)},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(performerJSON.UpdatedAt)},
-		}
-
-		if performerJSON.Name != "" {
-			newPerformer.Name = sql.NullString{String: performerJSON.Name, Valid: true}
-		}
-		if performerJSON.Gender != "" {
-			newPerformer.Gender = sql.NullString{String: performerJSON.Gender, Valid: true}
-		}
-		if performerJSON.URL != "" {
-			newPerformer.URL = sql.NullString{String: performerJSON.URL, Valid: true}
-		}
-		if performerJSON.Birthdate != "" {
-			newPerformer.Birthdate = models.SQLiteDate{String: performerJSON.Birthdate, Valid: true}
-		}
-		if performerJSON.Ethnicity != "" {
-			newPerformer.Ethnicity = sql.NullString{String: performerJSON.Ethnicity, Valid: true}
-		}
-		if performerJSON.Country != "" {
-			newPerformer.Country = sql.NullString{String: performerJSON.Country, Valid: true}
-		}
-		if performerJSON.EyeColor != "" {
-			newPerformer.EyeColor = sql.NullString{String: performerJSON.EyeColor, Valid: true}
-		}
-		if performerJSON.Height != "" {
-			newPerformer.Height = sql.NullString{String: performerJSON.Height, Valid: true}
-		}
-		if performerJSON.Measurements != "" {
-			newPerformer.Measurements = sql.NullString{String: performerJSON.Measurements, Valid: true}
-		}
-		if performerJSON.FakeTits != "" {
-			newPerformer.FakeTits = sql.NullString{String: performerJSON.FakeTits, Valid: true}
-		}
-		if performerJSON.CareerLength != "" {
-			newPerformer.CareerLength = sql.NullString{String: performerJSON.CareerLength, Valid: true}
-		}
-		if performerJSON.Tattoos != "" {
-			newPerformer.Tattoos = sql.NullString{String: performerJSON.Tattoos, Valid: true}
-		}
-		if performerJSON.Piercings != "" {
-			newPerformer.Piercings = sql.NullString{String: performerJSON.Piercings, Valid: true}
-		}
-		if performerJSON.Aliases != "" {
-			newPerformer.Aliases = sql.NullString{String: performerJSON.Aliases, Valid: true}
-		}
-		if performerJSON.Twitter != "" {
-			newPerformer.Twitter = sql.NullString{String: performerJSON.Twitter, Valid: true}
-		}
-		if performerJSON.Instagram != "" {
-			newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
-		}
-
-		createdPerformer, err := qb.Create(newPerformer, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[performers] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Add the performer image if set
-		if len(imageData) > 0 {
-			if err := qb.UpdatePerformerImage(createdPerformer.ID, imageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[performers] <%s> error setting performer image: %s", mappingJSON.Checksum, err.Error())
-				return
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Performer()
+			importer := &performer.Importer{
+				ReaderWriter: readerWriter,
+				TagWriter:    r.Tag(),
+				Input:        *performerJSON,
 			}
+
+			return performImport(importer, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[performers] <%s> import failed: %s", mappingJSON.Checksum, err.Error())
 		}
 	}
 
-	logger.Info("[performers] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[performers] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[performers] import complete")
 }
 
 func (t *ImportTask) ImportStudios(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-
 	pendingParent := make(map[string][]*jsonschema.Studio)
 
-	for i, mappingJSON := range t.Mappings.Studios {
+	logger.Info("[studios] importing")
+
+	for i, mappingJSON := range t.mappings.Studios {
 		index := i + 1
-		studioJSON, err := instance.JSON.getStudio(mappingJSON.Checksum)
+		studioJSON, err := t.json.getStudio(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[studios] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || studioJSON == nil {
-			return
-		}
 
-		logger.Progressf("[studios] %d of %d", index, len(t.Mappings.Studios))
+		logger.Progressf("[studios] %d of %d", index, len(t.mappings.Studios))
 
-		if err := t.ImportStudio(studioJSON, pendingParent, tx); err != nil {
-			tx.Rollback()
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			return t.ImportStudio(studioJSON, pendingParent, r.Studio())
+		}); err != nil {
+			if err == studio.ErrParentStudioNotExist {
+				// add to the pending parent list so that it is created after the parent
+				s := pendingParent[studioJSON.ParentStudio]
+				s = append(s, studioJSON)
+				pendingParent[studioJSON.ParentStudio] = s
+				continue
+			}
+
 			logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
+			continue
 		}
 	}
 
@@ -195,85 +259,40 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		for _, s := range pendingParent {
 			for _, orphanStudioJSON := range s {
-				if err := t.ImportStudio(orphanStudioJSON, nil, tx); err != nil {
-					tx.Rollback()
+				if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+					return t.ImportStudio(orphanStudioJSON, nil, r.Studio())
+				}); err != nil {
 					logger.Errorf("[studios] <%s> failed to create: %s", orphanStudioJSON.Name, err.Error())
-					return
+					continue
 				}
 			}
 		}
 	}
 
-	logger.Info("[studios] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[studios] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[studios] import complete")
 }
 
-func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, tx *sqlx.Tx) error {
-	qb := models.NewStudioQueryBuilder()
-
-	// generate checksum from studio name rather than image
-	checksum := utils.MD5FromString(studioJSON.Name)
-
-	// Process the base 64 encoded image string
-	_, imageData, err := utils.ProcessBase64Image(studioJSON.Image)
-	if err != nil {
-		return fmt.Errorf("invalid image: %s", err.Error())
+func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter models.StudioReaderWriter) error {
+	importer := &studio.Importer{
+		ReaderWriter:        readerWriter,
+		Input:               *studioJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
 	}
 
-	// Populate a new studio from the input
-	newStudio := models.Studio{
-		Checksum:  checksum,
-		Name:      sql.NullString{String: studioJSON.Name, Valid: true},
-		URL:       sql.NullString{String: studioJSON.URL, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.CreatedAt)},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.UpdatedAt)},
+	// first phase: return error if parent does not exist
+	if pendingParent != nil {
+		importer.MissingRefBehaviour = models.ImportMissingRefEnumFail
 	}
 
-	// Populate the parent ID
-	if studioJSON.ParentStudio != "" {
-		studio, err := qb.FindByName(studioJSON.ParentStudio, tx, false)
-		if err != nil {
-			return fmt.Errorf("error finding studio by name <%s>: %s", studioJSON.ParentStudio, err.Error())
-		}
-
-		if studio == nil {
-			// its possible that the parent hasn't been created yet
-			// do it after it is created
-			if pendingParent == nil {
-				logger.Warnf("[studios] studio <%s> does not exist", studioJSON.ParentStudio)
-			} else {
-				// add to the pending parent list so that it is created after the parent
-				s := pendingParent[studioJSON.ParentStudio]
-				s = append(s, studioJSON)
-				pendingParent[studioJSON.ParentStudio] = s
-
-				// skip
-				return nil
-			}
-		} else {
-			newStudio.ParentID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-		}
-	}
-
-	createdStudio, err := qb.Create(newStudio, tx)
-	if err != nil {
+	if err := performImport(importer, t.DuplicateBehaviour); err != nil {
 		return err
-	}
-
-	if len(imageData) > 0 {
-		if err := qb.UpdateStudioImage(createdStudio.ID, imageData, tx); err != nil {
-			return fmt.Errorf("error setting studio image: %s", err.Error())
-		}
 	}
 
 	// now create the studios pending this studios creation
 	s := pendingParent[studioJSON.Name]
 	for _, childStudioJSON := range s {
 		// map is nil since we're not checking parent studios at this point
-		if err := t.ImportStudio(childStudioJSON, nil, tx); err != nil {
+		if err := t.ImportStudio(childStudioJSON, nil, readerWriter); err != nil {
 			return fmt.Errorf("failed to create child studio <%s>: %s", childStudioJSON.Name, err.Error())
 		}
 	}
@@ -281,507 +300,277 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 	// delete the entry from the map so that we know its not left over
 	delete(pendingParent, studioJSON.Name)
 
-	return err
+	return nil
 }
 
 func (t *ImportTask) ImportMovies(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
+	logger.Info("[movies] importing")
 
-	for i, mappingJSON := range t.Mappings.Movies {
+	for i, mappingJSON := range t.mappings.Movies {
 		index := i + 1
-		movieJSON, err := instance.JSON.getMovie(mappingJSON.Checksum)
+		movieJSON, err := t.json.getMovie(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[movies] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || movieJSON == nil {
-			return
-		}
 
-		logger.Progressf("[movies] %d of %d", index, len(t.Mappings.Movies))
+		logger.Progressf("[movies] %d of %d", index, len(t.mappings.Movies))
 
-		// generate checksum from movie name rather than image
-		checksum := utils.MD5FromString(movieJSON.Name)
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Movie()
+			studioReaderWriter := r.Studio()
 
-		// Process the base 64 encoded image string
-		_, frontimageData, err := utils.ProcessBase64Image(movieJSON.FrontImage)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-		_, backimageData, err := utils.ProcessBase64Image(movieJSON.BackImage)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Populate a new movie from the input
-		newMovie := models.Movie{
-			Checksum:  checksum,
-			Name:      sql.NullString{String: movieJSON.Name, Valid: true},
-			Aliases:   sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date:      models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Director:  sql.NullString{String: movieJSON.Director, Valid: true},
-			Synopsis:  sql.NullString{String: movieJSON.Synopsis, Valid: true},
-			URL:       sql.NullString{String: movieJSON.URL, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
-		}
-
-		if movieJSON.Rating != 0 {
-			newMovie.Rating = sql.NullInt64{Int64: int64(movieJSON.Rating), Valid: true}
-		}
-		if movieJSON.Duration != 0 {
-			newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
-		}
-
-		// Populate the studio ID
-		if movieJSON.Studio != "" {
-			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(movieJSON.Studio, tx, false)
-			if err != nil {
-				logger.Warnf("[movies] error getting studio <%s>: %s", movieJSON.Studio, err.Error())
-			} else if studio == nil {
-				logger.Warnf("[movies] studio <%s> does not exist", movieJSON.Studio)
-			} else {
-				newMovie.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			movieImporter := &movie.Importer{
+				ReaderWriter:        readerWriter,
+				StudioWriter:        studioReaderWriter,
+				Input:               *movieJSON,
+				MissingRefBehaviour: t.MissingRefBehaviour,
 			}
-		}
 
-		createdMovie, err := qb.Create(newMovie, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[movies] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Add the performer image if set
-		if len(frontimageData) > 0 {
-			if err := qb.UpdateMovieImages(createdMovie.ID, frontimageData, backimageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[movies] <%s> error setting movie images: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
+			return performImport(movieImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[movies] <%s> import failed: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 	}
 
-	logger.Info("[movies] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[movies] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[movies] import complete")
 }
 
 func (t *ImportTask) ImportGalleries(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewGalleryQueryBuilder()
-
-	for i, mappingJSON := range t.Mappings.Galleries {
-		index := i + 1
-		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
-			return
-		}
-
-		logger.Progressf("[galleries] %d of %d", index, len(t.Mappings.Galleries))
-
-		// Populate a new gallery from the input
-		currentTime := time.Now()
-		newGallery := models.Gallery{
-			Checksum:  mappingJSON.Checksum,
-			Path:      mappingJSON.Path,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		}
-
-		_, err := qb.Create(newGallery, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[galleries] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-	}
-
 	logger.Info("[galleries] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[galleries] import failed to commit: %s", err.Error())
+
+	for i, mappingJSON := range t.mappings.Galleries {
+		index := i + 1
+		galleryJSON, err := t.json.getGallery(mappingJSON.Checksum)
+		if err != nil {
+			logger.Errorf("[galleries] failed to read json: %s", err.Error())
+			continue
+		}
+
+		logger.Progressf("[galleries] %d of %d", index, len(t.mappings.Galleries))
+
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Gallery()
+			tagWriter := r.Tag()
+			performerWriter := r.Performer()
+			studioWriter := r.Studio()
+
+			galleryImporter := &gallery.Importer{
+				ReaderWriter:        readerWriter,
+				PerformerWriter:     performerWriter,
+				StudioWriter:        studioWriter,
+				TagWriter:           tagWriter,
+				Input:               *galleryJSON,
+				MissingRefBehaviour: t.MissingRefBehaviour,
+			}
+
+			return performImport(galleryImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[galleries] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
+			continue
+		}
 	}
+
 	logger.Info("[galleries] import complete")
 }
 
 func (t *ImportTask) ImportTags(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
+	logger.Info("[tags] importing")
 
-	for i, mappingJSON := range t.Mappings.Tags {
+	for i, mappingJSON := range t.mappings.Tags {
 		index := i + 1
-		tagJSON, err := instance.JSON.getTag(mappingJSON.Checksum)
+		tagJSON, err := t.json.getTag(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[tags] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || tagJSON == nil {
-			return
-		}
 
-		logger.Progressf("[tags] %d of %d", index, len(t.Mappings.Tags))
+		logger.Progressf("[tags] %d of %d", index, len(t.mappings.Tags))
 
-		// Process the base 64 encoded image string
-		var imageData []byte
-		if len(tagJSON.Image) > 0 {
-			_, imageData, err = utils.ProcessBase64Image(tagJSON.Image)
-			if err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[tags] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
-				return
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Tag()
+
+			tagImporter := &tag.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *tagJSON,
 			}
-		}
 
-		// Populate a new tag from the input
-		newTag := models.Tag{
-			Name:      tagJSON.Name,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(tagJSON.CreatedAt)},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(tagJSON.UpdatedAt)},
-		}
-
-		createdTag, err := qb.Create(newTag, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[tags] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Add the tag image if set
-		if len(imageData) > 0 {
-			if err := qb.UpdateTagImage(createdTag.ID, imageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[tags] <%s> error setting tag image: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
+			return performImport(tagImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[tags] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 	}
 
-	logger.Info("[tags] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[tags] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[tags] import complete")
 }
 
 func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewScrapedItemQueryBuilder()
-	sqb := models.NewStudioQueryBuilder()
-	currentTime := time.Now()
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+		logger.Info("[scraped sites] importing")
+		qb := r.ScrapedItem()
+		sqb := r.Studio()
+		currentTime := time.Now()
 
-	for i, mappingJSON := range t.Scraped {
-		index := i + 1
-		logger.Progressf("[scraped sites] %d of %d", index, len(t.Mappings.Scenes))
+		for i, mappingJSON := range t.scraped {
+			index := i + 1
+			logger.Progressf("[scraped sites] %d of %d", index, len(t.mappings.Scenes))
 
-		newScrapedItem := models.ScrapedItem{
-			Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
-			Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
-			URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-			Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
-			Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
-			Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
-			Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
-			Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
-			GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
-			GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
-			VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
-			VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
-			CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
+			newScrapedItem := models.ScrapedItem{
+				Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
+				Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
+				URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
+				Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
+				Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
+				Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
+				Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
+				Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
+				GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
+				GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
+				VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
+				VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
+				CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
+				UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
+			}
+
+			studio, err := sqb.FindByName(mappingJSON.Studio, false)
+			if err != nil {
+				logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
+			}
+			if studio != nil {
+				newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			}
+
+			_, err = qb.Create(newScrapedItem)
+			if err != nil {
+				logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
+			}
 		}
 
-		studio, err := sqb.FindByName(mappingJSON.Studio, tx, false)
-		if err != nil {
-			logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
-		}
-		if studio != nil {
-			newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-		}
-
-		_, err = qb.Create(newScrapedItem, tx)
-		if err != nil {
-			logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
-		}
-	}
-
-	logger.Info("[scraped sites] importing")
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		logger.Errorf("[scraped sites] import failed to commit: %s", err.Error())
 	}
+
 	logger.Info("[scraped sites] import complete")
 }
 
 func (t *ImportTask) ImportScenes(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	logger.Info("[scenes] importing")
 
-	for i, mappingJSON := range t.Mappings.Scenes {
+	for i, mappingJSON := range t.mappings.Scenes {
 		index := i + 1
-		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
-			_ = tx.Rollback()
-			logger.Warn("[scenes] scene mapping without checksum or path: ", mappingJSON)
-			return
-		}
 
-		logger.Progressf("[scenes] %d of %d", index, len(t.Mappings.Scenes))
+		logger.Progressf("[scenes] %d of %d", index, len(t.mappings.Scenes))
 
-		newScene := models.Scene{
-			Checksum: mappingJSON.Checksum,
-			Path:     mappingJSON.Path,
-		}
-
-		sceneJSON, err := instance.JSON.getScene(mappingJSON.Checksum)
+		sceneJSON, err := t.json.getScene(mappingJSON.Checksum)
 		if err != nil {
 			logger.Infof("[scenes] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
 			continue
 		}
 
-		// Process the base 64 encoded cover image string
-		var coverImageData []byte
-		if sceneJSON.Cover != "" {
-			_, coverImageData, err = utils.ProcessBase64Image(sceneJSON.Cover)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> invalid cover image: %s", mappingJSON.Checksum, err.Error())
-			}
-			if len(coverImageData) > 0 {
-				if err = SetSceneScreenshot(mappingJSON.Checksum, coverImageData); err != nil {
-					logger.Warnf("[scenes] <%s> failed to create cover image: %s", mappingJSON.Checksum, err.Error())
-				}
+		sceneHash := mappingJSON.Checksum
 
-				// write the cover image data after creating the scene
-			}
-		}
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Scene()
+			tagWriter := r.Tag()
+			galleryWriter := r.Gallery()
+			movieWriter := r.Movie()
+			performerWriter := r.Performer()
+			studioWriter := r.Studio()
+			markerWriter := r.SceneMarker()
 
-		// Populate scene fields
-		if sceneJSON != nil {
-			if sceneJSON.Title != "" {
-				newScene.Title = sql.NullString{String: sceneJSON.Title, Valid: true}
-			}
-			if sceneJSON.Details != "" {
-				newScene.Details = sql.NullString{String: sceneJSON.Details, Valid: true}
-			}
-			if sceneJSON.URL != "" {
-				newScene.URL = sql.NullString{String: sceneJSON.URL, Valid: true}
-			}
-			if sceneJSON.Date != "" {
-				newScene.Date = models.SQLiteDate{String: sceneJSON.Date, Valid: true}
-			}
-			if sceneJSON.Rating != 0 {
-				newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
+			sceneImporter := &scene.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *sceneJSON,
+				Path:         mappingJSON.Path,
+
+				FileNamingAlgorithm: t.fileNamingAlgorithm,
+				MissingRefBehaviour: t.MissingRefBehaviour,
+
+				GalleryWriter:   galleryWriter,
+				MovieWriter:     movieWriter,
+				PerformerWriter: performerWriter,
+				StudioWriter:    studioWriter,
+				TagWriter:       tagWriter,
 			}
 
-			newScene.OCounter = sceneJSON.OCounter
-			newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.CreatedAt)}
-			newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.UpdatedAt)}
-
-			if sceneJSON.File != nil {
-				if sceneJSON.File.Size != "" {
-					newScene.Size = sql.NullString{String: sceneJSON.File.Size, Valid: true}
-				}
-				if sceneJSON.File.Duration != "" {
-					duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
-					newScene.Duration = sql.NullFloat64{Float64: duration, Valid: true}
-				}
-				if sceneJSON.File.VideoCodec != "" {
-					newScene.VideoCodec = sql.NullString{String: sceneJSON.File.VideoCodec, Valid: true}
-				}
-				if sceneJSON.File.AudioCodec != "" {
-					newScene.AudioCodec = sql.NullString{String: sceneJSON.File.AudioCodec, Valid: true}
-				}
-				if sceneJSON.File.Format != "" {
-					newScene.Format = sql.NullString{String: sceneJSON.File.Format, Valid: true}
-				}
-				if sceneJSON.File.Width != 0 {
-					newScene.Width = sql.NullInt64{Int64: int64(sceneJSON.File.Width), Valid: true}
-				}
-				if sceneJSON.File.Height != 0 {
-					newScene.Height = sql.NullInt64{Int64: int64(sceneJSON.File.Height), Valid: true}
-				}
-				if sceneJSON.File.Framerate != "" {
-					framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
-					newScene.Framerate = sql.NullFloat64{Float64: framerate, Valid: true}
-				}
-				if sceneJSON.File.Bitrate != 0 {
-					newScene.Bitrate = sql.NullInt64{Int64: int64(sceneJSON.File.Bitrate), Valid: true}
-				}
-			} else {
-				// TODO: Get FFMPEG data?
+			if err := performImport(sceneImporter, t.DuplicateBehaviour); err != nil {
+				return err
 			}
-		}
 
-		// Populate the studio ID
-		if sceneJSON.Studio != "" {
-			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(sceneJSON.Studio, tx, false)
-			if err != nil {
-				logger.Warnf("[scenes] error getting studio <%s>: %s", sceneJSON.Studio, err.Error())
-			} else if studio == nil {
-				logger.Warnf("[scenes] studio <%s> does not exist", sceneJSON.Studio)
-			} else {
-				newScene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-			}
-		}
+			// import the scene markers
+			for _, m := range sceneJSON.Markers {
+				markerImporter := &scene.MarkerImporter{
+					SceneID:             sceneImporter.ID,
+					Input:               m,
+					MissingRefBehaviour: t.MissingRefBehaviour,
+					ReaderWriter:        markerWriter,
+					TagWriter:           tagWriter,
+				}
 
-		// Create the scene in the DB
-		scene, err := qb.Create(newScene, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-		if scene.ID == 0 {
-			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> invalid id after scene creation", mappingJSON.Checksum)
-			return
-		}
-
-		// Add the scene cover if set
-		if len(coverImageData) > 0 {
-			if err := qb.UpdateSceneCover(scene.ID, coverImageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[scenes] <%s> error setting scene cover: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
-		}
-
-		// Relate the scene to the gallery
-		if sceneJSON.Gallery != "" {
-			gqb := models.NewGalleryQueryBuilder()
-			gallery, err := gqb.FindByChecksum(sceneJSON.Gallery, tx)
-			if err != nil {
-				logger.Warnf("[scenes] gallery <%s> does not exist: %s", sceneJSON.Gallery, err.Error())
-			} else {
-				gallery.SceneID = sql.NullInt64{Int64: int64(scene.ID), Valid: true}
-				_, err := gqb.Update(*gallery, tx)
-				if err != nil {
-					logger.Errorf("[scenes] <%s> failed to update gallery: %s", scene.Checksum, err.Error())
+				if err := performImport(markerImporter, t.DuplicateBehaviour); err != nil {
+					return err
 				}
 			}
-		}
 
-		// Relate the scene to the performers
-		if len(sceneJSON.Performers) > 0 {
-			performers, err := t.getPerformers(sceneJSON.Performers, tx)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch performers: %s", scene.Checksum, err.Error())
-			} else {
-				var performerJoins []models.PerformersScenes
-				for _, performer := range performers {
-					join := models.PerformersScenes{
-						PerformerID: performer.ID,
-						SceneID:     scene.ID,
-					}
-					performerJoins = append(performerJoins, join)
-				}
-				if err := jqb.CreatePerformersScenes(performerJoins, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate performers: %s", scene.Checksum, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the movies
-		if len(sceneJSON.Movies) > 0 {
-			moviesScenes, err := t.getMoviesScenes(sceneJSON.Movies, scene.ID, tx)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", scene.Checksum, err.Error())
-			} else {
-				if err := jqb.CreateMoviesScenes(moviesScenes, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the tags
-		if len(sceneJSON.Tags) > 0 {
-			tags, err := t.getTags(scene.Checksum, sceneJSON.Tags, tx)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch tags: %s", scene.Checksum, err.Error())
-			} else {
-				var tagJoins []models.ScenesTags
-				for _, tag := range tags {
-					join := models.ScenesTags{
-						SceneID: scene.ID,
-						TagID:   tag.ID,
-					}
-					tagJoins = append(tagJoins, join)
-				}
-				if err := jqb.CreateScenesTags(tagJoins, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate tags: %s", scene.Checksum, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the scene markers
-		if len(sceneJSON.Markers) > 0 {
-			smqb := models.NewSceneMarkerQueryBuilder()
-			tqb := models.NewTagQueryBuilder()
-			for _, marker := range sceneJSON.Markers {
-				seconds, _ := strconv.ParseFloat(marker.Seconds, 64)
-				newSceneMarker := models.SceneMarker{
-					Title:     marker.Title,
-					Seconds:   seconds,
-					SceneID:   sql.NullInt64{Int64: int64(scene.ID), Valid: true},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.CreatedAt)},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.UpdatedAt)},
-				}
-
-				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx, false)
-				if err != nil {
-					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", scene.Checksum, err.Error())
-				} else {
-					newSceneMarker.PrimaryTagID = primaryTag.ID
-				}
-
-				// Create the scene marker in the DB
-				sceneMarker, err := smqb.Create(newSceneMarker, tx)
-				if err != nil {
-					logger.Warnf("[scenes] <%s> failed to create scene marker: %s", scene.Checksum, err.Error())
-					continue
-				}
-				if sceneMarker.ID == 0 {
-					logger.Warnf("[scenes] <%s> invalid scene marker id after scene marker creation", scene.Checksum)
-					continue
-				}
-
-				// Get the scene marker tags and create the joins
-				tags, err := t.getTags(scene.Checksum, marker.Tags, tx)
-				if err != nil {
-					logger.Warnf("[scenes] <%s> failed to fetch scene marker tags: %s", scene.Checksum, err.Error())
-				} else {
-					var tagJoins []models.SceneMarkersTags
-					for _, tag := range tags {
-						join := models.SceneMarkersTags{
-							SceneMarkerID: sceneMarker.ID,
-							TagID:         tag.ID,
-						}
-						tagJoins = append(tagJoins, join)
-					}
-					if err := jqb.CreateSceneMarkersTags(tagJoins, tx); err != nil {
-						logger.Errorf("[scenes] <%s> failed to associate scene marker tags: %s", scene.Checksum, err.Error())
-					}
-				}
-			}
+			return nil
+		}); err != nil {
+			logger.Errorf("[scenes] <%s> import failed: %s", sceneHash, err.Error())
 		}
 	}
 
-	logger.Info("[scenes] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[scenes] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[scenes] import complete")
 }
 
-func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
-	pqb := models.NewPerformerQueryBuilder()
-	performers, err := pqb.FindByNames(names, tx, false)
+func (t *ImportTask) ImportImages(ctx context.Context) {
+	logger.Info("[images] importing")
+
+	for i, mappingJSON := range t.mappings.Images {
+		index := i + 1
+
+		logger.Progressf("[images] %d of %d", index, len(t.mappings.Images))
+
+		imageJSON, err := t.json.getImage(mappingJSON.Checksum)
+		if err != nil {
+			logger.Infof("[images] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
+			continue
+		}
+
+		imageHash := mappingJSON.Checksum
+
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Image()
+			tagWriter := r.Tag()
+			galleryWriter := r.Gallery()
+			performerWriter := r.Performer()
+			studioWriter := r.Studio()
+
+			imageImporter := &image.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *imageJSON,
+				Path:         mappingJSON.Path,
+
+				MissingRefBehaviour: t.MissingRefBehaviour,
+
+				GalleryWriter:   galleryWriter,
+				PerformerWriter: performerWriter,
+				StudioWriter:    studioWriter,
+				TagWriter:       tagWriter,
+			}
+
+			return performImport(imageImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[images] <%s> import failed: %s", imageHash, err.Error())
+		}
+	}
+
+	logger.Info("[images] import complete")
+}
+
+func (t *ImportTask) getPerformers(names []string, qb models.PerformerReader) ([]*models.Performer, error) {
+	performers, err := qb.FindByNames(names, false)
 	if err != nil {
 		return nil, err
 	}
@@ -805,12 +594,10 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Perfo
 	return performers, nil
 }
 
-func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
-	mqb := models.NewMovieQueryBuilder()
-
+func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, mqb models.MovieReader) ([]models.MoviesScenes, error) {
 	var movies []models.MoviesScenes
 	for _, inputMovie := range input {
-		movie, err := mqb.FindByName(inputMovie.MovieName, tx, false)
+		movie, err := mqb.FindByName(inputMovie.MovieName, false)
 		if err != nil {
 			return nil, err
 		}
@@ -837,9 +624,8 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 	return movies, nil
 }
 
-func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
-	tqb := models.NewTagQueryBuilder()
-	tags, err := tqb.FindByNames(names, tx, false)
+func (t *ImportTask) getTags(sceneChecksum string, names []string, tqb models.TagReader) ([]*models.Tag, error) {
+	tags, err := tqb.FindByNames(names, false)
 	if err != nil {
 		return nil, err
 	}

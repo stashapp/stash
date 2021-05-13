@@ -66,6 +66,7 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             id="popover"
+            className="hover-popover-content"
           >
             {content}
           </Popover>

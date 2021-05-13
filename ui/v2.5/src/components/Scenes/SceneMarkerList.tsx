@@ -1,23 +1,21 @@
 import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
+import Mousetrap from "mousetrap";
 import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
 import { queryFindSceneMarkers } from "src/core/StashService";
 import { NavUtils } from "src/utils";
 import { useSceneMarkersList } from "src/hooks";
+import { PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 
 interface ISceneMarkerList {
-  subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
-export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
-  subComponent,
-  filterHook,
-}) => {
+export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   const history = useHistory();
   const otherOperations = [
     {
@@ -42,9 +40,9 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   const listData = useSceneMarkersList({
     otherOperations,
     renderContent,
-    subComponent,
     filterHook,
     addKeybinds,
+    persistState: PersistanceLevel.ALL,
   });
 
   async function playRandom(

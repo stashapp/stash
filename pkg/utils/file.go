@@ -3,13 +3,18 @@ package utils
 import (
 	"archive/zip"
 	"fmt"
-	"github.com/h2non/filetype"
-	"github.com/h2non/filetype/types"
+	"io"
 	"io/ioutil"
-	"math"
+	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/h2non/filetype"
+	"github.com/h2non/filetype/types"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // FileType uses the filetype package to determine the given file path's type
@@ -111,11 +116,7 @@ func ListDir(path string) []string {
 		if !file.IsDir() {
 			continue
 		}
-		abs, err := filepath.Abs(path)
-		if err != nil {
-			continue
-		}
-		dirPaths = append(dirPaths, filepath.Join(abs, file.Name()))
+		dirPaths = append(dirPaths, filepath.Join(path, file.Name()))
 	}
 	return dirPaths
 }
@@ -127,6 +128,43 @@ func GetHomeDirectory() string {
 		panic(err)
 	}
 	return currentUser.HomeDir
+}
+
+func SafeMove(src, dst string) error {
+	err := os.Rename(src, dst)
+
+	if err != nil {
+		logger.Errorf("[Util] unable to rename: \"%s\" due to %s. Falling back to copying.", src, err.Error())
+
+		in, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		defer in.Close()
+
+		out, err := os.Create(dst)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, in)
+		if err != nil {
+			return err
+		}
+
+		err = out.Close()
+		if err != nil {
+			return err
+		}
+
+		err = os.Remove(src)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // IsZipFileUnmcompressed returns true if zip file in path is using 0 compression level
@@ -147,29 +185,6 @@ func IsZipFileUncompressed(path string) (bool, error) {
 	return false, nil
 }
 
-// humanize code taken from https://github.com/dustin/go-humanize and adjusted
-
-func logn(n, b float64) float64 {
-	return math.Log(n) / math.Log(b)
-}
-
-// HumanizeBytes returns a human readable bytes string of a uint
-func HumanizeBytes(s uint64) string {
-	sizes := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
-	if s < 10 {
-		return fmt.Sprintf("%d B", s)
-	}
-	e := math.Floor(logn(float64(s), 1024))
-	suffix := sizes[int(e)]
-	val := math.Floor(float64(s)/math.Pow(1024, e)*10+0.5) / 10
-	f := "%.0f %s"
-	if val < 10 {
-		f = "%.1f %s"
-	}
-
-	return fmt.Sprintf(f, val, suffix)
-}
-
 // WriteFile writes file to path creating parent directories if needed
 func WriteFile(path string, file []byte) error {
 	pathErr := EnsureDirAll(filepath.Dir(path))
@@ -185,8 +200,8 @@ func WriteFile(path string, file []byte) error {
 }
 
 // GetIntraDir returns a string that can be added to filepath.Join to implement directory depth, "" on error
-//eg given a pattern of 0af63ce3c99162e9df23a997f62621c5 and a depth of 2 length of 3
-//returns 0af/63c or 0af\63c ( dependin on os)  that can be later used like this  filepath.Join(directory, intradir, basename)
+// eg given a pattern of 0af63ce3c99162e9df23a997f62621c5 and a depth of 2 length of 3
+// returns 0af/63c or 0af\63c ( dependin on os)  that can be later used like this  filepath.Join(directory, intradir, basename)
 func GetIntraDir(pattern string, depth, length int) string {
 	if depth < 1 || length < 1 || (depth*length > len(pattern)) {
 		return ""
@@ -203,11 +218,7 @@ func GetDir(path string) string {
 		path = GetHomeDirectory()
 	}
 
-	absolutePath, err := filepath.Abs(path)
-	if err == nil {
-		path = absolutePath
-	}
-	return absolutePath
+	return path
 }
 
 func GetParent(path string) *string {
@@ -218,4 +229,68 @@ func GetParent(path string) *string {
 		parentPath := filepath.Clean(path + "/..")
 		return &parentPath
 	}
+}
+
+// ServeFileNoCache serves the provided file, ensuring that the response
+// contains headers to prevent caching.
+func ServeFileNoCache(w http.ResponseWriter, r *http.Request, filepath string) {
+	w.Header().Add("Cache-Control", "no-cache")
+
+	http.ServeFile(w, r, filepath)
+}
+
+// MatchEntries returns a string slice of the entries in directory dir which
+// match the regexp pattern. On error an empty slice is returned
+// MatchEntries isn't recursive, only the specific 'dir' is searched
+// without being expanded.
+func MatchEntries(dir, pattern string) ([]string, error) {
+	var res []string
+	var err error
+
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	f, err := os.Open(dir)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	files, err := f.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		if re.Match([]byte(file)) {
+			res = append(res, filepath.Join(dir, file))
+		}
+	}
+	return res, err
+}
+
+// IsPathInDir returns true if pathToCheck is within dir.
+func IsPathInDir(dir, pathToCheck string) bool {
+	rel, err := filepath.Rel(dir, pathToCheck)
+
+	if err == nil {
+		if !strings.HasPrefix(rel, "..") {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetNameFromPath returns the name of a file from its path
+// if stripExtension is true the extension is omitted from the name
+func GetNameFromPath(path string, stripExtension bool) string {
+	fn := filepath.Base(path)
+	if stripExtension {
+		ext := filepath.Ext(fn)
+		fn = strings.TrimSuffix(fn, ext)
+	}
+	return fn
 }

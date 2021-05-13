@@ -35,6 +35,7 @@ ui/v2.5/src/core/generated-*.tsx
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.vscode
 
 # Generated files
 .idea/**/contentModel.xml
@@ -48,6 +49,9 @@ ui/v2.5/src/core/generated-*.tsx
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+# Goland Junk
+pkg/pkg
+
 ####
 # Random
 ####
@@ -58,3 +62,4 @@ node_modules
 
 stash
 dist
+.DS_Store

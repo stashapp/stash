@@ -4,29 +4,73 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
-	if obj == nil {
-		return nil, nil
+func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.Scene().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
 	}
-	count, err := qb.CountByTagID(obj.ID)
+
 	return &count, err
 }
 
-func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
-	if obj == nil {
-		return nil, nil
+func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.SceneMarker().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
 	}
-	count, err := qb.CountByTagID(obj.ID)
+
+	return &count, err
+}
+
+func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = image.CountByTagID(repo.Image(), obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = gallery.CountByTagID(repo.Gallery(), obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.Performer().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	return &count, err
 }
 
 func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj.ID).GetTagImageURL()
+	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL()
 	return &imagePath, nil
 }

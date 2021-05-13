@@ -2,29 +2,34 @@ package manager
 
 import (
 	"fmt"
-	"github.com/bmatcuk/doublestar"
-	"github.com/disintegration/imaging"
-	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 	"image"
 	"image/color"
 	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/disintegration/imaging"
+
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SpriteGenerator struct {
 	Info *GeneratorInfo
 
+	VideoChecksum   string
 	ImageOutputPath string
 	VTTOutputPath   string
 	Rows            int
 	Columns         int
+
+	Overwrite bool
 }
 
-func NewSpriteGenerator(videoFile ffmpeg.VideoFile, imageOutputPath string, vttOutputPath string, rows int, cols int) (*SpriteGenerator, error) {
+func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageOutputPath string, vttOutputPath string, rows int, cols int) (*SpriteGenerator, error) {
 	exists, err := utils.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
@@ -40,6 +45,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, imageOutputPath string, vttO
 
 	return &SpriteGenerator{
 		Info:            generator,
+		VideoChecksum:   videoChecksum,
 		ImageOutputPath: imageOutputPath,
 		VTTOutputPath:   vttOutputPath,
 		Rows:            rows,
@@ -60,33 +66,22 @@ func (g *SpriteGenerator) Generate() error {
 }
 
 func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
-	if g.imageExists() {
+	if !g.Overwrite && g.imageExists() {
 		return nil
 	}
 	logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
 
 	// Create `this.chunkCount` thumbnails in the tmp directory
 	stepSize := g.Info.VideoFile.Duration / float64(g.Info.ChunkCount)
+	var images []image.Image
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		time := float64(i) * stepSize
-		num := fmt.Sprintf("%.3d", i)
-		filename := "thumbnail" + num + ".jpg"
 
-		options := ffmpeg.ScreenshotOptions{
-			OutputPath: instance.Paths.Generated.GetTmpPath(filename),
-			Time:       time,
-			Width:      160,
+		options := ffmpeg.SpriteScreenshotOptions{
+			Time:  time,
+			Width: 160,
 		}
-		encoder.Screenshot(g.Info.VideoFile, options)
-	}
-
-	// Combine all of the thumbnails into a sprite image
-	globPath := filepath.Join(instance.Paths.Generated.Tmp, "thumbnail*.jpg")
-	imagePaths, _ := doublestar.Glob(globPath)
-	utils.NaturalSort(imagePaths)
-	var images []image.Image
-	for _, imagePath := range imagePaths {
-		img, err := imaging.Open(imagePath)
+		img, err := encoder.SpriteScreenshot(g.Info.VideoFile, options)
 		if err != nil {
 			return err
 		}
@@ -96,6 +91,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	if len(images) == 0 {
 		return fmt.Errorf("images slice is empty, failed to generate sprite images for %s", g.Info.VideoFile.Path)
 	}
+	// Combine all of the thumbnails into a sprite image
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
 	canvasWidth := width * g.Columns
@@ -112,18 +108,20 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 }
 
 func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
-	if g.vttExists() {
+	if !g.Overwrite && g.vttExists() {
 		return nil
 	}
 	logger.Infof("[generator] generating sprite vtt for %s", g.Info.VideoFile.Path)
 
-	spriteImage, err := imaging.Open(g.ImageOutputPath)
+	spriteImage, err := os.Open(g.ImageOutputPath)
 	if err != nil {
 		return err
 	}
+	defer spriteImage.Close()
 	spriteImageName := filepath.Base(g.ImageOutputPath)
-	width := spriteImage.Bounds().Size().X / g.Columns
-	height := spriteImage.Bounds().Size().Y / g.Rows
+	image, _, err := image.DecodeConfig(spriteImage)
+	width := image.Width / g.Columns
+	height := image.Height / g.Rows
 
 	stepSize := float64(g.Info.NthFrame) / g.Info.FrameRate
 

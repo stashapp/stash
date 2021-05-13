@@ -1,12 +1,15 @@
+// @ts-nocheck
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import React from "react";
-import { Table } from "react-bootstrap";
+import { Table, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
+import { Icon, TruncatedText } from "src/components/Shared";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
 }
 
 export const SceneListTable: React.FC<ISceneListTableProps> = (
@@ -26,51 +29,67 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       </Link>
     ));
 
-  const renderMovies = (movies: Partial<GQL.SceneMovie>[]) => {
-    return movies.map((sceneMovie) =>
+  const renderMovies = (scene: GQL.SlimSceneDataFragment) =>
+    scene.movies.map((sceneMovie) =>
       !sceneMovie.movie ? undefined : (
         <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
           <h6>{sceneMovie.movie.name}</h6>
         </Link>
       )
     );
-  };
 
-  const renderSceneRow = (scene: GQL.SlimSceneDataFragment) => (
-    <tr key={scene.id}>
-      <td>
-        <Link to={`/scenes/${scene.id}`}>
-          <img
-            className="image-thumbnail"
-            alt={scene.title ?? ""}
-            src={scene.paths.screenshot ?? ""}
-          />
-        </Link>
-      </td>
-      <td className="text-left">
-        <Link to={`/scenes/${scene.id}`}>
-          <h5 className="text-truncate">
-            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-          </h5>
-        </Link>
-      </td>
-      <td>{scene.rating ? scene.rating : ""}</td>
-      <td>
-        {scene.file.duration &&
-          TextUtils.secondsToTimestamp(scene.file.duration)}
-      </td>
-      <td>{renderTags(scene.tags)}</td>
-      <td>{renderPerformers(scene.performers)}</td>
-      <td>
-        {scene.studio && (
-          <Link to={NavUtils.makeStudioScenesUrl(scene.studio)}>
-            <h6>{scene.studio.name}</h6>
+  const renderSceneRow = (scene: GQL.SlimSceneDataFragment, index: number) => {
+    const sceneLink = props.queue
+      ? props.queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+
+    return (
+      <tr key={scene.id}>
+        <td>
+          <Link to={sceneLink}>
+            <img
+              className="image-thumbnail"
+              alt={scene.title ?? ""}
+              src={scene.paths.screenshot ?? ""}
+            />
           </Link>
-        )}
-      </td>
-      <td>{renderMovies(scene.movies)}</td>
-    </tr>
-  );
+        </td>
+        <td className="text-left">
+          <Link to={sceneLink}>
+            <h5>
+              <TruncatedText
+                text={scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+              />
+            </h5>
+          </Link>
+        </td>
+        <td>{scene.rating ? scene.rating : ""}</td>
+        <td>
+          {scene.file.duration &&
+            TextUtils.secondsToTimestamp(scene.file.duration)}
+        </td>
+        <td>{renderTags(scene.tags)}</td>
+        <td>{renderPerformers(scene.performers)}</td>
+        <td>
+          {scene.studio && (
+            <Link to={NavUtils.makeStudioScenesUrl(scene.studio)}>
+              <h6>{scene.studio.name}</h6>
+            </Link>
+          )}
+        </td>
+        <td>{renderMovies(scene)}</td>
+        <td>
+          {scene.gallery && (
+            <Button className="minimal">
+              <Link to={`/galleries/${scene.gallery.id}`}>
+                <Icon icon="image" />
+              </Link>
+            </Button>
+          )}
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className="row table-list justify-content-center">
@@ -85,6 +104,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
             <th>Performers</th>
             <th>Studio</th>
             <th>Movies</th>
+            <th>Gallery</th>
           </tr>
         </thead>
         <tbody>{props.scenes.map(renderSceneRow)}</tbody>

@@ -1,5 +1,9 @@
 package models
 
+// PerPageAll is the value used for perPage to indicate all results should be
+// returned.
+const PerPageAll = -1
+
 func (ff FindFilterType) GetSort(defaultSort string) string {
 	var sort string
 	if ff.Sort == nil {
@@ -22,4 +26,38 @@ func (ff FindFilterType) GetDirection() string {
 		direction = "ASC"
 	}
 	return direction
+}
+
+func (ff FindFilterType) GetPage() int {
+	const defaultPage = 1
+	if ff.Page == nil || *ff.Page < 1 {
+		return defaultPage
+	}
+
+	return *ff.Page
+}
+
+func (ff FindFilterType) GetPageSize() int {
+	const defaultPerPage = 25
+	const minPerPage = 0
+	const maxPerPage = 1000
+
+	if ff.PerPage == nil {
+		return defaultPerPage
+	}
+
+	if *ff.PerPage > maxPerPage {
+		return maxPerPage
+	} else if *ff.PerPage < minPerPage {
+		// negative page sizes should return all results
+		// this is a sanity check in case GetPageSize is
+		// called with a negative page size.
+		return minPerPage
+	}
+
+	return *ff.PerPage
+}
+
+func (ff FindFilterType) IsGetAll() bool {
+	return ff.PerPage != nil && *ff.PerPage < 0
 }

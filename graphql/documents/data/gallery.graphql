@@ -3,14 +3,28 @@ fragment GalleryData on Gallery {
   checksum
   path
   title
-  files {
-    index
-    name
-    path
+  date
+  url
+  details
+  rating
+  organized
+  images {
+    ...SlimImageData
   }
-  scene {
-    id
-    title
-    path
+  cover {
+    ...SlimImageData
+  }
+  studio {
+    ...SlimStudioData
+  }
+  tags {
+    ...SlimTagData
+  }
+
+  performers {
+    ...PerformerData
+  }
+  scenes {
+    ...SlimSceneData
   }
 }

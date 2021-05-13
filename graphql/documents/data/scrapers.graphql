@@ -15,11 +15,18 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   tattoos
   piercings
   aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
   image
+  details
+  death_date
+  hair_color
+  weight
 }
 
 fragment ScrapedScenePerformerData on ScrapedScenePerformer {
-  id
+  stored_id
   name
   gender
   url
@@ -36,6 +43,21 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   tattoos
   piercings
   aliases
+  tags {
+    ...ScrapedSceneTagData
+  }
+  remote_site_id
+  images
+  details
+  death_date
+  hair_color
+  weight
+}
+
+fragment ScrapedMovieStudioData on ScrapedMovieStudio {
+  id
+  name
+  url
 }
 
 fragment ScrapedMovieData on ScrapedMovie {
@@ -47,10 +69,16 @@ fragment ScrapedMovieData on ScrapedMovie {
   director
   url
   synopsis
+  front_image
+  back_image
+
+  studio {
+    ...ScrapedMovieStudioData
+  }
 }
 
 fragment ScrapedSceneMovieData on ScrapedSceneMovie {
-  id
+  stored_id
   name
   aliases
   duration
@@ -62,13 +90,14 @@ fragment ScrapedSceneMovieData on ScrapedSceneMovie {
 }
 
 fragment ScrapedSceneStudioData on ScrapedSceneStudio {
-  id
+  stored_id
   name
   url
+  remote_site_id
 }
 
 fragment ScrapedSceneTagData on ScrapedSceneTag {
-  id
+  stored_id
   name
 }
 
@@ -104,5 +133,74 @@ fragment ScrapedSceneData on ScrapedScene {
 
   movies {
     ...ScrapedSceneMovieData
+  }
+}
+
+fragment ScrapedGalleryData on ScrapedGallery {
+  title
+  details
+  url
+  date
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+}
+
+fragment ScrapedStashBoxSceneData on ScrapedScene {
+  title
+  details
+  url
+  date
+  image
+  remote_site_id
+  duration
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  fingerprints {
+    hash
+    algorithm
+    duration
+  }
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+
+  movies {
+    ...ScrapedSceneMovieData
+  }
+}
+
+fragment ScrapedStashBoxPerformerData on StashBoxPerformerQueryResult {
+  query
+  results {
+    ...ScrapedScenePerformerData
   }
 }

@@ -1,0 +1,41 @@
+mutation ImageUpdate(
+  $input: ImageUpdateInput!) {
+
+  imageUpdate(input: $input) {
+      ...SlimImageData
+  }
+}
+
+mutation BulkImageUpdate(
+  $input: BulkImageUpdateInput!) {
+
+  bulkImageUpdate(input: $input) {
+      ...SlimImageData
+  }
+}
+
+mutation ImagesUpdate($input : [ImageUpdateInput!]!) {
+  imagesUpdate(input: $input) {
+    ...SlimImageData
+  }
+}
+
+mutation ImageIncrementO($id: ID!) {
+  imageIncrementO(id: $id) 
+}
+
+mutation ImageDecrementO($id: ID!) {
+  imageDecrementO(id: $id)
+}
+
+mutation ImageResetO($id: ID!) {
+  imageResetO(id: $id)
+}
+
+mutation ImageDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {
+  imageDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
+}
+
+mutation ImagesDestroy($ids: [ID!]!, $delete_file: Boolean, $delete_generated : Boolean) {
+  imagesDestroy(input: {ids: $ids, delete_file: $delete_file, delete_generated: $delete_generated})
+}

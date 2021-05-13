@@ -1,0 +1,26 @@
+# example plugin config
+name: Hawwwwt Tagger
+description: Ultimate Hawwwwt tagging utility.
+version: 1.0
+url: http://www.github.com/stashapp/stash
+exec:
+  - plugin_gorpc
+interface: rpc
+tasks:
+  - name: Add hawwwwt tag to random scene
+    description: Creates a "Hawwwwt" tag if not present and adds to a random scene.
+    defaultArgs:
+      mode: add
+  - name: Remove hawwwwt tag from system
+    description: Removes the "Hawwwwt" tag from all scenes and deletes the tag.
+    defaultArgs:
+      mode: remove
+  - name: Indefinite task
+    description: Sleeps indefinitely - interruptable
+    defaultArgs:
+      mode: indef
+  - name: Long task
+    description: Sleeps for 100 seconds - interruptable
+    defaultArgs:
+      mode: long
+      

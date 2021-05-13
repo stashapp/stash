@@ -6,6 +6,14 @@ mutation MetadataExport {
   metadataExport
 }
 
+mutation ExportObjects($input: ExportObjectsInput!) {
+  exportObjects(input: $input)
+}
+
+mutation ImportObjects($input: ImportObjectsInput!) {
+  importObjects(input: $input)
+}
+
 mutation MetadataScan($input: ScanMetadataInput!) {
   metadataScan(input: $input)
 }
@@ -18,10 +26,18 @@ mutation MetadataAutoTag($input: AutoTagMetadataInput!) {
   metadataAutoTag(input: $input)
 }
 
-mutation MetadataClean {
-  metadataClean
+mutation MetadataClean($input: CleanMetadataInput!) {
+  metadataClean(input: $input)
+}
+
+mutation MigrateHashNaming {
+  migrateHashNaming
 }
 
 mutation StopJob {
   stopJob
+}
+
+mutation BackupDatabase($input: BackupDatabaseInput!) {
+  backupDatabase(input: $input)
 }

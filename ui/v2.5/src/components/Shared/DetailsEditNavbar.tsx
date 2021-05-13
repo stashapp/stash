@@ -12,6 +12,10 @@ interface IProps {
   onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
   onBackImageChange?: (event: React.FormEvent<HTMLInputElement>) => void;
+  onImageChangeURL?: (url: string) => void;
+  onBackImageChangeURL?: (url: string) => void;
+  onClearImage?: () => void;
+  onClearBackImage?: () => void;
   acceptSVG?: boolean;
 }
 
@@ -63,6 +67,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         isEditing={props.isEditing}
         text="Back image..."
         onImageChange={props.onBackImageChange}
+        onImageURL={props.onBackImageChangeURL}
       />
     );
   }
@@ -114,9 +119,32 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         isEditing={props.isEditing}
         text={props.onBackImageChange ? "Front image..." : undefined}
         onImageChange={props.onImageChange}
+        onImageURL={props.onImageChangeURL}
         acceptSVG={props.acceptSVG ?? false}
       />
+      {props.isEditing && props.onClearImage ? (
+        <Button
+          className="mr-2"
+          variant="danger"
+          onClick={() => props.onClearImage!()}
+        >
+          {props.onClearBackImage ? "Clear front image" : "Clear image"}
+        </Button>
+      ) : (
+        ""
+      )}
       {renderBackImageInput()}
+      {props.isEditing && props.onClearBackImage ? (
+        <Button
+          className="mr-2"
+          variant="danger"
+          onClick={() => props.onClearBackImage!()}
+        >
+          Clear back image
+        </Button>
+      ) : (
+        ""
+      )}
       {renderAutoTagButton()}
       {renderSaveButton()}
       {renderDeleteButton()}

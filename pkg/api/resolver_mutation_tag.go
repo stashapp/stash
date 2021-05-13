@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -25,7 +24,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	var err error
 
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 
 		if err != nil {
 			return nil, err
@@ -33,31 +32,29 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	}
 
 	// Start the transaction and save the tag
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
+	var tag *models.Tag
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Tag()
 
-	// ensure name is unique
-	if err := manager.EnsureTagNameUnique(newTag.Name, tx); err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	tag, err := qb.Create(newTag, tx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdateTagImage(tag.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+		// ensure name is unique
+		if err := manager.EnsureTagNameUnique(newTag, qb); err != nil {
+			return err
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		tag, err = qb.Create(newTag)
+		if err != nil {
+			return err
+		}
+
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(tag.ID, imageData); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -66,7 +63,11 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
 	// Populate tag from the input
-	tagID, _ := strconv.Atoi(input.ID)
+	tagID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	updatedTag := models.Tag{
 		ID:        tagID,
 		Name:      input.Name,
@@ -74,10 +75,14 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	}
 
 	var imageData []byte
-	var err error
 
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 
 		if err != nil {
 			return nil, err
@@ -85,44 +90,45 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	}
 
 	// Start the transaction and save the tag
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
+	var tag *models.Tag
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Tag()
 
-	// ensure name is unique
-	existing, err := qb.Find(tagID, tx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	if existing == nil {
-		tx.Rollback()
-		return nil, fmt.Errorf("Tag with ID %d not found", tagID)
-	}
-
-	if existing.Name != updatedTag.Name {
-		if err := manager.EnsureTagNameUnique(updatedTag.Name, tx); err != nil {
-			tx.Rollback()
-			return nil, err
+		// ensure name is unique
+		existing, err := qb.Find(tagID)
+		if err != nil {
+			return err
 		}
-	}
 
-	tag, err := qb.Update(updatedTag, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdateTagImage(tag.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+		if existing == nil {
+			return fmt.Errorf("Tag with ID %d not found", tagID)
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		if existing.Name != updatedTag.Name {
+			if err := manager.EnsureTagNameUnique(updatedTag, qb); err != nil {
+				return err
+			}
+		}
+
+		tag, err = qb.Update(updatedTag)
+		if err != nil {
+			return err
+		}
+
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(tag.ID, imageData); err != nil {
+				return err
+			}
+		} else if imageIncluded {
+			// must be unsetting
+			if err := qb.DestroyImage(tag.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -130,13 +136,35 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
-	qb := models.NewTagQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	tagID, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Tag().Destroy(tagID)
+	}); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(tagIDs)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Tag()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

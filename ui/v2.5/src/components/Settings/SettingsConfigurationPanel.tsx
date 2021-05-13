@@ -1,15 +1,77 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
+import {
+  useConfiguration,
+  useConfigureGeneral,
+  useGenerateAPIKey,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
+import StashBoxConfiguration, {
+  IStashBoxInstance,
+} from "./StashBoxConfiguration";
+import StashConfiguration from "./StashConfiguration";
+
+interface IExclusionPatternsProps {
+  excludes: string[];
+  setExcludes: (value: string[]) => void;
+}
+
+const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
+  function excludeRegexChanged(idx: number, value: string) {
+    const newExcludes = props.excludes.map((regex, i) => {
+      const ret = idx !== i ? regex : value;
+      return ret;
+    });
+    props.setExcludes(newExcludes);
+  }
+
+  function excludeRemoveRegex(idx: number) {
+    const newExcludes = props.excludes.filter((_regex, i) => i !== idx);
+
+    props.setExcludes(newExcludes);
+  }
+
+  function excludeAddRegex() {
+    const demo = "sample\\.mp4$";
+    const newExcludes = props.excludes.concat(demo);
+
+    props.setExcludes(newExcludes);
+  }
+
+  return (
+    <>
+      <Form.Group>
+        {props.excludes &&
+          props.excludes.map((regexp, i) => (
+            <InputGroup>
+              <Form.Control
+                className="col col-sm-6 text-input"
+                value={regexp}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  excludeRegexChanged(i, e.currentTarget.value)
+                }
+              />
+              <InputGroup.Append>
+                <Button variant="danger" onClick={() => excludeRemoveRegex(i)}>
+                  <Icon icon="minus" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          ))}
+      </Form.Group>
+      <Button className="minimal" onClick={() => excludeAddRegex()}>
+        <Icon icon="plus" />
+      </Button>
+    </>
+  );
+};
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const Toast = useToast();
   // Editing config state
-  const [stashes, setStashes] = useState<string[]>([]);
+  const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
   const [databasePath, setDatabasePath] = useState<string | undefined>(
     undefined
   );
@@ -17,14 +79,30 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
+  const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
+  const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
+    GQL.HashAlgorithm | undefined
+  >(undefined);
+  const [parallelTasks, setParallelTasks] = useState<number>(0);
+  const [previewSegments, setPreviewSegments] = useState<number>(0);
+  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
+    0
+  );
+  const [previewExcludeStart, setPreviewExcludeStart] = useState<
+    string | undefined
+  >(undefined);
+  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<
+    string | undefined
+  >(undefined);
+  const [previewPreset, setPreviewPreset] = useState<string>(
+    GQL.PreviewPreset.Slow
+  );
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
-  const [forceMkv, setForceMkv] = useState<boolean>(false);
-  const [forceHevc, setForceHevc] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
@@ -32,22 +110,52 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
+
+  const [videoExtensions, setVideoExtensions] = useState<string | undefined>();
+  const [imageExtensions, setImageExtensions] = useState<string | undefined>();
+  const [galleryExtensions, setGalleryExtensions] = useState<
+    string | undefined
+  >();
+  const [
+    createGalleriesFromFolders,
+    setCreateGalleriesFromFolders,
+  ] = useState<boolean>(false);
+
   const [excludes, setExcludes] = useState<string[]>([]);
+  const [imageExcludes, setImageExcludes] = useState<string[]>([]);
   const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
     undefined
   );
+  const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
+    undefined
+  );
+  const [scraperCertCheck, setScraperCertCheck] = useState<boolean>(true);
+  const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
 
+  const [generateAPIKey] = useGenerateAPIKey();
+
   const [updateGeneralConfig] = useConfigureGeneral({
-    stashes,
+    stashes: stashes.map((s) => ({
+      path: s.path,
+      excludeVideo: s.excludeVideo,
+      excludeImage: s.excludeImage,
+    })),
     databasePath,
     generatedPath,
     cachePath,
+    calculateMD5,
+    videoFileNamingAlgorithm:
+      (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
+    parallelTasks,
+    previewSegments,
+    previewSegmentDuration,
+    previewExcludeStart,
+    previewExcludeEnd,
+    previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
-    forceMkv,
-    forceHevc,
     username,
     password,
     maxSessionAge,
@@ -55,8 +163,23 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logOut,
     logLevel,
     logAccess,
+    createGalleriesFromFolders,
+    videoExtensions: commaDelimitedToList(videoExtensions),
+    imageExtensions: commaDelimitedToList(imageExtensions),
+    galleryExtensions: commaDelimitedToList(galleryExtensions),
     excludes,
+    imageExcludes,
     scraperUserAgent,
+    scraperCDPPath,
+    scraperCertCheck,
+    stashBoxes: stashBoxes.map(
+      (b) =>
+        ({
+          name: b?.name ?? "",
+          api_key: b?.api_key ?? "",
+          endpoint: b?.endpoint ?? "",
+        } as GQL.StashBoxInput)
+    ),
   });
 
   useEffect(() => {
@@ -68,12 +191,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
+      setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
+      setCalculateMD5(conf.general.calculateMD5);
+      setParallelTasks(conf.general.parallelTasks);
+      setPreviewSegments(conf.general.previewSegments);
+      setPreviewSegmentDuration(conf.general.previewSegmentDuration);
+      setPreviewExcludeStart(conf.general.previewExcludeStart);
+      setPreviewExcludeEnd(conf.general.previewExcludeEnd);
+      setPreviewPreset(conf.general.previewPreset);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
       );
-      setForceMkv(conf.general.forceMkv);
-      setForceHevc(conf.general.forceHevc);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
@@ -81,34 +210,64 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);
+      setCreateGalleriesFromFolders(conf.general.createGalleriesFromFolders);
+      setVideoExtensions(listToCommaDelimited(conf.general.videoExtensions));
+      setImageExtensions(listToCommaDelimited(conf.general.imageExtensions));
+      setGalleryExtensions(
+        listToCommaDelimited(conf.general.galleryExtensions)
+      );
       setExcludes(conf.general.excludes);
+      setImageExcludes(conf.general.imageExcludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
+      setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
+      setScraperCertCheck(conf.general.scraperCertCheck);
+      setStashBoxes(
+        conf.general.stashBoxes.map((box, i) => ({
+          name: box?.name ?? undefined,
+          endpoint: box.endpoint,
+          api_key: box.api_key,
+          index: i,
+        })) ?? []
+      );
     }
   }, [data, error]);
 
-  function onStashesChanged(directories: string[]) {
-    setStashes(directories);
+  function commaDelimitedToList(value: string | undefined) {
+    if (value) {
+      return value.split(",").map((s) => s.trim());
+    }
   }
 
-  function excludeRegexChanged(idx: number, value: string) {
-    const newExcludes = excludes.map((regex, i) => {
-      const ret = idx !== i ? regex : value;
-      return ret;
-    });
-    setExcludes(newExcludes);
+  function listToCommaDelimited(value: string[] | undefined) {
+    if (value) {
+      return value.join(", ");
+    }
   }
 
-  function excludeRemoveRegex(idx: number) {
-    const newExcludes = excludes.filter((_regex, i) => i !== idx);
-
-    setExcludes(newExcludes);
+  async function onGenerateAPIKey() {
+    try {
+      await generateAPIKey({
+        variables: {
+          input: {},
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
-  function excludeAddRegex() {
-    const demo = "sample\\.mp4$";
-    const newExcludes = excludes.concat(demo);
-
-    setExcludes(newExcludes);
+  async function onClearAPIKey() {
+    try {
+      await generateAPIKey({
+        variables: {
+          input: {
+            clear: true,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   async function onSave() {
@@ -169,6 +328,33 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.StreamingResolutionEnum.Original;
   }
 
+  const namingHashAlgorithms = [
+    GQL.HashAlgorithm.Md5,
+    GQL.HashAlgorithm.Oshash,
+  ].map(namingHashToString);
+
+  function namingHashToString(value: GQL.HashAlgorithm | undefined) {
+    switch (value) {
+      case GQL.HashAlgorithm.Oshash:
+        return "oshash";
+      case GQL.HashAlgorithm.Md5:
+        return "MD5";
+    }
+
+    return "MD5";
+  }
+
+  function translateNamingHash(value: string) {
+    switch (value) {
+      case "oshash":
+        return GQL.HashAlgorithm.Oshash;
+      case "MD5":
+        return GQL.HashAlgorithm.Md5;
+    }
+
+    return GQL.HashAlgorithm.Md5;
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (!data?.configuration || loading) return <LoadingIndicator />;
 
@@ -178,9 +364,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <Form.Group id="stashes">
           <h6>Stashes</h6>
-          <FolderSelect
-            directories={stashes}
-            onDirectoriesChanged={onStashesChanged}
+          <StashConfiguration
+            stashes={stashes}
+            setStashes={(s) => setStashes(s)}
           />
           <Form.Text className="text-muted">
             Directory locations to your content
@@ -230,35 +416,56 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Text>
         </Form.Group>
 
-        <Form.Group>
-          <h6>Excluded Patterns</h6>
-          <Form.Group>
-            {excludes &&
-              excludes.map((regexp, i) => (
-                <InputGroup>
-                  <Form.Control
-                    className="col col-sm-6 text-input"
-                    value={regexp}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      excludeRegexChanged(i, e.currentTarget.value)
-                    }
-                  />
-                  <InputGroup.Append>
-                    <Button
-                      variant="danger"
-                      onClick={() => excludeRemoveRegex(i)}
-                    >
-                      <Icon icon="minus" />
-                    </Button>
-                  </InputGroup.Append>
-                </InputGroup>
-              ))}
-          </Form.Group>
-          <Button className="minimal" onClick={() => excludeAddRegex()}>
-            <Icon icon="plus" />
-          </Button>
+        <Form.Group id="video-extensions">
+          <h6>Video Extensions</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={videoExtensions}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setVideoExtensions(e.currentTarget.value)
+            }
+          />
           <Form.Text className="text-muted">
-            Regexps of files/paths to exclude from Scan and add to Clean
+            Comma-delimited list of file extensions that will be identified as
+            videos.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="image-extensions">
+          <h6>Image Extensions</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={imageExtensions}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setImageExtensions(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Comma-delimited list of file extensions that will be identified as
+            images.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="gallery-extensions">
+          <h6>Gallery zip Extensions</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={galleryExtensions}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setGalleryExtensions(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Comma-delimited list of file extensions that will be identified as
+            gallery zip files.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <h6>Excluded Video Patterns</h6>
+          <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
+          <Form.Text className="text-muted">
+            Regexps of video files/paths to exclude from Scan and add to Clean
             <a
               href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
               rel="noopener noreferrer"
@@ -266,6 +473,85 @@ export const SettingsConfigurationPanel: React.FC = () => {
             >
               <Icon icon="question-circle" />
             </a>
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <h6>Excluded Image/Gallery Patterns</h6>
+          <ExclusionPatterns
+            excludes={imageExcludes}
+            setExcludes={setImageExcludes}
+          />
+          <Form.Text className="text-muted">
+            Regexps of image and gallery files/paths to exclude from Scan and
+            add to Clean
+            <a
+              href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Icon icon="question-circle" />
+            </a>
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Check
+            id="log-terminal"
+            checked={createGalleriesFromFolders}
+            label="Create galleries from folders containing images"
+            onChange={() =>
+              setCreateGalleriesFromFolders(!createGalleriesFromFolders)
+            }
+          />
+          <Form.Text className="text-muted">
+            If true, creates galleries from folders containing images.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h4>Hashing</h4>
+        <Form.Group>
+          <Form.Check
+            checked={calculateMD5}
+            label="Calculate MD5 for videos"
+            onChange={() => setCalculateMD5(!calculateMD5)}
+          />
+          <Form.Text className="text-muted">
+            Calculate MD5 checksum in addition to oshash. Enabling will cause
+            initial scans to be slower. File naming hash must be set to oshash
+            to disable MD5 calculation.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="transcode-size">
+          <h6>Generated file naming hash</h6>
+
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={namingHashToString(videoFileNamingAlgorithm)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setVideoFileNamingAlgorithm(
+                translateNamingHash(e.currentTarget.value)
+              )
+            }
+          >
+            {namingHashAlgorithms.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </Form.Control>
+
+          <Form.Text className="text-muted">
+            Use MD5 or oshash for generated file naming. Changing this requires
+            that all scenes have the applicable MD5/oshash value populated.
+            After changing this value, existing generated files will need to be
+            migrated or regenerated. See Tasks page for migration.
           </Form.Text>
         </Form.Group>
       </Form.Group>
@@ -277,7 +563,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxTranscodeSize(translateQuality(event.currentTarget.value))
@@ -297,7 +583,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="streaming-transcode-size">
           <h6>Maximum streaming transcode size</h6>
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxStreamingTranscodeSize(
@@ -316,46 +602,177 @@ export const SettingsConfigurationPanel: React.FC = () => {
             Maximum size for transcoded streams
           </Form.Text>
         </Form.Group>
-        <Form.Group id="force-options-mkv">
-          <Form.Check
-            id="force-mkv"
-            checked={forceMkv}
-            label="Force Matroska as supported"
-            onChange={() => setForceMkv(!forceMkv)}
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h4>Parallel Scan/Generation</h4>
+
+        <Form.Group id="parallel-tasks">
+          <h6>Number of parallel task for scan/generation</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={parallelTasks}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setParallelTasks(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
+            }
           />
           <Form.Text className="text-muted">
-            Treat Matroska (MKV) as a supported container. Recommended for
-            Chromium based browsers
-          </Form.Text>
-        </Form.Group>
-        <Form.Group id="force-options-hevc">
-          <Form.Check
-            id="force-hevc"
-            checked={forceHevc}
-            label="Force HEVC as supported"
-            onChange={() => setForceHevc(!forceHevc)}
-          />
-          <Form.Text className="text-muted">
-            Treat HEVC as a supported codec. Recommended for Safari or some
-            Android based browsers
+            Set to 0 for auto-detection. Warning running more tasks than is
+            required to achieve 100% cpu utilisation will decrease performance
+            and potentially cause other issues.
           </Form.Text>
         </Form.Group>
       </Form.Group>
 
       <hr />
 
-      <Form.Group id="generated-path">
-        <h6>Scraping</h6>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          defaultValue={scraperUserAgent}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setScraperUserAgent(e.currentTarget.value)
-          }
-        />
-        <Form.Text className="text-muted">
-          User-Agent string used during scrape http requests
-        </Form.Text>
+      <Form.Group>
+        <h4>Preview Generation</h4>
+
+        <Form.Group id="transcode-size">
+          <h6>Preview encoding preset</h6>
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={previewPreset}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setPreviewPreset(e.currentTarget.value)
+            }
+          >
+            {Object.keys(GQL.PreviewPreset).map((p) => (
+              <option value={p.toLowerCase()} key={p}>
+                {p}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="preview-segments">
+          <h6>Number of segments in preview</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegments.toString()}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewSegments(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
+            }
+          />
+          <Form.Text className="text-muted">
+            Number of segments in preview files.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-segment-duration">
+          <h6>Preview segment duration</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegmentDuration.toString()}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewSegmentDuration(
+                Number.parseFloat(e.currentTarget.value || "0")
+              )
+            }
+          />
+          <Form.Text className="text-muted">
+            Duration of each preview segment, in seconds.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude start time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeStart}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeStart(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the first x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude end time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeEnd}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeEnd(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the last x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <Form.Group>
+        <h4>Scraping</h4>
+        <Form.Group id="scraperUserAgent">
+          <h6>Scraper User Agent</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={scraperUserAgent}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setScraperUserAgent(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            User-Agent string used during scrape http requests
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="scraperCDPPath">
+          <h6>Chrome CDP path</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={scraperCDPPath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setScraperCDPPath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            File path to the Chrome executable, or a remote address (starting
+            with http:// or https://, for example
+            http://localhost:9222/json/version) to a Chrome instance.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Check
+            id="scaper-cert-check"
+            checked={scraperCertCheck}
+            label="Check for insecure certificates"
+            onChange={() => setScraperCertCheck(!scraperCertCheck)}
+          />
+          <Form.Text className="text-muted">
+            Some sites use insecure ssl certificates. When unticked the scraper
+            skips the insecure certificates check and allows scraping of those
+            sites. If you get a certificate error when scraping untick this.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group id="stashbox">
+        <h4>Stash-box integration</h4>
+        <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
       </Form.Group>
 
       <hr />
@@ -390,14 +807,48 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Text>
         </Form.Group>
 
+        <Form.Group id="apikey">
+          <h6>API Key</h6>
+          <InputGroup>
+            <Form.Control
+              className="col col-sm-6 text-input"
+              value={data.configuration.general.apiKey}
+              readOnly
+            />
+            <InputGroup.Append>
+              <Button
+                className=""
+                title="Generate API key"
+                onClick={() => onGenerateAPIKey()}
+              >
+                <Icon icon="redo" />
+              </Button>
+              <Button
+                className=""
+                variant="danger"
+                title="Clear API key"
+                onClick={() => onClearAPIKey()}
+              >
+                <Icon icon="minus" />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+          <Form.Text className="text-muted">
+            API key for external systems. Only required when username/password
+            is configured. Username must be saved before generating API key.
+          </Form.Text>
+        </Form.Group>
+
         <Form.Group id="maxSessionAge">
           <h6>Maximum Session Age</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             type="number"
             value={maxSessionAge.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setMaxSessionAge(Number.parseInt(e.currentTarget.value, 10))
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setMaxSessionAge(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">

@@ -20,6 +20,28 @@ query ListSceneScrapers {
   }
 }
 
+query ListGalleryScrapers {
+  listGalleryScrapers {
+    id
+    name
+    gallery {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListMovieScrapers {
+  listMovieScrapers {
+    id
+    name
+    movie {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
 query ScrapePerformerList($scraper_id: ID!, $query: String!) {
   scrapePerformerList(scraper_id: $scraper_id, query: $query) {
     ...ScrapedPerformerData
@@ -47,5 +69,35 @@ query ScrapeScene($scraper_id: ID!, $scene: SceneUpdateInput!) {
 query ScrapeSceneURL($url: String!) {
   scrapeSceneURL(url: $url) {
     ...ScrapedSceneData
+  }
+}
+
+query ScrapeGallery($scraper_id: ID!, $gallery: GalleryUpdateInput!) {
+  scrapeGallery(scraper_id: $scraper_id, gallery: $gallery) {
+    ...ScrapedGalleryData
+  }
+}
+
+query ScrapeGalleryURL($url: String!) {
+  scrapeGalleryURL(url: $url) {
+    ...ScrapedGalleryData
+  }
+}
+
+query ScrapeMovieURL($url: String!) {
+  scrapeMovieURL(url: $url) {
+    ...ScrapedMovieData
+  }
+}
+
+query QueryStashBoxScene($input: StashBoxSceneQueryInput!) {
+  queryStashBoxScene(input: $input) {
+    ...ScrapedStashBoxSceneData
+  }
+}
+
+query QueryStashBoxPerformer($input: StashBoxPerformerQueryInput!) {
+  queryStashBoxPerformer(input: $input) {
+    ...ScrapedStashBoxPerformerData
   }
 }

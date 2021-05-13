@@ -41,6 +41,17 @@ $scrubberHeight: 120px;
   }
 }
 
+.scene-tabs,
+.scene-player-container {
+  padding-left: 15px;
+  position: relative;
+  width: 100%;
+}
+
+.scene-player-container {
+  padding-right: 15px;
+}
+
 $sceneTabWidth: 450px;
 
 @media (min-width: 1200px) {
@@ -48,20 +59,55 @@ $sceneTabWidth: 450px;
     flex: 0 0 $sceneTabWidth;
     max-width: $sceneTabWidth;
     overflow: auto;
+
+    &.collapsed {
+      display: none;
+    }
+
+    .tab-content {
+      flex: 1 1 auto;
+      min-height: 15rem;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+
+  .scene-divider {
+    flex: 0 0 15px;
+    max-width: 15px;
+
+    button {
+      background-color: transparent;
+      border: 0;
+      color: $link-color;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 800;
+      height: 100%;
+      line-height: 100%;
+      padding: 0;
+      text-align: center;
+      width: 100%;
+
+      &:active:not(:hover),
+      &:focus:not(:hover) {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+      }
+    }
   }
 
   .scene-player-container {
-    flex: 0 0 calc(100% - #{$sceneTabWidth});
-    max-width: calc(100% - #{$sceneTabWidth});
-  }
-}
+    flex: 0 0 calc(100% - #{$sceneTabWidth} - 15px);
+    max-width: calc(100% - #{$sceneTabWidth} - 15px);
+    padding-left: 0;
 
-.scene-tabs,
-.scene-player-container {
-  padding-left: 15px;
-  padding-right: 15px;
-  position: relative;
-  width: 100%;
+    &.expanded {
+      flex: 0 0 calc(100% - 15px);
+      max-width: calc(100% - 15px);
+    }
+  }
 }
 
 .scrubber-wrapper {

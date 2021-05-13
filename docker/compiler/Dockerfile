@@ -1,4 +1,4 @@
-FROM golang:1.11.5
+FROM golang:1.13.15
 
 LABEL maintainer="stashappdev@gmail.com"
 
@@ -9,17 +9,22 @@ ENV PACKR2_DOWNLOAD_URL=https://github.com/gobuffalo/packr/releases/download/v${
 
 # Install tools
 RUN apt-get update && apt-get install -y apt-transport-https
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 
+# prevent caching of the key
+ADD https://dl.yarnpkg.com/debian/pubkey.gpg yarn.gpg
+RUN cat yarn.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    rm yarn.gpg
 
 RUN apt-get update && \
     apt-get install -y automake autogen \
     libtool libxml2-dev uuid-dev libssl-dev bash \
     patch make tar xz-utils bzip2 gzip sed cpio \
-	gcc-6-multilib g++-6-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
+	gcc-8-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
 	gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
+    gcc-arm-linux-gnueabihf libc-dev-armhf-cross \
+    gcc-aarch64-linux-gnu libc-dev-arm64-cross \
 	nodejs yarn --no-install-recommends || exit 1; \
 	rm -rf /var/lib/apt/lists/*;
 

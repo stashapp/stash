@@ -2,9 +2,9 @@ package jsonschema
 
 import (
 	"fmt"
-	"github.com/json-iterator/go"
 	"os"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -26,9 +26,15 @@ type Performer struct {
 	Piercings    string          `json:"piercings,omitempty"`
 	Aliases      string          `json:"aliases,omitempty"`
 	Favorite     bool            `json:"favorite,omitempty"`
+	Tags         []string        `json:"tags,omitempty"`
 	Image        string          `json:"image,omitempty"`
 	CreatedAt    models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt    models.JSONTime `json:"updated_at,omitempty"`
+	Rating       int             `json:"rating,omitempty"`
+	Details      string          `json:"details,omitempty"`
+	DeathDate    string          `json:"death_date,omitempty"`
+	HairColor    string          `json:"hair_color,omitempty"`
+	Weight       int             `json:"weight,omitempty"`
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

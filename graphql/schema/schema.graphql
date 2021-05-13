@@ -2,15 +2,28 @@
 type Query {
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
+  findSceneByHash(input: SceneHashInput!): Scene
+  
   """A function which queries Scene objects"""
   findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  """ Returns any groups of scenes that are perceptual duplicates within the queried distance """
+  findDuplicateScenes(distance: Int): [[Scene!]!]!
+
+  """Return valid stream paths"""
+  sceneStreams(id: ID): [SceneStreamEndpoint!]!
+
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 
   """A function which queries SceneMarker objects"""
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
+
+  findImage(id: ID, checksum: String): Image
+  
+  """A function which queries Scene objects"""
+  findImages(image_filter: ImageFilterType, image_ids: [Int!], filter: FindFilterType): FindImagesResultType!
 
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer
@@ -40,8 +53,6 @@ type Query {
 
   """Get marker strings"""
   markerStrings(q: String, sort: String): [MarkerStringsResultType]!
-  """Get the list of valid galleries for a given scene ID"""
-  validGalleriesForScene(scene_id: ID): [Gallery!]!
   """Get stats"""
   stats: StatsResultType!
   """Organize scene markers by tag for a given scene ID"""
@@ -54,6 +65,8 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+  listGalleryScrapers: [Scraper!]!
+  listMovieScrapers: [Scraper!]!
 
   """Scrape a list of performers based on name"""
   scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
@@ -65,11 +78,27 @@ type Query {
   scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
   """Scrapes a complete performer record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
+  """Scrapes a complete gallery record based on an existing gallery"""
+  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
+  """Scrapes a complete gallery record based on a URL"""
+  scrapeGalleryURL(url: String!): ScrapedGallery
+  """Scrapes a complete movie record based on a URL"""
+  scrapeMovieURL(url: String!): ScrapedMovie
 
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
+
+  """Query StashBox for scenes"""
+  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]!
+  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]!
+
+  # Plugins
+  """List loaded plugins"""
+  plugins: [Plugin!]
+  """List available plugin operations"""
+  pluginTasks: [PluginTask!]
 
   # Config
   """Returns the current, complete configuration"""
@@ -78,7 +107,7 @@ type Query {
   directory(path: String): Directory!
 
   # Metadata
-
+  systemStatus: SystemStatus!
   jobStatus: MetadataUpdateStatus!
 
   # Get everything
@@ -90,11 +119,6 @@ type Query {
 
   # Get everything with minimal metadata
 
-  allPerformersSlim: [Performer!]!
-  allStudiosSlim: [Studio!]!
-  allMoviesSlim: [Movie!]!
-  allTagsSlim: [Tag!]!
-
   # Version
   version: Version!
   
@@ -103,6 +127,9 @@ type Query {
 }
 
 type Mutation {
+  setup(input: SetupInput!): Boolean!
+  migrate(input: MigrateInput!): Boolean!
+
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
@@ -123,29 +150,65 @@ type Mutation {
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
 
+  imageUpdate(input: ImageUpdateInput!): Image
+  bulkImageUpdate(input: BulkImageUpdateInput!): [Image!]
+  imageDestroy(input: ImageDestroyInput!): Boolean!
+  imagesDestroy(input: ImagesDestroyInput!): Boolean!
+  imagesUpdate(input: [ImageUpdateInput!]!): [Image]
+
+  """Increments the o-counter for an image. Returns the new value"""
+  imageIncrementO(id: ID!): Int!
+  """Decrements the o-counter for an image. Returns the new value"""
+  imageDecrementO(id: ID!): Int!
+  """Resets the o-counter for a image to 0. Returns the new value"""
+  imageResetO(id: ID!): Int!
+
+  galleryCreate(input: GalleryCreateInput!): Gallery
+  galleryUpdate(input: GalleryUpdateInput!): Gallery
+  bulkGalleryUpdate(input: BulkGalleryUpdateInput!): [Gallery!]
+  galleryDestroy(input: GalleryDestroyInput!): Boolean!
+  galleriesUpdate(input: [GalleryUpdateInput!]!): [Gallery]
+
+  addGalleryImages(input: GalleryAddInput!): Boolean!
+  removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
+  performersDestroy(ids: [ID!]!): Boolean!
+  bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!]
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
+  studiosDestroy(ids: [ID!]!): Boolean!
 
   movieCreate(input: MovieCreateInput!): Movie
   movieUpdate(input: MovieUpdateInput!): Movie
   movieDestroy(input: MovieDestroyInput!): Boolean!
+  moviesDestroy(ids: [ID!]!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
+  tagsDestroy(ids: [ID!]!): Boolean!
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
 
-  """Start an import. Returns the job ID"""
+  """Generate and set (or clear) API key"""
+  generateAPIKey(input: GenerateAPIKeyInput!): String!
+
+  """Returns a link to download the result"""
+  exportObjects(input: ExportObjectsInput!): String
+
+  """Performs an incremental import. Returns the job ID"""
+  importObjects(input: ImportObjectsInput!): String!
+
+  """Start an full import. Completely wipes the database and imports from the metadata directory. Returns the job ID"""
   metadataImport: String!
-  """Start an export. Returns the job ID"""
+  """Start a full export. Outputs to the metadata directory. Returns the job ID"""
   metadataExport: String!
   """Start a scan. Returns the job ID"""
   metadataScan(input: ScanMetadataInput!): String!
@@ -154,12 +217,27 @@ type Mutation {
   """Start auto-tagging. Returns the job ID"""
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
-  metadataClean: String!
+  metadataClean(input: CleanMetadataInput!): String!
+  """Migrate generated files for the current hash naming"""
+  migrateHashNaming: String!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!
 
+  """Run plugin task. Returns the job ID"""
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
+  reloadPlugins: Boolean!
+
   stopJob: Boolean!
+
+  """Submit fingerprints to stash-box instance"""
+  submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
+
+  """Backup the database. Optionally returns a link to download the database file"""
+  backupDatabase(input: BackupDatabaseInput!): String
+
+  """Run batch performer tag task. Returns the job ID."""
+  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
 }
 
 type Subscription {

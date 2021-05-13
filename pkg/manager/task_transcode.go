@@ -1,24 +1,26 @@
 package manager
 
 import (
-	"os"
-	"sync"
+	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GenerateTranscodeTask struct {
-	Scene models.Scene
+	Scene               models.Scene
+	Overwrite           bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateTranscodeTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
-	hasTranscode, _ := HasTranscode(&t.Scene)
-	if hasTranscode {
+	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
+	if !t.Overwrite && hasTranscode {
 		return
 	}
 
@@ -26,10 +28,9 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 
 	if t.Scene.Format.Valid {
 		container = ffmpeg.Container(t.Scene.Format.String)
-
 	} else { // container isn't in the DB
 		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
-		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
 			return
@@ -44,18 +45,19 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
 	}
 
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) && ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, container) {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return
 	}
 
-	outputPath := instance.Paths.Generated.GetTmpPath(t.Scene.Checksum + ".mp4")
-	transcodeSize := config.GetMaxTranscodeSize()
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
+	outputPath := instance.Paths.Generated.GetTmpPath(sceneHash + ".mp4")
+	transcodeSize := config.GetInstance().GetMaxTranscodeSize()
 	options := ffmpeg.TranscodeOptions{
 		OutputPath:       outputPath,
 		MaxTranscodeSize: transcodeSize,
@@ -77,12 +79,12 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		}
 	}
 
-	if err := os.Rename(outputPath, instance.Paths.Scene.GetTranscodePath(t.Scene.Checksum)); err != nil {
+	if err := utils.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
 		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
 		return
 	}
 
-	logger.Debugf("[transcode] <%s> created transcode: %s", t.Scene.Checksum, outputPath)
+	logger.Debugf("[transcode] <%s> created transcode: %s", sceneHash, outputPath)
 	return
 }
 
@@ -102,12 +104,12 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		container = t.Scene.Format.String
 	}
 
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) {
 		return false
 	}
 
-	hasTranscode, _ := HasTranscode(&t.Scene)
-	if hasTranscode {
+	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
+	if !t.Overwrite && hasTranscode {
 		return false
 	}
 	return true

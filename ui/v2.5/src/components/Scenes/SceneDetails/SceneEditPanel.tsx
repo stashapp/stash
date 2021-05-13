@@ -1,5 +1,3 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -9,6 +7,7 @@ import {
   Col,
   Row,
 } from "react-bootstrap";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
@@ -16,18 +15,20 @@ import {
   useListSceneScrapers,
   useSceneUpdate,
   mutateReloadScrapers,
+  useConfiguration,
+  queryStashBoxScene,
 } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-  SceneGallerySelect,
+  GallerySelect,
   Icon,
   LoadingIndicator,
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
+import { ImageUtils, FormUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
@@ -36,46 +37,70 @@ import { SceneScrapeDialog } from "./SceneScrapeDialog";
 interface IProps {
   scene: GQL.SceneDataFragment;
   isVisible: boolean;
-  onUpdate: (scene: GQL.SceneDataFragment) => void;
   onDelete: () => void;
 }
 
-export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
+export const SceneEditPanel: React.FC<IProps> = ({
+  scene,
+  isVisible,
+  onDelete,
+}) => {
   const Toast = useToast();
-  const [title, setTitle] = useState<string>();
-  const [details, setDetails] = useState<string>();
-  const [url, setUrl] = useState<string>();
-  const [date, setDate] = useState<string>();
-  const [rating, setRating] = useState<number>();
-  const [galleryId, setGalleryId] = useState<string>();
-  const [studioId, setStudioId] = useState<string>();
-  const [performerIds, setPerformerIds] = useState<string[]>();
-  const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
-  const [movieSceneIndexes, setMovieSceneIndexes] = useState<
-    MovieSceneIndexMap
-  >(new Map());
-  const [tagIds, setTagIds] = useState<string[]>();
+  const [title, setTitle] = useState<string>(scene.title ?? "");
+  const [details, setDetails] = useState<string>(scene.details ?? "");
+  const [url, setUrl] = useState<string>(scene.url ?? "");
+  const [date, setDate] = useState<string>(scene.date ?? "");
+  const [rating, setRating] = useState<number | undefined>(
+    scene.rating ?? undefined
+  );
+  const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
+    scene.galleries.map((g) => ({
+      id: g.id,
+      title: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
+    }))
+  );
+  const [studioId, setStudioId] = useState<string | undefined>(
+    scene.studio?.id
+  );
+  const [performerIds, setPerformerIds] = useState<string[]>(
+    scene.performers.map((p) => p.id)
+  );
+  const [movieIds, setMovieIds] = useState<string[]>(
+    scene.movies.map((m) => m.movie.id)
+  );
+  const [
+    movieSceneIndexes,
+    setMovieSceneIndexes,
+  ] = useState<MovieSceneIndexMap>(
+    new Map(scene.movies.map((m) => [m.movie.id, m.scene_index ?? undefined]))
+  );
+  const [tagIds, setTagIds] = useState<string[]>(scene.tags.map((t) => t.id));
   const [coverImage, setCoverImage] = useState<string>();
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>(scene.stash_ids);
 
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
-  const [coverImagePreview, setCoverImagePreview] = useState<string>();
+  const [coverImagePreview, setCoverImagePreview] = useState<
+    string | undefined
+  >(scene.paths.screenshot ?? undefined);
+
+  const stashConfig = useConfiguration();
 
   // Network state
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [updateScene] = useSceneUpdate(getSceneInput());
+  const [updateScene] = useSceneUpdate();
 
   useEffect(() => {
-    if (props.isVisible) {
+    if (isVisible) {
       Mousetrap.bind("s s", () => {
         onSave();
       });
       Mousetrap.bind("d d", () => {
-        props.onDelete();
+        onDelete();
       });
 
       // numeric keypresses get caught by jwplayer, so blur the element
@@ -119,7 +144,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
 
     setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers]);
+  }, [Scrapers, stashConfig]);
 
   useEffect(() => {
     let changed = false;
@@ -135,7 +160,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       });
 
       if (!changed) {
-        movieSceneIndexes.forEach((v, id) => {
+        movieSceneIndexes.forEach((_v, id) => {
           if (!newMap.has(id)) {
             // id was removed
             changed = true;
@@ -149,54 +174,26 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }, [movieIds, movieSceneIndexes]);
 
-  function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
-    const perfIds = state.performers?.map((performer) => performer.id);
-    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
-    const moviIds = state.movies
-      ? state.movies.map((sceneMovie) => sceneMovie.movie.id)
-      : undefined;
-    const movieSceneIdx: MovieSceneIndexMap = new Map();
-    if (state.movies) {
-      state.movies.forEach((m) => {
-        movieSceneIdx.set(m.movie.id, m.scene_index ?? undefined);
-      });
-    }
-
-    setTitle(state.title ?? undefined);
-    setDetails(state.details ?? undefined);
-    setUrl(state.url ?? undefined);
-    setDate(state.date ?? undefined);
-    setRating(state.rating === null ? NaN : state.rating);
-    setGalleryId(state?.gallery?.id ?? undefined);
-    setStudioId(state?.studio?.id ?? undefined);
-    setMovieIds(moviIds);
-    setMovieSceneIndexes(movieSceneIdx);
-    setPerformerIds(perfIds);
-    setTagIds(tIds);
-  }
-
-  useEffect(() => {
-    updateSceneEditState(props.scene);
-    setCoverImagePreview(props.scene?.paths?.screenshot ?? undefined);
-    setIsLoading(false);
-  }, [props.scene]);
-
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
   function getSceneInput(): GQL.SceneUpdateInput {
     return {
-      id: props.scene.id,
+      id: scene.id,
       title,
       details,
       url,
       date,
-      rating,
-      gallery_id: galleryId,
-      studio_id: studioId,
+      rating: rating ?? null,
+      gallery_ids: galleries.map((g) => g.id),
+      studio_id: studioId ?? null,
       performer_ids: performerIds,
       movies: makeMovieInputs(),
       tag_ids: tagIds,
       cover_image: coverImage,
+      stash_ids: stashIDs.map((s) => ({
+        stash_id: s.stash_id,
+        endpoint: s.endpoint,
+      })),
     };
   }
 
@@ -222,9 +219,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   async function onSave() {
     setIsLoading(true);
     try {
-      const result = await updateScene();
+      const result = await updateScene({
+        variables: {
+          input: getSceneInput(),
+        },
+      });
       if (result.data?.sceneUpdate) {
-        props.onUpdate(result.data.sceneUpdate);
         Toast.success({ content: "Updated scene" });
       }
     } catch (e) {
@@ -232,6 +232,15 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
     setIsLoading(false);
   }
+
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    setStashIDs(
+      stashIDs.filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
 
   function renderTableMovies() {
     return (
@@ -253,11 +262,36 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  async function onScrapeStashBoxClicked(stashBoxIndex: number) {
+    setIsLoading(true);
+    try {
+      const result = await queryStashBoxScene(stashBoxIndex, scene.id);
+      if (!result.data || !result.data.queryStashBoxScene) {
+        return;
+      }
+
+      if (result.data.queryStashBoxScene.length > 0) {
+        setScrapedScene(result.data.queryStashBoxScene[0]);
+      } else {
+        Toast.success({
+          content: "No scenes found",
+        });
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
       const result = await queryScrapeScene(scraper.id, getSceneInput());
       if (!result.data || !result.data.scrapeScene) {
+        Toast.success({
+          content: "No scenes found",
+        });
         return;
       }
       setScrapedScene(result.data.scrapeScene);
@@ -282,9 +316,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  function onScrapeDialogClosed(scene?: GQL.ScrapedSceneDataFragment) {
-    if (scene) {
-      updateSceneFromScrapedScene(scene);
+  function onScrapeDialogClosed(sceneData?: GQL.ScrapedSceneDataFragment) {
+    if (sceneData) {
+      updateSceneFromScrapedScene(sceneData);
     }
     setScrapedScene(undefined);
   }
@@ -296,23 +330,36 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     const currentScene = getSceneInput();
     if (!currentScene.cover_image) {
-      currentScene.cover_image = props.scene.paths.screenshot;
+      currentScene.cover_image = scene.paths.screenshot;
     }
 
     return (
       <SceneScrapeDialog
         scene={currentScene}
         scraped={scrapedScene}
-        onClose={(scene) => {
-          onScrapeDialogClosed(scene);
-        }}
+        onClose={(s) => onScrapeDialogClosed(s)}
       />
     );
   }
 
   function renderScraperMenu() {
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+
+    // TODO - change name based on stashbox configuration
     return (
-      <DropdownButton id="scene-scrape" title="Scrape with...">
+      <DropdownButton
+        className="d-inline-block"
+        id="scene-scrape"
+        title="Scrape with..."
+      >
+        {stashBoxes.map((s, index) => (
+          <Dropdown.Item
+            key={s.endpoint}
+            onClick={() => onScrapeStashBoxClicked(index)}
+          >
+            {s.name ?? "Stash-Box"}
+          </Dropdown.Item>
+        ))}
         {queryableScrapers.map((s) => (
           <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
             {s.name}
@@ -328,70 +375,110 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
   }
 
+  function maybeRenderStashboxQueryButton() {
+    // const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+    // if (stashBoxes.length === 0) {
+    //   return;
+    // }
+    // TODO - hide this button for now, with the view to add it when we get
+    // the query dialog going
+    // if (stashBoxes.length === 1) {
+    //   return (
+    //     <Button
+    //       className="mr-1"
+    //       onClick={() => onStashBoxQueryClicked(0)}
+    //       title="Query"
+    //     >
+    //       <Icon className="fa-fw" icon="search" />
+    //     </Button>
+    //   );
+    // }
+    // // TODO - change name based on stashbox configuration
+    // return (
+    //   <Dropdown className="d-inline-block mr-1">
+    //     <Dropdown.Toggle id="stashbox-query-dropdown">
+    //       <Icon className="fa-fw" icon="search" />
+    //     </Dropdown.Toggle>
+    //     <Dropdown.Menu>
+    //       {stashBoxes.map((s, index) => (
+    //         <Dropdown.Item
+    //           key={s.endpoint}
+    //           onClick={() => onStashBoxQueryClicked(index)}
+    //         >
+    //           stash-box
+    //         </Dropdown.Item>
+    //       ))}
+    //     </Dropdown.Menu>
+    //   </Dropdown>
+    // );
+  }
+
   function urlScrapable(scrapedUrl: string): boolean {
     return (Scrapers?.data?.listSceneScrapers ?? []).some((s) =>
       (s?.scene?.urls ?? []).some((u) => scrapedUrl.includes(u))
     );
   }
 
-  function updateSceneFromScrapedScene(scene: GQL.ScrapedSceneDataFragment) {
-    if (scene.title) {
-      setTitle(scene.title);
+  function updateSceneFromScrapedScene(
+    updatedScene: GQL.ScrapedSceneDataFragment
+  ) {
+    if (updatedScene.title) {
+      setTitle(updatedScene.title);
     }
 
-    if (scene.details) {
-      setDetails(scene.details);
+    if (updatedScene.details) {
+      setDetails(updatedScene.details);
     }
 
-    if (scene.date) {
-      setDate(scene.date);
+    if (updatedScene.date) {
+      setDate(updatedScene.date);
     }
 
-    if (scene.url) {
-      setUrl(scene.url);
+    if (updatedScene.url) {
+      setUrl(updatedScene.url);
     }
 
-    if (scene.studio && scene.studio.id) {
-      setStudioId(scene.studio.id);
+    if (updatedScene.studio && updatedScene.studio.stored_id) {
+      setStudioId(updatedScene.studio.stored_id);
     }
 
-    if (scene.performers && scene.performers.length > 0) {
-      const idPerfs = scene.performers.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+    if (updatedScene.performers && updatedScene.performers.length > 0) {
+      const idPerfs = updatedScene.performers.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.id);
+        const newIds = idPerfs.map((p) => p.stored_id);
         setPerformerIds(newIds as string[]);
       }
     }
 
-    if (scene.movies && scene.movies.length > 0) {
-      const idMovis = scene.movies.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+    if (updatedScene.movies && updatedScene.movies.length > 0) {
+      const idMovis = updatedScene.movies.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idMovis.length > 0) {
-        const newIds = idMovis.map((p) => p.id);
+        const newIds = idMovis.map((p) => p.stored_id);
         setMovieIds(newIds as string[]);
       }
     }
 
-    if (scene?.tags?.length) {
-      const idTags = scene.tags.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+    if (updatedScene?.tags?.length) {
+      const idTags = updatedScene.tags.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.id);
+        const newIds = idTags.map((p) => p.stored_id);
         setTagIds(newIds as string[]);
       }
     }
 
-    if (scene.image) {
+    if (updatedScene.image) {
       // image is a base64 string
-      setCoverImage(scene.image);
-      setCoverImagePreview(scene.image);
+      setCoverImage(updatedScene.image);
+      setCoverImagePreview(updatedScene.image);
     }
   }
 
@@ -434,19 +521,22 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     <div id="scene-edit-details">
       {maybeRenderScrapeDialog()}
       <div className="form-container row px-3 pt-3">
-        <div className="col edit-buttons mb-3 pl-0">
+        <div className="col-6 edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
             Save
           </Button>
           <Button
             className="edit-button"
             variant="danger"
-            onClick={() => props.onDelete()}
+            onClick={() => onDelete()}
           >
             Delete
           </Button>
         </div>
-        {renderScraperMenu()}
+        <Col xs={6} className="text-right">
+          {maybeRenderStashboxQueryButton()}
+          {renderScraperMenu()}
+        </Col>
       </div>
       <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
@@ -490,15 +580,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               />
             </Col>
           </Form.Group>
-          <Form.Group controlId="gallery" as={Row}>
+          <Form.Group controlId="galleries" as={Row}>
             {FormUtils.renderLabel({
-              title: "Gallery",
+              title: "Galleries",
             })}
             <Col xs={9}>
-              <SceneGallerySelect
-                sceneId={props.scene.id}
-                initialId={galleryId}
-                onSelect={(item) => setGalleryId(item ? item.id : undefined)}
+              <GallerySelect
+                galleries={galleries}
+                onSelect={(items) => setGalleries(items)}
               />
             </Col>
           </Form.Group>
@@ -573,6 +662,38 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               />
             </Col>
           </Form.Group>
+          <Form.Group controlId="details">
+            <Form.Label>StashIDs</Form.Label>
+            <ul className="pl-0">
+              {stashIDs.map((stashID) => {
+                const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+                const link = base ? (
+                  <a
+                    href={`${base}scenes/${stashID.stash_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {stashID.stash_id}
+                  </a>
+                ) : (
+                  stashID.stash_id
+                );
+                return (
+                  <li key={stashID.stash_id} className="row no-gutters">
+                    <Button
+                      variant="danger"
+                      className="mr-2 py-0"
+                      title="Delete StashID"
+                      onClick={() => removeStashID(stashID)}
+                    >
+                      <Icon icon="trash-alt" />
+                    </Button>
+                    {link}
+                  </li>
+                );
+              })}
+            </ul>
+          </Form.Group>
         </div>
         <div className="col-12 col-lg-6 col-xl-12">
           <Form.Group controlId="details">
@@ -598,7 +719,11 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                   alt="Scene cover"
                 />
               )}
-              <ImageInput isEditing onImageChange={onCoverImageChange} />
+              <ImageInput
+                isEditing
+                onImageChange={onCoverImageChange}
+                onImageURL={onImageLoad}
+              />
             </Form.Group>
           </div>
         </div>

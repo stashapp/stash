@@ -1,8 +1,6 @@
-#performer-details {
-  .scrape-url-button {
-    color: $text-color;
-    float: right;
-    margin-right: 0.5rem;
+#performer-edit {
+  .scrape-url-button:disabled {
+    opacity: 0.5;
   }
 }
 
@@ -11,7 +9,7 @@
   margin: 10px auto;
   overflow: hidden;
 
-  .image-container .performer {
+  .performer-image-container .performer {
     max-height: calc(100vh - 6rem);
     max-width: 100%;
   }
@@ -57,12 +55,30 @@
 }
 
 .performer-card {
+  width: 20rem;
+
+  &-image {
+    height: 30rem;
+    min-width: 11.25rem;
+    object-fit: cover;
+    object-position: top;
+    width: 100%;
+  }
+
   .flag-icon {
     bottom: 1rem;
     height: 2rem;
     position: absolute;
     right: 1rem;
     width: 3rem;
+  }
+
+  .favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    position: absolute;
+    right: 5px;
+    top: 10px;
   }
 }
 
@@ -77,4 +93,21 @@
   margin-bottom: 10px;
   margin-top: 10px;
   max-width: 100%;
+}
+
+#performer-scraper-popover {
+  z-index: 1;
+}
+
+.PerformerScrapeModal {
+  &-list {
+    list-style-type: none;
+    max-height: 50vh;
+    overflow-x: auto;
+    padding-left: 1rem;
+
+    .btn {
+      font-size: 1.2rem;
+    }
+  }
 }

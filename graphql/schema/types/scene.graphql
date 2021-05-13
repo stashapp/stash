@@ -16,6 +16,7 @@ type ScenePathsType {
   webp: String # Resolver
   vtt: String # Resolver
   chapters_vtt: String # Resolver
+  sprite: String # Resolver
 }
 
 type SceneMovie {
@@ -25,25 +26,28 @@ type SceneMovie {
 
 type Scene {
   id: ID!
-  checksum: String!
+  checksum: String
+  oshash: String
   title: String
   details: String
   url: String
   date: String
   rating: Int
+  organized: Boolean!
   o_counter: Int
   path: String!
+  phash: String
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
-  is_streamable: Boolean! # Resolver
 
   scene_markers: [SceneMarker!]!
-  gallery: Gallery
+  galleries: [Gallery!]!
   studio: Studio
   movies: [SceneMovie!]!
   tags: [Tag!]!
   performers: [Performer!]!
+  stash_ids: [StashID!]!
 }
 
 input SceneMovieInput {
@@ -59,13 +63,15 @@ input SceneUpdateInput {
   url: String
   date: String
   rating: Int
+  organized: Boolean
   studio_id: ID
-  gallery_id: ID
+  gallery_ids: [ID!]
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   cover_image: String
+  stash_ids: [StashIDInput!]
 }
 
 enum BulkUpdateIdMode {
@@ -87,8 +93,9 @@ input BulkSceneUpdateInput {
   url: String
   date: String
   rating: Int
+  organized: Boolean
   studio_id: ID
-  gallery_id: ID
+  gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
 }
@@ -129,7 +136,7 @@ type SceneParserResult {
   date: String
   rating: Int
   studio_id: ID
-  gallery_id: ID
+  gallery_ids: [ID!]
   performer_ids: [ID!]
   movies: [SceneMovieID!]
   tag_ids: [ID!]
@@ -138,4 +145,15 @@ type SceneParserResult {
 type SceneParserResultType {
   count: Int!
   results: [SceneParserResult!]!
+}
+
+input SceneHashInput {
+  checksum: String
+  oshash: String
+}
+
+type SceneStreamEndpoint {
+  url: String!
+  mime_type: String
+  label: String
 }

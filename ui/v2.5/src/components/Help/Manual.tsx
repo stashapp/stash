@@ -8,18 +8,26 @@ import Configuration from "src/docs/en/Configuration.md";
 import Interface from "src/docs/en/Interface.md";
 import Galleries from "src/docs/en/Galleries.md";
 import Scraping from "src/docs/en/Scraping.md";
+import Plugins from "src/docs/en/Plugins.md";
+import Tagger from "src/docs/en/Tagger.md";
 import Contributing from "src/docs/en/Contributing.md";
 import SceneFilenameParser from "src/docs/en/SceneFilenameParser.md";
 import KeyboardShortcuts from "src/docs/en/KeyboardShortcuts.md";
 import Help from "src/docs/en/Help.md";
-import { Page } from "./Page";
+import Deduplication from "src/docs/en/Deduplication.md";
+import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
   show: boolean;
   onClose: () => void;
+  defaultActiveTab?: string;
 }
 
-export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
+export const Manual: React.FC<IManualProps> = ({
+  show,
+  onClose,
+  defaultActiveTab,
+}) => {
   const content = [
     {
       key: "Introduction.md",
@@ -70,6 +78,21 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
       content: Scraping,
     },
     {
+      key: "Plugins.md",
+      title: "Plugins",
+      content: Plugins,
+    },
+    {
+      key: "Tagger.md",
+      title: "Scene Tagger",
+      content: Tagger,
+    },
+    {
+      key: "Deduplication.md",
+      title: "Dupe Checker",
+      content: Deduplication,
+    },
+    {
       key: "KeyboardShortcuts.md",
       title: "Keyboard Shortcuts",
       content: KeyboardShortcuts,
@@ -86,7 +109,9 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(content[0].key);
+  const [activeTab, setActiveTab] = useState(
+    defaultActiveTab ?? content[0].key
+  );
 
   // links to other manual pages are specified as "/help/page.md"
   // intercept clicks to these pages and set the tab accordingly
@@ -118,7 +143,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
         <Container className="manual-container">
           <Tab.Container
             activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
+            onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >
             <Row>
@@ -126,7 +151,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                 <Nav variant="pills" className="flex-column">
                   {content.map((c) => {
                     return (
-                      <Nav.Item>
+                      <Nav.Item key={`${c.key}-nav`}>
                         <Nav.Link className={c.className} eventKey={c.key}>
                           {c.title}
                         </Nav.Link>
@@ -140,8 +165,12 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                 <Tab.Content>
                   {content.map((c) => {
                     return (
-                      <Tab.Pane eventKey={c.key} onClick={interceptLinkClick}>
-                        <Page page={c.content} />
+                      <Tab.Pane
+                        eventKey={c.key}
+                        key={`${c.key}-pane`}
+                        onClick={interceptLinkClick}
+                      >
+                        <MarkdownPage page={c.content} />
                       </Tab.Pane>
                     );
                   })}

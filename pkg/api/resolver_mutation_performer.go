@@ -3,29 +3,24 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
-	checksum := utils.MD5FromString(*input.Name)
+	checksum := utils.MD5FromString(input.Name)
 
 	var imageData []byte
 	var err error
 
-	if input.Image == nil {
-		gender := ""
-		if input.Gender != nil {
-			gender = input.Gender.String()
-		}
-		imageData, err = getRandomPerformerImage(gender)
-	} else {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+	if input.Image != nil {
+		imageData, err = utils.ProcessImageInput(*input.Image)
 	}
 
 	if err != nil {
@@ -39,9 +34,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
-	if input.Name != nil {
-		newPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
-	}
+	newPerformer.Name = sql.NullString{String: input.Name, Valid: true}
 	if input.URL != nil {
 		newPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
@@ -92,26 +85,64 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	} else {
 		newPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
 	}
-
-	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	performer, err := qb.Create(newPerformer, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
+	if input.Rating != nil {
+		newPerformer.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+	} else {
+		newPerformer.Rating = sql.NullInt64{Valid: false}
+	}
+	if input.Details != nil {
+		newPerformer.Details = sql.NullString{String: *input.Details, Valid: true}
+	}
+	if input.DeathDate != nil {
+		newPerformer.DeathDate = models.SQLiteDate{String: *input.DeathDate, Valid: true}
+	}
+	if input.HairColor != nil {
+		newPerformer.HairColor = sql.NullString{String: *input.HairColor, Valid: true}
+	}
+	if input.Weight != nil {
+		weight := int64(*input.Weight)
+		newPerformer.Weight = sql.NullInt64{Int64: weight, Valid: true}
 	}
 
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
+	if err := performer.ValidateDeathDate(nil, input.Birthdate, input.DeathDate); err != nil {
+		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	// Start the transaction and save the performer
+	var performer *models.Performer
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+
+		performer, err = qb.Create(newPerformer)
+		if err != nil {
+			return err
+		}
+
+		if len(input.TagIds) > 0 {
+			if err := r.updatePerformerTags(qb, performer.ID, input.TagIds); err != nil {
+				return err
+			}
+		}
+
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+				return err
+			}
+		}
+
+		// Save the stash_ids
+		if input.StashIds != nil {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(performer.ID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -121,109 +152,259 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
 	// Populate performer from the input
 	performerID, _ := strconv.Atoi(input.ID)
-	updatedPerformer := models.Performer{
+	updatedPerformer := models.PerformerPartial{
 		ID:        performerID,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	var imageData []byte
 	var err error
+	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
-		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		imageData, err = utils.ProcessImageInput(*input.Image)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	if input.Name != nil {
 		// generate checksum from performer name rather than image
 		checksum := utils.MD5FromString(*input.Name)
 
-		updatedPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
-		updatedPerformer.Checksum = checksum
-	}
-	if input.URL != nil {
-		updatedPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
-	}
-	if input.Gender != nil {
-		updatedPerformer.Gender = sql.NullString{String: input.Gender.String(), Valid: true}
-	}
-	if input.Birthdate != nil {
-		updatedPerformer.Birthdate = models.SQLiteDate{String: *input.Birthdate, Valid: true}
-	}
-	if input.Ethnicity != nil {
-		updatedPerformer.Ethnicity = sql.NullString{String: *input.Ethnicity, Valid: true}
-	}
-	if input.Country != nil {
-		updatedPerformer.Country = sql.NullString{String: *input.Country, Valid: true}
-	}
-	if input.EyeColor != nil {
-		updatedPerformer.EyeColor = sql.NullString{String: *input.EyeColor, Valid: true}
-	}
-	if input.Height != nil {
-		updatedPerformer.Height = sql.NullString{String: *input.Height, Valid: true}
-	}
-	if input.Measurements != nil {
-		updatedPerformer.Measurements = sql.NullString{String: *input.Measurements, Valid: true}
-	}
-	if input.FakeTits != nil {
-		updatedPerformer.FakeTits = sql.NullString{String: *input.FakeTits, Valid: true}
-	}
-	if input.CareerLength != nil {
-		updatedPerformer.CareerLength = sql.NullString{String: *input.CareerLength, Valid: true}
-	}
-	if input.Tattoos != nil {
-		updatedPerformer.Tattoos = sql.NullString{String: *input.Tattoos, Valid: true}
-	}
-	if input.Piercings != nil {
-		updatedPerformer.Piercings = sql.NullString{String: *input.Piercings, Valid: true}
-	}
-	if input.Aliases != nil {
-		updatedPerformer.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
-	}
-	if input.Twitter != nil {
-		updatedPerformer.Twitter = sql.NullString{String: *input.Twitter, Valid: true}
-	}
-	if input.Instagram != nil {
-		updatedPerformer.Instagram = sql.NullString{String: *input.Instagram, Valid: true}
-	}
-	if input.Favorite != nil {
-		updatedPerformer.Favorite = sql.NullBool{Bool: *input.Favorite, Valid: true}
-	} else {
-		updatedPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
+		updatedPerformer.Name = &sql.NullString{String: *input.Name, Valid: true}
+		updatedPerformer.Checksum = &checksum
 	}
 
-	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	performer, err := qb.Update(updatedPerformer, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
+	updatedPerformer.URL = translator.nullString(input.URL, "url")
 
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+	if translator.hasField("gender") {
+		if input.Gender != nil {
+			updatedPerformer.Gender = &sql.NullString{String: input.Gender.String(), Valid: true}
+		} else {
+			updatedPerformer.Gender = &sql.NullString{String: "", Valid: false}
 		}
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	updatedPerformer.Birthdate = translator.sqliteDate(input.Birthdate, "birthdate")
+	updatedPerformer.Country = translator.nullString(input.Country, "country")
+	updatedPerformer.EyeColor = translator.nullString(input.EyeColor, "eye_color")
+	updatedPerformer.Measurements = translator.nullString(input.Measurements, "measurements")
+	updatedPerformer.Height = translator.nullString(input.Height, "height")
+	updatedPerformer.Ethnicity = translator.nullString(input.Ethnicity, "ethnicity")
+	updatedPerformer.FakeTits = translator.nullString(input.FakeTits, "fake_tits")
+	updatedPerformer.CareerLength = translator.nullString(input.CareerLength, "career_length")
+	updatedPerformer.Tattoos = translator.nullString(input.Tattoos, "tattoos")
+	updatedPerformer.Piercings = translator.nullString(input.Piercings, "piercings")
+	updatedPerformer.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
+	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
+	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedPerformer.Details = translator.nullString(input.Details, "details")
+	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
+	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
+	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
+
+	// Start the transaction and save the p
+	var p *models.Performer
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+
+		// need to get existing performer
+		existing, err := qb.Find(updatedPerformer.ID)
+		if err != nil {
+			return err
+		}
+
+		if existing == nil {
+			return fmt.Errorf("performer with id %d not found", updatedPerformer.ID)
+		}
+
+		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
+			if err != nil {
+				return err
+			}
+		}
+
+		p, err = qb.Update(updatedPerformer)
+		if err != nil {
+			return err
+		}
+
+		// Save the tags
+		if translator.hasField("tag_ids") {
+			if err := r.updatePerformerTags(qb, p.ID, input.TagIds); err != nil {
+				return err
+			}
+		}
+
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(p.ID, imageData); err != nil {
+				return err
+			}
+		} else if imageIncluded {
+			// must be unsetting
+			if err := qb.DestroyImage(p.ID); err != nil {
+				return err
+			}
+		}
+
+		// Save the stash_ids
+		if translator.hasField("stash_ids") {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(performerID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	return performer, nil
+	return p, nil
+}
+
+func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, performerID int, tagsIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateTags(performerID, ids)
+}
+
+func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models.BulkPerformerUpdateInput) ([]*models.Performer, error) {
+	performerIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, err
+	}
+
+	// Populate performer from the input
+	updatedTime := time.Now()
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	updatedPerformer := models.PerformerPartial{
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	}
+
+	updatedPerformer.URL = translator.nullString(input.URL, "url")
+	updatedPerformer.Birthdate = translator.sqliteDate(input.Birthdate, "birthdate")
+	updatedPerformer.Ethnicity = translator.nullString(input.Ethnicity, "ethnicity")
+	updatedPerformer.Country = translator.nullString(input.Country, "country")
+	updatedPerformer.EyeColor = translator.nullString(input.EyeColor, "eye_color")
+	updatedPerformer.Height = translator.nullString(input.Height, "height")
+	updatedPerformer.Measurements = translator.nullString(input.Measurements, "measurements")
+	updatedPerformer.FakeTits = translator.nullString(input.FakeTits, "fake_tits")
+	updatedPerformer.CareerLength = translator.nullString(input.CareerLength, "career_length")
+	updatedPerformer.Tattoos = translator.nullString(input.Tattoos, "tattoos")
+	updatedPerformer.Piercings = translator.nullString(input.Piercings, "piercings")
+	updatedPerformer.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
+	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
+	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedPerformer.Details = translator.nullString(input.Details, "details")
+	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
+	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
+	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
+
+	if translator.hasField("gender") {
+		if input.Gender != nil {
+			updatedPerformer.Gender = &sql.NullString{String: input.Gender.String(), Valid: true}
+		} else {
+			updatedPerformer.Gender = &sql.NullString{String: "", Valid: false}
+		}
+	}
+
+	ret := []*models.Performer{}
+
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+
+		for _, performerID := range performerIDs {
+			updatedPerformer.ID = performerID
+
+			// need to get existing performer
+			existing, err := qb.Find(performerID)
+			if err != nil {
+				return err
+			}
+
+			if existing == nil {
+				return fmt.Errorf("performer with id %d not found", performerID)
+			}
+
+			if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
+				return err
+			}
+
+			performer, err := qb.Update(updatedPerformer)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, performer)
+
+			// Save the tags
+			if translator.hasField("tag_ids") {
+				tagIDs, err := adjustTagIDs(qb, performerID, *input.TagIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateTags(performerID, tagIDs); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	qb := models.NewPerformerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Performer().Destroy(id)
+	}); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

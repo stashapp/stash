@@ -1,21 +1,30 @@
-import { Tab, Nav, Dropdown } from "react-bootstrap";
+import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
+  mutateMetadataScan,
   useFindScene,
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
+  useSceneStreams,
   useSceneGenerateScreenshot,
+  useSceneUpdate,
+  queryFindScenes,
+  queryFindScenesByID,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { LoadingIndicator, Icon } from "src/components/Shared";
+import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
-import * as Mousetrap from "mousetrap";
+import Mousetrap from "mousetrap";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { FilterMode } from "src/models/list-filter/types";
+import { SceneQueue } from "src/models/sceneQueue";
+import { QueueViewer } from "./QueueViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -23,33 +32,99 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { ExternalPlayerButton } from "./ExternalPlayerButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { SceneGalleriesPanel } from "./SceneGalleriesPanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
+import { SceneGenerateDialog } from "../SceneGenerateDialog";
+import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
+import { OrganizedButton } from "./OrganizedButton";
+
+interface ISceneParams {
+  id?: string;
+}
 
 export const Scene: React.FC = () => {
-  const { id = "new" } = useParams();
+  const { id = "new" } = useParams<ISceneParams>();
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
+  const [collapsed, setCollapsed] = useState(false);
 
-  const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
+  const scene = data?.findScene;
+  const {
+    data: sceneStreams,
+    error: streamableError,
+    loading: streamableLoading,
+  } = useSceneStreams(id);
+
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
 
+  const [organizedLoading, setOrganizedLoading] = useState(false);
+
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+  const [sceneQueue, setSceneQueue] = useState<SceneQueue>(new SceneQueue());
+  const [queueScenes, setQueueScenes] = useState<GQL.SlimSceneDataFragment[]>(
+    []
+  );
+
+  const [queueTotal, setQueueTotal] = useState(0);
+  const [queueStart, setQueueStart] = useState(1);
+
+  const [rerenderPlayer, setRerenderPlayer] = useState(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
+  const currentQueueIndex = queueScenes.findIndex((s) => s.id === id);
+
+  async function getQueueFilterScenes(filter: ListFilterModel) {
+    const query = await queryFindScenes(filter);
+    const { scenes, count } = query.data.findScenes;
+    setQueueScenes(scenes);
+    setQueueTotal(count);
+    setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
+  }
+
+  async function getQueueScenes(sceneIDs: number[]) {
+    const query = await queryFindScenesByID(sceneIDs);
+    const { scenes, count } = query.data.findScenes;
+    setQueueScenes(scenes);
+    setQueueTotal(count);
+    setQueueStart(1);
+  }
+
+  // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
+  // a rerender by not drawing it
+  useEffect(() => {
+    if (rerenderPlayer) {
+      setRerenderPlayer(false);
+    }
+  }, [rerenderPlayer]);
 
   useEffect(() => {
-    if (data?.findScene) setScene(data.findScene);
-  }, [data]);
+    setRerenderPlayer(true);
+  }, [id]);
+
+  useEffect(() => {
+    setSceneQueue(SceneQueue.fromQueryParameters(location.search));
+  }, [location.search]);
+
+  useEffect(() => {
+    if (sceneQueue.query) {
+      getQueueFilterScenes(sceneQueue.query);
+    } else if (sceneQueue.sceneIDs) {
+      getQueueScenes(sceneQueue.sceneIDs);
+    }
+  }, [sceneQueue]);
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
@@ -60,17 +135,28 @@ export const Scene: React.FC = () => {
     );
   }
 
-  const updateOCounter = (newValue: number) => {
-    const modifiedScene = { ...scene } as GQL.SceneDataFragment;
-    modifiedScene.o_counter = newValue;
-    setScene(modifiedScene);
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
+      await updateScene({
+        variables: {
+          input: {
+            id: scene?.id ?? "",
+            organized: !scene?.organized,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
+    }
   };
 
   const onIncrementClick = async () => {
     try {
       setOLoading(true);
-      const result = await incrementO();
-      if (result.data) updateOCounter(result.data.sceneIncrementO);
+      await incrementO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -81,8 +167,7 @@ export const Scene: React.FC = () => {
   const onDecrementClick = async () => {
     try {
       setOLoading(true);
-      const result = await decrementO();
-      if (result.data) updateOCounter(result.data.sceneDecrementO);
+      await decrementO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -93,8 +178,7 @@ export const Scene: React.FC = () => {
   const onResetClick = async () => {
     try {
       setOLoading(true);
-      const result = await resetO();
-      if (result.data) updateOCounter(result.data.sceneResetO);
+      await resetO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -104,6 +188,18 @@ export const Scene: React.FC = () => {
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
     setTimestamp(marker.seconds);
+  }
+
+  async function onRescan() {
+    if (!scene) {
+      return;
+    }
+
+    await mutateMetadataScan({
+      paths: [scene.path],
+    });
+
+    Toast.success({ content: "Rescanning scene" });
   }
 
   async function onGenerateScreenshot(at?: number) {
@@ -118,6 +214,99 @@ export const Scene: React.FC = () => {
       },
     });
     Toast.success({ content: "Generating screenshot" });
+  }
+
+  async function onQueueLessScenes() {
+    if (!sceneQueue.query || queueStart <= 1) {
+      return;
+    }
+
+    const filterCopy = Object.assign(
+      new ListFilterModel(FilterMode.Scenes),
+      sceneQueue.query
+    );
+    const newStart = queueStart - filterCopy.itemsPerPage;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindScenes(filterCopy);
+    const { scenes } = query.data.findScenes;
+
+    // prepend scenes to scene list
+    const newScenes = scenes.concat(queueScenes);
+    setQueueScenes(newScenes);
+    setQueueStart(newStart);
+  }
+
+  function queueHasMoreScenes() {
+    return queueStart + queueScenes.length - 1 < queueTotal;
+  }
+
+  async function onQueueMoreScenes() {
+    if (!sceneQueue.query || !queueHasMoreScenes()) {
+      return;
+    }
+
+    const filterCopy = Object.assign(
+      new ListFilterModel(FilterMode.Scenes),
+      sceneQueue.query
+    );
+    const newStart = queueStart + queueScenes.length;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindScenes(filterCopy);
+    const { scenes } = query.data.findScenes;
+
+    // append scenes to scene list
+    const newScenes = scenes.concat(queueScenes);
+    setQueueScenes(newScenes);
+    // don't change queue start
+  }
+
+  function playScene(sceneID: string, page?: number) {
+    sceneQueue.playScene(history, sceneID, {
+      newPage: page,
+      autoPlay: true,
+    });
+  }
+
+  function onQueueNext() {
+    if (currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) {
+      playScene(queueScenes[currentQueueIndex + 1].id);
+    }
+  }
+
+  function onQueuePrevious() {
+    if (currentQueueIndex > 0) {
+      playScene(queueScenes[currentQueueIndex - 1].id);
+    }
+  }
+
+  async function onQueueRandom() {
+    if (sceneQueue.query) {
+      const { query } = sceneQueue;
+      const pages = Math.ceil(queueTotal / query.itemsPerPage);
+      const page = Math.floor(Math.random() * pages) + 1;
+      const index = Math.floor(Math.random() * query.itemsPerPage);
+      const filterCopy = Object.assign(
+        new ListFilterModel(FilterMode.Scenes),
+        sceneQueue.query
+      );
+      filterCopy.currentPage = page;
+      const queryResults = await queryFindScenes(filterCopy);
+      if (queryResults.data.findScenes.scenes.length > index) {
+        const { id: sceneID } = queryResults!.data!.findScenes!.scenes[index];
+        // navigate to the image player page
+        playScene(sceneID, page);
+      }
+    } else {
+      const index = Math.floor(Math.random() * queueTotal);
+      playScene(queueScenes[index].id);
+    }
+  }
+
+  function onComplete() {
+    // load the next scene if we're autoplaying
+    if (autoplay) {
+      onQueueNext();
+    }
   }
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -135,6 +324,19 @@ export const Scene: React.FC = () => {
     }
   }
 
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen && scene) {
+      return (
+        <SceneGenerateDialog
+          selectedIds={[scene.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+        />
+      );
+    }
+  }
+
   function renderOperations() {
     return (
       <Dropdown>
@@ -147,6 +349,20 @@ export const Scene: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            Rescan
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            Generate...
+          </Dropdown.Item>
           <Dropdown.Item
             key="generate-screenshot"
             className="bg-secondary text-white"
@@ -183,13 +399,20 @@ export const Scene: React.FC = () => {
     return (
       <Tab.Container
         activeKey={activeTabKey}
-        onSelect={(k) => setActiveTabKey(k)}
+        onSelect={(k) => k && setActiveTabKey(k)}
       >
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
               <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
             </Nav.Item>
+            {(queueScenes ?? []).length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-queue-panel">Queue</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
             <Nav.Item>
               <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
             </Nav.Item>
@@ -200,68 +423,101 @@ export const Scene: React.FC = () => {
             ) : (
               ""
             )}
-            {scene.gallery ? (
+            {scene.galleries.length === 1 ? (
               <Nav.Item>
                 <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
               </Nav.Item>
-            ) : (
-              ""
-            )}
+            ) : undefined}
+            {scene.galleries.length > 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
+              </Nav.Item>
+            ) : undefined}
+            <Nav.Item>
+              <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
+            </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <ExternalPlayerButton scene={scene} />
-            </Nav.Item>
-            <Nav.Item>
-              <OCounterButton
-                loading={oLoading}
-                value={scene.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
+            <ButtonGroup className="ml-auto">
+              <Nav.Item className="ml-auto">
+                <ExternalPlayerButton scene={scene} />
+              </Nav.Item>
+              <Nav.Item className="ml-auto">
+                <OCounterButton
+                  loading={oLoading}
+                  value={scene.o_counter || 0}
+                  onIncrement={onIncrementClick}
+                  onDecrement={onDecrementClick}
+                  onReset={onResetClick}
+                />
+              </Nav.Item>
+              <Nav.Item>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={scene.organized}
+                  onClick={onOrganizedClick}
+                />
+              </Nav.Item>
+              <Nav.Item>{renderOperations()}</Nav.Item>
+            </ButtonGroup>
           </Nav>
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="scene-details-panel" title="Details">
+          <Tab.Pane eventKey="scene-details-panel">
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-markers-panel" title="Markers">
+          <Tab.Pane eventKey="scene-queue-panel">
+            <QueueViewer
+              scenes={queueScenes}
+              currentID={scene.id}
+              onSceneClicked={(sceneID) => playScene(sceneID)}
+              onNext={onQueueNext}
+              onPrevious={onQueuePrevious}
+              onRandom={onQueueRandom}
+              start={queueStart}
+              hasMoreScenes={queueHasMoreScenes()}
+              onLessScenes={() => onQueueLessScenes()}
+              onMoreScenes={() => onQueueMoreScenes()}
+            />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel
               scene={scene}
               onClickMarker={onClickMarker}
               isVisible={activeTabKey === "scene-markers-panel"}
             />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-movie-panel" title="Movies">
+          <Tab.Pane eventKey="scene-movie-panel">
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
-          {scene.gallery ? (
-            <Tab.Pane eventKey="scene-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={scene.gallery} />
+          {scene.galleries.length === 1 && (
+            <Tab.Pane eventKey="scene-gallery-panel">
+              <GalleryViewer galleryId={scene.galleries[0].id} />
             </Tab.Pane>
-          ) : (
-            ""
           )}
+          {scene.galleries.length > 1 && (
+            <Tab.Pane eventKey="scene-galleries-panel">
+              <SceneGalleriesPanel galleries={scene.galleries} />
+            </Tab.Pane>
+          )}
+          <Tab.Pane eventKey="scene-video-filter-panel">
+            <SceneVideoFilterPanel scene={scene} />
+          </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="scene-file-info-panel"
-            title="File Info"
           >
             <SceneFileInfoPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-edit-panel" title="Edit">
+          <Tab.Pane eventKey="scene-edit-panel">
             <SceneEditPanel
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
-              onUpdate={(newScene) => setScene(newScene)}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -287,16 +543,24 @@ export const Scene: React.FC = () => {
     };
   });
 
-  if (loading || !scene || !data?.findScene) {
-    return <LoadingIndicator />;
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
   }
 
-  if (error) return <div>{error.message}</div>;
+  if (loading || streamableLoading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (streamableError) return <ErrorMessage error={streamableError.message} />;
+  if (!scene) return <ErrorMessage error={`No scene found with id ${id}.`} />;
 
   return (
     <div className="row">
+      {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
-      <div className="scene-tabs order-xl-first order-last">
+      <div
+        className={`scene-tabs order-xl-first order-last ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         <div className="d-none d-xl-block">
           {scene.studio && (
             <h1 className="text-center">
@@ -315,13 +579,26 @@ export const Scene: React.FC = () => {
         </div>
         {renderTabs()}
       </div>
-      <div className="scene-player-container">
-        <ScenePlayer
-          className="w-100 m-sm-auto no-gutter"
-          scene={scene}
-          timestamp={timestamp}
-          autoplay={autoplay}
-        />
+      <div className="scene-divider d-none d-xl-block">
+        <Button
+          onClick={() => {
+            setCollapsed(!collapsed);
+          }}
+        >
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
+        {!rerenderPlayer ? (
+          <ScenePlayer
+            className="w-100 m-sm-auto no-gutter"
+            scene={scene}
+            timestamp={timestamp}
+            autoplay={autoplay}
+            sceneStreams={sceneStreams?.sceneStreams ?? []}
+            onComplete={onComplete}
+          />
+        ) : undefined}
       </div>
     </div>
   );

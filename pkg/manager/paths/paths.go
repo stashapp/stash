@@ -1,46 +1,39 @@
 package paths
 
 import (
-	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type Paths struct {
 	Generated *generatedPaths
-	JSON      *jsonPaths
 
-	Gallery      *galleryPaths
 	Scene        *scenePaths
 	SceneMarkers *sceneMarkerPaths
 }
 
-func NewPaths() *Paths {
+func NewPaths(generatedPath string) *Paths {
 	p := Paths{}
-	p.Generated = newGeneratedPaths()
-	p.JSON = newJSONPaths()
+	p.Generated = newGeneratedPaths(generatedPath)
 
-	p.Gallery = newGalleryPaths()
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
 	return &p
 }
 
-func GetConfigDirectory() string {
+func GetStashHomeDirectory() string {
 	return filepath.Join(utils.GetHomeDirectory(), ".stash")
 }
 
 func GetDefaultDatabaseFilePath() string {
-	return filepath.Join(GetConfigDirectory(), "stash-go.sqlite")
-}
-
-func GetDefaultConfigFilePath() string {
-	return filepath.Join(GetConfigDirectory(), "config.yml")
+	return filepath.Join(GetStashHomeDirectory(), "stash-go.sqlite")
 }
 
 func GetSSLKey() string {
-	return filepath.Join(GetConfigDirectory(), "stash.key")
+	return filepath.Join(GetStashHomeDirectory(), "stash.key")
 }
 
 func GetSSLCert() string {
-	return filepath.Join(GetConfigDirectory(), "stash.crt")
+	return filepath.Join(GetStashHomeDirectory(), "stash.crt")
 }

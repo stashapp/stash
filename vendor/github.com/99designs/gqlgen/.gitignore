@@ -4,6 +4,8 @@
 /integration/node_modules
 /integration/schema-fetched.graphql
 /example/chat/package-lock.json
+/example/federation/package-lock.json
+/example/federation/node_modules
 /codegen/gen
 /gen
 

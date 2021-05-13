@@ -1,31 +1,26 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { mutateMetadataGenerate } from "src/core/StashService";
-import { PreviewPreset } from "src/core/generated-graphql";
 import { useToast } from "src/hooks";
 
 export const GenerateButton: React.FC = () => {
   const Toast = useToast();
   const [sprites, setSprites] = useState(true);
+  const [phashes, setPhashes] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
-  const [thumbnails, setThumbnails] = useState(false);
   const [imagePreviews, setImagePreviews] = useState(false);
-  const [previewPreset, setPreviewPreset] = useState<string>(
-    PreviewPreset.Slow
-  );
 
   async function onGenerate() {
     try {
       await mutateMetadataGenerate({
         sprites,
+        phashes,
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
         transcodes,
-        thumbnails,
-        previewPreset: (previewPreset as PreviewPreset) ?? undefined,
       });
       Toast.success({ content: "Started generating" });
     } catch (e) {
@@ -53,31 +48,6 @@ export const GenerateButton: React.FC = () => {
             className="ml-2 flex-grow"
           />
         </div>
-        <Form.Group controlId="preview-preset" className="mt-2">
-          <Form.Label>
-            <h6>Preview encoding preset</h6>
-          </Form.Label>
-          <Form.Control
-            as="select"
-            value={previewPreset}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setPreviewPreset(e.currentTarget.value)
-            }
-            disabled={!previews}
-            className="col-1"
-          >
-            {Object.keys(PreviewPreset).map((p) => (
-              <option value={p.toLowerCase()} key={p}>
-                {p}
-              </option>
-            ))}
-          </Form.Control>
-          <Form.Text className="text-muted">
-            The preset regulates size, quality and encoding time of preview
-            generation. Presets beyond “slow” have diminishing returns and are
-            not recommended.
-          </Form.Text>
-        </Form.Group>
         <Form.Check
           id="sprite-task"
           checked={sprites}
@@ -97,10 +67,10 @@ export const GenerateButton: React.FC = () => {
           onChange={() => setTranscodes(!transcodes)}
         />
         <Form.Check
-          id="thumbnail-task"
-          checked={thumbnails}
-          label="Gallery thumbnails (thumbnails for all the gallery images)"
-          onChange={() => setThumbnails(!thumbnails)}
+          id="phash-task"
+          checked={phashes}
+          label="Phashes (for deduplication and scene identification)"
+          onChange={() => setPhashes(!phashes)}
         />
       </Form.Group>
       <Form.Group>

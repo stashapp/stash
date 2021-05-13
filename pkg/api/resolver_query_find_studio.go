@@ -2,31 +2,55 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) FindStudio(ctx context.Context, id string) (*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
-	idInt, _ := strconv.Atoi(id)
-	return qb.Find(idInt, nil)
+func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.Studio, err error) {
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		var err error
+		ret, err = repo.Studio().Find(idInt)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType) (*models.FindStudiosResultType, error) {
-	qb := models.NewStudioQueryBuilder()
-	studios, total := qb.Query(studioFilter, filter)
-	return &models.FindStudiosResultType{
-		Count:   total,
-		Studios: studios,
-	}, nil
+func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType) (ret *models.FindStudiosResultType, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		studios, total, err := repo.Studio().Query(studioFilter, filter)
+		if err != nil {
+			return err
+		}
+
+		ret = &models.FindStudiosResultType{
+			Count:   total,
+			Studios: studios,
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *queryResolver) AllStudios(ctx context.Context) ([]*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
-	return qb.All()
-}
+func (r *queryResolver) AllStudios(ctx context.Context) (ret []*models.Studio, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().All()
+		return err
+	}); err != nil {
+		return nil, err
+	}
 
-func (r *queryResolver) AllStudiosSlim(ctx context.Context) ([]*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
-	return qb.AllSlim()
+	return ret, nil
 }

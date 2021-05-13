@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
+import { TruncatedText } from "src/components/Shared";
 
 interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
@@ -10,13 +11,26 @@ interface ISceneFileInfoPanelProps {
 export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
+  function renderOSHash() {
+    if (props.scene.oshash) {
+      return (
+        <div className="row">
+          <span className="col-4">Hash</span>
+          <TruncatedText className="col-8" text={props.scene.oshash} />
+        </div>
+      );
+    }
+  }
+
   function renderChecksum() {
-    return (
-      <div className="row">
-        <span className="col-4">Checksum</span>
-        <span className="col-8 text-truncate">{props.scene.checksum}</span>
-      </div>
-    );
+    if (props.scene.checksum) {
+      return (
+        <div className="row">
+          <span className="col-4">Checksum</span>
+          <TruncatedText className="col-8" text={props.scene.checksum} />
+        </div>
+      );
+    }
   }
 
   function renderPath() {
@@ -26,9 +40,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Path</span>
-        <span className="col-8 text-truncate">
-          <a href={`file://${path}`}>{`file://${props.scene.path}`}</a>{" "}
-        </span>
+        <a href={`file://${path}`} className="col-8">
+          <TruncatedText text={`file://${props.scene.path}`} />
+        </a>{" "}
       </div>
     );
   }
@@ -37,11 +51,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Stream</span>
-        <span className="col-8 text-truncate">
-          <a href={props.scene.paths.stream ?? ""}>
-            {props.scene.paths.stream}
-          </a>{" "}
-        </span>
+        <a href={props.scene.paths.stream ?? ""} className="col-8">
+          <TruncatedText text={props.scene.paths.stream} />
+        </a>{" "}
       </div>
     );
   }
@@ -79,9 +91,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Duration</span>
-        <span className="col-8 text-truncate">
-          {TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}
-        </span>
+        <TruncatedText
+          className="col-8"
+          text={TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}
+        />
       </div>
     );
   }
@@ -93,9 +106,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Dimensions</span>
-        <span className="col-8 text-truncate">
-          {props.scene.file.width} x {props.scene.file.height}
-        </span>
+        <TruncatedText
+          className="col-8"
+          text={`${props.scene.file.width} x ${props.scene.file.height}`}
+        />
       </div>
     );
   }
@@ -141,9 +155,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Video Codec</span>
-        <span className="col-8 text-truncate">
-          {props.scene.file.video_codec}
-        </span>
+        <TruncatedText className="col-8" text={props.scene.file.video_codec} />
       </div>
     );
   }
@@ -155,9 +167,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Audio Codec</span>
-        <span className="col-8 text-truncate">
-          {props.scene.file.audio_codec}
-        </span>
+        <TruncatedText className="col-8" text={props.scene.file.audio_codec} />
       </div>
     );
   }
@@ -169,16 +179,64 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Downloaded From</span>
-        <span className="col-8 text-truncate">
-          <a href={TextUtils.sanitiseURL(props.scene.url)}>{props.scene.url}</a>
-        </span>
+        <a href={TextUtils.sanitiseURL(props.scene.url)} className="col-8">
+          <TruncatedText text={props.scene.url} />
+        </a>
       </div>
     );
   }
 
+  function renderStashIDs() {
+    if (!props.scene.stash_ids.length) {
+      return;
+    }
+
+    return (
+      <div className="row">
+        <span className="col-4">StashIDs</span>
+        <ul className="col-8">
+          {props.scene.stash_ids.map((stashID) => {
+            const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+            const link = base ? (
+              <a
+                href={`${base}scenes/${stashID.stash_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {stashID.stash_id}
+              </a>
+            ) : (
+              stashID.stash_id
+            );
+            return (
+              <li key={stashID.stash_id} className="row no-gutters">
+                {link}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  }
+
+  function renderPhash() {
+    if (props.scene.phash) {
+      return (
+        <div className="row">
+          <abbr className="col-4" title="Perceptual hash">
+            PHash
+          </abbr>
+          <TruncatedText className="col-8" text={props.scene.phash} />
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="container scene-file-info">
+      {renderOSHash()}
       {renderChecksum()}
+      {renderPhash()}
       {renderPath()}
       {renderStream()}
       {renderFileSize()}
@@ -189,6 +247,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       {renderVideoCodec()}
       {renderAudioCodec()}
       {renderUrl()}
+      {renderStashIDs()}
     </div>
   );
 };
