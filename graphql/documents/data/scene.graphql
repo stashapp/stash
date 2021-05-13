@@ -37,11 +37,11 @@ fragment SceneData on Scene {
   }
 
   galleries {
-    ...GallerySlimData
+    ...SlimGalleryData
   }
 
   studio {
-    ...StudioData
+    ...SlimStudioData
   }
   
   movies {
@@ -52,7 +52,7 @@ fragment SceneData on Scene {
   }
 
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   performers {

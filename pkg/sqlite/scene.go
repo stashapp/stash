@@ -562,11 +562,17 @@ func sceneTagCountCriterionHandler(qb *sceneQueryBuilder, tagCount *models.IntCr
 }
 
 func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		qb.performersRepository().join(f, "performers_join", "scenes.id")
-		f.addJoin("performers", "", "performers_join.performer_id = performers.id")
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    performersScenesTable,
+		joinAs:       "performers_join",
+		primaryFK:    sceneIDColumn,
+		foreignFK:    performerIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.performersRepository().join(f, "performers_join", "scenes.id")
+		},
 	}
-	h := qb.getMultiCriterionHandlerBuilder(performerTable, performersScenesTable, performerIDColumn, addJoinsFunc)
 
 	return h.handler(performers)
 }

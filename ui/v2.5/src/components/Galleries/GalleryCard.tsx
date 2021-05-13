@@ -15,7 +15,7 @@ import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
 interface IProps {
-  gallery: GQL.GallerySlimDataFragment;
+  gallery: GQL.SlimGalleryDataFragment;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
