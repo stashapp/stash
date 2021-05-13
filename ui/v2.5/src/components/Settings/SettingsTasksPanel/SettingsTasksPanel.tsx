@@ -151,7 +151,7 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGenerateSprites,
         scanGeneratePhashes,
       });
-      Toast.success({ content: "Started scan" });
+      Toast.success({ content: "Added scan to job queue" });
     } catch (e) {
       Toast.error(e);
     }
@@ -186,7 +186,7 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onAutoTag(paths?: string[]) {
     try {
       await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({ content: "Started auto tagging" });
+      Toast.success({ content: "Auto tagging to job queue" });
     } catch (e) {
       Toast.error(e);
     }
