@@ -56,11 +56,14 @@ export const SettingsTasksPanel: React.FC = () => {
 
   const plugins = usePlugins();
 
-  function onImport() {
+  async function onImport() {
     setIsImportAlertOpen(false);
-    mutateMetadataImport().catch((e) => {
+    try {
+      await mutateMetadataImport();
+      Toast.success({ content: "Added import task to queue" });
+    } catch (e) {
       Toast.error(e);
-    });
+    }
   }
 
   function renderImportAlert() {
@@ -186,7 +189,7 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onAutoTag(paths?: string[]) {
     try {
       await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({ content: "Auto tagging to job queue" });
+      Toast.success({ content: "Added Auto tagging job to queue" });
     } catch (e) {
       Toast.error(e);
     }
@@ -194,6 +197,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
     await mutateRunPluginTask(plugin.id, operation.name);
+    Toast.success({ content: `Added ${operation.name} job to queue` });
   }
 
   function renderPluginTasks(plugin: Plugin, pluginTasks: PluginTask[]) {
@@ -259,6 +263,24 @@ export const SettingsTasksPanel: React.FC = () => {
         })}
       </>
     );
+  }
+
+  async function onMigrateHashNaming() {
+    try {
+      await mutateMigrateHashNaming();
+      Toast.success({ content: "Added hash migration task to queue" });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
+  async function onExport() {
+    try {
+      await mutateMetadataExport();
+      Toast.success({ content: "Added export task to queue" });
+    } catch (err) {
+      Toast.error(err);
+    }
   }
 
   if (isBackupRunning) {
@@ -428,7 +450,7 @@ export const SettingsTasksPanel: React.FC = () => {
           id="export"
           variant="secondary"
           type="submit"
-          onClick={() => mutateMetadataExport().catch((e) => Toast.error(e))}
+          onClick={() => onExport()}
         >
           Full Export
         </Button>
@@ -508,7 +530,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="migrateHashNaming"
           variant="danger"
-          onClick={() => mutateMigrateHashNaming()}
+          onClick={() => onMigrateHashNaming()}
         >
           Rename generated files
         </Button>
