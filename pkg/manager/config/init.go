@@ -24,8 +24,22 @@ func Initialize() (*Instance, error) {
 		instance = &Instance{}
 
 		flags := initFlags()
-		err = initConfig(flags)
+		if err = initConfig(flags); err != nil {
+			return
+		}
+
 		initEnvs()
+
+		if instance.isNewSystem {
+			if instance.Validate() == nil {
+				// system has been initialised by the environment
+				instance.isNewSystem = false
+			}
+		}
+
+		if !instance.isNewSystem {
+			err = instance.SetInitialConfig()
+		}
 	})
 	return instance, err
 }
@@ -34,26 +48,44 @@ func initConfig(flags flagStruct) error {
 	// The config file is called config.  Leave off the file extension.
 	viper.SetConfigName("config")
 
-	if flagConfigFileExists, _ := utils.FileExists(flags.configFilePath); flagConfigFileExists {
-		viper.SetConfigFile(flags.configFilePath)
-	}
 	viper.AddConfigPath(".")            // Look for config in the working directory
 	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
 
-	// for Docker compatibility, if STASH_CONFIG_FILE is set, then touch the
-	// given filename
+	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
-	if envConfigFile != "" {
-		utils.Touch(envConfigFile)
+
+	if flags.configFilePath != "" {
+		configFile = flags.configFilePath
+	} else if envConfigFile != "" {
+		configFile = envConfigFile
+	}
+
+	if configFile != "" {
+		// if file does not exist, assume it is a new system
+		if exists, _ := utils.FileExists(configFile); !exists {
+			instance.isNewSystem = true
+
+			// ensure we can write to the file
+			if err := utils.Touch(configFile); err != nil {
+				return err
+			}
+
+			return nil
+		}
+
 		viper.SetConfigFile(envConfigFile)
 	}
 
 	err := viper.ReadInConfig() // Find and read the config file
-	// continue, but set an error to be handled by caller
+	// if not found, assume its a new system
+	if _, isMissing := err.(viper.ConfigFileNotFoundError); isMissing {
+		instance.isNewSystem = true
+		return nil
+	} else if err != nil {
+		return err
+	}
 
-	instance.SetInitialConfig()
-
-	return err
+	return nil
 }
 
 func initFlags() flagStruct {
