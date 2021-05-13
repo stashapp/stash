@@ -926,6 +926,14 @@ export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
     variables: { input },
   });
 
+export const mutateStashBoxBatchPerformerTag = (
+  input: GQL.StashBoxBatchPerformerTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
+    mutation: GQL.StashBoxBatchPerformerTagDocument,
+    variables: { input },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
