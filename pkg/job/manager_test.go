@@ -269,6 +269,14 @@ func TestSubscribe(t *testing.T) {
 		t.Error("updated job was not received")
 	}
 
+	// wait for it to start
+	select {
+	case <-exec1.started:
+		// ok
+	case <-time.After(time.Second):
+		t.Error("exec was not started")
+	}
+
 	// test update throttling
 	exec1.progress.SetPercent(0.1)
 
