@@ -31,7 +31,7 @@ export const Setup: React.FC = () => {
     if (systemStatus?.systemStatus.configPath) {
       setConfigLocation(systemStatus.systemStatus.configPath);
     }
-  }, [systemStatus])
+  }, [systemStatus]);
 
   const discordLink = (
     <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
@@ -73,13 +73,16 @@ export const Setup: React.FC = () => {
           <p className="lead text-center">
             If you&apos;re reading this, then Stash couldn&apos;t find the
             configuration file specified at the command line or the environment.
-            This wizard will guide you through the process of setting up a new configuration.
+            This wizard will guide you through the process of setting up a new
+            configuration.
           </p>
           <p>
-            Stash will use the following configuration file path: <code>{configLocation}</code>
+            Stash will use the following configuration file path:{" "}
+            <code>{configLocation}</code>
           </p>
           <p>
-            When you&apos;re ready to proceed with setting up a new system, click Next.
+            When you&apos;re ready to proceed with setting up a new system,
+            click Next.
           </p>
         </section>
 
@@ -483,7 +486,10 @@ export const Setup: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  const welcomeStep = systemStatus && systemStatus.systemStatus.configPath !== "" ? renderWelcomeSpecificConfig : renderWelcome;
+  const welcomeStep =
+    systemStatus && systemStatus.systemStatus.configPath !== ""
+      ? renderWelcomeSpecificConfig
+      : renderWelcome;
   const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
 
   return (
