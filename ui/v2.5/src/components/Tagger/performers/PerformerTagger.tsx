@@ -25,6 +25,11 @@ import {
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 
+type JobFragment = Pick<
+  GQL.Job,
+  "id" | "status" | "subTasks" | "description" | "progress"
+>;
+
 const CLASSNAME = "PerformerTagger";
 
 interface IPerformerTaggerListProps {
@@ -495,7 +500,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const [showManual, setShowManual] = useState(false);
 
   const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
-  const [batchJob, setBatchJob] = useState<GQL.Job | undefined>();
+  const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
 
   // monitor batch operation
   useEffect(() => {

@@ -9,8 +9,13 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
+type JobFragment = Pick<
+  GQL.Job,
+  "id" | "status" | "subTasks" | "description" | "progress"
+>;
+
 interface IJob {
-  job: GQL.JobDataFragment;
+  job: JobFragment;
 }
 
 const Task: React.FC<IJob> = ({ job }) => {
@@ -151,7 +156,7 @@ export const JobTable: React.FC = () => {
   const jobStatus = useJobQueue();
   const jobsSubscribe = useJobsSubscribe();
 
-  const [queue, setQueue] = useState<GQL.JobDataFragment[]>([]);
+  const [queue, setQueue] = useState<JobFragment[]>([]);
 
   useEffect(() => {
     setQueue(jobStatus.data?.jobQueue ?? []);
