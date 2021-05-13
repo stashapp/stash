@@ -5,37 +5,37 @@ import { SceneDataFragment } from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 
 export interface IExternalPlayerButtonProps {
-  scene?: SceneDataFragment;
+  scene: SceneDataFragment;
 }
 
 export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   scene,
 }) => {
-  if (!scene) return <span />;
+  const isAndroid = /(android)/i.test(navigator.userAgent);
+  const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
 
-  const icon = <Icon icon="external-link-alt" color="white" />;
-  const m3u = Buffer.from(
-    `#EXTM3U\n#EXTINF:${scene.file.duration},${
-      scene.title ?? TextUtils.fileNameFromPath(scene.path)
-    }\n${scene.paths.stream}`
-  ).toString("base64");
-  let link;
-  if (/(android)/i.test(navigator.userAgent)) {
-    const scheme = scene.paths?.stream?.match(/https?/)?.[0] ?? "";
-    link = (
-      <a
-        href={`intent${scene.paths?.stream?.slice(
-          scheme.length
-        )}#Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;end`}
-      >
-        {icon}
-      </a>
-    );
-  } else if (/(ipod|iphone|ipad)/i.test(navigator.userAgent))
-    link = (
-      <a href={`data:application/vnd.apple.mpegurl;base64,${m3u}`}>{icon}</a>
-    );
-  else link = <a href={`data:audio/x-mpegurl;base64,${m3u}`}>{icon}</a>;
+  const {paths, path, title} = scene;
+
+  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice)) return <span />;
+
+  const {stream} = paths;
+  const sceneTitle = title ?? TextUtils.fileNameFromPath(path);
+
+  let url;
+  const streamURL = new URL(stream);
+  if (isAndroid) {
+    const scheme = streamURL.protocol.slice(0, -1);
+    streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(sceneTitle)};end`;
+    streamURL.protocol = "intent";
+    url = streamURL.toString();
+  } else if (isAppleDevice) {
+    streamURL.host = "x-callback-url";
+    streamURL.port = "";
+    streamURL.pathname = "stream"
+    streamURL.search = `url=${encodeURIComponent(stream)}`;
+    streamURL.protocol = "vlc-x-callback";
+    url = streamURL.toString();
+  }
 
   return (
     <Button
@@ -43,7 +43,11 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
       variant="secondary"
       title="Open in external player"
     >
-      {link}
+      <a
+        href={url}
+      >
+        <Icon icon="external-link-alt" color="white" />
+      </a>
     </Button>
   );
 };
