@@ -79,7 +79,11 @@ func Initialize() *singleton {
 				}
 			}
 		} else {
-			logger.Warn("config file not found. Assuming new system...")
+			cfgFile := cfg.GetConfigFile()
+			if cfgFile != "" {
+				cfgFile = cfgFile + " "
+			}
+			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
 		initFFMPEG()

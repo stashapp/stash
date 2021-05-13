@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"sync"
@@ -61,19 +62,22 @@ func initConfig(flags flagStruct) error {
 	}
 
 	if configFile != "" {
+		viper.SetConfigFile(configFile)
+
 		// if file does not exist, assume it is a new system
 		if exists, _ := utils.FileExists(configFile); !exists {
 			instance.isNewSystem = true
 
 			// ensure we can write to the file
 			if err := utils.Touch(configFile); err != nil {
-				return err
+				return fmt.Errorf(`could not write to provided config path "%s": %s`, configFile, err.Error())
+			} else {
+				// remove the file
+				os.Remove(configFile)
 			}
 
 			return nil
 		}
-
-		viper.SetConfigFile(envConfigFile)
 	}
 
 	err := viper.ReadInConfig() // Find and read the config file
