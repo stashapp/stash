@@ -213,13 +213,20 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 			return
 		}
 
-		totalsNeeded := s.neededGenerate(scenes, input)
-		if totalsNeeded == nil {
-			logger.Infof("Taking too long to count content. Skipping...")
-			logger.Infof("Generating content")
-		} else {
-			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
-		}
+		// TODO - consider removing this. Even though we're only waiting a maximum of
+		// 90 seconds for this, it is all for a simple log message, and probably not worth
+		// waiting for
+		var totalsNeeded *totalsGenerate
+		progress.ExecuteTask("Calculating content to generate...", func() {
+			totalsNeeded = s.neededGenerate(scenes, input)
+
+			if totalsNeeded == nil {
+				logger.Infof("Taking too long to count content. Skipping...")
+				logger.Infof("Generating content")
+			} else {
+				logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
+			}
+		})
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 
@@ -259,7 +266,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				wg.Add()
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Previews {
@@ -271,7 +280,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				wg.Add()
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Markers {
@@ -282,7 +293,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Transcodes {
@@ -292,7 +305,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating transcode for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Phashes {
@@ -302,7 +317,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 					txnManager:          s.TxnManager,
 				}
 				wg.Add()
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 		}
 
@@ -331,7 +348,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 				Overwrite:           overwrite,
 				fileNamingAlgorithm: fileNamingAlgo,
 			}
-			go task.Start(&wg)
+			go progress.ExecuteTask(fmt.Sprintf("Generating marker preview for marker ID %d", marker.ID), func() {
+				task.Start(&wg)
+			})
 		}
 
 		wg.Wait()
@@ -466,7 +485,10 @@ func (s *singleton) Clean(input models.CleanMetadataInput) int {
 				Scene:               scene,
 				fileNamingAlgorithm: fileNamingAlgo,
 			}
-			go task.Start(&wg, input.DryRun)
+			go progress.ExecuteTask(fmt.Sprintf("Assessing scene %s for clean", scene.Path), func() {
+				task.Start(&wg, input.DryRun)
+			})
+
 			wg.Wait()
 		}
 
@@ -488,7 +510,9 @@ func (s *singleton) Clean(input models.CleanMetadataInput) int {
 				TxnManager: s.TxnManager,
 				Image:      img,
 			}
-			go task.Start(&wg, input.DryRun)
+			go progress.ExecuteTask(fmt.Sprintf("Assessing image %s for clean", img.Path), func() {
+				task.Start(&wg, input.DryRun)
+			})
 			wg.Wait()
 		}
 
@@ -510,7 +534,9 @@ func (s *singleton) Clean(input models.CleanMetadataInput) int {
 				TxnManager: s.TxnManager,
 				Gallery:    gallery,
 			}
-			go task.Start(&wg, input.DryRun)
+			go progress.ExecuteTask(fmt.Sprintf("Assessing gallery %s for clean", gallery.GetTitle()), func() {
+				task.Start(&wg, input.DryRun)
+			})
 			wg.Wait()
 		}
 
@@ -729,7 +755,7 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
 				}
 				if err != nil {
-					return fmt.Errorf("Error querying performers: %s", err.Error())
+					return fmt.Errorf("error querying performers: %s", err.Error())
 				}
 
 				for _, performer := range performers {
@@ -759,8 +785,9 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 		var wg sync.WaitGroup
 		for _, task := range tasks {
 			wg.Add(1)
-			go task.Start(&wg)
-			wg.Wait()
+			progress.ExecuteTask(task.Description(), func() {
+				task.Start(&wg)
+			})
 
 			progress.Increment()
 		}
