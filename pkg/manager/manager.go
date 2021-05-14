@@ -92,28 +92,40 @@ func Initialize() *singleton {
 	return instance
 }
 
-func initFFMPEG() {
-	configDirectory := paths.GetStashHomeDirectory()
-	ffmpegPath, ffprobePath := ffmpeg.GetPaths(configDirectory)
-	if ffmpegPath == "" || ffprobePath == "" {
-		logger.Infof("couldn't find FFMPEG, attempting to download it")
-		if err := ffmpeg.Download(configDirectory); err != nil {
-			msg := `Unable to locate / automatically download FFMPEG
-
-Check the readme for download links.
-The FFMPEG and FFProbe binaries should be placed in %s
-
-The error was: %s
-`
-			logger.Fatalf(msg, configDirectory, err)
-		} else {
-			// After download get new paths for ffmpeg and ffprobe
-			ffmpegPath, ffprobePath = ffmpeg.GetPaths(configDirectory)
+func initFFMPEG() error {
+	// only do this if we have a config file set
+	if instance.Config.GetConfigFile() != "" {
+		// use same directory as config path
+		configDirectory := instance.Config.GetConfigPath()
+		paths := []string{
+			configDirectory,
+			paths.GetStashHomeDirectory(),
 		}
+		ffmpegPath, ffprobePath := ffmpeg.GetPaths(paths)
+
+		if ffmpegPath == "" || ffprobePath == "" {
+			logger.Infof("couldn't find FFMPEG, attempting to download it")
+			if err := ffmpeg.Download(configDirectory); err != nil {
+				msg := `Unable to locate / automatically download FFMPEG
+
+	Check the readme for download links.
+	The FFMPEG and FFProbe binaries should be placed in %s
+
+	The error was: %s
+	`
+				logger.Errorf(msg, configDirectory, err)
+				return err
+			} else {
+				// After download get new paths for ffmpeg and ffprobe
+				ffmpegPath, ffprobePath = ffmpeg.GetPaths(paths)
+			}
+		}
+
+		instance.FFMPEGPath = ffmpegPath
+		instance.FFProbePath = ffprobePath
 	}
 
-	instance.FFMPEGPath = ffmpegPath
-	instance.FFProbePath = ffprobePath
+	return nil
 }
 
 func initLog() {
@@ -244,6 +256,8 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	}
 
 	s.Config.FinalizeSetup()
+
+	initFFMPEG()
 
 	return nil
 }
