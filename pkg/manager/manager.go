@@ -262,6 +262,14 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	return nil
 }
 
+func (s *singleton) validateFFMPEG() error {
+	if s.FFMPEGPath == "" || s.FFProbePath == "" {
+		return errors.New("missing ffmpeg and/or ffprobe")
+	}
+
+	return nil
+}
+
 func (s *singleton) Migrate(input models.MigrateInput) error {
 	// always backup so that we can roll back to the previous version if
 	// migration fails
