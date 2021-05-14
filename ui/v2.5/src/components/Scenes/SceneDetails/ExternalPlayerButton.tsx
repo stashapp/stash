@@ -14,24 +14,27 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const isAndroid = /(android)/i.test(navigator.userAgent);
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
 
-  const {paths, path, title} = scene;
+  const { paths, path, title } = scene;
 
-  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice)) return <span />;
+  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice))
+    return <span />;
 
-  const {stream} = paths;
+  const { stream } = paths;
   const sceneTitle = title ?? TextUtils.fileNameFromPath(path);
 
   let url;
   const streamURL = new URL(stream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);
-    streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(sceneTitle)};end`;
+    streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(
+      sceneTitle
+    )};end`;
     streamURL.protocol = "intent";
     url = streamURL.toString();
   } else if (isAppleDevice) {
     streamURL.host = "x-callback-url";
     streamURL.port = "";
-    streamURL.pathname = "stream"
+    streamURL.pathname = "stream";
     streamURL.search = `url=${encodeURIComponent(stream)}`;
     streamURL.protocol = "vlc-x-callback";
     url = streamURL.toString();
@@ -43,9 +46,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
       variant="secondary"
       title="Open in external player"
     >
-      <a
-        href={url}
-      >
+      <a href={url}>
         <Icon icon="external-link-alt" color="white" />
       </a>
     </Button>
