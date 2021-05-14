@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -40,4 +42,41 @@ func TestIsPathInDir(t *testing.T) {
 		result := IsPathInDir(tc.dir, tc.pathToCheck)
 		assert.Equal(tc.expected, result, "[%d] expected: %t for dir: %s; pathToCheck: %s", i, tc.expected, tc.dir, tc.pathToCheck)
 	}
+}
+
+func TestDirExists(t *testing.T) {
+	type test struct {
+		dir      string
+		expected bool
+	}
+
+	const st = "stash_tmp"
+
+	tmp := os.TempDir()
+	tmpDir, err := ioutil.TempDir(tmp, st) // create a tmp dir in the system's tmp folder
+	if err == nil {
+		defer os.RemoveAll(tmpDir)
+
+		tmpFile, err := ioutil.TempFile(tmpDir, st)
+		if err != nil {
+			return
+		}
+		tmpFile.Close()
+
+		tests := []test{
+			{dir: tmpDir, expected: true},                     // exists
+			{dir: tmpFile.Name(), expected: false},            // not a directory
+			{dir: filepath.Join(tmpDir, st), expected: false}, // doesn't exist
+			{dir: "\000x", expected: false},                   // stat error  \000 (ASCII: NUL) is an invalid character in unix,ntfs file names.
+		}
+
+		assert := assert.New(t)
+
+		for i, tc := range tests {
+			result, _ := DirExists(tc.dir)
+			assert.Equal(tc.expected, result, "[%d] expected: %t for dir: %s;", i, tc.expected, tc.dir)
+		}
+
+	}
+
 }
