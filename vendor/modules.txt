@@ -242,6 +242,14 @@ github.com/pkg/errors
 github.com/pmezard/go-difflib/difflib
 # github.com/remeh/sizedwaitgroup v1.0.0
 github.com/remeh/sizedwaitgroup
+# github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
+github.com/robertkrimen/otto
+github.com/robertkrimen/otto/ast
+github.com/robertkrimen/otto/dbg
+github.com/robertkrimen/otto/file
+github.com/robertkrimen/otto/parser
+github.com/robertkrimen/otto/registry
+github.com/robertkrimen/otto/token
 # github.com/rogpeppe/go-internal v1.3.0
 github.com/rogpeppe/go-internal/modfile
 github.com/rogpeppe/go-internal/module
@@ -376,5 +384,8 @@ golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/ini.v1 v1.51.0
 gopkg.in/ini.v1
+# gopkg.in/sourcemap.v1 v1.0.5
+gopkg.in/sourcemap.v1
+gopkg.in/sourcemap.v1/base64vlq
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
