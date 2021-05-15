@@ -159,6 +159,9 @@ func Start() {
 		txnManager: txnManager,
 	}
 
+	// register resolver with plugin cache
+	manager.GetInstance().PluginCache.RegisterAPI(resolver)
+
 	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, websocketKeepAliveDuration, maxUploadSize)
 
 	r.Handle("/graphql", gqlHandler)

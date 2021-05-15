@@ -33,6 +33,7 @@ type pluginTask struct {
 	operation        *OperationConfig
 	serverConnection common.StashServerConnection
 	args             []*models.PluginArgInput
+	api              interface{}
 
 	progress chan float64
 	result   *common.PluginOutput

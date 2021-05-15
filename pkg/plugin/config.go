@@ -147,10 +147,12 @@ const (
 	// common.PluginOutput. If this decoding fails, then the raw output will be
 	// treated as the output.
 	InterfaceEnumRaw interfaceEnum = "raw"
+
+	InterfaceEnumJS interfaceEnum = "js"
 )
 
 func (i interfaceEnum) Valid() bool {
-	return i == InterfaceEnumRPC || i == InterfaceEnumRaw
+	return i == InterfaceEnumRPC || i == InterfaceEnumRaw || i == InterfaceEnumJS
 }
 
 func (i *interfaceEnum) getTaskBuilder() taskBuilder {
@@ -160,6 +162,10 @@ func (i *interfaceEnum) getTaskBuilder() taskBuilder {
 
 	if *i == InterfaceEnumRPC {
 		return &rpcTaskBuilder{}
+	}
+
+	if *i == InterfaceEnumJS {
+		return &jsTaskBuilder{}
 	}
 
 	// shouldn't happen

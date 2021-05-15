@@ -21,6 +21,7 @@ import (
 type Cache struct {
 	path    string
 	plugins []Config
+	api     interface{}
 }
 
 // NewCache returns a new Cache loading plugin configurations
@@ -39,6 +40,10 @@ func NewCache(pluginPath string) (*Cache, error) {
 		path:    pluginPath,
 		plugins: plugins,
 	}, nil
+}
+
+func (c *Cache) RegisterAPI(api interface{}) {
+	c.api = api
 }
 
 // ReloadPlugins clears the plugin cache and reloads from the plugin path.
@@ -125,6 +130,7 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 		serverConnection: serverConnection,
 		args:             args,
 		progress:         progress,
+		api:              c.api,
 	}
 	return task.createTask(), nil
 }
