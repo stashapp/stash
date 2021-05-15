@@ -19,9 +19,9 @@ import (
 
 // Cache stores plugin details.
 type Cache struct {
-	path    string
-	plugins []Config
-	api     interface{}
+	path     string
+	plugins  []Config
+	resolver models.ResolverRoot
 }
 
 // NewCache returns a new Cache loading plugin configurations
@@ -42,8 +42,8 @@ func NewCache(pluginPath string) (*Cache, error) {
 	}, nil
 }
 
-func (c *Cache) RegisterAPI(api interface{}) {
-	c.api = api
+func (c *Cache) RegisterAPI(resolver models.ResolverRoot) {
+	c.resolver = resolver
 }
 
 // ReloadPlugins clears the plugin cache and reloads from the plugin path.
@@ -130,7 +130,7 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 		serverConnection: serverConnection,
 		args:             args,
 		progress:         progress,
-		api:              c.api,
+		api:              c.resolver,
 	}
 	return task.createTask(), nil
 }

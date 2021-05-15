@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/robertkrimen/otto"
-	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
 type jsTaskBuilder struct{}
@@ -25,10 +25,20 @@ type jsPluginTask struct {
 	waitGroup sync.WaitGroup
 }
 
-type testObject struct{}
+func (t *jsPluginTask) makeOutput(o otto.Value) {
+	t.result = &common.PluginOutput{}
 
-func (o *testObject) Foo(ctx context.Context) {
-	logger.Info(ctx.Value("foo"))
+	asObj := o.Object()
+	if asObj == nil {
+		return
+	}
+
+	t.result.Output, _ = asObj.Get("Output")
+	err, _ := asObj.Get("Error")
+	if !err.IsUndefined() {
+		errStr := err.String()
+		t.result.Error = &errStr
+	}
 }
 
 func (t *jsPluginTask) Start() error {
@@ -55,10 +65,14 @@ func (t *jsPluginTask) Start() error {
 		return err
 	}
 
-	vm.Set("api", t.api)
-	vm.Set("ctx", ctx)
-	vm.Set("test", &testObject{})
-	_, err = vm.Run(script)
+	input := t.buildPluginInput()
+
+	vm.Set("input", input)
+	vm.Set("api", &jsAPI{r: t.api, ctx: ctx})
+	// TODO - vm.Set("log")
+	output, err := vm.Run(script)
+
+	t.makeOutput(output)
 
 	return err
 }
