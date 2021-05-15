@@ -283,3 +283,14 @@ func IsPathInDir(dir, pathToCheck string) bool {
 
 	return false
 }
+
+// GetNameFromPath returns the name of a file from its path
+// if stripExtension is true the extension is omitted from the name
+func GetNameFromPath(path string, stripExtension bool) string {
+	fn := filepath.Base(path)
+	if stripExtension {
+		ext := filepath.Ext(fn)
+		fn = strings.TrimSuffix(fn, ext)
+	}
+	return fn
+}

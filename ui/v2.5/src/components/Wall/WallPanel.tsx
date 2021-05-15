@@ -1,9 +1,11 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
+import { SceneQueue } from "src/models/sceneQueue";
 import { WallItem } from "./WallItem";
 
 interface IWallPanelProps {
   scenes?: GQL.SlimSceneDataFragment[];
+  sceneQueue?: SceneQueue;
   sceneMarkers?: GQL.SceneMarkerDataFragment[];
   images?: GQL.SlimImageDataFragment[];
   clickHandler?: (
@@ -43,7 +45,9 @@ export const WallPanel: React.FC<IWallPanelProps> = (
   const scenes = (props.scenes ?? []).map((scene, index, sceneArray) => (
     <WallItem
       key={scene.id}
+      index={index}
       scene={scene}
+      sceneQueue={props.sceneQueue}
       clickHandler={props.clickHandler}
       className={calculateClass(index, sceneArray.length)}
     />

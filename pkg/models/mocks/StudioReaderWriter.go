@@ -296,6 +296,29 @@ func (_m *StudioReaderWriter) Query(studioFilter *models.StudioFilterType, findF
 	return r0, r1, r2
 }
 
+// QueryForAutoTag provides a mock function with given fields: words
+func (_m *StudioReaderWriter) QueryForAutoTag(words []string) ([]*models.Studio, error) {
+	ret := _m.Called(words)
+
+	var r0 []*models.Studio
+	if rf, ok := ret.Get(0).(func([]string) []*models.Studio); ok {
+		r0 = rf(words)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string) error); ok {
+		r1 = rf(words)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: updatedStudio
 func (_m *StudioReaderWriter) Update(updatedStudio models.StudioPartial) (*models.Studio, error) {
 	ret := _m.Called(updatedStudio)

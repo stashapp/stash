@@ -1,18 +1,10 @@
-mutation StudioCreate(
-  $name: String!,
-  $url: String,
-  $image: String,
-  $stash_ids: [StashIDInput!],
-  $parent_id: ID) {
-
-  studioCreate(input: { name: $name, url: $url, image: $image, stash_ids: $stash_ids, parent_id: $parent_id }) {
+mutation StudioCreate($input: StudioCreateInput!) {
+  studioCreate(input: $input) {
     ...StudioData
   }
 }
 
-mutation StudioUpdate(
-  $input: StudioUpdateInput!) {
-
+mutation StudioUpdate($input: StudioUpdateInput!) {
   studioUpdate(input: $input) {
     ...StudioData
   }

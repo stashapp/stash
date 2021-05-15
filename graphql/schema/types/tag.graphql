@@ -5,13 +5,15 @@ type Tag {
   image_path: String # Resolver
   scene_count: Int # Resolver
   scene_marker_count: Int # Resolver
+  image_count: Int # Resolver
+  gallery_count: Int # Resolver
   performer_count: Int
 }
 
 input TagCreateInput {
   name: String!
 
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
 }
 
@@ -19,7 +21,7 @@ input TagUpdateInput {
   id: ID!
   name: String!
 
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   image: String
 }
 

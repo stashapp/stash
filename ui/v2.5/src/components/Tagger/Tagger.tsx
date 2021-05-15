@@ -2,18 +2,20 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
+import { uniqBy } from "lodash";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { useLocalForage } from "src/hooks";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, TruncatedText } from "src/components/Shared";
 import {
-  stashBoxQuery,
-  stashBoxBatchQuery,
+  stashBoxSceneQuery,
+  stashBoxSceneBatchQuery,
   useConfiguration,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 
+import { SceneQueue } from "src/models/sceneQueue";
 import StashSearchResult from "./StashSearchResult";
 import Config from "./Config";
 import {
@@ -141,14 +143,19 @@ function prepareQueryString(
 
 interface ITaggerListProps {
   scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
   selectedEndpoint: { endpoint: string; index: number };
   config: ITaggerConfig;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
   clearSubmissionQueue: (endpoint: string) => void;
 }
 
+// Caches fingerprint lookups between page renders
+let fingerprintCache: Record<string, IStashBoxScene[]> = {};
+
 const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
+  queue,
   selectedEndpoint,
   config,
   queueFingerprintSubmission,
@@ -168,13 +175,16 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [selectedResult, setSelectedResult] = useState<
     Record<string, number>
   >();
+  const [selectedFingerprintResult, setSelectedFingerprintResult] = useState<
+    Record<string, number>
+  >();
   const [taggedScenes, setTaggedScenes] = useState<
     Record<string, Partial<GQL.SlimSceneDataFragment>>
   >({});
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
   const [fingerprints, setFingerprints] = useState<
-    Record<string, IStashBoxScene>
-  >({});
+    Record<string, IStashBoxScene[]>
+  >(fingerprintCache);
   const [hideUnmatched, setHideUnmatched] = useState(false);
   const fingerprintQueue =
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
@@ -184,7 +194,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   }, [config.mode, config.blacklist]);
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
-    stashBoxQuery(searchVal, selectedEndpoint.index)
+    stashBoxSceneQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
         const s = selectScenes(queryData.data?.queryStashBoxScene);
         setSearchResults({
@@ -251,7 +261,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
 
-    const results = await stashBoxBatchQuery(
+    const results = await stashBoxSceneBatchQuery(
       sceneIDs,
       selectedEndpoint.index
     ).catch(() => {
@@ -266,7 +276,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
     selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
       scene.fingerprints?.forEach((f) => {
-        newFingerprints[f.hash] = scene;
+        newFingerprints[f.hash] = newFingerprints[f.hash]
+          ? [...newFingerprints[f.hash], scene]
+          : [scene];
       });
     });
 
@@ -276,6 +288,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     });
 
     setFingerprints(newFingerprints);
+    fingerprintCache = newFingerprints;
     setLoadingFingerprints(false);
     setFingerprintError("");
   };
@@ -290,7 +303,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       (s) =>
         s.stash_ids.length === 0 &&
         ((s.checksum && fingerprints[s.checksum]) ||
-          (s.oshash && fingerprints[s.oshash]))
+          (s.oshash && fingerprints[s.oshash]) ||
+          (s.phash && fingerprints[s.phash]))
     ).length;
   };
 
@@ -303,8 +317,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     setHideUnmatched(!hideUnmatched);
   };
 
+  function generateSceneLink(scene: GQL.SlimSceneDataFragment, index: number) {
+    return queue
+      ? queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+  }
+
   const renderScenes = () =>
-    scenes.map((scene) => {
+    scenes.map((scene, index) => {
+      const sceneLink = generateSceneLink(scene, index);
       const { paths, file, ext } = parsePath(scene.path);
       const originalDir = scene.path.slice(
         0,
@@ -317,10 +338,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         config.mode,
         config.blacklist
       );
-      const fingerprintMatch =
-        fingerprints[scene.checksum ?? ""] ??
-        fingerprints[scene.oshash ?? ""] ??
-        null;
+
+      // Get all scenes matching one of the fingerprints, and return array of unique scenes
+      const fingerprintMatches = uniqBy(
+        [
+          ...(fingerprints[scene.checksum ?? ""] ?? []),
+          ...(fingerprints[scene.oshash ?? ""] ?? []),
+          ...(fingerprints[scene.phash ?? ""] ?? []),
+        ].flat(),
+        (f) => f.stash_id
+      );
+
       const isTagged = taggedScenes[scene.id];
       const hasStashIDs = scene.stash_ids.length > 0;
       const width = scene.file.width ? scene.file.width : 0;
@@ -374,7 +402,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           <div className="d-flex flex-column text-right">
             <h5>Scene successfully tagged:</h5>
             <h6>
-              <Link className="bold" to={`/scenes/${scene.id}`}>
+              <Link className="bold" to={sceneLink}>
                 {taggedScenes[scene.id].title}
               </Link>
             </h6>
@@ -415,26 +443,35 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       }
 
       let searchResult;
-      if (fingerprintMatch && !isTagged && !hasStashIDs) {
-        searchResult = (
+      if (fingerprintMatches.length > 0 && !isTagged && !hasStashIDs) {
+        searchResult = sortScenesByDuration(
+          fingerprintMatches,
+          scene.file.duration ?? 0
+        ).map((match, i) => (
           <StashSearchResult
             showMales={config.showMales}
             stashScene={scene}
-            isActive
-            setActive={() => {}}
+            isActive={(selectedFingerprintResult?.[scene.id] ?? 0) === i}
+            setActive={() =>
+              setSelectedFingerprintResult({
+                ...selectedFingerprintResult,
+                [scene.id]: i,
+              })
+            }
             setScene={handleTaggedScene}
-            scene={fingerprintMatch}
+            scene={match}
             setCoverImage={config.setCoverImage}
             setTags={config.setTags}
             tagOperation={config.tagOperation}
             endpoint={selectedEndpoint.endpoint}
             queueFingerprintSubmission={queueFingerprintSubmission}
+            key={match.stash_id}
           />
-        );
+        ));
       } else if (
         searchResults[scene.id]?.length > 0 &&
         !isTagged &&
-        !fingerprintMatch
+        fingerprintMatches.length === 0
       ) {
         searchResult = (
           <ul className="pl-0 mt-3 mb-0">
@@ -469,12 +506,12 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         );
       }
 
-      return hideUnmatched && !fingerprintMatch ? null : (
+      return hideUnmatched && fingerprintMatches.length === 0 ? null : (
         <div key={scene.id} className="mt-3 search-item">
           <div className="row">
             <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
               <div className="scene-card mr-3">
-                <Link to={`/scenes/${scene.id}`}>
+                <Link to={sceneLink}>
                   <ScenePreview
                     image={scene.paths.screenshot ?? undefined}
                     video={scene.paths.preview ?? undefined}
@@ -483,10 +520,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                   />
                 </Link>
               </div>
-              <Link
-                to={`/scenes/${scene.id}`}
-                className="scene-link overflow-hidden"
-              >
+              <Link to={sceneLink} className="scene-link overflow-hidden">
                 <TruncatedText
                   text={`${originalDir}\u200B${file}${ext}`}
                   lineCount={2}
@@ -546,9 +580,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
 }
 
-export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
+export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   const stashConfig = useConfiguration();
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
@@ -618,6 +653,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
             <Config config={config} setConfig={setConfig} show={showConfig} />
             <TaggerList
               scenes={scenes}
+              queue={queue}
               config={config}
               selectedEndpoint={{
                 endpoint: selectedEndpoint.endpoint,

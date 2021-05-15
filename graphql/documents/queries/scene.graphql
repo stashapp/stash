@@ -16,6 +16,12 @@ query FindScenesByPathRegex($filter: FindFilterType) {
   }
 }
 
+query FindDuplicateScenes($distance: Int) {
+  findDuplicateScenes(distance: $distance) {
+    ...SlimSceneData
+  }
+}
+
 query FindScene($id: ID!, $checksum: String) {
   findScene(id: $id, checksum: $checksum) {
     ...SceneData

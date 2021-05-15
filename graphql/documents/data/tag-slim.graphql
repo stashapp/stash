@@ -1,0 +1,5 @@
+fragment SlimTagData on Tag {
+  id
+  name
+  image_path
+}

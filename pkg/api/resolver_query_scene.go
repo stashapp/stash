@@ -30,5 +30,5 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*models
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, scene.ID)
 
-	return manager.GetSceneStreamPaths(scene, builder.GetStreamURL(), config.GetMaxStreamingTranscodeSize())
+	return manager.GetSceneStreamPaths(scene, builder.GetStreamURL(), config.GetInstance().GetMaxStreamingTranscodeSize())
 }

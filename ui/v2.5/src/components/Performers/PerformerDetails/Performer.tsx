@@ -47,7 +47,7 @@ export const Performer: React.FC = () => {
   const activeImage =
     imagePreview === undefined
       ? performer.image_path ?? ""
-      : imagePreview ?? `${performer.image_path}?default=true`;
+      : imagePreview ?? (isNew ? "" : `${performer.image_path}&default=true`);
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -160,7 +160,9 @@ export const Performer: React.FC = () => {
       // provided by the server
       return (
         <div>
-          <span className="age">{TextUtils.age(performer.birthdate)}</span>
+          <span className="age">
+            {TextUtils.age(performer.birthdate, performer.death_date)}
+          </span>
           <span className="age-tail"> years old</span>
         </div>
       );

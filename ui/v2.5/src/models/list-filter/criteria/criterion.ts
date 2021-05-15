@@ -25,6 +25,7 @@ export type CriterionType =
   | "tags"
   | "sceneTags"
   | "performerTags"
+  | "tag_count"
   | "performers"
   | "studios"
   | "movies"
@@ -33,8 +34,10 @@ export type CriterionType =
   | "age"
   | "ethnicity"
   | "country"
+  | "hair_color"
   | "eye_color"
   | "height"
+  | "weight"
   | "measurements"
   | "fake_tits"
   | "career_length"
@@ -47,7 +50,10 @@ export type CriterionType =
   | "marker_count"
   | "image_count"
   | "gallery_count"
-  | "performer_count";
+  | "performer_count"
+  | "death_year"
+  | "url"
+  | "stash_id";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -89,6 +95,8 @@ export abstract class Criterion {
         return "Scene Tags";
       case "performerTags":
         return "Performer Tags";
+      case "tag_count":
+        return "Tag Count";
       case "performers":
         return "Performers";
       case "studios":
@@ -99,16 +107,22 @@ export abstract class Criterion {
         return "Galleries";
       case "birth_year":
         return "Birth Year";
+      case "death_year":
+        return "Death Year";
       case "age":
         return "Age";
       case "ethnicity":
         return "Ethnicity";
       case "country":
         return "Country";
+      case "hair_color":
+        return "Hair Color";
       case "eye_color":
         return "Eye Color";
       case "height":
         return "Height";
+      case "weight":
+        return "Weight";
       case "measurements":
         return "Measurements";
       case "fake_tits":
@@ -135,6 +149,10 @@ export abstract class Criterion {
         return "Gallery Count";
       case "performer_count":
         return "Performer Count";
+      case "url":
+        return "URL";
+      case "stash_id":
+        return "StashID";
     }
   }
 
@@ -353,6 +371,15 @@ export class NumberCriterion extends Criterion {
       this.parameterName = type;
     }
   }
+}
+
+export class MandatoryNumberCriterion extends NumberCriterion {
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+  ];
 }
 
 export class DurationCriterion extends Criterion {

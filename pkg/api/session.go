@@ -19,7 +19,7 @@ const userIDKey = "userID"
 
 const returnURLParam = "returnURL"
 
-var sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
+var sessionStore = sessions.NewCookieStore(config.GetInstance().GetSessionStoreKey())
 
 type loginTemplateData struct {
 	URL   string
@@ -27,7 +27,7 @@ type loginTemplateData struct {
 }
 
 func initSessionStore() {
-	sessionStore.MaxAge(config.GetMaxSessionAge())
+	sessionStore.MaxAge(config.GetInstance().GetMaxSessionAge())
 }
 
 func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string) {
@@ -45,7 +45,7 @@ func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string)
 }
 
 func getLoginHandler(w http.ResponseWriter, r *http.Request) {
-	if !config.HasCredentials() {
+	if !config.GetInstance().HasCredentials() {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
@@ -66,7 +66,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	// authenticate the user
-	if !config.ValidateCredentials(username, password) {
+	if !config.GetInstance().ValidateCredentials(username, password) {
 		// redirect back to the login page with an error
 		redirectToLogin(w, url, "Username or password is invalid")
 		return

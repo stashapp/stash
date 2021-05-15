@@ -20,13 +20,20 @@ fragment PerformerData on Performer {
   favorite
   image_path
   scene_count
+  image_count
+  gallery_count
 
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   stash_ids {
     stash_id
     endpoint
   }
+  rating
+  details
+  death_date
+  hair_color
+  weight
 }

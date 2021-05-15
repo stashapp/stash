@@ -20,5 +20,8 @@ RUN curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/f
 FROM ubuntu:20.04 as app
 RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=prep /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
+
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+
 EXPOSE 9999
 CMD ["stash"]

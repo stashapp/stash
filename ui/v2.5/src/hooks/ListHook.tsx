@@ -1,13 +1,19 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
-  GallerySlimDataFragment,
+  SlimGalleryDataFragment,
   StudioDataFragment,
   PerformerDataFragment,
   FindScenesQueryResult,
@@ -88,6 +94,7 @@ export enum PersistanceLevel {
 interface IListHookOptions<T, E> {
   persistState?: PersistanceLevel;
   persistanceKey?: string;
+  defaultSort?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -431,7 +438,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const persistanceKey = options.persistanceKey ?? options.filterMode;
 
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(options.filterMode, queryString.parse(location.search))
+    new ListFilterModel(
+      options.filterMode,
+      queryString.parse(location.search),
+      options.defaultSort
+    )
   );
 
   const updateInterfaceConfig = useCallback(
@@ -520,25 +531,34 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     options.persistState,
   ]);
 
-  function updateQueryParams(listFilter: ListFilterModel) {
-    setFilter(listFilter);
-    const newLocation = { ...location };
-    newLocation.search = listFilter.makeQueryParameters();
-    history.replace(newLocation);
-    if (options.persistState) {
-      updateInterfaceConfig(listFilter, options.persistState);
-    }
-  }
+  const updateQueryParams = useCallback(
+    (listFilter: ListFilterModel) => {
+      setFilter(listFilter);
+      const newLocation = { ...location };
+      newLocation.search = listFilter.makeQueryParameters();
+      history.replace(newLocation);
+      if (options.persistState) {
+        updateInterfaceConfig(listFilter, options.persistState);
+      }
+    },
+    [setFilter, history, location, options.persistState, updateInterfaceConfig]
+  );
 
-  const onChangePage = (page: number) => {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.currentPage = page;
-    updateQueryParams(newFilter);
-  };
+  const onChangePage = useCallback(
+    (page: number) => {
+      const newFilter = _.cloneDeep(filter);
+      newFilter.currentPage = page;
+      updateQueryParams(newFilter);
+      window.scrollTo(0, 0);
+    },
+    [filter, updateQueryParams]
+  );
 
-  const renderFilter = !options.filterHook
-    ? filter
-    : options.filterHook(_.cloneDeep(filter));
+  const renderFilter = useMemo(() => {
+    return !options.filterHook
+      ? filter
+      : options.filterHook(_.cloneDeep(filter));
+  }, [filter, options]);
 
   const { contentTemplate, onSelectChange } = RenderList({
     ...options,
@@ -601,9 +621,9 @@ export const useImagesList = (
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult, GallerySlimDataFragment>
+  props: IListHookOptions<FindGalleriesQueryResult, SlimGalleryDataFragment>
 ) =>
-  useList<FindGalleriesQueryResult, GallerySlimDataFragment>({
+  useList<FindGalleriesQueryResult, SlimGalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: useFindGalleries,

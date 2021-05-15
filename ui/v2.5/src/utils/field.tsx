@@ -29,7 +29,7 @@ export const URLField: React.FC<IURLField> = ({ name, value, url }) => {
     return null;
   }
   return (
-    <dl className="row">
+    <dl className="row mb-0">
       <dt className="col-3 col-xl-2">{name}:</dt>
       <dd className="col-9 col-xl-10">
         {url ? (

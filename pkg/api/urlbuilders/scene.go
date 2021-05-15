@@ -1,6 +1,7 @@
 package urlbuilders
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -8,6 +9,7 @@ import (
 type SceneURLBuilder struct {
 	BaseURL string
 	SceneID string
+	APIKey  string
 }
 
 func NewSceneURLBuilder(baseURL string, sceneID int) SceneURLBuilder {
@@ -18,7 +20,11 @@ func NewSceneURLBuilder(baseURL string, sceneID int) SceneURLBuilder {
 }
 
 func (b SceneURLBuilder) GetStreamURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/stream"
+	var apiKeyParam string
+	if b.APIKey != "" {
+		apiKeyParam = fmt.Sprintf("?apikey=%s", b.APIKey)
+	}
+	return fmt.Sprintf("%s/scene/%s/stream%s", b.BaseURL, b.SceneID, apiKeyParam)
 }
 
 func (b SceneURLBuilder) GetStreamPreviewURL() string {
@@ -31,6 +37,10 @@ func (b SceneURLBuilder) GetStreamPreviewImageURL() string {
 
 func (b SceneURLBuilder) GetSpriteVTTURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "_thumbs.vtt"
+}
+
+func (b SceneURLBuilder) GetSpriteURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "_sprite.jpg"
 }
 
 func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {

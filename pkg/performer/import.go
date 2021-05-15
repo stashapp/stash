@@ -224,6 +224,21 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	if performerJSON.Instagram != "" {
 		newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
 	}
+	if performerJSON.Rating != 0 {
+		newPerformer.Rating = sql.NullInt64{Int64: int64(performerJSON.Rating), Valid: true}
+	}
+	if performerJSON.Details != "" {
+		newPerformer.Details = sql.NullString{String: performerJSON.Details, Valid: true}
+	}
+	if performerJSON.DeathDate != "" {
+		newPerformer.DeathDate = models.SQLiteDate{String: performerJSON.DeathDate, Valid: true}
+	}
+	if performerJSON.HairColor != "" {
+		newPerformer.HairColor = sql.NullString{String: performerJSON.HairColor, Valid: true}
+	}
+	if performerJSON.Weight != 0 {
+		newPerformer.Weight = sql.NullInt64{Int64: int64(performerJSON.Weight), Valid: true}
+	}
 
 	return newPerformer
 }

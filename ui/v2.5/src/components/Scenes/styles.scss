@@ -159,6 +159,11 @@ textarea.scene-description {
 
 .scene-card,
 .gallery-card {
+  a {
+    color: $text-color;
+    text-decoration: none;
+  }
+
   &-check {
     left: 0.5rem;
     margin-top: -12px;
@@ -209,36 +214,17 @@ textarea.scene-description {
     }
   }
 
-  @media (pointer: fine) {
-    &:hover {
-      .scene-specs-overlay,
-      .rating-banner,
-      .scene-studio-overlay {
-        opacity: 0;
-        transition: opacity 0.5s;
-      }
-
-      .scene-studio-overlay:hover {
-        opacity: 0.75;
-        transition: opacity 0.5s;
-      }
-
-      .scene-card-check {
-        opacity: 0.75;
-        transition: opacity 0.5s;
-      }
-
-      .scene-card-preview-video {
-        top: 0;
-        transition-delay: 0.2s;
-      }
-    }
-  }
-
-  /* replicate hover for non-hoverable interfaces */
-  @media (hover: none), (pointer: coarse), (pointer: none) {
-    /* don't hide overlays */
+  &:hover,
+  &:active {
+    .scene-specs-overlay,
+    .rating-banner,
     .scene-studio-overlay {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .scene-studio-overlay:hover,
+    .scene-studio-overlay:active {
       opacity: 0.75;
       transition: opacity 0.5s;
     }
@@ -280,10 +266,15 @@ textarea.scene-description {
 }
 
 .scene-tabs {
+  display: flex;
+  flex-direction: column;
   max-height: calc(100vh - 4rem);
-
   overflow-wrap: break-word;
   word-wrap: break-word;
+
+  > div {
+    flex: 0 1 auto;
+  }
 }
 
 input[type="range"].filter-slider {
@@ -572,4 +563,38 @@ input[type="range"].blue-slider {
   border: none;
   padding-left: 0;
   padding-right: 0.25rem;
+}
+
+#queue-viewer {
+  .queue-controls {
+    display: flex;
+    flex: 0 1 auto;
+    justify-content: flex-end;
+  }
+
+  .thumbnail-container {
+    height: 50px;
+    margin-bottom: 5px;
+    margin-right: 0.75rem;
+    margin-top: 5px;
+    min-width: 100px;
+    width: 100px;
+  }
+
+  img {
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    width: 100%;
+  }
+
+  a {
+    color: $text-color;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .current {
+    background-color: $secondary;
+  }
 }

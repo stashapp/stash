@@ -8,9 +8,13 @@ type PerformerReader interface {
 	FindByImageID(imageID int) ([]*Performer, error)
 	FindByGalleryID(galleryID int) ([]*Performer, error)
 	FindByNames(names []string, nocase bool) ([]*Performer, error)
+	FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*Performer, error)
 	CountByTagID(tagID int) (int, error)
 	Count() (int, error)
 	All() ([]*Performer, error)
+	// TODO - this interface is temporary until the filter schema can fully
+	// support the query needed
+	QueryForAutoTag(words []string) ([]*Performer, error)
 	Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	GetImage(performerID int) ([]byte, error)
 	GetStashIDs(performerID int) ([]*StashID, error)

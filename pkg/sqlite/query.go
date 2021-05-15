@@ -33,6 +33,19 @@ func (qb queryBuilder) executeFind() ([]int, int, error) {
 	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
 }
 
+func (qb queryBuilder) executeCount() (int, error) {
+	if qb.err != nil {
+		return 0, qb.err
+	}
+
+	body := qb.body
+	body += qb.joins.toSQL()
+
+	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	countQuery := qb.repository.buildCountQuery(body)
+	return qb.repository.runCountQuery(countQuery, qb.args)
+}
+
 func (qb *queryBuilder) addWhere(clauses ...string) {
 	for _, clause := range clauses {
 		if len(clause) > 0 {
@@ -149,5 +162,17 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 				}
 			}
 		}
+	}
+}
+
+func (qb *queryBuilder) handleCountCriterion(countFilter *models.IntCriterionInput, primaryTable, joinTable, primaryFK string) {
+	if countFilter != nil {
+		clause, count := getCountCriterionClause(primaryTable, joinTable, primaryFK, *countFilter)
+
+		if count == 1 {
+			qb.addArg(countFilter.Value)
+		}
+
+		qb.addWhere(clause)
 	}
 }

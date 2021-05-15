@@ -12,6 +12,8 @@ FROM ubuntu:20.04 as app
 run apt update && apt install -y python3 python3 python-is-python3 python3-requests ffmpeg && rm -rf /var/lib/apt/lists/*
 COPY --from=prep /stash /usr/bin/
 
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+
 EXPOSE 9999
 CMD ["stash"]
 

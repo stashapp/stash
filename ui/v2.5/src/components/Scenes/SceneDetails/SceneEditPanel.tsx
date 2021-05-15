@@ -284,10 +284,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  // function onStashBoxQueryClicked(/* stashBoxIndex: number */) {
-  // TODO
-  // }
-
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
@@ -361,7 +357,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             key={s.endpoint}
             onClick={() => onScrapeStashBoxClicked(index)}
           >
-            stash-box
+            {s.name ?? "Stash-Box"}
           </Dropdown.Item>
         ))}
         {queryableScrapers.map((s) => (

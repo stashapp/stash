@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
-	"time"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -173,6 +173,25 @@ func (qb *performerQueryBuilder) All() ([]*models.Performer, error) {
 	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil)
 }
 
+func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Performer, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(performerTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+		whereClauses = append(whereClauses, "aliases like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryPerformers(query+" WHERE "+where, args)
+}
+
 func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	if performerFilter == nil {
 		performerFilter = &models.PerformerFilterType{}
@@ -192,7 +211,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"performers.name", "performers.checksum", "performers.birthdate", "performers.ethnicity"}
+		searchColumns := []string{"performers.name", "performers.aliases"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
@@ -209,7 +228,13 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	}
 
 	if birthYear := performerFilter.BirthYear; birthYear != nil {
-		clauses, thisArgs := getBirthYearFilterClause(birthYear.Modifier, birthYear.Value)
+		clauses, thisArgs := getYearFilterClause(birthYear.Modifier, birthYear.Value, "birthdate")
+		query.addWhere(clauses...)
+		query.addArg(thisArgs...)
+	}
+
+	if deathYear := performerFilter.DeathYear; deathYear != nil {
+		clauses, thisArgs := getYearFilterClause(deathYear.Modifier, deathYear.Value, "death_date")
 		query.addWhere(clauses...)
 		query.addArg(thisArgs...)
 	}
@@ -233,16 +258,9 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 			query.body += `left join performers_image on performers_image.performer_id = performers.id
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
-		case "stash_id":
-			query.addWhere("performer_stash_ids.performer_id IS NULL")
 		default:
 			query.addWhere("(performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = '')")
 		}
-	}
-
-	if stashIDFilter := performerFilter.StashID; stashIDFilter != nil {
-		query.addWhere("performer_stash_ids.stash_id = ?")
-		query.addArg(stashIDFilter)
 	}
 
 	query.handleStringCriterionInput(performerFilter.Ethnicity, tableName+".ethnicity")
@@ -254,6 +272,11 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	query.handleStringCriterionInput(performerFilter.CareerLength, tableName+".career_length")
 	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
 	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
+	query.handleIntCriterionInput(performerFilter.Rating, tableName+".rating")
+	query.handleStringCriterionInput(performerFilter.HairColor, tableName+".hair_color")
+	query.handleStringCriterionInput(performerFilter.URL, tableName+".url")
+	query.handleIntCriterionInput(performerFilter.Weight, tableName+".weight")
+	query.handleStringCriterionInput(performerFilter.StashID, "performer_stash_ids.stash_id")
 
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
@@ -269,6 +292,11 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
+
+	query.handleCountCriterion(performerFilter.TagCount, performerTable, performersTagsTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.SceneCount, performerTable, performersScenesTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.ImageCount, performerTable, performersImagesTable, performerIDColumn)
+	query.handleCountCriterion(performerFilter.GalleryCount, performerTable, performersGalleriesTable, performerIDColumn)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
@@ -288,7 +316,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	return performers, countResult, nil
 }
 
-func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
+func getYearFilterClause(criterionModifier models.CriterionModifier, value int, col string) ([]string, []interface{}) {
 	var clauses []string
 	var args []interface{}
 
@@ -300,22 +328,22 @@ func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value 
 		switch modifier {
 		case "EQUALS":
 			// between yyyy-01-01 and yyyy-12-31
-			clauses = append(clauses, "performers.birthdate >= ?")
-			clauses = append(clauses, "performers.birthdate <= ?")
+			clauses = append(clauses, "performers."+col+" >= ?")
+			clauses = append(clauses, "performers."+col+" <= ?")
 			args = append(args, startOfYear)
 			args = append(args, endOfYear)
 		case "NOT_EQUALS":
 			// outside of yyyy-01-01 to yyyy-12-31
-			clauses = append(clauses, "performers.birthdate < ? OR performers.birthdate > ?")
+			clauses = append(clauses, "performers."+col+" < ? OR performers."+col+" > ?")
 			args = append(args, startOfYear)
 			args = append(args, endOfYear)
 		case "GREATER_THAN":
 			// > yyyy-12-31
-			clauses = append(clauses, "performers.birthdate > ?")
+			clauses = append(clauses, "performers."+col+" > ?")
 			args = append(args, endOfYear)
 		case "LESS_THAN":
 			// < yyyy-01-01
-			clauses = append(clauses, "performers.birthdate < ?")
+			clauses = append(clauses, "performers."+col+" < ?")
 			args = append(args, startOfYear)
 		}
 	}
@@ -326,33 +354,23 @@ func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value 
 func getAgeFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
 	var clauses []string
 	var args []interface{}
+	var clause string
 
-	// get the date at which performer would turn the age specified
-	dt := time.Now()
-	birthDate := dt.AddDate(-value-1, 0, 0)
-	yearAfter := birthDate.AddDate(1, 0, 0)
+	if criterionModifier.IsValid() {
+		switch criterionModifier {
+		case models.CriterionModifierEquals:
+			clause = " == ?"
+		case models.CriterionModifierNotEquals:
+			clause = " != ?"
+		case models.CriterionModifierGreaterThan:
+			clause = " > ?"
+		case models.CriterionModifierLessThan:
+			clause = " < ?"
+		}
 
-	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
-		switch modifier {
-		case "EQUALS":
-			// between birthDate and yearAfter
-			clauses = append(clauses, "performers.birthdate >= ?")
-			clauses = append(clauses, "performers.birthdate < ?")
-			args = append(args, birthDate)
-			args = append(args, yearAfter)
-		case "NOT_EQUALS":
-			// outside of birthDate and yearAfter
-			clauses = append(clauses, "performers.birthdate < ? OR performers.birthdate >= ?")
-			args = append(args, birthDate)
-			args = append(args, yearAfter)
-		case "GREATER_THAN":
-			// < birthDate
-			clauses = append(clauses, "performers.birthdate < ?")
-			args = append(args, birthDate)
-		case "LESS_THAN":
-			// > yearAfter
-			clauses = append(clauses, "performers.birthdate >= ?")
-			args = append(args, yearAfter)
+		if clause != "" {
+			clauses = append(clauses, "cast(IFNULL(strftime('%Y.%m%d', performers.death_date), strftime('%Y.%m%d', 'now')) - strftime('%Y.%m%d', performers.birthdate) as int)"+clause)
+			args = append(args, value)
 		}
 	}
 
@@ -369,6 +387,11 @@ func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterT
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
+
+	if sort == "tag_count" {
+		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
+	}
+
 	return getSort(sort, direction, "performers")
 }
 
@@ -440,4 +463,24 @@ func (qb *performerQueryBuilder) GetStashIDs(performerID int) ([]*models.StashID
 
 func (qb *performerQueryBuilder) UpdateStashIDs(performerID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(performerID, stashIDs)
+}
+
+func (qb *performerQueryBuilder) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
+	`
+
+	if hasStashID {
+		query += `
+			WHERE performer_stash_ids.stash_id IS NOT NULL
+			AND performer_stash_ids.endpoint = ?
+		`
+	} else {
+		query += `
+			WHERE performer_stash_ids.stash_id IS NULL
+		`
+	}
+
+	args := []interface{}{stashboxEndpoint}
+	return qb.queryPerformers(query, args)
 }

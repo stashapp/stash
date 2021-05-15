@@ -69,17 +69,33 @@ const fileNameFromPath = (path: string) => {
   return path.replace(/^.*[\\/]/, "");
 };
 
-const getAge = (dateString?: string | null, fromDateString?: string) => {
+const stringToDate = (dateString: string) => {
+  if (!dateString) return null;
+
+  const parts = dateString.split("-");
+  // Invalid date string
+  if (parts.length !== 3) return null;
+
+  const year = Number(parts[0]);
+  const monthIndex = Math.max(0, Number(parts[1]) - 1);
+  const day = Number(parts[2]);
+
+  return new Date(year, monthIndex, day, 0, 0, 0, 0);
+};
+
+const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
-  const birthdate = new Date(dateString);
-  const fromDate = fromDateString ? new Date(fromDateString) : new Date();
+  const birthdate = stringToDate(dateString);
+  const fromDate = fromDateString ? stringToDate(fromDateString) : new Date();
+
+  if (!birthdate || !fromDate) return 0;
 
   let age = fromDate.getFullYear() - birthdate.getFullYear();
   if (
     birthdate.getMonth() > fromDate.getMonth() ||
     (birthdate.getMonth() >= fromDate.getMonth() &&
-      birthdate.getDay() > fromDate.getDay())
+      birthdate.getDate() > fromDate.getDate())
   ) {
     age -= 1;
   }
@@ -170,12 +186,18 @@ const formatDate = (intl: IntlShape, date?: string) => {
   return intl.formatDate(date, { format: "long", timeZone: "utc" });
 };
 
+const capitalize = (val: string) =>
+  val
+    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
+    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
+
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
   fileSizeFractionalDigits,
   secondsToTimestamp,
   fileNameFromPath,
+  stringToDate,
   age: getAge,
   bitRate,
   resolution,
@@ -183,6 +205,7 @@ const TextUtils = {
   twitterURL,
   instagramURL,
   formatDate,
+  capitalize,
 };
 
 export default TextUtils;

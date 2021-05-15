@@ -19,8 +19,12 @@ type ScrapedPerformer {
   # Should be ScrapedPerformerTag - but would be identical types
   tags: [ScrapedSceneTag!]
 
-  """This should be base64 encoded"""
+  """This should be a base64 encoded data URL"""
   image: String
+  details: String
+  death_date: String
+  hair_color: String
+  weight: String
 }
 
 input ScrapedPerformerInput {
@@ -43,4 +47,8 @@ input ScrapedPerformerInput {
 
   # not including tags for the input
   # not including image for the input
+  details: String
+  death_date: String
+  hair_color: String
+  weight: String
 }
