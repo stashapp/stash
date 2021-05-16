@@ -311,3 +311,9 @@ input GenderCriterionInput {
   value: GenderEnum
   modifier: CriterionModifier!
 }
+
+input HierarchicalMultiCriterionInput {
+  value: [ID!]
+  modifier: CriterionModifier!
+  depth: Int!
+}

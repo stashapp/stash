@@ -8,12 +8,16 @@ import {
   DurationCriterion,
   CriterionValue,
   Criterion,
+  IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
-import { CriterionType } from "src/models/list-filter/types";
+import {
+  criterionIsHierarchicalLabelValue,
+  CriterionType,
+} from "src/models/list-filter/types";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -183,7 +187,29 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           />
         );
       }
-      if (criterion.options) {
+      if (criterion instanceof IHierarchicalLabeledIdCriterion) {
+        if (criterion.criterionOption.value !== "studios") return;
+
+        return (
+          <FilterSelect
+            type={criterion.criterionOption.value}
+            isMulti
+            onSelect={(items) => {
+              const newCriterion = _.cloneDeep(criterion);
+              newCriterion.value.items = items.map((i) => ({
+                id: i.id,
+                label: i.name!,
+              }));
+              setCriterion(newCriterion);
+            }}
+            ids={criterion.value.items.map((labeled) => labeled.id)}
+          />
+        );
+      }
+      if (
+        criterion.options &&
+        !criterionIsHierarchicalLabelValue(criterion.value)
+      ) {
         defaultValue.current = criterion.value;
         return (
           <Form.Control
@@ -219,10 +245,52 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         />
       );
     }
+    function renderAdditional() {
+      if (criterion instanceof IHierarchicalLabeledIdCriterion) {
+        return (
+          <>
+            <Form.Group>
+              <Form.Check
+                checked={criterion.value.depth !== 0}
+                label="Include child studios"
+                onChange={() => {
+                  const newCriterion = _.cloneDeep(criterion);
+                  newCriterion.value.depth =
+                    newCriterion.value.depth !== 0 ? 0 : -1;
+                  setCriterion(newCriterion);
+                }}
+              />
+            </Form.Group>
+            {criterion.value.depth !== 0 && (
+              <Form.Group>
+                <Form.Control
+                  className="btn-secondary"
+                  type="number"
+                  onChange={(e) => {
+                    const newCriterion = _.cloneDeep(criterion);
+                    newCriterion.value.depth = e.target.value
+                      ? parseInt(e.target.value, 10)
+                      : -1;
+                    setCriterion(newCriterion);
+                  }}
+                  defaultValue={
+                    criterion.value && criterion.value.depth !== -1
+                      ? criterion.value.depth
+                      : ""
+                  }
+                  min="1"
+                />
+              </Form.Group>
+            )}
+          </>
+        );
+      }
+    }
     return (
       <>
         <Form.Group>{renderModifier()}</Form.Group>
         <Form.Group>{renderSelect()}</Form.Group>
+        {renderAdditional()}
       </>
     );
   };

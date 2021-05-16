@@ -29,6 +29,18 @@ export interface ILabeledValue {
   value: string;
 }
 
+export interface IHierarchicalLabelValue {
+  items: ILabeledId[];
+  depth: number;
+}
+
+export function criterionIsHierarchicalLabelValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is IHierarchicalLabelValue {
+  return typeof value === "object" && "items" in value && "depth" in value;
+}
+
 export function encodeILabeledId(o: ILabeledId) {
   // escape " and \ and by encoding to JSON so that it encodes to JSON correctly down the line
   const adjustedLabel = JSON.stringify(o.label).slice(1, -1);

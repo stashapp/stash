@@ -246,11 +246,16 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 	return body
 }
 
-func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int, error) {
+func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string) ([]int, int, error) {
 	body = r.buildQueryBody(body, whereClauses, havingClauses)
 
-	countQuery := r.buildCountQuery(body)
-	idsQuery := body + sortAndPagination
+	withClause := ""
+	if len(withClauses) > 0 {
+		withClause = "WITH " + strings.Join(withClauses, ", ") + " "
+	}
+
+	countQuery := withClause + r.buildCountQuery(body)
+	idsQuery := withClause + body + sortAndPagination
 
 	// Perform query and fetch result
 	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
