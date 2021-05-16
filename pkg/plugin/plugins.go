@@ -9,6 +9,7 @@ package plugin
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -19,9 +20,9 @@ import (
 
 // Cache stores plugin details.
 type Cache struct {
-	path     string
-	plugins  []Config
-	resolver models.ResolverRoot
+	path       string
+	plugins    []Config
+	gqlHandler http.HandlerFunc
 }
 
 // NewCache returns a new Cache loading plugin configurations
@@ -42,8 +43,8 @@ func NewCache(pluginPath string) (*Cache, error) {
 	}, nil
 }
 
-func (c *Cache) RegisterAPI(resolver models.ResolverRoot) {
-	c.resolver = resolver
+func (c *Cache) RegisterGQLHandler(handler http.HandlerFunc) {
+	c.gqlHandler = handler
 }
 
 // ReloadPlugins clears the plugin cache and reloads from the plugin path.
@@ -130,7 +131,7 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 		serverConnection: serverConnection,
 		args:             args,
 		progress:         progress,
-		api:              c.resolver,
+		gqlHandler:       c.gqlHandler,
 	}
 	return task.createTask(), nil
 }

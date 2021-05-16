@@ -19,14 +19,6 @@ function main() {
         };
     }
 
-    // if err != nil {
-    //     errStr := err.Error()
-    //     *output = common.PluginOutput{
-    //         Error: &errStr,
-    //     }
-    //     return nil
-    // }
-
     return {
         Output: "ok"
     };
@@ -41,23 +33,31 @@ function getResult(result) {
 }
 
 function getTagID(create) {
-	console.log("Checking if tag exists already")
+	console.log("Checking if tag exists already (via GQL)")
 
 	// see if tag exists already
-    var result = api.AllTags()
-    result = getResult(result);
-
+    var query = "\
+query {\
+  allTags {\
+    id\
+    name\
+  }\
+}"
+	
+    var result = gql(query);
+    var allTags = result["allTags"];
+    
     var tag;
-	for (var i = 0; i < result.length; ++i) {
-		if (result[i].Name === tagName) {
-			tag = result[i];
+	for (var i = 0; i < allTags.length; ++i) {
+		if (allTags[i].name === tagName) {
+			tag = allTags[i];
 			break;
 		}
 	}
 
     if (tag) {
         console.log("found existing tag");
-        return tag.ID;
+        return tag.id;
     }
 
 	if (!create) {
@@ -65,15 +65,24 @@ function getTagID(create) {
 		return null;
 	}
 
-    console.log("Creating new tag")
+    console.log("Creating new tag");
 
-	result = api.TagCreate({
-        Name: tagName
-    });
+    var mutation = "\
+mutation tagCreate($input: TagCreateInput!) {\
+  tagCreate(input: $input) {\
+    id\
+  }\
+}";
 
-    result = getResult(result);
-    
-	return result.ID
+    var variables = {
+        input: {
+            'name': tagName
+        }
+    };
+
+    result = gql(mutation, variables);
+    console.log("tag id = " + result.tagCreate.id);
+	return result.tagCreate.id;
 }
 
 function addTag() {
@@ -85,44 +94,74 @@ function addTag() {
 		throw "no scenes to add tag to";
 	}
 
-	// var m struct {
-	// 	SceneUpdate SceneUpdate `graphql:"sceneUpdate(input: $s)"`
-	// }
+    var tagIds = []
+    var found = false;
+	for (var i = 0; i < scene.tags.length; ++i) {
+        var sceneTagID = scene.tags[i].id;
+        if (tagID === sceneTagID) {
+            found = true;
+        }
+        tagIds.push(sceneTagID);
+    }
+	
+    if (found) {
+        console.log("already has tag");
+        return;
+    }
+	    
+    tagIds.push(tagID)
 
-	// input := SceneUpdateInput{
-	// 	ID:     scene.ID,
-	// 	TagIds: scene.getTagIds(),
-	// }
+    var mutation = "\
+mutation sceneUpdate($input: SceneUpdateInput!) {\
+    sceneUpdate(input: $input) {\
+        id\
+    }\
+}";
 
-	// input.TagIds = addTagId(input.TagIds, *tagID)
+    var variables = {
+        input: {
+            id: scene.id,
+            tag_ids: tagIds,
+        }
+    };
 
-	// vars := map[string]interface{}{
-	// 	"s": input,
-	// }
+    console.log("Adding tag to scene " + scene.id);
 
-	// log.Infof("Adding tag to scene %v", scene.ID)
-	// err = client.Mutate(context.Background(), &m, vars)
-	// if err != nil {
-	// 	return fmt.Errorf("Error mutating scene: %s", err.Error())
-	// }
-
-	// return nil
+    gql(mutation, variables);
 }
 
 function findRandomScene() {
 	// get a random scene
     console.log("Finding a random scene")
-    result = api.FindScenes(null, [], {
-        PerPage: 1,
-        Sort: "random"
-    });
-    result = getResult(result);
 
-    if (result.Count === 0) {
+    var query = "\
+query findScenes($filter: FindFilterType!) {\
+    findScenes(filter: $filter) {\
+        count\
+        scenes {\
+            id\
+            tags {\
+                id\
+            }\
+        }\
+    }\
+}"
+
+    var variables = {
+        filter: {
+            per_page: 1,
+            sort: 'random'
+        }
+    };
+
+    var result = gql(query, variables);
+    var findScenes = result["findScenes"];
+    
+    if (findScenes.Count === 0) {
         return null;
     }
 
-    return result.Scenes[0];
+    return findScenes.scenes[0];
 }
 
 main();
