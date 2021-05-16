@@ -32,7 +32,7 @@ function getResult(result) {
 }
 
 function getTagID(create) {
-	console.log("Checking if tag exists already (via GQL)")
+	log.Info("Checking if tag exists already (via GQL)")
 
 	// see if tag exists already
     var query = "\
@@ -43,7 +43,7 @@ query {\
   }\
 }"
 	
-    var result = gql(query);
+    var result = gql.Do(query);
     var allTags = result["allTags"];
     
     var tag;
@@ -55,16 +55,16 @@ query {\
 	}
 
     if (tag) {
-        console.log("found existing tag");
+        log.Info("found existing tag");
         return tag.id;
     }
 
 	if (!create) {
-		console.log("Not found and not creating");
+		log.Info("Not found and not creating");
 		return null;
 	}
 
-    console.log("Creating new tag");
+    log.Info("Creating new tag");
 
     var mutation = "\
 mutation tagCreate($input: TagCreateInput!) {\
@@ -79,8 +79,8 @@ mutation tagCreate($input: TagCreateInput!) {\
         }
     };
 
-    result = gql(mutation, variables);
-    console.log("tag id = " + result.tagCreate.id);
+    result = gql.Do(mutation, variables);
+    log.Info("tag id = " + result.tagCreate.id);
 	return result.tagCreate.id;
 }
 
@@ -104,7 +104,7 @@ function addTag() {
     }
 	
     if (found) {
-        console.log("already has tag");
+        log.Info("already has tag");
         return;
     }
 	    
@@ -124,20 +124,20 @@ mutation sceneUpdate($input: SceneUpdateInput!) {\
         }
     };
 
-    console.log("Adding tag to scene " + scene.id);
+    log.Info("Adding tag to scene " + scene.id);
 
-    gql(mutation, variables);
+    gql.Do(mutation, variables);
 }
 
 function removeTag() {
 	var tagID = getTagID(false);
 
 	if (tagID == null) {
-		console.log("Tag does not exist. Nothing to remove");
+		log.Info("Tag does not exist. Nothing to remove");
 		return
     }
 
-	console.log("Destroying tag");
+	log.Info("Destroying tag");
 	
     var mutation = "\
 mutation tagDestroy($input: TagDestroyInput!) {\
@@ -150,12 +150,12 @@ mutation tagDestroy($input: TagDestroyInput!) {\
         }
     };
 
-    gql(mutation, variables);
+    gql.Do(mutation, variables);
 }
 
 function findRandomScene() {
 	// get a random scene
-    console.log("Finding a random scene")
+    log.Info("Finding a random scene")
 
     var query = "\
 query findScenes($filter: FindFilterType!) {\
@@ -177,7 +177,7 @@ query findScenes($filter: FindFilterType!) {\
         }
     };
 
-    var result = gql(query, variables);
+    var result = gql.Do(query, variables);
     var findScenes = result["findScenes"];
     
     if (findScenes.Count === 0) {
@@ -191,19 +191,19 @@ function doLongTask() {
 	var total = 100;
 	var upTo = 0;
 
-	console.log("Doing long task");
+	log.Info("Doing long task");
 	while (upTo < total) {
-		sleep(1000)
+		util.Sleep(1000);
 
-		//log.LogProgress(float(upTo) / float(total))
-		upTo = upTo + 1
+		log.Progress(upTo / total);
+		upTo = upTo + 1;
     }
 }
 
 function doIndefiniteTask() {
-	console.log("Sleeping indefinitely");
+	log.Info("Sleeping indefinitely");
 	while (true) {
-		sleep(1000);
+		util.Sleep(1000);
     }
 }
 
