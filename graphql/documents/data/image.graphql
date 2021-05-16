@@ -23,11 +23,11 @@ fragment ImageData on Image {
   }
 
   studio {
-    ...StudioData
+    ...SlimStudioData
   }
   
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   performers {

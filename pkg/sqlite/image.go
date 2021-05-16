@@ -347,11 +347,17 @@ func (qb *imageQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 }
 
 func imageTagsCriterionHandler(qb *imageQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		qb.tagsRepository().join(f, "tags_join", "images.id")
-		f.addJoin(tagTable, "", "tags_join.tag_id = tags.id")
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    imagesTagsTable,
+		joinAs:       "tags_join",
+		primaryFK:    imageIDColumn,
+		foreignFK:    tagIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.tagsRepository().join(f, "tags_join", "images.id")
+		},
 	}
-	h := qb.getMultiCriterionHandlerBuilder(tagTable, imagesTagsTable, tagIDColumn, addJoinsFunc)
 
 	return h.handler(tags)
 }
@@ -377,11 +383,17 @@ func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.Mul
 }
 
 func imagePerformersCriterionHandler(qb *imageQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		qb.performersRepository().join(f, "performers_join", "images.id")
-		f.addJoin(performerTable, "", "performers_join.performer_id = performers.id")
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    performersImagesTable,
+		joinAs:       "performers_join",
+		primaryFK:    imageIDColumn,
+		foreignFK:    performerIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.performersRepository().join(f, "performers_join", "images.id")
+		},
 	}
-	h := qb.getMultiCriterionHandlerBuilder(performerTable, performersImagesTable, performerIDColumn, addJoinsFunc)
 
 	return h.handler(performers)
 }

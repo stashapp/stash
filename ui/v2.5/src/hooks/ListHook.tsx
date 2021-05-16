@@ -13,7 +13,7 @@ import Mousetrap from "mousetrap";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
-  GallerySlimDataFragment,
+  SlimGalleryDataFragment,
   StudioDataFragment,
   PerformerDataFragment,
   FindScenesQueryResult,
@@ -621,9 +621,9 @@ export const useImagesList = (
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult, GallerySlimDataFragment>
+  props: IListHookOptions<FindGalleriesQueryResult, SlimGalleryDataFragment>
 ) =>
-  useList<FindGalleriesQueryResult, GallerySlimDataFragment>({
+  useList<FindGalleriesQueryResult, SlimGalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: useFindGalleries,

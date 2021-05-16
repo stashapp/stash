@@ -146,7 +146,10 @@ func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
 }
 
-type Instance struct{}
+type Instance struct {
+	cpuProfilePath string
+	isNewSystem    bool
+}
 
 var instance *Instance
 
@@ -157,8 +160,19 @@ func GetInstance() *Instance {
 	return instance
 }
 
+func (i *Instance) IsNewSystem() bool {
+	return i.isNewSystem
+}
+
 func (i *Instance) SetConfigFile(fn string) {
 	viper.SetConfigFile(fn)
+}
+
+// GetCPUProfilePath returns the path to the CPU profile file to output
+// profiling info to. This is set only via a commandline flag. Returns an
+// empty string if not set.
+func (i *Instance) GetCPUProfilePath() string {
+	return i.cpuProfilePath
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -709,29 +723,26 @@ func (i *Instance) Validate() error {
 	return nil
 }
 
-func (i *Instance) setDefaultValues() {
+func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(ParallelTasks, parallelTasksDefault)
 	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 
-	// #1356 - only set these defaults once config file exists
-	if i.GetConfigFile() != "" {
-		viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
+	viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
 
-		// Set generated to the metadata path for backwards compat
-		viper.SetDefault(Generated, viper.GetString(Metadata))
+	// Set generated to the metadata path for backwards compat
+	viper.SetDefault(Generated, viper.GetString(Metadata))
 
-		// Set default scrapers and plugins paths
-		viper.SetDefault(ScrapersPath, i.GetDefaultScrapersPath())
-		viper.SetDefault(PluginsPath, i.GetDefaultPluginsPath())
-		viper.WriteConfig()
-	}
+	// Set default scrapers and plugins paths
+	viper.SetDefault(ScrapersPath, i.GetDefaultScrapersPath())
+	viper.SetDefault(PluginsPath, i.GetDefaultPluginsPath())
+	return viper.WriteConfig()
 }
 
 // SetInitialConfig fills in missing required config fields
-func (i *Instance) SetInitialConfig() {
+func (i *Instance) SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -745,5 +756,9 @@ func (i *Instance) SetInitialConfig() {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	i.setDefaultValues()
+	return i.setDefaultValues()
+}
+
+func (i *Instance) FinalizeSetup() {
+	i.isNewSystem = false
 }

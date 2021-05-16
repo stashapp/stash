@@ -13,7 +13,7 @@ https://stashapp.cc
 * You can tag videos and find them later.
 * It provides statistics about performers, tags, studios and other things.
 
-You can [watch a demo video](https://vimeo.com/275537038) to see it in action (password is stashapp).
+You can [watch a SFW demo video](https://vimeo.com/545323354) to see it in action.
 
 For further information you can [read the in-app manual](ui/v2.5/src/docs/en).
 
@@ -145,3 +145,15 @@ where the app can be cross-compiled.  This process is kicked off by CI via the `
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
+
+## Profiling
+
+Stash can be profiled using the `--cpuprofile <output profile filename>` command line flag.
+
+The resulting file can then be used with pprof as follows: 
+
+`go tool pprof <path to binary> <path to profile filename>`
+
+With `graphviz` installed and in the path, a call graph can be generated with:
+
+`go tool pprof -svg <path to binary> <path to profile filename> > <output svg file>`
