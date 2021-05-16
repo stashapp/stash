@@ -4,14 +4,13 @@ function main() {
     var modeArg = input.Args.mode;
     try {
         if (modeArg == "" || modeArg == "add") {
-            console.log("add");
             addTag();
         } else if (modeArg == "remove") {
-            console.log("remove");
+            removeTag();
         } else if (modeArg == "long") {
-            console.log("long");
+            doLongTask();
         } else if (modeArg == "indef") {
-            console.log("indef");
+            doIndefiniteTask();
         }
     } catch (err) {
         return {
@@ -130,6 +129,30 @@ mutation sceneUpdate($input: SceneUpdateInput!) {\
     gql(mutation, variables);
 }
 
+function removeTag() {
+	var tagID = getTagID(false);
+
+	if (tagID == null) {
+		console.log("Tag does not exist. Nothing to remove");
+		return
+    }
+
+	console.log("Destroying tag");
+	
+    var mutation = "\
+mutation tagDestroy($input: TagDestroyInput!) {\
+    tagDestroy(input: $input)\
+}";
+
+    var variables = {
+        input: {
+            id: tagID
+        }
+    };
+
+    gql(mutation, variables);
+}
+
 function findRandomScene() {
 	// get a random scene
     console.log("Finding a random scene")
@@ -162,6 +185,26 @@ query findScenes($filter: FindFilterType!) {\
     }
 
     return findScenes.scenes[0];
+}
+
+function doLongTask() {
+	var total = 100;
+	var upTo = 0;
+
+	console.log("Doing long task");
+	while (upTo < total) {
+		sleep(1000)
+
+		//log.LogProgress(float(upTo) / float(total))
+		upTo = upTo + 1
+    }
+}
+
+function doIndefiniteTask() {
+	console.log("Sleeping indefinitely");
+	while (true) {
+		sleep(1000);
+    }
 }
 
 main();

@@ -9,10 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/robertkrimen/otto"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
+
+var errStop = errors.New("stop")
 
 type jsTaskBuilder struct{}
 
@@ -27,6 +30,7 @@ type jsPluginTask struct {
 
 	started   bool
 	waitGroup sync.WaitGroup
+	vm        *otto.Otto
 }
 
 type responseWriter struct {
@@ -118,6 +122,21 @@ func gqlRequestFunc(vm *otto.Otto, gqlHandler http.HandlerFunc) func(call otto.F
 	}
 }
 
+func sleepFunc(call otto.FunctionCall) otto.Value {
+	arg := call.Argument(0)
+	ms, _ := arg.ToInteger()
+
+	time.Sleep(time.Millisecond * time.Duration(ms))
+	return otto.UndefinedValue()
+}
+
+func (t *jsPluginTask) onError(err error) {
+	errString := err.Error()
+	t.result = &common.PluginOutput{
+		Error: &errString,
+	}
+}
+
 func (t *jsPluginTask) makeOutput(o otto.Value) {
 	t.result = &common.PluginOutput{}
 
@@ -147,28 +166,56 @@ func (t *jsPluginTask) Start() error {
 
 	scriptFile := t.plugin.Exec[0]
 
-	vm := otto.New()
+	t.vm = otto.New()
 	pluginPath := t.plugin.getConfigPath()
-	script, err := vm.Compile(filepath.Join(pluginPath, scriptFile), nil)
+	script, err := t.vm.Compile(filepath.Join(pluginPath, scriptFile), nil)
 	if err != nil {
 		return err
 	}
 
 	input := t.buildPluginInput()
 
-	vm.Set("input", input)
-	vm.Set("gql", gqlRequestFunc(vm, t.gqlHandler))
+	t.vm.Set("input", input)
+	t.vm.Set("gql", gqlRequestFunc(t.vm, t.gqlHandler))
+	t.vm.Set("sleep", sleepFunc)
 	// TODO - vm.Set("log")
-	output, err := vm.Run(script)
 
-	t.makeOutput(output)
+	t.vm.Interrupt = make(chan func(), 1)
 
-	return err
+	t.waitGroup.Add(1)
+
+	go func() {
+		defer func() {
+			t.waitGroup.Done()
+
+			if caught := recover(); caught != nil {
+				if caught == errStop {
+					// TODO - log this
+					return
+				}
+			}
+		}()
+
+		output, err := t.vm.Run(script)
+
+		if err != nil {
+			t.onError(err)
+		} else {
+			t.makeOutput(output)
+		}
+	}()
+
+	return nil
 }
 
 func (t *jsPluginTask) Wait() {
+	t.waitGroup.Wait()
 }
 
 func (t *jsPluginTask) Stop() error {
+	// TODO - need another way of doing this that doesn't require panic
+	t.vm.Interrupt <- func() {
+		panic(errStop)
+	}
 	return nil
 }

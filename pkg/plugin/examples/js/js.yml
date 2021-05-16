@@ -18,9 +18,8 @@ tasks:
   - name: Indefinite task
     description: Sleeps indefinitely - interruptable
     # we'll try command-line argument for this one
-    execArgs:
-      - indef
-      - "{pluginDir}"
+    defaultArgs:
+      mode: indef
   - name: Long task
     description: Sleeps for 100 seconds - interruptable
     defaultArgs:
