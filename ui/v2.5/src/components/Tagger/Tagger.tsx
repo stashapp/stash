@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
+import { uniqBy } from "lodash";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { useLocalForage } from "src/hooks";
 
@@ -149,6 +150,9 @@ interface ITaggerListProps {
   clearSubmissionQueue: (endpoint: string) => void;
 }
 
+// Caches fingerprint lookups between page renders
+let fingerprintCache: Record<string, IStashBoxScene[]> = {};
+
 const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
   queue,
@@ -180,7 +184,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
   const [fingerprints, setFingerprints] = useState<
     Record<string, IStashBoxScene[]>
-  >({});
+  >(fingerprintCache);
   const [hideUnmatched, setHideUnmatched] = useState(false);
   const fingerprintQueue =
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
@@ -284,6 +288,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     });
 
     setFingerprints(newFingerprints);
+    fingerprintCache = newFingerprints;
     setLoadingFingerprints(false);
     setFingerprintError("");
   };
@@ -333,11 +338,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         config.mode,
         config.blacklist
       );
-      const fingerprintMatch =
-        fingerprints[scene.checksum ?? ""] ??
-        fingerprints[scene.oshash ?? ""] ??
-        fingerprints[scene.phash ?? ""] ??
-        null;
+
+      // Get all scenes matching one of the fingerprints, and return array of unique scenes
+      const fingerprintMatches = uniqBy(
+        [
+          ...(fingerprints[scene.checksum ?? ""] ?? []),
+          ...(fingerprints[scene.oshash ?? ""] ?? []),
+          ...(fingerprints[scene.phash ?? ""] ?? []),
+        ].flat(),
+        (f) => f.stash_id
+      );
+
       const isTagged = taggedScenes[scene.id];
       const hasStashIDs = scene.stash_ids.length > 0;
       const width = scene.file.width ? scene.file.width : 0;
@@ -432,9 +443,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       }
 
       let searchResult;
-      if (fingerprintMatch && !isTagged && !hasStashIDs) {
+      if (fingerprintMatches.length > 0 && !isTagged && !hasStashIDs) {
         searchResult = sortScenesByDuration(
-          fingerprintMatch,
+          fingerprintMatches,
           scene.file.duration ?? 0
         ).map((match, i) => (
           <StashSearchResult
@@ -460,7 +471,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       } else if (
         searchResults[scene.id]?.length > 0 &&
         !isTagged &&
-        !fingerprintMatch
+        fingerprintMatches.length === 0
       ) {
         searchResult = (
           <ul className="pl-0 mt-3 mb-0">
@@ -495,7 +506,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         );
       }
 
-      return hideUnmatched && !fingerprintMatch ? null : (
+      return hideUnmatched && fingerprintMatches.length === 0 ? null : (
         <div key={scene.id} className="mt-3 search-item">
           <div className="row">
             <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">

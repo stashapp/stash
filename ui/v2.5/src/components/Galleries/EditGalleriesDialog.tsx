@@ -10,7 +10,7 @@ import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
 
 interface IListOperationProps {
-  selected: GQL.GallerySlimDataFragment[];
+  selected: GQL.SlimGalleryDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
@@ -146,7 +146,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(false);
   }
 
-  function getRating(state: GQL.GallerySlimDataFragment[]) {
+  function getRating(state: GQL.SlimGalleryDataFragment[]) {
     let ret: number | undefined;
     let first = true;
 
@@ -162,7 +162,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function getStudioId(state: GQL.GallerySlimDataFragment[]) {
+  function getStudioId(state: GQL.SlimGalleryDataFragment[]) {
     let ret: string | undefined;
     let first = true;
 
@@ -181,7 +181,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function getPerformerIds(state: GQL.GallerySlimDataFragment[]) {
+  function getPerformerIds(state: GQL.SlimGalleryDataFragment[]) {
     let ret: string[] = [];
     let first = true;
 
@@ -205,7 +205,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function getTagIds(state: GQL.GallerySlimDataFragment[]) {
+  function getTagIds(state: GQL.SlimGalleryDataFragment[]) {
     let ret: string[] = [];
     let first = true;
 
@@ -234,7 +234,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     let updateOrganized: boolean | undefined;
     let first = true;
 
-    state.forEach((gallery: GQL.GallerySlimDataFragment) => {
+    state.forEach((gallery: GQL.SlimGalleryDataFragment) => {
       const galleryRating = gallery.rating;
       const GalleriestudioID = gallery?.studio?.id;
       const galleryPerformerIDs = (gallery.performers ?? [])

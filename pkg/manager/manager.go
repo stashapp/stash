@@ -50,6 +50,11 @@ func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetStashHomeDirectory())
 		cfg, err := config.Initialize()
+
+		if err != nil {
+			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
+		}
+
 		initLog()
 		initProfiling(cfg.GetCPUProfilePath())
 
@@ -61,8 +66,7 @@ func Initialize() *singleton {
 			TxnManager: sqlite.NewTransactionManager(),
 		}
 
-		cfgFile := cfg.GetConfigFile()
-		if cfgFile != "" {
+		if !cfg.IsNewSystem() {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
 
 			if err == nil {
@@ -77,7 +81,11 @@ func Initialize() *singleton {
 				}
 			}
 		} else {
-			logger.Warn("config file not found. Assuming new system...")
+			cfgFile := cfg.GetConfigFile()
+			if cfgFile != "" {
+				cfgFile = cfgFile + " "
+			}
+			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
 		initFFMPEG()
@@ -253,6 +261,8 @@ func (s *singleton) Setup(input models.SetupInput) error {
 		return fmt.Errorf("error initializing the database: %s", err.Error())
 	}
 
+	s.Config.FinalizeSetup()
+
 	return nil
 }
 
@@ -301,8 +311,9 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
 	appSchema := int(database.AppSchemaVersion())
+	configFile := s.Config.GetConfigFile()
 
-	if s.Config.GetConfigFile() == "" {
+	if s.Config.IsNewSystem() {
 		status = models.SystemStatusEnumSetup
 	} else if dbSchema < appSchema {
 		status = models.SystemStatusEnumNeedsMigration
@@ -313,5 +324,6 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 		DatabasePath:   &dbPath,
 		AppSchema:      appSchema,
 		Status:         status,
+		ConfigPath:     &configFile,
 	}
 }
