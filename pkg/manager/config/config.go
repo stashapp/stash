@@ -142,7 +142,8 @@ func (e MissingConfigError) Error() string {
 }
 
 type Instance struct {
-	isNewSystem bool
+	cpuProfilePath string
+	isNewSystem    bool
 }
 
 var instance *Instance
@@ -160,6 +161,13 @@ func (i *Instance) IsNewSystem() bool {
 
 func (i *Instance) SetConfigFile(fn string) {
 	viper.SetConfigFile(fn)
+}
+
+// GetCPUProfilePath returns the path to the CPU profile file to output
+// profiling info to. This is set only via a commandline flag. Returns an
+// empty string if not set.
+func (i *Instance) GetCPUProfilePath() string {
+	return i.cpuProfilePath
 }
 
 func (i *Instance) Set(key string, value interface{}) {

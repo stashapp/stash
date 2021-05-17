@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"sync"
 	"time"
 
@@ -55,6 +56,7 @@ func Initialize() *singleton {
 		}
 
 		initLog()
+		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
 			Config:        cfg,
@@ -90,6 +92,22 @@ func Initialize() *singleton {
 	})
 
 	return instance
+}
+
+func initProfiling(cpuProfilePath string) {
+	if cpuProfilePath == "" {
+		return
+	}
+
+	f, err := os.Create(cpuProfilePath)
+	if err != nil {
+		logger.Fatalf("unable to create cpu profile file: %s", err.Error())
+	}
+
+	logger.Infof("profiling to %s", cpuProfilePath)
+
+	// StopCPUProfile is defer called in main
+	pprof.StartCPUProfile(f)
 }
 
 func initFFMPEG() error {
