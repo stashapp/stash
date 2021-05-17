@@ -15,7 +15,9 @@ import (
 )
 
 func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
-	manager.GetInstance().Scan(input)
+	if err := manager.GetInstance().Scan(input); err != nil {
+		return "", err
+	}
 	return "todo", nil
 }
 
@@ -71,7 +73,9 @@ func (r *mutationResolver) ExportObjects(ctx context.Context, input models.Expor
 }
 
 func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
-	manager.GetInstance().Generate(input)
+	if err := manager.GetInstance().Generate(input); err != nil {
+		return "", err
+	}
 	return "todo", nil
 }
 
