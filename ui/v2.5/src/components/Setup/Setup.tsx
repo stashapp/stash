@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Button,
@@ -26,6 +26,12 @@ export const Setup: React.FC = () => {
   const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
+
+  useEffect(() => {
+    if (systemStatus?.systemStatus.configPath) {
+      setConfigLocation(systemStatus.systemStatus.configPath);
+    }
+  }, [systemStatus]);
 
   const discordLink = (
     <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
@@ -57,6 +63,38 @@ export const Setup: React.FC = () => {
 
   function next() {
     setStep(step + 1);
+  }
+
+  function renderWelcomeSpecificConfig() {
+    return (
+      <>
+        <section>
+          <h2 className="mb-5">Welcome to Stash</h2>
+          <p className="lead text-center">
+            If you&apos;re reading this, then Stash couldn&apos;t find the
+            configuration file specified at the command line or the environment.
+            This wizard will guide you through the process of setting up a new
+            configuration.
+          </p>
+          <p>
+            Stash will use the following configuration file path:{" "}
+            <code>{configLocation}</code>
+          </p>
+          <p>
+            When you&apos;re ready to proceed with setting up a new system,
+            click Next.
+          </p>
+        </section>
+
+        <section className="mt-5">
+          <div className="d-flex justify-content-center">
+            <Button variant="primary mx-2 p-5" onClick={() => next()}>
+              Next
+            </Button>
+          </div>
+        </section>
+      </>
+    );
   }
 
   function renderWelcome() {
@@ -433,8 +471,6 @@ export const Setup: React.FC = () => {
     return renderSuccess();
   }
 
-  const steps = [renderWelcome, renderSetPaths, renderConfirm, renderFinish];
-
   // only display setup wizard if system is not setup
   if (statusLoading) {
     return <LoadingIndicator />;
@@ -449,6 +485,12 @@ export const Setup: React.FC = () => {
     window.location.href = newURL.toString();
     return <LoadingIndicator />;
   }
+
+  const welcomeStep =
+    systemStatus && systemStatus.systemStatus.configPath !== ""
+      ? renderWelcomeSpecificConfig
+      : renderWelcome;
+  const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
 
   return (
     <Container>
