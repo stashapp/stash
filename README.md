@@ -145,3 +145,15 @@ where the app can be cross-compiled.  This process is kicked off by CI via the `
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
+
+## Profiling
+
+Stash can be profiled using the `--cpuprofile <output profile filename>` command line flag.
+
+The resulting file can then be used with pprof as follows: 
+
+`go tool pprof <path to binary> <path to profile filename>`
+
+With `graphviz` installed and in the path, a call graph can be generated with:
+
+`go tool pprof -svg <path to binary> <path to profile filename> > <output svg file>`
