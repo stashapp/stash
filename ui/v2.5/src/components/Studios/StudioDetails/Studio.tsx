@@ -1,4 +1,4 @@
-import { Table, Tabs, Tab } from "react-bootstrap";
+import { Button, Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
@@ -14,6 +14,7 @@ import {
 } from "src/core/StashService";
 import { ImageUtils, TableUtils } from "src/utils";
 import {
+  Icon,
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
@@ -48,6 +49,7 @@ export const Studio: React.FC = () => {
   const [parentStudioId, setParentStudioId] = useState<string>();
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [details, setDetails] = useState<string>();
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
@@ -68,6 +70,7 @@ export const Studio: React.FC = () => {
     setParentStudioId(state?.parent_studio?.id ?? undefined);
     setRating(state.rating ?? undefined);
     setDetails(state.details ?? undefined);
+    setStashIDs(state.stash_ids ?? []);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -150,6 +153,10 @@ export const Studio: React.FC = () => {
       details,
       parent_id: parentStudioId ?? null,
       rating: rating ?? null,
+      stash_ids: stashIDs.map((s) => ({
+        stash_id: s.stash_id,
+        endpoint: s.endpoint,
+      })),
     };
 
     if (!isNew) {
@@ -203,6 +210,15 @@ export const Studio: React.FC = () => {
     history.push(`/studios`);
   }
 
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    setStashIDs(
+      stashIDs.filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
+
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
   }
@@ -230,7 +246,7 @@ export const Studio: React.FC = () => {
         <td>StashIDs</td>
         <td>
           <ul className="pl-0">
-            {studio.stash_ids.map((stashID) => {
+            {stashIDs.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
               const link = base ? (
                 <a
@@ -245,6 +261,16 @@ export const Studio: React.FC = () => {
               );
               return (
                 <li key={stashID.stash_id} className="row no-gutters">
+                  {isEditing && (
+                    <Button
+                      variant="danger"
+                      className="mr-2 py-0"
+                      title="Delete StashID"
+                      onClick={() => removeStashID(stashID)}
+                    >
+                      <Icon icon="trash-alt" />
+                    </Button>
+                  )}
                   {link}
                 </li>
               );
@@ -353,7 +379,7 @@ export const Studio: React.FC = () => {
                 />
               </td>
             </tr>
-            {!isEditing && renderStashIDs()}
+            {renderStashIDs()}
           </tbody>
         </Table>
         <DetailsEditNavbar
