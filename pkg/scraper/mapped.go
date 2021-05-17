@@ -75,7 +75,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
-			results = attrConfig.distinctResults(results)
+			results = attrConfig.cleanResults(results)
 			return results
 		}
 
@@ -89,7 +89,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 
 			ret = append(ret, text)
 		}
-		ret = attrConfig.distinctResults(ret)
+		ret = attrConfig.cleanResults(ret)
 	}
 
 	return ret
@@ -643,8 +643,10 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	return strings.Join(result, separator)
 }
 
-func (c mappedScraperAttrConfig) distinctResults(nodes []string) []string {
-	return utils.StrUnique(nodes)
+func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {
+	cleaned := utils.StrUnique(nodes)      // remove duplicate values
+	cleaned = utils.StrDelete(cleaned, "") // remove empty values
+	return cleaned
 }
 
 func (c mappedScraperAttrConfig) splitString(value string) []string {
