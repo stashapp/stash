@@ -2,6 +2,7 @@ package dlna
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -20,7 +21,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 	var objs []interface{}
 
 	// get the first scene of each page to set an appropriate title
-	pages := total/pageSize + 1
+	pages := int(math.Ceil(float64(total) / float64(pageSize)))
 
 	singlePageSize := 1
 	sort := "title"
