@@ -118,5 +118,6 @@ func makeConfigDLNAResult() *models.ConfigDLNAResult {
 		ServerName:     config.GetDLNAServerName(),
 		Enabled:        config.GetDLNADefaultEnabled(),
 		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
+		Interfaces:     config.GetDLNAInterfaces(),
 	}
 }

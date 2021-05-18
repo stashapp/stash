@@ -9,7 +9,10 @@ import (
 )
 
 func (r *mutationResolver) EnableDlna(ctx context.Context, input models.EnableDLNAInput) (bool, error) {
-	manager.GetInstance().DLNAService.Start(parseMinutes(input.Duration))
+	err := manager.GetInstance().DLNAService.Start(parseMinutes(input.Duration))
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

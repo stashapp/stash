@@ -275,6 +275,8 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 		}
 	}
 
+	c.Set(config.DLNAInterfaces, input.Interfaces)
+
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
 	}

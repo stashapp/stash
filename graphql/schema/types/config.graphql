@@ -222,6 +222,8 @@ input ConfigDLNAInput {
   enabled: Boolean
   """List of IPs whitelisted for DLNA service"""
   whitelistedIPs: [String!]
+  """List of interfaces to run DLNA on. Empty for all"""
+  interfaces: [String!]
 }
 
 type ConfigDLNAResult {
@@ -230,6 +232,8 @@ type ConfigDLNAResult {
   enabled: Boolean!
   """List of IPs whitelisted for DLNA service"""
   whitelistedIPs: [String!]!
+  """List of interfaces to run DLNA on. Empty for all"""
+  interfaces: [String!]!
 }
 
 """All configuration settings"""

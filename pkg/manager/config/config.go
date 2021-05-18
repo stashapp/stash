@@ -128,6 +128,7 @@ const SlideshowDelay = "slideshow_delay"
 const DLNAServerName = "dlna.server_name"
 const DLNADefaultEnabled = "dlna.default_enabled"
 const DLNADefaultIPWhitelist = "dlna.default_whitelist"
+const DLNAInterfaces = "dlna.interfaces"
 
 // Logging options
 const LogFile = "logFile"
@@ -647,6 +648,12 @@ func (i *Instance) GetDLNADefaultEnabled() bool {
 // are allowed to use the DLNA service.
 func (i *Instance) GetDLNADefaultIPWhitelist() []string {
 	return viper.GetStringSlice(DLNADefaultIPWhitelist)
+}
+
+// GetDLNAInterfaces returns a list of interface names to expose DLNA on. If
+// empty, runs on all interfaces.
+func (i *Instance) GetDLNAInterfaces() []string {
+	return viper.GetStringSlice(DLNAInterfaces)
 }
 
 // GetLogFile returns the filename of the file to output logs to.

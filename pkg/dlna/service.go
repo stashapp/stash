@@ -1,6 +1,7 @@
 package dlna
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -14,7 +15,7 @@ import (
 
 type dmsConfig struct {
 	Path                string
-	IfName              string
+	IfNames             []string
 	Http                string
 	FriendlyName        string
 	LogHeaders          bool
@@ -43,7 +44,42 @@ type Service struct {
 	stopTime   *time.Time
 }
 
-func (s *Service) init() {
+func (s *Service) getInterfaces() ([]net.Interface, error) {
+	var ifs []net.Interface
+	var err error
+	ifNames := s.config.GetDLNAInterfaces()
+
+	if len(ifNames) == 0 {
+		ifs, err = net.Interfaces()
+	} else {
+		for _, n := range ifNames {
+			if_, err := net.InterfaceByName(n)
+			if err != nil {
+				return nil, fmt.Errorf("error getting interface for name %s: %s", n, err.Error())
+			}
+
+			if if_ != nil {
+				ifs = append(ifs, *if_)
+			}
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	var tmp []net.Interface
+	for _, if_ := range ifs {
+		if if_.Flags&net.FlagUp == 0 || if_.MTU <= 0 {
+			continue
+		}
+		tmp = append(tmp, if_)
+	}
+	ifs = tmp
+	return ifs, nil
+}
+
+func (s *Service) init() error {
 	friendlyName := s.config.GetDLNAServerName()
 	if friendlyName == "" {
 		friendlyName = "stash"
@@ -51,42 +87,23 @@ func (s *Service) init() {
 
 	var dmsConfig = &dmsConfig{
 		Path:           "",
-		IfName:         "",
+		IfNames:        s.config.GetDLNADefaultIPWhitelist(),
 		Http:           ":1338",
 		FriendlyName:   friendlyName,
 		LogHeaders:     false,
 		NotifyInterval: 30 * time.Second,
 	}
 
+	interfaces, err := s.getInterfaces()
+	if err != nil {
+		return err
+	}
+
 	s.server = &Server{
 		txnManager:         s.txnManager,
 		sceneServer:        s.sceneServer,
 		ipWhitelistManager: s.ipWhitelistMgr,
-		Interfaces: func(ifName string) (ifs []net.Interface) {
-			var err error
-			if ifName == "" {
-				ifs, err = net.Interfaces()
-			} else {
-				var if_ *net.Interface
-				if_, err = net.InterfaceByName(ifName)
-				if if_ != nil {
-					ifs = append(ifs, *if_)
-				}
-			}
-			if err != nil {
-				logger.Error(err.Error())
-				return
-			}
-			var tmp []net.Interface
-			for _, if_ := range ifs {
-				if if_.Flags&net.FlagUp == 0 || if_.MTU <= 0 {
-					continue
-				}
-				tmp = append(tmp, if_)
-			}
-			ifs = tmp
-			return
-		}(dmsConfig.IfName),
+		Interfaces:         interfaces,
 		HTTPConn: func() net.Listener {
 			conn, err := net.Listen("tcp", dmsConfig.Http)
 			if err != nil {
@@ -116,6 +133,8 @@ func (s *Service) init() {
 		StallEventSubscribe: dmsConfig.StallEventSubscribe,
 		NotifyInterval:      dmsConfig.NotifyInterval,
 	}
+
+	return nil
 }
 
 // func getIconReader(fn string) (io.Reader, error) {
@@ -159,12 +178,15 @@ func NewService(txnManager models.TransactionManager, cfg *config.Instance, scen
 
 // Start starts the DLNA service. If duration is provided, then the service
 // is stopped after the duration has elapsed.
-func (s *Service) Start(duration *time.Duration) {
+func (s *Service) Start(duration *time.Duration) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if !s.running {
-		s.init()
+		if err := s.init(); err != nil {
+			logger.Error(err)
+			return err
+		}
 
 		go func() {
 			logger.Info("Starting DLNA")
@@ -196,6 +218,8 @@ func (s *Service) Start(duration *time.Duration) {
 			s.stopTime = &t
 		}
 	}
+
+	return nil
 }
 
 // Stop stops the DLNA service. If duration is provided, then the service

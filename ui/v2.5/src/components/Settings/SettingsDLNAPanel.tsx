@@ -49,18 +49,21 @@ export const SettingsDLNAPanel: React.FC = () => {
     serverName: yup.string(),
     enabled: yup.boolean().required(),
     whitelistedIPs: yup.array(yup.string().required()).required(),
+    interfaces: yup.array(yup.string().required()).required(),
   });
 
   interface IConfigValues {
     serverName: string;
     enabled: boolean;
     whitelistedIPs: string[];
+    interfaces: string[];
   }
 
   const initialValues: IConfigValues = {
     serverName: data?.configuration.dlna.serverName ?? "",
     enabled: data?.configuration.dlna.enabled ?? false,
     whitelistedIPs: data?.configuration.dlna.whitelistedIPs ?? [],
+    interfaces: data?.configuration.dlna.interfaces ?? [],
   };
 
   async function onSave(input: IConfigValues) {
@@ -444,6 +447,20 @@ export const SettingsDLNAPanel: React.FC = () => {
               label="Enabled by default"
               onChange={() => setFieldValue("enabled", !values.enabled)}
             />
+          </Form.Group>
+
+          <Form.Group>
+            <h6>Interfaces</h6>
+            <StringListInput
+              value={values.interfaces}
+              setValue={(value) => setFieldValue("interfaces", value)}
+              defaultNewValue=""
+              className="interfaces-input"
+            />
+            <Form.Text className="text-muted">
+              Interfaces to expose DLNA server on. An empty list results in
+              running on all interfaces. Requires DLNA restart after changing.
+            </Form.Text>
           </Form.Group>
 
           <Form.Group>

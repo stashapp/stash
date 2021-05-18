@@ -59,6 +59,7 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   serverName
   enabled
   whitelistedIPs
+  interfaces
 }
 
 fragment ConfigData on ConfigResult {
