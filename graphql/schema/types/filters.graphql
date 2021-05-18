@@ -29,6 +29,10 @@ enum ResolutionEnum {
 }
 
 input PerformerFilterType {
+  AND: PerformerFilterType
+  OR: PerformerFilterType
+  NOT: PerformerFilterType
+
   """Filter by favorite"""
   filter_favorites: Boolean
   """Filter by birth year"""

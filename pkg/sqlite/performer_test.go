@@ -100,6 +100,143 @@ func TestPerformerFindByNames(t *testing.T) {
 	})
 }
 
+func TestPerformerQueryEthnicityOr(t *testing.T) {
+	const performer1Idx = 1
+	const performer2Idx = 2
+
+	performer1Eth := getPerformerStringValue(performer1Idx, "Ethnicity")
+	performer2Eth := getPerformerStringValue(performer2Idx, "Ethnicity")
+
+	performerFilter := models.PerformerFilterType{
+		Ethnicity: &models.StringCriterionInput{
+			Value:    performer1Eth,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.PerformerFilterType{
+			Ethnicity: &models.StringCriterionInput{
+				Value:    performer2Eth,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 2)
+		assert.Equal(t, performer1Eth, performers[0].Ethnicity.String)
+		assert.Equal(t, performer2Eth, performers[1].Ethnicity.String)
+
+		return nil
+	})
+}
+
+func TestPerformerQueryEthnicityAndRating(t *testing.T) {
+	const performerIdx = 1
+	performerEth := getPerformerStringValue(performerIdx, "Ethnicity")
+	performerRating := getRating(performerIdx)
+
+	performerFilter := models.PerformerFilterType{
+		Ethnicity: &models.StringCriterionInput{
+			Value:    performerEth,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.PerformerFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(performerRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 1)
+		assert.Equal(t, performerEth, performers[0].Ethnicity.String)
+		assert.Equal(t, performerRating.Int64, performers[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestPerformerQueryPathNotRating(t *testing.T) {
+	const performerIdx = 1
+
+	performerRating := getRating(performerIdx)
+
+	ethCriterion := models.StringCriterionInput{
+		Value:    "performer_.*1_Ethnicity",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(performerRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	performerFilter := models.PerformerFilterType{
+		Ethnicity: &ethCriterion,
+		Not: &models.PerformerFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		for _, performer := range performers {
+			verifyString(t, performer.Ethnicity.String, ethCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, performer.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const performerIdx = 1
+	subFilter := models.PerformerFilterType{
+		Ethnicity: &models.StringCriterionInput{
+			Value:    getPerformerStringValue(performerIdx, "Ethnicity"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	performerFilter := &models.PerformerFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		_, _, err := sqb.Query(performerFilter, nil)
+		assert.NotNil(err)
+
+		performerFilter.Or = nil
+		performerFilter.Not = &subFilter
+		_, _, err = sqb.Query(performerFilter, nil)
+		assert.NotNil(err)
+
+		performerFilter.And = nil
+		performerFilter.Or = &subFilter
+		_, _, err = sqb.Query(performerFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func TestPerformerQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Performer()

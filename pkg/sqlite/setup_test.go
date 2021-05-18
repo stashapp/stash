@@ -745,6 +745,8 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 			},
 			DeathDate: getPerformerDeathDate(i),
 			Details:   sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
+			Ethnicity: sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
+			Rating:    getRating(i),
 		}
 
 		careerLength := getPerformerCareerLength(i)
