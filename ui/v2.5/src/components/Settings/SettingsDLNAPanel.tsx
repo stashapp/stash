@@ -32,7 +32,7 @@ export const SettingsDLNAPanel: React.FC = () => {
   const [ipEntry, setIPEntry] = useState<string>("");
   const [tempIP, setTempIP] = useState<string | undefined>();
 
-  const { data } = useConfiguration();
+  const { data, refetch: configRefetch } = useConfiguration();
   const { data: statusData, loading, refetch: statusRefetch } = useDLNAStatus();
 
   const [updateDLNAConfig] = useConfigureDLNA();
@@ -70,6 +70,7 @@ export const SettingsDLNAPanel: React.FC = () => {
           input,
         },
       });
+      configRefetch();
       Toast.success({ content: "Updated config" });
     } catch (e) {
       Toast.error(e);
@@ -411,7 +412,6 @@ export const SettingsDLNAPanel: React.FC = () => {
       handleSubmit,
       values,
       setFieldValue,
-      submitForm,
       dirty,
     } = useFormikContext<IConfigValues>();
 
@@ -463,7 +463,7 @@ export const SettingsDLNAPanel: React.FC = () => {
 
         <hr />
 
-        <Button variant="primary" onClick={() => submitForm()}>
+        <Button variant="primary" type="submit">
           Save
         </Button>
       </Form>
@@ -506,6 +506,7 @@ export const SettingsDLNAPanel: React.FC = () => {
         initialValues={initialValues}
         validationSchema={schema}
         onSubmit={(values) => onSave(values)}
+        enableReinitialize
       >
         <DLNASettingsForm />
       </Formik>
