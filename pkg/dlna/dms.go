@@ -355,7 +355,14 @@ func (me *Server) soapActionResponse(sa upnp.SoapAction, actionRequestXML []byte
 		// TODO: What's the invalid service error?!
 		return nil, upnp.Errorf(upnp.InvalidActionErrorCode, "Invalid service: %s", sa.Type)
 	}
-	return service.Handle(sa.Action, actionRequestXML, r)
+
+	logger.Tracef("%s::Handle %s - %s", sa.Type, sa.Action, actionRequestXML)
+	ret, err := service.Handle(sa.Action, actionRequestXML, r)
+	if err == nil {
+		logger.Tracef("< %v", ret)
+	}
+
+	return ret, err
 }
 
 // Handle a service control HTTP request.
