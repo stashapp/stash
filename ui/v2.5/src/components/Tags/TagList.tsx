@@ -142,7 +142,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   );
 
   const listData = useTagsList({
-    filterOptions: new TagListFilterOptions(),
+    filterOptions: TagListFilterOptions,
     renderContent,
     filterHook,
     addKeybinds,

@@ -118,7 +118,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
   );
 
   const listData = usePerformersList({
-    filterOptions: new PerformerListFilterOptions(),
+    filterOptions: PerformerListFilterOptions,
     otherOperations,
     renderContent,
     renderEditDialog: renderEditPerformersDialog,

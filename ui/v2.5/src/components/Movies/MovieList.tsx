@@ -66,7 +66,7 @@ export const MovieList: React.FC = () => {
   );
 
   const listData = useMoviesList({
-    filterOptions: new MovieListFilterOptions(),
+    filterOptions: MovieListFilterOptions,
     renderContent,
     addKeybinds,
     otherOperations,

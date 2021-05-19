@@ -1,3 +1,4 @@
+import { createCriterionOption } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -5,37 +6,32 @@ import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
-export class StudioListFilterOptions extends ListFilterOptions {
-  public static readonly defaultSortBy = "name";
+const defaultSortBy = "name";
+const sortByOptions = [
+  "name",
+  "scenes_count",
+  "images_count",
+  "galleries_count",
+  "random",
+  "rating",
+];
 
-  constructor() {
-    const sortByOptions = [
-      "name",
-      "scenes_count",
-      "images_count",
-      "galleries_count",
-      "random",
-      "rating",
-    ];
+const displayModeOptions = [DisplayMode.Grid];
+const criterionOptions = [
+  NoneCriterionOption,
+  ParentStudiosCriterionOption,
+  StudioIsMissingCriterionOption,
+  RatingCriterionOption,
+  createCriterionOption("scene_count"),
+  createCriterionOption("image_count"),
+  createCriterionOption("gallery_count"),
+  createCriterionOption("url"),
+  createCriterionOption("stash_id"),
+];
 
-    const displayModeOptions = [DisplayMode.Grid];
-    const criterionOptions = [
-      NoneCriterionOption,
-      ParentStudiosCriterionOption,
-      StudioIsMissingCriterionOption,
-      RatingCriterionOption,
-      ListFilterOptions.createCriterionOption("scene_count"),
-      ListFilterOptions.createCriterionOption("image_count"),
-      ListFilterOptions.createCriterionOption("gallery_count"),
-      ListFilterOptions.createCriterionOption("url"),
-      ListFilterOptions.createCriterionOption("stash_id"),
-    ];
-
-    super(
-      StudioListFilterOptions.defaultSortBy,
-      sortByOptions,
-      displayModeOptions,
-      criterionOptions
-    );
-  }
-}
+export const StudioListFilterOptions = new ListFilterOptions(
+  defaultSortBy,
+  sortByOptions,
+  displayModeOptions,
+  criterionOptions
+);

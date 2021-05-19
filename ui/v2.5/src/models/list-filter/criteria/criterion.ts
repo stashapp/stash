@@ -168,6 +168,10 @@ export class CriterionOption {
   }
 }
 
+export function createCriterionOption(value: CriterionType) {
+  return new CriterionOption(value, value);
+}
+
 export class StringCriterion extends Criterion<string> {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [

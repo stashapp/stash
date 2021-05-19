@@ -63,7 +63,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   };
 
   const listData = useGalleriesList({
-    filterOptions: new GalleryListFilterOptions(),
+    filterOptions: GalleryListFilterOptions,
     zoomable: true,
     selectable: true,
     otherOperations,

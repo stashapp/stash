@@ -39,7 +39,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   };
 
   const listData = useSceneMarkersList({
-    filterOptions: new SceneMarkerListFilterOptions(),
+    filterOptions: SceneMarkerListFilterOptions,
     otherOperations,
     renderContent,
     filterHook,

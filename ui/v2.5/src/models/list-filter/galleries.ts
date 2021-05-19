@@ -1,3 +1,4 @@
+import { createCriterionOption } from "./criteria/criterion";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import { OrganizedCriterionOption } from "./criteria/organized";
@@ -12,47 +13,45 @@ import {
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
-export class GalleryListFilterOptions extends ListFilterOptions {
-  public static readonly defaultSortBy = "path";
+const defaultSortBy = "path";
 
-  constructor() {
-    const sortByOptions = [
-      "date",
-      "path",
-      "file_mod_time",
-      "images_count",
-      "tag_count",
-      "performer_count",
-      "title",
-      "random",
-    ];
-    const displayModeOptions = [
-      DisplayMode.Grid,
-      DisplayMode.List,
-      DisplayMode.Wall,
-    ];
-    const criterionOptions = [
-      NoneCriterionOption,
-      ListFilterOptions.createCriterionOption("path"),
-      RatingCriterionOption,
-      OrganizedCriterionOption,
-      AverageResolutionCriterionOption,
-      GalleryIsMissingCriterionOption,
-      TagsCriterionOption,
-      ListFilterOptions.createCriterionOption("tag_count"),
-      PerformerTagsCriterionOption,
-      PerformersCriterionOption,
-      ListFilterOptions.createCriterionOption("performer_count"),
-      ListFilterOptions.createCriterionOption("image_count"),
-      StudiosCriterionOption,
-      ListFilterOptions.createCriterionOption("url"),
-    ];
+const sortByOptions = [
+  "date",
+  "path",
+  "file_mod_time",
+  "images_count",
+  "tag_count",
+  "performer_count",
+  "title",
+  "random",
+];
 
-    super(
-      GalleryListFilterOptions.defaultSortBy,
-      sortByOptions,
-      displayModeOptions,
-      criterionOptions
-    );
-  }
-}
+const displayModeOptions = [
+  DisplayMode.Grid,
+  DisplayMode.List,
+  DisplayMode.Wall,
+];
+
+const criterionOptions = [
+  NoneCriterionOption,
+  createCriterionOption("path"),
+  RatingCriterionOption,
+  OrganizedCriterionOption,
+  AverageResolutionCriterionOption,
+  GalleryIsMissingCriterionOption,
+  TagsCriterionOption,
+  createCriterionOption("tag_count"),
+  PerformerTagsCriterionOption,
+  PerformersCriterionOption,
+  createCriterionOption("performer_count"),
+  createCriterionOption("image_count"),
+  StudiosCriterionOption,
+  createCriterionOption("url"),
+];
+
+export const GalleryListFilterOptions = new ListFilterOptions(
+  defaultSortBy,
+  sortByOptions,
+  displayModeOptions,
+  criterionOptions
+);

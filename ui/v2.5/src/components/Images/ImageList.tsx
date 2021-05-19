@@ -153,7 +153,7 @@ export const ImageList: React.FC<IImageList> = ({
   };
 
   const { template, onSelectChange } = useImagesList({
-    filterOptions: new ImageListFilterOptions(),
+    filterOptions: ImageListFilterOptions,
     zoomable: true,
     selectable: true,
     otherOperations,

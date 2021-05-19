@@ -1,3 +1,4 @@
+import { createCriterionOption } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
@@ -6,67 +7,61 @@ import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { CriterionType, DisplayMode } from "./types";
 
-export class PerformerListFilterOptions extends ListFilterOptions {
-  public static readonly defaultSortBy = "name";
+const defaultSortBy = "name";
+const sortByOptions = [
+  "name",
+  "height",
+  "birthdate",
+  "scenes_count",
+  "tag_count",
+  "random",
+  "rating",
+];
 
-  constructor() {
-    const sortByOptions = [
-      "name",
-      "height",
-      "birthdate",
-      "scenes_count",
-      "tag_count",
-      "random",
-      "rating",
-    ];
-    const displayModeOptions = [
-      DisplayMode.Grid,
-      DisplayMode.List,
-      DisplayMode.Tagger,
-    ];
+const displayModeOptions = [
+  DisplayMode.Grid,
+  DisplayMode.List,
+  DisplayMode.Tagger,
+];
 
-    const numberCriteria: CriterionType[] = [
-      "birth_year",
-      "death_year",
-      "age",
-      "weight",
-    ];
-    const stringCriteria: CriterionType[] = [
-      "ethnicity",
-      "country",
-      "hair_color",
-      "eye_color",
-      "height",
-      "measurements",
-      "fake_tits",
-      "career_length",
-      "tattoos",
-      "piercings",
-      "aliases",
-      "stash_id",
-    ];
+const numberCriteria: CriterionType[] = [
+  "birth_year",
+  "death_year",
+  "age",
+  "weight",
+];
 
-    const criterionOptions = [
-      NoneCriterionOption,
-      FavoriteCriterionOption,
-      GenderCriterionOption,
-      PerformerIsMissingCriterionOption,
-      TagsCriterionOption,
-      ListFilterOptions.createCriterionOption("url"),
-      ListFilterOptions.createCriterionOption("tag_count"),
-      ListFilterOptions.createCriterionOption("scene_count"),
-      ListFilterOptions.createCriterionOption("image_count"),
-      ListFilterOptions.createCriterionOption("gallery_count"),
-      ...numberCriteria
-        .concat(stringCriteria)
-        .map((c) => ListFilterOptions.createCriterionOption(c)),
-    ];
+const stringCriteria: CriterionType[] = [
+  "ethnicity",
+  "country",
+  "hair_color",
+  "eye_color",
+  "height",
+  "measurements",
+  "fake_tits",
+  "career_length",
+  "tattoos",
+  "piercings",
+  "aliases",
+  "stash_id",
+];
 
-    super(
-      PerformerListFilterOptions.defaultSortBy,
-      sortByOptions,
-      displayModeOptions,
-      criterionOptions
-    );
-  }
-}
+const criterionOptions = [
+  NoneCriterionOption,
+  FavoriteCriterionOption,
+  GenderCriterionOption,
+  PerformerIsMissingCriterionOption,
+  TagsCriterionOption,
+  createCriterionOption("url"),
+  createCriterionOption("tag_count"),
+  createCriterionOption("scene_count"),
+  createCriterionOption("image_count"),
+  createCriterionOption("gallery_count"),
+  ...numberCriteria.concat(stringCriteria).map((c) => createCriterionOption(c)),
+];
+export const PerformerListFilterOptions = new ListFilterOptions(
+  defaultSortBy,
+  sortByOptions,
+  displayModeOptions,
+  criterionOptions
+);

@@ -4,30 +4,25 @@ import { SceneTagsCriterionOption, TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
-export class SceneMarkerListFilterOptions extends ListFilterOptions {
-  public static readonly defaultSortBy = "title";
+const defaultSortBy = "title";
+const sortByOptions = [
+  "title",
+  "seconds",
+  "scene_id",
+  "random",
+  "scenes_updated_at",
+];
+const displayModeOptions = [DisplayMode.Wall];
+const criterionOptions = [
+  NoneCriterionOption,
+  TagsCriterionOption,
+  SceneTagsCriterionOption,
+  PerformersCriterionOption,
+];
 
-  constructor() {
-    const sortByOptions = [
-      "title",
-      "seconds",
-      "scene_id",
-      "random",
-      "scenes_updated_at",
-    ];
-    const displayModeOptions = [DisplayMode.Wall];
-    const criterionOptions = [
-      NoneCriterionOption,
-      TagsCriterionOption,
-      SceneTagsCriterionOption,
-      PerformersCriterionOption,
-    ];
-
-    super(
-      SceneMarkerListFilterOptions.defaultSortBy,
-      sortByOptions,
-      displayModeOptions,
-      criterionOptions
-    );
-  }
-}
+export const SceneMarkerListFilterOptions = new ListFilterOptions(
+  defaultSortBy,
+  sortByOptions,
+  displayModeOptions,
+  criterionOptions
+);

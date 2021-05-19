@@ -127,7 +127,7 @@ export const StudioList: React.FC<IStudioList> = ({
   );
 
   const listData = useStudiosList({
-    filterOptions: new StudioListFilterOptions(),
+    filterOptions: StudioListFilterOptions,
     renderContent,
     filterHook,
     addKeybinds,

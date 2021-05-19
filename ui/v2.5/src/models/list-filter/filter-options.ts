@@ -2,10 +2,10 @@ import { CriterionOption } from "./criteria/criterion";
 import { CriterionType, DisplayMode } from "./types";
 
 export class ListFilterOptions {
-  public defaultSortBy: string = "";
-  public sortByOptions: string[] = [];
-  public displayModeOptions: DisplayMode[] = [];
-  public criterionOptions: CriterionOption[] = [];
+  public readonly defaultSortBy: string = "";
+  public readonly sortByOptions: string[] = [];
+  public readonly displayModeOptions: DisplayMode[] = [];
+  public readonly criterionOptions: CriterionOption[] = [];
 
   protected static createCriterionOption(value: CriterionType) {
     return new CriterionOption(value, value);

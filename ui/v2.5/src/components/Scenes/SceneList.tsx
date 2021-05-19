@@ -83,7 +83,7 @@ export const SceneList: React.FC<ISceneList> = ({
   ) => <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />;
 
   const listData = useScenesList({
-    filterOptions: new SceneListFilterOptions(),
+    filterOptions: SceneListFilterOptions,
     zoomable: true,
     selectable: true,
     otherOperations,
