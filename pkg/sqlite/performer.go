@@ -276,6 +276,8 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 
 	query.handleCriterionFunc(performerTagsCriterionHandler(qb, filter.Tags))
 
+	query.handleCriterionFunc(performerStudiosCriterionHandler(filter.Studios))
+
 	query.handleCriterionFunc(performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterionFunc(performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterionFunc(performerImageCountCriterionHandler(qb, filter.ImageCount))
@@ -449,6 +451,47 @@ func performerGalleryCountCriterionHandler(qb *performerQueryBuilder, count *mod
 	}
 
 	return h.handler(count)
+}
+
+func performerStudiosCriterionHandler(studios *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if studios != nil {
+			var countCondition string
+			var clauseJoin string
+
+			if studios.Modifier == models.CriterionModifierIncludes {
+				// return performers who appear in scenes/images/galleries with any of the given studios
+				countCondition = " > 0"
+				clauseJoin = " OR "
+			} else if studios.Modifier == models.CriterionModifierExcludes {
+				// exclude performers who appear in scenes/images/galleries with  any of the given studios
+				countCondition = " = 0"
+				clauseJoin = " AND "
+			} else {
+				return
+			}
+
+			templStr := "(SELECT COUNT(DISTINCT %[1]s.id) FROM %[1]s LEFT JOIN %[2]s ON %[1]s.id = %[2]s.%[3]s WHERE %[2]s.performer_id = performers.id AND %[1]s.studio_id IN %[4]s)" + countCondition
+
+			inBinding := getInBinding(len(studios.Value))
+
+			clauses := []string{
+				fmt.Sprintf(templStr, sceneTable, performersScenesTable, sceneIDColumn, inBinding),
+				fmt.Sprintf(templStr, imageTable, performersImagesTable, imageIDColumn, inBinding),
+				fmt.Sprintf(templStr, galleryTable, performersGalleriesTable, galleryIDColumn, inBinding),
+			}
+
+			var args []interface{}
+			for _, tagID := range studios.Value {
+				args = append(args, tagID)
+			}
+
+			// this is a bit gross. We need the args three times
+			combinedArgs := append(args, append(args, args...)...)
+
+			f.addWhere(fmt.Sprintf("(%s)", strings.Join(clauses, clauseJoin)), combinedArgs...)
+		}
+	}
 }
 
 func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterType) string {

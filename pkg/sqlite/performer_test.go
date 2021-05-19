@@ -732,6 +732,58 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 	})
 }
 
+func TestPerformerQueryStudio(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		testCases := []struct {
+			studioIndex    int
+			performerIndex int
+		}{
+			{studioIndex: studioIdxWithScenePerformer, performerIndex: performerIdxWithSceneStudio},
+			{studioIndex: studioIdxWithImagePerformer, performerIndex: performerIdxWithImageStudio},
+			{studioIndex: studioIdxWithGalleryPerformer, performerIndex: performerIdxWithGalleryStudio},
+		}
+
+		sqb := r.Performer()
+
+		for _, tc := range testCases {
+			studioCriterion := models.MultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[tc.studioIndex]),
+				},
+				Modifier: models.CriterionModifierIncludes,
+			}
+
+			performerFilter := models.PerformerFilterType{
+				Studios: &studioCriterion,
+			}
+
+			performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+			assert.Len(t, performers, 1)
+
+			// ensure id is correct
+			assert.Equal(t, performerIDs[tc.performerIndex], performers[0].ID)
+
+			studioCriterion = models.MultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[tc.studioIndex]),
+				},
+				Modifier: models.CriterionModifierExcludes,
+			}
+
+			q := getPerformerStringValue(tc.performerIndex, "Name")
+			findFilter := models.FindFilterType{
+				Q: &q,
+			}
+
+			performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+			assert.Len(t, performers, 0)
+		}
+
+		return nil
+	})
+}
+
 func TestPerformerStashIDs(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Performer()

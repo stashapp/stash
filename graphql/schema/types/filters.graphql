@@ -85,6 +85,8 @@ input PerformerFilterType {
   weight: IntCriterionInput
   """Filter by death year"""
   death_year: IntCriterionInput
+  """Filter by studios where performer appears in scene/image/gallery"""
+  studios: MultiCriterionInput
 }
 
 input SceneMarkerFilterType {
