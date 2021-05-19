@@ -279,12 +279,6 @@ export class MandatoryNumberCriterion extends NumberCriterion {
   ];
 }
 
-export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
-  public getLabelValue(): string {
-    return this.value.map((v) => v.label).join(", ");
-  }
-}
-
 export class DurationCriterion extends Criterion<number> {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [

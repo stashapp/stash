@@ -88,4 +88,5 @@ export type CriterionType =
   | "gallery_count"
   | "performer_count"
   | "death_year"
-  | "url";
+  | "url"
+  | "stash_id";
