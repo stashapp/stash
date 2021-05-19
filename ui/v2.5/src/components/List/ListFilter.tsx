@@ -245,7 +245,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
-    return props.filterOptions.sortByOptions.map((option) => (
+    return props.filterOptions.sortByOptions.sort((a, b) => a.localeCompare(b)).map((option) => (
       <Dropdown.Item
         onClick={onChangeSortBy}
         key={option}
