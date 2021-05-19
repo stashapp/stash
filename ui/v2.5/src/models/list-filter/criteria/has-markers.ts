@@ -1,4 +1,4 @@
-import { BooleanCriterion, CriterionOption } from "./criterion";
+import { CriterionOption, StringCriterion } from "./criterion";
 
 export class HasMarkersCriterionOption extends CriterionOption {
   constructor() {
@@ -6,8 +6,12 @@ export class HasMarkersCriterionOption extends CriterionOption {
   }
 }
 
-export class HasMarkersCriterion extends BooleanCriterion {
+export class HasMarkersCriterion extends StringCriterion {
   constructor() {
-    super(new HasMarkersCriterionOption());
+    super(new HasMarkersCriterionOption(), [true.toString(), false.toString()]);
+  }
+
+  protected toCriterionInput(): string {
+    return this.value;
   }
 }

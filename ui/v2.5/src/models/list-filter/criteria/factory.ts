@@ -24,7 +24,7 @@ import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
 import { AverageResolutionCriterion, ResolutionCriterion } from "./resolution";
 import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
-import { TagsCriterion } from "./tags";
+import { PerformerTagsCriterionOption, SceneTagsCriterionOption, TagsCriterion, TagsCriterionOption } from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
 import { GalleriesCriterion } from "./galleries";
@@ -73,9 +73,11 @@ export function makeCriteria(type: CriterionType = "none") {
     case "movieIsMissing":
       return new MovieIsMissingCriterion();
     case "tags":
+      return new TagsCriterion(new TagsCriterionOption());
     case "sceneTags":
+      return new TagsCriterion(new SceneTagsCriterionOption());
     case "performerTags":
-      return new TagsCriterion(new CriterionOption(type, type));
+      return new TagsCriterion(new PerformerTagsCriterionOption());
     case "performers":
       return new PerformersCriterion();
     case "studios":
