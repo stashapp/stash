@@ -19,9 +19,18 @@ export class PerformerListFilterOptions extends ListFilterOptions {
       "random",
       "rating",
     ];
-    const displayModeOptions = [DisplayMode.Grid, DisplayMode.List, DisplayMode.Tagger];
+    const displayModeOptions = [
+      DisplayMode.Grid,
+      DisplayMode.List,
+      DisplayMode.Tagger,
+    ];
 
-    const numberCriteria: CriterionType[] = ["birth_year", "death_year", "age", "weight"];
+    const numberCriteria: CriterionType[] = [
+      "birth_year",
+      "death_year",
+      "age",
+      "weight",
+    ];
     const stringCriteria: CriterionType[] = [
       "ethnicity",
       "country",

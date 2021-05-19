@@ -17,7 +17,6 @@ type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
 
 // V = criterion value type
-// I = criterion input type
 export abstract class Criterion<V extends CriterionValue> {
   public static getModifierOption(
     modifier: CriterionModifier = CriterionModifier.Equals

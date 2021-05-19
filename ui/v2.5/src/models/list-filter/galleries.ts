@@ -26,7 +26,11 @@ export class GalleryListFilterOptions extends ListFilterOptions {
       "title",
       "random",
     ];
-    const displayModeOptions = [DisplayMode.Grid, DisplayMode.List, DisplayMode.Wall];
+    const displayModeOptions = [
+      DisplayMode.Grid,
+      DisplayMode.List,
+      DisplayMode.Wall,
+    ];
     const criterionOptions = [
       new NoneCriterionOption(),
       ListFilterOptions.createCriterionOption("path"),

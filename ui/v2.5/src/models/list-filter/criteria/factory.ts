@@ -73,13 +73,9 @@ export function makeCriteria(type: CriterionType = "none") {
     case "movieIsMissing":
       return new MovieIsMissingCriterion();
     case "tags":
-      return new TagsCriterion(new CriterionOption("tags", "tags"));
     case "sceneTags":
-      return new TagsCriterion(new CriterionOption("sceneTags", "sceneTags"));
     case "performerTags":
-      return new TagsCriterion(
-        new CriterionOption("performerTags", "performerTags")
-      );
+      return new TagsCriterion(new CriterionOption(type, type));
     case "performers":
       return new PerformersCriterion();
     case "studios":
