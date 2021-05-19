@@ -300,6 +300,29 @@ func (_m *SceneReaderWriter) FindByChecksum(checksum string) (*models.Scene, err
 	return r0, r1
 }
 
+// FindByGalleryID provides a mock function with given fields: performerID
+func (_m *SceneReaderWriter) FindByGalleryID(performerID int) ([]*models.Scene, error) {
+	ret := _m.Called(performerID)
+
+	var r0 []*models.Scene
+	if rf, ok := ret.Get(0).(func(int) []*models.Scene); ok {
+		r0 = rf(performerID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByMovieID provides a mock function with given fields: movieID
 func (_m *SceneReaderWriter) FindByMovieID(movieID int) ([]*models.Scene, error) {
 	ret := _m.Called(movieID)
@@ -392,22 +415,22 @@ func (_m *SceneReaderWriter) FindByPerformerID(performerID int) ([]*models.Scene
 	return r0, r1
 }
 
-// FindByGalleryID provides a mock function with given fields: galleryID
-func (_m *SceneReaderWriter) FindByGalleryID(galleryID int) ([]*models.Scene, error) {
-	ret := _m.Called(galleryID)
+// FindDuplicates provides a mock function with given fields: distance
+func (_m *SceneReaderWriter) FindDuplicates(distance int) ([][]*models.Scene, error) {
+	ret := _m.Called(distance)
 
-	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(int) []*models.Scene); ok {
-		r0 = rf(galleryID)
+	var r0 [][]*models.Scene
+	if rf, ok := ret.Get(0).(func(int) [][]*models.Scene); ok {
+		r0 = rf(distance)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Scene)
+			r0 = ret.Get(0).([][]*models.Scene)
 		}
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(galleryID)
+		r1 = rf(distance)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -448,6 +471,29 @@ func (_m *SceneReaderWriter) GetCover(sceneID int) ([]byte, error) {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetGalleryIDs provides a mock function with given fields: sceneID
+func (_m *SceneReaderWriter) GetGalleryIDs(sceneID int) ([]int, error) {
+	ret := _m.Called(sceneID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(sceneID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
 		}
 	}
 
@@ -507,8 +553,31 @@ func (_m *SceneReaderWriter) GetPerformerIDs(sceneID int) ([]int, error) {
 	return r0, r1
 }
 
-// GetGalleryIDs provides a mock function with given fields: sceneID
-func (_m *SceneReaderWriter) GetGalleryIDs(sceneID int) ([]int, error) {
+// GetStashIDs provides a mock function with given fields: sceneID
+func (_m *SceneReaderWriter) GetStashIDs(sceneID int) ([]*models.StashID, error) {
+	ret := _m.Called(sceneID)
+
+	var r0 []*models.StashID
+	if rf, ok := ret.Get(0).(func(int) []*models.StashID); ok {
+		r0 = rf(sceneID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.StashID)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetTagIDs provides a mock function with given fields: sceneID
+func (_m *SceneReaderWriter) GetTagIDs(sceneID int) ([]int, error) {
 	ret := _m.Called(sceneID)
 
 	var r0 []int
@@ -523,52 +592,6 @@ func (_m *SceneReaderWriter) GetGalleryIDs(sceneID int) ([]int, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetStashIDs provides a mock function with given fields: performerID
-func (_m *SceneReaderWriter) GetStashIDs(performerID int) ([]*models.StashID, error) {
-	ret := _m.Called(performerID)
-
-	var r0 []*models.StashID
-	if rf, ok := ret.Get(0).(func(int) []*models.StashID); ok {
-		r0 = rf(performerID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.StashID)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(performerID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetTagIDs provides a mock function with given fields: imageID
-func (_m *SceneReaderWriter) GetTagIDs(imageID int) ([]int, error) {
-	ret := _m.Called(imageID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(int) []int); ok {
-		r0 = rf(imageID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(imageID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -625,29 +648,6 @@ func (_m *SceneReaderWriter) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	return r0, r1, r2
-}
-
-// QueryForAutoTag provides a mock function with given fields: regex, pathPrefixes
-func (_m *SceneReaderWriter) QueryForAutoTag(regex string, pathPrefixes []string) ([]*models.Scene, error) {
-	ret := _m.Called(regex, pathPrefixes)
-
-	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(string, []string) []*models.Scene); ok {
-		r0 = rf(regex, pathPrefixes)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Scene)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string, []string) error); ok {
-		r1 = rf(regex, pathPrefixes)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }
 
 // ResetOCounter provides a mock function with given fields: id
@@ -766,6 +766,20 @@ func (_m *SceneReaderWriter) UpdateFull(updatedScene models.Scene) (*models.Scen
 	return r0, r1
 }
 
+// UpdateGalleries provides a mock function with given fields: sceneID, galleryIDs
+func (_m *SceneReaderWriter) UpdateGalleries(sceneID int, galleryIDs []int) error {
+	ret := _m.Called(sceneID, galleryIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(sceneID, galleryIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateMovies provides a mock function with given fields: sceneID, movies
 func (_m *SceneReaderWriter) UpdateMovies(sceneID int, movies []models.MoviesScenes) error {
 	ret := _m.Called(sceneID, movies)
@@ -787,20 +801,6 @@ func (_m *SceneReaderWriter) UpdatePerformers(sceneID int, performerIDs []int) e
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
 		r0 = rf(sceneID, performerIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateGalleries provides a mock function with given fields: sceneID, galleryIDs
-func (_m *SceneReaderWriter) UpdateGalleries(sceneID int, galleryIDs []int) error {
-	ret := _m.Called(sceneID, galleryIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
-		r0 = rf(sceneID, galleryIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

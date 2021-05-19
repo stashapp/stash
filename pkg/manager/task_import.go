@@ -120,7 +120,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	t.scraped = scraped
 
 	if t.Reset {
-		err := database.Reset(config.GetDatabasePath())
+		err := database.Reset(config.GetInstance().GetDatabasePath())
 
 		if err != nil {
 			logger.Errorf("Error resetting database: %s", err.Error())
@@ -209,6 +209,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			readerWriter := r.Performer()
 			importer := &performer.Importer{
 				ReaderWriter: readerWriter,
+				TagWriter:    r.Tag(),
 				Input:        *performerJSON,
 			}
 

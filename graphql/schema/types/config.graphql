@@ -1,3 +1,13 @@
+input SetupInput {
+  """Empty to indicate $HOME/.stash/config.yml default"""
+  configLocation: String!
+  stashes: [StashConfigInput!]!
+  """Empty to indicate default"""
+  databaseFile: String!
+  """Empty to indicate default"""
+  generatedLocation: String!
+}
+
 enum StreamingResolutionEnum {
   "240p", LOW
   "480p", STANDARD
@@ -81,6 +91,8 @@ input ConfigGeneralInput {
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
+  """Whether the scraper should check for invalid certificates"""
+  scraperCertCheck: Boolean!
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBoxInput!]!
 }
@@ -92,6 +104,10 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Path to the config file used"""
+  configFilePath: String!
+  """Path to scrapers"""
+  scrapersPath: String!
   """Path to cache"""
   cachePath: String!
   """Whether to calculate MD5 checksums for scene video files"""
@@ -114,6 +130,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """API Key"""
+  apiKey: String!
   """Username"""
   username: String!
   """Password"""
@@ -144,6 +162,8 @@ type ConfigGeneralResult {
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
+  """Whether the scraper should check for invalid certificates"""
+  scraperCertCheck: Boolean!
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBox!]!
 }
@@ -168,6 +188,8 @@ input ConfigInterfaceInput {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
 }
 
 type ConfigInterfaceResult {
@@ -190,6 +212,8 @@ type ConfigInterfaceResult {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
 }
 
 """All configuration settings"""
@@ -216,4 +240,8 @@ type StashConfig {
   path: String!
   excludeVideo: Boolean!
   excludeImage: Boolean!
+}
+
+input GenerateAPIKeyInput {
+  clear: Boolean
 }

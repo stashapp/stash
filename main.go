@@ -2,10 +2,13 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"runtime/pprof"
+	"syscall"
+
 	"github.com/stashapp/stash/pkg/api"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
-	"github.com/stashapp/stash/pkg/manager/config"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -13,16 +16,17 @@ import (
 
 func main() {
 	manager.Initialize()
-
-	// perform the post-migration for new databases
-	if database.Initialize(config.GetDatabasePath()) {
-		manager.GetInstance().PostMigrate()
-	}
-
 	api.Start()
+
+	// stop any profiling at exit
+	defer pprof.StopCPUProfile()
 	blockForever()
 }
 
 func blockForever() {
-	select {}
+	// handle signals
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	<-signals
 }

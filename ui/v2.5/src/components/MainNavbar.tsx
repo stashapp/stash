@@ -95,7 +95,7 @@ const allMenuItems: IMenuItem[] = [
     name: "galleries",
     message: messages.galleries,
     href: "/galleries",
-    icon: "image",
+    icon: "images",
   },
   {
     name: "performers",

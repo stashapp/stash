@@ -31,6 +31,7 @@ type ScanTask struct {
 	calculateMD5         bool
 	fileNamingAlgorithm  models.HashAlgorithm
 	GenerateSprite       bool
+	GeneratePhash        bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
@@ -55,9 +56,20 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 				go taskSprite.Start(&iwg)
 			}
 
+			if t.GeneratePhash {
+				iwg.Add()
+				taskPhash := GeneratePhashTask{
+					Scene:               *s,
+					fileNamingAlgorithm: t.fileNamingAlgorithm,
+					txnManager:          t.TxnManager,
+				}
+				go taskPhash.Start(&iwg)
+			}
+
 			if t.GeneratePreview {
 				iwg.Add()
 
+				config := config.GetInstance()
 				var previewSegmentDuration = config.GetPreviewSegmentDuration()
 				var previewSegments = config.GetPreviewSegments()
 				var previewExcludeStart = config.GetPreviewExcludeStart()
@@ -228,6 +240,10 @@ func (t *ScanTask) scanGallery() {
 						Timestamp: fileModTime,
 						Valid:     true,
 					},
+					Title: sql.NullString{
+						String: utils.GetNameFromPath(t.FilePath, t.StripFileExtension),
+						Valid:  true,
+					},
 					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				}
@@ -302,7 +318,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 
 		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
 		var relatedFiles []string
-		vExt := config.GetVideoExtensions()
+		vExt := config.GetInstance().GetVideoExtensions()
 		// make a list of media files that can be related to the gallery
 		for _, ext := range vExt {
 			related := basename + "." + ext
@@ -315,14 +331,22 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 			scene, _ := sqb.FindByPath(scenePath)
 			// found related Scene
 			if scene != nil {
-				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
-
-				if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
-					return err
+				sceneGalleries, _ := sqb.FindByGalleryID(g.ID) // check if gallery is already associated to the scene
+				isAssoc := false
+				for _, sg := range sceneGalleries {
+					if scene.ID == sg.ID {
+						isAssoc = true
+						break
+					}
+				}
+				if !isAssoc {
+					logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+					if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
+						return err
+					}
 				}
 			}
 		}
-
 		return nil
 	}); err != nil {
 		logger.Error(err.Error())
@@ -379,6 +403,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		// if the mod time of the file is different than that of the associated
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, s.FileModTime)
+		config := config.GetInstance()
 		if modified || !s.Size.Valid {
 			oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 			s, err = t.rescanScene(s, fileModTime)
@@ -832,6 +857,9 @@ func (t *ScanTask) scanImage() {
 				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			}
+			newImage.Title.String = image.GetFilename(&newImage, t.StripFileExtension)
+			newImage.Title.Valid = true
+
 			if err := image.SetFileDetails(&newImage); err != nil {
 				logger.Error(err.Error())
 				return
@@ -855,7 +883,7 @@ func (t *ScanTask) scanImage() {
 				logger.Error(err.Error())
 				return
 			}
-		} else if config.GetCreateGalleriesFromFolders() {
+		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
 			// create gallery from folder or associate with existing gallery
 			logger.Infof("Associating image %s with folder gallery", i.Path)
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -945,6 +973,10 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			Title: sql.NullString{
+				String: utils.GetNameFromPath(path, false),
+				Valid:  true,
+			},
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)
@@ -1008,6 +1040,7 @@ func (t *ScanTask) calculateImageChecksum() (string, error) {
 }
 
 func (t *ScanTask) doesPathExist() bool {
+	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
@@ -1038,6 +1071,7 @@ func (t *ScanTask) doesPathExist() bool {
 }
 
 func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
+	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
@@ -1061,6 +1095,13 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		if info.IsDir() {
 			// #1102 - ignore files in generated path
 			if utils.IsPathInDir(generatedPath, path) {
+				return filepath.SkipDir
+			}
+
+			// shortcut: skip the directory entirely if it matches both exclusion patterns
+			// add a trailing separator so that it correctly matches against patterns like path/.*
+			pathExcludeTest := path + string(filepath.Separator)
+			if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, excludeVidRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, excludeImgRegex)) {
 				return filepath.SkipDir
 			}
 

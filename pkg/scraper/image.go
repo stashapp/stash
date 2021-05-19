@@ -1,6 +1,8 @@
 package scraper
 
 import (
+	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -83,6 +85,8 @@ func setMovieBackImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error 
 
 func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()}},
 		Timeout: imageGetTimeout,
 	}
 
@@ -91,7 +95,7 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 		return nil, err
 	}
 
-	userAgent := globalConfig.UserAgent
+	userAgent := globalConfig.GetScraperUserAgent()
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
@@ -107,6 +111,10 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d", resp.StatusCode)
 	}
 
 	defer resp.Body.Close()

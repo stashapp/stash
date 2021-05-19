@@ -59,12 +59,25 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 	return scene, nil
 }
 
-func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIds []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
+func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		scenes, total, err := repo.Scene().Query(sceneFilter, filter)
+		var scenes []*models.Scene
+		var total int
+		var err error
+
+		if len(sceneIDs) > 0 {
+			scenes, err = repo.Scene().FindMany(sceneIDs)
+			if err == nil {
+				total = len(scenes)
+			}
+		} else {
+			scenes, total, err = repo.Scene().Query(sceneFilter, filter)
+		}
+
 		if err != nil {
 			return err
 		}
+
 		ret = &models.FindScenesResultType{
 			Count:  total,
 			Scenes: scenes,
@@ -132,6 +145,21 @@ func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.
 		}
 
 		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) (ret [][]*models.Scene, err error) {
+	dist := 0
+	if distance != nil {
+		dist = *distance
+	}
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().FindDuplicates(dist)
+		return err
 	}); err != nil {
 		return nil, err
 	}

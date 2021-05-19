@@ -16,6 +16,7 @@ import {
   usePerformerCreate,
   useMovieCreate,
   useTagCreate,
+  makePerformerCreateInput,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { DurationUtils } from "src/utils";
@@ -317,7 +318,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
 
   const [createStudio] = useStudioCreate({ name: "" });
   const [createPerformer] = usePerformerCreate();
-  const [createMovie] = useMovieCreate({ name: "" });
+  const [createMovie] = useMovieCreate();
   const [createTag] = useTagCreate({ name: "" });
 
   const Toast = useToast();
@@ -336,8 +337,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     try {
       const result = await createStudio({
         variables: {
-          name: toCreate.name,
-          url: toCreate.url,
+          input: {
+            name: toCreate.name,
+            url: toCreate.url,
+          },
         },
       });
 
@@ -358,11 +361,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
   }
 
   async function createNewPerformer(toCreate: GQL.ScrapedScenePerformer) {
-    let performerInput: GQL.PerformerCreateInput = { name: "" };
+    const input = makePerformerCreateInput(toCreate);
+
     try {
-      performerInput = Object.assign(performerInput, toCreate);
       const result = await createPerformer({
-        variables: performerInput,
+        variables: { input },
       });
 
       // add the new performer to the new performers value

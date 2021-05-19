@@ -1,4 +1,4 @@
-import { Table, Tabs, Tab } from "react-bootstrap";
+import { Button, Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
@@ -14,12 +14,14 @@ import {
 } from "src/core/StashService";
 import { ImageUtils, TableUtils } from "src/utils";
 import {
+  Icon,
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
   StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -45,6 +47,9 @@ export const Studio: React.FC = () => {
   const [name, setName] = useState<string>();
   const [url, setUrl] = useState<string>();
   const [parentStudioId, setParentStudioId] = useState<string>();
+  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [details, setDetails] = useState<string>();
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
@@ -63,6 +68,9 @@ export const Studio: React.FC = () => {
     setName(state.name);
     setUrl(state.url ?? undefined);
     setParentStudioId(state?.parent_studio?.id ?? undefined);
+    setRating(state.rating ?? undefined);
+    setDetails(state.details ?? undefined);
+    setStashIDs(state.stash_ids ?? []);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -70,6 +78,7 @@ export const Studio: React.FC = () => {
     updateStudioEditState(studioData);
     setImagePreview(studioData.image_path ?? undefined);
     setStudio(studioData);
+    setRating(studioData.rating ?? undefined);
   }
 
   // set up hotkeys
@@ -80,6 +89,30 @@ export const Studio: React.FC = () => {
 
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
+
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
 
     return () => {
       if (isEditing) {
@@ -117,7 +150,13 @@ export const Studio: React.FC = () => {
       name,
       url,
       image,
+      details,
       parent_id: parentStudioId ?? null,
+      rating: rating ?? null,
+      stash_ids: stashIDs.map((s) => ({
+        stash_id: s.stash_id,
+        endpoint: s.endpoint,
+      })),
     };
 
     if (!isNew) {
@@ -134,10 +173,6 @@ export const Studio: React.FC = () => {
             input: getStudioInput() as GQL.StudioUpdateInput,
           },
         });
-        if (result.data?.studioUpdate?.image_path)
-          await fetch(result.data?.studioUpdate?.image_path, {
-            cache: "reload",
-          });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
@@ -175,6 +210,15 @@ export const Studio: React.FC = () => {
     history.push(`/studios`);
   }
 
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    setStashIDs(
+      stashIDs.filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
+
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
   }
@@ -202,7 +246,7 @@ export const Studio: React.FC = () => {
         <td>StashIDs</td>
         <td>
           <ul className="pl-0">
-            {studio.stash_ids.map((stashID) => {
+            {stashIDs.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
               const link = base ? (
                 <a
@@ -217,6 +261,16 @@ export const Studio: React.FC = () => {
               );
               return (
                 <li key={stashID.stash_id} className="row no-gutters">
+                  {isEditing && (
+                    <Button
+                      variant="danger"
+                      className="mr-2 py-0"
+                      title="Delete StashID"
+                      onClick={() => removeStashID(stashID)}
+                    >
+                      <Icon icon="trash-alt" />
+                    </Button>
+                  )}
                   {link}
                 </li>
               );
@@ -235,7 +289,7 @@ export const Studio: React.FC = () => {
   function onClearImage() {
     setImage(null);
     setImagePreview(
-      studio.image_path ? `${studio.image_path}?default=true` : undefined
+      studio.image_path ? `${studio.image_path}&default=true` : undefined
     );
   }
 
@@ -305,11 +359,27 @@ export const Studio: React.FC = () => {
               isEditing: !!isEditing,
               onChange: setUrl,
             })}
+            {TableUtils.renderTextArea({
+              title: "Details",
+              value: details,
+              isEditing: !!isEditing,
+              onChange: setDetails,
+            })}
             <tr>
               <td>Parent Studio</td>
               <td>{renderStudio()}</td>
             </tr>
-            {!isEditing && renderStashIDs()}
+            <tr>
+              <td>Rating:</td>
+              <td>
+                <RatingStars
+                  value={rating}
+                  disabled={!isEditing}
+                  onSetRating={(value) => setRating(value ?? NaN)}
+                />
+              </td>
+            </tr>
+            {renderStashIDs()}
           </tbody>
         </Table>
         <DetailsEditNavbar
@@ -319,6 +389,7 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onImageChangeURL={onImageLoad}
           onClearImage={() => {
             onClearImage();
           }}

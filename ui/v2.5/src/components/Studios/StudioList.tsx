@@ -7,7 +7,7 @@ import {
   SlimStudioDataFragment,
 } from "src/core/generated-graphql";
 import { useStudiosList } from "src/hooks";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindStudios, useStudiosDestroy } from "src/core/StashService";
@@ -131,7 +131,7 @@ export const StudioList: React.FC<IStudioList> = ({
     addKeybinds,
     otherOperations,
     selectable: true,
-    persistState: !fromParent,
+    persistState: !fromParent ? PersistanceLevel.ALL : PersistanceLevel.NONE,
     renderDeleteDialog,
   });
 

@@ -9,6 +9,7 @@
 @import "src/components/Movies/styles.scss";
 @import "src/components/Performers/styles.scss";
 @import "src/components/Scenes/styles.scss";
+@import "src/components/SceneDuplicateChecker/styles.scss";
 @import "src/components/SceneFilenameParser/styles.scss";
 @import "src/components/ScenePlayer/styles.scss";
 @import "src/components/Settings/styles.scss";
@@ -42,6 +43,10 @@ code,
 .code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+dd {
+  white-space: pre-line;
 }
 
 .input-control,
@@ -406,7 +411,6 @@ div.dropdown-menu {
 
 .image-input {
   margin-bottom: 0;
-  overflow: hidden;
   position: relative;
 
   input[type="file"], /* FF, IE7+, chrome (except button) */
@@ -418,7 +422,6 @@ div.dropdown-menu {
   [type="file"] {
     display: block;
     filter: alpha(opacity=0);
-    font-size: 999px;
     min-height: 100%;
     min-width: 100%;
     opacity: 0;

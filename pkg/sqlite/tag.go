@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -108,8 +109,20 @@ func (qb *tagQueryBuilder) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 		WHERE scenes_join.scene_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getTagSort(nil)
+	query += qb.getDefaultTagSort()
 	args := []interface{}{sceneID}
+	return qb.queryTags(query, args)
+}
+
+func (qb *tagQueryBuilder) FindByPerformerID(performerID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN performers_tags as performers_join on performers_join.tag_id = tags.id
+		WHERE performers_join.performer_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{performerID}
 	return qb.queryTags(query, args)
 }
 
@@ -120,7 +133,7 @@ func (qb *tagQueryBuilder) FindByImageID(imageID int) ([]*models.Tag, error) {
 		WHERE images_join.image_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getTagSort(nil)
+	query += qb.getDefaultTagSort()
 	args := []interface{}{imageID}
 	return qb.queryTags(query, args)
 }
@@ -132,7 +145,7 @@ func (qb *tagQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Tag, error)
 		WHERE galleries_join.gallery_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getTagSort(nil)
+	query += qb.getDefaultTagSort()
 	args := []interface{}{galleryID}
 	return qb.queryTags(query, args)
 }
@@ -144,7 +157,7 @@ func (qb *tagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int) ([]*models.Tag
 		WHERE scene_markers_join.scene_marker_id = ?
 		GROUP BY tags.id
 	`
-	query += qb.getTagSort(nil)
+	query += qb.getDefaultTagSort()
 	args := []interface{}{sceneMarkerID}
 	return qb.queryTags(query, args)
 }
@@ -177,11 +190,85 @@ func (qb *tagQueryBuilder) Count() (int, error) {
 }
 
 func (qb *tagQueryBuilder) All() ([]*models.Tag, error) {
-	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil)
+	return qb.queryTags(selectAll("tags")+qb.getDefaultTagSort(), nil)
 }
 
-func (qb *tagQueryBuilder) AllSlim() ([]*models.Tag, error) {
-	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getTagSort(nil), nil)
+func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(tagTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryTags(query+" WHERE "+where, args)
+}
+
+func (qb *tagQueryBuilder) validateFilter(tagFilter *models.TagFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if tagFilter.And != nil {
+		if tagFilter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if tagFilter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(tagFilter.And)
+	}
+
+	if tagFilter.Or != nil {
+		if tagFilter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(tagFilter.Or)
+	}
+
+	if tagFilter.Not != nil {
+		return qb.validateFilter(tagFilter.Not)
+	}
+
+	return nil
+}
+
+func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBuilder {
+	query := &filterBuilder{}
+
+	if tagFilter.And != nil {
+		query.and(qb.makeFilter(tagFilter.And))
+	}
+	if tagFilter.Or != nil {
+		query.or(qb.makeFilter(tagFilter.Or))
+	}
+	if tagFilter.Not != nil {
+		query.not(qb.makeFilter(tagFilter.Not))
+	}
+
+	// if markerCount := tagFilter.MarkerCount; markerCount != nil {
+	// 	clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
+	// 	query.addHaving(clause)
+	// 	if count == 1 {
+	// 		query.addArg(markerCount.Value)
+	// 	}
+	// }
+
+	query.handleCriterionFunc(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
+	query.handleCriterionFunc(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))
+	query.handleCriterionFunc(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
+	query.handleCriterionFunc(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
+	query.handleCriterionFunc(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
+
+	return query
 }
 
 func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, int, error) {
@@ -209,11 +296,6 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	// appears to confuse sqlite and causes serious performance issues.
 	// Disabling querying/sorting on marker count for now.
 
-	query.body += ` 
-	left join tags_image on tags_image.tag_id = tags.id
-	left join scenes_tags on scenes_tags.tag_id = tags.id
-	left join scenes on scenes_tags.scene_id = scenes.id`
-
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
@@ -221,32 +303,14 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 		query.addArg(thisArgs...)
 	}
 
-	if isMissingFilter := tagFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
-		switch *isMissingFilter {
-		case "image":
-			query.addWhere("tags_image.tag_id IS NULL")
-		default:
-			query.addWhere("tags." + *isMissingFilter + " IS NULL")
-		}
+	if err := qb.validateFilter(tagFilter); err != nil {
+		return nil, 0, err
 	}
+	filter := qb.makeFilter(tagFilter)
 
-	if sceneCount := tagFilter.SceneCount; sceneCount != nil {
-		clause, count := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
-		query.addHaving(clause)
-		if count == 1 {
-			query.addArg(sceneCount.Value)
-		}
-	}
+	query.addFilter(filter)
 
-	// if markerCount := tagFilter.MarkerCount; markerCount != nil {
-	// 	clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
-	// 	query.addHaving(clause)
-	// 	if count == 1 {
-	// 		query.addArg(markerCount.Value)
-	// 	}
-	// }
-
-	query.sortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
+	query.sortAndPagination = qb.getTagSort(&query, findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -264,7 +328,89 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	return tags, countResult, nil
 }
 
-func (qb *tagQueryBuilder) getTagSort(findFilter *models.FindFilterType) string {
+func tagIsMissingCriterionHandler(qb *tagQueryBuilder, isMissing *string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if isMissing != nil && *isMissing != "" {
+			switch *isMissing {
+			case "image":
+				qb.imageRepository().join(f, "", "tags.id")
+				f.addWhere("tags_image.tag_id IS NULL")
+			default:
+				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
+			}
+		}
+	}
+}
+
+func tagSceneCountCriterionHandler(qb *tagQueryBuilder, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if sceneCount != nil {
+			f.addJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
+			clause, count := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
+
+			args := []interface{}{}
+			if count == 1 {
+				args = append(args, sceneCount.Value)
+			}
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagImageCountCriterionHandler(qb *tagQueryBuilder, imageCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if imageCount != nil {
+			f.addJoin("images_tags", "", "images_tags.tag_id = tags.id")
+			clause, count := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
+
+			args := []interface{}{}
+			if count == 1 {
+				args = append(args, imageCount.Value)
+			}
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagGalleryCountCriterionHandler(qb *tagQueryBuilder, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if galleryCount != nil {
+			f.addJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
+			clause, count := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
+
+			args := []interface{}{}
+			if count == 1 {
+				args = append(args, galleryCount.Value)
+			}
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagPerformerCountCriterionHandler(qb *tagQueryBuilder, performerCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerCount != nil {
+			f.addJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
+			clause, count := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
+
+			args := []interface{}{}
+			if count == 1 {
+				args = append(args, performerCount.Value)
+			}
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func (qb *tagQueryBuilder) getDefaultTagSort() string {
+	return getSort("name", "ASC", "tags")
+}
+
+func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -274,6 +420,24 @@ func (qb *tagQueryBuilder) getTagSort(findFilter *models.FindFilterType) string 
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
+
+	if findFilter.Sort != nil {
+		switch *findFilter.Sort {
+		case "scenes_count":
+			query.join("scenes_tags", "", "scenes_tags.tag_id = tags.id")
+			return " ORDER BY COUNT(distinct scenes_tags.scene_id) " + direction
+		case "images_count":
+			query.join("images_tags", "", "images_tags.tag_id = tags.id")
+			return " ORDER BY COUNT(distinct images_tags.image_id) " + direction
+		case "galleries_count":
+			query.join("galleries_tags", "", "galleries_tags.tag_id = tags.id")
+			return " ORDER BY COUNT(distinct galleries_tags.gallery_id) " + direction
+		case "performers_count":
+			query.join("performers_tags", "", "performers_tags.tag_id = tags.id")
+			return " ORDER BY COUNT(distinct performers_tags.performer_id) " + direction
+		}
+	}
+
 	return getSort(sort, direction, "tags")
 }
 

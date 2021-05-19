@@ -16,6 +16,7 @@ type ScenePathsType {
   webp: String # Resolver
   vtt: String # Resolver
   chapters_vtt: String # Resolver
+  sprite: String # Resolver
 }
 
 type SceneMovie {
@@ -35,6 +36,7 @@ type Scene {
   organized: Boolean!
   o_counter: Int
   path: String!
+  phash: String
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
@@ -67,7 +69,7 @@ input SceneUpdateInput {
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
-  """This should be base64 encoded"""
+  """This should be a URL or a base64 encoded data URL"""
   cover_image: String
   stash_ids: [StashIDInput!]
 }

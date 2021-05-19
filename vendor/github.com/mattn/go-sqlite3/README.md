@@ -2,16 +2,20 @@ go-sqlite3
 ==========
 
 [![GoDoc Reference](https://godoc.org/github.com/mattn/go-sqlite3?status.svg)](http://godoc.org/github.com/mattn/go-sqlite3)
-[![Build Status](https://travis-ci.org/mattn/go-sqlite3.svg?branch=master)](https://travis-ci.org/mattn/go-sqlite3)
+[![GitHub Actions](https://github.com/mattn/go-sqlite3/workflows/Go/badge.svg)](https://github.com/mattn/go-sqlite3/actions?query=workflow%3AGo)
 [![Financial Contributors on Open Collective](https://opencollective.com/mattn-go-sqlite3/all/badge.svg?label=financial+contributors)](https://opencollective.com/mattn-go-sqlite3) 
-[![Coverage Status](https://coveralls.io/repos/mattn/go-sqlite3/badge.svg?branch=master)](https://coveralls.io/r/mattn/go-sqlite3?branch=master)
+[![codecov](https://codecov.io/gh/mattn/go-sqlite3/branch/master/graph/badge.svg)](https://codecov.io/gh/mattn/go-sqlite3)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mattn/go-sqlite3)](https://goreportcard.com/report/github.com/mattn/go-sqlite3)
+
+Latest stable version is v1.14 or later not v2.
+
+~~**NOTE:** The increase to v2 was an accident. There were no major changes or features.~~
 
 # Description
 
 sqlite3 driver conforming to the built-in database/sql interface
 
-Supported Golang version: See .travis.yml
+Supported Golang version: See [.github/workflows/go.yaml](./.github/workflows/go.yaml)
 
 [This package follows the official Golang Release Policy.](https://golang.org/doc/devel/release.html#policy)
 
@@ -121,6 +125,8 @@ Boolean values can be one of:
 | Time Zone Location | `_loc` | auto | Specify location of time format. |
 | Transaction Lock | `_txlock` | <ul><li>immediate</li><li>deferred</li><li>exclusive</li></ul> | Specify locking behavior for transactions. |
 | Writable Schema | `_writable_schema` | `Boolean` | When this pragma is on, the SQLITE_MASTER tables in which database can be changed using ordinary UPDATE, INSERT, and DELETE statements. Warning: misuse of this pragma can easily result in a corrupt database file. |
+| Cache Size | `_cache_size` | `int` | Maximum cache size; default is 2000K (2M). See [PRAGMA cache_size](https://sqlite.org/pragma.html#pragma_cache_size) |
+
 
 ## DSN Examples
 
@@ -210,9 +216,15 @@ This library can be cross-compiled.
 
 In some cases you are required to the `CC` environment variable with the cross compiler.
 
-Additional information:
-- [#491](https://github.com/mattn/go-sqlite3/issues/491)
-- [#560](https://github.com/mattn/go-sqlite3/issues/560)
+## Cross Compiling from MAC OSX
+The simplest way to cross compile from OSX is to use [xgo](https://github.com/karalabe/xgo).
+
+Steps:
+- Install [xgo](https://github.com/karalabe/xgo) (`go get github.com/karalabe/xgo`).
+- Ensure that your project is within your `GOPATH`.
+- Run `xgo local/path/to/project`.
+
+Please refer to the project's [README](https://github.com/karalabe/xgo/blob/master/README.md) for further information.
 
 # Google Cloud Platform
 
@@ -450,6 +462,16 @@ If you want your own extension to be listed here or you want to add a reference 
 
 Spatialite is available as an extension to SQLite, and can be used in combination with this repository.
 For an example see [shaxbee/go-spatialite](https://github.com/shaxbee/go-spatialite).
+
+## extension-functions.c from SQLite3 Contrib
+
+extension-functions.c is available as an extension to SQLite, and provides the following functions:
+
+- Math: acos, asin, atan, atn2, atan2, acosh, asinh, atanh, difference, degrees, radians, cos, sin, tan, cot, cosh, sinh, tanh, coth, exp, log, log10, power, sign, sqrt, square, ceil, floor, pi.
+- String: replicate, charindex, leftstr, rightstr, ltrim, rtrim, trim, replace, reverse, proper, padl, padr, padc, strfilter.
+- Aggregate: stdev, variance, mode, median, lower_quartile, upper_quartile
+
+For an example see [dinedal/go-sqlite3-extension-functions](https://github.com/dinedal/go-sqlite3-extension-functions).
 
 # FAQ
 

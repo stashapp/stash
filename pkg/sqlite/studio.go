@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -121,8 +122,21 @@ func (qb *studioQueryBuilder) All() ([]*models.Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil)
 }
 
-func (qb *studioQueryBuilder) AllSlim() ([]*models.Studio, error) {
-	return qb.queryStudios("SELECT studios.id, studios.name, studios.parent_id FROM studios "+qb.getStudioSort(nil), nil)
+func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio, error) {
+	// TODO - Query needs to be changed to support queries of this type, and
+	// this method should be removed
+	query := selectAll(studioTable)
+
+	var whereClauses []string
+	var args []interface{}
+
+	for _, w := range words {
+		whereClauses = append(whereClauses, "name like ?")
+		args = append(args, "%"+w+"%")
+	}
+
+	where := strings.Join(whereClauses, " OR ")
+	return qb.queryStudios(query+" WHERE "+where, args)
 }
 
 func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
@@ -133,12 +147,11 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		findFilter = &models.FindFilterType{}
 	}
 
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("studios")
-	body += `
-		left join scenes on studios.id = scenes.studio_id		
+	query := qb.newQuery()
+
+	query.body = selectDistinctIDs("studios")
+	query.body += `
+		left join scenes on studios.id = scenes.studio_id
 		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
 
@@ -146,44 +159,49 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		searchColumns := []string{"studios.name"}
 
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		whereClauses = append(whereClauses, clause)
-		args = append(args, thisArgs...)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
 	if parentsFilter := studioFilter.Parents; parentsFilter != nil && len(parentsFilter.Value) > 0 {
-		body += `
+		query.body += `
 			left join studios as parent_studio on parent_studio.id = studios.parent_id
 		`
 
 		for _, studioID := range parentsFilter.Value {
-			args = append(args, studioID)
+			query.addArg(studioID)
 		}
 
 		whereClause, havingClause := getMultiCriterionClause("studios", "parent_studio", "", "", "parent_id", parentsFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
-	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
-		whereClauses = append(whereClauses, "studio_stash_ids.stash_id = ?")
-		args = append(args, stashIDFilter)
+	if rating := studioFilter.Rating; rating != nil {
+		query.handleIntCriterionInput(studioFilter.Rating, "studios.rating")
 	}
+	query.handleCountCriterion(studioFilter.SceneCount, studioTable, sceneTable, studioIDColumn)
+	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
+	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
+	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
+	query.handleStringCriterionInput(studioFilter.StashID, "studio_stash_ids.stash_id")
 
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "image":
-			body += `left join studios_image on studios_image.studio_id = studios.id
+			query.body += `left join studios_image on studios_image.studio_id = studios.id
 			`
-			whereClauses = appendClause(whereClauses, "studios_image.studio_id IS NULL")
+			query.addWhere("studios_image.studio_id IS NULL")
 		case "stash_id":
-			whereClauses = appendClause(whereClauses, "studio_stash_ids.studio_id IS NULL")
+			query.addWhere("studio_stash_ids.studio_id IS NULL")
 		default:
-			whereClauses = appendClause(whereClauses, "studios."+*isMissingFilter+" IS NULL")
+			query.addWhere("studios." + *isMissingFilter + " IS NULL")
 		}
 	}
 
-	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -211,7 +229,15 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
-	return getSort(sort, direction, "studios")
+
+	switch sort {
+	case "images_count":
+		return getCountSort(studioTable, imageTable, studioIDColumn, direction)
+	case "galleries_count":
+		return getCountSort(studioTable, galleryTable, studioIDColumn, direction)
+	default:
+		return getSort(sort, direction, "studios")
+	}
 }
 
 func (qb *studioQueryBuilder) queryStudio(query string, args []interface{}) (*models.Studio, error) {

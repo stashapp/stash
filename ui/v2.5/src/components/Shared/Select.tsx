@@ -10,7 +10,6 @@ import {
   useAllStudiosForFilter,
   useAllPerformersForFilter,
   useMarkerStrings,
-  useScrapePerformerList,
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
@@ -32,6 +31,7 @@ interface ITypeProps {
     | "parent_studios"
     | "tags"
     | "sceneTags"
+    | "performerTags"
     | "movies";
 }
 interface IFilterProps {
@@ -43,6 +43,8 @@ interface IFilterProps {
   isMulti?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
+  creatable?: boolean;
+  menuPortalTarget?: HTMLElement | null;
 }
 interface ISelectProps<T extends boolean> {
   className?: string;
@@ -60,6 +62,7 @@ interface ISelectProps<T extends boolean> {
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
+  menuPortalTarget?: HTMLElement | null;
   closeMenuOnSelect?: boolean;
   noOptionsMessage?: string | null;
 }
@@ -109,6 +112,7 @@ const SelectComponent = <T extends boolean>({
   placeholder,
   showDropdown = true,
   groupHeader,
+  menuPortalTarget,
   closeMenuOnSelect = true,
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
@@ -158,6 +162,7 @@ const SelectComponent = <T extends boolean>({
     isLoading,
     styles,
     closeMenuOnSelect,
+    menuPortalTarget,
     components: {
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
@@ -336,48 +341,6 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
   );
 };
 
-interface IScrapePerformerSuggestProps {
-  scraperId: string;
-  onSelectPerformer: (performer: GQL.ScrapedPerformerDataFragment) => void;
-  placeholder?: string;
-}
-export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
-  props
-) => {
-  const [query, setQuery] = useState<string>("");
-  const { data, loading } = useScrapePerformerList(props.scraperId, query);
-
-  const performers = data?.scrapePerformerList ?? [];
-  const items = performers.map((item) => ({
-    label: item.name ?? "",
-    value: item.name ?? "",
-  }));
-
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
-
-  const onChange = (option: ValueType<Option, false>) => {
-    const performer = performers.find((p) => p.name === option?.value);
-    if (performer) props.onSelectPerformer(performer);
-  };
-
-  return (
-    <SelectComponent
-      isMulti={false}
-      onChange={onChange}
-      onInputChange={onInputChange}
-      isLoading={loading}
-      items={items}
-      initialIds={[]}
-      placeholder={props.placeholder}
-      className="select-suggest"
-      showDropdown={false}
-      noOptionsMessage={query === "" ? null : "No performers found."}
-    />
-  );
-};
-
 interface IMarkerSuggestProps {
   initialMarkerTitle?: string;
   onChange: (title: string) => void;
@@ -414,11 +377,11 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllPerformersForFilter();
   const [createPerformer] = usePerformerCreate();
 
-  const performers = data?.allPerformersSlim ?? [];
+  const performers = data?.allPerformers ?? [];
 
   const onCreate = async (name: string) => {
     const result = await createPerformer({
-      variables: { name },
+      variables: { input: { name } },
     });
     return {
       item: result.data!.performerCreate!,
@@ -430,7 +393,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     <FilterSelectComponent
       {...props}
       isMulti={props.isMulti ?? false}
-      creatable
+      creatable={props.creatable ?? true}
       onCreate={onCreate}
       type="performers"
       isLoading={loading}
@@ -447,12 +410,16 @@ export const StudioSelect: React.FC<
   const [createStudio] = useStudioCreate({ name: "" });
 
   const exclude = props.excludeIds ?? [];
-  const studios = (data?.allStudiosSlim ?? []).filter(
+  const studios = (data?.allStudios ?? []).filter(
     (studio) => !exclude.includes(studio.id)
   );
 
   const onCreate = async (name: string) => {
-    const result = await createStudio({ variables: { name } });
+    const result = await createStudio({
+      variables: {
+        input: { name },
+      },
+    });
     return { item: result.data!.studioCreate!, message: "Created studio" };
   };
 
@@ -464,7 +431,7 @@ export const StudioSelect: React.FC<
       isLoading={loading}
       items={studios}
       placeholder={props.noSelectionString ?? "Select studio..."}
-      creatable
+      creatable={props.creatable ?? true}
       onCreate={onCreate}
     />
   );
@@ -472,7 +439,7 @@ export const StudioSelect: React.FC<
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
-  const items = data?.allMoviesSlim ?? [];
+  const items = data?.allMovies ?? [];
 
   return (
     <FilterSelectComponent
@@ -491,7 +458,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   const [createTag] = useTagCreate({ name: "" });
   const placeholder = props.noSelectionString ?? "Select tags...";
 
-  const tags = data?.allTagsSlim ?? [];
+  const tags = data?.allTags ?? [];
 
   const onCreate = async (name: string) => {
     const result = await createTag({
@@ -505,7 +472,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
       {...props}
       isMulti={props.isMulti ?? false}
       items={tags}
-      creatable
+      creatable={props.creatable ?? true}
       type="tags"
       placeholder={placeholder}
       isLoading={loading}
@@ -517,11 +484,11 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   props.type === "performers" ? (
-    <PerformerSelect {...props} />
+    <PerformerSelect {...props} creatable={false} />
   ) : props.type === "studios" || props.type === "parent_studios" ? (
-    <StudioSelect {...props} />
+    <StudioSelect {...props} creatable={false} />
   ) : props.type === "movies" ? (
-    <MovieSelect {...props} />
+    <MovieSelect {...props} creatable={false} />
   ) : (
-    <TagSelect {...props} />
+    <TagSelect {...props} creatable={false} />
   );

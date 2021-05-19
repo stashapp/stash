@@ -114,10 +114,6 @@ func (qb *movieQueryBuilder) All() ([]*models.Movie, error) {
 	return qb.queryMovies(selectAll("movies")+qb.getMovieSort(nil), nil)
 }
 
-func (qb *movieQueryBuilder) AllSlim() ([]*models.Movie, error) {
-	return qb.queryMovies("SELECT movies.id, movies.name FROM movies "+qb.getMovieSort(nil), nil)
-}
-
 func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
@@ -126,11 +122,10 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 		movieFilter = &models.MovieFilterType{}
 	}
 
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("movies")
-	body += `
+	query := qb.newQuery()
+
+	query.body = selectDistinctIDs("movies")
+	query.body += `
 	left join movies_scenes as scenes_join on scenes_join.movie_id = movies.id
 	left join scenes on scenes_join.scene_id = scenes.id
 	left join studios as studio on studio.id = movies.studio_id
@@ -139,41 +134,43 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		whereClauses = append(whereClauses, clause)
-		args = append(args, thisArgs...)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
 	if studiosFilter := movieFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
 		for _, studioID := range studiosFilter.Value {
-			args = append(args, studioID)
+			query.addArg(studioID)
 		}
 
 		whereClause, havingClause := getMultiCriterionClause("movies", "studio", "", "", "studio_id", studiosFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	if isMissingFilter := movieFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "front_image":
-			body += `left join movies_images on movies_images.movie_id = movies.id
+			query.body += `left join movies_images on movies_images.movie_id = movies.id
 			`
-			whereClauses = appendClause(whereClauses, "movies_images.front_image IS NULL")
+			query.addWhere("movies_images.front_image IS NULL")
 		case "back_image":
-			body += `left join movies_images on movies_images.movie_id = movies.id
+			query.body += `left join movies_images on movies_images.movie_id = movies.id
 			`
-			whereClauses = appendClause(whereClauses, "movies_images.back_image IS NULL")
+			query.addWhere("movies_images.back_image IS NULL")
 		case "scenes":
-			body += `left join movies_scenes on movies_scenes.movie_id = movies.id
+			query.body += `left join movies_scenes on movies_scenes.movie_id = movies.id
 			`
-			whereClauses = appendClause(whereClauses, "movies_scenes.scene_id IS NULL")
+			query.addWhere("movies_scenes.scene_id IS NULL")
 		default:
-			whereClauses = appendClause(whereClauses, "movies."+*isMissingFilter+" IS NULL")
+			query.addWhere("movies." + *isMissingFilter + " IS NULL")
 		}
 	}
 
-	sortAndPagination := qb.getMovieSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	query.handleStringCriterionInput(movieFilter.URL, "movies.url")
+
+	query.sortAndPagination = qb.getMovieSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
 	}

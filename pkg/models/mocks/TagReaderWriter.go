@@ -35,29 +35,6 @@ func (_m *TagReaderWriter) All() ([]*models.Tag, error) {
 	return r0, r1
 }
 
-// AllSlim provides a mock function with given fields:
-func (_m *TagReaderWriter) AllSlim() ([]*models.Tag, error) {
-	ret := _m.Called()
-
-	var r0 []*models.Tag
-	if rf, ok := ret.Get(0).(func() []*models.Tag); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Tag)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Count provides a mock function with given fields:
 func (_m *TagReaderWriter) Count() (int, error) {
 	ret := _m.Called()
@@ -245,6 +222,29 @@ func (_m *TagReaderWriter) FindByNames(names []string, nocase bool) ([]*models.T
 	return r0, r1
 }
 
+// FindByPerformerID provides a mock function with given fields: performerID
+func (_m *TagReaderWriter) FindByPerformerID(performerID int) ([]*models.Tag, error) {
+	ret := _m.Called(performerID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(int) []*models.Tag); ok {
+		r0 = rf(performerID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindBySceneID provides a mock function with given fields: sceneID
 func (_m *TagReaderWriter) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 	ret := _m.Called(sceneID)
@@ -365,6 +365,29 @@ func (_m *TagReaderWriter) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	return r0, r1, r2
+}
+
+// QueryForAutoTag provides a mock function with given fields: words
+func (_m *TagReaderWriter) QueryForAutoTag(words []string) ([]*models.Tag, error) {
+	ret := _m.Called(words)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func([]string) []*models.Tag); ok {
+		r0 = rf(words)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string) error); ok {
+		r1 = rf(words)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Update provides a mock function with given fields: updatedTag

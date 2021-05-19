@@ -23,6 +23,10 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		newStudioJSON.URL = studio.URL.String
 	}
 
+	if studio.Details.Valid {
+		newStudioJSON.Details = studio.Details.String
+	}
+
 	if studio.ParentID.Valid {
 		parent, err := reader.Find(int(studio.ParentID.Int64))
 		if err != nil {
@@ -32,6 +36,10 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		if parent != nil {
 			newStudioJSON.ParentStudio = parent.Name.String
 		}
+	}
+
+	if studio.Rating.Valid {
+		newStudioJSON.Rating = int(studio.Rating.Int64)
 	}
 
 	image, err := reader.GetImage(studio.ID)

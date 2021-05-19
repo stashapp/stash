@@ -39,10 +39,12 @@ func FileExists(path string) (bool, error) {
 
 // DirExists returns true if the given path exists and is a directory
 func DirExists(path string) (bool, error) {
-	exists, _ := FileExists(path)
-	fileInfo, _ := os.Stat(path)
-	if !exists || !fileInfo.IsDir() {
-		return false, fmt.Errorf("path either doesn't exist, or is not a directory <%s>", path)
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, fmt.Errorf("path doesn't exist <%s>", path)
+	}
+	if !fileInfo.IsDir() {
+		return false, fmt.Errorf("path is not a directory <%s>", path)
 	}
 	return true, nil
 }
@@ -276,10 +278,21 @@ func IsPathInDir(dir, pathToCheck string) bool {
 	rel, err := filepath.Rel(dir, pathToCheck)
 
 	if err == nil {
-		if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		if !strings.HasPrefix(rel, "..") {
 			return true
 		}
 	}
 
 	return false
+}
+
+// GetNameFromPath returns the name of a file from its path
+// if stripExtension is true the extension is omitted from the name
+func GetNameFromPath(path string, stripExtension bool) string {
+	fn := filepath.Base(path)
+	if stripExtension {
+		ext := filepath.Ext(fn)
+		fn = strings.TrimSuffix(fn, ext)
+	}
+	return fn
 }

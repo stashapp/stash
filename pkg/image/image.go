@@ -246,7 +246,7 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 
 func IsCover(img *models.Image) bool {
 	_, fn := getFilePath(img.Path)
-	return fn == "cover.jpg"
+	return strings.HasSuffix(fn, "cover.jpg")
 }
 
 func GetTitle(s *models.Image) string {
@@ -256,4 +256,11 @@ func GetTitle(s *models.Image) string {
 
 	_, fn := getFilePath(s.Path)
 	return filepath.Base(fn)
+}
+
+// GetFilename gets the base name of the image file
+// If stripExt is set the file extension is omitted from the name
+func GetFilename(s *models.Image, stripExt bool) string {
+	_, fn := getFilePath(s.Path)
+	return utils.GetNameFromPath(fn, stripExt)
 }

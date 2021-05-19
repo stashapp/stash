@@ -10,23 +10,26 @@ import { queryFindScenes } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
+import { SceneQueue } from "src/models/sceneQueue";
 import { WallPanel } from "../Wall/WallPanel";
-import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { SceneCardsGrid } from "./SceneCardsGrid";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: boolean;
+  defaultSort?: string;
+  persistState?: PersistanceLevel.ALL;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
   filterHook,
+  defaultSort,
   persistState,
 }) => {
   const history = useHistory();
@@ -35,6 +38,11 @@ export const SceneList: React.FC<ISceneList> = ({
   const [isExportAll, setIsExportAll] = useState(false);
 
   const otherOperations = [
+    {
+      text: "Play selected",
+      onClick: playSelected,
+      isDisplayed: showWhenSelected,
+    },
     {
       text: "Play Random",
       onClick: playRandom,
@@ -77,6 +85,7 @@ export const SceneList: React.FC<ISceneList> = ({
     zoomable: true,
     selectable: true,
     otherOperations,
+    defaultSort,
     renderContent,
     renderEditDialog: renderEditScenesDialog,
     renderDeleteDialog,
@@ -84,6 +93,17 @@ export const SceneList: React.FC<ISceneList> = ({
     addKeybinds,
     persistState,
   });
+
+  async function playSelected(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    // populate queue and go to first scene
+    const sceneIDs = Array.from(selectedIds.values());
+    const queue = SceneQueue.fromSceneIDList(sceneIDs);
+    queue.playScene(history, sceneIDs[0], { autoPlay: true });
+  }
 
   async function playRandom(
     result: FindScenesQueryResult,
@@ -93,20 +113,18 @@ export const SceneList: React.FC<ISceneList> = ({
     if (result.data && result.data.findScenes) {
       const { count } = result.data.findScenes;
 
-      const index = Math.floor(Math.random() * count);
+      const pages = Math.ceil(count / filter.itemsPerPage);
+      const page = Math.floor(Math.random() * pages) + 1;
+      const index = Math.floor(Math.random() * filter.itemsPerPage);
       const filterCopy = _.cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindScenes(filterCopy);
-      if (
-        singleResult &&
-        singleResult.data &&
-        singleResult.data.findScenes &&
-        singleResult.data.findScenes.scenes.length === 1
-      ) {
-        const { id } = singleResult!.data!.findScenes!.scenes[0];
-        // navigate to the scene player page
-        history.push(`/scenes/${id}?autoplay=true`);
+      filterCopy.currentPage = page;
+      filterCopy.sortBy = "random";
+      const queryResults = await queryFindScenes(filterCopy);
+      if (queryResults.data.findScenes.scenes.length > index) {
+        const { id } = queryResults!.data!.findScenes!.scenes[index];
+        // navigate to the image player page
+        const queue = SceneQueue.fromListFilterModel(filterCopy);
+        queue.playScene(history, id, { sceneIndex: index, autoPlay: true });
       }
     }
   }
@@ -171,25 +189,6 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  function renderSceneCard(
-    scene: SlimSceneDataFragment,
-    selectedIds: Set<string>,
-    zoomIndex: number
-  ) {
-    return (
-      <SceneCard
-        key={scene.id}
-        scene={scene}
-        zoomIndex={zoomIndex}
-        selecting={selectedIds.size > 0}
-        selected={selectedIds.has(scene.id)}
-        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          listData.onSelectChange(scene.id, selected, shiftKey)
-        }
-      />
-    );
-  }
-
   function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
@@ -199,23 +198,34 @@ export const SceneList: React.FC<ISceneList> = ({
     if (!result.data || !result.data.findScenes) {
       return;
     }
+
+    const queue = SceneQueue.fromListFilterModel(filter);
+
     if (filter.displayMode === DisplayMode.Grid) {
       return (
-        <div className="row justify-content-center">
-          {result.data.findScenes.scenes.map((scene) =>
-            renderSceneCard(scene, selectedIds, zoomIndex)
-          )}
-        </div>
+        <SceneCardsGrid
+          scenes={result.data.findScenes.scenes}
+          queue={queue}
+          zoomIndex={zoomIndex}
+          selectedIds={selectedIds}
+          onSelectChange={(id, selected, shiftKey) =>
+            listData.onSelectChange(id, selected, shiftKey)
+          }
+        />
       );
     }
     if (filter.displayMode === DisplayMode.List) {
-      return <SceneListTable scenes={result.data.findScenes.scenes} />;
+      return (
+        <SceneListTable scenes={result.data.findScenes.scenes} queue={queue} />
+      );
     }
     if (filter.displayMode === DisplayMode.Wall) {
-      return <WallPanel scenes={result.data.findScenes.scenes} />;
+      return (
+        <WallPanel scenes={result.data.findScenes.scenes} sceneQueue={queue} />
+      );
     }
     if (filter.displayMode === DisplayMode.Tagger) {
-      return <Tagger scenes={result.data.findScenes.scenes} />;
+      return <Tagger scenes={result.data.findScenes.scenes} queue={queue} />;
     }
   }
 

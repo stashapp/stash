@@ -31,33 +31,28 @@ xPathScrapers:
         selector: //div[@id="search-result"]//div[@data-test="teaser-subject"]/a/@href
         postProcess:
           - replace:
-            - regex: ^
-              with: https://www.freeones.com
-            - regex: $
-              with: /profile
+              - regex: ^
+                with: https://www.freeones.com
+              - regex: /feed$
+                with: /bio
 
   performerScraper:
     performer:
-      Name: 
+      Name:
         selector: //h1
         postProcess:
           - replace:
-            - regex: \sBio\s*$
-              with: ""
-      URL:
-        selector: //a[span[text()="Profile"]]/@href
-        postProcess:
-          - replace:
-            - regex: ^
-              with: https://www.freeones.com
+              - regex: \sBio\s*$
+                with: ""
+      URL: //link[@rel="alternate" and @hreflang="x-default"]/@href
       Twitter: //a[contains(@href,'twitter.com/')]/@href
       Instagram: //a[contains(@href,'instagram.com/')]/@href
       Birthdate:
         selector: //span[contains(text(),'Born On')]
         postProcess:
           - replace:
-            - regex: Born On
-              with:
+              - regex: Born On
+                with:
           - parseDate: January 2, 2006
       Ethnicity:
         selector: //a[@data-test="link_ethnicity"]/span/text()
@@ -73,8 +68,8 @@ xPathScrapers:
         selector: //span[text()='Height']/following-sibling::span/a
         postProcess:
           - replace:
-            - regex: \D+[\s\S]+
-              with: ""
+              - regex: \D+[\s\S]+
+                with: ""
           - map:
               Unknown: ""
       Measurements:
@@ -88,18 +83,18 @@ xPathScrapers:
         postProcess:
           - map:
               Unknown: ""
-              Fake: Yes
-              Natural: No
+              Fake: "Yes"
+              Natural: "No"
       CareerLength:
         selector: //div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
         concat: "-"
       Aliases: //p[@data-test='p_aliases']/text()
-      Tattoos: 
+      Tattoos:
         selector: //span[text()='Tattoos']/following-sibling::span/span
         postProcess:
           - map:
               Unknown: ""
-      Piercings: 
+      Piercings:
         selector: //span[text()='Piercings']/following-sibling::span/span
         postProcess:
           - map:
@@ -108,7 +103,23 @@ xPathScrapers:
         selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
         fixed: "Female"
-# Last updated January 31, 2021
+      Details: //div[@data-test="biography"]
+      DeathDate:
+        selector: //div[contains(text(),'Passed away on')]
+        postProcess:
+          - replace:
+              - regex: Passed away on (.+) at the age of \d+
+                with: $1
+          - parseDate: January 2, 2006
+      HairColor: //span[text()='Hair Color']/following-sibling::span/a
+      Weight:
+        selector: //span[text()='Weight']/following-sibling::span/a
+        postProcess:
+        - replace:
+            - regex: \D+[\s\S]+
+              with: ""
+
+# Last updated April 13, 2021
 `
 
 func getFreeonesScraper() config {

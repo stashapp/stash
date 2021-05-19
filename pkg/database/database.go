@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/fvbommel/sortorder"
@@ -20,11 +21,31 @@ import (
 )
 
 var DB *sqlx.DB
+var WriteMu *sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 18
+var appSchemaVersion uint = 22
 var databaseSchemaVersion uint
 
+var (
+	// ErrMigrationNeeded indicates that a database migration is needed
+	// before the database can be initialized
+	ErrMigrationNeeded = errors.New("database migration required")
+
+	// ErrDatabaseNotInitialized indicates that the database is not
+	// initialized, usually due to an incomplete configuration.
+	ErrDatabaseNotInitialized = errors.New("database not initialized")
+)
+
 const sqlite3Driver = "sqlite3ex"
+
+// Ready returns an error if the database is not ready to begin transactions.
+func Ready() error {
+	if DB == nil {
+		return ErrDatabaseNotInitialized
+	}
+
+	return nil
+}
 
 func init() {
 	// register custom driver with regexp function
@@ -35,20 +56,20 @@ func init() {
 // performs a full migration to the latest schema version. Otherwise, any
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
-func Initialize(databasePath string) bool {
+func Initialize(databasePath string) error {
 	dbPath = databasePath
 
 	if err := getDatabaseSchemaVersion(); err != nil {
-		panic(err)
+		return fmt.Errorf("error getting database schema version: %s", err.Error())
 	}
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
 		if err := RunMigrations(); err != nil {
-			panic(err)
+			return fmt.Errorf("error running initial schema migrations: %s", err.Error())
 		}
 		// RunMigrations calls Initialise. Just return
-		return true
+		return nil
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
 			panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
@@ -57,14 +78,15 @@ func Initialize(databasePath string) bool {
 		// if migration is needed, then don't open the connection
 		if NeedsMigration() {
 			logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
-			return false
+			return nil
 		}
 	}
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
+	WriteMu = &sync.Mutex{}
 
-	return false
+	return nil
 }
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
@@ -77,6 +99,7 @@ func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	conn, err := sqlx.Open(sqlite3Driver, url)
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
+	conn.SetConnMaxLifetime(30 * time.Second)
 	if err != nil {
 		logger.Fatalf("db.Open(): %q\n", err)
 	}
@@ -144,6 +167,10 @@ func NeedsMigration() bool {
 
 func AppSchemaVersion() uint {
 	return appSchemaVersion
+}
+
+func DatabasePath() string {
+	return dbPath
 }
 
 func DatabaseBackupPath() string {

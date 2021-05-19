@@ -70,6 +70,26 @@ func TestTagFindByName(t *testing.T) {
 	})
 }
 
+func TestTagQueryForAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		tqb := r.Tag()
+
+		name := tagNames[tagIdxWithScene] // find a tag by name
+
+		tags, err := tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 2)
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
+
+		return nil
+	})
+}
+
 func TestTagFindByNames(t *testing.T) {
 	var names []string
 
@@ -232,6 +252,132 @@ func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterion
 				Int64: int64(getTagMarkerCount(tag.ID)),
 				Valid: true,
 			}, markerCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestTagQueryImageCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagImageCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagImageCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagImageCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagImageCount(t, countCriterion)
+}
+
+func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			ImageCount: &imageCountCriterion,
+		}
+
+		tags, _, err := qb.Query(&tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
+
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagImageCount(tag.ID)),
+				Valid: true,
+			}, imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestTagQueryGalleryCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagGalleryCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagGalleryCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagGalleryCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagGalleryCount(t, countCriterion)
+}
+
+func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			GalleryCount: &imageCountCriterion,
+		}
+
+		tags, _, err := qb.Query(&tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
+
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagGalleryCount(tag.ID)),
+				Valid: true,
+			}, imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestTagQueryPerformerCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagPerformerCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagPerformerCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagPerformerCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagPerformerCount(t, countCriterion)
+}
+
+func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			PerformerCount: &imageCountCriterion,
+		}
+
+		tags, _, err := qb.Query(&tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
+
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagPerformerCount(tag.ID)),
+				Valid: true,
+			}, imageCountCriterion)
 		}
 
 		return nil

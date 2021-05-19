@@ -34,6 +34,7 @@ func makeConfigResult() *models.ConfigResult {
 }
 
 func makeConfigGeneralResult() *models.ConfigGeneralResult {
+	config := config.GetInstance()
 	logFile := config.GetLogFile()
 
 	maxTranscodeSize := config.GetMaxTranscodeSize()
@@ -46,6 +47,8 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Stashes:                    config.GetStashPaths(),
 		DatabasePath:               config.GetDatabasePath(),
 		GeneratedPath:              config.GetGeneratedPath(),
+		ConfigFilePath:             config.GetConfigFilePath(),
+		ScrapersPath:               config.GetScrapersPath(),
 		CachePath:                  config.GetCachePath(),
 		CalculateMd5:               config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:   config.GetVideoFileNamingAlgorithm(),
@@ -57,6 +60,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		PreviewPreset:              config.GetPreviewPreset(),
 		MaxTranscodeSize:           &maxTranscodeSize,
 		MaxStreamingTranscodeSize:  &maxStreamingTranscodeSize,
+		APIKey:                     config.GetAPIKey(),
 		Username:                   config.GetUsername(),
 		Password:                   config.GetPasswordHash(),
 		MaxSessionAge:              config.GetMaxSessionAge(),
@@ -71,12 +75,14 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Excludes:                   config.GetExcludes(),
 		ImageExcludes:              config.GetImageExcludes(),
 		ScraperUserAgent:           &scraperUserAgent,
+		ScraperCertCheck:           config.GetScraperCertCheck(),
 		ScraperCDPPath:             &scraperCDPPath,
 		StashBoxes:                 config.GetStashBoxes(),
 	}
 }
 
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	config := config.GetInstance()
 	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
@@ -87,6 +93,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
+	slideshowDelay := config.GetSlideshowDelay()
 
 	return &models.ConfigInterfaceResult{
 		MenuItems:           menuItems,
@@ -99,5 +106,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
 		Language:            &language,
+		SlideshowDelay:      &slideshowDelay,
 	}
 }

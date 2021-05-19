@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -73,7 +74,9 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result := attrConfig.concatenateResults(found)
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
-			return attrConfig.splitString(result)
+			results := attrConfig.splitString(result)
+			results = attrConfig.cleanResults(results)
+			return results
 		}
 
 		ret = []string{result}
@@ -86,6 +89,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 
 			ret = append(ret, text)
 		}
+		ret = attrConfig.cleanResults(ret)
 	}
 
 	return ret
@@ -94,10 +98,10 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 type mappedSceneScraperConfig struct {
 	mappedConfig
 
-	Tags       mappedConfig `yaml:"Tags"`
-	Performers mappedConfig `yaml:"Performers"`
-	Studio     mappedConfig `yaml:"Studio"`
-	Movies     mappedConfig `yaml:"Movies"`
+	Tags       mappedConfig                 `yaml:"Tags"`
+	Performers mappedPerformerScraperConfig `yaml:"Performers"`
+	Studio     mappedConfig                 `yaml:"Studio"`
+	Movies     mappedConfig                 `yaml:"Movies"`
 }
 type _mappedSceneScraperConfig mappedSceneScraperConfig
 
@@ -211,10 +215,54 @@ func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) e
 
 type mappedPerformerScraperConfig struct {
 	mappedConfig
+
+	Tags mappedConfig `yaml:"Tags"`
 }
+type _mappedPerformerScraperConfig mappedPerformerScraperConfig
+
+const (
+	mappedScraperConfigPerformerTags = "Tags"
+)
 
 func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	return unmarshal(&s.mappedConfig)
+	// HACK - unmarshal to map first, then remove known scene sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
+	}
+
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	thisMap[mappedScraperConfigPerformerTags] = parentMap[mappedScraperConfigPerformerTags]
+
+	delete(parentMap, mappedScraperConfigPerformerTags)
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _mappedPerformerScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = mappedPerformerScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.mappedConfig); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type mappedMovieScraperConfig struct {
@@ -318,6 +366,17 @@ type postProcessParseDate string
 func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 	parseDate := string(*p)
 
+	const internalDateFormat = "2006-01-02"
+
+	value = strings.ToLower(value)
+	if value == "today" || value == "yesterday" { // handle today, yesterday
+		dt := time.Now()
+		if value == "yesterday" { // subtract 1 day from now
+			dt = dt.AddDate(0, 0, -1)
+		}
+		return dt.Format(internalDateFormat)
+	}
+
 	if parseDate == "" {
 		return value
 	}
@@ -331,7 +390,6 @@ func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 	}
 
 	// convert it into our date format
-	const internalDateFormat = "2006-01-02"
 	return parsedValue.Format(internalDateFormat)
 }
 
@@ -408,12 +466,25 @@ func (p *postProcessFeetToCm) Apply(value string, q mappedQuery) string {
 	return strconv.Itoa(int(math.Round(centimeters)))
 }
 
+type postProcessLbToKg bool
+
+func (p *postProcessLbToKg) Apply(value string, q mappedQuery) string {
+	const lb_in_kg = 0.45359237
+	w, err := strconv.ParseFloat(value, 64)
+	if err == nil {
+		w = w * lb_in_kg
+		value = strconv.Itoa(int(math.Round(w)))
+	}
+	return value
+}
+
 type mappedPostProcessAction struct {
 	ParseDate  string                   `yaml:"parseDate"`
 	Replace    mappedRegexConfigs       `yaml:"replace"`
 	SubScraper *mappedScraperAttrConfig `yaml:"subScraper"`
 	Map        map[string]string        `yaml:"map"`
 	FeetToCm   bool                     `yaml:"feetToCm"`
+	LbToKg     bool                     `yaml:"lbToKg"`
 }
 
 func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
@@ -455,6 +526,14 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		}
 		found = "feetToCm"
 		action := postProcessFeetToCm(a.FeetToCm)
+		ret = &action
+	}
+	if a.LbToKg {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "lbToKg")
+		}
+		found = "lbToKg"
+		action := postProcessLbToKg(a.LbToKg)
 		ret = &action
 	}
 
@@ -564,6 +643,12 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	return strings.Join(result, separator)
 }
 
+func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {
+	cleaned := utils.StrUnique(nodes)      // remove duplicate values
+	cleaned = utils.StrDelete(cleaned, "") // remove empty values
+	return cleaned
+}
+
 func (c mappedScraperAttrConfig) splitString(value string) []string {
 	separator := c.Split
 	var res []string
@@ -647,9 +732,23 @@ func (s mappedScraper) scrapePerformer(q mappedQuery) (*models.ScrapedPerformer,
 		return nil, nil
 	}
 
+	performerTagsMap := performerMap.Tags
+
 	results := performerMap.process(q, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
+
+		// now apply the tags
+		if performerTagsMap != nil {
+			logger.Debug(`Processing performer tags:`)
+			tagResults := performerTagsMap.process(q, s.Common)
+
+			for _, p := range tagResults {
+				tag := &models.ScrapedSceneTag{}
+				p.apply(tag)
+				ret.Tags = append(ret.Tags, tag)
+			}
+		}
 	}
 
 	return &ret, nil
@@ -687,19 +786,34 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 	sceneStudioMap := sceneScraperConfig.Studio
 	sceneMoviesMap := sceneScraperConfig.Movies
 
+	scenePerformerTagsMap := scenePerformersMap.Tags
+
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(q, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
 
+		// process performer tags once
+		var performerTagResults mappedResults
+		if scenePerformerTagsMap != nil {
+			performerTagResults = scenePerformerTagsMap.process(q, s.Common)
+		}
+
 		// now apply the performers and tags
-		if scenePerformersMap != nil {
+		if scenePerformersMap.mappedConfig != nil {
 			logger.Debug(`Processing scene performers:`)
 			performerResults := scenePerformersMap.process(q, s.Common)
 
 			for _, p := range performerResults {
 				performer := &models.ScrapedScenePerformer{}
 				p.apply(performer)
+
+				for _, p := range performerTagResults {
+					tag := &models.ScrapedSceneTag{}
+					p.apply(tag)
+					ret.Tags = append(ret.Tags, tag)
+				}
+
 				ret.Performers = append(ret.Performers, performer)
 			}
 		}

@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -11,6 +12,7 @@ type queryBuilder struct {
 
 	body string
 
+	joins         joins
 	whereClauses  []string
 	havingClauses []string
 	args          []interface{}
@@ -25,7 +27,23 @@ func (qb queryBuilder) executeFind() ([]int, int, error) {
 		return nil, 0, qb.err
 	}
 
-	return qb.repository.executeFindQuery(qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
+	body := qb.body
+	body += qb.joins.toSQL()
+
+	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
+}
+
+func (qb queryBuilder) executeCount() (int, error) {
+	if qb.err != nil {
+		return 0, qb.err
+	}
+
+	body := qb.body
+	body += qb.joins.toSQL()
+
+	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	countQuery := qb.repository.buildCountQuery(body)
+	return qb.repository.runCountQuery(countQuery, qb.args)
 }
 
 func (qb *queryBuilder) addWhere(clauses ...string) {
@@ -46,6 +64,48 @@ func (qb *queryBuilder) addHaving(clauses ...string) {
 
 func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
+}
+
+func (qb *queryBuilder) join(table, as, onClause string) {
+	newJoin := join{
+		table:    table,
+		as:       as,
+		onClause: onClause,
+	}
+
+	qb.joins.add(newJoin)
+}
+
+func (qb *queryBuilder) addJoins(joins ...join) {
+	qb.joins.add(joins...)
+}
+
+func (qb *queryBuilder) addFilter(f *filterBuilder) {
+	err := f.getError()
+	if err != nil {
+		qb.err = err
+		return
+	}
+
+	clause, args := f.generateWhereClauses()
+	if len(clause) > 0 {
+		qb.addWhere(clause)
+	}
+
+	if len(args) > 0 {
+		qb.addArg(args...)
+	}
+
+	clause, args = f.generateHavingClauses()
+	if len(clause) > 0 {
+		qb.addHaving(clause)
+	}
+
+	if len(args) > 0 {
+		qb.addArg(args...)
+	}
+
+	qb.addJoins(f.getAllJoins()...)
 }
 
 func (qb *queryBuilder) handleIntCriterionInput(c *models.IntCriterionInput, column string) {
@@ -81,15 +141,19 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 					qb.err = err
 					return
 				}
-				qb.addWhere(column + " regexp ?")
+				qb.addWhere(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", column))
 				qb.addArg(c.Value)
 			case models.CriterionModifierNotMatchesRegex:
 				if _, err := regexp.Compile(c.Value); err != nil {
 					qb.err = err
 					return
 				}
-				qb.addWhere(column + " NOT regexp ?")
+				qb.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", column))
 				qb.addArg(c.Value)
+			case models.CriterionModifierIsNull:
+				qb.addWhere("(" + column + " IS NULL OR TRIM(" + column + ") = '')")
+			case models.CriterionModifierNotNull:
+				qb.addWhere("(" + column + " IS NOT NULL AND TRIM(" + column + ") != '')")
 			default:
 				clause, count := getSimpleCriterionClause(modifier, "?")
 				qb.addWhere(column + " " + clause)
@@ -98,5 +162,17 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 				}
 			}
 		}
+	}
+}
+
+func (qb *queryBuilder) handleCountCriterion(countFilter *models.IntCriterionInput, primaryTable, joinTable, primaryFK string) {
+	if countFilter != nil {
+		clause, count := getCountCriterionClause(primaryTable, joinTable, primaryFK, *countFilter)
+
+		if count == 1 {
+			qb.addArg(countFilter.Value)
+		}
+
+		qb.addWhere(clause)
 	}
 }

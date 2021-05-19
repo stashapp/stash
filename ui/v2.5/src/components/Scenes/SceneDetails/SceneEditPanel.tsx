@@ -284,10 +284,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  // function onStashBoxQueryClicked(/* stashBoxIndex: number */) {
-  // TODO
-  // }
-
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
@@ -361,7 +357,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             key={s.endpoint}
             onClick={() => onScrapeStashBoxClicked(index)}
           >
-            stash-box
+            {s.name ?? "Stash-Box"}
           </Dropdown.Item>
         ))}
         {queryableScrapers.map((s) => (
@@ -666,8 +662,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
               />
             </Col>
           </Form.Group>
-        </div>
-        <div className="col-12 col-lg-6 col-xl-12">
           <Form.Group controlId="details">
             <Form.Label>StashIDs</Form.Label>
             <ul className="pl-0">
@@ -725,7 +719,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   alt="Scene cover"
                 />
               )}
-              <ImageInput isEditing onImageChange={onCoverImageChange} />
+              <ImageInput
+                isEditing
+                onImageChange={onCoverImageChange}
+                onImageURL={onImageLoad}
+              />
             </Form.Group>
           </div>
         </div>

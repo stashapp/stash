@@ -29,6 +29,7 @@ type Scene struct {
 	Bitrate     sql.NullInt64       `db:"bitrate" json:"bitrate"`
 	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
 	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
+	Phash       sql.NullInt64       `db:"phash,omitempty" json:"phash"`
 	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 }
@@ -58,6 +59,7 @@ type ScenePartial struct {
 	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
 	MovieID     *sql.NullInt64       `db:"movie_id,omitempty" json:"movie_id"`
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
+	Phash       *sql.NullInt64       `db:"phash,omitempty" json:"phash"`
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 }
@@ -82,6 +84,14 @@ func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
 	}
 
 	panic("unknown hash algorithm")
+}
+
+func (s Scene) GetMinResolution() int64 {
+	if s.Width.Int64 < s.Height.Int64 {
+		return s.Width.Int64
+	}
+
+	return s.Height.Int64
 }
 
 // SceneFileType represents the file metadata for a scene.

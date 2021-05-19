@@ -107,7 +107,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	startTime := time.Now()
 
 	if t.full {
-		t.baseDir = config.GetMetadataPath()
+		t.baseDir = config.GetInstance().GetMetadataPath()
 	} else {
 		var err error
 		t.baseDir, err = instance.Paths.Generated.TempDir("export")
@@ -723,6 +723,18 @@ func (t *ExportTask) exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.
 		if err != nil {
 			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Checksum, err.Error())
 			continue
+		}
+
+		tags, err := repo.Tag().FindByPerformerID(p.ID)
+		if err != nil {
+			logger.Errorf("[performers] <%s> error getting performer tags: %s", p.Checksum, err.Error())
+			continue
+		}
+
+		newPerformerJSON.Tags = tag.GetNames(tags)
+
+		if t.includeDependencies {
+			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
 		}
 
 		performerJSON, err := t.json.getPerformer(p.Checksum)

@@ -1,12 +1,11 @@
 /* eslint-disable consistent-return, default-case */
-import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  Criterion,
   CriterionType,
   StringCriterion,
   NumberCriterion,
   DurationCriterion,
   MandatoryStringCriterion,
+  MandatoryNumberCriterion,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion } from "./favorite";
@@ -43,7 +42,11 @@ export function makeCriteria(type: CriterionType = "none") {
     case "o_counter":
     case "scene_count":
     case "marker_count":
-      return new NumberCriterion(type, type);
+    case "image_count":
+    case "gallery_count":
+    case "performer_count":
+    case "tag_count":
+      return new MandatoryNumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":
@@ -72,6 +75,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new TagsCriterion("tags");
     case "sceneTags":
       return new TagsCriterion("sceneTags");
+    case "performerTags":
+      return new TagsCriterion("performerTags");
     case "performers":
       return new PerformersCriterion();
     case "studios":
@@ -83,22 +88,16 @@ export function makeCriteria(type: CriterionType = "none") {
     case "galleries":
       return new GalleriesCriterion();
     case "birth_year":
+    case "death_year":
+    case "weight":
       return new NumberCriterion(type, type);
-    case "age": {
-      const ret = new NumberCriterion(type, type);
-      // null/not null doesn't make sense for these criteria
-      ret.modifierOptions = [
-        Criterion.getModifierOption(CriterionModifier.Equals),
-        Criterion.getModifierOption(CriterionModifier.NotEquals),
-        Criterion.getModifierOption(CriterionModifier.GreaterThan),
-        Criterion.getModifierOption(CriterionModifier.LessThan),
-      ];
-      return ret;
-    }
+    case "age":
+      return new MandatoryNumberCriterion(type, type);
     case "gender":
       return new GenderCriterion();
     case "ethnicity":
     case "country":
+    case "hair_color":
     case "eye_color":
     case "height":
     case "measurements":
@@ -107,6 +106,8 @@ export function makeCriteria(type: CriterionType = "none") {
     case "tattoos":
     case "piercings":
     case "aliases":
+    case "url":
+    case "stash_id":
       return new StringCriterion(type, type);
   }
 }

@@ -45,6 +45,26 @@ func TestStudioFindByName(t *testing.T) {
 	})
 }
 
+func TestStudioQueryForAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		tqb := r.Studio()
+
+		name := studioNames[studioIdxWithScene] // find a studio by name
+
+		studios, err := tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
+
+		assert.Len(t, studios, 2)
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[0].Name.String))
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[1].Name.String))
+
+		return nil
+	})
+}
+
 func TestStudioQueryParent(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Studio()
@@ -265,6 +285,147 @@ func TestStudioDestroyStudioImage(t *testing.T) {
 	}
 }
 
+func TestStudioQuerySceneCount(t *testing.T) {
+	const sceneCount = 1
+	sceneCountCriterion := models.IntCriterionInput{
+		Value:    sceneCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+
+	sceneCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosSceneCount(t, sceneCountCriterion)
+}
+
+func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			SceneCount: &sceneCountCriterion,
+		}
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			sceneCount, err := r.Scene().CountByStudioID(studio.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, sceneCount, sceneCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioQueryImageCount(t *testing.T) {
+	const imageCount = 1
+	imageCountCriterion := models.IntCriterionInput{
+		Value:    imageCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosImageCount(t, imageCountCriterion)
+
+	imageCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosImageCount(t, imageCountCriterion)
+}
+
+func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			ImageCount: &imageCountCriterion,
+		}
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			pp := 0
+
+			_, count, err := r.Image().Query(&models.ImageFilterType{
+				Studios: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(studio.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, imageCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioQueryGalleryCount(t *testing.T) {
+	const galleryCount = 1
+	galleryCountCriterion := models.IntCriterionInput{
+		Value:    galleryCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+
+	galleryCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosGalleryCount(t, galleryCountCriterion)
+}
+
+func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			GalleryCount: &galleryCountCriterion,
+		}
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			pp := 0
+
+			_, count, err := r.Gallery().Query(&models.GalleryFilterType{
+				Studios: &models.MultiCriterionInput{
+					Value:    []string{strconv.Itoa(studio.ID)},
+					Modifier: models.CriterionModifierIncludes,
+				},
+			}, &models.FindFilterType{
+				PerPage: &pp,
+			})
+			if err != nil {
+				return err
+			}
+			verifyInt(t, count, galleryCountCriterion)
+		}
+
+		return nil
+	})
+}
+
 func TestStudioStashIDs(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Studio()
@@ -281,6 +442,141 @@ func TestStudioStashIDs(t *testing.T) {
 	}); err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func TestStudioQueryURL(t *testing.T) {
+	const sceneIdx = 1
+	studioURL := getStudioStringValue(sceneIdx, urlField)
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    studioURL,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.StudioFilterType{
+		URL: &urlCriterion,
+	}
+
+	verifyFn := func(g *models.Studio) {
+		t.Helper()
+		verifyNullString(t, g.URL, urlCriterion)
+	}
+
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierMatchesRegex
+	urlCriterion.Value = "studio_.*1_URL"
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierIsNull
+	urlCriterion.Value = ""
+	verifyStudioQuery(t, filter, verifyFn)
+
+	urlCriterion.Modifier = models.CriterionModifierNotNull
+	verifyStudioQuery(t, filter, verifyFn)
+}
+
+func TestStudioQueryRating(t *testing.T) {
+	const rating = 3
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyStudiosRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyStudiosRating(t, ratingCriterion)
+}
+
+func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(s *models.Studio)) {
+	withTxn(func(r models.Repository) error {
+		t.Helper()
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &filter, nil)
+
+		// assume it should find at least one
+		assert.Greater(t, len(studios), 0)
+
+		for _, studio := range studios {
+			verifyFn(studio)
+		}
+
+		return nil
+	})
+}
+
+func verifyStudiosRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioFilter := models.StudioFilterType{
+			Rating: &ratingCriterion,
+		}
+
+		studios, _, err := sqb.Query(&studioFilter, nil)
+
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
+
+		for _, studio := range studios {
+			verifyInt64(t, studio.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioQueryIsMissingRating(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		isMissing := "rating"
+		studioFilter := models.StudioFilterType{
+			IsMissing: &isMissing,
+		}
+
+		studios, _, err := sqb.Query(&studioFilter, nil)
+
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
+
+		assert.True(t, len(studios) > 0)
+
+		for _, studio := range studios {
+			assert.True(t, !studio.Rating.Valid)
+		}
+
+		return nil
+	})
+}
+
+func queryStudio(t *testing.T, sqb models.StudioReader, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) []*models.Studio {
+	studios, _, err := sqb.Query(studioFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying studio: %s", err.Error())
+	}
+
+	return studios
 }
 
 // TODO Create

@@ -1,13 +1,19 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
-  GallerySlimDataFragment,
+  SlimGalleryDataFragment,
   StudioDataFragment,
   PerformerDataFragment,
   FindScenesQueryResult,
@@ -79,8 +85,16 @@ export interface IListHookOperation<T> {
   postRefetch?: boolean;
 }
 
+export enum PersistanceLevel {
+  NONE,
+  ALL,
+  VIEW,
+}
+
 interface IListHookOptions<T, E> {
-  persistState?: boolean;
+  persistState?: PersistanceLevel;
+  persistanceKey?: string;
+  defaultSort?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -421,22 +435,40 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
   // Store initial pathname to prevent hooks from operating outside this page
   const originalPathName = useRef(location.pathname);
+  const persistanceKey = options.persistanceKey ?? options.filterMode;
 
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(options.filterMode, queryString.parse(location.search))
+    new ListFilterModel(
+      options.filterMode,
+      queryString.parse(location.search),
+      options.defaultSort
+    )
   );
 
   const updateInterfaceConfig = useCallback(
-    (updatedFilter: ListFilterModel) => {
-      setInterfaceState({
-        [options.filterMode]: {
-          filter: updatedFilter.makeQueryParameters(),
-          itemsPerPage: updatedFilter.itemsPerPage,
-          currentPage: updatedFilter.currentPage,
-        },
+    (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
+      setInterfaceState((prevState) => {
+        if (level === PersistanceLevel.VIEW) {
+          return {
+            [persistanceKey]: {
+              ...prevState[persistanceKey],
+              filter: queryString.stringify({
+                ...queryString.parse(prevState[persistanceKey]?.filter ?? ""),
+                disp: updatedFilter.displayMode,
+              }),
+            },
+          };
+        }
+        return {
+          [persistanceKey]: {
+            filter: updatedFilter.makeQueryParameters(),
+            itemsPerPage: updatedFilter.itemsPerPage,
+            currentPage: updatedFilter.currentPage,
+          },
+        };
       });
     },
-    [options.filterMode, setInterfaceState]
+    [persistanceKey, setInterfaceState]
   );
 
   useEffect(() => {
@@ -451,20 +483,25 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     if (!options.persistState) return;
 
-    const storedQuery = interfaceState.data?.[options.filterMode];
+    const storedQuery = interfaceState.data?.[persistanceKey];
     if (!storedQuery) return;
 
     const queryFilter = queryString.parse(history.location.search);
     const storedFilter = queryString.parse(storedQuery.filter);
+
+    const activeFilter =
+      options.persistState === PersistanceLevel.ALL
+        ? storedFilter
+        : { disp: storedFilter.disp };
     const query = history.location.search
       ? {
-          sortby: storedFilter.sortby,
-          sortdir: storedFilter.sortdir,
-          disp: storedFilter.disp,
-          perPage: storedFilter.perPage,
+          sortby: activeFilter.sortby,
+          sortdir: activeFilter.sortdir,
+          disp: activeFilter.disp,
+          perPage: activeFilter.perPage,
           ...queryFilter,
         }
-      : storedFilter;
+      : activeFilter;
 
     const newFilter = new ListFilterModel(options.filterMode, query);
 
@@ -474,7 +511,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     newLocation.search = newFilter.makeQueryParameters();
     if (newLocation.search !== filter.makeQueryParameters()) {
       setFilter(newFilter);
-      updateInterfaceConfig(newFilter);
+      updateInterfaceConfig(newFilter, options.persistState);
     }
     // If constructed search is different from current, update it as well
     if (newLocation.search !== location.search) {
@@ -488,30 +525,40 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     history,
     location.search,
     options.filterMode,
+    persistanceKey,
     forageInitialised,
     updateInterfaceConfig,
     options.persistState,
   ]);
 
-  function updateQueryParams(listFilter: ListFilterModel) {
-    setFilter(listFilter);
-    const newLocation = { ...location };
-    newLocation.search = listFilter.makeQueryParameters();
-    history.replace(newLocation);
-    if (options.persistState) {
-      updateInterfaceConfig(listFilter);
-    }
-  }
+  const updateQueryParams = useCallback(
+    (listFilter: ListFilterModel) => {
+      setFilter(listFilter);
+      const newLocation = { ...location };
+      newLocation.search = listFilter.makeQueryParameters();
+      history.replace(newLocation);
+      if (options.persistState) {
+        updateInterfaceConfig(listFilter, options.persistState);
+      }
+    },
+    [setFilter, history, location, options.persistState, updateInterfaceConfig]
+  );
 
-  const onChangePage = (page: number) => {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.currentPage = page;
-    updateQueryParams(newFilter);
-  };
+  const onChangePage = useCallback(
+    (page: number) => {
+      const newFilter = _.cloneDeep(filter);
+      newFilter.currentPage = page;
+      updateQueryParams(newFilter);
+      window.scrollTo(0, 0);
+    },
+    [filter, updateQueryParams]
+  );
 
-  const renderFilter = !options.filterHook
-    ? filter
-    : options.filterHook(_.cloneDeep(filter));
+  const renderFilter = useMemo(() => {
+    return !options.filterHook
+      ? filter
+      : options.filterHook(_.cloneDeep(filter));
+  }, [filter, options]);
 
   const { contentTemplate, onSelectChange } = RenderList({
     ...options,
@@ -574,9 +621,9 @@ export const useImagesList = (
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult, GallerySlimDataFragment>
+  props: IListHookOptions<FindGalleriesQueryResult, SlimGalleryDataFragment>
 ) =>
-  useList<FindGalleriesQueryResult, GallerySlimDataFragment>({
+  useList<FindGalleriesQueryResult, SlimGalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: useFindGalleries,

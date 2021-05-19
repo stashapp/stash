@@ -22,6 +22,7 @@ import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
+import { PerformerEditPanel } from "./PerformerEditPanel";
 
 interface IPerformerParams {
   id?: string;
@@ -46,7 +47,7 @@ export const Performer: React.FC = () => {
   const activeImage =
     imagePreview === undefined
       ? performer.image_path ?? ""
-      : imagePreview ?? `${performer.image_path}?default=true`;
+      : imagePreview ?? (isNew ? "" : `${performer.image_path}&default=true`);
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -126,11 +127,7 @@ export const Performer: React.FC = () => {
       unmountOnExit
     >
       <Tab eventKey="details" title="Details">
-        <PerformerDetailsPanel
-          performer={performer}
-          isEditing={false}
-          isVisible={activeTabKey === "details"}
-        />
+        <PerformerDetailsPanel performer={performer} />
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
@@ -142,9 +139,8 @@ export const Performer: React.FC = () => {
         <PerformerImagesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title="Edit">
-        <PerformerDetailsPanel
+        <PerformerEditPanel
           performer={performer}
-          isEditing
           isVisible={activeTabKey === "edit"}
           isNew={isNew}
           onDelete={onDelete}
@@ -164,7 +160,9 @@ export const Performer: React.FC = () => {
       // provided by the server
       return (
         <div>
-          <span className="age">{TextUtils.age(performer.birthdate)}</span>
+          <span className="age">
+            {TextUtils.age(performer.birthdate, performer.death_date)}
+          </span>
           <span className="age-tail"> years old</span>
         </div>
       );
@@ -256,21 +254,22 @@ export const Performer: React.FC = () => {
       return <LoadingIndicator message="Encoding image..." />;
     }
     if (activeImage) {
-      return <img className="photo" src={activeImage} alt="Performer" />;
+      return <img className="performer" src={activeImage} alt="Performer" />;
     }
   }
 
   if (isNew)
     return (
-      <div className="row new-view">
-        <div className="col-4">{renderPerformerImage()}</div>
-        <div className="col-6">
+      <div className="row new-view" id="performer-page">
+        <div className="performer-image-container col-md-4 text-center">
+          {renderPerformerImage()}
+        </div>
+        <div className="col-md-8">
           <h2>Create Performer</h2>
-          <PerformerDetailsPanel
+          <PerformerEditPanel
             performer={performer}
-            isEditing
             isVisible
-            isNew={isNew}
+            isNew
             onDelete={onDelete}
             onImageChange={onImageChange}
             onImageEncoding={onImageEncoding}

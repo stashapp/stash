@@ -11,6 +11,7 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -42,7 +43,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     if (props.image.tags.length <= 0) return;
 
     const popoverContent = props.image.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} tagType="image" />
     ));
 
     return (
@@ -58,30 +59,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
   function maybeRenderPerformerPopoverButton() {
     if (props.image.performers.length <= 0) return;
 
-    const popoverContent = props.image.performers.map((performer) => (
-      <div className="performer-tag-container row" key={performer.id}>
-        <Link
-          to={`/performers/${performer.id}`}
-          className="performer-tag col m-auto zoom-2"
-        >
-          <img
-            className="image-thumbnail"
-            alt={performer.name ?? ""}
-            src={performer.image_path ?? ""}
-          />
-        </Link>
-        <TagLink key={performer.id} performer={performer} className="d-block" />
-      </div>
-    ));
-
-    return (
-      <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal">
-          <Icon icon="user" />
-          <span>{props.image.performers.length}</span>
-        </Button>
-      </HoverPopover>
-    );
+    return <PerformerPopoverButton performers={props.image.performers} />;
   }
 
   function maybeRenderOCounter() {

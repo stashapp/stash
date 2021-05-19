@@ -95,6 +95,12 @@ func imageQueryQ(t *testing.T, sqb models.ImageReader, q string, expectedImageId
 	image := images[0]
 	assert.Equal(t, imageIDs[expectedImageIdx], image.ID)
 
+	count, err := sqb.QueryCount(nil, &filter)
+	if err != nil {
+		t.Errorf("Error querying image: %s", err.Error())
+	}
+	assert.Equal(t, len(images), count)
+
 	// no Q should return all results
 	filter.Q = nil
 	images, _, err = sqb.Query(nil, &filter)
@@ -120,7 +126,7 @@ func TestImageQueryPath(t *testing.T) {
 	verifyImagePath(t, pathCriterion, totalImages-1)
 
 	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-	pathCriterion.Value = "image_.*1_Path"
+	pathCriterion.Value = "image_.*01_Path"
 	verifyImagePath(t, pathCriterion, 1) // TODO - 2 if zip path is included
 
 	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
@@ -144,6 +150,143 @@ func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, ex
 		for _, image := range images {
 			verifyString(t, image.Path, pathCriterion)
 		}
+
+		return nil
+	})
+}
+
+func TestImageQueryPathOr(t *testing.T) {
+	const image1Idx = 1
+	const image2Idx = 2
+
+	image1Path := getImageStringValue(image1Idx, "Path")
+	image2Path := getImageStringValue(image2Idx, "Path")
+
+	imageFilter := models.ImageFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    image1Path,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.ImageFilterType{
+			Path: &models.StringCriterionInput{
+				Value:    image2Path,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+
+		assert.Len(t, images, 2)
+		assert.Equal(t, image1Path, images[0].Path)
+		assert.Equal(t, image2Path, images[1].Path)
+
+		return nil
+	})
+}
+
+func TestImageQueryPathAndRating(t *testing.T) {
+	const imageIdx = 1
+	imagePath := getImageStringValue(imageIdx, "Path")
+	imageRating := getRating(imageIdx)
+
+	imageFilter := models.ImageFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    imagePath,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.ImageFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(imageRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+
+		assert.Len(t, images, 1)
+		assert.Equal(t, imagePath, images[0].Path)
+		assert.Equal(t, imageRating.Int64, images[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestImageQueryPathNotRating(t *testing.T) {
+	const imageIdx = 1
+
+	imageRating := getRating(imageIdx)
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    "image_.*1_Path",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(imageRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	imageFilter := models.ImageFilterType{
+		Path: &pathCriterion,
+		Not: &models.ImageFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+
+		for _, image := range images {
+			verifyString(t, image.Path, pathCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, image.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestImageIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const imageIdx = 1
+	subFilter := models.ImageFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    getImageStringValue(imageIdx, "Path"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	imageFilter := &models.ImageFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		_, _, err := sqb.Query(imageFilter, nil)
+		assert.NotNil(err)
+
+		imageFilter.Or = nil
+		imageFilter.Not = &subFilter
+		_, _, err = sqb.Query(imageFilter, nil)
+		assert.NotNil(err)
+
+		imageFilter.And = nil
+		imageFilter.Or = &subFilter
+		_, _, err = sqb.Query(imageFilter, nil)
+		assert.NotNil(err)
 
 		return nil
 	})
@@ -443,6 +586,70 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 	})
 }
 
+func TestImageQueryGallery(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		galleryCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(galleryIDs[galleryIdxWithImage]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		imageFilter := models.ImageFilterType{
+			Galleries: &galleryCriterion,
+		}
+
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+
+		assert.Len(t, images, 1)
+
+		// ensure ids are correct
+		for _, image := range images {
+			assert.True(t, image.ID == imageIDs[imageIdxWithGallery])
+		}
+
+		galleryCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(galleryIDs[galleryIdx1WithImage]),
+				strconv.Itoa(galleryIDs[galleryIdx2WithImage]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		images, _, err = sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithTwoGalleries], images[0].ID)
+
+		galleryCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[galleryIdx1WithImage]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getImageStringValue(imageIdxWithTwoGalleries, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
 func TestImageQueryPerformers(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
@@ -614,6 +821,152 @@ func TestImageQueryStudio(t *testing.T) {
 			t.Errorf("Error querying image: %s", err.Error())
 		}
 		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
+func queryImages(t *testing.T, sqb models.ImageReader, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) []*models.Image {
+	images, _, err := sqb.Query(imageFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying images: %s", err.Error())
+	}
+
+	return images
+}
+
+func TestImageQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		imageFilter := models.ImageFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 2)
+
+		// ensure ids are correct
+		for _, image := range images {
+			assert.True(t, image.ID == imageIDs[imageIdxWithPerformerTag] || image.ID == imageIDs[imageIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		images = queryImages(t, sqb, &imageFilter, nil)
+
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithPerformerTwoTags], images[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getImageStringValue(imageIdxWithPerformerTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
+func TestImageQueryTagCount(t *testing.T) {
+	const tagCount = 1
+	tagCountCriterion := models.IntCriterionInput{
+		Value:    tagCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyImagesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImagesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyImagesTagCount(t, tagCountCriterion)
+
+	tagCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyImagesTagCount(t, tagCountCriterion)
+}
+
+func verifyImagesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			TagCount: &tagCountCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Greater(t, len(images), 0)
+
+		for _, image := range images {
+			ids, err := sqb.GetTagIDs(image.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), tagCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestImageQueryPerformerCount(t *testing.T) {
+	const performerCount = 1
+	performerCountCriterion := models.IntCriterionInput{
+		Value:    performerCount,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyImagesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImagesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyImagesPerformerCount(t, performerCountCriterion)
+
+	performerCountCriterion.Modifier = models.CriterionModifierLessThan
+	verifyImagesPerformerCount(t, performerCountCriterion)
+}
+
+func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			PerformerCount: &performerCountCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Greater(t, len(images), 0)
+
+		for _, image := range images {
+			ids, err := sqb.GetPerformerIDs(image.ID)
+			if err != nil {
+				return err
+			}
+			verifyInt(t, len(ids), performerCountCriterion)
+		}
 
 		return nil
 	})

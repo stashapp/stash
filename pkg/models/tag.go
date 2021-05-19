@@ -4,6 +4,7 @@ type TagReader interface {
 	Find(id int) (*Tag, error)
 	FindMany(ids []int) ([]*Tag, error)
 	FindBySceneID(sceneID int) ([]*Tag, error)
+	FindByPerformerID(performerID int) ([]*Tag, error)
 	FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error)
 	FindByImageID(imageID int) ([]*Tag, error)
 	FindByGalleryID(galleryID int) ([]*Tag, error)
@@ -11,7 +12,9 @@ type TagReader interface {
 	FindByNames(names []string, nocase bool) ([]*Tag, error)
 	Count() (int, error)
 	All() ([]*Tag, error)
-	AllSlim() ([]*Tag, error)
+	// TODO - this interface is temporary until the filter schema can fully
+	// support the query needed
+	QueryForAutoTag(words []string) ([]*Tag, error)
 	Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(tagID int) ([]byte, error)
 }

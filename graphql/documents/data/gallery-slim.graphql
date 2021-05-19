@@ -1,4 +1,4 @@
-fragment GallerySlimData on Gallery {
+fragment SlimGalleryData on Gallery {
   id
   checksum
   path
@@ -10,16 +10,31 @@ fragment GallerySlimData on Gallery {
   organized
   image_count
   cover {
-    ...SlimImageData
+    file {
+      size
+      width
+      height
+    }
+    
+    paths {
+      thumbnail
+    }
   }
   studio {
-    ...StudioData
+    id
+    name
+    image_path
   }
   tags {
-    ...TagData
+    id
+    name
   }
   performers {
-    ...PerformerData
+    id
+    name
+    gender
+    favorite
+    image_path
   }
   scenes {
     id

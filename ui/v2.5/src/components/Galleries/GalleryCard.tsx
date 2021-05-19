@@ -12,9 +12,10 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
 interface IProps {
-  gallery: GQL.GallerySlimDataFragment;
+  gallery: GQL.SlimGalleryDataFragment;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
@@ -47,7 +48,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     if (props.gallery.tags.length <= 0) return;
 
     const popoverContent = props.gallery.tags.map((tag) => (
-      <TagLink key={tag.id} tag={tag} />
+      <TagLink key={tag.id} tag={tag} tagType="gallery" />
     ));
 
     return (
@@ -63,30 +64,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   function maybeRenderPerformerPopoverButton() {
     if (props.gallery.performers.length <= 0) return;
 
-    const popoverContent = props.gallery.performers.map((performer) => (
-      <div className="performer-tag-container row" key={performer.id}>
-        <Link
-          to={`/performers/${performer.id}`}
-          className="performer-tag col m-auto zoom-2"
-        >
-          <img
-            className="image-thumbnail"
-            alt={performer.name ?? ""}
-            src={performer.image_path ?? ""}
-          />
-        </Link>
-        <TagLink key={performer.id} performer={performer} className="d-block" />
-      </div>
-    ));
-
-    return (
-      <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal">
-          <Icon icon="user" />
-          <span>{props.gallery.performers.length}</span>
-        </Button>
-      </HoverPopover>
-    );
+    return <PerformerPopoverButton performers={props.gallery.performers} />;
   }
 
   function maybeRenderSceneStudioOverlay() {

@@ -2,7 +2,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes {
     path
     excludeVideo
-    excludeImage 
+    excludeImage
   }
   databasePath
   generatedPath
@@ -17,6 +17,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
+  apiKey
   username
   password
   maxSessionAge
@@ -31,6 +32,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   excludes
   imageExcludes
   scraperUserAgent
+  scraperCertCheck
   scraperCDPPath
   stashBoxes {
     name
@@ -50,6 +52,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   css
   cssEnabled
   language
+  slideshowDelay
 }
 
 fragment ConfigData on ConfigResult {

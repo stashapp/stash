@@ -64,6 +64,7 @@ import {
   ParentStudiosCriterionOption,
 } from "./criteria/studios";
 import {
+  PerformerTagsCriterionOption,
   SceneTagsCriterionOption,
   TagsCriterion,
   TagsCriterionOption,
@@ -110,11 +111,15 @@ export class ListFilterModel {
     return new CriterionOption(Criterion.getLabel(criterion), criterion);
   }
 
-  public constructor(filterMode: FilterMode, rawParms?: ParsedQuery<string>) {
+  public constructor(
+    filterMode: FilterMode,
+    rawParms?: ParsedQuery<string>,
+    defaultSort?: string
+  ) {
     const params = rawParms as IQueryParameters;
     switch (filterMode) {
       case FilterMode.Scenes:
-        this.sortBy = "date";
+        this.sortBy = defaultSort ?? "date";
         this.sortByOptions = [
           "title",
           "path",
@@ -127,7 +132,10 @@ export class ListFilterModel {
           "duration",
           "framerate",
           "bitrate",
+          "tag_count",
+          "performer_count",
           "random",
+          "movie_scene_number",
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -146,13 +154,18 @@ export class ListFilterModel {
           new HasMarkersCriterionOption(),
           new SceneIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
+          new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
+          ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
+          ListFilterModel.createCriterionOption("stash_id"),
         ];
         break;
       case FilterMode.Images:
-        this.sortBy = "path";
+        this.sortBy = defaultSort ?? "path";
         this.sortByOptions = [
           "title",
           "path",
@@ -160,6 +173,8 @@ export class ListFilterModel {
           "o_counter",
           "filesize",
           "file_mod_time",
+          "tag_count",
+          "performer_count",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
@@ -172,25 +187,40 @@ export class ListFilterModel {
           new ResolutionCriterionOption(),
           new ImageIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
+          new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
+          ListFilterModel.createCriterionOption("performer_count"),
           new StudiosCriterionOption(),
         ];
         break;
       case FilterMode.Performers: {
-        this.sortBy = "name";
+        this.sortBy = defaultSort ?? "name";
         this.sortByOptions = [
           "name",
           "height",
           "birthdate",
           "scenes_count",
+          "tag_count",
           "random",
+          "rating",
         ];
-        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.displayModeOptions = [
+          DisplayMode.Grid,
+          DisplayMode.List,
+          DisplayMode.Tagger,
+        ];
 
-        const numberCriteria: CriterionType[] = ["birth_year", "age"];
+        const numberCriteria: CriterionType[] = [
+          "birth_year",
+          "death_year",
+          "age",
+          "weight",
+        ];
         const stringCriteria: CriterionType[] = [
           "ethnicity",
           "country",
+          "hair_color",
           "eye_color",
           "height",
           "measurements",
@@ -199,6 +229,7 @@ export class ListFilterModel {
           "tattoos",
           "piercings",
           "aliases",
+          "stash_id",
         ];
 
         this.criterionOptions = [
@@ -206,6 +237,13 @@ export class ListFilterModel {
           new FavoriteCriterionOption(),
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
+          new TagsCriterionOption(),
+          new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
+          ListFilterModel.createCriterionOption("tag_count"),
+          ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
           ...numberCriteria
             .concat(stringCriteria)
             .map((c) => ListFilterModel.createCriterionOption(c)),
@@ -214,28 +252,51 @@ export class ListFilterModel {
         break;
       }
       case FilterMode.Studios:
-        this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortBy = defaultSort ?? "name";
+        this.sortByOptions = [
+          "name",
+          "scenes_count",
+          "images_count",
+          "galleries_count",
+          "random",
+          "rating",
+        ];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
           new StudioIsMissingCriterionOption(),
+          new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
+          ListFilterModel.createCriterionOption("url"),
+          ListFilterModel.createCriterionOption("stash_id"),
         ];
         break;
       case FilterMode.Movies:
-        this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count"];
+        this.sortBy = defaultSort ?? "name";
+        this.sortByOptions = ["name", "scenes_count", "random"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new StudiosCriterionOption(),
           new MovieIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         break;
       case FilterMode.Galleries:
-        this.sortBy = "path";
-        this.sortByOptions = ["path", "file_mod_time", "images_count"];
+        this.sortBy = defaultSort ?? "path";
+        this.sortByOptions = [
+          "date",
+          "path",
+          "file_mod_time",
+          "images_count",
+          "tag_count",
+          "performer_count",
+          "title",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
@@ -245,8 +306,13 @@ export class ListFilterModel {
           new AverageResolutionCriterionOption(),
           new GalleryIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          ListFilterModel.createCriterionOption("tag_count"),
+          new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
+          ListFilterModel.createCriterionOption("performer_count"),
+          ListFilterModel.createCriterionOption("image_count"),
           new StudiosCriterionOption(),
+          ListFilterModel.createCriterionOption("url"),
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -255,7 +321,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.SceneMarkers:
-        this.sortBy = "title";
+        this.sortBy = defaultSort ?? "title";
         this.sortByOptions = [
           "title",
           "seconds",
@@ -272,18 +338,26 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.Tags:
-        this.sortBy = "name";
+        this.sortBy = defaultSort ?? "name";
         // scene markers count has been disabled for now due to performance
         // issues
         this.sortByOptions = [
           "name",
-          "scenes_count" /* , "scene_markers_count"*/,
+          "scenes_count",
+          "images_count",
+          "galleries_count",
+          "performers_count",
+          "random",
+          /* "scene_markers_count" */
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new TagIsMissingCriterionOption(),
           ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("image_count"),
+          ListFilterModel.createCriterionOption("gallery_count"),
+          ListFilterModel.createCriterionOption("performer_count"),
           // marker count has been disabled for now due to performance issues
           // ListFilterModel.createCriterionOption("marker_count"),
         ];
@@ -326,7 +400,7 @@ export class ListFilterModel {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      this.searchTerm = params.q;
+      this.searchTerm = params.q.trim();
     }
     if (params.p) {
       this.currentPage = Number.parseInt(params.p, 10);
@@ -378,7 +452,7 @@ export class ListFilterModel {
     return this.sortBy;
   }
 
-  public makeQueryParameters(): string {
+  public getQueryParameters() {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
       const encodedCriterion: Partial<Criterion> = {
@@ -399,7 +473,7 @@ export class ListFilterModel {
         this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage
           ? this.itemsPerPage
           : undefined,
-      sortby: this.sortBy !== "date" ? this.getSortBy() : undefined,
+      sortby: this.getSortBy() ?? undefined,
       sortdir:
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp:
@@ -413,7 +487,12 @@ export class ListFilterModel {
           : undefined,
       c: encodedCriteria,
     };
-    return queryString.stringify(result, { encode: false });
+
+    return result;
+  }
+
+  public makeQueryParameters(): string {
+    return queryString.stringify(this.getQueryParameters(), { encode: false });
   }
 
   // TODO: These don't support multiple of the same criteria, only the last one set is used.
@@ -527,11 +606,35 @@ export class ListFilterModel {
           };
           break;
         }
+        case "performerTags": {
+          const performerTagsCrit = criterion as TagsCriterion;
+          result.performer_tags = {
+            value: performerTagsCrit.value.map((tag) => tag.id),
+            modifier: performerTagsCrit.modifier,
+          };
+          break;
+        }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "performer_count": {
+          const performerCountCrit = criterion as NumberCriterion;
+          result.performer_count = {
+            value: performerCountCrit.value,
+            modifier: performerCountCrit.modifier,
           };
           break;
         }
@@ -548,6 +651,22 @@ export class ListFilterModel {
           result.movies = {
             value: movCrit.value.map((movie) => movie.id),
             modifier: movCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
           };
           break;
         }
@@ -573,6 +692,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "death_year": {
+          const dyCrit = criterion as NumberCriterion;
+          result.death_year = {
+            value: dyCrit.value,
+            modifier: dyCrit.modifier,
+          };
+          break;
+        }
         case "age": {
           const ageCrit = criterion as NumberCriterion;
           result.age = { value: ageCrit.value, modifier: ageCrit.modifier };
@@ -594,6 +721,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "hair_color": {
+          const hcCrit = criterion as StringCriterion;
+          result.hair_color = {
+            value: hcCrit.value,
+            modifier: hcCrit.modifier,
+          };
+          break;
+        }
         case "eye_color": {
           const ecCrit = criterion as StringCriterion;
           result.eye_color = { value: ecCrit.value, modifier: ecCrit.modifier };
@@ -602,6 +737,11 @@ export class ListFilterModel {
         case "height": {
           const hCrit = criterion as StringCriterion;
           result.height = { value: hCrit.value, modifier: hCrit.modifier };
+          break;
+        }
+        case "weight": {
+          const wCrit = criterion as NumberCriterion;
+          result.weight = { value: wCrit.value, modifier: wCrit.modifier };
           break;
         }
         case "measurements": {
@@ -650,9 +790,75 @@ export class ListFilterModel {
         }
         case "performerIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        case "tags": {
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = {
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
+
     return result;
   }
 
@@ -778,11 +984,35 @@ export class ListFilterModel {
           };
           break;
         }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
+        case "performerTags": {
+          const performerTagsCrit = criterion as TagsCriterion;
+          result.performer_tags = {
+            value: performerTagsCrit.value.map((tag) => tag.id),
+            modifier: performerTagsCrit.modifier,
+          };
+          break;
+        }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "performer_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.performer_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
           };
           break;
         }
@@ -820,6 +1050,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
         case "movieIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
@@ -840,8 +1078,58 @@ export class ListFilterModel {
           };
           break;
         }
-        case "studioIsMissing":
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
+          };
+          break;
+        }
+        case "studioIsMissing": {
           result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        }
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "stash_id": {
+          const stashIdCrit = criterion as StringCriterion;
+          result.stash_id = {
+            value: stashIdCrit.value,
+            modifier: stashIdCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });
@@ -929,6 +1217,22 @@ export class ListFilterModel {
           };
           break;
         }
+        case "tag_count": {
+          const tagCountCrit = criterion as NumberCriterion;
+          result.tag_count = {
+            value: tagCountCrit.value,
+            modifier: tagCountCrit.modifier,
+          };
+          break;
+        }
+        case "performerTags": {
+          const performerTagsCrit = criterion as TagsCriterion;
+          result.performer_tags = {
+            value: performerTagsCrit.value.map((tag) => tag.id),
+            modifier: performerTagsCrit.modifier,
+          };
+          break;
+        }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = {
@@ -937,11 +1241,35 @@ export class ListFilterModel {
           };
           break;
         }
+        case "performer_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.performer_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
         case "studios": {
           const studCrit = criterion as StudiosCriterion;
           result.studios = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "url": {
+          const urlCrit = criterion as StringCriterion;
+          result.url = {
+            value: urlCrit.value,
+            modifier: urlCrit.modifier,
           };
           break;
         }
@@ -962,6 +1290,30 @@ export class ListFilterModel {
         case "scene_count": {
           const countCrit = criterion as NumberCriterion;
           result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "image_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.image_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "gallery_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.gallery_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "performer_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.performer_count = {
             value: countCrit.value,
             modifier: countCrit.modifier,
           };

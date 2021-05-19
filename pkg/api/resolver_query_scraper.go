@@ -88,8 +88,8 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 	return manager.GetInstance().ScraperCache.ScrapeMovieURL(url)
 }
 
-func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxQueryInput) ([]*models.ScrapedScene, error) {
-	boxes := config.GetStashBoxes()
+func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxSceneQueryInput) ([]*models.ScrapedScene, error) {
+	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
 		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
@@ -103,6 +103,26 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 
 	if input.Q != nil {
 		return client.QueryStashBoxScene(*input.Q)
+	}
+
+	return nil, nil
+}
+
+func (r *queryResolver) QueryStashBoxPerformer(ctx context.Context, input models.StashBoxPerformerQueryInput) ([]*models.StashBoxPerformerQueryResult, error) {
+	boxes := config.GetInstance().GetStashBoxes()
+
+	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
+		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	}
+
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
+
+	if len(input.PerformerIds) > 0 {
+		return client.FindStashBoxPerformersByNames(input.PerformerIds)
+	}
+
+	if input.Q != nil {
+		return client.QueryStashBoxPerformer(*input.Q)
 	}
 
 	return nil, nil

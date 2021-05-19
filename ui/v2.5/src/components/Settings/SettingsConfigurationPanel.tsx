@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
+import {
+  useConfiguration,
+  useConfigureGeneral,
+  useGenerateAPIKey,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import StashBoxConfiguration, {
@@ -125,9 +129,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
     undefined
   );
+  const [scraperCertCheck, setScraperCertCheck] = useState<boolean>(true);
   const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
+
+  const [generateAPIKey] = useGenerateAPIKey();
 
   const [updateGeneralConfig] = useConfigureGeneral({
     stashes: stashes.map((s) => ({
@@ -164,6 +171,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     imageExcludes,
     scraperUserAgent,
     scraperCDPPath,
+    scraperCertCheck,
     stashBoxes: stashBoxes.map(
       (b) =>
         ({
@@ -212,6 +220,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setImageExcludes(conf.general.imageExcludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
+      setScraperCertCheck(conf.general.scraperCertCheck);
       setStashBoxes(
         conf.general.stashBoxes.map((box, i) => ({
           name: box?.name ?? undefined,
@@ -232,6 +241,32 @@ export const SettingsConfigurationPanel: React.FC = () => {
   function listToCommaDelimited(value: string[] | undefined) {
     if (value) {
       return value.join(", ");
+    }
+  }
+
+  async function onGenerateAPIKey() {
+    try {
+      await generateAPIKey({
+        variables: {
+          input: {},
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
+  async function onClearAPIKey() {
+    try {
+      await generateAPIKey({
+        variables: {
+          input: {
+            clear: true,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
     }
   }
 
@@ -717,6 +752,20 @@ export const SettingsConfigurationPanel: React.FC = () => {
             http://localhost:9222/json/version) to a Chrome instance.
           </Form.Text>
         </Form.Group>
+
+        <Form.Group>
+          <Form.Check
+            id="scaper-cert-check"
+            checked={scraperCertCheck}
+            label="Check for insecure certificates"
+            onChange={() => setScraperCertCheck(!scraperCertCheck)}
+          />
+          <Form.Text className="text-muted">
+            Some sites use insecure ssl certificates. When unticked the scraper
+            skips the insecure certificates check and allows scraping of those
+            sites. If you get a certificate error when scraping untick this.
+          </Form.Text>
+        </Form.Group>
       </Form.Group>
 
       <hr />
@@ -755,6 +804,38 @@ export const SettingsConfigurationPanel: React.FC = () => {
           />
           <Form.Text className="text-muted">
             Password to access Stash. Leave blank to disable user authentication
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="apikey">
+          <h6>API Key</h6>
+          <InputGroup>
+            <Form.Control
+              className="col col-sm-6 text-input"
+              value={data.configuration.general.apiKey}
+              readOnly
+            />
+            <InputGroup.Append>
+              <Button
+                className=""
+                title="Generate API key"
+                onClick={() => onGenerateAPIKey()}
+              >
+                <Icon icon="redo" />
+              </Button>
+              <Button
+                className=""
+                variant="danger"
+                title="Clear API key"
+                onClick={() => onClearAPIKey()}
+              >
+                <Icon icon="minus" />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+          <Form.Text className="text-muted">
+            API key for external systems. Only required when username/password
+            is configured. Username must be saved before generating API key.
           </Form.Text>
         </Form.Group>
 

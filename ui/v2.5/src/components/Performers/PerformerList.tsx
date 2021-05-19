@@ -11,14 +11,24 @@ import {
   usePerformersDestroy,
 } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { PerformerTagger } from "src/components/Tagger";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
+import { EditPerformersDialog } from "./EditPerformersDialog";
 
-export const PerformerList: React.FC = () => {
+interface IPerformerList {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: PersistanceLevel;
+}
+
+export const PerformerList: React.FC<IPerformerList> = ({
+  filterHook,
+  persistState,
+}) => {
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -82,6 +92,17 @@ export const PerformerList: React.FC = () => {
     }
   }
 
+  function renderEditPerformersDialog(
+    selectedPerformers: SlimPerformerDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return (
+      <>
+        <EditPerformersDialog selected={selectedPerformers} onClose={onClose} />
+      </>
+    );
+  }
+
   const renderDeleteDialog = (
     selectedPerformers: SlimPerformerDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -98,9 +119,11 @@ export const PerformerList: React.FC = () => {
   const listData = usePerformersList({
     otherOperations,
     renderContent,
+    renderEditDialog: renderEditPerformersDialog,
+    filterHook,
     addKeybinds,
     selectable: true,
-    persistState: true,
+    persistState,
     renderDeleteDialog,
   });
 
@@ -160,6 +183,11 @@ export const PerformerList: React.FC = () => {
         <PerformerListTable
           performers={result.data.findPerformers.performers}
         />
+      );
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return (
+        <PerformerTagger performers={result.data.findPerformers.performers} />
       );
     }
   }

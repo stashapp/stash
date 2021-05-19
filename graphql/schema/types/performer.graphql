@@ -27,11 +27,19 @@ type Performer {
   piercings: String
   aliases: String
   favorite: Boolean!
+  tags: [Tag!]!
 
   image_path: String # Resolver
   scene_count: Int # Resolver
+  image_count: Int # Resolver
+  gallery_count: Int # Resolver
   scenes: [Scene!]!
   stash_ids: [StashID!]!
+  rating: Int
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input PerformerCreateInput {
@@ -52,9 +60,15 @@ input PerformerCreateInput {
   twitter: String
   instagram: String
   favorite: Boolean
-  """This should be base64 encoded"""
+  tag_ids: [ID!]
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
+  rating: Int
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input PerformerUpdateInput {
@@ -76,9 +90,42 @@ input PerformerUpdateInput {
   twitter: String
   instagram: String
   favorite: Boolean
-  """This should be base64 encoded"""
+  tag_ids: [ID!]
+  """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
+  rating: Int
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
+}
+
+input BulkPerformerUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  url: String
+  gender: GenderEnum
+  birthdate: String
+  ethnicity: String
+  country: String
+  eye_color: String
+  height: String
+  measurements: String
+  fake_tits: String
+  career_length: String
+  tattoos: String
+  piercings: String
+  aliases: String
+  twitter: String
+  instagram: String
+  favorite: Boolean
+  tag_ids: BulkUpdateIds
+  rating: Int
+  details: String
+  death_date: String
+  hair_color: String
+  weight: Int
 }
 
 input PerformerDestroyInput {

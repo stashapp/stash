@@ -9,6 +9,9 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  """ Returns any groups of scenes that are perceptual duplicates within the queried distance """
+  findDuplicateScenes(distance: Int): [[Scene!]!]!
+
   """Return valid stream paths"""
   sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
@@ -88,7 +91,8 @@ type Query {
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
   """Query StashBox for scenes"""
-  queryStashBoxScene(input: StashBoxQueryInput!): [ScrapedScene!]!
+  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]!
+  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]!
 
   # Plugins
   """List loaded plugins"""
@@ -103,7 +107,7 @@ type Query {
   directory(path: String): Directory!
 
   # Metadata
-
+  systemStatus: SystemStatus!
   jobStatus: MetadataUpdateStatus!
 
   # Get everything
@@ -115,11 +119,6 @@ type Query {
 
   # Get everything with minimal metadata
 
-  allPerformersSlim: [Performer!]!
-  allStudiosSlim: [Studio!]!
-  allMoviesSlim: [Movie!]!
-  allTagsSlim: [Tag!]!
-
   # Version
   version: Version!
   
@@ -128,6 +127,9 @@ type Query {
 }
 
 type Mutation {
+  setup(input: SetupInput!): Boolean!
+  migrate(input: MigrateInput!): Boolean!
+
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
@@ -174,6 +176,7 @@ type Mutation {
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
   performersDestroy(ids: [ID!]!): Boolean!
+  bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!]
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
@@ -193,6 +196,9 @@ type Mutation {
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
+
+  """Generate and set (or clear) API key"""
+  generateAPIKey(input: GenerateAPIKeyInput!): String!
 
   """Returns a link to download the result"""
   exportObjects(input: ExportObjectsInput!): String
@@ -229,6 +235,9 @@ type Mutation {
 
   """Backup the database. Optionally returns a link to download the database file"""
   backupDatabase(input: BackupDatabaseInput!): String
+
+  """Run batch performer tag task. Returns the job ID."""
+  stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
 }
 
 type Subscription {

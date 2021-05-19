@@ -75,6 +75,11 @@ fragment PerformerFragment on Performer {
   piercings {
     ...BodyModificationFragment
   }
+  details
+  death_date {
+    ...FuzzyDateFragment
+  }
+  weight
 }
 
 fragment PerformerAppearanceFragment on PerformerAppearance {
@@ -131,6 +136,18 @@ query FindScenesByFingerprints($fingerprints: [String!]!) {
 query SearchScene($term: String!) {
   searchScene(term: $term) {
     ...SceneFragment
+  }
+}
+
+query SearchPerformer($term: String!) {
+  searchPerformer(term: $term) {
+    ...PerformerFragment
+  }
+}
+
+query FindPerformerByID($id: ID!) {
+  findPerformer(id: $id) {
+    ...PerformerFragment
   }
 }
 

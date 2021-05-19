@@ -45,9 +45,14 @@ type ScrapedScenePerformer {
   tattoos: String
   piercings: String
   aliases: String
+  tags: [ScrapedSceneTag!]
 
   remote_site_id: String
   images: [String!]
+  details: String
+  death_date: String
+  hair_color: String
+  weight: String
 }
 
 type ScrapedSceneMovie {
@@ -84,7 +89,7 @@ type ScrapedScene {
   url: String
   date: String
 
-  """This should be base64 encoded"""
+  """This should be a base64 encoded data URL"""
   image: String
 
   file: SceneFileType # Resolver
@@ -110,7 +115,7 @@ type ScrapedGallery {
   performers: [ScrapedScenePerformer!]
 }
 
-input StashBoxQueryInput {
+input StashBoxSceneQueryInput {
   """Index of the configured stash-box instance to use"""
   stash_box_index: Int!
   """Instructs query by scene fingerprints"""
@@ -119,8 +124,30 @@ input StashBoxQueryInput {
   q: String
 }
 
+input StashBoxPerformerQueryInput {
+  """Index of the configured stash-box instance to use"""
+  stash_box_index: Int!
+  """Instructs query by scene fingerprints"""
+  performer_ids: [ID!]
+  """Query by query string"""
+  q: String
+}
+
+type StashBoxPerformerQueryResult {
+  query: String!
+  results: [ScrapedScenePerformer!]!
+}
+
 type StashBoxFingerprint {
   algorithm: String!
   hash: String!
   duration: Int!
+}
+
+input StashBoxBatchPerformerTagInput {
+  endpoint: Int!
+  exclude_fields: [String!]
+  refresh: Boolean!
+  performer_ids: [ID!]
+  performer_names: [String!]
 }

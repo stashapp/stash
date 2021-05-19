@@ -1,8 +1,6 @@
-#performer-details {
-  .scrape-url-button {
-    color: $text-color;
-    float: right;
-    margin-right: 0.5rem;
+#performer-edit {
+  .scrape-url-button:disabled {
+    opacity: 0.5;
   }
 }
 
@@ -74,6 +72,14 @@
     right: 1rem;
     width: 3rem;
   }
+
+  .favorite {
+    color: #ff7373;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    position: absolute;
+    right: 5px;
+    top: 10px;
+  }
 }
 
 .card {
@@ -91,4 +97,17 @@
 
 #performer-scraper-popover {
   z-index: 1;
+}
+
+.PerformerScrapeModal {
+  &-list {
+    list-style-type: none;
+    max-height: 50vh;
+    overflow-x: auto;
+    padding-left: 1rem;
+
+    .btn {
+      font-size: 1.2rem;
+    }
+  }
 }
