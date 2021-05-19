@@ -8,11 +8,7 @@ interface IOptionType {
   image_path?: string;
 }
 
-export class MoviesCriterionOption extends CriterionOption {
-  constructor() {
-    super("movies", "movies");
-  }
-}
+export const MoviesCriterionOption = new CriterionOption("movies", "movies");
 
 export class MoviesCriterion extends ILabeledIdCriterion {
   public modifier = CriterionModifier.Includes;
@@ -24,7 +20,7 @@ export class MoviesCriterion extends ILabeledIdCriterion {
   public value: ILabeledId[] = [];
 
   constructor() {
-    super(new MoviesCriterionOption());
+    super(MoviesCriterionOption);
   }
 
   public encodeValue() {

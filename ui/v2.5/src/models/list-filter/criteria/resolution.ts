@@ -55,28 +55,26 @@ abstract class AbstractResolutionCriterion extends StringCriterion {
   }
 }
 
-export class ResolutionCriterionOption extends CriterionOption {
-  constructor() {
-    super("resolution", "resolution");
-  }
-}
+export const ResolutionCriterionOption = new CriterionOption(
+  "resolution",
+  "resolution"
+);
 export class ResolutionCriterion extends AbstractResolutionCriterion {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
 
   constructor() {
-    super(new ResolutionCriterionOption());
+    super(ResolutionCriterionOption);
   }
 }
 
-export class AverageResolutionCriterionOption extends CriterionOption {
-  constructor() {
-    super("average_resolution", "average_resolution");
-  }
-}
+export const AverageResolutionCriterionOption = new CriterionOption(
+  "average_resolution",
+  "average_resolution"
+);
 
 export class AverageResolutionCriterion extends AbstractResolutionCriterion {
   constructor() {
-    super(new AverageResolutionCriterionOption());
+    super(AverageResolutionCriterionOption);
   }
 }

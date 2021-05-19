@@ -1,11 +1,7 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { Criterion, CriterionOption } from "./criterion";
 
-export class NoneCriterionOption extends CriterionOption {
-  constructor() {
-    super("none", "none");
-  }
-}
+export const NoneCriterionOption = new CriterionOption("none", "none");
 export class NoneCriterion extends Criterion<string> {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
@@ -13,7 +9,7 @@ export class NoneCriterion extends Criterion<string> {
   public value: string = "none";
 
   constructor() {
-    super(new NoneCriterionOption());
+    super(NoneCriterionOption);
   }
 
   // eslint-disable-next-line class-methods-use-this

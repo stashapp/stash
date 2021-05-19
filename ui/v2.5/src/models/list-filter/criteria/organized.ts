@@ -1,13 +1,12 @@
 import { BooleanCriterion, CriterionOption } from "./criterion";
 
-export class OrganizedCriterionOption extends CriterionOption {
-  constructor() {
-    super("organized", "organized");
-  }
-}
+export const OrganizedCriterionOption = new CriterionOption(
+  "organized",
+  "organized"
+);
 
 export class OrganizedCriterion extends BooleanCriterion {
   constructor() {
-    super(new OrganizedCriterionOption());
+    super(OrganizedCriterionOption);
   }
 }

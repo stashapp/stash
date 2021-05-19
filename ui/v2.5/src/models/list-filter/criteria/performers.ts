@@ -2,11 +2,10 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
 
-export class PerformersCriterionOption extends CriterionOption {
-  constructor() {
-    super("performers", "performers");
-  }
-}
+export const PerformersCriterionOption = new CriterionOption(
+  "performers",
+  "performers"
+);
 
 export class PerformersCriterion extends ILabeledIdCriterion {
   public modifier = CriterionModifier.IncludesAll;
@@ -19,7 +18,7 @@ export class PerformersCriterion extends ILabeledIdCriterion {
   public value: ILabeledId[] = [];
 
   constructor() {
-    super(new PerformersCriterionOption());
+    super(PerformersCriterionOption);
   }
 
   public encodeValue() {

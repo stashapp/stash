@@ -20,8 +20,8 @@ export class TagListFilterOptions extends ListFilterOptions {
     ];
     const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
     const criterionOptions = [
-      new NoneCriterionOption(),
-      new TagIsMissingCriterionOption(),
+      NoneCriterionOption,
+      TagIsMissingCriterionOption,
       ListFilterOptions.createCriterionOption("scene_count"),
       ListFilterOptions.createCriterionOption("image_count"),
       ListFilterOptions.createCriterionOption("gallery_count"),

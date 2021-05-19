@@ -11,9 +11,9 @@ export class MovieListFilterOptions extends ListFilterOptions {
     const sortByOptions = ["name", "scenes_count", "random"];
     const displayModeOptions = [DisplayMode.Grid];
     const criterionOptions = [
-      new NoneCriterionOption(),
-      new StudiosCriterionOption(),
-      new MovieIsMissingCriterionOption(),
+      NoneCriterionOption,
+      StudiosCriterionOption,
+      MovieIsMissingCriterionOption,
       ListFilterOptions.createCriterionOption("url"),
     ];
 

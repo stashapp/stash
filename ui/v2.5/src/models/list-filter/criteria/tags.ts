@@ -19,20 +19,14 @@ export class TagsCriterion extends ILabeledIdCriterion {
   }
 }
 
-export class TagsCriterionOption extends CriterionOption {
-  constructor() {
-    super("tags", "tags");
-  }
-}
-
-export class SceneTagsCriterionOption extends CriterionOption {
-  constructor() {
-    super("sceneTags", "sceneTags", "scene_tags");
-  }
-}
-
-export class PerformerTagsCriterionOption extends CriterionOption {
-  constructor() {
-    super("performerTags", "performerTags", "performer_tags");
-  }
-}
+export const TagsCriterionOption = new CriterionOption("tags", "tags");
+export const SceneTagsCriterionOption = new CriterionOption(
+  "sceneTags",
+  "sceneTags",
+  "scene_tags"
+);
+export const PerformerTagsCriterionOption = new CriterionOption(
+  "performerTags",
+  "performerTags",
+  "performer_tags"
+);

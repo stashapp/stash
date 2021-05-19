@@ -1,14 +1,14 @@
 import { CriterionOption, StringCriterion } from "./criterion";
 
-export class HasMarkersCriterionOption extends CriterionOption {
-  constructor() {
-    super("hasMarkers", "hasMarkers", "has_markers");
-  }
-}
+export const HasMarkersCriterionOption = new CriterionOption(
+  "hasMarkers",
+  "hasMarkers",
+  "has_markers"
+);
 
 export class HasMarkersCriterion extends StringCriterion {
   constructor() {
-    super(new HasMarkersCriterionOption(), [true.toString(), false.toString()]);
+    super(HasMarkersCriterionOption, [true.toString(), false.toString()]);
   }
 
   protected toCriterionInput(): string {

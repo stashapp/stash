@@ -245,15 +245,17 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
-    return props.filterOptions.sortByOptions.sort((a, b) => a.localeCompare(b)).map((option) => (
-      <Dropdown.Item
-        onClick={onChangeSortBy}
-        key={option}
-        className="bg-secondary text-white"
-      >
-        {option}
-      </Dropdown.Item>
-    ));
+    return props.filterOptions.sortByOptions
+      .sort((a, b) => a.localeCompare(b))
+      .map((option) => (
+        <Dropdown.Item
+          onClick={onChangeSortBy}
+          key={option}
+          className="bg-secondary text-white"
+        >
+          {option}
+        </Dropdown.Item>
+      ));
   }
 
   function renderDisplayModeOptions() {

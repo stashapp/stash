@@ -5,18 +5,14 @@ import {
 import { getGenderStrings, stringToGender } from "src/core/StashService";
 import { CriterionOption, StringCriterion } from "./criterion";
 
-export class GenderCriterionOption extends CriterionOption {
-  constructor() {
-    super("gender", "gender");
-  }
-}
+export const GenderCriterionOption = new CriterionOption("gender", "gender");
 
 export class GenderCriterion extends StringCriterion {
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
 
   constructor() {
-    super(new GenderCriterionOption(), getGenderStrings());
+    super(GenderCriterionOption, getGenderStrings());
   }
 
   protected toCriterionInput(): GenderCriterionInput {

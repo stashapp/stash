@@ -30,7 +30,7 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
-      tagCriterion = new TagsCriterion(new TagsCriterionOption());
+      tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = [tagValue];
       filter.criteria.push(tagCriterion);
     }

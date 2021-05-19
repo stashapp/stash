@@ -20,10 +20,10 @@ export class StudioListFilterOptions extends ListFilterOptions {
 
     const displayModeOptions = [DisplayMode.Grid];
     const criterionOptions = [
-      new NoneCriterionOption(),
-      new ParentStudiosCriterionOption(),
-      new StudioIsMissingCriterionOption(),
-      new RatingCriterionOption(),
+      NoneCriterionOption,
+      ParentStudiosCriterionOption,
+      StudioIsMissingCriterionOption,
+      RatingCriterionOption,
       ListFilterOptions.createCriterionOption("scene_count"),
       ListFilterOptions.createCriterionOption("image_count"),
       ListFilterOptions.createCriterionOption("gallery_count"),

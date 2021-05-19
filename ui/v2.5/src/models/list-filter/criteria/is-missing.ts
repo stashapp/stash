@@ -10,15 +10,15 @@ export abstract class IsMissingCriterion extends StringCriterion {
   }
 }
 
-export class SceneIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "sceneIsMissing", "is_missing");
-  }
-}
+export const SceneIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "sceneIsMissing",
+  "is_missing"
+);
 
 export class SceneIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new SceneIsMissingCriterionOption(), [
+    super(SceneIsMissingCriterionOption, [
       "title",
       "details",
       "url",
@@ -33,15 +33,15 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
   }
 }
 
-export class ImageIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "imageIsMissing", "is_missing");
-  }
-}
+export const ImageIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "imageIsMissing",
+  "is_missing"
+);
 
 export class ImageIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new ImageIsMissingCriterionOption(), [
+    super(ImageIsMissingCriterionOption, [
       "title",
       "galleries",
       "studio",
@@ -51,15 +51,15 @@ export class ImageIsMissingCriterion extends IsMissingCriterion {
   }
 }
 
-export class PerformerIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "performerIsMissing", "is_missing");
-  }
-}
+export const PerformerIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "performerIsMissing",
+  "is_missing"
+);
 
 export class PerformerIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new PerformerIsMissingCriterionOption(), [
+    super(PerformerIsMissingCriterionOption, [
       "url",
       "twitter",
       "instagram",
@@ -84,15 +84,15 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
   }
 }
 
-export class GalleryIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "galleryIsMissing", "is_missing");
-  }
-}
+export const GalleryIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "galleryIsMissing",
+  "is_missing"
+);
 
 export class GalleryIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new GalleryIsMissingCriterionOption(), [
+    super(GalleryIsMissingCriterionOption, [
       "title",
       "details",
       "url",
@@ -105,43 +105,39 @@ export class GalleryIsMissingCriterion extends IsMissingCriterion {
   }
 }
 
-export class TagIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "tagIsMissing", "is_missing");
-  }
-}
+export const TagIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "tagIsMissing",
+  "is_missing"
+);
 
 export class TagIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new TagIsMissingCriterionOption(), ["image"]);
+    super(TagIsMissingCriterionOption, ["image"]);
   }
 }
 
-export class StudioIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "studioIsMissing", "is_missing");
-  }
-}
+export const StudioIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "studioIsMissing",
+  "is_missing"
+);
 
 export class StudioIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new StudioIsMissingCriterionOption(), [
-      "image",
-      "stash_id",
-      "details",
-    ]);
+    super(StudioIsMissingCriterionOption, ["image", "stash_id", "details"]);
   }
 }
 
-export class MovieIsMissingCriterionOption extends CriterionOption {
-  constructor() {
-    super("isMissing", "movieIsMissing", "is_missing");
-  }
-}
+export const MovieIsMissingCriterionOption = new CriterionOption(
+  "isMissing",
+  "movieIsMissing",
+  "is_missing"
+);
 
 export class MovieIsMissingCriterion extends IsMissingCriterion {
   constructor() {
-    super(new MovieIsMissingCriterionOption(), [
+    super(MovieIsMissingCriterionOption, [
       "front_image",
       "back_image",
       "scenes",

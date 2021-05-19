@@ -47,11 +47,11 @@ export class PerformerListFilterOptions extends ListFilterOptions {
     ];
 
     const criterionOptions = [
-      new NoneCriterionOption(),
-      new FavoriteCriterionOption(),
-      new GenderCriterionOption(),
-      new PerformerIsMissingCriterionOption(),
-      new TagsCriterionOption(),
+      NoneCriterionOption,
+      FavoriteCriterionOption,
+      GenderCriterionOption,
+      PerformerIsMissingCriterionOption,
+      TagsCriterionOption,
       ListFilterOptions.createCriterionOption("url"),
       ListFilterOptions.createCriterionOption("tag_count"),
       ListFilterOptions.createCriterionOption("scene_count"),

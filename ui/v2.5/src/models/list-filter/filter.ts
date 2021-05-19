@@ -117,7 +117,9 @@ export class ListFilterModel {
   }
 
   public getQueryParameters() {
-    const encodedCriteria: string[] = this.criteria.map((criterion) => criterion.toJSON());
+    const encodedCriteria: string[] = this.criteria.map((criterion) =>
+      criterion.toJSON()
+    );
 
     const result = {
       perPage:

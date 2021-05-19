@@ -17,10 +17,10 @@ export class SceneMarkerListFilterOptions extends ListFilterOptions {
     ];
     const displayModeOptions = [DisplayMode.Wall];
     const criterionOptions = [
-      new NoneCriterionOption(),
-      new TagsCriterionOption(),
-      new SceneTagsCriterionOption(),
-      new PerformersCriterionOption(),
+      NoneCriterionOption,
+      TagsCriterionOption,
+      SceneTagsCriterionOption,
+      PerformersCriterionOption,
     ];
 
     super(

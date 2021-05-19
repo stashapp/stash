@@ -29,19 +29,19 @@ export class ImageListFilterOptions extends ListFilterOptions {
     ];
     const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
     const criterionOptions = [
-      new NoneCriterionOption(),
+      NoneCriterionOption,
       ListFilterOptions.createCriterionOption("path"),
-      new RatingCriterionOption(),
-      new OrganizedCriterionOption(),
+      RatingCriterionOption,
+      OrganizedCriterionOption,
       ListFilterOptions.createCriterionOption("o_counter"),
-      new ResolutionCriterionOption(),
-      new ImageIsMissingCriterionOption(),
-      new TagsCriterionOption(),
+      ResolutionCriterionOption,
+      ImageIsMissingCriterionOption,
+      TagsCriterionOption,
       ListFilterOptions.createCriterionOption("tag_count"),
-      new PerformerTagsCriterionOption(),
-      new PerformersCriterionOption(),
+      PerformerTagsCriterionOption,
+      PerformersCriterionOption,
       ListFilterOptions.createCriterionOption("performer_count"),
-      new StudiosCriterionOption(),
+      StudiosCriterionOption,
     ];
 
     super(

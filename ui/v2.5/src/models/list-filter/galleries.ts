@@ -32,19 +32,19 @@ export class GalleryListFilterOptions extends ListFilterOptions {
       DisplayMode.Wall,
     ];
     const criterionOptions = [
-      new NoneCriterionOption(),
+      NoneCriterionOption,
       ListFilterOptions.createCriterionOption("path"),
-      new RatingCriterionOption(),
-      new OrganizedCriterionOption(),
-      new AverageResolutionCriterionOption(),
-      new GalleryIsMissingCriterionOption(),
-      new TagsCriterionOption(),
+      RatingCriterionOption,
+      OrganizedCriterionOption,
+      AverageResolutionCriterionOption,
+      GalleryIsMissingCriterionOption,
+      TagsCriterionOption,
       ListFilterOptions.createCriterionOption("tag_count"),
-      new PerformerTagsCriterionOption(),
-      new PerformersCriterionOption(),
+      PerformerTagsCriterionOption,
+      PerformersCriterionOption,
       ListFilterOptions.createCriterionOption("performer_count"),
       ListFilterOptions.createCriterionOption("image_count"),
-      new StudiosCriterionOption(),
+      StudiosCriterionOption,
       ListFilterOptions.createCriterionOption("url"),
     ];
 

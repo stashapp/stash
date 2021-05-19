@@ -2,11 +2,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
 
-export class GalleriesCriterionOption extends CriterionOption {
-  constructor() {
-    super("galleries", "galleries");
-  }
-}
+const galleriesCriterionOption = new CriterionOption("galleries", "galleries");
 
 export class GalleriesCriterion extends ILabeledIdCriterion {
   public modifier = GQL.CriterionModifier.IncludesAll;
@@ -19,7 +15,7 @@ export class GalleriesCriterion extends ILabeledIdCriterion {
   public value: ILabeledId[] = [];
 
   constructor() {
-    super(new GalleriesCriterionOption());
+    super(galleriesCriterionOption);
   }
 
   public encodeValue() {

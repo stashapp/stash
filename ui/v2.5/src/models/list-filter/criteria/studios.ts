@@ -18,24 +18,19 @@ abstract class AbstractStudiosCriterion extends ILabeledIdCriterion {
   }
 }
 
-export class StudiosCriterionOption extends CriterionOption {
-  constructor() {
-    super("studios", "studios");
-  }
-}
+export const StudiosCriterionOption = new CriterionOption("studios", "studios");
 export class StudiosCriterion extends AbstractStudiosCriterion {
   constructor() {
-    super(new StudiosCriterionOption());
+    super(StudiosCriterionOption);
   }
 }
 
-export class ParentStudiosCriterionOption extends CriterionOption {
-  constructor() {
-    super("parent_studios", "parent_studios");
-  }
-}
+export const ParentStudiosCriterionOption = new CriterionOption(
+  "parent_studios",
+  "parent_studios"
+);
 export class ParentStudiosCriterion extends AbstractStudiosCriterion {
   constructor() {
-    super(new ParentStudiosCriterionOption());
+    super(ParentStudiosCriterionOption);
   }
 }

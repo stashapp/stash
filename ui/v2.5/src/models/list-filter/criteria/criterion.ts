@@ -157,9 +157,9 @@ export abstract class Criterion<V extends CriterionValue> {
 }
 
 export class CriterionOption {
-  public messageID: string;
-  public value: CriterionType;
-  public parameterName: string;
+  public readonly messageID: string;
+  public readonly value: CriterionType;
+  public readonly parameterName: string;
 
   constructor(messageID: string, value: CriterionType, parameterName?: string) {
     this.messageID = messageID;
