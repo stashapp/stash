@@ -51,5 +51,19 @@
   "image_count": "Image Count",
   "gallery_count": "Gallery Count",
   "performer_count": "Performer Count",
-  "url": "URL"
+  "url": "URL",
+  "stash_id": "Stash ID",
+  "criterion_modifier": {
+    "equals": "is",
+    "not_equals": "is not",
+    "greater_than": "is greater than",
+    "less_than": "is less than",
+    "is_null": "is null",
+    "not_null": "is not null",
+    "includes": "includes",
+    "includes_all": "includes all",
+    "excludes": "excludes",
+    "matches_regex": "matches regex",
+    "not_matches_regex": "not matches regex"
+  }
 }

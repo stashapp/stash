@@ -67,45 +67,48 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public getLabel(intl: IntlShape): string {
-    let modifierString: string;
+    let modifierMessageID: string;
     switch (this.modifier) {
       case CriterionModifier.Equals:
-        modifierString = "is";
+        modifierMessageID = "criterion_modifier.equals";
         break;
       case CriterionModifier.NotEquals:
-        modifierString = "is not";
+        modifierMessageID = "criterion_modifier.not_equals";
         break;
       case CriterionModifier.GreaterThan:
-        modifierString = "is greater than";
+        modifierMessageID = "criterion_modifier.greater_than";
         break;
       case CriterionModifier.LessThan:
-        modifierString = "is less than";
+        modifierMessageID = "criterion_modifier.less_than";
         break;
       case CriterionModifier.IsNull:
-        modifierString = "is null";
+        modifierMessageID = "criterion_modifier.is_null";
         break;
       case CriterionModifier.NotNull:
-        modifierString = "is not null";
+        modifierMessageID = "criterion_modifier.not_null";
         break;
       case CriterionModifier.Includes:
-        modifierString = "includes";
+        modifierMessageID = "criterion_modifier.includes";
         break;
       case CriterionModifier.IncludesAll:
-        modifierString = "includes all";
+        modifierMessageID = "criterion_modifier.includes_all";
         break;
       case CriterionModifier.Excludes:
-        modifierString = "excludes";
+        modifierMessageID = "criterion_modifier.excludes";
         break;
       case CriterionModifier.MatchesRegex:
-        modifierString = "matches regex";
+        modifierMessageID = "criterion_modifier.matches_regex";
         break;
       case CriterionModifier.NotMatchesRegex:
-        modifierString = "not matches regex";
+        modifierMessageID = "criterion_modifier.not_matches_regex";
         break;
       default:
-        modifierString = "";
+        modifierMessageID = "";
     }
 
+    const modifierString = modifierMessageID
+      ? intl.formatMessage({ id: modifierMessageID })
+      : "";
     let valueString = "";
 
     if (
