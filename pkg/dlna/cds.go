@@ -25,7 +25,6 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -337,7 +336,7 @@ func (me *contentDirectoryService) Handle(action string, argsXML []byte, r *http
 
 				// http://upnp.org/specs/av/UPnP-av-ContentDirectory-v1-Service.pdf
 				// maximum update ID is 2**32, then rolls back to 0
-				maxUpdateID := int64(math.Pow(float64(2), float64(32)))
+				const maxUpdateID int64 = 1 << 32
 				updateID := scene.UpdatedAt.Timestamp.Unix() % maxUpdateID
 				return map[string]string{
 					"Result":         didl_lite(string(result)),
