@@ -10,22 +10,22 @@ import { TagListFilterOptions } from "./tags";
 import { FilterMode } from "./types";
 
 export function getFilterOptions(mode: FilterMode): ListFilterOptions {
-    switch (mode) {
-      case FilterMode.Scenes:
-        return SceneListFilterOptions;
-      case FilterMode.Performers:
-        return PerformerListFilterOptions;
-      case FilterMode.Studios:
-        return StudioListFilterOptions;
-      case FilterMode.Galleries:
-        return GalleryListFilterOptions;
-      case FilterMode.SceneMarkers:
-        return SceneMarkerListFilterOptions;
-      case FilterMode.Movies:
-        return MovieListFilterOptions;
-      case FilterMode.Tags:
-        return TagListFilterOptions;
-      case FilterMode.Images:
-        return ImageListFilterOptions;
-    }
+  switch (mode) {
+    case FilterMode.Scenes:
+      return SceneListFilterOptions;
+    case FilterMode.Performers:
+      return PerformerListFilterOptions;
+    case FilterMode.Studios:
+      return StudioListFilterOptions;
+    case FilterMode.Galleries:
+      return GalleryListFilterOptions;
+    case FilterMode.SceneMarkers:
+      return SceneMarkerListFilterOptions;
+    case FilterMode.Movies:
+      return MovieListFilterOptions;
+    case FilterMode.Tags:
+      return TagListFilterOptions;
+    case FilterMode.Images:
+      return ImageListFilterOptions;
   }
+}
