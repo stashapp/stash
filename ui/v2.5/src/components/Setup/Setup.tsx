@@ -492,15 +492,24 @@ export const Setup: React.FC = () => {
       : renderWelcome;
   const steps = [welcomeStep, renderSetPaths, renderConfirm, renderFinish];
 
+  function renderCreating() {
+    return (
+      <Card>
+        <LoadingIndicator message="Creating your system" />
+        <Alert variant="info text-center">
+          If <code>ffmpeg</code> is not yet in your paths, please be patient
+          while stash downloads it. View the console output to see download
+          progress.
+        </Alert>
+      </Card>
+    );
+  }
+
   return (
     <Container>
       {maybeRenderGeneratedSelectDialog()}
       <h1 className="text-center">Stash Setup Wizard</h1>
-      {loading ? (
-        <LoadingIndicator message="Creating your system" />
-      ) : (
-        <Card>{steps[step]()}</Card>
-      )}
+      {loading ? renderCreating() : <Card>{steps[step]()}</Card>}
     </Container>
   );
 };

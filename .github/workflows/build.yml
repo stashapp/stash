@@ -31,21 +31,62 @@ jobs:
         path: ui/v2.5/node_modules
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
 
+    - name: Cache UI build
+      uses: actions/cache@v2
+      id: cache-ui
+      env:
+        cache-name: cache-ui
+      with:
+        path: ui/v2.5/build
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+
+    - name: Cache go build
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-go-cache
+      with:
+        path: .go-cache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+
+    - name: Start build container
+      run: |
+        mkdir -p .go-cache
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
+    
     - name: Pre-install
-      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make pre-ui"
+      run: docker exec -t build /bin/bash -c "make pre-ui"
 
     - name: Generate
-      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make generate"
+      run: docker exec -t build /bin/bash -c "make generate"
     
+    - name: Validate UI
+      # skip UI validation for pull requests if UI is unchanged
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make ui-validate"
+
     # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
     - name: Validate
-      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make ui-validate fmt-check vet it"
+      run: docker exec -t build /bin/bash -c "make fmt-check vet it"
 
     - name: Build UI
-      run: docker run --rm --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated -w /stash $COMPILER_IMAGE /bin/bash -c "make ui-only"
+      # skip UI build for pull requests if UI is unchanged (UI was cached)
+      # this means that the build version/time may be incorrect if the UI is
+      # not changed in a pull request
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make ui-only"
 
     - name: Compile for all supported platforms
-      run: ./scripts/cross-compile.sh
+      run: |
+        docker exec -t build /bin/bash -c "make packr"
+        docker exec -t build /bin/bash -c "make cross-compile-windows"
+        docker exec -t build /bin/bash -c "make cross-compile-osx"
+        docker exec -t build /bin/bash -c "make cross-compile-linux"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
+        docker exec -t build /bin/bash -c "make cross-compile-pi"
+
+    - name: Cleanup build container
+      run: docker rm -f -v build
 
     - name: Generate checksums
       run: |
