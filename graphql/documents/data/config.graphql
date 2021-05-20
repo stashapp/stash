@@ -55,11 +55,21 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   slideshowDelay
 }
 
+fragment ConfigDLNAData on ConfigDLNAResult {
+  serverName
+  enabled
+  whitelistedIPs
+  interfaces
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
   }
   interface {
     ...ConfigInterfaceData
+  }
+  dlna {
+    ...ConfigDLNAData
   }
 }
