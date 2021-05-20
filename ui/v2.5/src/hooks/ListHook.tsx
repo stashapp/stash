@@ -43,8 +43,9 @@ import {
   useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode, getFilterOptions } from "src/models/list-filter/types";
+import { FilterMode } from "src/models/list-filter/types";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import { getFilterOptions } from "src/models/list-filter/factory";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
