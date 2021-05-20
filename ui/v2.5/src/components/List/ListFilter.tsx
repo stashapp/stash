@@ -245,7 +245,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
-    // for now assume that messageID === sort by column
     return props.filterOptions.sortByOptions
       .map((o) => {
         return {
