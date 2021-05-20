@@ -43,7 +43,7 @@ import {
   useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
+import { FilterMode, getFilterOptions } from "src/models/list-filter/types";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 
 const getSelectedData = <I extends IDataItem>(
@@ -93,7 +93,6 @@ export enum PersistanceLevel {
 }
 
 interface IListHookOptions<T, E> {
-  filterOptions: ListFilterOptions;
   persistState?: PersistanceLevel;
   persistanceKey?: string;
   defaultSort?: string;
@@ -431,6 +430,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult, QueryData> &
     IQuery<QueryResult, QueryData>
 ): IListHookData => {
+  const filterOptions = getFilterOptions(options.filterMode);
+
   const history = useHistory();
   const location = useLocation();
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
@@ -445,7 +446,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
       queryString.parse(location.search),
-      options.defaultSort ?? options.filterOptions.defaultSortBy
+      options.defaultSort ?? filterOptions.defaultSortBy
     )
   );
 
@@ -567,6 +568,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const { contentTemplate, onSelectChange } = RenderList({
     ...options,
     filter: renderFilter,
+    filterOptions,
     onChangePage,
     updateQueryParams,
   });

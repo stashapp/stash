@@ -16,7 +16,6 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "src/components/Tagger";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
-import { PerformerListFilterOptions } from "src/models/list-filter/performers";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
@@ -118,7 +117,6 @@ export const PerformerList: React.FC<IPerformerList> = ({
   );
 
   const listData = usePerformersList({
-    filterOptions: PerformerListFilterOptions,
     otherOperations,
     renderContent,
     renderEditDialog: renderEditPerformersDialog,

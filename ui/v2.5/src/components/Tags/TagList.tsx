@@ -22,7 +22,6 @@ import { useToast } from "src/hooks";
 import { FormattedNumber } from "react-intl";
 import { NavUtils } from "src/utils";
 import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
-import { TagListFilterOptions } from "src/models/list-filter/tags";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 
@@ -142,7 +141,6 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   );
 
   const listData = useTagsList({
-    filterOptions: TagListFilterOptions,
     renderContent,
     filterHook,
     addKeybinds,

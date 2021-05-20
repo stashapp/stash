@@ -15,7 +15,6 @@ import {
   PersistanceLevel,
 } from "src/hooks/ListHook";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
-import { MovieListFilterOptions } from "src/models/list-filter/movies";
 import { MovieCard } from "./MovieCard";
 
 export const MovieList: React.FC = () => {
@@ -66,7 +65,6 @@ export const MovieList: React.FC = () => {
   );
 
   const listData = useMoviesList({
-    filterOptions: MovieListFilterOptions,
     renderContent,
     addKeybinds,
     otherOperations,

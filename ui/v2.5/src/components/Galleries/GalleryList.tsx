@@ -13,7 +13,6 @@ import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries } from "src/core/StashService";
-import { GalleryListFilterOptions } from "src/models/list-filter/galleries";
 import { GalleryCard } from "./GalleryCard";
 import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
@@ -63,7 +62,6 @@ export const GalleryList: React.FC<IGalleryList> = ({
   };
 
   const listData = useGalleriesList({
-    filterOptions: GalleryListFilterOptions,
     zoomable: true,
     selectable: true,
     otherOperations,
