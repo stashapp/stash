@@ -9,13 +9,29 @@ const defaultSortBy = "name";
 // issues
 const sortByOptions = [
   "name",
-  "scenes_count",
-  "images_count",
-  "galleries_count",
-  "performers_count",
   "random",
   /* "scene_markers_count" */
-];
+]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "gallery_count",
+      value: "galleries_count",
+    },
+    {
+      messageID: "image_count",
+      value: "images_count",
+    },
+    {
+      messageID: "performer_count",
+      value: "performers_count",
+    },
+    {
+      messageID: "scene_count",
+      value: "scenes_count",
+    },
+  ]);
+
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
   NoneCriterionOption,

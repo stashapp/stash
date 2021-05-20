@@ -166,9 +166,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
     props.onFilterUpdate(newFilter);
   }
 
-  function onChangeSortBy(event: React.MouseEvent<HTMLAnchorElement>) {
+  function onChangeSortBy(eventKey: string | null) {
     const newFilter = _.cloneDeep(props.filter);
-    newFilter.sortBy = event.currentTarget.text;
+    newFilter.sortBy = eventKey ?? undefined;
     newFilter.currentPage = 1;
     props.onFilterUpdate(newFilter);
   }
@@ -245,15 +245,23 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
+    // for now assume that messageID === sort by column
     return props.filterOptions.sortByOptions
-      .sort((a, b) => a.localeCompare(b))
+      .map((o) => {
+        return {
+          message: intl.formatMessage({ id: o.messageID }),
+          value: o.value,
+        };
+      })
+      .sort((a, b) => a.message.localeCompare(b.message))
       .map((option) => (
         <Dropdown.Item
-          onClick={onChangeSortBy}
-          key={option}
+          onSelect={onChangeSortBy}
+          key={option.value}
           className="bg-secondary text-white"
+          eventKey={option.value}
         >
-          {option}
+          {option.message}
         </Dropdown.Item>
       ));
   }
@@ -462,6 +470,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function render() {
+    const currentSortBy = props.filterOptions.sortByOptions.find(
+      (o) => o.value === props.filter.sortBy
+    );
+
     return (
       <>
         <ButtonToolbar className="align-items-center justify-content-center mb-2">
@@ -487,7 +499,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
             <Dropdown as={ButtonGroup} className="mr-2">
               <Dropdown.Toggle split variant="secondary" id="more-menu">
-                {props.filter.sortBy}
+                {intl.formatMessage({ id: currentSortBy?.messageID })}
               </Dropdown.Toggle>
               <Dropdown.Menu className="bg-secondary text-white">
                 {renderSortByOptions()}

@@ -19,12 +19,18 @@ const sortByOptions = [
   "date",
   "path",
   "file_mod_time",
-  "images_count",
   "tag_count",
   "performer_count",
   "title",
   "random",
-];
+]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "image_count",
+      value: "images_count",
+    },
+  ]);
 
 const displayModeOptions = [
   DisplayMode.Grid,

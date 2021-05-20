@@ -7,14 +7,22 @@ import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
-const sortByOptions = [
-  "name",
-  "scenes_count",
-  "images_count",
-  "galleries_count",
-  "random",
-  "rating",
-];
+const sortByOptions = ["name", "random", "rating"]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "gallery_count",
+      value: "galleries_count",
+    },
+    {
+      messageID: "image_count",
+      value: "images_count",
+    },
+    {
+      messageID: "scene_count",
+      value: "scenes_count",
+    },
+  ]);
 
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [

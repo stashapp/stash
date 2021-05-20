@@ -25,7 +25,7 @@ const sortByOptions = [
   "tag_count",
   "performer_count",
   "random",
-];
+].map(ListFilterOptions.createSortBy);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [

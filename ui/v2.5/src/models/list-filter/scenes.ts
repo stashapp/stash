@@ -32,7 +32,7 @@ const sortByOptions = [
   "performer_count",
   "random",
   "movie_scene_number",
-];
+].map(ListFilterOptions.createSortBy);
 
 const displayModeOptions = [
   DisplayMode.Grid,

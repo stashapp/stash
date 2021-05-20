@@ -12,11 +12,17 @@ const sortByOptions = [
   "name",
   "height",
   "birthdate",
-  "scenes_count",
   "tag_count",
   "random",
   "rating",
-];
+]
+  .map(ListFilterOptions.createSortBy)
+  .concat([
+    {
+      messageID: "scene_count",
+      value: "scenes_count",
+    },
+  ]);
 
 const displayModeOptions = [
   DisplayMode.Grid,

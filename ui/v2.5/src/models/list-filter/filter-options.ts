@@ -1,24 +1,36 @@
 import { CriterionOption } from "./criteria/criterion";
-import { CriterionType, DisplayMode } from "./types";
+import { DisplayMode } from "./types";
+
+interface ISortByOption {
+  messageID: string;
+  value: string;
+}
 
 export class ListFilterOptions {
   public readonly defaultSortBy: string = "";
-  public readonly sortByOptions: string[] = [];
+  public readonly sortByOptions: ISortByOption[] = [];
   public readonly displayModeOptions: DisplayMode[] = [];
   public readonly criterionOptions: CriterionOption[] = [];
 
-  protected static createCriterionOption(value: CriterionType) {
-    return new CriterionOption(value, value);
+  public static createSortBy(value: string) {
+    return {
+      messageID: value,
+      value,
+    };
   }
 
   constructor(
     defaultSortBy: string,
-    sortByOptions: string[],
+    sortByOptions: ISortByOption[],
     displayModeOptions: DisplayMode[],
     criterionOptions: CriterionOption[]
   ) {
     this.defaultSortBy = defaultSortBy;
-    this.sortByOptions = [...sortByOptions, "created_at", "updated_at"];
+    this.sortByOptions = [
+      ...sortByOptions,
+      ListFilterOptions.createSortBy("created_at"),
+      ListFilterOptions.createSortBy("updated_at"),
+    ];
     this.displayModeOptions = displayModeOptions;
     this.criterionOptions = criterionOptions;
   }
