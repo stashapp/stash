@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { HashLink } from "react-router-hash-link";
 import { uniqBy } from "lodash";
+import distance from "hamming-distance";
+
+
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { useLocalForage } from "src/hooks";
 
@@ -257,7 +260,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   const handleFingerprintSearch = async () => {
     setLoadingFingerprints(true);
-    const newFingerprints = { ...fingerprints };
 
     const sceneIDs = scenes
       .filter((s) => s.stash_ids.length === 0)
@@ -276,19 +278,28 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     // clear search errors
     setSearchErrors({});
 
-    selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
-      scene.fingerprints?.forEach((f) => {
-        newFingerprints[f.hash] = newFingerprints[f.hash]
-          ? [...newFingerprints[f.hash], scene]
-          : [scene];
-      });
-    });
+    const sceneResults = selectScenes(results.data.queryStashBoxScene);
+    const hashes = sceneResults.reduce((dict: Record<string, IStashBoxScene>, scene: IStashBoxScene) => ({
+      ...dict,
+      ...Object.fromEntries(scene.fingerprints.filter(f => f.algorithm !== 'PHASH').map(f => [f.hash, scene])),
+    }), {});
+    const phashes = sceneResults.reduce((dict: Record<string, IStashBoxScene>, scene: IStashBoxScene) => ({
+      ...dict,
+      ...Object.fromEntries(scene.fingerprints.filter(f => f.algorithm === 'PHASH').map(f => [f.hash, scene])),
+    }), {});
 
-    // Null any ids that are still undefined since it means they weren't found
-    sceneIDs.forEach((id) => {
-      newFingerprints[id] = newFingerprints[id] ?? null;
-    });
+    const sceneHashes = Object.fromEntries(scenes.map(s => ([
+      s.id, uniqBy([
+        ...(s.oshash && hashes[s.oshash] ? [hashes[s.oshash]] : []),
+        ...(s.checksum && hashes[s.checksum] ? [hashes[s.checksum]] : []),
+        ...(s.phash ? Object.keys(phashes).filter(fp => distance(fp, s.phash) <= 8).map(fp => phashes[fp]) : []),
+      ], fpScene => fpScene.stash_id)
+    ])));
 
+    const newFingerprints = {
+      ...fingerprints,
+      ...sceneHashes,
+    };
     setFingerprints(newFingerprints);
     fingerprintCache = newFingerprints;
     setLoadingFingerprints(false);
@@ -300,15 +311,12 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       (s) => s.stash_ids.length === 0 && fingerprints[s.id] === undefined
     );
 
-  const getFingerprintCount = () => {
-    return scenes.filter(
+  const getFingerprintCount = () => (
+    scenes.filter(
       (s) =>
-        s.stash_ids.length === 0 &&
-        ((s.checksum && fingerprints[s.checksum]) ||
-          (s.oshash && fingerprints[s.oshash]) ||
-          (s.phash && fingerprints[s.phash]))
-    ).length;
-  };
+      s.stash_ids.length === 0 && fingerprints[s.id] && fingerprints[s.id].length > 0
+    ).length
+  );
 
   const getFingerprintCountMessage = () => {
     const count = getFingerprintCount();
@@ -345,14 +353,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       );
 
       // Get all scenes matching one of the fingerprints, and return array of unique scenes
-      const fingerprintMatches = uniqBy(
-        [
-          ...(fingerprints[scene.checksum ?? ""] ?? []),
-          ...(fingerprints[scene.oshash ?? ""] ?? []),
-          ...(fingerprints[scene.phash ?? ""] ?? []),
-        ].flat(),
-        (f) => f.stash_id
-      );
+      const fingerprintMatches = fingerprints[scene.id] ?? [];
 
       const isTagged = taggedScenes[scene.id];
       const hasStashIDs = scene.stash_ids.length > 0;
