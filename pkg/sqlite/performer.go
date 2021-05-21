@@ -365,7 +365,7 @@ func yearFilterCriterionHandler(year *models.IntCriterionInput, col string) crit
 				f.addWhere(col+" < ? OR "+col+" > ?", startOfYear, endOfYear)
 			case models.CriterionModifierGreaterThan:
 				// > yyyy-12-31
-				f.addWhere(col+" >= ?", endOfYear)
+				f.addWhere(col+" > ?", endOfYear)
 			case models.CriterionModifierLessThan:
 				// < yyyy-01-01
 				f.addWhere(col+" < ?", startOfYear)
