@@ -311,7 +311,8 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	// Disabling querying/sorting on marker count for now.
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"tags.name"}
+		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
+		searchColumns := []string{"tags.name", "tag_aliases.alias"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
