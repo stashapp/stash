@@ -35,7 +35,16 @@ func (qb *tagQueryBuilder) Create(newObject models.Tag) (*models.Tag, error) {
 	return &ret, nil
 }
 
-func (qb *tagQueryBuilder) Update(updatedObject models.Tag) (*models.Tag, error) {
+func (qb *tagQueryBuilder) Update(updatedObject models.TagPartial) (*models.Tag, error) {
+	const partial = true
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedObject.ID)
+}
+
+func (qb *tagQueryBuilder) UpdateFull(updatedObject models.Tag) (*models.Tag, error) {
 	const partial = false
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err

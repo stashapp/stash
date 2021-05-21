@@ -390,8 +390,31 @@ func (_m *TagReaderWriter) QueryForAutoTag(words []string) ([]*models.Tag, error
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: updatedTag
-func (_m *TagReaderWriter) Update(updatedTag models.Tag) (*models.Tag, error) {
+// Update provides a mock function with given fields: updateTag
+func (_m *TagReaderWriter) Update(updateTag models.TagPartial) (*models.Tag, error) {
+	ret := _m.Called(updateTag)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(models.TagPartial) *models.Tag); ok {
+		r0 = rf(updateTag)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.TagPartial) error); ok {
+		r1 = rf(updateTag)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateFull provides a mock function with given fields: updatedTag
+func (_m *TagReaderWriter) UpdateFull(updatedTag models.Tag) (*models.Tag, error) {
 	ret := _m.Called(updatedTag)
 
 	var r0 *models.Tag

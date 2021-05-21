@@ -110,7 +110,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			}
 		}
 
-		tag, err = qb.Update(updatedTag)
+		tag, err = qb.UpdateFull(updatedTag)
 		if err != nil {
 			return err
 		}

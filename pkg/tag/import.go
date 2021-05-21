@@ -76,7 +76,7 @@ func (i *Importer) Create() (*int, error) {
 func (i *Importer) Update(id int) error {
 	tag := i.tag
 	tag.ID = id
-	_, err := i.ReaderWriter.Update(tag)
+	_, err := i.ReaderWriter.UpdateFull(tag)
 	if err != nil {
 		return fmt.Errorf("error updating existing tag: %s", err.Error())
 	}

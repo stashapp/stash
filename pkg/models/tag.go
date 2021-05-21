@@ -21,7 +21,8 @@ type TagReader interface {
 
 type TagWriter interface {
 	Create(newTag Tag) (*Tag, error)
-	Update(updatedTag Tag) (*Tag, error)
+	Update(updateTag TagPartial) (*Tag, error)
+	UpdateFull(updatedTag Tag) (*Tag, error)
 	Destroy(id int) error
 	UpdateImage(tagID int, image []byte) error
 	DestroyImage(tagID int) error
