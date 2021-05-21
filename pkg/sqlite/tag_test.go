@@ -137,6 +137,100 @@ func TestTagFindByNames(t *testing.T) {
 	})
 }
 
+func TestTagQueryName(t *testing.T) {
+	const tagIdx = 1
+	tagName := getSceneStringValue(tagIdx, "Name")
+
+	nameCriterion := &models.StringCriterionInput{
+		Value:    tagName,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	tagFilter := &models.TagFilterType{
+		Name: nameCriterion,
+	}
+
+	verifyFn := func(tag *models.Tag, r models.Repository) {
+		verifyString(t, tag.Name, *nameCriterion)
+	}
+
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierMatchesRegex
+	nameCriterion.Value = "tag_.*1_Name"
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+}
+
+func TestTagQueryAlias(t *testing.T) {
+	const tagIdx = 1
+	tagName := getSceneStringValue(tagIdx, "Alias")
+
+	aliasCriterion := &models.StringCriterionInput{
+		Value:    tagName,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	tagFilter := &models.TagFilterType{
+		Aliases: aliasCriterion,
+	}
+
+	verifyFn := func(tag *models.Tag, r models.Repository) {
+		aliases, err := r.Tag().GetAliases(tag.ID)
+		if err != nil {
+			t.Errorf("Error querying tags: %s", err.Error())
+		}
+
+		var alias string
+		if len(aliases) > 0 {
+			alias = aliases[0]
+		}
+
+		verifyString(t, alias, *aliasCriterion)
+	}
+
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierMatchesRegex
+	aliasCriterion.Value = "tag_.*1_Alias"
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+}
+
+func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(t *models.Tag, r models.Repository)) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Tag()
+
+		tags := queryTags(t, sqb, tagFilter, findFilter)
+
+		for _, tag := range tags {
+			verifyFn(tag, r)
+		}
+
+		return nil
+	})
+}
+
+func queryTags(t *testing.T, qb models.TagReader, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) []*models.Tag {
+	t.Helper()
+	tags, _, err := qb.Query(tagFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying tags: %s", err.Error())
+	}
+
+	return tags
+}
+
 func TestTagQueryIsMissingImage(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		qb := r.Tag()
@@ -454,6 +548,39 @@ func TestTagDestroyTagImage(t *testing.T) {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Nil(t, storedImage)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestTagUpdateAlias(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+
+		// create tag to test against
+		const name = "TestTagUpdateAlias"
+		tag := models.Tag{
+			Name: name,
+		}
+		created, err := qb.Create(tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		aliases := []string{"alias1", "alias2"}
+		err = qb.UpdateAliases(created.ID, aliases)
+		if err != nil {
+			return fmt.Errorf("Error updating tag aliases: %s", err.Error())
+		}
+
+		// ensure aliases set
+		storedAliases, err := qb.GetAliases(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting aliases: %s", err.Error())
+		}
+		assert.Equal(t, aliases, storedAliases)
 
 		return nil
 	}); err != nil {

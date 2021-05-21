@@ -11,6 +11,8 @@ import (
 
 const tagTable = "tags"
 const tagIDColumn = "tag_id"
+const tagAliasesTable = "tag_aliases"
+const tagAliasColumn = "alias"
 
 type tagQueryBuilder struct {
 	repository
@@ -271,6 +273,9 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	// 	}
 	// }
 
+	query.handleCriterionFunc(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
+	query.handleCriterionFunc(tagAliasCriterionHandler(qb, tagFilter.Aliases))
+
 	query.handleCriterionFunc(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
 	query.handleCriterionFunc(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))
 	query.handleCriterionFunc(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
@@ -335,6 +340,18 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	return tags, countResult, nil
+}
+
+func tagAliasCriterionHandler(qb *tagQueryBuilder, alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    tagAliasesTable,
+		stringColumn: tagAliasColumn,
+		addJoinTable: func(f *filterBuilder) {
+			qb.aliasRepository().join(f, "", "tags.id")
+		},
+	}
+
+	return h.handler(alias)
 }
 
 func tagIsMissingCriterionHandler(qb *tagQueryBuilder, isMissing *string) criterionHandlerFunc {
@@ -492,4 +509,23 @@ func (qb *tagQueryBuilder) UpdateImage(tagID int, image []byte) error {
 
 func (qb *tagQueryBuilder) DestroyImage(tagID int) error {
 	return qb.imageRepository().destroy([]int{tagID})
+}
+
+func (qb *tagQueryBuilder) aliasRepository() *stringRepository {
+	return &stringRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: tagAliasesTable,
+			idColumn:  tagIDColumn,
+		},
+		stringColumn: tagAliasColumn,
+	}
+}
+
+func (qb *tagQueryBuilder) GetAliases(tagID int) ([]string, error) {
+	return qb.aliasRepository().get(tagID)
+}
+
+func (qb *tagQueryBuilder) UpdateAliases(tagID int, aliases []string) error {
+	return qb.aliasRepository().replace(tagID, aliases)
 }

@@ -17,6 +17,7 @@ type TagReader interface {
 	QueryForAutoTag(words []string) ([]*Tag, error)
 	Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(tagID int) ([]byte, error)
+	GetAliases(tagID int) ([]string, error)
 }
 
 type TagWriter interface {
@@ -26,6 +27,7 @@ type TagWriter interface {
 	Destroy(id int) error
 	UpdateImage(tagID int, image []byte) error
 	DestroyImage(tagID int) error
+	UpdateAliases(tagID int, aliases []string) error
 }
 
 type TagReaderWriter interface {

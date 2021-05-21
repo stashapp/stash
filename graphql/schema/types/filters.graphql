@@ -203,6 +203,12 @@ input TagFilterType {
   OR: TagFilterType
   NOT: TagFilterType
 
+  """Filter by tag name"""
+  name: StringCriterionInput
+
+  """Filter by tag aliases"""
+  aliases: StringCriterionInput
+
   """Filter to only include tags missing this property"""
   is_missing: String
 

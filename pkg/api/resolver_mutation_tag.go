@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -31,24 +31,30 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		}
 	}
 
-	// Start the transaction and save the tag
-	var tag *models.Tag
+	// Start the transaction and save the t
+	var t *models.Tag
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Tag()
 
 		// ensure name is unique
-		if err := manager.EnsureTagNameUnique(newTag, qb); err != nil {
+		if err := tag.EnsureTagNameUnique(0, newTag.Name, qb); err != nil {
 			return err
 		}
 
-		tag, err = qb.Create(newTag)
+		t, err = qb.Create(newTag)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(tag.ID, imageData); err != nil {
+			if err := qb.UpdateImage(t.ID, imageData); err != nil {
+				return err
+			}
+		}
+
+		if len(input.Aliases) > 0 {
+			if err := qb.UpdateAliases(t.ID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -58,7 +64,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		return nil, err
 	}
 
-	return tag, nil
+	return t, nil
 }
 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
@@ -66,12 +72,6 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
-	}
-
-	updatedTag := models.Tag{
-		ID:        tagID,
-		Name:      input.Name,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
 	var imageData []byte
@@ -90,7 +90,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	}
 
 	// Start the transaction and save the tag
-	var tag *models.Tag
+	var t *models.Tag
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Tag()
 
@@ -104,25 +104,37 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			return fmt.Errorf("Tag with ID %d not found", tagID)
 		}
 
-		if existing.Name != updatedTag.Name {
-			if err := manager.EnsureTagNameUnique(updatedTag, qb); err != nil {
+		if input.Name != nil && existing.Name != *input.Name {
+			if err := tag.EnsureTagNameUnique(tagID, *input.Name, qb); err != nil {
 				return err
 			}
-		}
 
-		tag, err = qb.UpdateFull(updatedTag)
-		if err != nil {
-			return err
+			updatedTag := models.TagPartial{
+				ID:        tagID,
+				Name:      input.Name,
+				UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
+			}
+
+			t, err = qb.Update(updatedTag)
+			if err != nil {
+				return err
+			}
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(tag.ID, imageData); err != nil {
+			if err := qb.UpdateImage(t.ID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(tag.ID); err != nil {
+			if err := qb.DestroyImage(t.ID); err != nil {
+				return err
+			}
+		}
+
+		if translator.hasField("aliases") {
+			if err := qb.UpdateAliases(t.ID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -132,7 +144,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		return nil, err
 	}
 
-	return tag, nil
+	return t, nil
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {

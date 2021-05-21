@@ -161,7 +161,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	tag.ID = tagID
-	readerWriter.On("Update", tag).Return(nil, nil).Once()
+	readerWriter.On("UpdateFull", tag).Return(nil, nil).Once()
 
 	err := i.Update(tagID)
 	assert.Nil(t, err)
@@ -170,7 +170,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	tagErr.ID = errImageID
-	readerWriter.On("Update", tagErr).Return(nil, errUpdate).Once()
+	readerWriter.On("UpdateFull", tagErr).Return(nil, errUpdate).Once()
 
 	err = i.Update(errImageID)
 	assert.NotNil(t, err)
