@@ -1,21 +1,17 @@
 import React, { useEffect } from "react";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
-import {
-  DetailsEditNavbar,
-} from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { DetailsEditNavbar } from "src/components/Shared";
 import { Form, Col, Row } from "react-bootstrap";
 import { ImageUtils } from "src/utils";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import { StringListInput } from "src/components/Shared/StringListInput";
 
 interface ITagEditPanel {
   tag?: Partial<GQL.TagDataFragment>;
-  onSubmit: (
-    movie: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
-  ) => void;
+  onSubmit: (movie: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>) => void;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
@@ -28,8 +24,6 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   onDelete,
   setImage,
 }) => {
-  const Toast = useToast();
-
   const isNew = tag === undefined;
 
   const labelXS = 3;
@@ -39,7 +33,17 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    aliases: yup.array(yup.string().required()).required(),
+    aliases: yup
+      .array(yup.string().required())
+      .optional()
+      .test({
+        name: "unique",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        test: (value: any) => {
+          return (value ?? []).length === new Set(value).size;
+        },
+        message: "aliases must be unique",
+      }),
   });
 
   const initialValues = {
@@ -81,24 +85,6 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const isEditing = true;
 
-  function renderTextField(field: string, title: string) {
-    return (
-      <Form.Group controlId={field} as={Row}>
-        <Form.Label column xs={labelXS} xl={labelXL}>
-          {title}
-        </Form.Label>
-        <Col xs={fieldXS} xl={fieldXL}>
-          <Form.Control
-            className="text-input"
-            placeholder={title}
-            {...formik.getFieldProps(field)}
-            isInvalid={!!formik.getFieldMeta(field).error}
-          />
-        </Col>
-      </Form.Group>
-    );
-  }
-
   // TODO: CSS class
   return (
     <div>
@@ -127,8 +113,18 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {/* {renderTextField("aliases", "Aliases")} */}
-
+        <Form.Group controlId="aliases" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Aliases
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <StringListInput
+              value={formik.values.aliases ?? []}
+              setValue={(value) => formik.setFieldValue("aliases", value)}
+              errors={formik.errors.aliases}
+            />
+          </Col>
+        </Form.Group>
       </Form>
 
       <DetailsEditNavbar

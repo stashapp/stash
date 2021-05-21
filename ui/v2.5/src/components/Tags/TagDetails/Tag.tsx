@@ -1,4 +1,4 @@
-import { Table, Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -12,7 +12,7 @@ import {
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils } from "src/utils";
 import {
   DetailsEditNavbar,
   Modal,
@@ -99,7 +99,9 @@ export const Tag: React.FC = () => {
     if (error) return <div>{error.message}</div>;
   }
 
-  function getTagInput(input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>) {
+  function getTagInput(
+    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
+  ) {
     const ret: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
       ...input,
       image,
@@ -112,7 +114,9 @@ export const Tag: React.FC = () => {
     return ret;
   }
 
-  async function onSave(input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>) {
+  async function onSave(
+    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
+  ) {
     try {
       if (!isNew) {
         const result = await updateTag({
@@ -190,9 +194,7 @@ export const Tag: React.FC = () => {
     }
 
     if (tagImage) {
-      return (
-        <img className="logo" alt={tag?.name ?? ""} src={tagImage} />
-      );
+      return <img className="logo" alt={tag?.name ?? ""} src={tagImage} />;
     }
   }
 
@@ -204,11 +206,12 @@ export const Tag: React.FC = () => {
           "col-8": isNew,
         })}
       >
-        {isNew && <h2>Add Tag</h2>}
         <div className="text-center logo-container">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
-          ) : renderImage()}
+          ) : (
+            renderImage()
+          )}
           {!isNew && tag && <h2>{tag.name}</h2>}
         </div>
         {!isEditing && !isNew && tag ? (

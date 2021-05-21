@@ -95,16 +95,16 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		qb := repo.Tag()
 
 		// ensure name is unique
-		existing, err := qb.Find(tagID)
+		t, err = qb.Find(tagID)
 		if err != nil {
 			return err
 		}
 
-		if existing == nil {
+		if t == nil {
 			return fmt.Errorf("Tag with ID %d not found", tagID)
 		}
 
-		if input.Name != nil && existing.Name != *input.Name {
+		if input.Name != nil && t.Name != *input.Name {
 			if err := tag.EnsureTagNameUnique(tagID, *input.Name, qb); err != nil {
 				return err
 			}
@@ -123,18 +123,18 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(t.ID, imageData); err != nil {
+			if err := qb.UpdateImage(tagID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(t.ID); err != nil {
+			if err := qb.DestroyImage(tagID); err != nil {
 				return err
 			}
 		}
 
 		if translator.hasField("aliases") {
-			if err := qb.UpdateAliases(t.ID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(tagID, input.Aliases); err != nil {
 				return err
 			}
 		}
