@@ -455,14 +455,18 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
 
 export const TagSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllTagsForFilter();
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
   const placeholder = props.noSelectionString ?? "Select tags...";
 
   const tags = data?.allTags ?? [];
 
   const onCreate = async (name: string) => {
     const result = await createTag({
-      variables: { name },
+      variables: {
+        input: {
+          name,
+        },
+      },
     });
     return { item: result.data!.tagCreate!, message: "Created tag" };
   };

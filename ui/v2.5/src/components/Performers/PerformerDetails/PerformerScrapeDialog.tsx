@@ -223,7 +223,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     new ScrapeResult<string>(props.performer.details, props.scraped.details)
   );
 
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
   const Toast = useToast();
 
   interface IHasStoredID {
@@ -318,7 +318,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     try {
       tagInput = Object.assign(tagInput, toCreate);
       const result = await createTag({
-        variables: tagInput,
+        variables: {
+          input: tagInput,
+        },
       });
 
       // add the new tag to the new tags value

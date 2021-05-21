@@ -33,6 +33,7 @@ query AllTagsForFilter {
   allTags {
     id
     name
+    aliases
   }
 }
 
