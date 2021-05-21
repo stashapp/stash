@@ -18,7 +18,7 @@ type PerformerReader interface {
 	Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	GetImage(performerID int) ([]byte, error)
 	GetStashIDs(performerID int) ([]*StashID, error)
-	GetTagIDs(sceneID int) ([]int, error)
+	GetTagIDs(performerID int) ([]int, error)
 }
 
 type PerformerWriter interface {
@@ -29,7 +29,7 @@ type PerformerWriter interface {
 	UpdateImage(performerID int, image []byte) error
 	DestroyImage(performerID int) error
 	UpdateStashIDs(performerID int, stashIDs []StashID) error
-	UpdateTags(sceneID int, tagIDs []int) error
+	UpdateTags(performerID int, tagIDs []int) error
 }
 
 type PerformerReaderWriter interface {
