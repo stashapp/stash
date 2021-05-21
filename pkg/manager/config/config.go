@@ -124,6 +124,12 @@ const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
 
+// DLNA options
+const DLNAServerName = "dlna.server_name"
+const DLNADefaultEnabled = "dlna.default_enabled"
+const DLNADefaultIPWhitelist = "dlna.default_whitelist"
+const DLNAInterfaces = "dlna.interfaces"
+
 // Logging options
 const LogFile = "logFile"
 const LogOut = "logOut"
@@ -625,6 +631,29 @@ func (i *Instance) SetCSS(css string) {
 
 func (i *Instance) GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
+}
+
+// GetDLNAServerName returns the visible name of the DLNA server. If empty,
+// "stash" will be used.
+func (i *Instance) GetDLNAServerName() string {
+	return viper.GetString(DLNAServerName)
+}
+
+// GetDLNADefaultEnabled returns true if the DLNA is enabled by default.
+func (i *Instance) GetDLNADefaultEnabled() bool {
+	return viper.GetBool(DLNADefaultEnabled)
+}
+
+// GetDLNADefaultIPWhitelist returns a list of IP addresses/wildcards that
+// are allowed to use the DLNA service.
+func (i *Instance) GetDLNADefaultIPWhitelist() []string {
+	return viper.GetStringSlice(DLNADefaultIPWhitelist)
+}
+
+// GetDLNAInterfaces returns a list of interface names to expose DLNA on. If
+// empty, runs on all interfaces.
+func (i *Instance) GetDLNAInterfaces() []string {
+	return viper.GetStringSlice(DLNAInterfaces)
 }
 
 // GetLogFile returns the filename of the file to output logs to.

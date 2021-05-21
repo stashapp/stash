@@ -155,9 +155,13 @@ func (s *singleton) neededScan(paths []*models.StashConfig) (total *int, newFile
 	return &t, &n
 }
 
-func (s *singleton) Scan(input models.ScanMetadataInput) {
+func (s *singleton) Scan(input models.ScanMetadataInput) error {
+	if err := s.validateFFMPEG(); err != nil {
+		return err
+	}
+
 	if s.Status.Status != Idle {
-		return
+		return nil
 	}
 	s.Status.SetStatus(Scan)
 	s.Status.indefiniteProgress()
@@ -264,6 +268,8 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 		}
 		logger.Info("Finished gallery association")
 	}()
+
+	return nil
 }
 
 func (s *singleton) Import() error {
@@ -378,9 +384,13 @@ func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsI
 	}
 }
 
-func (s *singleton) Generate(input models.GenerateMetadataInput) {
+func (s *singleton) Generate(input models.GenerateMetadataInput) error {
+	if err := s.validateFFMPEG(); err != nil {
+		return err
+	}
+
 	if s.Status.Status != Idle {
-		return
+		return nil
 	}
 	s.Status.SetStatus(Generate)
 	s.Status.indefiniteProgress()
@@ -571,6 +581,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 	}()
+
+	return nil
 }
 
 func (s *singleton) GenerateDefaultScreenshot(sceneId string) {

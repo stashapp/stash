@@ -36,6 +36,12 @@ github.com/Yamashou/gqlgenc/graphqljson
 github.com/Yamashou/gqlgenc/introspection
 # github.com/agnivade/levenshtein v1.1.0
 github.com/agnivade/levenshtein
+# github.com/anacrolix/dms v1.2.2
+github.com/anacrolix/dms/dlna
+github.com/anacrolix/dms/soap
+github.com/anacrolix/dms/ssdp
+github.com/anacrolix/dms/upnp
+github.com/anacrolix/dms/upnpav
 # github.com/antchfx/htmlquery v1.2.3
 github.com/antchfx/htmlquery
 # github.com/antchfx/xpath v1.1.6
@@ -326,10 +332,14 @@ golang.org/x/image/webp
 golang.org/x/mod/module
 golang.org/x/mod/semver
 # golang.org/x/net v0.0.0-20200822124328-c89045814202
+golang.org/x/net/bpf
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
+golang.org/x/net/internal/iana
+golang.org/x/net/internal/socket
+golang.org/x/net/ipv4
 golang.org/x/net/publicsuffix
 # golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 golang.org/x/sys/cpu
