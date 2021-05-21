@@ -73,7 +73,7 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.S
 		return nil, err
 	}
 
-	var fingerprints []string
+	var fingerprints []*graphql.FingerprintQueryInput
 
 	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		qb := r.Scene()
@@ -89,15 +89,24 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.S
 			}
 
 			if scene.Checksum.Valid {
-				fingerprints = append(fingerprints, scene.Checksum.String)
+				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
+					Hash:      scene.Checksum.String,
+					Algorithm: graphql.FingerprintAlgorithmMd5,
+				})
 			}
 
 			if scene.OSHash.Valid {
-				fingerprints = append(fingerprints, scene.OSHash.String)
+				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
+					Hash:      scene.OSHash.String,
+					Algorithm: graphql.FingerprintAlgorithmOshash,
+				})
 			}
 
 			if scene.Phash.Valid {
-				fingerprints = append(fingerprints, utils.PhashToString(scene.Phash.Int64))
+				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
+					Hash:      utils.PhashToString(scene.Phash.Int64),
+					Algorithm: graphql.FingerprintAlgorithmPhash,
+				})
 			}
 		}
 
@@ -109,20 +118,20 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.S
 	return c.findStashBoxScenesByFingerprints(fingerprints)
 }
 
-func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*models.ScrapedScene, error) {
+func (c Client) findStashBoxScenesByFingerprints(fingerprints []*graphql.FingerprintQueryInput) ([]*models.ScrapedScene, error) {
 	var ret []*models.ScrapedScene
 	for i := 0; i < len(fingerprints); i += 100 {
 		end := i + 100
 		if end > len(fingerprints) {
 			end = len(fingerprints)
 		}
-		scenes, err := c.client.FindScenesByFingerprints(context.TODO(), fingerprints[i:end])
+		scenes, err := c.client.FindScenesByFullFingerprints(context.TODO(), fingerprints[i:end])
 
 		if err != nil {
 			return nil, err
 		}
 
-		sceneFragments := scenes.FindScenesByFingerprints
+		sceneFragments := scenes.FindScenesByFullFingerprints
 
 		for _, s := range sceneFragments {
 			ss, err := sceneFragmentToScrapedScene(c.txnManager, s)

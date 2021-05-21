@@ -81,6 +81,7 @@ type Edit struct {
 	Status    VoteStatusEnum `json:"status"`
 	Applied   bool           `json:"applied"`
 	Created   time.Time      `json:"created"`
+	Updated   time.Time      `json:"updated"`
 }
 
 type EditComment struct {
@@ -134,9 +135,21 @@ type EyeColorCriterionInput struct {
 }
 
 type Fingerprint struct {
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Submissions int                  `json:"submissions"`
+	Created     time.Time            `json:"created"`
+	Updated     time.Time            `json:"updated"`
+}
+
+type FingerprintEditInput struct {
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Submissions int                  `json:"submissions"`
+	Created     time.Time            `json:"created"`
+	Updated     time.Time            `json:"updated"`
 }
 
 type FingerprintInput struct {
@@ -507,7 +520,7 @@ type SceneCreateInput struct {
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []string                    `json:"tag_ids"`
 	ImageIds     []string                    `json:"image_ids"`
-	Fingerprints []*FingerprintInput         `json:"fingerprints"`
+	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
 }
@@ -547,7 +560,7 @@ type SceneEditDetailsInput struct {
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []string                    `json:"tag_ids"`
 	ImageIds     []string                    `json:"image_ids"`
-	Fingerprints []*FingerprintInput         `json:"fingerprints"`
+	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
 }
@@ -578,6 +591,8 @@ type SceneFilterType struct {
 	Performers *MultiIDCriterionInput `json:"performers"`
 	// Filter to include scenes with performer appearing as alias
 	Alias *StringCriterionInput `json:"alias"`
+	// Filter to only include scenes with these fingerprints
+	Fingerprints *MultiIDCriterionInput `json:"fingerprints"`
 }
 
 type SceneUpdateInput struct {
@@ -590,7 +605,7 @@ type SceneUpdateInput struct {
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []string                    `json:"tag_ids"`
 	ImageIds     []string                    `json:"image_ids"`
-	Fingerprints []*FingerprintInput         `json:"fingerprints"`
+	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
 }
