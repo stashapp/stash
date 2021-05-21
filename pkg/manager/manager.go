@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -34,6 +36,8 @@ type singleton struct {
 
 	DownloadStore *DownloadStore
 
+	DLNAService *dlna.Service
+
 	TxnManager models.TransactionManager
 }
 
@@ -55,6 +59,7 @@ func Initialize() *singleton {
 		}
 
 		initLog()
+		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
 			Config:        cfg,
@@ -63,6 +68,11 @@ func Initialize() *singleton {
 
 			TxnManager: sqlite.NewTransactionManager(),
 		}
+
+		sceneServer := SceneServer{
+			TXNManager: instance.TxnManager,
+		}
+		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
 
 		if !cfg.IsNewSystem() {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -87,33 +97,66 @@ func Initialize() *singleton {
 		}
 
 		initFFMPEG()
+
+		// if DLNA is enabled, start it now
+		if instance.Config.GetDLNADefaultEnabled() {
+			instance.DLNAService.Start(nil)
+		}
 	})
 
 	return instance
 }
 
-func initFFMPEG() {
-	configDirectory := paths.GetStashHomeDirectory()
-	ffmpegPath, ffprobePath := ffmpeg.GetPaths(configDirectory)
-	if ffmpegPath == "" || ffprobePath == "" {
-		logger.Infof("couldn't find FFMPEG, attempting to download it")
-		if err := ffmpeg.Download(configDirectory); err != nil {
-			msg := `Unable to locate / automatically download FFMPEG
-
-Check the readme for download links.
-The FFMPEG and FFProbe binaries should be placed in %s
-
-The error was: %s
-`
-			logger.Fatalf(msg, configDirectory, err)
-		} else {
-			// After download get new paths for ffmpeg and ffprobe
-			ffmpegPath, ffprobePath = ffmpeg.GetPaths(configDirectory)
-		}
+func initProfiling(cpuProfilePath string) {
+	if cpuProfilePath == "" {
+		return
 	}
 
-	instance.FFMPEGPath = ffmpegPath
-	instance.FFProbePath = ffprobePath
+	f, err := os.Create(cpuProfilePath)
+	if err != nil {
+		logger.Fatalf("unable to create cpu profile file: %s", err.Error())
+	}
+
+	logger.Infof("profiling to %s", cpuProfilePath)
+
+	// StopCPUProfile is defer called in main
+	pprof.StartCPUProfile(f)
+}
+
+func initFFMPEG() error {
+	// only do this if we have a config file set
+	if instance.Config.GetConfigFile() != "" {
+		// use same directory as config path
+		configDirectory := instance.Config.GetConfigPath()
+		paths := []string{
+			configDirectory,
+			paths.GetStashHomeDirectory(),
+		}
+		ffmpegPath, ffprobePath := ffmpeg.GetPaths(paths)
+
+		if ffmpegPath == "" || ffprobePath == "" {
+			logger.Infof("couldn't find FFMPEG, attempting to download it")
+			if err := ffmpeg.Download(configDirectory); err != nil {
+				msg := `Unable to locate / automatically download FFMPEG
+
+	Check the readme for download links.
+	The FFMPEG and FFProbe binaries should be placed in %s
+
+	The error was: %s
+	`
+				logger.Errorf(msg, configDirectory, err)
+				return err
+			} else {
+				// After download get new paths for ffmpeg and ffprobe
+				ffmpegPath, ffprobePath = ffmpeg.GetPaths(paths)
+			}
+		}
+
+		instance.FFMPEGPath = ffmpegPath
+		instance.FFProbePath = ffprobePath
+	}
+
+	return nil
 }
 
 func initLog() {
@@ -244,6 +287,16 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	}
 
 	s.Config.FinalizeSetup()
+
+	initFFMPEG()
+
+	return nil
+}
+
+func (s *singleton) validateFFMPEG() error {
+	if s.FFMPEGPath == "" || s.FFProbePath == "" {
+		return errors.New("missing ffmpeg and/or ffprobe")
+	}
 
 	return nil
 }

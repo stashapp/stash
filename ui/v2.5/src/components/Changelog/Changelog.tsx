@@ -10,7 +10,11 @@ import V040 from "./versions/v040.md";
 import V050 from "./versions/v050.md";
 import V060 from "./versions/v060.md";
 import V070 from "./versions/v070.md";
+import V080 from "./versions/v080.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
+
+// to avoid use of explicit any
+type Module = typeof V010;
 
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
@@ -35,82 +39,89 @@ const Changelog: React.FC = () => {
       },
     });
 
+  interface IStashRelease {
+    version: string;
+    date?: string;
+    page: Module;
+    defaultOpen?: boolean;
+  }
+
+  // after new release:
+  // add entry to releases, using the current* fields
+  // then update the current fields.
+  const currentVersion = stashVersion || "v0.8.0";
+  const currentDate = buildDate;
+  const currentPage = V080;
+
+  const releases: IStashRelease[] = [
+    {
+      version: currentVersion,
+      date: currentDate,
+      page: currentPage,
+      defaultOpen: true,
+    },
+    {
+      version: "v0.7.0",
+      date: "2021-05-15",
+      page: V070,
+    },
+    {
+      version: "v0.6.0",
+      date: "2021-03-29",
+      page: V060,
+    },
+    {
+      version: "v0.5.0",
+      date: "2021-02-23",
+      page: V050,
+    },
+    {
+      version: "v0.4.0",
+      date: "2020-11-24",
+      page: V040,
+    },
+    {
+      version: "v0.3.0",
+      date: "2020-09-02",
+      page: V030,
+    },
+    {
+      version: "v0.2.1",
+      date: "2020-06-10",
+      page: V021,
+    },
+    {
+      version: "v0.2.0",
+      date: "2020-06-06",
+      page: V020,
+    },
+    {
+      version: "v0.1.1",
+      date: "2020-02-25",
+      page: V011,
+    },
+    {
+      version: "v0.1.0",
+      date: "2020-02-24",
+      page: V010,
+    },
+  ];
+
   return (
     <>
       <h1 className="mb-4">Changelog:</h1>
-      <Version
-        version={stashVersion || "v0.7.0"}
-        date={buildDate}
-        openState={openState}
-        setOpenState={setVersionOpenState}
-        defaultOpen
-      >
-        <MarkdownPage page={V070} />
-      </Version>
-      <Version
-        version="v0.6.0"
-        date="2021-03-29"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V060} />
-      </Version>
-      <Version
-        version="v0.5.0"
-        date="2021-02-23"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V050} />
-      </Version>
-      <Version
-        version="v0.4.0"
-        date="2020-11-24"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V040} />
-      </Version>
-      <Version
-        version="v0.3.0"
-        date="2020-09-02"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V030} />
-      </Version>
-      <Version
-        version="v0.2.1"
-        date="2020-06-10"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V021} />
-      </Version>
-      <Version
-        version="v0.2.0"
-        date="2020-06-06"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V020} />
-      </Version>
-      <Version
-        version="v0.1.1"
-        date="2020-02-25"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V011} />
-      </Version>
-      <Version
-        version="v0.1.0"
-        date="2020-02-24"
-        openState={openState}
-        setOpenState={setVersionOpenState}
-      >
-        <MarkdownPage page={V010} />
-      </Version>
+      {releases.map((r) => (
+        <Version
+          key={r.version}
+          version={r.version}
+          date={r.date}
+          openState={openState}
+          setOpenState={setVersionOpenState}
+          defaultOpen={r.defaultOpen}
+        >
+          <MarkdownPage page={r.page} />
+        </Version>
+      ))}
     </>
   );
 };

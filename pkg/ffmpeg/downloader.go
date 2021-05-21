@@ -3,7 +3,6 @@ package ffmpeg
 import (
 	"archive/zip"
 	"fmt"
-	"github.com/stashapp/stash/pkg/utils"
 	"io"
 	"net/http"
 	"os"
@@ -12,9 +11,23 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
-func GetPaths(configDirectory string) (string, string) {
+func findInPaths(paths []string, baseName string) string {
+	for _, p := range paths {
+		filePath := filepath.Join(p, baseName)
+		if exists, _ := utils.FileExists(filePath); exists {
+			return filePath
+		}
+	}
+
+	return ""
+}
+
+func GetPaths(paths []string) (string, string) {
 	var ffmpegPath, ffprobePath string
 
 	// Check if ffmpeg exists in the PATH
@@ -24,15 +37,11 @@ func GetPaths(configDirectory string) (string, string) {
 	}
 
 	// Check if ffmpeg exists in the config directory
-	ffmpegConfigPath := filepath.Join(configDirectory, getFFMPEGFilename())
-	ffprobeConfigPath := filepath.Join(configDirectory, getFFProbeFilename())
-	ffmpegConfigExists, _ := utils.FileExists(ffmpegConfigPath)
-	ffprobeConfigExists, _ := utils.FileExists(ffprobeConfigPath)
-	if ffmpegPath == "" && ffmpegConfigExists {
-		ffmpegPath = ffmpegConfigPath
+	if ffmpegPath == "" {
+		ffmpegPath = findInPaths(paths, getFFMPEGFilename())
 	}
-	if ffprobePath == "" && ffprobeConfigExists {
-		ffprobePath = ffprobeConfigPath
+	if ffprobePath == "" {
+		ffprobePath = findInPaths(paths, getFFProbeFilename())
 	}
 
 	return ffmpegPath, ffprobePath
@@ -46,6 +55,29 @@ func Download(configDirectory string) error {
 		}
 	}
 	return nil
+}
+
+type progressReader struct {
+	io.Reader
+	lastProgress int64
+	bytesRead    int64
+	total        int64
+}
+
+func (r *progressReader) Read(p []byte) (int, error) {
+	read, err := r.Reader.Read(p)
+	if err == nil {
+		r.bytesRead += int64(read)
+		if r.total > 0 {
+			progress := int64(float64(r.bytesRead) / float64(r.total) * 100)
+			if progress/5 > r.lastProgress {
+				logger.Infof("%d%% downloaded...", progress)
+				r.lastProgress = progress / 5
+			}
+		}
+	}
+
+	return read, err
 }
 
 func DownloadSingle(configDirectory, url string) error {
@@ -64,6 +96,8 @@ func DownloadSingle(configDirectory, url string) error {
 	}
 	defer out.Close()
 
+	logger.Infof("Downloading %s...", url)
+
 	// Make the HTTP request
 	resp, err := http.Get(url)
 	if err != nil {
@@ -76,13 +110,21 @@ func DownloadSingle(configDirectory, url string) error {
 		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
+	reader := &progressReader{
+		Reader: resp.Body,
+		total:  resp.ContentLength,
+	}
+
 	// Write the response to the archive file location
-	_, err = io.Copy(out, resp.Body)
+	_, err = io.Copy(out, reader)
 	if err != nil {
 		return err
 	}
 
+	logger.Info("Downloading complete")
+
 	if urlExt == ".zip" {
+		logger.Infof("Unzipping %s...", archivePath)
 		if err := unzip(archivePath, configDirectory); err != nil {
 			return err
 		}
@@ -102,6 +144,8 @@ func DownloadSingle(configDirectory, url string) error {
 			// xattr -c /path/to/binary -- xattr.Remove(path, "com.apple.quarantine")
 		}
 
+		logger.Infof("ffmpeg and ffprobe successfully installed in %s", configDirectory)
+
 	} else {
 		return fmt.Errorf("ffmpeg was downloaded to %s", archivePath)
 	}
@@ -110,7 +154,7 @@ func DownloadSingle(configDirectory, url string) error {
 }
 
 func getFFMPEGURL() []string {
-	urls := []string{""}
+	var urls []string
 	switch runtime.GOOS {
 	case "darwin":
 		urls = []string{"https://evermeet.cx/ffmpeg/ffmpeg-4.3.1.zip", "https://evermeet.cx/ffmpeg/ffprobe-4.3.1.zip"}
