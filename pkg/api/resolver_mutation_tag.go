@@ -54,6 +54,10 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		}
 
 		if len(input.Aliases) > 0 {
+			if err := tag.EnsureAliasesUnique(t.ID, input.Aliases, qb); err != nil {
+				return err
+			}
+
 			if err := qb.UpdateAliases(t.ID, input.Aliases); err != nil {
 				return err
 			}
@@ -134,6 +138,10 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		}
 
 		if translator.hasField("aliases") {
+			if err := tag.EnsureAliasesUnique(tagID, input.Aliases, qb); err != nil {
+				return err
+			}
+
 			if err := qb.UpdateAliases(tagID, input.Aliases); err != nil {
 				return err
 			}
