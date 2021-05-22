@@ -8,6 +8,7 @@ type Image {
   path: String!
   created_at: Time!
   updated_at: Time!
+  file_mod_time: Time!
 
   file: ImageFileType! # Resolver
   paths: ImagePathsType! # Resolver

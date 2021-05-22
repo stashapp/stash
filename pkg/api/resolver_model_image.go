@@ -100,3 +100,7 @@ func (r *imageResolver) CreatedAt(ctx context.Context, obj *models.Image) (*time
 func (r *imageResolver) UpdatedAt(ctx context.Context, obj *models.Image) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
+
+func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {
+	return &obj.FileModTime.Timestamp, nil
+}

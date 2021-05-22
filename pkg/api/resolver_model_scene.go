@@ -221,3 +221,7 @@ func (r *sceneResolver) CreatedAt(ctx context.Context, obj *models.Scene) (*time
 func (r *sceneResolver) UpdatedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
+
+func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.FileModTime.Timestamp, nil
+}

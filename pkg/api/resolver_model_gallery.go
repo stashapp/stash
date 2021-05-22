@@ -162,3 +162,7 @@ func (r *galleryResolver) CreatedAt(ctx context.Context, obj *models.Gallery) (*
 func (r *galleryResolver) UpdatedAt(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
+
+func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
+	return &obj.FileModTime.Timestamp, nil
+}
