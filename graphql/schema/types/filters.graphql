@@ -29,6 +29,10 @@ enum ResolutionEnum {
 }
 
 input PerformerFilterType {
+  AND: PerformerFilterType
+  OR: PerformerFilterType
+  NOT: PerformerFilterType
+
   """Filter by favorite"""
   filter_favorites: Boolean
   """Filter by birth year"""
@@ -81,6 +85,8 @@ input PerformerFilterType {
   weight: IntCriterionInput
   """Filter by death year"""
   death_year: IntCriterionInput
+  """Filter by studios where performer appears in scene/image/gallery"""
+  studios: MultiCriterionInput
 }
 
 input SceneMarkerFilterType {
