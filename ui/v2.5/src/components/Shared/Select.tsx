@@ -6,7 +6,6 @@ import Select, {
   components as reactSelectComponents,
   GroupedOptionsType,
   OptionsType,
-  GroupType,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
@@ -555,7 +554,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
     }
 
     if (
-      options.some((o: Option | GroupType<Option>) => {
+      (options as OptionsType<Option>).some((o: Option) => {
         return o.label.toLowerCase() === inputValue.toLowerCase();
       })
     ) {
