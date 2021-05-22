@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/image"
@@ -90,4 +91,12 @@ func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret 
 	}
 
 	return ret, nil
+}
+
+func (r *imageResolver) CreatedAt(ctx context.Context, obj *models.Image) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *imageResolver) UpdatedAt(ctx context.Context, obj *models.Image) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

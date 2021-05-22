@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -73,4 +74,12 @@ func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj).GetTagImageURL()
 	return &imagePath, nil
+}
+
+func (r *tagResolver) CreatedAt(ctx context.Context, obj *models.Tag) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *tagResolver) UpdatedAt(ctx context.Context, obj *models.Tag) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

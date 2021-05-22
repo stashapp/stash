@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -244,4 +245,12 @@ func (r *performerResolver) Weight(ctx context.Context, obj *models.Performer) (
 		return &weight, nil
 	}
 	return nil, nil
+}
+
+func (r *performerResolver) CreatedAt(ctx context.Context, obj *models.Performer) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *performerResolver) UpdatedAt(ctx context.Context, obj *models.Performer) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

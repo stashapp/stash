@@ -11,6 +11,8 @@ type Movie {
   director: String
   synopsis: String
   url: String
+  created_at: Time!
+  updated_at: Time!
 
   front_image_path: String # Resolver
   back_image_path: String # Resolver

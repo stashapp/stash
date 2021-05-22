@@ -37,6 +37,8 @@ type Scene {
   o_counter: Int
   path: String!
   phash: String
+  created_at: Time!
+  updated_at: Time!
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver

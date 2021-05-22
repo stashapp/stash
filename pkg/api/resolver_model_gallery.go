@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -152,4 +153,12 @@ func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (
 	}
 
 	return ret, nil
+}
+
+func (r *galleryResolver) CreatedAt(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *galleryResolver) UpdatedAt(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

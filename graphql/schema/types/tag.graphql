@@ -1,6 +1,8 @@
 type Tag {
   id: ID!
   name: String!
+  created_at: Time!
+  updated_at: Time!
 
   image_path: String # Resolver
   scene_count: Int # Resolver

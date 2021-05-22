@@ -6,6 +6,8 @@ type Image {
   o_counter: Int
   organized: Boolean!
   path: String!
+  created_at: Time!
+  updated_at: Time!
 
   file: ImageFileType! # Resolver
   paths: ImagePathsType! # Resolver
