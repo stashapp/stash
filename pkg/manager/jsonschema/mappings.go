@@ -26,10 +26,10 @@ type Mappings struct {
 func LoadMappingsFile(filePath string) (*Mappings, error) {
 	var mappings Mappings
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&mappings)
