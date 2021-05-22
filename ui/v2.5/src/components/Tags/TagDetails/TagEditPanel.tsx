@@ -5,13 +5,16 @@ import { DetailsEditNavbar } from "src/components/Shared";
 import { Form, Col, Row } from "react-bootstrap";
 import { ImageUtils } from "src/utils";
 import { useFormik } from "formik";
-import { Prompt } from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import { StringListInput } from "src/components/Shared/StringListInput";
 
 interface ITagEditPanel {
   tag?: Partial<GQL.TagDataFragment>;
-  onSubmit: (movie: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>) => void;
+  // returns id
+  onSubmit: (
+    tag: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
+  ) => Promise<string | undefined>;
   onCancel: () => void;
   onDelete: () => void;
   setImage: (image?: string | null) => void;
@@ -24,6 +27,8 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   onDelete,
   setImage,
 }) => {
+  const history = useHistory();
+
   const isNew = tag === undefined;
 
   const labelXS = 3;
@@ -56,8 +61,17 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   const formik = useFormik({
     initialValues,
     validationSchema: schema,
-    onSubmit: (values) => onSubmit(getTagInput(values)),
+    enableReinitialize: true,
+    onSubmit: doSubmit,
   });
+
+  async function doSubmit(values: InputValues) {
+    const id = await onSubmit(getTagInput(values));
+    if (id) {
+      formik.resetForm({ values });
+      history.push(`/tags/${id}`);
+    }
+  }
 
   // set up hotkeys
   useEffect(() => {
@@ -92,7 +106,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={(location) => {
+          if (!isNew && location.pathname.startsWith(`/tags/${tag?.id}`)) {
+            return true;
+          }
+          return "Unsaved changes. Are you sure you want to leave?";
+        }}
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">

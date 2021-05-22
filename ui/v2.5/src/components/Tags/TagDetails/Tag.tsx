@@ -126,7 +126,7 @@ export const Tag: React.FC = () => {
         });
         if (result.data?.tagUpdate) {
           setIsEditing(false);
-          history.push(`/tags/${result.data.tagUpdate.id}`);
+          return result.data.tagUpdate.id;
         }
       } else {
         const result = await createTag({
@@ -135,8 +135,8 @@ export const Tag: React.FC = () => {
           },
         });
         if (result.data?.tagCreate?.id) {
-          history.push(`/tags/${result.data.tagCreate.id}`);
           setIsEditing(false);
+          return result.data.tagCreate.id;
         }
       }
     } catch (e) {
