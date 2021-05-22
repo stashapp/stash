@@ -187,17 +187,13 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 	}
 }
 
-func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addJoin(studioTable, "studio", "studio.id = movies.studio_id")
-	}
-	h := multiCriterionHandlerBuilder{
+func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := hierarchicalMultiCriterionHandlerBuilder{
 		primaryTable: movieTable,
-		foreignTable: "studio",
-		joinTable:    "",
-		primaryFK:    movieIDColumn,
+		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		addJoinsFunc: addJoinsFunc,
+		derivedTable: "studio",
+		parentFK:     "parent_id",
 	}
 
 	return h.handler(studios)

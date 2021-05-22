@@ -76,11 +76,12 @@ func TestMovieFindByNames(t *testing.T) {
 func TestMovieQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		mqb := r.Movie()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		movieFilter := models.MovieFilterType{
@@ -97,11 +98,12 @@ func TestMovieQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, movieIDs[movieIdxWithStudio], movies[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getMovieStringValue(movieIdxWithStudio, titleField)

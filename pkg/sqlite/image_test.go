@@ -783,11 +783,12 @@ func TestImageQueryTags(t *testing.T) {
 func TestImageQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -804,11 +805,12 @@ func TestImageQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, imageIDs[imageIdxWithStudio], images[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getImageStringValue(imageIdxWithStudio, titleField)

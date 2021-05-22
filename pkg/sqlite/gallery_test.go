@@ -675,11 +675,12 @@ func TestGalleryQueryTags(t *testing.T) {
 func TestGalleryQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		galleryFilter := models.GalleryFilterType{
@@ -693,11 +694,12 @@ func TestGalleryQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, galleryIDs[galleryIdxWithStudio], galleries[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getGalleryStringValue(galleryIdxWithStudio, titleField)

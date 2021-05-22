@@ -1070,11 +1070,12 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 func TestSceneQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1088,11 +1089,12 @@ func TestSceneQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithStudio, titleField)

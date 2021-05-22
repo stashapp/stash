@@ -85,9 +85,10 @@ const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
   const filter = new ListFilterModel();
   const criterion = new StudiosCriterion();
-  criterion.value = [
-    { id: studio.id, label: studio.name || `Studio ${studio.id}` },
-  ];
+  criterion.value = {
+    items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    depth: 0,
+  };
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
 };
@@ -96,9 +97,10 @@ const makeStudioImagesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
   const filter = new ListFilterModel();
   const criterion = new StudiosCriterion();
-  criterion.value = [
-    { id: studio.id, label: studio.name || `Studio ${studio.id}` },
-  ];
+  criterion.value = {
+    items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    depth: 0,
+  };
   filter.criteria.push(criterion);
   return `/images?${filter.makeQueryParameters()}`;
 };
@@ -107,9 +109,10 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   if (!studio.id) return "#";
   const filter = new ListFilterModel();
   const criterion = new StudiosCriterion();
-  criterion.value = [
-    { id: studio.id, label: studio.name || `Studio ${studio.id}` },
-  ];
+  criterion.value = {
+    items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    depth: 0,
+  };
   filter.criteria.push(criterion);
   return `/galleries?${filter.makeQueryParameters()}`;
 };
