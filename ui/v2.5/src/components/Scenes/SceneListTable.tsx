@@ -15,7 +15,7 @@ interface ISceneListTableProps {
 export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
-  const renderTags = (tags: GQL.Tag[]) =>
+  const renderTags = (tags: GQL.SlimTagDataFragment[]) =>
     tags.map((tag) => (
       <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
