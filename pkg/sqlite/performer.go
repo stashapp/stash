@@ -335,9 +335,6 @@ func performerIsMissingCriterionHandler(qb *performerQueryBuilder, isMissing *st
 	return func(f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
-			case "scenes":
-				f.addJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
-				f.addWhere("scenes_join.scene_id IS NULL")
 			case "image":
 				f.addJoin(performersImagesTable, "", "performers_image.performer_id = performers.id")
 				f.addWhere("performers_image.performer_id IS NULL")
