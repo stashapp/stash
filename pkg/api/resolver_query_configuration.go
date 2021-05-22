@@ -30,6 +30,7 @@ func makeConfigResult() *models.ConfigResult {
 	return &models.ConfigResult{
 		General:   makeConfigGeneralResult(),
 		Interface: makeConfigInterfaceResult(),
+		Dlna:      makeConfigDLNAResult(),
 	}
 }
 
@@ -107,5 +108,16 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSSEnabled:          &cssEnabled,
 		Language:            &language,
 		SlideshowDelay:      &slideshowDelay,
+	}
+}
+
+func makeConfigDLNAResult() *models.ConfigDLNAResult {
+	config := config.GetInstance()
+
+	return &models.ConfigDLNAResult{
+		ServerName:     config.GetDLNAServerName(),
+		Enabled:        config.GetDLNADefaultEnabled(),
+		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
+		Interfaces:     config.GetDLNAInterfaces(),
 	}
 }
