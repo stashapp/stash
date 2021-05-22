@@ -4,6 +4,9 @@ import Select, {
   Styles,
   OptionProps,
   components as reactSelectComponents,
+  GroupedOptionsType,
+  OptionsType,
+  GroupType,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
@@ -67,6 +70,11 @@ interface ISelectProps<T extends boolean> {
   onInputChange?: (input: string) => void;
   components?: Partial<SelectComponents<Option, T>>;
   filterOption?: (option: Option, rawInput: string) => boolean;
+  isValidNewOption?: (
+    inputValue: string,
+    value: ValueType<Option, T>,
+    options: OptionsType<Option> | GroupedOptionsType<Option>
+  ) => boolean;
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
@@ -118,6 +126,7 @@ const SelectComponent = <T extends boolean>({
   isMulti,
   onInputChange,
   filterOption,
+  isValidNewOption,
   components,
   placeholder,
   showDropdown = true,
@@ -169,6 +178,7 @@ const SelectComponent = <T extends boolean>({
     placeholder: isDisabled ? "" : placeholder,
     onInputChange,
     filterOption,
+    isValidNewOption,
     isDisabled,
     isLoading,
     styles,
@@ -467,6 +477,7 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
 
 export const TagSelect: React.FC<IFilterProps> = (props) => {
   const [tagAliases, setTagAliases] = useState<Record<string, string[]>>({});
+  const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate();
   const placeholder = props.noSelectionString ?? "Select tags...";
@@ -476,10 +487,13 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   useEffect(() => {
     // build the tag aliases map
     const newAliases: Record<string, string[]> = {};
+    const newAll: string[] = [];
     tags.forEach((t) => {
       newAliases[t.id] = t.aliases;
+      newAll.push(...t.aliases);
     });
     setTagAliases(newAliases);
+    setAllAliases(newAll);
   }, [tags]);
 
   const TagOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
@@ -531,10 +545,35 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
     return { item: result.data!.tagCreate!, message: "Created tag" };
   };
 
+  const isValidNewOption = (
+    inputValue: string,
+    value: ValueType<Option, boolean>,
+    options: OptionsType<Option> | GroupedOptionsType<Option>
+  ) => {
+    if (!inputValue) {
+      return false;
+    }
+
+    if (
+      options.some((o: Option | GroupType<Option>) => {
+        return o.label.toLowerCase() === inputValue.toLowerCase();
+      })
+    ) {
+      return false;
+    }
+
+    if (allAliases.some((a) => a.toLowerCase() === inputValue.toLowerCase())) {
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <FilterSelectComponent
       {...props}
       filterOption={filterOption}
+      isValidNewOption={isValidNewOption}
       components={{ Option: TagOption }}
       isMulti={props.isMulti ?? false}
       items={tags}
