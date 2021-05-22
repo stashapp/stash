@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import Select, { ValueType, Styles } from "react-select";
+import React, { useEffect, useMemo, useState } from "react";
+import Select, {
+  ValueType,
+  Styles,
+  OptionProps,
+  components as reactSelectComponents,
+} from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
 
@@ -16,6 +21,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
+import { SelectComponents } from "react-select/src/components";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -59,6 +65,8 @@ interface ISelectProps<T extends boolean> {
   isMulti: T;
   isClearable?: boolean;
   onInputChange?: (input: string) => void;
+  components?: Partial<SelectComponents<Option, T>>;
+  filterOption?: (option: Option, rawInput: string) => boolean;
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
@@ -109,6 +117,8 @@ const SelectComponent = <T extends boolean>({
   creatable = false,
   isMulti,
   onInputChange,
+  filterOption,
+  components,
   placeholder,
   showDropdown = true,
   groupHeader,
@@ -158,12 +168,14 @@ const SelectComponent = <T extends boolean>({
     noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
     onInputChange,
+    filterOption,
     isDisabled,
     isLoading,
     styles,
     closeMenuOnSelect,
     menuPortalTarget,
     components: {
+      ...components,
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
       ...(isDisabled && { MultiValueRemove: () => null }),
@@ -454,11 +466,59 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
 };
 
 export const TagSelect: React.FC<IFilterProps> = (props) => {
+  const [tagAliases, setTagAliases] = useState<Record<string, string[]>>({});
   const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate();
   const placeholder = props.noSelectionString ?? "Select tags...";
 
-  const tags = data?.allTags ?? [];
+  const tags = useMemo(() => data?.allTags ?? [], [data?.allTags]);
+
+  useEffect(() => {
+    // build the tag aliases map
+    const newAliases: Record<string, string[]> = {};
+    tags.forEach((t) => {
+      newAliases[t.id] = t.aliases;
+    });
+    setTagAliases(newAliases);
+  }, [tags]);
+
+  const TagOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
+    const { inputValue } = optionProps.selectProps;
+
+    let thisOptionProps = optionProps;
+    if (inputValue && !optionProps.label.includes(inputValue)) {
+      // must be alias
+      const newLabel = `${optionProps.data.label} (alias)`;
+      thisOptionProps = {
+        ...optionProps,
+        children: newLabel,
+      };
+    }
+
+    return <reactSelectComponents.Option {...thisOptionProps} />;
+  };
+
+  const filterOption = (option: Option, rawInput: string): boolean => {
+    if (!rawInput) {
+      return true;
+    }
+
+    const input = rawInput.toLowerCase();
+    const optionVal = option.label.toLowerCase();
+
+    if (optionVal.includes(input)) {
+      return true;
+    }
+
+    // search for tag aliases
+    const aliases = tagAliases[option.value];
+    // only match on alias if exact
+    if (aliases && aliases.some((a) => a.toLowerCase() === input)) {
+      return true;
+    }
+
+    return false;
+  };
 
   const onCreate = async (name: string) => {
     const result = await createTag({
@@ -474,6 +534,8 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
+      filterOption={filterOption}
+      components={{ Option: TagOption }}
       isMulti={props.isMulti ?? false}
       items={tags}
       creatable={props.creatable ?? true}
