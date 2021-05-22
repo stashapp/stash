@@ -509,6 +509,9 @@ func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterT
 	if sort == "tag_count" {
 		return getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
 	}
+	if sort == "scenes_count" {
+		return getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	}
 
 	return getSort(sort, direction, "performers")
 }
