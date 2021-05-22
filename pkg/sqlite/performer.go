@@ -12,6 +12,7 @@ import (
 const performerTable = "performers"
 const performerIDColumn = "performer_id"
 const performersTagsTable = "performers_tags"
+const performersImageTable = "performers_image" // performer cover image
 
 var countPerformersForTagQuery = `
 SELECT tag_id AS id FROM performers_tags
@@ -339,8 +340,8 @@ func performerIsMissingCriterionHandler(qb *performerQueryBuilder, isMissing *st
 				f.addJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
 			case "image":
-				f.addJoin(performersImagesTable, "", "performers_image.performer_id = performers.id")
-				f.addWhere("performers_image.performer_id IS NULL")
+				f.addJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
+				f.addWhere("image_join.performer_id IS NULL")
 			default:
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}
