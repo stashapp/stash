@@ -83,8 +83,20 @@ func TestTagQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, tags, 2)
-		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
-		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
+		lcName := tagNames[tagIdxWithScene]
+		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[0].Name))
+		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[1].Name))
+
+		// find by alias
+		name = getTagStringValue(tagIdxWithScene, "Alias")
+		tags, err = tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithScene], tags[0].ID)
 
 		return nil
 	})

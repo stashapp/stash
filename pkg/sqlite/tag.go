@@ -208,13 +208,19 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	query := selectAll(tagTable)
+	query += " LEFT JOIN tag_aliases ON tag_aliases.tag_id = tags.id"
 
 	var whereClauses []string
 	var args []interface{}
 
 	for _, w := range words {
-		whereClauses = append(whereClauses, "name like ?")
-		args = append(args, "%"+w+"%")
+		ww := "%" + w + "%"
+		whereClauses = append(whereClauses, "tags.name like ?")
+		args = append(args, ww)
+
+		// include aliases
+		whereClauses = append(whereClauses, "tag_aliases.alias like ?")
+		args = append(args, ww)
 	}
 
 	where := strings.Join(whereClauses, " OR ")

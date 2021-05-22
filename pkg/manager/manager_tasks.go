@@ -903,13 +903,18 @@ func (s *singleton) autoTagTags(paths []string, tagIds []string) {
 				}
 
 				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					if err := autotag.TagScenes(tag, paths, r.Scene()); err != nil {
+					aliases, err := r.Tag().GetAliases(tag.ID)
+					if err != nil {
 						return err
 					}
-					if err := autotag.TagImages(tag, paths, r.Image()); err != nil {
+
+					if err := autotag.TagScenes(tag, paths, aliases, r.Scene()); err != nil {
 						return err
 					}
-					if err := autotag.TagGalleries(tag, paths, r.Gallery()); err != nil {
+					if err := autotag.TagImages(tag, paths, aliases, r.Image()); err != nil {
+						return err
+					}
+					if err := autotag.TagGalleries(tag, paths, aliases, r.Gallery()); err != nil {
 						return err
 					}
 
