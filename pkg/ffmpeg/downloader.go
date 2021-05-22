@@ -217,6 +217,9 @@ func unzip(src, configDirectory string) error {
 		}
 
 		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
 
 		unzippedPath := filepath.Join(configDirectory, filename)
 		unzippedOutput, err := os.Create(unzippedPath)

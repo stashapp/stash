@@ -106,21 +106,23 @@ func EmptyDir(path string) error {
 }
 
 // ListDir will return the contents of a given directory path as a string slice
-func ListDir(path string) []string {
+func ListDir(path string) ([]string, error) {
+	var dirPaths []string
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		path = filepath.Dir(path)
 		files, err = ioutil.ReadDir(path)
+		if err != nil {
+			return dirPaths, err
+		}
 	}
-
-	var dirPaths []string
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
 		}
 		dirPaths = append(dirPaths, filepath.Join(path, file.Name()))
 	}
-	return dirPaths
+	return dirPaths, nil
 }
 
 // GetHomeDirectory returns the path of the user's home directory.  ~ on Unix and C:\Users\UserName on Windows

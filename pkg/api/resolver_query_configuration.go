@@ -13,17 +13,25 @@ func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult
 }
 
 func (r *queryResolver) Directory(ctx context.Context, path *string) (*models.Directory, error) {
+
+	directory := &models.Directory{}
+	var err error
+
 	var dirPath = ""
 	if path != nil {
 		dirPath = *path
 	}
 	currentDir := utils.GetDir(dirPath)
+	directories, err := utils.ListDir(currentDir)
+	if err != nil {
+		return directory, err
+	}
 
-	return &models.Directory{
-		Path:        currentDir,
-		Parent:      utils.GetParent(currentDir),
-		Directories: utils.ListDir(currentDir),
-	}, nil
+	directory.Path = currentDir
+	directory.Parent = utils.GetParent(currentDir)
+	directory.Directories = directories
+
+	return directory, err
 }
 
 func makeConfigResult() *models.ConfigResult {
