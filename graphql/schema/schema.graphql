@@ -255,6 +255,8 @@ type Mutation {
 
   """Run batch performer tag task. Returns the job ID."""
   stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
+  """Run batch scene tag task. Returns the job ID."""
+  stashBoxBatchSceneTag(input: StashBoxBatchSceneTagInput!): String!
   
   """Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"""
   enableDLNA(input: EnableDLNAInput!): Boolean!

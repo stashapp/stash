@@ -268,6 +268,7 @@ type Performer struct {
 	Deleted         bool                `json:"deleted"`
 	Edits           []*Edit             `json:"edits"`
 	SceneCount      int                 `json:"scene_count"`
+	MergedIds       []string            `json:"merged_ids"`
 }
 
 func (Performer) IsEditTarget() {}
@@ -372,16 +373,16 @@ type PerformerEditInput struct {
 }
 
 type PerformerEditOptions struct {
-	//  Set performer alias on scenes without alias to old name if name is changed
+	// Set performer alias on scenes without alias to old name if name is changed
 	SetModifyAliases bool `json:"set_modify_aliases"`
-	//  Set performer alias on scenes attached to merge sources to old name
+	// Set performer alias on scenes attached to merge sources to old name
 	SetMergeAliases bool `json:"set_merge_aliases"`
 }
 
 type PerformerEditOptionsInput struct {
-	//  Set performer alias on scenes without alias to old name if name is changed
+	// Set performer alias on scenes without alias to old name if name is changed
 	SetModifyAliases *bool `json:"set_modify_aliases"`
-	//  Set performer alias on scenes attached to merge sources to old name
+	// Set performer alias on scenes attached to merge sources to old name
 	SetMergeAliases *bool `json:"set_merge_aliases"`
 }
 

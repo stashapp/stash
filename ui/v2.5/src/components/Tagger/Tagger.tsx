@@ -1,21 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Form, InputGroup } from "react-bootstrap";
+import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { HashLink } from "react-router-hash-link";
 import { uniqBy } from "lodash";
 import distance from "hamming-distance";
 
-
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { useLocalForage } from "src/hooks";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator, TruncatedText } from "src/components/Shared";
+import { LoadingIndicator, Modal, TruncatedText } from "src/components/Shared";
 import {
   stashBoxSceneQuery,
-  stashBoxSceneBatchQuery,
   useConfiguration,
+  useJobsSubscribe,
+  mutateStashBoxBatchSceneTag,
+  stashBoxSceneBatchQuery,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 
@@ -34,6 +35,11 @@ import {
   IStashBoxScene,
   sortScenesByDuration,
 } from "./utils";
+
+type JobFragment = Pick<
+  GQL.Job,
+  "id" | "status" | "subTasks" | "description" | "progress"
+>;
 
 const months = [
   "jan",
@@ -149,9 +155,11 @@ interface ITaggerListProps {
   scenes: GQL.SlimSceneDataFragment[];
   queue?: SceneQueue;
   selectedEndpoint: { endpoint: string; index: number };
+  isIdle: boolean;
   config: ITaggerConfig;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
   clearSubmissionQueue: (endpoint: string) => void;
+  onBatchUpdate: (ids: string[] | undefined, refresh: boolean) => void;
 }
 
 // Caches fingerprint lookups between page renders
@@ -161,9 +169,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
   queue,
   selectedEndpoint,
+  isIdle,
   config,
   queueFingerprintSubmission,
   clearSubmissionQueue,
+  onBatchUpdate,
 }) => {
   const intl = useIntl();
   const [fingerprintError, setFingerprintError] = useState("");
@@ -193,6 +203,25 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [hideUnmatched, setHideUnmatched] = useState(false);
   const fingerprintQueue =
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
+
+  const [refresh, setRefresh] = useState(false);
+  const { data: allScenes } = GQL.useFindScenesQuery({
+    variables: {
+      scene_filter: {
+        stash_id: {
+          value: "",
+          modifier: refresh
+            ? GQL.CriterionModifier.NotNull
+            : GQL.CriterionModifier.IsNull,
+        },
+      },
+      filter: {
+        per_page: 0,
+      },
+    },
+  });
+  const [showBatchUpdate, setShowBatchUpdate] = useState(false);
+  const [queryAll, setQueryAll] = useState(false);
 
   useEffect(() => {
     inputForm?.current?.reset();
@@ -249,6 +278,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         },
       },
     });
+  };
+
+  const handleBatchUpdate = () => {
+    onBatchUpdate(!queryAll ? scenes.map((p) => p.id) : undefined, refresh);
+    setShowBatchUpdate(false);
   };
 
   const handleTaggedScene = (scene: Partial<GQL.SlimSceneDataFragment>) => {
@@ -553,6 +587,76 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   return (
     <Card className="tagger-table">
+      <Modal
+        show={showBatchUpdate}
+        icon="tags"
+        header="Update Scenes"
+        accept={{ text: "Update Scenes", onClick: handleBatchUpdate }}
+        cancel={{
+          text: "Cancel",
+          variant: "danger",
+          onClick: () => setShowBatchUpdate(false),
+        }}
+        disabled={!isIdle}
+      >
+        <Form.Group>
+          <Form.Label>
+            <h6>Scene selection</h6>
+          </Form.Label>
+          <Form.Check
+            id="query-page"
+            type="radio"
+            name="scene-query"
+            label="Current page"
+            defaultChecked
+            onChange={() => setQueryAll(false)}
+          />
+          <Form.Check
+            id="query-all"
+            type="radio"
+            name="scene-query"
+            label="All scenes in the database"
+            defaultChecked={false}
+            onChange={() => setQueryAll(true)}
+          />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>
+            <h6>Tag Status</h6>
+          </Form.Label>
+          <Form.Check
+            id="untagged-scenes"
+            type="radio"
+            name="scene-refresh"
+            label="Untagged scenes"
+            defaultChecked
+            onChange={() => setRefresh(false)}
+          />
+          <Form.Text>
+            Updating untagged scenes will try to match any scenes that
+            lack a stashid and update the metadata.
+          </Form.Text>
+          <Form.Check
+            id="tagged-scenes"
+            type="radio"
+            name="scene-refresh"
+            label="Refresh tagged scenes"
+            defaultChecked={false}
+            onChange={() => setRefresh(true)}
+          />
+          <Form.Text>
+            Refreshing will update the data of any tagged scenes from the
+            stash-box instance.
+          </Form.Text>
+        </Form.Group>
+        <b>{`${
+          queryAll
+            ? allScenes?.findScenes.count
+            : scenes.filter((p) =>
+                refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
+              ).length
+        } scenes will be processed`}</b>
+      </Modal>
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
@@ -602,6 +706,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           {!canFingerprintSearch() && getFingerprintCountMessage()}
           {loadingFingerprints && <LoadingIndicator message="" inline small />}
         </Button>
+        <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
+          Batch Update Performers
+        </Button>
       </div>
       <form ref={inputForm}>{renderScenes()}</form>
     </Card>
@@ -614,6 +721,7 @@ interface ITaggerProps {
 }
 
 export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
+  const jobsSubscribe = useJobsSubscribe();
   const stashConfig = useConfiguration();
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
@@ -621,6 +729,28 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   );
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
+
+  const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
+  const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
+
+  // monitor batch operation
+  useEffect(() => {
+    if (!jobsSubscribe.data) {
+      return;
+    }
+
+    const event = jobsSubscribe.data.jobsSubscribe;
+    if (event.job.id !== batchJobID) {
+      return;
+    }
+
+    if (event.type !== GQL.JobStatusUpdateType.Remove) {
+      setBatchJob(event.job);
+    } else {
+      setBatchJob(undefined);
+      setBatchJobID(undefined);
+    }
+  }, [jobsSubscribe, batchJobID]);
 
   if (!config) return <LoadingIndicator />;
 
@@ -656,6 +786,51 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     });
   };
 
+  async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
+    if (config && selectedEndpoint) {
+      const ret = await mutateStashBoxBatchSceneTag({
+        scene_ids: ids,
+        endpoint: selectedEndpointIndex,
+        refresh,
+        set_organized: false,
+        tag_strategy: GQL.TagStrategy.Overwrite,
+        create_tags: true,
+        exclude_fields: config.excludedPerformerFields ?? [],
+      });
+
+      setBatchJobID(ret.data?.stashBoxBatchSceneTag);
+    }
+  }
+
+  function renderStatus() {
+    if (batchJob) {
+      const progress =
+        batchJob.progress !== undefined && batchJob.progress !== null
+          ? batchJob.progress * 100
+          : undefined;
+      return (
+        <Form.Group className="px-4">
+          <h5>Status: Tagging scenes</h5>
+          {progress !== undefined && (
+            <ProgressBar
+              animated
+              now={progress}
+              label={`${progress.toFixed(0)}%`}
+            />
+          )}
+        </Form.Group>
+      );
+    }
+
+    if (batchJobID !== undefined) {
+      return (
+        <Form.Group className="px-4">
+          <h5>Status: Tagging job queued</h5>
+        </Form.Group>
+      );
+    }
+  }
+
   return (
     <>
       <Manual
@@ -663,6 +838,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         onClose={() => setShowManual(false)}
         defaultActiveTab="Tagger.md"
       />
+      {renderStatus()}
       <div className="tagger-container mx-md-auto">
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
@@ -699,8 +875,10 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
                 endpoint: selectedEndpoint.endpoint,
                 index: selectedEndpointIndex,
               }}
+              isIdle={batchJobID === undefined}
               queueFingerprintSubmission={queueFingerprintSubmission}
               clearSubmissionQueue={clearSubmissionQueue}
+              onBatchUpdate={batchUpdate}
             />
           </>
         ) : (

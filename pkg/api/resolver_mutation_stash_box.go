@@ -27,3 +27,8 @@ func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input 
 	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
+
+func (r *mutationResolver) StashBoxBatchSceneTag(ctx context.Context, input models.StashBoxBatchSceneTagInput) (string, error) {
+	manager.GetInstance().StashBoxBatchSceneTag(input)
+	return "todo", nil
+}
