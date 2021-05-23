@@ -17,7 +17,7 @@ func (r *subscriptionResolver) MetadataUpdate(ctx context.Context) (<-chan *mode
 		lastStatus := manager.TaskStatus{}
 		for {
 			select {
-			case _ = <-ticker.C:
+			case <-ticker.C:
 				thisStatus := manager.GetInstance().Status
 				if thisStatus != lastStatus {
 					ret := models.MetadataUpdateStatus{

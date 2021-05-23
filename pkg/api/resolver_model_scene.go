@@ -157,8 +157,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*m
 			}
 
 			if sceneIdx.Valid {
-				var idx int
-				idx = int(sceneIdx.Int64)
+				idx := int(sceneIdx.Int64)
 				sceneMovie.SceneIndex = &idx
 			}
 
