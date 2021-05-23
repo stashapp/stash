@@ -14,7 +14,7 @@ var nilTime = (time.Time{}).UnixNano()
 func CompareJSON(a interface{}, b interface{}) bool {
 	aBuf, _ := encode(a)
 	bBuf, _ := encode(b)
-	return bytes.Compare(aBuf, bBuf) == 0
+	return bytes.Equal(aBuf, bBuf)
 }
 
 func marshalToFile(filePath string, j interface{}) error {
