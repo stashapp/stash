@@ -12,8 +12,8 @@ import (
 const updateInputField = "input"
 
 func getArgumentMap(ctx context.Context) map[string]interface{} {
-	rctx := graphql.GetResolverContext(ctx)
-	reqCtx := graphql.GetRequestContext(ctx)
+	rctx := graphql.GetFieldContext(ctx)
+	reqCtx := graphql.GetOperationContext(ctx)
 	return rctx.Field.ArgumentMap(reqCtx.Variables)
 }
 
