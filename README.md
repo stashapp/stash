@@ -131,6 +131,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 * `make fmt-check` - Ensure changed files are formatted correctly
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
+* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash port can be changed from the default of `9999` with environment variable `REACT_APP_PLATFORM_PORT`.
 
 ## Building a release
 
