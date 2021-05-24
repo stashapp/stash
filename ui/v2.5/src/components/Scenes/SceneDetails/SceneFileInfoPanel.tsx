@@ -232,6 +232,19 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
   }
 
+  function renderFunscript() {
+    if (props.scene.interactive) {
+      return (
+        <div className="row">
+          <span className="col-4">Funscript</span>
+          <a href={props.scene.paths.funscript ?? ""} className="col-8">
+            <TruncatedText text={props.scene.paths.funscript} />
+          </a>{" "}
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="container scene-file-info">
       {renderOSHash()}
@@ -239,6 +252,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       {renderPhash()}
       {renderPath()}
       {renderStream()}
+      {renderFunscript()}
       {renderFileSize()}
       {renderDuration()}
       {renderDimensions()}

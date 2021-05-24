@@ -75,8 +75,8 @@ func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (
 	}, nil
 }
 
-func (t *ImportTask) GetStatus() JobStatus {
-	return Import
+func (t *ImportTask) GetDescription() string {
+	return "Importing..."
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {

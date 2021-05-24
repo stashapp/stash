@@ -22,7 +22,7 @@ export const GenerateButton: React.FC = () => {
         markers,
         transcodes,
       });
-      Toast.success({ content: "Started generating" });
+      Toast.success({ content: "Added generation job to queue" });
     } catch (e) {
       Toast.error(e);
     }
