@@ -29,7 +29,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
   const messageId = plural ? pluralMessageId : singleMessageId;
   const message = plural ? pluralMessage : singleMessage;
 
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
+  const [deleteFile, setDeleteFile] = useState<boolean>(true);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
   const Toast = useToast();
