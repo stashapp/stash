@@ -4,6 +4,8 @@ import (
 	"context"
 	"io/ioutil"
 	"path/filepath"
+	"strconv"
+	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -15,18 +17,22 @@ import (
 )
 
 func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
-	if err := manager.GetInstance().Scan(input); err != nil {
+	jobID, err := manager.GetInstance().Scan(input)
+
+	if err != nil {
 		return "", err
 	}
-	return "todo", nil
+
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
-	if err := manager.GetInstance().Import(); err != nil {
+	jobID, err := manager.GetInstance().Import()
+	if err != nil {
 		return "", err
 	}
 
-	return "todo", nil
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) ImportObjects(ctx context.Context, input models.ImportObjectsInput) (string, error) {
@@ -35,30 +41,26 @@ func (r *mutationResolver) ImportObjects(ctx context.Context, input models.Impor
 		return "", err
 	}
 
-	_, err = manager.GetInstance().RunSingleTask(t)
+	jobID := manager.GetInstance().RunSingleTask(t)
+
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
+	jobID, err := manager.GetInstance().Export()
 	if err != nil {
 		return "", err
 	}
 
-	return "todo", nil
-}
-
-func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
-	if err := manager.GetInstance().Export(); err != nil {
-		return "", err
-	}
-
-	return "todo", nil
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) ExportObjects(ctx context.Context, input models.ExportObjectsInput) (*string, error) {
 	t := manager.CreateExportTask(config.GetInstance().GetVideoFileNamingAlgorithm(), input)
-	wg, err := manager.GetInstance().RunSingleTask(t)
-	if err != nil {
-		return nil, err
-	}
 
-	wg.Wait()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	t.Start(&wg)
 
 	if t.DownloadHash != "" {
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
@@ -73,40 +75,28 @@ func (r *mutationResolver) ExportObjects(ctx context.Context, input models.Expor
 }
 
 func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
-	if err := manager.GetInstance().Generate(input); err != nil {
+	jobID, err := manager.GetInstance().Generate(input)
+
+	if err != nil {
 		return "", err
 	}
-	return "todo", nil
+
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
-	manager.GetInstance().AutoTag(input)
-	return "todo", nil
+	jobID := manager.GetInstance().AutoTag(input)
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MetadataClean(ctx context.Context, input models.CleanMetadataInput) (string, error) {
-	manager.GetInstance().Clean(input)
-	return "todo", nil
+	jobID := manager.GetInstance().Clean(input)
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error) {
-	manager.GetInstance().MigrateHash()
-	return "todo", nil
-}
-
-func (r *mutationResolver) JobStatus(ctx context.Context) (*models.MetadataUpdateStatus, error) {
-	status := manager.GetInstance().Status
-	ret := models.MetadataUpdateStatus{
-		Progress: status.Progress,
-		Status:   status.Status.String(),
-		Message:  "",
-	}
-
-	return &ret, nil
-}
-
-func (r *mutationResolver) StopJob(ctx context.Context) (bool, error) {
-	return manager.GetInstance().Status.Stop(), nil
+	jobID := manager.GetInstance().MigrateHash()
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.BackupDatabaseInput) (*string, error) {

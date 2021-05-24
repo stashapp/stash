@@ -701,6 +701,8 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
+
 export const useConfigureDLNA = () =>
   GQL.useConfigureDlnaMutation({
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
@@ -714,8 +716,6 @@ export const useDisableDLNA = () => GQL.useDisableDlnaMutation();
 export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
 
 export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
-
-export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
@@ -735,14 +735,17 @@ export const useLogs = () =>
     fetchPolicy: "no-cache",
   });
 
-export const useJobStatus = () =>
-  GQL.useJobStatusQuery({
+export const useJobQueue = () =>
+  GQL.useJobQueueQuery({
     fetchPolicy: "no-cache",
   });
 
-export const mutateStopJob = () =>
+export const mutateStopJob = (jobID: string) =>
   client.mutate<GQL.StopJobMutation>({
     mutation: GQL.StopJobDocument,
+    variables: {
+      job_id: jobID,
+    },
   });
 
 export const useDLNAStatus = () =>
@@ -939,6 +942,14 @@ export const mutateImportObjects = (input: GQL.ImportObjectsInput) =>
 export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
   client.mutate<GQL.BackupDatabaseMutation>({
     mutation: GQL.BackupDatabaseDocument,
+    variables: { input },
+  });
+
+export const mutateStashBoxBatchPerformerTag = (
+  input: GQL.StashBoxBatchPerformerTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
+    mutation: GQL.StashBoxBatchPerformerTagDocument,
     variables: { input },
   });
 
