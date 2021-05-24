@@ -425,13 +425,18 @@ export class ListFilterModel {
       }
 
       jsonParameters.forEach((jsonString) => {
-        const encodedCriterion = JSON.parse(jsonString);
-        const criterion = makeCriteria(encodedCriterion.type);
-        // it's possible that we have unsupported criteria. Just skip if so.
-        if (criterion) {
-          criterion.value = encodedCriterion.value;
-          criterion.modifier = encodedCriterion.modifier;
-          this.criteria.push(criterion);
+        try {
+          const encodedCriterion = JSON.parse(jsonString);
+          const criterion = makeCriteria(encodedCriterion.type);
+          // it's possible that we have unsupported criteria. Just skip if so.
+          if (criterion) {
+            criterion.value = encodedCriterion.value;
+            criterion.modifier = encodedCriterion.modifier;
+            this.criteria.push(criterion);
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to parse encoded criterion:", err);
         }
       });
     }
