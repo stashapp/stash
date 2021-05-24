@@ -74,7 +74,7 @@ export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin);
 
   if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-    platformUrl.port = "9999"; // TODO: Hack. Development expects port 9999
+    platformUrl.port = process.env.REACT_APP_PLATFORM_PORT ?? "9999";
 
     if (process.env.REACT_APP_HTTPS === "true") {
       platformUrl.protocol = "https:";
