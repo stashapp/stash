@@ -53,7 +53,8 @@ export type CriterionType =
   | "performer_count"
   | "death_year"
   | "url"
-  | "stash_id";
+  | "stash_id"
+  | "interactive";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -153,6 +154,8 @@ export abstract class Criterion {
         return "URL";
       case "stash_id":
         return "StashID";
+      case "interactive":
+        return "Interactive";
     }
   }
 

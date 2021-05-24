@@ -67,6 +67,7 @@
     "sass": "^1.32.5",
     "string.prototype.replaceall": "^1.0.4",
     "subscriptions-transport-ws": "^0.9.18",
+    "thehandy": "^0.2.7",
     "universal-cookie": "^4.0.4",
     "yup": "^0.32.9"
   },

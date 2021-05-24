@@ -246,6 +246,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.CSSEnabled, *input.CSSEnabled)
 	}
 
+	if input.HandyKey != nil {
+		c.Set(config.HandyKey, *input.HandyKey)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
 	}
