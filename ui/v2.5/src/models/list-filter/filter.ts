@@ -245,6 +245,7 @@ export class ListFilterModel {
           new PerformerIsMissingCriterionOption(),
           new TagsCriterionOption(),
           new RatingCriterionOption(),
+          new StudiosCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
           ListFilterModel.createCriterionOption("tag_count"),
           ListFilterModel.createCriterionOption("scene_count"),
@@ -823,6 +824,14 @@ export class ListFilterModel {
           result.url = {
             value: urlCrit.value,
             modifier: urlCrit.modifier,
+          };
+          break;
+        }
+        case "studios": {
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
           };
           break;
         }

@@ -197,9 +197,11 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 			return nil, err
 		}
 
-		// post-process - set the image if applicable
-		if err := setPerformerImage(ret, c.globalConfig); err != nil {
-			logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+		if ret != nil {
+			err = c.postScrapePerformer(ret)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return ret, nil

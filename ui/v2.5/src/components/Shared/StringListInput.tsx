@@ -1,0 +1,60 @@
+import React from "react";
+import { Button, Form, InputGroup } from "react-bootstrap";
+import { Icon } from "src/components/Shared";
+
+interface IStringListInputProps {
+  value: string[];
+  setValue: (value: string[]) => void;
+  defaultNewValue?: string;
+  className?: string;
+}
+
+export const StringListInput: React.FC<IStringListInputProps> = (props) => {
+  function valueChanged(idx: number, value: string) {
+    const newValues = props.value.map((v, i) => {
+      const ret = idx !== i ? v : value;
+      return ret;
+    });
+    props.setValue(newValues);
+  }
+
+  function removeValue(idx: number) {
+    const newValues = props.value.filter((_v, i) => i !== idx);
+
+    props.setValue(newValues);
+  }
+
+  function addValue() {
+    const newValues = props.value.concat(props.defaultNewValue ?? "");
+
+    props.setValue(newValues);
+  }
+
+  return (
+    <>
+      <Form.Group>
+        {props.value &&
+          props.value.map((v, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <InputGroup className={props.className} key={i}>
+              <Form.Control
+                className="text-input"
+                value={v}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  valueChanged(i, e.currentTarget.value)
+                }
+              />
+              <InputGroup.Append>
+                <Button variant="danger" onClick={() => removeValue(i)}>
+                  <Icon icon="minus" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          ))}
+      </Form.Group>
+      <Button className="minimal" onClick={() => addValue()}>
+        <Icon icon="plus" />
+      </Button>
+    </>
+  );
+};

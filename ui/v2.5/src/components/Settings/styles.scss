@@ -70,3 +70,46 @@
     list-style: none;
   }
 }
+
+#temp-enable-duration .duration-control:disabled {
+  opacity: 0.5;
+}
+
+#settings-dlna {
+  .ip-whitelist-input,
+  .interfaces-input {
+    width: 12em;
+  }
+
+  .server-name {
+    width: 24em;
+  }
+
+  .addresses {
+    list-style-type: none;
+    padding-inline-start: 0;
+
+    li {
+      display: flex;
+      margin-bottom: 0.5rem;
+
+      .address {
+        display: inline-block;
+        width: 12em;
+      }
+
+      .buttons {
+        align-items: center;
+        display: flex;
+      }
+
+      .deadline {
+        font-size: 0.8em;
+      }
+
+      code {
+        display: inline-block;
+      }
+    }
+  }
+}

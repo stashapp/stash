@@ -56,11 +56,21 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   handyKey
 }
 
+fragment ConfigDLNAData on ConfigDLNAResult {
+  serverName
+  enabled
+  whitelistedIPs
+  interfaces
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
   }
   interface {
     ...ConfigInterfaceData
+  }
+  dlna {
+    ...ConfigDLNAData
   }
 }

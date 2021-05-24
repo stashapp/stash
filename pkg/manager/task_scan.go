@@ -1121,6 +1121,13 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 				return filepath.SkipDir
 			}
 
+			// shortcut: skip the directory entirely if it matches both exclusion patterns
+			// add a trailing separator so that it correctly matches against patterns like path/.*
+			pathExcludeTest := path + string(filepath.Separator)
+			if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, excludeVidRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, excludeImgRegex)) {
+				return filepath.SkipDir
+			}
+
 			return nil
 		}
 
