@@ -106,9 +106,12 @@ type Query {
   """Returns an array of paths for the given path"""
   directory(path: String): Directory!
 
-  # Metadata
+  # System status
   systemStatus: SystemStatus!
-  jobStatus: MetadataUpdateStatus!
+
+  # Job status
+  jobQueue: [Job!]
+  findJob(input: FindJobInput!): Job
 
   dlnaStatus: DLNAStatus!
 
@@ -207,31 +210,32 @@ type Mutation {
   exportObjects(input: ExportObjectsInput!): String
 
   """Performs an incremental import. Returns the job ID"""
-  importObjects(input: ImportObjectsInput!): String!
+  importObjects(input: ImportObjectsInput!): ID!
 
   """Start an full import. Completely wipes the database and imports from the metadata directory. Returns the job ID"""
-  metadataImport: String!
+  metadataImport: ID!
   """Start a full export. Outputs to the metadata directory. Returns the job ID"""
-  metadataExport: String!
+  metadataExport: ID!
   """Start a scan. Returns the job ID"""
-  metadataScan(input: ScanMetadataInput!): String!
+  metadataScan(input: ScanMetadataInput!): ID!
   """Start generating content. Returns the job ID"""
-  metadataGenerate(input: GenerateMetadataInput!): String!
+  metadataGenerate(input: GenerateMetadataInput!): ID!
   """Start auto-tagging. Returns the job ID"""
-  metadataAutoTag(input: AutoTagMetadataInput!): String!
+  metadataAutoTag(input: AutoTagMetadataInput!): ID!
   """Clean metadata. Returns the job ID"""
-  metadataClean(input: CleanMetadataInput!): String!
+  metadataClean(input: CleanMetadataInput!): ID!
   """Migrate generated files for the current hash naming"""
-  migrateHashNaming: String!
+  migrateHashNaming: ID!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!
 
   """Run plugin task. Returns the job ID"""
-  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): ID!
   reloadPlugins: Boolean!
 
-  stopJob: Boolean!
+  stopJob(job_id: ID!): Boolean!
+  stopAllJobs: Boolean!
 
   """Submit fingerprints to stash-box instance"""
   submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
@@ -254,9 +258,11 @@ type Mutation {
 
 type Subscription {
   """Update from the metadata manager"""
-  metadataUpdate: MetadataUpdateStatus!
+  jobsSubscribe: JobStatusUpdate!
 
   loggingSubscribe: [LogEntry!]!
+
+  scanCompleteSubscribe: Boolean!
 }
 
 schema {

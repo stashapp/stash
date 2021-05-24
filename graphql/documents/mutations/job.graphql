@@ -1,0 +1,7 @@
+mutation StopJob($job_id: ID!) {
+  stopJob(job_id: $job_id)
+}
+
+mutation StopAllJobs {
+    stopAllJobs
+}

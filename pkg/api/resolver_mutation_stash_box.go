@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -23,6 +24,6 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) (string, error) {
-	manager.GetInstance().StashBoxBatchPerformerTag(input)
-	return "todo", nil
+	jobID := manager.GetInstance().StashBoxBatchPerformerTag(input)
+	return strconv.Itoa(jobID), nil
 }

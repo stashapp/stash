@@ -63,12 +63,6 @@ input AutoTagMetadataInput {
   tags: [String!]
 }
 
-type MetadataUpdateStatus {
-  progress: Float!
-  status: String!
-  message: String!
-}
-
 input ExportObjectTypeInput {
   ids: [String!]
   all: Boolean

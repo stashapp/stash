@@ -17,6 +17,7 @@ type ScenePathsType {
   vtt: String # Resolver
   chapters_vtt: String # Resolver
   sprite: String # Resolver
+  funscript: String # Resolver
 }
 
 type SceneMovie {
@@ -37,6 +38,7 @@ type Scene {
   o_counter: Int
   path: String!
   phash: String
+  interactive: Boolean!
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver

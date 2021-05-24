@@ -142,23 +142,13 @@ export const createClient = () => {
   });
 
   // Watch for scan/clean tasks and reset cache when they complete
-  let prevStatus = "Idle";
   client
-    .subscribe<GQL.MetadataUpdateSubscription>({
-      query: GQL.MetadataUpdateDocument,
+    .subscribe<GQL.ScanCompleteSubscribeSubscription>({
+      query: GQL.ScanCompleteSubscribeDocument,
     })
     .subscribe({
-      next: (res) => {
-        const currentStatus = res.data?.metadataUpdate.status;
-        if (currentStatus) {
-          if (
-            currentStatus === "Idle" &&
-            (prevStatus === "Scan" || prevStatus === "Clean")
-          ) {
-            client.resetStore();
-          }
-          prevStatus = currentStatus;
-        }
+      next: () => {
+        client.resetStore();
       },
     });
 
