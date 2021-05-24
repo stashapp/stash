@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const sleepTime time.Duration = 1 * time.Millisecond
+const sleepTime time.Duration = 10 * time.Millisecond
 
 type testExec struct {
 	started   chan struct{}
