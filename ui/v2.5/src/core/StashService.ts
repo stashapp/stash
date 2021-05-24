@@ -703,6 +703,22 @@ export const useGenerateAPIKey = () =>
 
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
+export const useConfigureDLNA = () =>
+  GQL.useConfigureDlnaMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const useEnableDLNA = () => GQL.useEnableDlnaMutation();
+
+export const useDisableDLNA = () => GQL.useDisableDlnaMutation();
+
+export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
+
+export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
+
+export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
+
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
 export const querySystemStatus = () =>
@@ -732,6 +748,11 @@ export const mutateStopJob = (jobID: string) =>
     variables: {
       job_id: jobID,
     },
+  });
+
+export const useDLNAStatus = () =>
+  GQL.useDlnaStatusQuery({
+    fetchPolicy: "no-cache",
   });
 
 export const queryScrapeFreeones = (performerName: string) =>

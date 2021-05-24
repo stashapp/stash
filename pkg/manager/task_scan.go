@@ -479,6 +479,12 @@ func (t *ScanTask) getFileModTime() (time.Time, error) {
 	return ret, nil
 }
 
+func (t *ScanTask) getInteractive() bool {
+	_, err := os.Stat(utils.GetFunscriptPath(t.FilePath))
+	return err == nil
+
+}
+
 func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLiteTimestamp) bool {
 	return !modTime.Timestamp.Equal(fileModTime)
 }
@@ -560,6 +566,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 	if err != nil {
 		return logError(err)
 	}
+	interactive := t.getInteractive()
 
 	if s != nil {
 		// if file mod time is not set, set it now
@@ -668,6 +675,20 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}
 		}
 
+		if s.Interactive != interactive {
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				qb := r.Scene()
+				scenePartial := models.ScenePartial{
+					ID:          s.ID,
+					Interactive: &interactive,
+				}
+				_, err := qb.Update(scenePartial)
+				return err
+			}); err != nil {
+				return logError(err)
+			}
+		}
+
 		return nil
 	}
 
@@ -733,8 +754,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 		} else {
 			logger.Infof("%s already exists. Updating path...", t.FilePath)
 			scenePartial := models.ScenePartial{
-				ID:   s.ID,
-				Path: &t.FilePath,
+				ID:          s.ID,
+				Path:        &t.FilePath,
+				Interactive: &interactive,
 			}
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
@@ -764,8 +786,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 				Timestamp: fileModTime,
 				Valid:     true,
 			},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			Interactive: interactive,
 		}
 
 		if t.UseFileMetadata {
@@ -1279,6 +1302,13 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		if info.IsDir() {
 			// #1102 - ignore files in generated path
 			if utils.IsPathInDir(generatedPath, path) {
+				return filepath.SkipDir
+			}
+
+			// shortcut: skip the directory entirely if it matches both exclusion patterns
+			// add a trailing separator so that it correctly matches against patterns like path/.*
+			pathExcludeTest := path + string(filepath.Separator)
+			if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, excludeVidRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, excludeImgRegex)) {
 				return filepath.SkipDir
 			}
 

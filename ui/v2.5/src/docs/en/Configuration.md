@@ -32,6 +32,8 @@ exclude:
 * the fourth the directory `/stash/videos/exclude/`
 * and the last a windows network path `\\stash\network\share\excl\`
 
+**Note:** if a directory is excluded for images and videos, then the directory will be excluded from scans completely.
+
 _a useful [link](https://regex101.com/) to experiment with regexps_
 
 ## Hashing algorithms

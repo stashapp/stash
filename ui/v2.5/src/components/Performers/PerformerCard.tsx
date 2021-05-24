@@ -11,7 +11,14 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+
+export interface IPerformerCardExtraCriteria {
+  scenes: Criterion[];
+  images: Criterion[];
+  galleries: Criterion[];
+}
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -19,6 +26,7 @@ interface IPerformerCardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerCard: React.FC<IPerformerCardProps> = ({
@@ -27,6 +35,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   selecting,
   selected,
   onSelectedChanged,
+  extraCriteria,
 }) => {
   const age = TextUtils.age(
     performer.birthdate,
@@ -52,7 +61,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <PopoverCountButton
         type="scene"
         count={performer.scene_count}
-        url={NavUtils.makePerformerScenesUrl(performer)}
+        url={NavUtils.makePerformerScenesUrl(performer, extraCriteria?.scenes)}
       />
     );
   }
@@ -64,7 +73,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <PopoverCountButton
         type="image"
         count={performer.image_count}
-        url={NavUtils.makePerformerImagesUrl(performer)}
+        url={NavUtils.makePerformerImagesUrl(performer, extraCriteria?.images)}
       />
     );
   }
@@ -76,7 +85,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <PopoverCountButton
         type="gallery"
         count={performer.gallery_count}
-        url={NavUtils.makePerformerGalleriesUrl(performer)}
+        url={NavUtils.makePerformerGalleriesUrl(
+          performer,
+          extraCriteria?.galleries
+        )}
       />
     );
   }

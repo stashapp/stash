@@ -110,6 +110,7 @@ enum SystemStatusEnum {
 type SystemStatus {
   databaseSchema: Int
   databasePath: String
+  configPath: String
   appSchema: Int!
   status: SystemStatusEnum!
 }

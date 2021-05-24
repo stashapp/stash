@@ -113,6 +113,8 @@ type Query {
   jobQueue: [Job!]
   findJob(input: FindJobInput!): Job
 
+  dlnaStatus: DLNAStatus!
+
   # Get everything
 
   allPerformers: [Performer!]!
@@ -199,6 +201,7 @@ type Mutation {
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
+  configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
 
   """Generate and set (or clear) API key"""
   generateAPIKey(input: GenerateAPIKeyInput!): String!
@@ -242,6 +245,15 @@ type Mutation {
 
   """Run batch performer tag task. Returns the job ID."""
   stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
+  
+  """Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"""
+  enableDLNA(input: EnableDLNAInput!): Boolean!
+  """Disables DLNA for an optional duration. Has no effect if DLNA is disabled by default"""
+  disableDLNA(input: DisableDLNAInput!): Boolean!
+  """Enables an IP address for DLNA for an optional duration"""
+  addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean!
+  """Removes an IP address from the temporary DLNA whitelist"""
+  removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean!
 }
 
 type Subscription {

@@ -60,14 +60,18 @@ func (s *singleton) ScanSubscribe(ctx context.Context) <-chan bool {
 	return s.scanSubs.subscribe(ctx)
 }
 
-func (s *singleton) Scan(input models.ScanMetadataInput) int {
+func (s *singleton) Scan(input models.ScanMetadataInput) (int, error) {
+	if err := s.validateFFMPEG(); err != nil {
+		return 0, err
+	}
+
 	scanJob := ScanJob{
 		txnManager:    s.TxnManager,
 		input:         input,
 		subscriptions: s.scanSubs,
 	}
 
-	return s.JobManager.Add("Scanning...", &scanJob)
+	return s.JobManager.Add("Scanning...", &scanJob), nil
 }
 
 func (s *singleton) Import() (int, error) {
@@ -155,7 +159,10 @@ func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsI
 	}
 }
 
-func (s *singleton) Generate(input models.GenerateMetadataInput) int {
+func (s *singleton) Generate(input models.GenerateMetadataInput) (int, error) {
+	if err := s.validateFFMPEG(); err != nil {
+		return 0, err
+	}
 	instance.Paths.Generated.EnsureTmpDir()
 
 	sceneIDs, err := utils.StringSliceToIntSlice(input.SceneIDs)
@@ -360,7 +367,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) int {
 		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 	})
 
-	return s.JobManager.Add("Generating...", j)
+	return s.JobManager.Add("Generating...", j), nil
 }
 
 func (s *singleton) GenerateDefaultScreenshot(sceneId string) int {

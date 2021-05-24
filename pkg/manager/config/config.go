@@ -1,16 +1,15 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
-
-	"errors"
-	"io/ioutil"
-	"path/filepath"
-	"regexp"
 
 	"github.com/spf13/viper"
 
@@ -123,6 +122,13 @@ const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
+const HandyKey = "handy_key"
+
+// DLNA options
+const DLNAServerName = "dlna.server_name"
+const DLNADefaultEnabled = "dlna.default_enabled"
+const DLNADefaultIPWhitelist = "dlna.default_whitelist"
+const DLNAInterfaces = "dlna.interfaces"
 
 // Logging options
 const LogFile = "logFile"
@@ -141,7 +147,10 @@ func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
 }
 
-type Instance struct{}
+type Instance struct {
+	cpuProfilePath string
+	isNewSystem    bool
+}
 
 var instance *Instance
 
@@ -152,8 +161,19 @@ func GetInstance() *Instance {
 	return instance
 }
 
+func (i *Instance) IsNewSystem() bool {
+	return i.isNewSystem
+}
+
 func (i *Instance) SetConfigFile(fn string) {
 	viper.SetConfigFile(fn)
+}
+
+// GetCPUProfilePath returns the path to the CPU profile file to output
+// profiling info to. This is set only via a commandline flag. Returns an
+// empty string if not set.
+func (i *Instance) GetCPUProfilePath() string {
+	return i.cpuProfilePath
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -613,6 +633,33 @@ func (i *Instance) GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
 }
 
+func (i *Instance) GetHandyKey() string {
+	return viper.GetString(HandyKey)
+}
+
+// GetDLNAServerName returns the visible name of the DLNA server. If empty,
+// "stash" will be used.
+func (i *Instance) GetDLNAServerName() string {
+	return viper.GetString(DLNAServerName)
+}
+
+// GetDLNADefaultEnabled returns true if the DLNA is enabled by default.
+func (i *Instance) GetDLNADefaultEnabled() bool {
+	return viper.GetBool(DLNADefaultEnabled)
+}
+
+// GetDLNADefaultIPWhitelist returns a list of IP addresses/wildcards that
+// are allowed to use the DLNA service.
+func (i *Instance) GetDLNADefaultIPWhitelist() []string {
+	return viper.GetStringSlice(DLNADefaultIPWhitelist)
+}
+
+// GetDLNAInterfaces returns a list of interface names to expose DLNA on. If
+// empty, runs on all interfaces.
+func (i *Instance) GetDLNAInterfaces() []string {
+	return viper.GetStringSlice(DLNAInterfaces)
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func (i *Instance) GetLogFile() string {
@@ -687,29 +734,26 @@ func (i *Instance) Validate() error {
 	return nil
 }
 
-func (i *Instance) setDefaultValues() {
+func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(ParallelTasks, parallelTasksDefault)
 	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 
-	// #1356 - only set these defaults once config file exists
-	if i.GetConfigFile() != "" {
-		viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
+	viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
 
-		// Set generated to the metadata path for backwards compat
-		viper.SetDefault(Generated, viper.GetString(Metadata))
+	// Set generated to the metadata path for backwards compat
+	viper.SetDefault(Generated, viper.GetString(Metadata))
 
-		// Set default scrapers and plugins paths
-		viper.SetDefault(ScrapersPath, i.GetDefaultScrapersPath())
-		viper.SetDefault(PluginsPath, i.GetDefaultPluginsPath())
-		viper.WriteConfig()
-	}
+	// Set default scrapers and plugins paths
+	viper.SetDefault(ScrapersPath, i.GetDefaultScrapersPath())
+	viper.SetDefault(PluginsPath, i.GetDefaultPluginsPath())
+	return viper.WriteConfig()
 }
 
 // SetInitialConfig fills in missing required config fields
-func (i *Instance) SetInitialConfig() {
+func (i *Instance) SetInitialConfig() error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -723,5 +767,9 @@ func (i *Instance) SetInitialConfig() {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	i.setDefaultValues()
+	return i.setDefaultValues()
+}
+
+func (i *Instance) FinalizeSetup() {
+	i.isNewSystem = false
 }

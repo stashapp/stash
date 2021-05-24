@@ -4,5 +4,6 @@ query SystemStatus {
     databasePath
     appSchema
     status
+    configPath
   }
 }

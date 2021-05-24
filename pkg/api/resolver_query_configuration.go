@@ -30,6 +30,7 @@ func makeConfigResult() *models.ConfigResult {
 	return &models.ConfigResult{
 		General:   makeConfigGeneralResult(),
 		Interface: makeConfigInterfaceResult(),
+		Dlna:      makeConfigDLNAResult(),
 	}
 }
 
@@ -94,6 +95,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
 	slideshowDelay := config.GetSlideshowDelay()
+	handyKey := config.GetHandyKey()
 
 	return &models.ConfigInterfaceResult{
 		MenuItems:           menuItems,
@@ -107,5 +109,17 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSSEnabled:          &cssEnabled,
 		Language:            &language,
 		SlideshowDelay:      &slideshowDelay,
+		HandyKey:            &handyKey,
+	}
+}
+
+func makeConfigDLNAResult() *models.ConfigDLNAResult {
+	config := config.GetInstance()
+
+	return &models.ConfigDLNAResult{
+		ServerName:     config.GetDLNAServerName(),
+		Enabled:        config.GetDLNADefaultEnabled(),
+		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
+		Interfaces:     config.GetDLNAInterfaces(),
 	}
 }

@@ -53,6 +53,14 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   cssEnabled
   language
   slideshowDelay
+  handyKey
+}
+
+fragment ConfigDLNAData on ConfigDLNAResult {
+  serverName
+  enabled
+  whitelistedIPs
+  interfaces
 }
 
 fragment ConfigData on ConfigResult {
@@ -61,5 +69,8 @@ fragment ConfigData on ConfigResult {
   }
   interface {
     ...ConfigInterfaceData
+  }
+  dlna {
+    ...ConfigDLNAData
   }
 }

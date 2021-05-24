@@ -69,6 +69,17 @@ func StrUnique(vs []string) []string {
 	return ret
 }
 
+// StrDelete returns the vs string slice with toDel values removed.
+func StrDelete(vs []string, toDel string) []string {
+	var ret []string
+	for _, v := range vs {
+		if v != toDel {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
 // StringSliceToIntSlice converts a slice of strings to a slice of ints.
 // Returns an error if any values cannot be parsed.
 func StringSliceToIntSlice(ss []string) ([]int, error) {
