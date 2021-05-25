@@ -7,7 +7,7 @@ import { FilterSelect } from "./Select";
 
 type ValidTypes =
   | GQL.SlimPerformerDataFragment
-  | GQL.Tag
+  | GQL.SlimTagDataFragment
   | GQL.SlimStudioDataFragment
   | GQL.SlimMovieDataFragment;
 

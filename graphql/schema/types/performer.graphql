@@ -40,6 +40,8 @@ type Performer {
   death_date: String
   hair_color: String
   weight: Int
+  created_at: Time!
+  updated_at: Time!
 }
 
 input PerformerCreateInput {
