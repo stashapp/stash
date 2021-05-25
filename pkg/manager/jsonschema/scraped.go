@@ -27,10 +27,10 @@ type ScrapedItem struct {
 func LoadScrapedFile(filePath string) ([]ScrapedItem, error) {
 	var scraped []ScrapedItem
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&scraped)

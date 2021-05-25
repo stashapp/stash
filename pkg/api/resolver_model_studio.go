@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -130,4 +131,12 @@ func (r *studioResolver) Details(ctx context.Context, obj *models.Studio) (*stri
 		return &obj.Details.String, nil
 	}
 	return nil, nil
+}
+
+func (r *studioResolver) CreatedAt(ctx context.Context, obj *models.Studio) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *studioResolver) UpdatedAt(ctx context.Context, obj *models.Studio) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

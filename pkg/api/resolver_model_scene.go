@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -214,4 +215,16 @@ func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, 
 		return &hexval, nil
 	}
 	return nil, nil
+}
+
+func (r *sceneResolver) CreatedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *sceneResolver) UpdatedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
+}
+
+func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.FileModTime.Timestamp, nil
 }
