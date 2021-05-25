@@ -27,7 +27,7 @@ import { SelectComponents } from "react-select/src/components";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
-  | GQL.Tag
+  | GQL.SlimTagDataFragment
   | GQL.SlimStudioDataFragment
   | GQL.SlimMovieDataFragment;
 type Option = { value: string; label: string };

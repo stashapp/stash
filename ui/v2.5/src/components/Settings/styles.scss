@@ -71,6 +71,54 @@
   }
 }
 
+.job-table {
+  height: 10em;
+  overflow-y: auto;
+
+  ul {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  li {
+    opacity: 0;
+    transition: opacity 0.25s;
+
+    &.fade-in {
+      opacity: 1;
+    }
+
+    > div {
+      align-items: flex-start;
+      display: flex;
+    }
+  }
+
+  .job-status {
+    width: 100%;
+  }
+
+  .stop:not(:disabled),
+  .stopping .fa-icon,
+  .cancelled .fa-icon {
+    color: $danger;
+  }
+
+  .running .fa-icon,
+  .finished .fa-icon {
+    color: $success;
+  }
+
+  .ready .fa-icon {
+    color: $warning;
+  }
+
+  .cancelled,
+  .finished {
+    color: $text-muted;
+  }
+}
+
 #temp-enable-duration .duration-control:disabled {
   opacity: 0.5;
 }

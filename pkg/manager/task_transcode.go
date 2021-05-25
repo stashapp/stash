@@ -85,7 +85,6 @@ func (t *GenerateTranscodeTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	}
 
 	logger.Debugf("[transcode] <%s> created transcode: %s", sceneHash, outputPath)
-	return
 }
 
 // return true if transcode is needed

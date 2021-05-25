@@ -659,13 +659,7 @@ func (c mappedScraperAttrConfig) hasSplit() bool {
 
 func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	separator := c.Concat
-	result := []string{}
-
-	for _, text := range nodes {
-		result = append(result, text)
-	}
-
-	return strings.Join(result, separator)
+	return strings.Join(nodes, separator)
 }
 
 func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {

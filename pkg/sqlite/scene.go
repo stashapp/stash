@@ -363,6 +363,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
 	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id"))
+	query.handleCriterionFunc(boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
 
 	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterionFunc(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))

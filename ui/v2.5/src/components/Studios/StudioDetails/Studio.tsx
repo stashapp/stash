@@ -26,6 +26,7 @@ import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
+import { StudioPerformersPanel } from "./StudioPerformersPanel";
 
 interface IStudioParams {
   id?: string;
@@ -294,7 +295,10 @@ export const Studio: React.FC = () => {
   }
 
   const activeTabKey =
-    tab === "childstudios" || tab === "images" || tab === "galleries"
+    tab === "childstudios" ||
+    tab === "images" ||
+    tab === "galleries" ||
+    tab === "performers"
       ? tab
       : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
@@ -415,6 +419,9 @@ export const Studio: React.FC = () => {
             </Tab>
             <Tab eventKey="images" title="Images">
               <StudioImagesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="performers" title="Performers">
+              <StudioPerformersPanel studio={studio} />
             </Tab>
             <Tab eventKey="childstudios" title="Child Studios">
               <StudioChildrenPanel studio={studio} />

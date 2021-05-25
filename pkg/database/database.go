@@ -23,7 +23,7 @@ import (
 var DB *sqlx.DB
 var WriteMu *sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 23
+var appSchemaVersion uint = 24
 var databaseSchemaVersion uint
 
 var (

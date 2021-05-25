@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/remeh/sizedwaitgroup"
 
-	"github.com/stashapp/stash/pkg/autotag"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -31,56 +30,6 @@ func isVideo(pathname string) bool {
 func isImage(pathname string) bool {
 	imgExt := config.GetInstance().GetImageExtensions()
 	return matchExtension(pathname, imgExt)
-}
-
-type TaskStatus struct {
-	Status     JobStatus
-	Progress   float64
-	LastUpdate time.Time
-	stopping   bool
-	upTo       int
-	total      int
-}
-
-func (t *TaskStatus) Stop() bool {
-	t.stopping = true
-	t.updated()
-	return true
-}
-
-func (t *TaskStatus) SetStatus(s JobStatus) {
-	t.Status = s
-	t.updated()
-}
-
-func (t *TaskStatus) setProgress(upTo int, total int) {
-	if total == 0 {
-		t.Progress = 1
-	}
-	t.upTo = upTo
-	t.total = total
-	t.Progress = float64(upTo) / float64(total)
-	t.updated()
-}
-
-func (t *TaskStatus) setProgressPercent(progress float64) {
-	if progress != t.Progress {
-		t.Progress = progress
-		t.updated()
-	}
-}
-
-func (t *TaskStatus) incrementProgress() {
-	t.setProgress(t.upTo+1, t.total)
-}
-
-func (t *TaskStatus) indefiniteProgress() {
-	t.Progress = -1
-	t.updated()
-}
-
-func (t *TaskStatus) updated() {
-	t.LastUpdate = time.Now()
 }
 
 func getScanPaths(inputPaths []string) []*models.StashConfig {
@@ -105,189 +54,34 @@ func getScanPaths(inputPaths []string) []*models.StashConfig {
 	return ret
 }
 
-func (s *singleton) neededScan(paths []*models.StashConfig) (total *int, newFiles *int) {
-	const timeout = 90 * time.Second
-
-	// create a control channel through which to signal the counting loop when the timeout is reached
-	chTimeout := time.After(timeout)
-
-	logger.Infof("Counting files to scan...")
-
-	t := 0
-	n := 0
-
-	timeoutErr := errors.New("timed out")
-
-	for _, sp := range paths {
-		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
-			t++
-			task := ScanTask{FilePath: path, TxnManager: s.TxnManager}
-			if !task.doesPathExist() {
-				n++
-			}
-
-			//check for timeout
-			select {
-			case <-chTimeout:
-				return timeoutErr
-			default:
-			}
-
-			// check stop
-			if s.Status.stopping {
-				return timeoutErr
-			}
-
-			return nil
-		})
-
-		if err == timeoutErr {
-			// timeout should return nil counts
-			return nil, nil
-		}
-
-		if err != nil {
-			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
-			return nil, nil
-		}
-	}
-
-	return &t, &n
+// ScanSubscribe subscribes to a notification that is triggered when a
+// scan or clean is complete.
+func (s *singleton) ScanSubscribe(ctx context.Context) <-chan bool {
+	return s.scanSubs.subscribe(ctx)
 }
 
-func (s *singleton) Scan(input models.ScanMetadataInput) error {
+func (s *singleton) Scan(input models.ScanMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
-		return err
+		return 0, err
 	}
 
-	if s.Status.Status != Idle {
-		return nil
+	scanJob := ScanJob{
+		txnManager:    s.TxnManager,
+		input:         input,
+		subscriptions: s.scanSubs,
 	}
-	s.Status.SetStatus(Scan)
-	s.Status.indefiniteProgress()
 
-	go func() {
-		defer s.returnToIdleState()
-
-		paths := getScanPaths(input.Paths)
-
-		total, newFiles := s.neededScan(paths)
-
-		if s.Status.stopping {
-			logger.Info("Stopping due to user request")
-			return
-		}
-
-		if total == nil || newFiles == nil {
-			logger.Infof("Taking too long to count content. Skipping...")
-			logger.Infof("Starting scan")
-		} else {
-			logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
-		}
-
-		start := time.Now()
-		config := config.GetInstance()
-		parallelTasks := config.GetParallelTasksWithAutoDetection()
-		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
-		wg := sizedwaitgroup.New(parallelTasks)
-
-		s.Status.Progress = 0
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
-		calculateMD5 := config.IsCalculateMD5()
-
-		i := 0
-		stoppingErr := errors.New("stopping")
-		var err error
-
-		var galleries []string
-
-		for _, sp := range paths {
-			err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
-				if total != nil {
-					s.Status.setProgress(i, *total)
-					i++
-				}
-
-				if s.Status.stopping {
-					return stoppingErr
-				}
-
-				if isGallery(path) {
-					galleries = append(galleries, path)
-				}
-
-				instance.Paths.Generated.EnsureTmpDir()
-
-				wg.Add()
-				task := ScanTask{
-					TxnManager:           s.TxnManager,
-					FilePath:             path,
-					UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
-					StripFileExtension:   utils.IsTrue(input.StripFileExtension),
-					fileNamingAlgorithm:  fileNamingAlgo,
-					calculateMD5:         calculateMD5,
-					GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
-					GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
-					GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
-					GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
-				}
-				go task.Start(&wg)
-
-				return nil
-			})
-
-			if err == stoppingErr {
-				logger.Info("Stopping due to user request")
-				break
-			}
-
-			if err != nil {
-				logger.Errorf("Error encountered scanning files: %s", err.Error())
-				break
-			}
-		}
-
-		wg.Wait()
-		instance.Paths.Generated.EmptyTmpDir()
-		elapsed := time.Since(start)
-		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
-
-		if s.Status.stopping || err != nil {
-			return
-		}
-
-		for _, path := range galleries {
-			wg.Add()
-			task := ScanTask{
-				TxnManager:      s.TxnManager,
-				FilePath:        path,
-				UseFileMetadata: false,
-			}
-			go task.associateGallery(&wg)
-			wg.Wait()
-		}
-		logger.Info("Finished gallery association")
-	}()
-
-	return nil
+	return s.JobManager.Add("Scanning...", &scanJob), nil
 }
 
-func (s *singleton) Import() error {
+func (s *singleton) Import() (int, error) {
 	config := config.GetInstance()
 	metadataPath := config.GetMetadataPath()
 	if metadataPath == "" {
-		return errors.New("metadata path must be set in config")
+		return 0, errors.New("metadata path must be set in config")
 	}
 
-	if s.Status.Status != Idle {
-		return nil
-	}
-	s.Status.SetStatus(Import)
-	s.Status.indefiniteProgress()
-
-	go func() {
-		defer s.returnToIdleState()
-
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 
@@ -299,29 +93,20 @@ func (s *singleton) Import() error {
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		go task.Start(&wg)
-		wg.Wait()
-	}()
+		task.Start(&wg)
+	})
 
-	return nil
+	return s.JobManager.Add("Importing...", j), nil
 }
 
-func (s *singleton) Export() error {
+func (s *singleton) Export() (int, error) {
 	config := config.GetInstance()
 	metadataPath := config.GetMetadataPath()
 	if metadataPath == "" {
-		return errors.New("metadata path must be set in config")
+		return 0, errors.New("metadata path must be set in config")
 	}
 
-	if s.Status.Status != Idle {
-		return nil
-	}
-	s.Status.SetStatus(Export)
-	s.Status.indefiniteProgress()
-
-	go func() {
-		defer s.returnToIdleState()
-
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		task := ExportTask{
@@ -329,31 +114,21 @@ func (s *singleton) Export() error {
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		go task.Start(&wg)
-		wg.Wait()
-	}()
+		task.Start(&wg)
+	})
 
-	return nil
+	return s.JobManager.Add("Exporting...", j), nil
 }
 
-func (s *singleton) RunSingleTask(t Task) (*sync.WaitGroup, error) {
-	if s.Status.Status != Idle {
-		return nil, errors.New("task already running")
-	}
-
-	s.Status.SetStatus(t.GetStatus())
-	s.Status.indefiniteProgress()
+func (s *singleton) RunSingleTask(t Task) int {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go func() {
-		defer s.returnToIdleState()
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+		t.Start(&wg)
+	})
 
-		go t.Start(&wg)
-		wg.Wait()
-	}()
-
-	return &wg, nil
+	return s.JobManager.Add(t.GetDescription(), j)
 }
 
 func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {
@@ -384,18 +159,10 @@ func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsI
 	}
 }
 
-func (s *singleton) Generate(input models.GenerateMetadataInput) error {
+func (s *singleton) Generate(input models.GenerateMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
-		return err
+		return 0, err
 	}
-
-	if s.Status.Status != Idle {
-		return nil
-	}
-	s.Status.SetStatus(Generate)
-	s.Status.indefiniteProgress()
-
-	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
 	sceneIDs, err := utils.StringSliceToIntSlice(input.SceneIDs)
@@ -407,9 +174,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 		logger.Error(err.Error())
 	}
 
-	go func() {
-		defer s.returnToIdleState()
-
+	// TODO - formalise this
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		var scenes []*models.Scene
 		var err error
 		var markers []*models.SceneMarker
@@ -445,22 +211,29 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
 		wg := sizedwaitgroup.New(parallelTasks)
 
-		s.Status.Progress = 0
 		lenScenes := len(scenes)
 		total := lenScenes + len(markers)
+		progress.SetTotal(total)
 
-		if s.Status.stopping {
+		if job.IsCancelled(ctx) {
 			logger.Info("Stopping due to user request")
 			return
 		}
 
-		totalsNeeded := s.neededGenerate(scenes, input)
-		if totalsNeeded == nil {
-			logger.Infof("Taking too long to count content. Skipping...")
-			logger.Infof("Generating content")
-		} else {
-			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
-		}
+		// TODO - consider removing this. Even though we're only waiting a maximum of
+		// 90 seconds for this, it is all for a simple log message, and probably not worth
+		// waiting for
+		var totalsNeeded *totalsGenerate
+		progress.ExecuteTask("Calculating content to generate...", func() {
+			totalsNeeded = s.neededGenerate(scenes, input)
+
+			if totalsNeeded == nil {
+				logger.Infof("Taking too long to count content. Skipping...")
+				logger.Infof("Generating content")
+			} else {
+				logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
+			}
+		})
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 
@@ -479,9 +252,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 		start := time.Now()
 		instance.Paths.Generated.EnsureTmpDir()
 
-		for i, scene := range scenes {
-			s.Status.setProgress(i, total)
-			if s.Status.stopping {
+		for _, scene := range scenes {
+			progress.Increment()
+			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				wg.Wait()
 				instance.Paths.Generated.EmptyTmpDir()
@@ -500,7 +273,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				wg.Add()
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Previews {
@@ -512,7 +287,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				wg.Add()
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Markers {
@@ -523,7 +300,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Transcodes {
@@ -533,7 +312,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating transcode for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 
 			if input.Phashes {
@@ -543,15 +324,17 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 					txnManager:          s.TxnManager,
 				}
 				wg.Add()
-				go task.Start(&wg)
+				go progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
 			}
 		}
 
 		wg.Wait()
 
-		for i, marker := range markers {
-			s.Status.setProgress(lenScenes+i, total)
-			if s.Status.stopping {
+		for _, marker := range markers {
+			progress.Increment()
+			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				wg.Wait()
 				instance.Paths.Generated.EmptyTmpDir()
@@ -572,7 +355,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 				Overwrite:           overwrite,
 				fileNamingAlgorithm: fileNamingAlgo,
 			}
-			go task.Start(&wg)
+			go progress.ExecuteTask(fmt.Sprintf("Generating marker preview for marker ID %d", marker.ID), func() {
+				task.Start(&wg)
+			})
 		}
 
 		wg.Wait()
@@ -580,32 +365,24 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) error {
 		instance.Paths.Generated.EmptyTmpDir()
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
-	}()
+	})
 
-	return nil
+	return s.JobManager.Add("Generating...", j), nil
 }
 
-func (s *singleton) GenerateDefaultScreenshot(sceneId string) {
-	s.generateScreenshot(sceneId, nil)
+func (s *singleton) GenerateDefaultScreenshot(sceneId string) int {
+	return s.generateScreenshot(sceneId, nil)
 }
 
-func (s *singleton) GenerateScreenshot(sceneId string, at float64) {
-	s.generateScreenshot(sceneId, &at)
+func (s *singleton) GenerateScreenshot(sceneId string, at float64) int {
+	return s.generateScreenshot(sceneId, &at)
 }
 
 // generate default screenshot if at is nil
-func (s *singleton) generateScreenshot(sceneId string, at *float64) {
-	if s.Status.Status != Idle {
-		return
-	}
-	s.Status.SetStatus(Generate)
-	s.Status.indefiniteProgress()
-
+func (s *singleton) generateScreenshot(sceneId string, at *float64) int {
 	instance.Paths.Generated.EnsureTmpDir()
 
-	go func() {
-		defer s.returnToIdleState()
-
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		sceneIdInt, err := strconv.Atoi(sceneId)
 		if err != nil {
 			logger.Errorf("Error parsing scene id %s: %s", sceneId, err.Error())
@@ -631,319 +408,25 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		go task.Start(&wg)
-
-		wg.Wait()
+		task.Start(&wg)
 
 		logger.Infof("Generate screenshot finished")
-	}()
+	})
+
+	return s.JobManager.Add(fmt.Sprintf("Generating screenshot for scene id %s", sceneId), j)
 }
 
-func (s *singleton) isFileBasedAutoTag(input models.AutoTagMetadataInput) bool {
-	const wildcard = "*"
-	performerIds := input.Performers
-	studioIds := input.Studios
-	tagIds := input.Tags
-
-	return (len(performerIds) == 0 || performerIds[0] == wildcard) && (len(studioIds) == 0 || studioIds[0] == wildcard) && (len(tagIds) == 0 || tagIds[0] == wildcard)
-}
-
-func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
-	if s.Status.Status != Idle {
-		return
-	}
-	s.Status.SetStatus(AutoTag)
-	s.Status.indefiniteProgress()
-
-	go func() {
-		defer s.returnToIdleState()
-
-		if s.isFileBasedAutoTag(input) {
-			// doing file-based auto-tag
-			s.autoTagFiles(input.Paths, len(input.Performers) > 0, len(input.Studios) > 0, len(input.Tags) > 0)
-		} else {
-			// doing specific performer/studio/tag auto-tag
-			s.autoTagSpecific(input)
-		}
-	}()
-}
-
-func (s *singleton) autoTagFiles(paths []string, performers, studios, tags bool) {
-	t := autoTagFilesTask{
-		paths:      paths,
-		performers: performers,
-		studios:    studios,
-		tags:       tags,
+func (s *singleton) AutoTag(input models.AutoTagMetadataInput) int {
+	j := autoTagJob{
 		txnManager: s.TxnManager,
-		status:     &s.Status,
+		input:      input,
 	}
 
-	t.process()
+	return s.JobManager.Add("Auto-tagging...", &j)
 }
 
-func (s *singleton) autoTagSpecific(input models.AutoTagMetadataInput) {
-	performerIds := input.Performers
-	studioIds := input.Studios
-	tagIds := input.Tags
-
-	performerCount := len(performerIds)
-	studioCount := len(studioIds)
-	tagCount := len(tagIds)
-
-	if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		performerQuery := r.Performer()
-		studioQuery := r.Studio()
-		tagQuery := r.Tag()
-
-		const wildcard = "*"
-		var err error
-		if performerCount == 1 && performerIds[0] == wildcard {
-			performerCount, err = performerQuery.Count()
-			if err != nil {
-				return fmt.Errorf("error getting performer count: %s", err.Error())
-			}
-		}
-		if studioCount == 1 && studioIds[0] == wildcard {
-			studioCount, err = studioQuery.Count()
-			if err != nil {
-				return fmt.Errorf("error getting studio count: %s", err.Error())
-			}
-		}
-		if tagCount == 1 && tagIds[0] == wildcard {
-			tagCount, err = tagQuery.Count()
-			if err != nil {
-				return fmt.Errorf("error getting tag count: %s", err.Error())
-			}
-		}
-
-		return nil
-	}); err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	total := performerCount + studioCount + tagCount
-	s.Status.setProgress(0, total)
-
-	logger.Infof("Starting autotag of %d performers, %d studios, %d tags", performerCount, studioCount, tagCount)
-
-	s.autoTagPerformers(input.Paths, performerIds)
-	s.autoTagStudios(input.Paths, studioIds)
-	s.autoTagTags(input.Paths, tagIds)
-
-	logger.Info("Finished autotag")
-}
-
-func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
-	if s.Status.stopping {
-		return
-	}
-
-	for _, performerId := range performerIds {
-		var performers []*models.Performer
-
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			performerQuery := r.Performer()
-
-			if performerId == "*" {
-				var err error
-				performers, err = performerQuery.All()
-				if err != nil {
-					return fmt.Errorf("error querying performers: %s", err.Error())
-				}
-			} else {
-				performerIdInt, err := strconv.Atoi(performerId)
-				if err != nil {
-					return fmt.Errorf("error parsing performer id %s: %s", performerId, err.Error())
-				}
-
-				performer, err := performerQuery.Find(performerIdInt)
-				if err != nil {
-					return fmt.Errorf("error finding performer id %s: %s", performerId, err.Error())
-				}
-
-				if performer == nil {
-					return fmt.Errorf("performer with id %s not found", performerId)
-				}
-				performers = append(performers, performer)
-			}
-
-			for _, performer := range performers {
-				if s.Status.stopping {
-					logger.Info("Stopping due to user request")
-					return nil
-				}
-
-				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					if err := autotag.PerformerScenes(performer, paths, r.Scene()); err != nil {
-						return err
-					}
-					if err := autotag.PerformerImages(performer, paths, r.Image()); err != nil {
-						return err
-					}
-					if err := autotag.PerformerGalleries(performer, paths, r.Gallery()); err != nil {
-						return err
-					}
-
-					return nil
-				}); err != nil {
-					return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name.String, err.Error())
-				}
-
-				s.Status.incrementProgress()
-			}
-
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			continue
-		}
-	}
-}
-
-func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
-	if s.Status.stopping {
-		return
-	}
-
-	for _, studioId := range studioIds {
-		var studios []*models.Studio
-
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			studioQuery := r.Studio()
-			if studioId == "*" {
-				var err error
-				studios, err = studioQuery.All()
-				if err != nil {
-					return fmt.Errorf("error querying studios: %s", err.Error())
-				}
-			} else {
-				studioIdInt, err := strconv.Atoi(studioId)
-				if err != nil {
-					return fmt.Errorf("error parsing studio id %s: %s", studioId, err.Error())
-				}
-
-				studio, err := studioQuery.Find(studioIdInt)
-				if err != nil {
-					return fmt.Errorf("error finding studio id %s: %s", studioId, err.Error())
-				}
-
-				if studio == nil {
-					return fmt.Errorf("studio with id %s not found", studioId)
-				}
-
-				studios = append(studios, studio)
-			}
-
-			for _, studio := range studios {
-				if s.Status.stopping {
-					logger.Info("Stopping due to user request")
-					return nil
-				}
-
-				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					if err := autotag.StudioScenes(studio, paths, r.Scene()); err != nil {
-						return err
-					}
-					if err := autotag.StudioImages(studio, paths, r.Image()); err != nil {
-						return err
-					}
-					if err := autotag.StudioGalleries(studio, paths, r.Gallery()); err != nil {
-						return err
-					}
-
-					return nil
-				}); err != nil {
-					return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name.String, err.Error())
-				}
-
-				s.Status.incrementProgress()
-			}
-
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			continue
-		}
-	}
-}
-
-func (s *singleton) autoTagTags(paths []string, tagIds []string) {
-	if s.Status.stopping {
-		return
-	}
-
-	for _, tagId := range tagIds {
-		var tags []*models.Tag
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			tagQuery := r.Tag()
-			if tagId == "*" {
-				var err error
-				tags, err = tagQuery.All()
-				if err != nil {
-					return fmt.Errorf("error querying tags: %s", err.Error())
-				}
-			} else {
-				tagIdInt, err := strconv.Atoi(tagId)
-				if err != nil {
-					return fmt.Errorf("error parsing tag id %s: %s", tagId, err.Error())
-				}
-
-				tag, err := tagQuery.Find(tagIdInt)
-				if err != nil {
-					return fmt.Errorf("error finding tag id %s: %s", tagId, err.Error())
-				}
-				tags = append(tags, tag)
-			}
-
-			for _, tag := range tags {
-				if s.Status.stopping {
-					logger.Info("Stopping due to user request")
-					return nil
-				}
-
-				if err := s.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					aliases, err := r.Tag().GetAliases(tag.ID)
-					if err != nil {
-						return err
-					}
-
-					if err := autotag.TagScenes(tag, paths, aliases, r.Scene()); err != nil {
-						return err
-					}
-					if err := autotag.TagImages(tag, paths, aliases, r.Image()); err != nil {
-						return err
-					}
-					if err := autotag.TagGalleries(tag, paths, aliases, r.Gallery()); err != nil {
-						return err
-					}
-
-					return nil
-				}); err != nil {
-					return fmt.Errorf("error auto-tagging tag '%s': %s", tag.Name, err.Error())
-				}
-
-				s.Status.incrementProgress()
-			}
-
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			continue
-		}
-	}
-}
-
-func (s *singleton) Clean(input models.CleanMetadataInput) {
-	if s.Status.Status != Idle {
-		return
-	}
-	s.Status.SetStatus(Clean)
-	s.Status.indefiniteProgress()
-
-	go func() {
-		defer s.returnToIdleState()
-
+func (s *singleton) Clean(input models.CleanMetadataInput) int {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		var scenes []*models.Scene
 		var images []*models.Image
 		var galleries []*models.Gallery
@@ -981,18 +464,18 @@ func (s *singleton) Clean(input models.CleanMetadataInput) {
 			return
 		}
 
-		if s.Status.stopping {
+		if job.IsCancelled(ctx) {
 			logger.Info("Stopping due to user request")
 			return
 		}
 
 		var wg sync.WaitGroup
-		s.Status.Progress = 0
 		total := len(scenes) + len(images) + len(galleries)
+		progress.SetTotal(total)
 		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-		for i, scene := range scenes {
-			s.Status.setProgress(i, total)
-			if s.Status.stopping {
+		for _, scene := range scenes {
+			progress.Increment()
+			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				return
 			}
@@ -1009,13 +492,16 @@ func (s *singleton) Clean(input models.CleanMetadataInput) {
 				Scene:               scene,
 				fileNamingAlgorithm: fileNamingAlgo,
 			}
-			go task.Start(&wg, input.DryRun)
+			go progress.ExecuteTask(fmt.Sprintf("Assessing scene %s for clean", scene.Path), func() {
+				task.Start(&wg, input.DryRun)
+			})
+
 			wg.Wait()
 		}
 
-		for i, img := range images {
-			s.Status.setProgress(len(scenes)+i, total)
-			if s.Status.stopping {
+		for _, img := range images {
+			progress.Increment()
+			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				return
 			}
@@ -1031,13 +517,15 @@ func (s *singleton) Clean(input models.CleanMetadataInput) {
 				TxnManager: s.TxnManager,
 				Image:      img,
 			}
-			go task.Start(&wg, input.DryRun)
+			go progress.ExecuteTask(fmt.Sprintf("Assessing image %s for clean", img.Path), func() {
+				task.Start(&wg, input.DryRun)
+			})
 			wg.Wait()
 		}
 
-		for i, gallery := range galleries {
-			s.Status.setProgress(len(scenes)+len(galleries)+i, total)
-			if s.Status.stopping {
+		for _, gallery := range galleries {
+			progress.Increment()
+			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				return
 			}
@@ -1053,24 +541,22 @@ func (s *singleton) Clean(input models.CleanMetadataInput) {
 				TxnManager: s.TxnManager,
 				Gallery:    gallery,
 			}
-			go task.Start(&wg, input.DryRun)
+			go progress.ExecuteTask(fmt.Sprintf("Assessing gallery %s for clean", gallery.GetTitle()), func() {
+				task.Start(&wg, input.DryRun)
+			})
 			wg.Wait()
 		}
 
 		logger.Info("Finished Cleaning")
-	}()
+
+		s.scanSubs.notify()
+	})
+
+	return s.JobManager.Add("Cleaning...", j)
 }
 
-func (s *singleton) MigrateHash() {
-	if s.Status.Status != Idle {
-		return
-	}
-	s.Status.SetStatus(Migrate)
-	s.Status.indefiniteProgress()
-
-	go func() {
-		defer s.returnToIdleState()
-
+func (s *singleton) MigrateHash() int {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
@@ -1085,12 +571,12 @@ func (s *singleton) MigrateHash() {
 		}
 
 		var wg sync.WaitGroup
-		s.Status.Progress = 0
 		total := len(scenes)
+		progress.SetTotal(total)
 
-		for i, scene := range scenes {
-			s.Status.setProgress(i, total)
-			if s.Status.stopping {
+		for _, scene := range scenes {
+			progress.Increment()
+			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				return
 			}
@@ -1108,20 +594,9 @@ func (s *singleton) MigrateHash() {
 		}
 
 		logger.Info("Finished migrating")
-	}()
-}
+	})
 
-func (s *singleton) returnToIdleState() {
-	if r := recover(); r != nil {
-		logger.Info("recovered from ", r)
-	}
-
-	if s.Status.Status == Generate {
-		instance.Paths.Generated.RemoveTmpDir()
-	}
-	s.Status.SetStatus(Idle)
-	s.Status.indefiniteProgress()
-	s.Status.stopping = false
+	return s.JobManager.Add("Migrating scene hashes...", j)
 }
 
 type totalsGenerate struct {
@@ -1227,15 +702,8 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	return &totals
 }
 
-func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerformerTagInput) {
-	if s.Status.Status != Idle {
-		return
-	}
-	s.Status.SetStatus(StashBoxBatchPerformer)
-	s.Status.indefiniteProgress()
-
-	go func() {
-		defer s.returnToIdleState()
+func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerformerTagInput) int {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Initiating stash-box batch performer tag")
 
 		boxes := config.GetInstance().GetStashBoxes()
@@ -1294,7 +762,7 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
 				}
 				if err != nil {
-					return fmt.Errorf("Error querying performers: %s", err.Error())
+					return fmt.Errorf("error querying performers: %s", err.Error())
 				}
 
 				for _, performer := range performers {
@@ -1314,21 +782,23 @@ func (s *singleton) StashBoxBatchPerformerTag(input models.StashBoxBatchPerforme
 		}
 
 		if len(tasks) == 0 {
-			s.returnToIdleState()
 			return
 		}
 
-		s.Status.setProgress(0, len(tasks))
+		progress.SetTotal(len(tasks))
 
 		logger.Infof("Starting stash-box batch operation for %d performers", len(tasks))
 
 		var wg sync.WaitGroup
 		for _, task := range tasks {
 			wg.Add(1)
-			go task.Start(&wg)
-			wg.Wait()
+			progress.ExecuteTask(task.Description(), func() {
+				task.Start(&wg)
+			})
 
-			s.Status.incrementProgress()
+			progress.Increment()
 		}
-	}()
+	})
+
+	return s.JobManager.Add("Batch stash-box performer tag...", j)
 }
