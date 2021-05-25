@@ -87,6 +87,8 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	vttPath := builder.GetSpriteVTTURL()
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
+	funscriptPath := builder.GetFunscriptURL()
+
 	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
 		Preview:     &previewPath,
@@ -95,6 +97,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
 		Sprite:      &spritePath,
+		Funscript:   &funscriptPath,
 	}, nil
 }
 

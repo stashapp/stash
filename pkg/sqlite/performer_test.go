@@ -868,6 +868,72 @@ func TestPerformerQueryIsMissingRating(t *testing.T) {
 	})
 }
 
+func TestPerformerQueryIsMissingImage(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		isMissing := "image"
+		performerFilter := &models.PerformerFilterType{
+			IsMissing: &isMissing,
+		}
+
+		// ensure query does not error
+		performers, _, err := r.Performer().Query(performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+
+		for _, performer := range performers {
+			img, err := r.Performer().GetImage(performer.ID)
+			if err != nil {
+				t.Errorf("error getting performer image: %s", err.Error())
+			}
+			assert.Nil(t, img)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQuerySortScenesCount(t *testing.T) {
+	sort := "scenes_count"
+	direction := models.SortDirectionEnumDesc
+	findFilter := &models.FindFilterType{
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	withTxn(func(r models.Repository) error {
+		// just ensure it queries without error
+		performers, _, err := r.Performer().Query(nil, findFilter)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+
+		// first performer should be performerIdxWithTwoScenes
+		firstPerformer := performers[0]
+
+		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+
+		// sort in ascending order
+		direction = models.SortDirectionEnumAsc
+
+		performers, _, err = r.Performer().Query(nil, findFilter)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+		lastPerformer := performers[len(performers)-1]
+
+		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
+
+		return nil
+	})
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find
