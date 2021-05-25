@@ -108,21 +108,22 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			return fmt.Errorf("Tag with ID %d not found", tagID)
 		}
 
+		updatedTag := models.TagPartial{
+			ID:        tagID,
+			UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
+		}
+
 		if input.Name != nil && t.Name != *input.Name {
 			if err := tag.EnsureTagNameUnique(tagID, *input.Name, qb); err != nil {
 				return err
 			}
 
-			updatedTag := models.TagPartial{
-				ID:        tagID,
-				Name:      input.Name,
-				UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
-			}
+			updatedTag.Name = input.Name
+		}
 
-			t, err = qb.Update(updatedTag)
-			if err != nil {
-				return err
-			}
+		t, err = qb.Update(updatedTag)
+		if err != nil {
+			return err
 		}
 
 		// update image table
