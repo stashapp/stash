@@ -41,7 +41,7 @@ type Scene {
   interactive: Boolean!
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time!
+  file_mod_time: Time
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
