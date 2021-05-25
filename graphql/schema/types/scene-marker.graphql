@@ -5,6 +5,8 @@ type SceneMarker {
   seconds: Float!
   primary_tag: Tag!
   tags: [Tag!]!
+  created_at: Time!
+  updated_at: Time!
 
   """The path to stream this marker"""
   stream: String! # Resolver

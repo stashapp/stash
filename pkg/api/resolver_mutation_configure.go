@@ -246,11 +246,46 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.CSSEnabled, *input.CSSEnabled)
 	}
 
+	if input.HandyKey != nil {
+		c.Set(config.HandyKey, *input.HandyKey)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
 	}
 
 	return makeConfigInterfaceResult(), nil
+}
+
+func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.ConfigDLNAInput) (*models.ConfigDLNAResult, error) {
+	c := config.GetInstance()
+
+	if input.ServerName != nil {
+		c.Set(config.DLNAServerName, *input.ServerName)
+	}
+
+	c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+
+	currentDLNAEnabled := c.GetDLNADefaultEnabled()
+	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
+		c.Set(config.DLNADefaultEnabled, *input.Enabled)
+
+		// start/stop the DLNA service as needed
+		dlnaService := manager.GetInstance().DLNAService
+		if !*input.Enabled && dlnaService.IsRunning() {
+			dlnaService.Stop(nil)
+		} else if *input.Enabled && !dlnaService.IsRunning() {
+			dlnaService.Start(nil)
+		}
+	}
+
+	c.Set(config.DLNAInterfaces, input.Interfaces)
+
+	if err := c.Write(); err != nil {
+		return makeConfigDLNAResult(), err
+	}
+
+	return makeConfigDLNAResult(), nil
 }
 
 func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {

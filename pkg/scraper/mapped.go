@@ -75,7 +75,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
-			results = attrConfig.distinctResults(results)
+			results = attrConfig.cleanResults(results)
 			return results
 		}
 
@@ -89,7 +89,7 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 
 			ret = append(ret, text)
 		}
-		ret = attrConfig.distinctResults(ret)
+		ret = attrConfig.cleanResults(ret)
 	}
 
 	return ret
@@ -368,10 +368,10 @@ func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 
 	const internalDateFormat = "2006-01-02"
 
-	value = strings.ToLower(value)
-	if value == "today" || value == "yesterday" { // handle today, yesterday
+	valueLower := strings.ToLower(value)
+	if valueLower == "today" || valueLower == "yesterday" { // handle today, yesterday
 		dt := time.Now()
-		if value == "yesterday" { // subtract 1 day from now
+		if valueLower == "yesterday" { // subtract 1 day from now
 			dt = dt.AddDate(0, 0, -1)
 		}
 		return dt.Format(internalDateFormat)
@@ -391,6 +391,22 @@ func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 
 	// convert it into our date format
 	return parsedValue.Format(internalDateFormat)
+}
+
+type postProcessSubtractDays bool
+
+func (p *postProcessSubtractDays) Apply(value string, q mappedQuery) string {
+	const internalDateFormat = "2006-01-02"
+
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		logger.Warnf("Error parsing day string %s: %s", value, err)
+		return value
+	}
+
+	dt := time.Now()
+	dt = dt.AddDate(0, 0, -i)
+	return dt.Format(internalDateFormat)
 }
 
 type postProcessReplace mappedRegexConfigs
@@ -479,12 +495,13 @@ func (p *postProcessLbToKg) Apply(value string, q mappedQuery) string {
 }
 
 type mappedPostProcessAction struct {
-	ParseDate  string                   `yaml:"parseDate"`
-	Replace    mappedRegexConfigs       `yaml:"replace"`
-	SubScraper *mappedScraperAttrConfig `yaml:"subScraper"`
-	Map        map[string]string        `yaml:"map"`
-	FeetToCm   bool                     `yaml:"feetToCm"`
-	LbToKg     bool                     `yaml:"lbToKg"`
+	ParseDate    string                   `yaml:"parseDate"`
+	SubtractDays bool                     `yaml:"subtractDays"`
+	Replace      mappedRegexConfigs       `yaml:"replace"`
+	SubScraper   *mappedScraperAttrConfig `yaml:"subScraper"`
+	Map          map[string]string        `yaml:"map"`
+	FeetToCm     bool                     `yaml:"feetToCm"`
+	LbToKg       bool                     `yaml:"lbToKg"`
 }
 
 func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
@@ -534,6 +551,14 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		}
 		found = "lbToKg"
 		action := postProcessLbToKg(a.LbToKg)
+		ret = &action
+	}
+	if a.SubtractDays {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "subtractDays")
+		}
+		found = "subtractDays"
+		action := postProcessSubtractDays(a.SubtractDays)
 		ret = &action
 	}
 
@@ -634,17 +659,13 @@ func (c mappedScraperAttrConfig) hasSplit() bool {
 
 func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	separator := c.Concat
-	result := []string{}
-
-	for _, text := range nodes {
-		result = append(result, text)
-	}
-
-	return strings.Join(result, separator)
+	return strings.Join(nodes, separator)
 }
 
-func (c mappedScraperAttrConfig) distinctResults(nodes []string) []string {
-	return utils.StrUnique(nodes)
+func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {
+	cleaned := utils.StrUnique(nodes)      // remove duplicate values
+	cleaned = utils.StrDelete(cleaned, "") // remove empty values
+	return cleaned
 }
 
 func (c mappedScraperAttrConfig) splitString(value string) []string {

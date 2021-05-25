@@ -74,6 +74,10 @@ import { DisplayMode, FilterMode } from "./types";
 import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
 import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
 import { GalleriesCriterion } from "./criteria/galleries";
+import {
+  InteractiveCriterion,
+  InteractiveCriterionOption,
+} from "./criteria/interactive";
 
 interface IQueryParameters {
   perPage?: string;
@@ -136,6 +140,7 @@ export class ListFilterModel {
           "performer_count",
           "random",
           "movie_scene_number",
+          "interactive",
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
@@ -162,6 +167,7 @@ export class ListFilterModel {
           new MoviesCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
           ListFilterModel.createCriterionOption("stash_id"),
+          new InteractiveCriterionOption(),
         ];
         break;
       case FilterMode.Images:
@@ -239,6 +245,7 @@ export class ListFilterModel {
           new PerformerIsMissingCriterionOption(),
           new TagsCriterionOption(),
           new RatingCriterionOption(),
+          new StudiosCriterionOption(),
           ListFilterModel.createCriterionOption("url"),
           ListFilterModel.createCriterionOption("tag_count"),
           ListFilterModel.createCriterionOption("scene_count"),
@@ -418,13 +425,18 @@ export class ListFilterModel {
       }
 
       jsonParameters.forEach((jsonString) => {
-        const encodedCriterion = JSON.parse(jsonString);
-        const criterion = makeCriteria(encodedCriterion.type);
-        // it's possible that we have unsupported criteria. Just skip if so.
-        if (criterion) {
-          criterion.value = encodedCriterion.value;
-          criterion.modifier = encodedCriterion.modifier;
-          this.criteria.push(criterion);
+        try {
+          const encodedCriterion = JSON.parse(jsonString);
+          const criterion = makeCriteria(encodedCriterion.type);
+          // it's possible that we have unsupported criteria. Just skip if so.
+          if (criterion) {
+            criterion.value = encodedCriterion.value;
+            criterion.modifier = encodedCriterion.modifier;
+            this.criteria.push(criterion);
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to parse encoded criterion:", err);
         }
       });
     }
@@ -670,6 +682,11 @@ export class ListFilterModel {
           };
           break;
         }
+        case "interactive": {
+          result.interactive =
+            (criterion as InteractiveCriterion).value === "true";
+          break;
+        }
         // no default
       }
     });
@@ -812,6 +829,14 @@ export class ListFilterModel {
           result.url = {
             value: urlCrit.value,
             modifier: urlCrit.modifier,
+          };
+          break;
+        }
+        case "studios": {
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
           };
           break;
         }

@@ -372,6 +372,18 @@ Height and weight are extracted from the selected spans and converted to `cm` an
 
 * `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them.
 
+* `subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format.
+Example:
+```yaml
+Date:
+  selector: //strong[contains(text(),"Added:")]/following-sibling::text()
+  postProcess:
+    - replace:
+        - regex: (\d+)\sdays\sago.+
+          with: $1
+    - subtractDays: true
+```
+
 * `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
 
 Example:

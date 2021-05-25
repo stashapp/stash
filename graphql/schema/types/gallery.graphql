@@ -9,6 +9,10 @@ type Gallery {
   details: String
   rating: Int
   organized: Boolean!
+  created_at: Time!
+  updated_at: Time!
+  file_mod_time: Time
+
   scenes: [Scene!]!
   studio: Studio
   image_count: Int!

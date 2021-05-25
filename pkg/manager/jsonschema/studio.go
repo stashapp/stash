@@ -22,10 +22,10 @@ type Studio struct {
 func LoadStudioFile(filePath string) (*Studio, error) {
 	var studio Studio
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&studio)

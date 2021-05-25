@@ -15,12 +15,12 @@
             <form action="/login" method="POST">
                 <div class="form-group">
                     <label for="username"><h6>Username</h6></label>
-                    <input class="text-input form-control" name="username" type="text" placeholder="Username" />
+                    <input class="text-input form-control" id="username" name="username" type="text" placeholder="Username" />
                 </div>
                 <div>
                 <div class="form-group">
                     <label for="password"><h6>Password</h6></label>
-                    <input class="text-input form-control" name="password" type="password" placeholder="Password" />
+                    <input class="text-input form-control" id="password" name="password" type="password" placeholder="Password" />
                 </div>
                 <div class="login-error">
                     {{.Error}}

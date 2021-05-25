@@ -47,12 +47,17 @@ button.minimal {
   color: $text-color;
   transition: none;
 
-  &:hover {
+  &:disabled {
+    background: none;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
     background: rgba(138, 155, 168, 0.15);
     color: $text-color;
   }
 
-  &:active {
+  &:active:not(:disabled) {
     background: rgba(138, 155, 168, 0.3);
     color: $text-color;
   }

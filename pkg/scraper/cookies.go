@@ -20,7 +20,6 @@ import (
 func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && !driverOptions.UseCDP {
-		var foundURLs []*url.URL
 
 		for _, ckURL := range driverOptions.Cookies { // go through all cookies
 			url, err := url.Parse(ckURL.CookieURL) // CookieURL must be valid, include schema
@@ -44,12 +43,8 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 
 				if jar.Cookies(url) == nil {
 					logger.Warnf("Setting jar cookies for %s failed", url.String())
-				} else {
-
-					foundURLs = append(foundURLs, url)
 				}
 			}
-
 		}
 	}
 }

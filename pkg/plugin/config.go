@@ -217,10 +217,10 @@ func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 
 func loadPluginFromYAMLFile(path string) (*Config, error) {
 	file, err := os.Open(path)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	ret, err := loadPluginFromYAML(file)
 	if err != nil {
