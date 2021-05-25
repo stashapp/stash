@@ -41,6 +41,10 @@ func (i *Importer) PostImport(id int) error {
 		}
 	}
 
+	if err := i.ReaderWriter.UpdateAliases(id, i.Input.Aliases); err != nil {
+		return fmt.Errorf("error setting tag aliases: %s", err.Error())
+	}
+
 	return nil
 }
 

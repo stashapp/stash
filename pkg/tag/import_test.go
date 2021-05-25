@@ -56,18 +56,29 @@ func TestImporterPostImport(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: readerWriter,
-		imageData:    imageBytes,
+		Input: jsonschema.Tag{
+			Aliases: []string{"alias"},
+		},
+		imageData: imageBytes,
 	}
 
 	updateTagImageErr := errors.New("UpdateImage error")
+	updateTagAliasErr := errors.New("UpdateAlias error")
+
+	readerWriter.On("UpdateAliases", tagID, i.Input.Aliases).Return(nil).Once()
+	readerWriter.On("UpdateAliases", errAliasID, i.Input.Aliases).Return(updateTagAliasErr).Once()
 
 	readerWriter.On("UpdateImage", tagID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", errAliasID, imageBytes).Return(nil).Once()
 	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updateTagImageErr).Once()
 
 	err := i.PostImport(tagID)
 	assert.Nil(t, err)
 
 	err = i.PostImport(errImageID)
+	assert.NotNil(t, err)
+
+	err = i.PostImport(errAliasID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)
