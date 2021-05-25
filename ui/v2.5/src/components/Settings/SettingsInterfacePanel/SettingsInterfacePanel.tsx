@@ -16,6 +16,8 @@ const allMenuItems = [
   { id: "tags", label: "Tags" },
 ];
 
+const SECONDS_TO_MS = 1000;
+
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
   const { data: config, error, loading } = useConfiguration();
@@ -27,10 +29,12 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [wallPlayback, setWallPlayback] = useState<string>("video");
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
   const [autostartVideo, setAutostartVideo] = useState<boolean>(false);
+  const [slideshowDelay, setSlideshowDelay] = useState<number>(0);
   const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("en");
+  const [handyKey, setHandyKey] = useState<string>();
 
   const [updateInterfaceConfig] = useConfigureInterface({
     menuItems: menuItemIds,
@@ -43,6 +47,8 @@ export const SettingsInterfacePanel: React.FC = () => {
     css,
     cssEnabled,
     language,
+    slideshowDelay,
+    handyKey,
   });
 
   useEffect(() => {
@@ -57,6 +63,8 @@ export const SettingsInterfacePanel: React.FC = () => {
     setCSS(iCfg?.css ?? "");
     setCSSEnabled(iCfg?.cssEnabled ?? false);
     setLanguage(iCfg?.language ?? "en-US");
+    setSlideshowDelay(iCfg?.slideshowDelay ?? 5000);
+    setHandyKey(iCfg?.handyKey ?? "");
   }, [config]);
 
   async function onSave() {
@@ -100,6 +108,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
+          <option value="zh-TW">Chinese (Taiwan)</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>
@@ -187,6 +196,23 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
+      <Form.Group id="slideshow-delay">
+        <h5>Slideshow Delay</h5>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          type="number"
+          value={slideshowDelay / SECONDS_TO_MS}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setSlideshowDelay(
+              Number.parseInt(e.currentTarget.value, 10) * SECONDS_TO_MS
+            );
+          }}
+        />
+        <Form.Text className="text-muted">
+          Slideshow is available in galleries when in wall view mode
+        </Form.Text>
+      </Form.Group>
+
       <Form.Group>
         <h5>Custom CSS</h5>
         <Form.Check
@@ -209,6 +235,20 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <h5>Handy Connection Key</h5>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          value={handyKey}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setHandyKey(e.currentTarget.value);
+          }}
+        />
+        <Form.Text className="text-muted">
+          Handy connection key to use for interactive scenes.
         </Form.Text>
       </Form.Group>
 

@@ -12,35 +12,6 @@ const imageIDColumn = "image_id"
 const performersImagesTable = "performers_images"
 const imagesTagsTable = "images_tags"
 
-var imagesForPerformerQuery = selectAll(imageTable) + `
-LEFT JOIN performers_images as performers_join on performers_join.image_id = images.id
-WHERE performers_join.performer_id = ?
-GROUP BY images.id
-`
-
-var countImagesForPerformerQuery = `
-SELECT performer_id FROM performers_images as performers_join
-WHERE performer_id = ?
-GROUP BY image_id
-`
-
-var imagesForStudioQuery = selectAll(imageTable) + `
-JOIN studios ON studios.id = images.studio_id
-WHERE studios.id = ?
-GROUP BY images.id
-`
-var imagesForMovieQuery = selectAll(imageTable) + `
-LEFT JOIN movies_images as movies_join on movies_join.image_id = images.id
-WHERE movies_join.movie_id = ?
-GROUP BY images.id
-`
-
-var countImagesForTagQuery = `
-SELECT tag_id AS id FROM images_tags
-WHERE images_tags.tag_id = ?
-GROUP BY images_tags.image_id
-`
-
 var imagesForGalleryQuery = selectAll(imageTable) + `
 LEFT JOIN galleries_images as galleries_join on galleries_join.image_id = images.id
 WHERE galleries_join.gallery_id = ?
@@ -216,7 +187,69 @@ func (qb *imageQueryBuilder) All() ([]*models.Image, error) {
 	return qb.queryImages(selectAll(imageTable)+qb.getImageSort(nil), nil)
 }
 
-func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
+func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if imageFilter.And != nil {
+		if imageFilter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if imageFilter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(imageFilter.And)
+	}
+
+	if imageFilter.Or != nil {
+		if imageFilter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(imageFilter.Or)
+	}
+
+	if imageFilter.Not != nil {
+		return qb.validateFilter(imageFilter.Not)
+	}
+
+	return nil
+}
+
+func (qb *imageQueryBuilder) makeFilter(imageFilter *models.ImageFilterType) *filterBuilder {
+	query := &filterBuilder{}
+
+	if imageFilter.And != nil {
+		query.and(qb.makeFilter(imageFilter.And))
+	}
+	if imageFilter.Or != nil {
+		query.or(qb.makeFilter(imageFilter.Or))
+	}
+	if imageFilter.Not != nil {
+		query.not(qb.makeFilter(imageFilter.Not))
+	}
+
+	query.handleCriterionFunc(stringCriterionHandler(imageFilter.Path, "images.path"))
+	query.handleCriterionFunc(intCriterionHandler(imageFilter.Rating, "images.rating"))
+	query.handleCriterionFunc(intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
+	query.handleCriterionFunc(boolCriterionHandler(imageFilter.Organized, "images.organized"))
+	query.handleCriterionFunc(resolutionCriterionHandler(imageFilter.Resolution, "images.height", "images.width"))
+	query.handleCriterionFunc(imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
+
+	query.handleCriterionFunc(imageTagsCriterionHandler(qb, imageFilter.Tags))
+	query.handleCriterionFunc(imageTagCountCriterionHandler(qb, imageFilter.TagCount))
+	query.handleCriterionFunc(imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
+	query.handleCriterionFunc(imagePerformersCriterionHandler(qb, imageFilter.Performers))
+	query.handleCriterionFunc(imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
+	query.handleCriterionFunc(imageStudioCriterionHandler(qb, imageFilter.Studios))
+	query.handleCriterionFunc(imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
+
+	return query
+}
+
+func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if imageFilter == nil {
 		imageFilter = &models.ImageFilterType{}
 	}
@@ -227,12 +260,6 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs(imageTable)
-	query.body += `
-		left join performers_images as performers_join on performers_join.image_id = images.id
-		left join studios as studio on studio.id = images.studio_id
-		left join images_tags as tags_join on tags_join.image_id = images.id
-		left join galleries_images as galleries_join on galleries_join.image_id = images.id
-	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"images.title", "images.path", "images.checksum"}
@@ -241,148 +268,24 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		query.addArg(thisArgs...)
 	}
 
-	query.handleStringCriterionInput(imageFilter.Path, "images.path")
-
-	if rating := imageFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("images.rating", *imageFilter.Rating)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(imageFilter.Rating.Value)
-		}
+	if err := qb.validateFilter(imageFilter); err != nil {
+		return nil, err
 	}
+	filter := qb.makeFilter(imageFilter)
 
-	if oCounter := imageFilter.OCounter; oCounter != nil {
-		clause, count := getIntCriterionWhereClause("images.o_counter", *imageFilter.OCounter)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(imageFilter.OCounter.Value)
-		}
-	}
-
-	if Organized := imageFilter.Organized; Organized != nil {
-		var organized string
-		if *Organized == true {
-			organized = "1"
-		} else {
-			organized = "0"
-		}
-		query.addWhere("images.organized = " + organized)
-	}
-
-	if resolutionFilter := imageFilter.Resolution; resolutionFilter != nil {
-		if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
-			switch resolution {
-			case "VERY_LOW":
-				query.addWhere("MIN(images.height, images.width) < 240")
-			case "LOW":
-				query.addWhere("(MIN(images.height, images.width) >= 240 AND MIN(images.height, images.width) < 360)")
-			case "R360P":
-				query.addWhere("(MIN(images.height, images.width) >= 360 AND MIN(images.height, images.width) < 480)")
-			case "STANDARD":
-				query.addWhere("(MIN(images.height, images.width) >= 480 AND MIN(images.height, images.width) < 540)")
-			case "WEB_HD":
-				query.addWhere("(MIN(images.height, images.width) >= 540 AND MIN(images.height, images.width) < 720)")
-			case "STANDARD_HD":
-				query.addWhere("(MIN(images.height, images.width) >= 720 AND MIN(images.height, images.width) < 1080)")
-			case "FULL_HD":
-				query.addWhere("(MIN(images.height, images.width) >= 1080 AND MIN(images.height, images.width) < 1440)")
-			case "QUAD_HD":
-				query.addWhere("(MIN(images.height, images.width) >= 1440 AND MIN(images.height, images.width) < 1920)")
-			case "VR_HD":
-				query.addWhere("(MIN(images.height, images.width) >= 1920 AND MIN(images.height, images.width) < 2160)")
-			case "FOUR_K":
-				query.addWhere("(MIN(images.height, images.width) >= 2160 AND MIN(images.height, images.width) < 2880)")
-			case "FIVE_K":
-				query.addWhere("(MIN(images.height, images.width) >= 2880 AND MIN(images.height, images.width) < 3384)")
-			case "SIX_K":
-				query.addWhere("(MIN(images.height, images.width) >= 3384 AND MIN(images.height, images.width) < 4320)")
-			case "EIGHT_K":
-				query.addWhere("MIN(images.height, images.width) >= 4320")
-			}
-		}
-	}
-
-	if isMissingFilter := imageFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
-		switch *isMissingFilter {
-		case "studio":
-			query.addWhere("images.studio_id IS NULL")
-		case "performers":
-			query.addWhere("performers_join.image_id IS NULL")
-		case "galleries":
-			query.addWhere("galleries_join.image_id IS NULL")
-		case "tags":
-			query.addWhere("tags_join.image_id IS NULL")
-		default:
-			query.addWhere("(images." + *isMissingFilter + " IS NULL OR TRIM(images." + *isMissingFilter + ") = '')")
-		}
-	}
-
-	if tagsFilter := imageFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
-		for _, tagID := range tagsFilter.Value {
-			query.addArg(tagID)
-		}
-
-		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
-		whereClause, havingClause := getMultiCriterionClause("images", "tags", "images_tags", "image_id", "tag_id", tagsFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if tagCountFilter := imageFilter.TagCount; tagCountFilter != nil {
-		clause, count := getCountCriterionClause(imageTable, imagesTagsTable, imageIDColumn, *tagCountFilter)
-
-		if count == 1 {
-			query.addArg(tagCountFilter.Value)
-		}
-
-		query.addWhere(clause)
-	}
-
-	if galleriesFilter := imageFilter.Galleries; galleriesFilter != nil && len(galleriesFilter.Value) > 0 {
-		for _, galleryID := range galleriesFilter.Value {
-			query.addArg(galleryID)
-		}
-
-		query.body += " LEFT JOIN galleries ON galleries_join.gallery_id = galleries.id"
-		whereClause, havingClause := getMultiCriterionClause("images", "galleries", "galleries_images", "image_id", "gallery_id", galleriesFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if performersFilter := imageFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
-		for _, performerID := range performersFilter.Value {
-			query.addArg(performerID)
-		}
-
-		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
-		whereClause, havingClause := getMultiCriterionClause("images", "performers", "performers_images", "image_id", "performer_id", performersFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if performerCountFilter := imageFilter.PerformerCount; performerCountFilter != nil {
-		clause, count := getCountCriterionClause(imageTable, performersImagesTable, imageIDColumn, *performerCountFilter)
-
-		if count == 1 {
-			query.addArg(performerCountFilter.Value)
-		}
-
-		query.addWhere(clause)
-	}
-
-	if studiosFilter := imageFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
-		for _, studioID := range studiosFilter.Value {
-			query.addArg(studioID)
-		}
-
-		whereClause, havingClause := getMultiCriterionClause("images", "studio", "", "", "studio_id", studiosFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	handleImagePerformerTagsCriterion(&query, imageFilter.PerformerTags)
+	query.addFilter(filter)
 
 	query.sortAndPagination = qb.getImageSort(findFilter) + getPagination(findFilter)
+
+	return &query, nil
+}
+
+func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
+	query, err := qb.makeQuery(imageFilter, findFilter)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -401,27 +304,144 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 	return images, countResult, nil
 }
 
-func handleImagePerformerTagsCriterion(query *queryBuilder, performerTagsFilter *models.MultiCriterionInput) {
-	if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
-		for _, tagID := range performerTagsFilter.Value {
-			query.addArg(tagID)
+func (qb *imageQueryBuilder) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(imageFilter, findFilter)
+	if err != nil {
+		return 0, err
+	}
+
+	return query.executeCount()
+}
+
+func imageIsMissingCriterionHandler(qb *imageQueryBuilder, isMissing *string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if isMissing != nil && *isMissing != "" {
+			switch *isMissing {
+			case "studio":
+				f.addWhere("images.studio_id IS NULL")
+			case "performers":
+				qb.performersRepository().join(f, "performers_join", "images.id")
+				f.addWhere("performers_join.image_id IS NULL")
+			case "galleries":
+				qb.galleriesRepository().join(f, "galleries_join", "images.id")
+				f.addWhere("galleries_join.image_id IS NULL")
+			case "tags":
+				qb.tagsRepository().join(f, "tags_join", "images.id")
+				f.addWhere("tags_join.image_id IS NULL")
+			default:
+				f.addWhere("(images." + *isMissing + " IS NULL OR TRIM(images." + *isMissing + ") = '')")
+			}
 		}
+	}
+}
 
-		query.body += " LEFT JOIN performers_tags AS performer_tags_join on performers_join.performer_id = performer_tags_join.performer_id"
+func (qb *imageQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+	return multiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		foreignTable: foreignTable,
+		joinTable:    joinTable,
+		primaryFK:    imageIDColumn,
+		foreignFK:    foreignFK,
+		addJoinsFunc: addJoinsFunc,
+	}
+}
 
-		if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
-			// includes any of the provided ids
-			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
-		} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
-			// includes all of the provided ids
-			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
-			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
-		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-			query.addWhere(fmt.Sprintf(`not exists 
-				(select performers_images.performer_id from performers_images 
-					left join performers_tags on performers_tags.performer_id = performers_images.performer_id where
-					performers_images.image_id = images.id AND
-					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
+func imageTagsCriterionHandler(qb *imageQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    imagesTagsTable,
+		joinAs:       "tags_join",
+		primaryFK:    imageIDColumn,
+		foreignFK:    tagIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.tagsRepository().join(f, "tags_join", "images.id")
+		},
+	}
+
+	return h.handler(tags)
+}
+
+func imageTagCountCriterionHandler(qb *imageQueryBuilder, tagCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    imagesTagsTable,
+		primaryFK:    imageIDColumn,
+	}
+
+	return h.handler(tagCount)
+}
+
+func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		qb.galleriesRepository().join(f, "galleries_join", "images.id")
+		f.addJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
+	}
+	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
+
+	return h.handler(galleries)
+}
+
+func imagePerformersCriterionHandler(qb *imageQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
+	h := joinedMultiCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    performersImagesTable,
+		joinAs:       "performers_join",
+		primaryFK:    imageIDColumn,
+		foreignFK:    performerIDColumn,
+
+		addJoinTable: func(f *filterBuilder) {
+			qb.performersRepository().join(f, "performers_join", "images.id")
+		},
+	}
+
+	return h.handler(performers)
+}
+
+func imagePerformerCountCriterionHandler(qb *imageQueryBuilder, performerCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    performersImagesTable,
+		primaryFK:    imageIDColumn,
+	}
+
+	return h.handler(performerCount)
+}
+
+func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		f.addJoin(studioTable, "studio", "studio.id = images.studio_id")
+	}
+	h := qb.getMultiCriterionHandlerBuilder("studio", "", studioIDColumn, addJoinsFunc)
+
+	return h.handler(studios)
+}
+
+func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, performerTagsFilter *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
+			qb.performersRepository().join(f, "performers_join", "images.id")
+			f.addJoin("performers_tags", "performer_tags_join", "performers_join.performer_id = performer_tags_join.performer_id")
+
+			var args []interface{}
+			for _, tagID := range performerTagsFilter.Value {
+				args = append(args, tagID)
+			}
+
+			if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
+				// includes any of the provided ids
+				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
+			} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
+				// includes all of the provided ids
+				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
+				f.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
+			} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
+				f.addWhere(fmt.Sprintf(`not exists
+					(select performers_images.performer_id from performers_images
+						left join performers_tags on performers_tags.performer_id = performers_images.performer_id where
+						performers_images.image_id = images.id AND
+						performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))), args...)
+			}
 		}
 	}
 }

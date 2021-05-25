@@ -376,6 +376,60 @@ func stringLiteralCriterionHandler(v *string, column string) criterionHandlerFun
 	}
 }
 
+// handle for MultiCriterion where there is a join table between the new
+// objects
+type joinedMultiCriterionHandlerBuilder struct {
+	// table containing the primary objects
+	primaryTable string
+	// table joining primary and foreign objects
+	joinTable string
+	// alias for join table, if required
+	joinAs string
+	// foreign key of the primary object on the join table
+	primaryFK string
+	// foreign key of the foreign object on the join table
+	foreignFK string
+
+	addJoinTable func(f *filterBuilder)
+}
+
+func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil && len(criterion.Value) > 0 {
+			var args []interface{}
+			for _, tagID := range criterion.Value {
+				args = append(args, tagID)
+			}
+
+			joinAlias := m.joinAs
+			if joinAlias == "" {
+				joinAlias = m.joinTable
+			}
+
+			whereClause := ""
+			havingClause := ""
+			if criterion.Modifier == models.CriterionModifierIncludes {
+				// includes any of the provided ids
+				m.addJoinTable(f)
+				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
+			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+				// includes all of the provided ids
+				m.addJoinTable(f)
+				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
+				havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
+			} else if criterion.Modifier == models.CriterionModifierExcludes {
+				// excludes all of the provided ids
+				// need to use actual join table name for this
+				// not exists (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<primaryFK> = <primaryTable>.id and <joinTable>.<foreignFK> in <values>)
+				whereClause = fmt.Sprintf("not exists (select %[1]s.%[2]s from %[1]s where %[1]s.%[2]s = %[3]s.id and %[1]s.%[4]s in %[5]s)", m.joinTable, m.primaryFK, m.primaryTable, m.foreignFK, getInBinding(len(criterion.Value)))
+			}
+
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
+	}
+}
+
 type multiCriterionHandlerBuilder struct {
 	primaryTable string
 	foreignTable string

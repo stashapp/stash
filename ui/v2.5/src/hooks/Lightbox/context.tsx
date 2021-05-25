@@ -12,6 +12,8 @@ export interface IState {
   initialIndex?: number;
   pageCallback?: (direction: number) => boolean;
   pageHeader?: string;
+  slideshowEnabled: boolean;
+  onClose?: () => void;
 }
 interface IContext {
   setLightboxState: (state: Partial<IState>) => void;
@@ -26,6 +28,7 @@ const Lightbox: React.FC = ({ children }) => {
     isVisible: false,
     isLoading: false,
     showNavigation: true,
+    slideshowEnabled: false,
   });
 
   const setPartialState = useCallback(
@@ -38,14 +41,18 @@ const Lightbox: React.FC = ({ children }) => {
     [setLightboxState]
   );
 
+  const onHide = () => {
+    setLightboxState({ ...lightboxState, isVisible: false });
+    if (lightboxState.onClose) {
+      lightboxState.onClose();
+    }
+  };
+
   return (
     <LightboxContext.Provider value={{ setLightboxState: setPartialState }}>
       {children}
       {lightboxState.isVisible && (
-        <LightboxComponent
-          {...lightboxState}
-          hide={() => setLightboxState({ ...lightboxState, isVisible: false })}
-        />
+        <LightboxComponent {...lightboxState} hide={onHide} />
       )}
     </LightboxContext.Provider>
   );

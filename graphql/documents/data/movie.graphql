@@ -9,7 +9,7 @@ fragment MovieData on Movie {
   director
 
   studio {
-    ...StudioData
+    ...SlimStudioData
   }
   
   synopsis

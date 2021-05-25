@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
@@ -12,6 +11,14 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { PopoverCountButton } from "../Shared/PopoverCountButton";
+
+export interface IPerformerCardExtraCriteria {
+  scenes: Criterion[];
+  images: Criterion[];
+  galleries: Criterion[];
+}
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -19,6 +26,7 @@ interface IPerformerCardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerCard: React.FC<IPerformerCardProps> = ({
@@ -27,17 +35,21 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   selecting,
   selected,
   onSelectedChanged,
+  extraCriteria,
 }) => {
-  const age = TextUtils.age(performer.birthdate, ageFromDate);
+  const age = TextUtils.age(
+    performer.birthdate,
+    ageFromDate ?? performer.death_date
+  );
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 
-  function maybeRenderFavoriteBanner() {
+  function maybeRenderFavoriteIcon() {
     if (performer.favorite === false) {
       return;
     }
     return (
-      <div className="rating-banner rating-5">
-        <FormattedMessage id="favourite" defaultMessage="Favourite" />
+      <div className="favorite">
+        <Icon icon="heart" size="2x" />
       </div>
     );
   }
@@ -46,12 +58,38 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     if (!performer.scene_count) return;
 
     return (
-      <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-        <Button className="minimal">
-          <Icon icon="play-circle" />
-          <span>{performer.scene_count}</span>
-        </Button>
-      </Link>
+      <PopoverCountButton
+        type="scene"
+        count={performer.scene_count}
+        url={NavUtils.makePerformerScenesUrl(performer, extraCriteria?.scenes)}
+      />
+    );
+  }
+
+  function maybeRenderImagesPopoverButton() {
+    if (!performer.image_count) return;
+
+    return (
+      <PopoverCountButton
+        type="image"
+        count={performer.image_count}
+        url={NavUtils.makePerformerImagesUrl(performer, extraCriteria?.images)}
+      />
+    );
+  }
+
+  function maybeRenderGalleriesPopoverButton() {
+    if (!performer.gallery_count) return;
+
+    return (
+      <PopoverCountButton
+        type="gallery"
+        count={performer.gallery_count}
+        url={NavUtils.makePerformerGalleriesUrl(
+          performer,
+          extraCriteria?.galleries
+        )}
+      />
     );
   }
 
@@ -73,17 +111,39 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (performer.scene_count || performer.tags.length > 0) {
+    if (
+      performer.scene_count ||
+      performer.image_count ||
+      performer.gallery_count ||
+      performer.tags.length > 0
+    ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
+            {maybeRenderImagesPopoverButton()}
+            {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}
           </ButtonGroup>
         </>
       );
     }
+  }
+
+  function maybeRenderRatingBanner() {
+    if (!performer.rating) {
+      return;
+    }
+    return (
+      <div
+        className={`rating-banner ${
+          performer.rating ? `rating-${performer.rating}` : ""
+        }`}
+      >
+        RATING: {performer.rating}
+      </div>
+    );
   }
 
   return (
@@ -97,7 +157,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             alt={performer.name ?? ""}
             src={performer.image_path ?? ""}
           />
-          {maybeRenderFavoriteBanner()}
+          {maybeRenderFavoriteIcon()}
+          {maybeRenderRatingBanner()}
         </>
       }
       details={

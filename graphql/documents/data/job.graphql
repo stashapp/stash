@@ -1,0 +1,10 @@
+fragment JobData on Job {
+  id
+  status
+  subTasks
+  description
+  progress
+  startTime
+  endTime
+  addTime
+}

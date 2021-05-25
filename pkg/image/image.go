@@ -257,3 +257,10 @@ func GetTitle(s *models.Image) string {
 	_, fn := getFilePath(s.Path)
 	return filepath.Base(fn)
 }
+
+// GetFilename gets the base name of the image file
+// If stripExt is set the file extension is omitted from the name
+func GetFilename(s *models.Image, stripExt bool) string {
+	_, fn := getFilePath(s.Path)
+	return utils.GetNameFromPath(fn, stripExt)
+}

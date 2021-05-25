@@ -376,6 +376,27 @@ func (_m *GalleryReaderWriter) Query(galleryFilter *models.GalleryFilterType, fi
 	return r0, r1, r2
 }
 
+// QueryCount provides a mock function with given fields: galleryFilter, findFilter
+func (_m *GalleryReaderWriter) QueryCount(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (int, error) {
+	ret := _m.Called(galleryFilter, findFilter)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(*models.GalleryFilterType, *models.FindFilterType) int); ok {
+		r0 = rf(galleryFilter, findFilter)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*models.GalleryFilterType, *models.FindFilterType) error); ok {
+		r1 = rf(galleryFilter, findFilter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: updatedGallery
 func (_m *GalleryReaderWriter) Update(updatedGallery models.Gallery) (*models.Gallery, error) {
 	ret := _m.Called(updatedGallery)

@@ -29,8 +29,10 @@ type Scene struct {
 	Bitrate     sql.NullInt64       `db:"bitrate" json:"bitrate"`
 	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
 	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
+	Phash       sql.NullInt64       `db:"phash,omitempty" json:"phash"`
 	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	Interactive bool                `db:"interactive" json:"interactive"`
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
@@ -58,8 +60,10 @@ type ScenePartial struct {
 	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
 	MovieID     *sql.NullInt64       `db:"movie_id,omitempty" json:"movie_id"`
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
+	Phash       *sql.NullInt64       `db:"phash,omitempty" json:"phash"`
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	Interactive *bool                `db:"interactive" json:"interactive"`
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,

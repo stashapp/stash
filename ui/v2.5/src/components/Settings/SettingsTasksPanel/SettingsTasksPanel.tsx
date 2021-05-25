@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Button, Form, ProgressBar } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Button, Form } from "react-bootstrap";
 import {
-  useJobStatus,
-  useMetadataUpdate,
   mutateMetadataImport,
   mutateMetadataClean,
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataExport,
   mutateMigrateHashNaming,
-  mutateStopJob,
   usePlugins,
   mutateRunPluginTask,
   mutateBackupDatabase,
@@ -22,6 +18,7 @@ import { downloadFile } from "src/utils";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
+import { JobTable } from "./JobTable";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -44,78 +41,29 @@ export const SettingsTasksPanel: React.FC = () => {
   const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
     false
   );
+  const [scanGeneratePhashes, setScanGeneratePhashes] = useState<boolean>(
+    false
+  );
   const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
   const [
     scanGenerateImagePreviews,
     setScanGenerateImagePreviews,
   ] = useState<boolean>(false);
 
-  const [status, setStatus] = useState<string>("");
-  const [progress, setProgress] = useState<number>(0);
-
   const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
   const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
   const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
 
-  const jobStatus = useJobStatus();
-  const metadataUpdate = useMetadataUpdate();
-
   const plugins = usePlugins();
 
-  function statusToText(s: string) {
-    switch (s) {
-      case "Idle":
-        return "Idle";
-      case "Scan":
-        return "Scanning for new content";
-      case "Generate":
-        return "Generating supporting files";
-      case "Clean":
-        return "Cleaning the database";
-      case "Export":
-        return "Exporting to JSON";
-      case "Import":
-        return "Importing from JSON";
-      case "Auto Tag":
-        return "Auto tagging scenes";
-      case "Plugin Operation":
-        return "Running Plugin Operation";
-      case "Migrate":
-        return "Migrating";
-      default:
-        return "Idle";
-    }
-  }
-
-  useEffect(() => {
-    if (jobStatus?.data?.jobStatus) {
-      setStatus(statusToText(jobStatus.data.jobStatus.status));
-      const newProgress = jobStatus.data.jobStatus.progress;
-      if (newProgress < 0) {
-        setProgress(-1);
-      } else {
-        setProgress(newProgress * 100);
-      }
-    }
-  }, [jobStatus]);
-
-  useEffect(() => {
-    if (metadataUpdate?.data?.metadataUpdate) {
-      setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
-      const newProgress = metadataUpdate.data.metadataUpdate.progress;
-      if (newProgress < 0) {
-        setProgress(-1);
-      } else {
-        setProgress(newProgress * 100);
-      }
-    }
-  }, [metadataUpdate]);
-
-  function onImport() {
+  async function onImport() {
     setIsImportAlertOpen(false);
-    mutateMetadataImport().then(() => {
-      jobStatus.refetch();
-    });
+    try {
+      await mutateMetadataImport();
+      Toast.success({ content: "Added import task to queue" });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function renderImportAlert() {
@@ -138,8 +86,6 @@ export const SettingsTasksPanel: React.FC = () => {
     setIsCleanAlertOpen(false);
     mutateMetadataClean({
       dryRun: cleanDryRun,
-    }).then(() => {
-      jobStatus.refetch();
     });
   }
 
@@ -206,9 +152,9 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGeneratePreviews,
         scanGenerateImagePreviews,
         scanGenerateSprites,
+        scanGeneratePhashes,
       });
-      Toast.success({ content: "Started scan" });
-      jobStatus.refetch();
+      Toast.success({ content: "Added scan to job queue" });
     } catch (e) {
       Toast.error(e);
     }
@@ -243,53 +189,15 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onAutoTag(paths?: string[]) {
     try {
       await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({ content: "Started auto tagging" });
-      jobStatus.refetch();
+      Toast.success({ content: "Added Auto tagging job to queue" });
     } catch (e) {
       Toast.error(e);
     }
   }
 
-  function maybeRenderStop() {
-    if (!status || status === "Idle") {
-      return undefined;
-    }
-
-    return (
-      <Form.Group>
-        <Button
-          id="stop"
-          variant="danger"
-          onClick={() => mutateStopJob().then(() => jobStatus.refetch())}
-        >
-          Stop
-        </Button>
-      </Form.Group>
-    );
-  }
-
-  function renderJobStatus() {
-    return (
-      <>
-        <Form.Group>
-          <h5>Status: {status}</h5>
-          {!!status && status !== "Idle" ? (
-            <ProgressBar
-              animated
-              now={progress > -1 ? progress : 100}
-              label={progress > -1 ? `${progress.toFixed(0)}%` : ""}
-            />
-          ) : (
-            ""
-          )}
-        </Form.Group>
-        {maybeRenderStop()}
-      </>
-    );
-  }
-
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
     await mutateRunPluginTask(plugin.id, operation.name);
+    Toast.success({ content: `Added ${operation.name} job to queue` });
   }
 
   function renderPluginTasks(plugin: Plugin, pluginTasks: PluginTask[]) {
@@ -357,6 +265,24 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
+  async function onMigrateHashNaming() {
+    try {
+      await mutateMigrateHashNaming();
+      Toast.success({ content: "Added hash migration task to queue" });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
+  async function onExport() {
+    try {
+      await mutateMetadataExport();
+      Toast.success({ content: "Added export task to queue" });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
   if (isBackupRunning) {
     return <LoadingIndicator message="Backup up database" />;
   }
@@ -369,9 +295,9 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
 
-      <h4>Running Jobs</h4>
+      <h4>Job Queue</h4>
 
-      {renderJobStatus()}
+      <JobTable />
 
       <hr />
 
@@ -413,6 +339,12 @@ export const SettingsTasksPanel: React.FC = () => {
           checked={scanGenerateSprites}
           label="Generate sprites during scan (for the scene scrubber)"
           onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
+        />
+        <Form.Check
+          id="scan-generate-phashes"
+          checked={scanGeneratePhashes}
+          label="Generate phashes during scan (for deduplication and scene identification)"
+          onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
         />
       </Form.Group>
       <Form.Group>
@@ -481,12 +413,6 @@ export const SettingsTasksPanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
 
-      <Form.Group>
-        <Link to="/sceneFilenameParser">
-          <Button variant="secondary">Scene Filename Parser</Button>
-        </Link>
-      </Form.Group>
-
       <hr />
 
       <h5>Generated Content</h5>
@@ -524,11 +450,7 @@ export const SettingsTasksPanel: React.FC = () => {
           id="export"
           variant="secondary"
           type="submit"
-          onClick={() =>
-            mutateMetadataExport().then(() => {
-              jobStatus.refetch();
-            })
-          }
+          onClick={() => onExport()}
         >
           Full Export
         </Button>
@@ -608,11 +530,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="migrateHashNaming"
           variant="danger"
-          onClick={() =>
-            mutateMigrateHashNaming().then(() => {
-              jobStatus.refetch();
-            })
-          }
+          onClick={() => onMigrateHashNaming()}
         >
           Rename generated files
         </Button>

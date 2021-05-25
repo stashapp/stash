@@ -56,6 +56,10 @@ export interface IStashBoxPerformer {
   piercings?: string;
   aliases?: string;
   images: string[];
+  details?: string;
+  death_date?: string;
+  hair_color?: string;
+  weight?: string;
 }
 
 export interface IStashBoxTag {
@@ -103,7 +107,7 @@ const selectTags = (tags: GQL.ScrapedSceneTag[]): IStashBoxTag[] =>
     name: t.name ?? "",
   }));
 
-const selectPerformers = (
+export const selectPerformers = (
   performers: GQL.ScrapedScenePerformer[]
 ): IStashBoxPerformer[] =>
   performers.map((p) => ({
@@ -126,6 +130,9 @@ const selectPerformers = (
     piercings: p.piercings ? toTitleCase(p.piercings) : undefined,
     aliases: p.aliases ?? undefined,
     images: p.images ?? [],
+    details: p.details ?? undefined,
+    death_date: p.death_date ?? undefined,
+    hair_color: p.hair_color ?? undefined,
   }));
 
 export const selectScenes = (
@@ -158,20 +165,93 @@ export const sortScenesByDuration = (
   targetDuration?: number
 ) =>
   scenes.sort((a, b) => {
-    const adur =
-      a?.duration || (a?.fingerprints.map((f) => f.duration)?.[0] ?? null);
-    const bdur =
-      b?.duration || (b?.fingerprints.map((f) => f.duration)?.[0] ?? null);
-    if (!adur && !bdur) return 0;
-    if (adur && !bdur) return -1;
-    if (!adur && bdur) return 1;
-
     if (!targetDuration) return 0;
 
-    const aDiff = Math.abs((adur ?? 0) - targetDuration);
-    const bDiff = Math.abs((bdur ?? 0) - targetDuration);
+    const aDur = [
+      a.duration,
+      ...a.fingerprints.map((f) => f.duration),
+    ].map((d) => Math.abs(d - targetDuration));
+    const bDur = [
+      b.duration,
+      ...b.fingerprints.map((f) => f.duration),
+    ].map((d) => Math.abs(d - targetDuration));
+
+    if (aDur.length > 0 && bDur.length === 0) return -1;
+    if (aDur.length === 0 && bDur.length > 0) return 1;
+
+    const aMatches = aDur.filter((match) => match <= 5);
+    const bMatches = bDur.filter((match) => match <= 5);
+
+    if (aMatches.length > 0 || bMatches.length > 0) {
+      if (aMatches.length > bMatches.length) return -1;
+      if (aMatches.length < bMatches.length) return 1;
+      return 0;
+    }
+
+    const aDiff = Math.min(...aDur);
+    const bDiff = Math.min(...bDur);
 
     if (aDiff < bDiff) return -1;
     if (aDiff > bDiff) return 1;
     return 0;
   });
+
+export const filterPerformer = (
+  performer: IStashBoxPerformer,
+  excludedFields: string[]
+) => {
+  const {
+    name,
+    aliases,
+    gender,
+    birthdate,
+    ethnicity,
+    country,
+    eye_color,
+    height,
+    measurements,
+    fake_tits,
+    career_length,
+    tattoos,
+    piercings,
+  } = performer;
+  return {
+    name: !excludedFields.includes("name") && name ? name : undefined,
+    aliases:
+      !excludedFields.includes("aliases") && aliases ? aliases : undefined,
+    gender: !excludedFields.includes("gender") && gender ? gender : undefined,
+    birthdate:
+      !excludedFields.includes("birthdate") && birthdate
+        ? birthdate
+        : undefined,
+    ethnicity:
+      !excludedFields.includes("ethnicity") && ethnicity
+        ? ethnicity
+        : undefined,
+    country:
+      !excludedFields.includes("country") && country ? country : undefined,
+    eye_color:
+      !excludedFields.includes("eye_color") && eye_color
+        ? eye_color
+        : undefined,
+    height: !excludedFields.includes("height") && height ? height : undefined,
+    measurements:
+      !excludedFields.includes("measurements") && measurements
+        ? measurements
+        : undefined,
+    fake_tits:
+      !excludedFields.includes("fake_tits") && fake_tits
+        ? fake_tits
+        : undefined,
+    career_length:
+      !excludedFields.includes("career_length") && career_length
+        ? career_length
+        : undefined,
+    tattoos:
+      !excludedFields.includes("tattoos") && tattoos ? tattoos : undefined,
+    piercings:
+      !excludedFields.includes("piercings") && piercings
+        ? piercings
+        : undefined,
+  };
+};

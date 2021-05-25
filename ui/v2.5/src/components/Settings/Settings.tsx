@@ -9,6 +9,8 @@ import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapersPanel } from "./SettingsScrapersPanel";
+import { SettingsToolsPanel } from "./SettingsToolsPanel";
+import { SettingsDLNAPanel } from "./SettingsDLNAPanel";
 
 export const Settings: React.FC = () => {
   const location = useLocation();
@@ -20,7 +22,7 @@ export const Settings: React.FC = () => {
   return (
     <Card className="col col-lg-9 mx-auto">
       <Tab.Container
-        defaultActiveKey={defaultTab}
+        activeKey={defaultTab}
         id="configuration-tabs"
         onSelect={(tab) => tab && onSelect(tab)}
       >
@@ -35,6 +37,12 @@ export const Settings: React.FC = () => {
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="tasks">Tasks</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="dlna">DLNA</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="tools">Tools</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="scrapers">Scrapers</Nav.Link>
@@ -62,16 +70,22 @@ export const Settings: React.FC = () => {
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="scrapers">
+              <Tab.Pane eventKey="dlna" unmountOnExit>
+                <SettingsDLNAPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="tools" unmountOnExit>
+                <SettingsToolsPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="scrapers" unmountOnExit>
                 <SettingsScrapersPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="plugins">
+              <Tab.Pane eventKey="plugins" unmountOnExit>
                 <SettingsPluginsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="logs">
+              <Tab.Pane eventKey="logs" unmountOnExit>
                 <SettingsLogsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="about">
+              <Tab.Pane eventKey="about" unmountOnExit>
                 <SettingsAboutPanel />
               </Tab.Pane>
             </Tab.Content>

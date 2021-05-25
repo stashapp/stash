@@ -6,7 +6,7 @@ enum SortDirectionEnum {
 input FindFilterType {
   q: String
   page: Int
-  """use per_page = 0 to indicate all results. Defaults to 25."""
+  """use per_page = -1 to indicate all results. Defaults to 25."""
   per_page: Int
   sort: String
   direction: SortDirectionEnum
@@ -29,6 +29,10 @@ enum ResolutionEnum {
 }
 
 input PerformerFilterType {
+  AND: PerformerFilterType
+  OR: PerformerFilterType
+  NOT: PerformerFilterType
+
   """Filter by favorite"""
   filter_favorites: Boolean
   """Filter by birth year"""
@@ -70,9 +74,19 @@ input PerformerFilterType {
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: String
+  stash_id: StringCriterionInput
+  """Filter by rating"""
+  rating: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by hair color"""
+  hair_color: StringCriterionInput
+  """Filter by weight"""
+  weight: IntCriterionInput
+  """Filter by death year"""
+  death_year: IntCriterionInput
+  """Filter by studios where performer appears in scene/image/gallery"""
+  studios: MultiCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -122,9 +136,11 @@ input SceneFilterType {
   """Filter by performer count"""
   performer_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: String
+  stash_id: StringCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by interactive"""
+  interactive: Boolean
 }
 
 input MovieFilterType {
@@ -140,14 +156,26 @@ input StudioFilterType {
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
   """Filter by StashID"""
-  stash_id: String
+  stash_id: StringCriterionInput
   """Filter to only include studios missing this property"""
   is_missing: String
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by scene count"""
+  scene_count: IntCriterionInput
+  """Filter by image count"""
+  image_count: IntCriterionInput
+  """Filter by gallery count"""
+  gallery_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
 }
 
 input GalleryFilterType {
+  AND: GalleryFilterType
+  OR: GalleryFilterType
+  NOT: GalleryFilterType
+
   """Filter by path"""
   path: StringCriterionInput
   """Filter to only include galleries missing this property"""
@@ -203,6 +231,10 @@ input TagFilterType {
 }
 
 input ImageFilterType {
+  AND: ImageFilterType
+  OR: ImageFilterType
+  NOT: ImageFilterType
+
   """Filter by path"""
   path: StringCriterionInput
   """Filter by rating"""

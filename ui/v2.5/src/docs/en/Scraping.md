@@ -346,21 +346,43 @@ The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="in
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
 * `feetToCm`: converts a string containing feet and inches numbers into centimetres. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimetres.
+* `lbToKg`: converts a string containing lbs to kg.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
 
 Example:
 ```yaml
 performer:
   Gender:
-    selector: //div[class="example element"]
+    selector: //div[@class="example element"]
     postProcess:
       - map:
           F: Female
           M: Male
+  Height:
+    selector: //span[@id="height"]
+    postProcess:
+      - feetToCm: true
+  Weight:
+    selector: //span[@id="weight"]
+    postProcess:
+      - lbToKg: true
 ```
 Gets the contents of the selected div element, and sets the returned value to `Female` if the scraped value is `F`; `Male` if the scraped value is `M`.
+Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
 
 * `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them.
+
+* `subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format.
+Example:
+```yaml
+Date:
+  selector: //strong[contains(text(),"Added:")]/following-sibling::text()
+  postProcess:
+    - replace:
+        - regex: (\d+)\sdays\sago.+
+          with: $1
+    - subtractDays: true
+```
 
 * `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
 
@@ -379,7 +401,17 @@ Replaces `2001 to 2003` with `2001-2003`.
 
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
-* `split`: Its the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
+* `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
+
+Example:
+```yaml
+Tags:
+  Name:
+    selector: //span[@class="list_attributes"]
+    split: ","
+```
+Splits a comma separated list of tags located in the span and returns the tags.
+
 
 For backwards compatibility, `replace`, `subscraper` and `parseDate` are also allowed as keys for the attribute.
 
@@ -544,6 +576,24 @@ When developing a scraper you can have a look at the cookies set by a site by ad
 
 and having a look at the log / console in debug mode.
 
+### Headers
+
+Sending request headers is possible when using a scraper.
+Headers can be set in the `driver` section and are supported for plain, CDP enabled and JSON scrapers.
+They consist of a Key and a Value. If the the Key is empty or not defined then the header is ignored.
+
+```yaml
+driver:
+  headers:
+    - Key: User-Agent
+      Value: My Stash Scraper
+    - Key: Authorization
+      Value: Bearer ds3sdfcFdfY17p4qBkTVF03zscUU2glSjWF17bZyoe8
+```
+
+* headers are set after stash's `User-Agent` configuration option is applied.
+This means setting a `User-Agent` header from the scraper overrides the one in the configuration settings.
+
 ### XPath scraper example
 
 A performer and scene xpath scraper is shown as an example below:
@@ -614,31 +664,42 @@ A performer and scene scraper for ThePornDB is shown below:
 name: ThePornDB
 performerByName:
   action: scrapeJson
-  queryURL: https://metadataapi.net/api/performers?q={}
+  queryURL: https://api.metadataapi.net/performers?q={}
   scraper: performerSearch
 performerByURL:
   - action: scrapeJson
     url:
-      - https://metadataapi.net/api/performers/
+      - https://api.metadataapi.net/performers/
     scraper: performerScraper
 sceneByURL:
   - action: scrapeJson
     url:
-      - https://metadataapi.net/api/scenes/
+      - https://api.metadataapi.net/scenes/
     scraper: sceneScraper
 sceneByFragment:
   action: scrapeJson
-  queryURL: https://metadataapi.net/api/scenes?parse={filename}&limit=1
+  queryURL: https://api.metadataapi.net/scenes?parse={filename}&hash={oshash}&limit=1
   scraper: sceneQueryScraper
+  queryURLReplace:
+    filename:
+      - regex: "[^a-zA-Z\\d\\-._~]" # clean filename so that it can contruct a valid url
+        with: "." # "%20"
+      - regex: HEVC
+        with:
+      - regex: x265
+        with:
+      - regex: \.+
+        with: "."
 jsonScrapers:
   performerSearch:
     performer:
       Name: data.#.name
       URL:
         selector: data.#.id
-        replace:
-          - regex: ^
-            with: https://metadataapi.net/api/performers/
+        postProcess:
+          - replace:
+              - regex: ^
+                with: https://api.metadataapi.net/performers/
 
   performerScraper:
     common:
@@ -648,7 +709,12 @@ jsonScrapers:
       Gender: $extras.gender
       Birthdate: $extras.birthday
       Ethnicity: $extras.ethnicity
-      Height: $extras.height
+      Height:
+        selector: $extras.height
+        postProcess:
+          - replace:
+              - regex: cm
+                with:
       Measurements: $extras.measurements
       Tattoos: $extras.tattoos
       Piercings: $extras.piercings
@@ -670,7 +736,7 @@ jsonScrapers:
         Name: data.site.name
       Tags:
         Name: data.tags.#.tag
-  
+
   sceneQueryScraper:
     common:
       $data: data.0
@@ -686,7 +752,14 @@ jsonScrapers:
       Studio:
         Name: $data.site.name
       Tags:
-        Name: $data.tags.#.tag  
+        Name: $data.tags.#.tag
+driver:
+  headers:
+    - Key: User-Agent
+      Value: Stash JSON Scraper
+    - Key: Authorization
+      Value: Bearer lPdwFdfY17p4qBkTVF03zscUU2glSjdf17bZyoe  # use an actual API Key here
+# Last Updated April 7, 2021
 ```
 
 ## Object fields
@@ -699,10 +772,13 @@ URL
 Twitter
 Instagram
 Birthdate
+DeathDate
 Ethnicity
 Country
+HairColor
 EyeColor
 Height
+Weight
 Measurements
 FakeTits
 CareerLength
@@ -711,6 +787,7 @@ Piercings
 Aliases
 Tags (see Tag fields)
 Image
+Details
 ```
 
 *Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).

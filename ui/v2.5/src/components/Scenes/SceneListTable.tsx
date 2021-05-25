@@ -9,12 +9,13 @@ import { Icon, TruncatedText } from "src/components/Shared";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
+  queue?: SceneQueue;
 }
 
 export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
-  const renderTags = (tags: GQL.Tag[]) =>
+  const renderTags = (tags: GQL.SlimTagDataFragment[]) =>
     tags.map((tag) => (
       <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
@@ -37,52 +38,58 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       )
     );
 
-  const renderSceneRow = (scene: GQL.SlimSceneDataFragment) => (
-    <tr key={scene.id}>
-      <td>
-        <Link to={`/scenes/${scene.id}`}>
-          <img
-            className="image-thumbnail"
-            alt={scene.title ?? ""}
-            src={scene.paths.screenshot ?? ""}
-          />
-        </Link>
-      </td>
-      <td className="text-left">
-        <Link to={`/scenes/${scene.id}`}>
-          <h5>
-            <TruncatedText
-              text={scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+  const renderSceneRow = (scene: GQL.SlimSceneDataFragment, index: number) => {
+    const sceneLink = props.queue
+      ? props.queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+
+    return (
+      <tr key={scene.id}>
+        <td>
+          <Link to={sceneLink}>
+            <img
+              className="image-thumbnail"
+              alt={scene.title ?? ""}
+              src={scene.paths.screenshot ?? ""}
             />
-          </h5>
-        </Link>
-      </td>
-      <td>{scene.rating ? scene.rating : ""}</td>
-      <td>
-        {scene.file.duration &&
-          TextUtils.secondsToTimestamp(scene.file.duration)}
-      </td>
-      <td>{renderTags(scene.tags)}</td>
-      <td>{renderPerformers(scene.performers)}</td>
-      <td>
-        {scene.studio && (
-          <Link to={NavUtils.makeStudioScenesUrl(scene.studio)}>
-            <h6>{scene.studio.name}</h6>
           </Link>
-        )}
-      </td>
-      <td>{renderMovies(scene)}</td>
-      <td>
-        {scene.gallery && (
-          <Button className="minimal">
-            <Link to={`/galleries/${scene.gallery.id}`}>
-              <Icon icon="image" />
+        </td>
+        <td className="text-left">
+          <Link to={sceneLink}>
+            <h5>
+              <TruncatedText
+                text={scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+              />
+            </h5>
+          </Link>
+        </td>
+        <td>{scene.rating ? scene.rating : ""}</td>
+        <td>
+          {scene.file.duration &&
+            TextUtils.secondsToTimestamp(scene.file.duration)}
+        </td>
+        <td>{renderTags(scene.tags)}</td>
+        <td>{renderPerformers(scene.performers)}</td>
+        <td>
+          {scene.studio && (
+            <Link to={NavUtils.makeStudioScenesUrl(scene.studio)}>
+              <h6>{scene.studio.name}</h6>
             </Link>
-          </Button>
-        )}
-      </td>
-    </tr>
-  );
+          )}
+        </td>
+        <td>{renderMovies(scene)}</td>
+        <td>
+          {scene.gallery && (
+            <Button className="minimal">
+              <Link to={`/galleries/${scene.gallery.id}`}>
+                <Icon icon="image" />
+              </Link>
+            </Button>
+          )}
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className="row table-list justify-content-center">

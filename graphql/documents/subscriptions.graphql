@@ -1,8 +1,13 @@
-subscription MetadataUpdate {
-  metadataUpdate {
-    progress
-    status
-    message
+subscription JobsSubscribe {
+  jobsSubscribe {
+    type
+    job {
+      id
+      status
+      subTasks
+      description
+      progress
+    }
   }
 }
 
@@ -10,4 +15,8 @@ subscription LoggingSubscribe {
   loggingSubscribe {
     ...LogEntryData
   }
+}
+
+subscription ScanCompleteSubscribe {
+  scanCompleteSubscribe
 }

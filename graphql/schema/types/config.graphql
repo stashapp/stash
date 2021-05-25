@@ -1,3 +1,13 @@
+input SetupInput {
+  """Empty to indicate $HOME/.stash/config.yml default"""
+  configLocation: String!
+  stashes: [StashConfigInput!]!
+  """Empty to indicate default"""
+  databaseFile: String!
+  """Empty to indicate default"""
+  generatedLocation: String!
+}
+
 enum StreamingResolutionEnum {
   "240p", LOW
   "480p", STANDARD
@@ -178,6 +188,10 @@ input ConfigInterfaceInput {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
+  """Handy Connection Key"""
+  handyKey: String
 }
 
 type ConfigInterfaceResult {
@@ -200,12 +214,37 @@ type ConfigInterfaceResult {
   cssEnabled: Boolean
   """Interface language"""
   language: String
+  """Slideshow Delay"""
+  slideshowDelay: Int
+  """Handy Connection Key"""
+  handyKey: String
+}
+
+input ConfigDLNAInput {
+  serverName: String
+  """True if DLNA service should be enabled by default"""
+  enabled: Boolean
+  """List of IPs whitelisted for DLNA service"""
+  whitelistedIPs: [String!]
+  """List of interfaces to run DLNA on. Empty for all"""
+  interfaces: [String!]
+}
+
+type ConfigDLNAResult {
+  serverName: String!
+  """True if DLNA service should be enabled by default"""
+  enabled: Boolean!
+  """List of IPs whitelisted for DLNA service"""
+  whitelistedIPs: [String!]!
+  """List of interfaces to run DLNA on. Empty for all"""
+  interfaces: [String!]!
 }
 
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
+  dlna: ConfigDLNAResult!
 }
 
 """Directory structure of a path"""

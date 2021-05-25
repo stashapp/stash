@@ -93,10 +93,6 @@ func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *
 	}
 }
 
-func (t *ExportTask) GetStatus() JobStatus {
-	return Export
-}
-
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Movie.count
@@ -107,7 +103,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	startTime := time.Now()
 
 	if t.full {
-		t.baseDir = config.GetMetadataPath()
+		t.baseDir = config.GetInstance().GetMetadataPath()
 	} else {
 		var err error
 		t.baseDir, err = instance.Paths.Generated.TempDir("export")

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -116,10 +117,12 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 		notStr = " NOT"
 		binaryType = " AND "
 	}
-
-	queryWords := strings.Split(q, " ")
+	q = strings.TrimSpace(q)
 	trimmedQuery := strings.Trim(q, "\"")
+
 	if trimmedQuery == q {
+		q = regexp.MustCompile(`\s+`).ReplaceAllString(q, " ")
+		queryWords := strings.Split(q, " ")
 		// Search for any word
 		for _, word := range queryWords {
 			for _, column := range columns {

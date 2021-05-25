@@ -12,7 +12,10 @@ const CLASSNAME_LIST = `${CLASSNAME}-list`;
 interface IProps {
   scraper: GQL.Scraper;
   onHide: () => void;
-  onSelectPerformer: (performer: GQL.ScrapedPerformerDataFragment) => void;
+  onSelectPerformer: (
+    performer: GQL.ScrapedPerformerDataFragment,
+    scraper: GQL.Scraper
+  ) => void;
   name?: string;
 }
 const PerformerScrapeModal: React.FC<IProps> = ({
@@ -56,7 +59,10 @@ const PerformerScrapeModal: React.FC<IProps> = ({
           <ul className={CLASSNAME_LIST}>
             {performers.map((p) => (
               <li key={p.url}>
-                <Button variant="link" onClick={() => onSelectPerformer(p)}>
+                <Button
+                  variant="link"
+                  onClick={() => onSelectPerformer(p, scraper)}
+                >
                   {p.name}
                 </Button>
               </li>

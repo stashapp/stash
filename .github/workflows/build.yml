@@ -8,6 +8,9 @@ on:
   release:
     types: [ published ]
 
+env:
+  COMPILER_IMAGE: stashapp/compiler:4
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -17,44 +20,73 @@ jobs:
     - name: Checkout
       run: git fetch --prune --unshallow --tags
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.13
+    - name: Pull compiler image
+      run: docker pull $COMPILER_IMAGE
 
-    - name: Set up Node
-      uses: actions/setup-node@v2
-      with:
-        node-version: '12'
-    
     - name: Cache node modules
       uses: actions/cache@v2
       env:
         cache-name: cache-node_modules
       with:
         path: ui/v2.5/node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
 
+    - name: Cache UI build
+      uses: actions/cache@v2
+      id: cache-ui
+      env:
+        cache-name: cache-ui
+      with:
+        path: ui/v2.5/build
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+
+    - name: Cache go build
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-go-cache
+      with:
+        path: .go-cache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+
+    - name: Start build container
+      run: |
+        mkdir -p .go-cache
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
+    
     - name: Pre-install
-      run: make pre-ui
+      run: docker exec -t build /bin/bash -c "make pre-ui"
 
     - name: Generate
-      run: make generate
+      run: docker exec -t build /bin/bash -c "make generate"
     
+    - name: Validate UI
+      # skip UI validation for pull requests if UI is unchanged
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make ui-validate"
+
+    # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
     - name: Validate
-      run: make ui-validate fmt-check vet it
+      run: docker exec -t build /bin/bash -c "make fmt-check vet it"
 
     - name: Build UI
-      run: make ui-only
+      # skip UI build for pull requests if UI is unchanged (UI was cached)
+      # this means that the build version/time may be incorrect if the UI is
+      # not changed in a pull request
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make ui-only"
 
-    - name: Cross Compile
+    - name: Compile for all supported platforms
       run: |
-        docker pull stashapp/compiler:4
-        ./scripts/cross-compile.sh
+        docker exec -t build /bin/bash -c "make packr"
+        docker exec -t build /bin/bash -c "make cross-compile-windows"
+        docker exec -t build /bin/bash -c "make cross-compile-osx"
+        docker exec -t build /bin/bash -c "make cross-compile-linux"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
+        docker exec -t build /bin/bash -c "make cross-compile-pi"
+
+    - name: Cleanup build container
+      run: docker rm -f -v build
 
     - name: Generate checksums
       run: |
@@ -93,14 +125,12 @@ jobs:
 
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
-      uses: meeDamian/github-release@2.0
+      uses: marvinpinto/action-automatic-releases@v1.1.2
       with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
-        allow_override: true
-        tag: latest_develop
-        name: "${{ env.STASH_VERSION }}: Latest development build"
-        body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
+        automatic_release_tag: latest_develop
+        title: "${{ env.STASH_VERSION }}: Latest development build"
         files: |
           dist/stash-osx
           dist/stash-win.exe
@@ -109,8 +139,7 @@ jobs:
           dist/stash-linux-arm32v7
           dist/stash-pi
           CHECKSUMS_SHA1
-        gzip: false
-
+        
     - name: Master release
       if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
       uses: meeDamian/github-release@2.0

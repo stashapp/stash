@@ -8,11 +8,9 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/fvbommel/sortorder"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
@@ -75,29 +73,15 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 
 	// Create `this.chunkCount` thumbnails in the tmp directory
 	stepSize := g.Info.VideoFile.Duration / float64(g.Info.ChunkCount)
+	var images []image.Image
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		time := float64(i) * stepSize
-		num := fmt.Sprintf("%.3d", i)
-		filename := "thumbnail_" + g.VideoChecksum + "_" + num + ".jpg"
 
-		options := ffmpeg.ScreenshotOptions{
-			OutputPath: instance.Paths.Generated.GetTmpPath(filename),
-			Time:       time,
-			Width:      160,
+		options := ffmpeg.SpriteScreenshotOptions{
+			Time:  time,
+			Width: 160,
 		}
-		encoder.Screenshot(g.Info.VideoFile, options)
-	}
-
-	// Combine all of the thumbnails into a sprite image
-	pattern := fmt.Sprintf("thumbnail_%s_.+\\.jpg$", g.VideoChecksum)
-	imagePaths, err := utils.MatchEntries(instance.Paths.Generated.Tmp, pattern)
-	if err != nil {
-		return err
-	}
-	sort.Sort(sortorder.Natural(imagePaths))
-	var images []image.Image
-	for _, imagePath := range imagePaths {
-		img, err := imaging.Open(imagePath)
+		img, err := encoder.SpriteScreenshot(g.Info.VideoFile, options)
 		if err != nil {
 			return err
 		}
@@ -107,6 +91,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	if len(images) == 0 {
 		return fmt.Errorf("images slice is empty, failed to generate sprite images for %s", g.Info.VideoFile.Path)
 	}
+	// Combine all of the thumbnails into a sprite image
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
 	canvasWidth := width * g.Columns

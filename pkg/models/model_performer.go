@@ -29,6 +29,11 @@ type Performer struct {
 	Favorite     sql.NullBool    `db:"favorite" json:"favorite"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Rating       sql.NullInt64   `db:"rating" json:"rating"`
+	Details      sql.NullString  `db:"details" json:"details"`
+	DeathDate    SQLiteDate      `db:"death_date" json:"death_date"`
+	HairColor    sql.NullString  `db:"hair_color" json:"hair_color"`
+	Weight       sql.NullInt64   `db:"weight" json:"weight"`
 }
 
 type PerformerPartial struct {
@@ -53,6 +58,11 @@ type PerformerPartial struct {
 	Favorite     *sql.NullBool    `db:"favorite" json:"favorite"`
 	CreatedAt    *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	Rating       *sql.NullInt64   `db:"rating" json:"rating"`
+	Details      *sql.NullString  `db:"details" json:"details"`
+	DeathDate    *SQLiteDate      `db:"death_date" json:"death_date"`
+	HairColor    *sql.NullString  `db:"hair_color" json:"hair_color"`
+	Weight       *sql.NullInt64   `db:"weight" json:"weight"`
 }
 
 func NewPerformer(name string) *Performer {

@@ -19,6 +19,10 @@ fragment ScrapedPerformerData on ScrapedPerformer {
     ...ScrapedSceneTagData
   }
   image
+  details
+  death_date
+  hair_color
+  weight
 }
 
 fragment ScrapedScenePerformerData on ScrapedScenePerformer {
@@ -44,6 +48,10 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   }
   remote_site_id
   images
+  details
+  death_date
+  hair_color
+  weight
 }
 
 fragment ScrapedMovieStudioData on ScrapedMovieStudio {
@@ -187,5 +195,12 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
 
   movies {
     ...ScrapedSceneMovieData
+  }
+}
+
+fragment ScrapedStashBoxPerformerData on StashBoxPerformerQueryResult {
+  query
+  results {
+    ...ScrapedScenePerformerData
   }
 }

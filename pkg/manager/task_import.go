@@ -75,8 +75,8 @@ func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (
 	}, nil
 }
 
-func (t *ImportTask) GetStatus() JobStatus {
-	return Import
+func (t *ImportTask) GetDescription() string {
+	return "Importing..."
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
@@ -120,7 +120,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	t.scraped = scraped
 
 	if t.Reset {
-		err := database.Reset(config.GetDatabasePath())
+		err := database.Reset(config.GetInstance().GetDatabasePath())
 
 		if err != nil {
 			logger.Errorf("Error resetting database: %s", err.Error())

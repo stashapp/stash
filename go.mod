@@ -3,9 +3,11 @@ module github.com/stashapp/stash
 require (
 	github.com/99designs/gqlgen v0.12.2
 	github.com/Yamashou/gqlgenc v0.0.0-20200902035953-4dbef3551953
+	github.com/anacrolix/dms v1.2.2
 	github.com/antchfx/htmlquery v1.2.3
 	github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
 	github.com/chromedp/chromedp v0.5.3
+	github.com/corona10/goimagehash v1.0.3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fvbommel/sortorder v1.0.2

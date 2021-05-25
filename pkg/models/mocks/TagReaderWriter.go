@@ -367,6 +367,29 @@ func (_m *TagReaderWriter) Query(tagFilter *models.TagFilterType, findFilter *mo
 	return r0, r1, r2
 }
 
+// QueryForAutoTag provides a mock function with given fields: words
+func (_m *TagReaderWriter) QueryForAutoTag(words []string) ([]*models.Tag, error) {
+	ret := _m.Called(words)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func([]string) []*models.Tag); ok {
+		r0 = rf(words)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string) error); ok {
+		r1 = rf(words)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: updatedTag
 func (_m *TagReaderWriter) Update(updatedTag models.Tag) (*models.Tag, error) {
 	ret := _m.Called(updatedTag)

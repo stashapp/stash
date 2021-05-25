@@ -10,6 +10,8 @@ fragment SceneData on Scene {
   o_counter
   organized
   path
+  phash
+  interactive
 
   file {
     size
@@ -29,6 +31,7 @@ fragment SceneData on Scene {
     webp
     vtt
     chapters_vtt
+    funscript
   }
 
   scene_markers {
@@ -36,11 +39,11 @@ fragment SceneData on Scene {
   }
 
   galleries {
-    ...GallerySlimData
+    ...SlimGalleryData
   }
 
   studio {
-    ...StudioData
+    ...SlimStudioData
   }
   
   movies {
@@ -51,7 +54,7 @@ fragment SceneData on Scene {
   }
 
   tags {
-    ...TagData
+    ...SlimTagData
   }
 
   performers {

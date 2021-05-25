@@ -5,6 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
@@ -30,6 +31,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
               <TagLink key={tag.id} tagType="performer" tag={tag} />
             ))}
           </ul>
+        </dd>
+      </dl>
+    );
+  }
+
+  function renderRating() {
+    if (!performer.rating) {
+      return null;
+    }
+
+    return (
+      <dl className="row mb-0">
+        <dt className="col-3 col-xl-2">Rating:</dt>
+        <dd className="col-9 col-xl-10">
+          <RatingStars value={performer.rating} />
         </dd>
       </dl>
     );
@@ -81,6 +97,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     });
   };
 
+  const formatWeight = (weight?: number | null) => {
+    if (!weight) {
+      return "";
+    }
+    return intl.formatNumber(weight, {
+      style: "unit",
+      unit: "kilogram",
+      unitDisplay: "narrow",
+    });
+  };
+
   return (
     <>
       <TextField
@@ -91,15 +118,22 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         name="Birthdate"
         value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
       />
+      <TextField
+        name="Death Date"
+        value={TextUtils.formatDate(intl, performer.death_date ?? undefined)}
+      />
       <TextField name="Ethnicity" value={performer.ethnicity} />
+      <TextField name="Hair Color" value={performer.hair_color} />
       <TextField name="Eye Color" value={performer.eye_color} />
       <TextField name="Country" value={performer.country} />
       <TextField name="Height" value={formatHeight(performer.height)} />
+      <TextField name="Weight" value={formatWeight(performer.weight)} />
       <TextField name="Measurements" value={performer.measurements} />
       <TextField name="Fake Tits" value={performer.fake_tits} />
       <TextField name="Career Length" value={performer.career_length} />
       <TextField name="Tattoos" value={performer.tattoos} />
       <TextField name="Piercings" value={performer.piercings} />
+      <TextField name="Details" value={performer.details} />
       <URLField
         name="URL"
         value={performer.url}
@@ -121,6 +155,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           TextUtils.instagramURL
         )}
       />
+      {renderRating()}
       {renderTagsField()}
       {renderStashIDs()}
     </>

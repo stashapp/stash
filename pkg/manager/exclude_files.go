@@ -90,7 +90,7 @@ func matchFileSimple(file string, regExps []*regexp.Regexp) bool {
 func matchExtension(path string, extensions []string) bool {
 	ext := filepath.Ext(path)
 	for _, e := range extensions {
-		if strings.ToLower(ext) == strings.ToLower("."+e) {
+		if strings.EqualFold(ext, "."+e) {
 			return true
 		}
 	}

@@ -12,6 +12,8 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
+import { SceneQueue } from "src/models/sceneQueue";
+import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -64,12 +66,13 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  index?: number;
+  queue?: SceneQueue;
   compact?: boolean;
   selecting?: boolean;
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
-  onSceneClicked?: () => void;
 }
 
 export const SceneCard: React.FC<ISceneCardProps> = (
@@ -161,30 +164,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderPerformerPopoverButton() {
     if (props.scene.performers.length <= 0) return;
 
-    const popoverContent = props.scene.performers.map((performer) => (
-      <div className="performer-tag-container row" key={performer.id}>
-        <Link
-          to={`/performers/${performer.id}`}
-          className="performer-tag col m-auto zoom-2"
-        >
-          <img
-            className="image-thumbnail"
-            alt={performer.name ?? ""}
-            src={performer.image_path ?? ""}
-          />
-        </Link>
-        <TagLink key={performer.id} performer={performer} className="d-block" />
-      </div>
-    ));
-
-    return (
-      <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal">
-          <Icon icon="user" />
-          <span>{props.scene.performers.length}</span>
-        </Button>
-      </HoverPopover>
-    );
+    return <PerformerPopoverButton performers={props.scene.performers} />;
   }
 
   function maybeRenderMoviePopoverButton() {
@@ -322,9 +302,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
-    } else if (props.onSceneClicked) {
-      props.onSceneClicked();
-      event.preventDefault();
     }
   }
 
@@ -362,6 +339,10 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   let shiftKey = false;
 
+  const sceneLink = props.queue
+    ? props.queue.makeLink(props.scene.id, { sceneIndex: props.index })
+    : `/scenes/${props.scene.id}`;
+
   return (
     <Card className={`scene-card ${zoomIndex()}`}>
       <Form.Control
@@ -378,7 +359,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
       <div className="video-section">
         <Link
-          to={`/scenes/${props.scene.id}`}
+          to={sceneLink}
           className="scene-card-link"
           onClick={handleSceneClick}
           onDragStart={handleDrag}

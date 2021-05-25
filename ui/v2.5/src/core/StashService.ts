@@ -5,6 +5,7 @@ import {
   getQueryDefinition,
   getOperationName,
 } from "@apollo/client/utilities";
+import { filterData } from "../utils";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
@@ -281,6 +282,20 @@ export const useLatestVersion = () =>
   });
 
 export const useConfiguration = () => GQL.useConfigurationQuery();
+export const mutateSetup = (input: GQL.SetupInput) =>
+  client.mutate<GQL.SetupMutation>({
+    mutation: GQL.SetupDocument,
+    variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const mutateMigrate = (input: GQL.MigrateInput) =>
+  client.mutate<GQL.MigrateMutation>({
+    mutation: GQL.MigrateDocument,
+    variables: { input },
+  });
+
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
@@ -570,7 +585,7 @@ export const studioMutationImpactedQueries = [
 
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
-    variables: input,
+    variables: { input },
     refetchQueries: getQueryNames([GQL.AllStudiosForFilterDocument]),
     update: deleteCache([
       GQL.FindStudiosDocument,
@@ -686,23 +701,56 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
-export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
+export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
+
+export const useConfigureDLNA = () =>
+  GQL.useConfigureDlnaMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const useEnableDLNA = () => GQL.useEnableDlnaMutation();
+
+export const useDisableDLNA = () => GQL.useDisableDlnaMutation();
+
+export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
+
+export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
+
+export const querySystemStatus = () =>
+  client.query<GQL.SystemStatusQuery>({
+    query: GQL.SystemStatusDocument,
+    fetchPolicy: "no-cache",
+  });
+
+export const useSystemStatus = () =>
+  GQL.useSystemStatusQuery({
+    fetchPolicy: "no-cache",
+  });
 
 export const useLogs = () =>
   GQL.useLogsQuery({
     fetchPolicy: "no-cache",
   });
 
-export const useJobStatus = () =>
-  GQL.useJobStatusQuery({
+export const useJobQueue = () =>
+  GQL.useJobQueueQuery({
     fetchPolicy: "no-cache",
   });
 
-export const mutateStopJob = () =>
+export const mutateStopJob = (jobID: string) =>
   client.mutate<GQL.StopJobMutation>({
     mutation: GQL.StopJobDocument,
+    variables: {
+      job_id: jobID,
+    },
+  });
+
+export const useDLNAStatus = () =>
+  GQL.useDlnaStatusQuery({
+    fetchPolicy: "no-cache",
   });
 
 export const queryScrapeFreeones = (performerName: string) =>
@@ -783,6 +831,20 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
       input: {
         stash_box_index: stashBoxIndex,
         scene_ids: [sceneID],
+      },
+    },
+  });
+
+export const queryStashBoxPerformer = (
+  stashBoxIndex: number,
+  performerID: string
+) =>
+  client.query<GQL.QueryStashBoxPerformerQuery>({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: {
+      input: {
+        stash_box_index: stashBoxIndex,
+        performer_ids: [performerID],
       },
     },
   });
@@ -883,6 +945,14 @@ export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
     variables: { input },
   });
 
+export const mutateStashBoxBatchPerformerTag = (
+  input: GQL.StashBoxBatchPerformerTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
+    mutation: GQL.StashBoxBatchPerformerTagDocument,
+    variables: { input },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
@@ -908,7 +978,7 @@ export const stringGenderMap = new Map<string, GQL.GenderEnum>([
   ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
 
-export const genderToString = (value?: GQL.GenderEnum) => {
+export const genderToString = (value?: GQL.GenderEnum | string) => {
   if (!value) {
     return undefined;
   }
@@ -922,7 +992,10 @@ export const genderToString = (value?: GQL.GenderEnum) => {
   }
 };
 
-export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
+export const stringToGender = (
+  value?: string | null,
+  caseInsensitive?: boolean
+) => {
   if (!value) {
     return undefined;
   }
@@ -944,7 +1017,40 @@ export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
 
 export const getGenderStrings = () => Array.from(stringGenderMap.keys());
 
-export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
+export const makePerformerCreateInput = (
+  toCreate: GQL.ScrapedScenePerformer
+) => {
+  const input: GQL.PerformerCreateInput = {
+    name: toCreate.name,
+    url: toCreate.url,
+    gender: stringToGender(toCreate.gender),
+    birthdate: toCreate.birthdate,
+    ethnicity: toCreate.ethnicity,
+    country: toCreate.country,
+    eye_color: toCreate.eye_color,
+    height: toCreate.height,
+    measurements: toCreate.measurements,
+    fake_tits: toCreate.fake_tits,
+    career_length: toCreate.career_length,
+    tattoos: toCreate.tattoos,
+    piercings: toCreate.piercings,
+    aliases: toCreate.aliases,
+    twitter: toCreate.twitter,
+    instagram: toCreate.instagram,
+    tag_ids: filterData((toCreate.tags ?? []).map((t) => t.stored_id)),
+    image:
+      (toCreate.images ?? []).length > 0
+        ? (toCreate.images ?? [])[0]
+        : undefined,
+    details: toCreate.details,
+    death_date: toCreate.death_date,
+    hair_color: toCreate.hair_color,
+    weight: toCreate.weight ? Number(toCreate.weight) : undefined,
+  };
+  return input;
+};
+
+export const stashBoxSceneQuery = (searchVal: string, stashBoxIndex: number) =>
   client?.query<
     GQL.QueryStashBoxSceneQuery,
     GQL.QueryStashBoxSceneQueryVariables
@@ -953,7 +1059,22 @@ export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
     variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
   });
 
-export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
+export const stashBoxPerformerQuery = (
+  searchVal: string,
+  stashBoxIndex: number
+) =>
+  client?.query<
+    GQL.QueryStashBoxPerformerQuery,
+    GQL.QueryStashBoxPerformerQueryVariables
+  >({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
+  });
+
+export const stashBoxSceneBatchQuery = (
+  sceneIds: string[],
+  stashBoxIndex: number
+) =>
   client?.query<
     GQL.QueryStashBoxSceneQuery,
     GQL.QueryStashBoxSceneQueryVariables
@@ -961,5 +1082,19 @@ export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
     query: GQL.QueryStashBoxSceneDocument,
     variables: {
       input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
+    },
+  });
+
+export const stashBoxPerformerBatchQuery = (
+  performerIds: string[],
+  stashBoxIndex: number
+) =>
+  client?.query<
+    GQL.QueryStashBoxPerformerQuery,
+    GQL.QueryStashBoxPerformerQueryVariables
+  >({
+    query: GQL.QueryStashBoxPerformerDocument,
+    variables: {
+      input: { performer_ids: performerIds, stash_box_index: stashBoxIndex },
     },
   });

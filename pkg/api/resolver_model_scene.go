@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -78,12 +80,16 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
+	builder.APIKey = config.GetInstance().GetAPIKey()
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL()
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
+	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
+	funscriptPath := builder.GetFunscriptURL()
+
 	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
 		Preview:     &previewPath,
@@ -91,6 +97,8 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Webp:        &webpPath,
 		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
+		Sprite:      &spritePath,
+		Funscript:   &funscriptPath,
 	}, nil
 }
 
@@ -153,8 +161,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*m
 			}
 
 			if sceneIdx.Valid {
-				var idx int
-				idx = int(sceneIdx.Int64)
+				idx := int(sceneIdx.Int64)
 				sceneMovie.SceneIndex = &idx
 			}
 
@@ -199,4 +206,24 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 	}
 
 	return ret, nil
+}
+
+func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Phash.Valid {
+		hexval := utils.PhashToString(obj.Phash.Int64)
+		return &hexval, nil
+	}
+	return nil, nil
+}
+
+func (r *sceneResolver) CreatedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *sceneResolver) UpdatedAt(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
+}
+
+func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	return &obj.FileModTime.Timestamp, nil
 }

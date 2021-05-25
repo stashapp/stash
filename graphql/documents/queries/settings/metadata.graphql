@@ -1,7 +1,9 @@
-query JobStatus {
-  jobStatus {
-    progress
+query SystemStatus {
+  systemStatus {
+    databaseSchema
+    databasePath
+    appSchema
     status
-    message
+    configPath
   }
 }

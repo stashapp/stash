@@ -39,6 +39,7 @@ type Scene struct {
 	Title      string          `json:"title,omitempty"`
 	Checksum   string          `json:"checksum,omitempty"`
 	OSHash     string          `json:"oshash,omitempty"`
+	Phash      string          `json:"phash,omitempty"`
 	Studio     string          `json:"studio,omitempty"`
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`
@@ -60,10 +61,10 @@ type Scene struct {
 func LoadSceneFile(filePath string) (*Scene, error) {
 	var scene Scene
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&scene)

@@ -8,6 +8,7 @@ type SceneReader interface {
 	FindByPath(path string) (*Scene, error)
 	FindByPerformerID(performerID int) ([]*Scene, error)
 	FindByGalleryID(performerID int) ([]*Scene, error)
+	FindDuplicates(distance int) ([][]*Scene, error)
 	CountByPerformerID(performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(movieID int) ([]*Scene, error)

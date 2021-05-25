@@ -558,10 +558,10 @@ func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) {
 		assert.NotEqual(criterion.Value, value)
 	}
 	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value > criterion.Value)
+		assert.Greater(value, criterion.Value)
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value < criterion.Value)
+		assert.Less(value, criterion.Value)
 	}
 }
 
@@ -1164,7 +1164,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		lastScene := scenes[len(scenes)-1]
 
 		assert.Equal(t, sceneIDs[0], firstScene.ID)
-		assert.Equal(t, sceneIDs[len(sceneIDs)-1], lastScene.ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], lastScene.ID)
 
 		// sort in descending order
 		direction = models.SortDirectionEnumDesc
@@ -1173,7 +1173,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		firstScene = scenes[0]
 		lastScene = scenes[len(scenes)-1]
 
-		assert.Equal(t, sceneIDs[len(sceneIDs)-1], firstScene.ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], firstScene.ID)
 		assert.Equal(t, sceneIDs[0], lastScene.ID)
 
 		return nil
@@ -1513,6 +1513,49 @@ func TestSceneStashIDs(t *testing.T) {
 		}
 
 		testStashIDReaderWriter(t, qb, created.ID)
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestSceneQueryQTrim(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Scene()
+
+		expectedID := sceneIDs[sceneIdxWithSpacedName]
+
+		type test struct {
+			query string
+			id    int
+			count int
+		}
+		tests := []test{
+			{query: " zzz    yyy    ", id: expectedID, count: 1},
+			{query: "   \"zzz yyy xxx\" ", id: expectedID, count: 1},
+			{query: "zzz", id: expectedID, count: 1},
+			{query: "\" zzz    yyy    \"", count: 0},
+			{query: "\"zzz    yyy\"", count: 0},
+			{query: "\" zzz yyy\"", count: 0},
+			{query: "\"zzz yyy  \"", count: 0},
+		}
+
+		for _, tst := range tests {
+			f := models.FindFilterType{
+				Q: &tst.query,
+			}
+			scenes := queryScene(t, qb, nil, &f)
+
+			assert.Len(t, scenes, tst.count)
+			if len(scenes) > 0 {
+				assert.Equal(t, tst.id, scenes[0].ID)
+			}
+		}
+
+		findFilter := models.FindFilterType{}
+		scenes := queryScene(t, qb, nil, &findFilter)
+		assert.NotEqual(t, 0, len(scenes))
+
 		return nil
 	}); err != nil {
 		t.Error(err.Error())

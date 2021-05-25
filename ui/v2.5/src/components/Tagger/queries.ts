@@ -31,7 +31,10 @@ export const useUpdatePerformerStashID = () => {
           query: GQL.FindPerformersDocument,
           variables: {
             performer_filter: {
-              stash_id: newStashID,
+              stash_id: {
+                value: newStashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {
@@ -48,6 +51,49 @@ export const useUpdatePerformerStashID = () => {
   return updatePerformerHandler;
 };
 
+export const useUpdatePerformer = () => {
+  const [updatePerformer] = GQL.usePerformerUpdateMutation({
+    onError: (errors) => errors,
+    errorPolicy: "all",
+  });
+
+  const updatePerformerHandler = (input: GQL.PerformerUpdateInput) =>
+    updatePerformer({
+      variables: {
+        input,
+      },
+      update: (store, updatedPerformer) => {
+        if (!updatedPerformer.data?.performerUpdate) return;
+
+        updatedPerformer.data.performerUpdate.stash_ids.forEach((id) => {
+          store.writeQuery<
+            GQL.FindPerformersQuery,
+            GQL.FindPerformersQueryVariables
+          >({
+            query: GQL.FindPerformersDocument,
+            variables: {
+              performer_filter: {
+                stash_id: {
+                  value: id.stash_id,
+                  modifier: GQL.CriterionModifier.Equals,
+                },
+              },
+            },
+            data: {
+              findPerformers: {
+                count: 1,
+                performers: [updatedPerformer.data!.performerUpdate!],
+                __typename: "FindPerformersResultType",
+              },
+            },
+          });
+        });
+      },
+    });
+
+  return updatePerformerHandler;
+};
+
 export const useCreatePerformer = () => {
   const [createPerformer] = GQL.usePerformerCreateMutation({
     onError: (errors) => errors,
@@ -55,7 +101,7 @@ export const useCreatePerformer = () => {
 
   const handleCreate = (performer: GQL.PerformerCreateInput, stashID: string) =>
     createPerformer({
-      variables: performer,
+      variables: { input: performer },
       update: (store, newPerformer) => {
         if (!newPerformer?.data?.performerCreate) return;
 
@@ -91,7 +137,10 @@ export const useCreatePerformer = () => {
           query: GQL.FindPerformersDocument,
           variables: {
             performer_filter: {
-              stash_id: stashID,
+              stash_id: {
+                value: stashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {
@@ -135,7 +184,10 @@ export const useUpdateStudioStashID = () => {
           query: GQL.FindStudiosDocument,
           variables: {
             studio_filter: {
-              stash_id: newStashID,
+              stash_id: {
+                value: newStashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {
@@ -159,7 +211,7 @@ export const useCreateStudio = () => {
 
   const handleCreate = (studio: GQL.StudioCreateInput, stashID: string) =>
     createStudio({
-      variables: studio,
+      variables: { input: studio },
       update: (store, result) => {
         if (!result?.data?.studioCreate) return;
 
@@ -189,7 +241,10 @@ export const useCreateStudio = () => {
           query: GQL.FindStudiosDocument,
           variables: {
             studio_filter: {
-              stash_id: stashID,
+              stash_id: {
+                value: stashID,
+                modifier: GQL.CriterionModifier.Equals,
+              },
             },
           },
           data: {

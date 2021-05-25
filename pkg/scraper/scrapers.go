@@ -14,21 +14,19 @@ import (
 )
 
 // GlobalConfig contains the global scraper options.
-type GlobalConfig struct {
-	// User Agent used when scraping using http.
-	UserAgent string
-
-	// Path (file or remote address) to a Chrome CDP instance.
-	CDPPath string
-	Path    string
+type GlobalConfig interface {
+	GetScraperUserAgent() string
+	GetScrapersPath() string
+	GetScraperCDPPath() string
+	GetScraperCertCheck() bool
 }
 
-func (c GlobalConfig) isCDPPathHTTP() bool {
-	return strings.HasPrefix(c.CDPPath, "http://") || strings.HasPrefix(c.CDPPath, "https://")
+func isCDPPathHTTP(c GlobalConfig) bool {
+	return strings.HasPrefix(c.GetScraperCDPPath(), "http://") || strings.HasPrefix(c.GetScraperCDPPath(), "https://")
 }
 
-func (c GlobalConfig) isCDPPathWS() bool {
-	return strings.HasPrefix(c.CDPPath, "ws://")
+func isCDPPathWS(c GlobalConfig) bool {
+	return strings.HasPrefix(c.GetScraperCDPPath(), "ws://")
 }
 
 // Cache stores scraper details.
@@ -45,7 +43,7 @@ type Cache struct {
 // Scraper configurations are loaded from yml files in the provided scrapers
 // directory and any subdirectories.
 func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (*Cache, error) {
-	scrapers, err := loadScrapers(globalConfig.Path)
+	scrapers, err := loadScrapers(globalConfig.GetScrapersPath())
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +91,7 @@ func loadScrapers(path string) ([]config, error) {
 // In the event of an error during loading, the cache will be left empty.
 func (c *Cache) ReloadScrapers() error {
 	c.scrapers = nil
-	scrapers, err := loadScrapers(c.globalConfig.Path)
+	scrapers, err := loadScrapers(c.globalConfig.GetScrapersPath())
 	if err != nil {
 		return err
 	}
@@ -102,6 +100,7 @@ func (c *Cache) ReloadScrapers() error {
 	return nil
 }
 
+// TODO - don't think this is needed
 // UpdateConfig updates the global config for the cache. If the scraper path
 // has changed, ReloadScrapers will need to be called separately.
 func (c *Cache) UpdateConfig(globalConfig GlobalConfig) {
@@ -198,9 +197,11 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 			return nil, err
 		}
 
-		// post-process - set the image if applicable
-		if err := setPerformerImage(ret, c.globalConfig); err != nil {
-			logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+		if ret != nil {
+			err = c.postScrapePerformer(ret)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return ret, nil

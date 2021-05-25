@@ -83,7 +83,7 @@ const stringToDate = (dateString: string) => {
   return new Date(year, monthIndex, day, 0, 0, 0, 0);
 };
 
-const getAge = (dateString?: string | null, fromDateString?: string) => {
+const getAge = (dateString?: string | null, fromDateString?: string | null) => {
   if (!dateString) return 0;
 
   const birthdate = stringToDate(dateString);
@@ -186,6 +186,11 @@ const formatDate = (intl: IntlShape, date?: string) => {
   return intl.formatDate(date, { format: "long", timeZone: "utc" });
 };
 
+const capitalize = (val: string) =>
+  val
+    .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
+    .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
+
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
@@ -200,6 +205,7 @@ const TextUtils = {
   twitterURL,
   instagramURL,
   formatDate,
+  capitalize,
 };
 
 export default TextUtils;

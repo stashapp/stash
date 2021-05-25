@@ -16,7 +16,8 @@ import (
 )
 
 type sceneRoutes struct {
-	txnManager models.TransactionManager
+	txnManager  models.TransactionManager
+	sceneServer manager.SceneServer
 }
 
 func (rs sceneRoutes) Routes() chi.Router {
@@ -37,6 +38,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
 		r.Get("/vtt/chapter", rs.ChapterVtt)
+		r.Get("/funscript", rs.Funscript)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -69,12 +71,11 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
-	manager.RegisterStream(filepath, &w)
-	http.ServeFile(w, r, filepath)
-	manager.WaitAndDeregisterStream(filepath, &w, r)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
+	}
+	ss.StreamSceneDirect(scene, w, r)
 }
 
 func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
@@ -158,7 +159,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 	options := ffmpeg.GetTranscodeStreamOptions(*videoFile, videoCodec, audioCodec)
 	options.StartTime = startTime
-	options.MaxTranscodeSize = config.GetMaxStreamingTranscodeSize()
+	options.MaxTranscodeSize = config.GetInstance().GetMaxStreamingTranscodeSize()
 	if requestedSize != "" {
 		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize)
 	}
@@ -178,31 +179,22 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
 
-	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := utils.FileExists(filepath)
-	if screenshotExists {
-		http.ServeFile(w, r, filepath)
-	} else {
-		var cover []byte
-		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			cover, _ = repo.Scene().GetCover(scene.ID)
-			return nil
-		})
-		utils.ServeImage(cover, w, r)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
 	}
+	ss.ServeScreenshot(scene, w, r)
 }
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	utils.ServeFileNoCache(w, r, filepath)
 }
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -264,17 +256,23 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(vtt))
 }
 
+func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	funscript := utils.GetFunscriptPath(scene.Path)
+	utils.ServeFileNoCache(w, r, funscript)
+}
+
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "text/vtt")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "image/jpeg")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -291,7 +289,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -308,7 +306,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
 	exists, _ := utils.FileExists(filepath)

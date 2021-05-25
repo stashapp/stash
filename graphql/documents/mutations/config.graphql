@@ -1,3 +1,11 @@
+mutation Setup($input: SetupInput!) {
+  setup(input: $input)
+}
+
+mutation Migrate($input: MigrateInput!) {
+  migrate(input: $input)
+}
+
 mutation ConfigureGeneral($input: ConfigGeneralInput!) {
   configureGeneral(input: $input) {
     ...ConfigGeneralData
@@ -7,6 +15,12 @@ mutation ConfigureGeneral($input: ConfigGeneralInput!) {
 mutation ConfigureInterface($input: ConfigInterfaceInput!) {
   configureInterface(input: $input) {
     ...ConfigInterfaceData
+  }
+}
+
+mutation ConfigureDLNA($input: ConfigDLNAInput!) {
+  configureDLNA(input: $input) {
+    ...ConfigDLNAData
   }
 }
 

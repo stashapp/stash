@@ -2881,11 +2881,12 @@
     "@types/history" "*"
     "@types/react" "*"
 
-"@types/react-select@^3.1.2":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@types/react-select/-/react-select-3.1.2.tgz#38627df4b49be9b28f800ed72b35d830369a624b"
-  integrity sha512-ygvR/2FL87R2OLObEWFootYzkvm67LRA+URYEAcBuvKk7IXmdsnIwSGm60cVXGaqkJQHozb2Cy1t94tCYb6rJA==
+"@types/react-select@^4.0.8":
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/@types/react-select/-/react-select-4.0.8.tgz#109e8223cf3d9a50c20b386b3bc7fbc46c701916"
+  integrity sha512-dOfoJxPq4s4shWmI9mDjhs6w7tXlH4bgQarqp5HulL3jgwzEPGK/DaGah4pdCNrY70mnIvMAN7cAzZbUWomESQ==
   dependencies:
+    "@emotion/serialize" "^1.0.0"
     "@types/react" "*"
     "@types/react-dom" "*"
     "@types/react-transition-group" "*"
@@ -3009,11 +3010,6 @@
   integrity sha512-kQ5JNTrbDv3Rp5X2n/iUu37IJBDU2gsZ5R/g1/KHOOEc5IKfUFjXT6DENPGduh08I/pamwtEq4oul7gUqKTQDQ==
   dependencies:
     "@types/yargs-parser" "*"
-
-"@types/yup@^0.29.11":
-  version "0.29.11"
-  resolved "https://registry.yarnpkg.com/@types/yup/-/yup-0.29.11.tgz#d654a112973f5e004bf8438122bd7e56a8e5cd7e"
-  integrity sha512-9cwk3c87qQKZrT251EDoibiYRILjCmxBvvcb4meofCmx1vdnNcR9gyildy5vOHASpOKMsn42CugxUvcwK5eu1g==
 
 "@types/zen-observable@^0.8.0":
   version "0.8.2"
@@ -14211,6 +14207,11 @@ text-table@0.2.0, text-table@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
+
+thehandy@^0.2.7:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/thehandy/-/thehandy-0.2.7.tgz#8677ada28f622eaa7c680b685c397899548fdba7"
+  integrity sha512-Wo5sPWkoiRjAiK4EeZhOq1QRs4MVsl1Cc3tlPccrfsZLazXAUtUExkxzwA+N2MWJOavuJl5hoz/nV9ehF0yi7Q==
 
 throat@^5.0.0:
   version "5.0.0"

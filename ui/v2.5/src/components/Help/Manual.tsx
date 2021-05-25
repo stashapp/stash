@@ -14,6 +14,8 @@ import Contributing from "src/docs/en/Contributing.md";
 import SceneFilenameParser from "src/docs/en/SceneFilenameParser.md";
 import KeyboardShortcuts from "src/docs/en/KeyboardShortcuts.md";
 import Help from "src/docs/en/Help.md";
+import Deduplication from "src/docs/en/Deduplication.md";
+import Interactive from "src/docs/en/Interactive.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
@@ -85,6 +87,16 @@ export const Manual: React.FC<IManualProps> = ({
       key: "Tagger.md",
       title: "Scene Tagger",
       content: Tagger,
+    },
+    {
+      key: "Deduplication.md",
+      title: "Dupe Checker",
+      content: Deduplication,
+    },
+    {
+      key: "Interactive.md",
+      title: "Interactivity",
+      content: Interactive,
     },
     {
       key: "KeyboardShortcuts.md",

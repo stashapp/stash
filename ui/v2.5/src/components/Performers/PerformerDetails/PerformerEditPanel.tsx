@@ -23,6 +23,7 @@ import {
   usePerformerCreate,
   useTagCreate,
   queryScrapePerformerURL,
+  useConfiguration,
 } from "src/core/StashService";
 import {
   Icon,
@@ -33,11 +34,18 @@ import {
   TagSelect,
 } from "src/components/Shared";
 import { ImageUtils } from "src/utils";
+import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
+import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+
+const isScraper = (
+  scraper: GQL.Scraper | GQL.StashBox
+): scraper is GQL.Scraper => (scraper as GQL.Scraper).id !== undefined;
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
@@ -60,9 +68,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const history = useHistory();
 
   // Editing state
-  const [scraper, setScraper] = useState<GQL.Scraper | undefined>();
+  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
-
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -77,6 +84,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [scrapedPerformer, setScrapedPerformer] = useState<
     GQL.ScrapedPerformer | undefined
   >();
+  const stashConfig = useConfiguration();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
@@ -109,6 +117,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: yup.array(yup.string().required()).optional(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional(),
     image: yup.string().optional().nullable(),
+    rating: yup.number().optional().nullable(),
+    details: yup.string().optional(),
+    death_date: yup.string().optional(),
+    hair_color: yup.string().optional(),
+    weight: yup.number().optional(),
   });
 
   const initialValues = {
@@ -131,6 +144,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
+    rating: performer.rating ?? undefined,
+    details: performer.details ?? "",
+    death_date: performer.death_date ?? "",
+    hair_color: performer.hair_color ?? "",
+    weight: performer.weight ?? undefined,
   };
 
   type InputValues = typeof initialValues;
@@ -138,8 +156,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const formik = useFormik({
     initialValues,
     validationSchema: schema,
-    onSubmit: (values) => onSave(getPerformerInput(values)),
+    onSubmit: (values) => onSave(values),
   });
+
+  function setRating(v: number) {
+    formik.setFieldValue("rating", v);
+  }
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -150,7 +172,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
     // try to translate from enum values first
     const upperGender = scrapedGender?.toUpperCase();
-    const asEnum = genderToString(upperGender as GQL.GenderEnum);
+    const asEnum = genderToString(upperGender);
     if (asEnum) {
       retEnum = stringToGender(asEnum);
     } else {
@@ -206,9 +228,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         variables: tagInput,
       });
 
+      if (!result.data?.tagCreate) {
+        Toast.error(new Error("Failed to create tag"));
+        return;
+      }
+
       // add the new tag to the new tags value
       const newTagIds = formik.values.tag_ids.concat([
-        result.data!.tagCreate!.id,
+        result.data.tagCreate.id,
       ]);
       formik.setFieldValue("tag_ids", newTagIds);
 
@@ -290,7 +317,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.tags) {
       // map tags to their ids and filter out those not found
       const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
-      formik.setFieldValue("tag_ids", newTagIds as string[]);
+      formik.setFieldValue("tag_ids", newTagIds);
 
       setNewTags(state.tags.filter((t) => !t.stored_id));
     }
@@ -298,13 +325,26 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
     // overwrite if not new since it came from a dialog
-    // otherwise follow existing behaviour
+    // overwrite if image was cleared (`null`)
+    // otherwise follow existing behaviour (`undefined`)
     if (
-      (!isNew || formik.values.image === undefined) &&
-      (state as GQL.ScrapedPerformerDataFragment).image !== undefined
+      (!isNew || [null, undefined].includes(formik.values.image)) &&
+      state.image !== undefined
     ) {
-      const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
+      const imageStr = state.image;
       formik.setFieldValue("image", imageStr ?? undefined);
+    }
+    if (state.details) {
+      formik.setFieldValue("details", state.details);
+    }
+    if (state.death_date) {
+      formik.setFieldValue("death_date", state.death_date);
+    }
+    if (state.hair_color) {
+      formik.setFieldValue("hair_color", state.hair_color);
+    }
+    if (state.weight) {
+      formik.setFieldValue("weight", state.weight);
     }
   }
 
@@ -312,29 +352,30 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     formik.setFieldValue("image", imageData);
   }
 
-  async function onSave(
-    performerInput:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) {
+  async function onSave(performerInput: InputValues) {
     setIsLoading(true);
     try {
       if (!isNew) {
+        const input = getUpdateValues(performerInput);
+
         await updatePerformer({
           variables: {
             input: {
-              ...performerInput,
+              ...input,
               stash_ids: performerInput?.stash_ids?.map((s) => ({
                 endpoint: s.endpoint,
                 stash_id: s.stash_id,
               })),
-            } as GQL.PerformerUpdateInput,
+            },
           },
         });
         history.push(`/performers/${performer.id}`);
       } else {
+        const input = getCreateValues(performerInput);
         const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput,
+          variables: {
+            input,
+          },
         });
         if (result.data?.performerCreate) {
           history.push(`/performers/${result.data.performerCreate.id}`);
@@ -350,7 +391,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
-        onSave?.(getPerformerInput(formik.values));
+        onSave?.(formik.values);
       });
 
       if (!isNew) {
@@ -358,6 +399,30 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           setIsDeleteAlertOpen(true);
         });
       }
+
+      // numeric keypresses get caught by jwplayer, so blur the element
+      // if the rating sequence is started
+      Mousetrap.bind("r", () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        Mousetrap.bind("0", () => setRating(NaN));
+        Mousetrap.bind("1", () => setRating(1));
+        Mousetrap.bind("2", () => setRating(2));
+        Mousetrap.bind("3", () => setRating(3));
+        Mousetrap.bind("4", () => setRating(4));
+        Mousetrap.bind("5", () => setRating(5));
+
+        setTimeout(() => {
+          Mousetrap.unbind("0");
+          Mousetrap.unbind("1");
+          Mousetrap.unbind("2");
+          Mousetrap.unbind("3");
+          Mousetrap.unbind("4");
+          Mousetrap.unbind("5");
+        }, 1000);
+      });
 
       return () => {
         Mousetrap.unbind("s s");
@@ -393,18 +458,22 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   if (isLoading) return <LoadingIndicator />;
 
-  function getPerformerInput(values: InputValues) {
-    const performerInput: Partial<
-      GQL.PerformerCreateInput | GQL.PerformerUpdateInput
-    > = {
+  function getUpdateValues(values: InputValues): GQL.PerformerUpdateInput {
+    return {
       ...values,
       gender: stringToGender(values.gender),
+      rating: values.rating ?? null,
+      weight: Number(values.weight),
+      id: performer.id ?? "",
     };
+  }
 
-    if (!isNew) {
-      (performerInput as GQL.PerformerUpdateInput).id = performer.id!;
-    }
-    return performerInput;
+  function getCreateValues(values: InputValues): GQL.PerformerCreateInput {
+    return {
+      ...values,
+      gender: stringToGender(values.gender),
+      weight: Number(values.weight),
+    };
   }
 
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
@@ -430,7 +499,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   async function onScrapePerformer(
-    selectedPerformer: GQL.ScrapedPerformerDataFragment
+    selectedPerformer: GQL.ScrapedPerformerDataFragment,
+    selectedScraper: GQL.Scraper
   ) {
     setScraper(undefined);
     try {
@@ -444,7 +514,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         ...ret
       } = selectedPerformer;
 
-      const result = await queryScrapePerformer(scraper.id, ret);
+      const result = await queryScrapePerformer(selectedScraper.id, ret);
       if (!result?.data?.scrapePerformer) return;
 
       // if this is a new performer, just dump the data
@@ -483,15 +553,44 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
+  async function onScrapeStashBox(performerResult: GQL.ScrapedScenePerformer) {
+    setScraper(undefined);
+
+    const result: Partial<GQL.ScrapedPerformerDataFragment> = {
+      ...performerResult,
+      image: performerResult.images?.[0] ?? undefined,
+      country: getCountryByISO(performerResult.country),
+      __typename: "ScrapedPerformer",
+    };
+
+    // if this is a new performer, just dump the data
+    if (isNew) {
+      updatePerformerEditStateFromScraper(result);
+    } else {
+      setScrapedPerformer(result);
+    }
+  }
+
   function renderScraperMenu() {
     if (!performer) {
       return;
     }
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
     const popover = (
       <Popover id="performer-scraper-popover">
         <Popover.Content>
           <>
+            {stashBoxes.map((s, index) => (
+              <div key={s.endpoint}>
+                <Button
+                  className="minimal"
+                  onClick={() => setScraper({ ...s, index })}
+                >
+                  {s.name ?? "Stash-Box"}
+                </Button>
+              </div>
+            ))}
             {queryableScrapers
               ? queryableScrapers.map((s) => (
                   <div key={s.name}>
@@ -550,6 +649,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       ...formik.values,
       gender: stringToGender(formik.values.gender),
       image: formik.values.image ?? performer.image_path,
+      weight: Number(formik.values.weight),
     };
 
     return (
@@ -624,14 +724,21 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   const renderScrapeModal = () =>
-    scraper !== undefined && (
+    scraper !== undefined && isScraper(scraper) ? (
       <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
         onSelectPerformer={onScrapePerformer}
         name={formik.values.name || ""}
       />
-    );
+    ) : scraper !== undefined && !isScraper(scraper) ? (
+      <PerformerStashBoxModal
+        instance={scraper}
+        onHide={() => setScraper(undefined)}
+        onSelectPerformer={onScrapeStashBox}
+        name={formik.values.name || ""}
+      />
+    ) : undefined;
 
   function renderDeleteAlert() {
     return (
@@ -806,10 +913,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         </Form.Group>
 
         {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
+        {renderTextField("death_date", "Death Date", "YYYY-MM-DD")}
         {renderTextField("country", "Country")}
         {renderTextField("ethnicity", "Ethnicity")}
+        {renderTextField("hair_color", "Hair Color")}
         {renderTextField("eye_color", "Eye Color")}
         {renderTextField("height", "Height (cm)")}
+        {renderTextField("weight", "Weight (kg)")}
         {renderTextField("measurements", "Measurements")}
         {renderTextField("fake_tits", "Fake Tits")}
 
@@ -861,8 +971,32 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderTextField("twitter", "Twitter")}
         {renderTextField("instagram", "Instagram")}
-
+        <Form.Group controlId="details" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            Details
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <Form.Control
+              as="textarea"
+              className="text-input"
+              placeholder="Details"
+              {...formik.getFieldProps("details")}
+            />
+          </Col>
+        </Form.Group>
         {renderTagsField()}
+
+        <Form.Group controlId="rating" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            Rating
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <RatingStars
+              value={formik.values.rating ?? undefined}
+              onSetRating={(value) => formik.setFieldValue("rating", value)}
+            />
+          </Col>
+        </Form.Group>
         {renderStashIDs()}
 
         {renderButtons()}

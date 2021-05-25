@@ -7,6 +7,7 @@ input GenerateMetadataInput {
   previewOptions: GeneratePreviewOptionsInput
   markers: Boolean!
   transcodes: Boolean!
+  phashes: Boolean!
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
@@ -42,6 +43,8 @@ input ScanMetadataInput {
   scanGenerateImagePreviews: Boolean
   """Generate sprites during scan"""
   scanGenerateSprites: Boolean
+  """Generate phashes during scan"""
+  scanGeneratePhashes: Boolean
 }
 
 input CleanMetadataInput {
@@ -58,12 +61,6 @@ input AutoTagMetadataInput {
   studios: [String!]
   """IDs of tags to tag files with, or "*" for all"""
   tags: [String!]
-}
-
-type MetadataUpdateStatus {
-  progress: Float!
-  status: String!
-  message: String!
 }
 
 input ExportObjectTypeInput {
@@ -102,4 +99,22 @@ input ImportObjectsInput {
 
 input BackupDatabaseInput {
   download: Boolean
+}
+
+enum SystemStatusEnum {
+  SETUP
+  NEEDS_MIGRATION
+  OK
+}
+
+type SystemStatus {
+  databaseSchema: Int
+  databasePath: String
+  configPath: String
+  appSchema: Int!
+  status: SystemStatusEnum!
+}
+
+input MigrateInput {
+  backupPath: String!
 }

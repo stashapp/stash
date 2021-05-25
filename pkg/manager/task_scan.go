@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,12 +17,182 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type ScanJob struct {
+	txnManager    models.TransactionManager
+	input         models.ScanMetadataInput
+	subscriptions *subscriptionManager
+}
+
+func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+	input := j.input
+	paths := getScanPaths(input.Paths)
+
+	var total *int
+	var newFiles *int
+	progress.ExecuteTask("Counting files to scan...", func() {
+		total, newFiles = j.neededScan(ctx, paths)
+	})
+
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
+		return
+	}
+
+	if total == nil || newFiles == nil {
+		logger.Infof("Taking too long to count content. Skipping...")
+		logger.Infof("Starting scan")
+	} else {
+		logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
+	}
+
+	start := time.Now()
+	config := config.GetInstance()
+	parallelTasks := config.GetParallelTasksWithAutoDetection()
+	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
+	wg := sizedwaitgroup.New(parallelTasks)
+
+	if total != nil {
+		progress.SetTotal(*total)
+	}
+
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	calculateMD5 := config.IsCalculateMD5()
+
+	stoppingErr := errors.New("stopping")
+	var err error
+
+	var galleries []string
+
+	for _, sp := range paths {
+		err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			if job.IsCancelled(ctx) {
+				return stoppingErr
+			}
+
+			if isGallery(path) {
+				galleries = append(galleries, path)
+			}
+
+			instance.Paths.Generated.EnsureTmpDir()
+
+			wg.Add()
+			task := ScanTask{
+				TxnManager:           j.txnManager,
+				FilePath:             path,
+				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
+				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
+				fileNamingAlgorithm:  fileNamingAlgo,
+				calculateMD5:         calculateMD5,
+				GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
+				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
+				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
+				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+				progress:             progress,
+			}
+
+			go func() {
+				task.Start(&wg)
+				progress.Increment()
+			}()
+
+			return nil
+		})
+
+		if err == stoppingErr {
+			logger.Info("Stopping due to user request")
+			break
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered scanning files: %s", err.Error())
+			break
+		}
+	}
+
+	wg.Wait()
+	instance.Paths.Generated.EmptyTmpDir()
+	elapsed := time.Since(start)
+	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+	if job.IsCancelled(ctx) || err != nil {
+		return
+	}
+
+	progress.ExecuteTask("Associating galleries", func() {
+		for _, path := range galleries {
+			wg.Add()
+			task := ScanTask{
+				TxnManager:      j.txnManager,
+				FilePath:        path,
+				UseFileMetadata: false,
+			}
+
+			go task.associateGallery(&wg)
+			wg.Wait()
+		}
+		logger.Info("Finished gallery association")
+	})
+
+	j.subscriptions.notify()
+}
+
+func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (total *int, newFiles *int) {
+	const timeout = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
+	chTimeout := time.After(timeout)
+
+	logger.Infof("Counting files to scan...")
+
+	t := 0
+	n := 0
+
+	timeoutErr := errors.New("timed out")
+
+	for _, sp := range paths {
+		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			t++
+			task := ScanTask{FilePath: path, TxnManager: j.txnManager}
+			if !task.doesPathExist() {
+				n++
+			}
+
+			//check for timeout
+			select {
+			case <-chTimeout:
+				return timeoutErr
+			default:
+			}
+
+			// check stop
+			if job.IsCancelled(ctx) {
+				return timeoutErr
+			}
+
+			return nil
+		})
+
+		if err == timeoutErr {
+			// timeout should return nil counts
+			return nil, nil
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
+			return nil, nil
+		}
+	}
+
+	return &t, &n
+}
 
 type ScanTask struct {
 	TxnManager           models.TransactionManager
@@ -31,33 +202,62 @@ type ScanTask struct {
 	calculateMD5         bool
 	fileNamingAlgorithm  models.HashAlgorithm
 	GenerateSprite       bool
+	GeneratePhash        bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
+	progress             *job.Progress
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	if isGallery(t.FilePath) {
-		t.scanGallery()
-	} else if isVideo(t.FilePath) {
-		s := t.scanScene()
+	defer wg.Done()
 
-		if s != nil {
-			iwg := sizedwaitgroup.New(2)
+	var s *models.Scene
 
-			if t.GenerateSprite {
-				iwg.Add()
+	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
+		if isGallery(t.FilePath) {
+			t.scanGallery()
+		} else if isVideo(t.FilePath) {
+			s = t.scanScene()
+		} else if isImage(t.FilePath) {
+			t.scanImage()
+		}
+	})
+
+	if s != nil {
+		iwg := sizedwaitgroup.New(2)
+
+		if t.GenerateSprite {
+			iwg.Add()
+
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", t.FilePath), func() {
 				taskSprite := GenerateSpriteTask{
 					Scene:               *s,
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				go taskSprite.Start(&iwg)
-			}
+				taskSprite.Start(&iwg)
+			})
+		}
 
-			if t.GeneratePreview {
-				iwg.Add()
+		if t.GeneratePhash {
+			iwg.Add()
 
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", t.FilePath), func() {
+				taskPhash := GeneratePhashTask{
+					Scene:               *s,
+					fileNamingAlgorithm: t.fileNamingAlgorithm,
+					txnManager:          t.TxnManager,
+				}
+				taskPhash.Start(&iwg)
+			})
+		}
+
+		if t.GeneratePreview {
+			iwg.Add()
+
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", t.FilePath), func() {
+				config := config.GetInstance()
 				var previewSegmentDuration = config.GetPreviewSegmentDuration()
 				var previewSegments = config.GetPreviewSegments()
 				var previewExcludeStart = config.GetPreviewExcludeStart()
@@ -80,16 +280,12 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				go taskPreview.Start(&iwg)
-			}
-
-			iwg.Wait()
+				taskPreview.Start(wg)
+			})
 		}
-	} else if isImage(t.FilePath) {
-		t.scanImage()
-	}
 
-	wg.Done()
+		iwg.Wait()
+	}
 }
 
 func (t *ScanTask) scanGallery() {
@@ -228,6 +424,10 @@ func (t *ScanTask) scanGallery() {
 						Timestamp: fileModTime,
 						Valid:     true,
 					},
+					Title: sql.NullString{
+						String: utils.GetNameFromPath(t.FilePath, t.StripFileExtension),
+						Valid:  true,
+					},
 					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				}
@@ -279,6 +479,12 @@ func (t *ScanTask) getFileModTime() (time.Time, error) {
 	return ret, nil
 }
 
+func (t *ScanTask) getInteractive() bool {
+	_, err := os.Stat(utils.GetFunscriptPath(t.FilePath))
+	return err == nil
+
+}
+
 func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLiteTimestamp) bool {
 	return !modTime.Timestamp.Equal(fileModTime)
 }
@@ -302,7 +508,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 
 		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
 		var relatedFiles []string
-		vExt := config.GetVideoExtensions()
+		vExt := config.GetInstance().GetVideoExtensions()
 		// make a list of media files that can be related to the gallery
 		for _, ext := range vExt {
 			related := basename + "." + ext
@@ -360,6 +566,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 	if err != nil {
 		return logError(err)
 	}
+	interactive := t.getInteractive()
 
 	if s != nil {
 		// if file mod time is not set, set it now
@@ -387,6 +594,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		// if the mod time of the file is different than that of the associated
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, s.FileModTime)
+		config := config.GetInstance()
 		if modified || !s.Size.Valid {
 			oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 			s, err = t.rescanScene(s, fileModTime)
@@ -467,6 +675,20 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}
 		}
 
+		if s.Interactive != interactive {
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				qb := r.Scene()
+				scenePartial := models.ScenePartial{
+					ID:          s.ID,
+					Interactive: &interactive,
+				}
+				_, err := qb.Update(scenePartial)
+				return err
+			}); err != nil {
+				return logError(err)
+			}
+		}
+
 		return nil
 	}
 
@@ -532,8 +754,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 		} else {
 			logger.Infof("%s already exists. Updating path...", t.FilePath)
 			scenePartial := models.ScenePartial{
-				ID:   s.ID,
-				Path: &t.FilePath,
+				ID:          s.ID,
+				Path:        &t.FilePath,
+				Interactive: &interactive,
 			}
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
@@ -563,8 +786,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 				Timestamp: fileModTime,
 				Valid:     true,
 			},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			Interactive: interactive,
 		}
 
 		if t.UseFileMetadata {
@@ -840,6 +1064,9 @@ func (t *ScanTask) scanImage() {
 				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			}
+			newImage.Title.String = image.GetFilename(&newImage, t.StripFileExtension)
+			newImage.Title.Valid = true
+
 			if err := image.SetFileDetails(&newImage); err != nil {
 				logger.Error(err.Error())
 				return
@@ -863,7 +1090,7 @@ func (t *ScanTask) scanImage() {
 				logger.Error(err.Error())
 				return
 			}
-		} else if config.GetCreateGalleriesFromFolders() {
+		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
 			// create gallery from folder or associate with existing gallery
 			logger.Infof("Associating image %s with folder gallery", i.Path)
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -953,6 +1180,10 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			Title: sql.NullString{
+				String: utils.GetNameFromPath(path, false),
+				Valid:  true,
+			},
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)
@@ -1016,6 +1247,7 @@ func (t *ScanTask) calculateImageChecksum() (string, error) {
 }
 
 func (t *ScanTask) doesPathExist() bool {
+	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
@@ -1046,6 +1278,7 @@ func (t *ScanTask) doesPathExist() bool {
 }
 
 func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
+	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
@@ -1069,6 +1302,13 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		if info.IsDir() {
 			// #1102 - ignore files in generated path
 			if utils.IsPathInDir(generatedPath, path) {
+				return filepath.SkipDir
+			}
+
+			// shortcut: skip the directory entirely if it matches both exclusion patterns
+			// add a trailing separator so that it correctly matches against patterns like path/.*
+			pathExcludeTest := path + string(filepath.Separator)
+			if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, excludeVidRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, excludeImgRegex)) {
 				return filepath.SkipDir
 			}
 

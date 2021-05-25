@@ -90,8 +90,14 @@ query ScrapeMovieURL($url: String!) {
   }
 }
 
-query QueryStashBoxScene($input: StashBoxQueryInput!) {
+query QueryStashBoxScene($input: StashBoxSceneQueryInput!) {
   queryStashBoxScene(input: $input) {
     ...ScrapedStashBoxSceneData
+  }
+}
+
+query QueryStashBoxPerformer($input: StashBoxPerformerQueryInput!) {
+  queryStashBoxPerformer(input: $input) {
+    ...ScrapedStashBoxPerformerData
   }
 }
