@@ -499,7 +499,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
     const { inputValue } = optionProps.selectProps;
 
     let thisOptionProps = optionProps;
-    if (inputValue && !optionProps.label.includes(inputValue)) {
+    if (inputValue && !optionProps.label.toLowerCase().includes(inputValue.toLowerCase())) {
       // must be alias
       const newLabel = `${optionProps.data.label} (alias)`;
       thisOptionProps = {
