@@ -588,7 +588,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col xs={9}>
                 <RatingStars
                   value={formik.values.rating ?? undefined}
-                  onSetRating={(value) => formik.setFieldValue("rating", value ?? null)}
+                  onSetRating={(value) =>
+                    formik.setFieldValue("rating", value ?? null)
+                  }
                 />
               </Col>
             </Form.Group>

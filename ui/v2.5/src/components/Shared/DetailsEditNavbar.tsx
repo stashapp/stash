@@ -40,7 +40,12 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     if (!props.isEditing) return;
 
     return (
-      <Button variant="success" className="save" disabled={props.saveDisabled} onClick={() => props.onSave()}>
+      <Button
+        variant="success"
+        className="save"
+        disabled={props.saveDisabled}
+        onClick={() => props.onSave()}
+      >
         Save
       </Button>
     );
