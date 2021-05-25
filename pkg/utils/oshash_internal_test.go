@@ -44,17 +44,3 @@ func TestOshashCollisions(t *testing.T) {
 		t.Errorf("TestOshashCollisions: oshash(n, k, ... %v) =! oshash(n, k, ... %v)", buf1, buf2)
 	}
 }
-
-// Requires reference file http://www.opensubtitles.org/addons/avi/breakdance.avi
-// func TestOshasBreakDance(t *testing.T) {
-// 	got, err := OSHashFromFilePath("breakdance.avi")
-// 	if err != nil {
-// 		t.Errorf("TestOshasBreakDance: Error from OSHashFromFilePath: %v", err)
-// 	}
-
-// 	want := "8e245d9679d31e12"
-
-// 	if got != want {
-// 		t.Errorf("TestOshasBreakDance: OSHashFromFilePath() = %v; want %v", got, want)
-// 	}
-// }
