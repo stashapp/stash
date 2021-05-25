@@ -11,6 +11,7 @@ fragment SlimSceneData on Scene {
   organized
   path
   phash
+  interactive
 
   file {
     size
@@ -31,6 +32,7 @@ fragment SlimSceneData on Scene {
     vtt
     chapters_vtt
     sprite
+    funscript
   }
 
   scene_markers {

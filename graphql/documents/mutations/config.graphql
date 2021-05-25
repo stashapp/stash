@@ -18,6 +18,12 @@ mutation ConfigureInterface($input: ConfigInterfaceInput!) {
   }
 }
 
+mutation ConfigureDLNA($input: ConfigDLNAInput!) {
+  configureDLNA(input: $input) {
+    ...ConfigDLNAData
+  }
+}
+
 mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {
   generateAPIKey(input: $input)
 }

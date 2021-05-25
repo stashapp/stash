@@ -18,10 +18,10 @@ type Tag struct {
 func LoadTagFile(filePath string) (*Tag, error) {
 	var tag Tag
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&tag)

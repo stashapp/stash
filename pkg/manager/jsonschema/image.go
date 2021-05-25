@@ -33,10 +33,10 @@ type Image struct {
 func LoadImageFile(filePath string) (*Image, error) {
 	var image Image
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&image)

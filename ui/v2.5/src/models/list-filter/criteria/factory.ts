@@ -34,6 +34,7 @@ import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
+import { InteractiveCriterion } from "./interactive";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -115,5 +116,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "url":
     case "stash_id":
       return new StringCriterion(new CriterionOption(type, type));
+    case "interactive":
+      return new InteractiveCriterion();
   }
 }

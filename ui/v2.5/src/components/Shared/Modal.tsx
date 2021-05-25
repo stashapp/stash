@@ -22,6 +22,8 @@ interface IModal {
   dialogClassName?: string;
 }
 
+const defaultOnHide = () => {};
+
 const ModalComponent: React.FC<IModal> = ({
   children,
   show,
@@ -37,7 +39,7 @@ const ModalComponent: React.FC<IModal> = ({
 }) => (
   <Modal
     keyboard={false}
-    onHide={onHide}
+    onHide={onHide ?? defaultOnHide}
     show={show}
     dialogClassName={dialogClassName}
     {...modalProps}

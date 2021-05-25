@@ -16,7 +16,7 @@ import {
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { CriterionAny } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
@@ -61,8 +61,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Criterion<any> | undefined
+    CriterionAny | undefined
   >(undefined);
 
   const intl = useIntl();
@@ -187,7 +186,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onAddCriterion(criterion: Criterion<any>, oldId?: string) {
+  function onAddCriterion(criterion: CriterionAny, oldId?: string) {
     const newFilter = _.cloneDeep(props.filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
@@ -216,7 +215,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onRemoveCriterion(removedCriterion: Criterion<any>) {
+  function onRemoveCriterion(removedCriterion: CriterionAny) {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.criteria = newFilter.criteria.filter(
       (criterion) => criterion.getId() !== removedCriterion.getId()
@@ -227,7 +226,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
   let removedCriterionId = "";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onRemoveCriterionTag(criterion?: Criterion<any>) {
+  function onRemoveCriterionTag(criterion?: CriterionAny) {
     if (!criterion) {
       return;
     }
@@ -237,7 +236,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onClickCriterionTag(criterion?: Criterion<any>) {
+  function onClickCriterionTag(criterion?: CriterionAny) {
     if (!criterion || removedCriterionId !== "") {
       return;
     }

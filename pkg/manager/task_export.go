@@ -93,10 +93,6 @@ func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *
 	}
 }
 
-func (t *ExportTask) GetStatus() JobStatus {
-	return Export
-}
-
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Movie.count

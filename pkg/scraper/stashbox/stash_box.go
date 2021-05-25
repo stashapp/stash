@@ -573,7 +573,7 @@ func (c Client) FindStashBoxPerformerByName(name string) (*models.ScrapedScenePe
 
 	var ret *models.ScrapedScenePerformer
 	for _, performer := range performers.SearchPerformer {
-		if strings.ToLower(performer.Name) == strings.ToLower(name) {
+		if strings.EqualFold(performer.Name, name) {
 			ret = performerFragmentToScrapedScenePerformer(*performer)
 		}
 	}

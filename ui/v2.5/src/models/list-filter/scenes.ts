@@ -8,6 +8,7 @@ import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
+import { InteractiveCriterionOption } from "./criteria/interactive";
 import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
@@ -32,6 +33,7 @@ const sortByOptions = [
   "performer_count",
   "random",
   "movie_scene_number",
+  "interactive",
 ].map(ListFilterOptions.createSortBy);
 
 const displayModeOptions = [
@@ -60,6 +62,7 @@ const criterionOptions = [
   MoviesCriterionOption,
   createCriterionOption("url"),
   createCriterionOption("stash_id"),
+  InteractiveCriterionOption,
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(

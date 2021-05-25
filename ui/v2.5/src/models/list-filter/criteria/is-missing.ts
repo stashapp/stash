@@ -76,7 +76,6 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
       "piercings",
       "aliases",
       "gender",
-      "scenes",
       "image",
       "details",
       "stash_id",

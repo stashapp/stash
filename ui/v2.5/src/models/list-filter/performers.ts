@@ -3,6 +3,8 @@ import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
+import { RatingCriterionOption } from "./criteria/rating";
+import { StudiosCriterionOption } from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { CriterionType, DisplayMode } from "./types";
@@ -58,6 +60,8 @@ const criterionOptions = [
   GenderCriterionOption,
   PerformerIsMissingCriterionOption,
   TagsCriterionOption,
+  RatingCriterionOption,
+  StudiosCriterionOption,
   createCriterionOption("url"),
   createCriterionOption("tag_count"),
   createCriterionOption("scene_count"),

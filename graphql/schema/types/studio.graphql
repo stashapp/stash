@@ -13,6 +13,8 @@ type Studio {
   stash_ids: [StashID!]!
   rating: Int
   details: String
+  created_at: Time!
+  updated_at: Time!
 }
 
 input StudioCreateInput {

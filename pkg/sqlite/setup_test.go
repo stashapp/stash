@@ -40,6 +40,7 @@ const (
 	sceneIdxWithPerformerTag
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
+	sceneIdxWithStudioPerformer
 	// new indexes above
 	lastSceneIdx
 
@@ -60,6 +61,7 @@ const (
 	imageIdxWithStudio
 	imageIdx1WithStudio
 	imageIdx2WithStudio
+	imageIdxWithStudioPerformer
 	imageIdxInZip // TODO - not implemented
 	imageIdxWithPerformerTag
 	imageIdxWithPerformerTwoTags
@@ -82,6 +84,9 @@ const (
 	performerIdxWithTwoGalleries
 	performerIdx1WithGallery
 	performerIdx2WithGallery
+	performerIdxWithSceneStudio
+	performerIdxWithImageStudio
+	performerIdxWithGalleryStudio
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -119,6 +124,7 @@ const (
 	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
 	galleryIdxWithPerformerTwoTags
+	galleryIdxWithStudioPerformer
 	// new indexes above
 	lastGalleryIdx
 
@@ -160,6 +166,9 @@ const (
 	studioIdxWithTwoImages
 	studioIdxWithGallery
 	studioIdxWithTwoGalleries
+	studioIdxWithScenePerformer
+	studioIdxWithImagePerformer
+	studioIdxWithGalleryPerformer
 	// new indexes above
 	// studios with dup names start from the end
 	studioIdxWithDupName
@@ -216,6 +225,7 @@ var (
 		{sceneIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{sceneIdx1WithPerformer, performerIdxWithTwoScenes},
 		{sceneIdx2WithPerformer, performerIdxWithTwoScenes},
+		{sceneIdxWithStudioPerformer, performerIdxWithSceneStudio},
 	}
 
 	sceneGalleryLinks = [][2]int{
@@ -230,6 +240,7 @@ var (
 		{sceneIdxWithStudio, studioIdxWithScene},
 		{sceneIdx1WithStudio, studioIdxWithTwoScenes},
 		{sceneIdx2WithStudio, studioIdxWithTwoScenes},
+		{sceneIdxWithStudioPerformer, studioIdxWithScenePerformer},
 	}
 )
 
@@ -245,6 +256,7 @@ var (
 		{imageIdxWithStudio, studioIdxWithImage},
 		{imageIdx1WithStudio, studioIdxWithTwoImages},
 		{imageIdx2WithStudio, studioIdxWithTwoImages},
+		{imageIdxWithStudioPerformer, studioIdxWithImagePerformer},
 	}
 	imageTagLinks = [][2]int{
 		{imageIdxWithTag, tagIdxWithImage},
@@ -259,6 +271,7 @@ var (
 		{imageIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{imageIdx1WithPerformer, performerIdxWithTwoImages},
 		{imageIdx2WithPerformer, performerIdxWithTwoImages},
+		{imageIdxWithStudioPerformer, performerIdxWithImageStudio},
 	}
 )
 
@@ -271,12 +284,14 @@ var (
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
 		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
+		{galleryIdxWithStudioPerformer, performerIdxWithGalleryStudio},
 	}
 
 	galleryStudioLinks = [][2]int{
 		{galleryIdxWithStudio, studioIdxWithGallery},
 		{galleryIdx1WithStudio, studioIdxWithTwoGalleries},
 		{galleryIdx2WithStudio, studioIdxWithTwoGalleries},
+		{galleryIdxWithStudioPerformer, studioIdxWithGalleryPerformer},
 	}
 
 	galleryTagLinks = [][2]int{
@@ -745,6 +760,8 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 			},
 			DeathDate: getPerformerDeathDate(i),
 			Details:   sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
+			Ethnicity: sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
+			Rating:    getRating(i),
 		}
 
 		careerLength := getPerformerCareerLength(i)

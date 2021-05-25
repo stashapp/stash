@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
@@ -24,18 +26,23 @@ import (
 type singleton struct {
 	Config *config.Instance
 
-	Status TaskStatus
-	Paths  *paths.Paths
+	Paths *paths.Paths
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	JobManager *job.Manager
 
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
 
 	DownloadStore *DownloadStore
 
+	DLNAService *dlna.Service
+
 	TxnManager models.TransactionManager
+
+	scanSubs *subscriptionManager
 }
 
 var instance *singleton
@@ -60,11 +67,18 @@ func Initialize() *singleton {
 
 		instance = &singleton{
 			Config:        cfg,
-			Status:        TaskStatus{Status: Idle, Progress: -1},
+			JobManager:    job.NewManager(),
 			DownloadStore: NewDownloadStore(),
 
 			TxnManager: sqlite.NewTransactionManager(),
+
+			scanSubs: &subscriptionManager{},
 		}
+
+		sceneServer := SceneServer{
+			TXNManager: instance.TxnManager,
+		}
+		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
 
 		if !cfg.IsNewSystem() {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -89,6 +103,11 @@ func Initialize() *singleton {
 		}
 
 		initFFMPEG()
+
+		// if DLNA is enabled, start it now
+		if instance.Config.GetDLNADefaultEnabled() {
+			instance.DLNAService.Start(nil)
+		}
 	})
 
 	return instance

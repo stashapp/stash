@@ -11,9 +11,17 @@ import {
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
+import { CriterionAny } from "src/models/list-filter/criteria/criterion";
+
+function addExtraCriteria(dest: CriterionAny[], src?: CriterionAny[]) {
+  if (src && src.length > 0) {
+    dest.push(...src);
+  }
+}
 
 const makePerformerScenesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>
+  performer: Partial<GQL.PerformerDataFragment>,
+  extraCriteria?: CriterionAny[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel();
@@ -22,11 +30,13 @@ const makePerformerScenesUrl = (
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
+  addExtraCriteria(filter.criteria, extraCriteria);
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
 const makePerformerImagesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>
+  performer: Partial<GQL.PerformerDataFragment>,
+  extraCriteria?: CriterionAny[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel();
@@ -35,11 +45,13 @@ const makePerformerImagesUrl = (
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
+  addExtraCriteria(filter.criteria, extraCriteria);
   return `/images?${filter.makeQueryParameters()}`;
 };
 
 const makePerformerGalleriesUrl = (
-  performer: Partial<GQL.PerformerDataFragment>
+  performer: Partial<GQL.PerformerDataFragment>,
+  extraCriteria?: CriterionAny[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel();
@@ -48,6 +60,7 @@ const makePerformerGalleriesUrl = (
     { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
+  addExtraCriteria(filter.criteria, extraCriteria);
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 

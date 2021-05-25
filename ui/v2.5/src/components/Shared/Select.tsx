@@ -19,7 +19,7 @@ import { TextUtils } from "src/utils";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
-  | GQL.Tag
+  | GQL.SlimTagDataFragment
   | GQL.SlimStudioDataFragment
   | GQL.SlimMovieDataFragment;
 type Option = { value: string; label: string };

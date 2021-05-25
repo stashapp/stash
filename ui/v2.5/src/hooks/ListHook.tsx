@@ -179,6 +179,14 @@ const RenderList = <
   const result = useData(filter);
   const totalCount = getCount(result);
   const items = getData(result);
+  const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+  // handle case where page is more than there are pages
+  useEffect(() => {
+    if (pages > 0 && filter.currentPage > pages) {
+      onChangePage(pages);
+    }
+  }, [pages, filter.currentPage, onChangePage]);
 
   useEffect(() => {
     Mousetrap.bind("right", () => {
@@ -367,8 +375,6 @@ const RenderList = <
     if (result.loading || result.error) {
       return;
     }
-
-    const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
     return (
       <>

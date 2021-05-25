@@ -30,8 +30,8 @@ export interface ILabeledValue {
 }
 
 export function encodeILabeledId(o: ILabeledId) {
-  // escape \ to \\ so that it encodes to JSON correctly
-  const adjustedLabel = o.label.replaceAll("\\", "\\\\");
+  // escape " and \ and by encoding to JSON so that it encodes to JSON correctly down the line
+  const adjustedLabel = JSON.stringify(o.label).slice(1, -1);
   return { ...o, label: encodeURIComponent(adjustedLabel) };
 }
 
@@ -90,4 +90,5 @@ export type CriterionType =
   | "performer_count"
   | "death_year"
   | "url"
-  | "stash_id";
+  | "stash_id"
+  | "interactive";

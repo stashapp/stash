@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
@@ -122,4 +123,12 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret 
 	}
 
 	return &res, err
+}
+
+func (r *movieResolver) CreatedAt(ctx context.Context, obj *models.Movie) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *movieResolver) UpdatedAt(ctx context.Context, obj *models.Movie) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

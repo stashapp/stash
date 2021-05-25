@@ -5,9 +5,9 @@ import Mousetrap from "mousetrap";
 import { Icon, FilterSelect, DurationInput } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  Criterion,
   DurationCriterion,
   CriterionValue,
+  CriterionAny,
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
@@ -17,11 +17,11 @@ import { CriterionType } from "src/models/list-filter/types";
 
 interface IAddFilterProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onAddCriterion: (criterion: Criterion<any>, oldId?: string) => void;
+  onAddCriterion: (criterion: CriterionAny, oldId?: string) => void;
   onCancel: () => void;
   filterOptions: ListFilterOptions;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  editingCriterion?: Criterion<any>;
+  editingCriterion?: CriterionAny;
 }
 
 export const AddFilter: React.FC<IAddFilterProps> = (
@@ -31,9 +31,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
   const [isOpen, setIsOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [criterion, setCriterion] = useState<Criterion<any>>(
-    new NoneCriterion()
-  );
+  const [criterion, setCriterion] = useState<CriterionAny>(new NoneCriterion());
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 

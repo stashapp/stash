@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"sync"
 	"time"
 
@@ -25,6 +26,17 @@ func (t *StashBoxPerformerTagTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	t.stashBoxPerformerTag()
+}
+
+func (t *StashBoxPerformerTagTask) Description() string {
+	var name string
+	if t.name != nil {
+		name = *t.name
+	} else if t.performer != nil {
+		name = t.performer.Name.String
+	}
+
+	return fmt.Sprintf("Tagging performer %s from stash-box", name)
 }
 
 func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {

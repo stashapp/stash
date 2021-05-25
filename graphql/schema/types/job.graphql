@@ -1,0 +1,33 @@
+enum JobStatus {
+  READY
+  RUNNING
+  FINISHED
+  STOPPING
+  CANCELLED
+}
+
+type Job {
+  id: ID!
+  status: JobStatus!
+  subTasks: [String!]
+  description: String!
+  progress: Float
+  startTime: Time
+  endTime: Time
+  addTime: Time!
+}
+
+input FindJobInput {
+  id: ID!
+}
+
+enum JobStatusUpdateType {
+  ADD
+  REMOVE
+  UPDATE
+}
+
+type JobStatusUpdate {
+  type: JobStatusUpdateType!
+  job: Job!
+}

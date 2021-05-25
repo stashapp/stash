@@ -208,13 +208,10 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 				return err
 			}
 			_, hasKey := tags[markerPrimaryTag.ID]
-			var sceneMarkerTag *models.SceneMarkerTag
 			if !hasKey {
-				sceneMarkerTag = &models.SceneMarkerTag{Tag: markerPrimaryTag}
+				sceneMarkerTag := &models.SceneMarkerTag{Tag: markerPrimaryTag}
 				tags[markerPrimaryTag.ID] = sceneMarkerTag
 				keys = append(keys, markerPrimaryTag.ID)
-			} else {
-				sceneMarkerTag = tags[markerPrimaryTag.ID]
 			}
 			tags[markerPrimaryTag.ID].SceneMarkers = append(tags[markerPrimaryTag.ID].SceneMarkers, sceneMarker)
 		}
