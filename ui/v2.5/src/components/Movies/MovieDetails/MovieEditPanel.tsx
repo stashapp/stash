@@ -77,7 +77,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     aliases: movie?.aliases,
     duration: movie?.duration,
     date: movie?.date,
-    rating: movie?.rating,
+    rating: movie?.rating ?? null,
     studio_id: movie?.studio?.id,
     director: movie?.director,
     synopsis: movie?.synopsis,
@@ -357,7 +357,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           <Col sm={fieldXS} xl={fieldXL}>
             <RatingStars
               value={formik.values.rating ?? undefined}
-              onSetRating={(value) => formik.setFieldValue("rating", value)}
+              onSetRating={(value) => formik.setFieldValue("rating", value ?? null)}
             />
           </Col>
         </Form.Group>
@@ -399,6 +399,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         isEditing={isEditing}
         onToggleEdit={onCancel}
         onSave={() => formik.handleSubmit()}
+        saveDisabled={!formik.dirty}
         onImageChange={onFrontImageChange}
         onImageChangeURL={setFrontImage}
         onClearImage={() => {

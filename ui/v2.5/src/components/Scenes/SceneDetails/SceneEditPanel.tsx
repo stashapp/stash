@@ -99,7 +99,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     details: scene.details ?? "",
     url: scene.url ?? "",
     date: scene.date ?? "",
-    rating: scene.rating ?? undefined,
+    rating: scene.rating ?? null,
     gallery_ids: (scene.galleries ?? []).map((g) => g.id),
     studio_id: scene.studio?.id,
     performer_ids: (scene.performers ?? []).map((p) => p.id),
@@ -206,7 +206,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       const result = await updateScene({
         variables: {
-          input,
+          input: {
+            ...input,
+            rating: input.rating ?? null,
+          },
         },
       });
       if (result.data?.sceneUpdate) {
@@ -585,7 +588,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col xs={9}>
                 <RatingStars
                   value={formik.values.rating ?? undefined}
-                  onSetRating={(value) => formik.setFieldValue("rating", value)}
+                  onSetRating={(value) => formik.setFieldValue("rating", value ?? null)}
                 />
               </Col>
             </Form.Group>
