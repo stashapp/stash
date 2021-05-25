@@ -1,20 +1,8 @@
-import { CriterionModifier } from "src/core/generated-graphql";
-import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import { Criterion, CriterionOption, ILabeledIdCriterion } from "./criterion";
+import { CriterionOption, ILabeledIdCriterion } from "./criterion";
 
 abstract class AbstractStudiosCriterion extends ILabeledIdCriterion {
-  public modifier = CriterionModifier.Includes;
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes),
-  ];
-  public options: IOptionType[] = [];
-  public value: ILabeledId[] = [];
-
-  public encodeValue() {
-    return this.value.map((o) => {
-      return encodeILabeledId(o);
-    });
+  constructor(type: CriterionOption) {
+    super(type, false);
   }
 }
 

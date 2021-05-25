@@ -8,6 +8,7 @@ import {
 import DurationUtils from "src/utils/duration";
 import {
   CriterionType,
+  encodeILabeledId,
   ILabeledId,
   ILabeledValue,
   IOptionType,
@@ -269,6 +270,16 @@ export class NumberCriterion extends Criterion<number> {
 }
 
 export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
+  public modifier = CriterionModifier.IncludesAll;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.IncludesAll),
+    Criterion.getModifierOption(CriterionModifier.Includes),
+    Criterion.getModifierOption(CriterionModifier.Excludes),
+  ];
+
+  public options: IOptionType[] = [];
+  public value: ILabeledId[] = [];
+
   public getLabelValue(): string {
     return this.value.map((v) => v.label).join(", ");
   }
@@ -278,6 +289,24 @@ export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
       value: this.value.map((v) => v.id),
       modifier: this.modifier,
     };
+  }
+
+  public encodeValue() {
+    return this.value.map((o) => {
+      return encodeILabeledId(o);
+    });
+  }
+
+  constructor(type: CriterionOption, includeAll: boolean) {
+    super(type);
+
+    if (!includeAll) {
+      this.modifier = CriterionModifier.Includes;
+      this.modifierOptions = [
+        Criterion.getModifierOption(CriterionModifier.Includes),
+        Criterion.getModifierOption(CriterionModifier.Excludes),
+      ];
+    }
   }
 }
 
