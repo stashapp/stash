@@ -6,9 +6,7 @@ import React, {
   useRef,
   useState,
   useCallback,
-  useMemo,
 } from "react";
-import { debounce } from "lodash";
 import { Button } from "react-bootstrap";
 import axios from "axios";
 import * as GQL from "src/core/generated-graphql";
@@ -82,10 +80,6 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
   const velocity = useRef(0);
 
   const _position = useRef(0);
-  const onSeek = useMemo(() => debounce(props.onSeek, 1000), [props.onSeek]);
-  const onScrolled = useMemo(() => debounce(props.onScrolled, 1000), [
-    props.onScrolled,
-  ]);
   const getPosition = useCallback(() => _position.current, []);
   const setPosition = useCallback(
     (newPostion: number, shouldEmit: boolean = true) => {
@@ -93,7 +87,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         return;
       }
       if (shouldEmit) {
-        onScrolled();
+        props.onScrolled();
       }
 
       const midpointOffset = scrubberSliderEl.current.clientWidth / 2;
@@ -114,7 +108,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         scrubberSliderEl.current.clientWidth;
       positionIndicatorEl.current.style.transform = `translateX(${indicatorPosition}px)`;
     },
-    [onScrolled]
+    [props]
   );
 
   const [spriteItems, setSpriteItems] = useState<ISceneSpriteItem[]>([]);
@@ -209,7 +203,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       }
 
       if (seekSeconds) {
-        onSeek(seekSeconds);
+        props.onSeek(seekSeconds);
       }
     } else if (Math.abs(velocity.current) > 25) {
       const newPosition = getPosition() + velocity.current * 10;
