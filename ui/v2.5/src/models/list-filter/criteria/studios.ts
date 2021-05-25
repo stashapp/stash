@@ -15,7 +15,8 @@ export class StudiosCriterion extends AbstractStudiosCriterion {
 
 export const ParentStudiosCriterionOption = new CriterionOption(
   "parent_studios",
-  "parent_studios"
+  "parent_studios",
+  "parents"
 );
 export class ParentStudiosCriterion extends AbstractStudiosCriterion {
   constructor() {
