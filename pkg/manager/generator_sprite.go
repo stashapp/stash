@@ -120,6 +120,9 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 	defer spriteImage.Close()
 	spriteImageName := filepath.Base(g.ImageOutputPath)
 	image, _, err := image.DecodeConfig(spriteImage)
+	if err != nil {
+		return err
+	}
 	width := image.Width / g.Columns
 	height := image.Height / g.Rows
 

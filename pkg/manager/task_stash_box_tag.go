@@ -174,6 +174,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 						return err
 					}
 					err = r.Performer().UpdateImage(t.performer.ID, image)
+					if err != nil {
+						return err
+					}
 				}
 
 				if err == nil {
