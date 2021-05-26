@@ -1,41 +1,37 @@
 package utils
 
 import (
-	"strconv"
-	"time"
+	"fmt"
+	"math"
 )
 
+// from stdlib's time.go
+func norm(hi, lo, base int) (nhi, nlo int) {
+	if lo < 0 {
+		n := (-lo-1)/base + 1
+		hi -= n
+		lo += n * base
+	}
+	if lo >= base {
+		n := lo / base
+		hi += n
+		lo -= n * base
+	}
+	return hi, lo
+}
+
 // GetVTTTime returns a timestamp appropriate for VTT files (hh:mm:ss.mmm)
-func GetVTTTime(totalSeconds float64) (s string) {
-	totalSecondsString := strconv.FormatFloat(totalSeconds, 'f', -1, 64)
-	secondsDuration, _ := time.ParseDuration(totalSecondsString + "s")
-
-	// Hours
-	var hours = int(secondsDuration / time.Hour)
-	var n = secondsDuration % time.Hour
-	if hours < 10 {
-		s += "0"
+func GetVTTTime(fracSeconds float64) string {
+	if fracSeconds < 0 || math.IsNaN(fracSeconds) || math.IsInf(fracSeconds, 0) {
+		return "00:00:00.000"
 	}
-	s += strconv.Itoa(hours) + ":"
 
-	// Minutes
-	var minutes = int(n / time.Minute)
-	n = secondsDuration % time.Minute
-	if minutes < 10 {
-		s += "0"
-	}
-	s += strconv.Itoa(minutes) + ":"
+	var msec, sec, min, hour int
+	msec = int(fracSeconds * 1000)
+	sec, msec = norm(sec, msec, 1000)
+	min, sec = norm(min, sec, 60)
+	hour, min = norm(hour, min, 60)
 
-	// Seconds
-	var seconds = int(n / time.Second)
-	n = secondsDuration % time.Second
-	if seconds < 10 {
-		s += "0"
-	}
-	s += strconv.Itoa(seconds)
+	return fmt.Sprintf("%02d:%02d:%02d.%03d", hour, min, sec, msec)
 
-	// videojs requires milliseconds
-	s += ".000"
-
-	return
 }

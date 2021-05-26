@@ -7,6 +7,33 @@ import (
 	"os"
 )
 
+const chunkSize int64 = 64 * 1024
+
+func oshash(size int64, head []byte, tail []byte) (string, error) {
+	// put the head and tail together
+	buf := append(head, tail...)
+
+	// convert bytes into uint64
+	ints := make([]uint64, len(buf)/8)
+	reader := bytes.NewReader(buf)
+	err := binary.Read(reader, binary.LittleEndian, &ints)
+	if err != nil {
+		return "", err
+	}
+
+	// sum the integers
+	var sum uint64
+	for _, v := range ints {
+		sum += v
+	}
+
+	// add the filesize
+	sum += uint64(size)
+
+	// output as hex
+	return fmt.Sprintf("%016x", sum), nil
+}
+
 // OSHashFromFilePath calculates the hash using the same algorithm that
 // OpenSubtitles.org uses.
 //
@@ -24,14 +51,13 @@ func OSHashFromFilePath(filePath string) (string, error) {
 		return "", err
 	}
 
-	fileSize := int64(fi.Size())
+	fileSize := fi.Size()
 
 	if fileSize == 0 {
 		return "", nil
 	}
 
-	const chunkSize = 64 * 1024
-	fileChunkSize := int64(chunkSize)
+	fileChunkSize := chunkSize
 	if fileSize < fileChunkSize {
 		fileChunkSize = fileSize
 	}
@@ -57,26 +83,5 @@ func OSHashFromFilePath(filePath string) (string, error) {
 		return "", err
 	}
 
-	// put the head and tail together
-	buf := append(head, tail...)
-
-	// convert bytes into uint64
-	ints := make([]uint64, len(buf)/8)
-	reader := bytes.NewReader(buf)
-	err = binary.Read(reader, binary.LittleEndian, &ints)
-	if err != nil {
-		return "", err
-	}
-
-	// sum the integers
-	var sum uint64
-	for _, v := range ints {
-		sum += v
-	}
-
-	// add the filesize
-	sum += uint64(fileSize)
-
-	// output as hex
-	return fmt.Sprintf("%016x", sum), nil
+	return oshash(fileSize, head, tail)
 }

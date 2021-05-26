@@ -24,6 +24,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 	github.com/remeh/sizedwaitgroup v1.0.0
+	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
 	github.com/rs/cors v1.6.0
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 	github.com/sirupsen/logrus v1.4.2
@@ -38,6 +39,7 @@ require (
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 	golang.org/x/tools v0.0.0-20200915031644-64986481280e // indirect
+	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )
 
