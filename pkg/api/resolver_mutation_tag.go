@@ -190,3 +190,44 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 	}
 	return true, nil
 }
+
+func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMergeInput) (*models.Tag, error) {
+	source, err := utils.StringSliceToIntSlice(input.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	destination, err := strconv.Atoi(input.Destination)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(source) == 0 {
+		return nil, nil
+	}
+
+	var t *models.Tag
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Tag()
+
+		var err error
+		t, err = qb.Find(destination)
+		if err != nil {
+			return err
+		}
+
+		if t == nil {
+			return fmt.Errorf("Tag with ID %d not found", destination)
+		}
+
+		if err = qb.MergeTags(source, destination); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return t, nil
+}
