@@ -88,7 +88,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
 
   const genderOptions = [""].concat(getGenderStrings());
 
@@ -225,7 +225,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     try {
       tagInput = Object.assign(tagInput, toCreate);
       const result = await createTag({
-        variables: tagInput,
+        variables: {
+          input: tagInput,
+        },
       });
 
       if (!result.data?.tagCreate) {

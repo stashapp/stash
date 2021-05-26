@@ -17,14 +17,17 @@ type TagReader interface {
 	QueryForAutoTag(words []string) ([]*Tag, error)
 	Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(tagID int) ([]byte, error)
+	GetAliases(tagID int) ([]string, error)
 }
 
 type TagWriter interface {
 	Create(newTag Tag) (*Tag, error)
-	Update(updatedTag Tag) (*Tag, error)
+	Update(updateTag TagPartial) (*Tag, error)
+	UpdateFull(updatedTag Tag) (*Tag, error)
 	Destroy(id int) error
 	UpdateImage(tagID int, image []byte) error
 	DestroyImage(tagID int) error
+	UpdateAliases(tagID int, aliases []string) error
 }
 
 type TagReaderWriter interface {

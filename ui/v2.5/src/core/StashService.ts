@@ -651,9 +651,8 @@ export const tagMutationImpactedQueries = [
   GQL.FindTagsDocument,
 ];
 
-export const useTagCreate = (input: GQL.TagCreateInput) =>
+export const useTagCreate = () =>
   GQL.useTagCreateMutation({
-    variables: input,
     refetchQueries: getQueryNames([
       GQL.AllTagsDocument,
       GQL.AllTagsForFilterDocument,

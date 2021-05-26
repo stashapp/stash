@@ -41,6 +41,10 @@ func (i *Importer) PostImport(id int) error {
 		}
 	}
 
+	if err := i.ReaderWriter.UpdateAliases(id, i.Input.Aliases); err != nil {
+		return fmt.Errorf("error setting tag aliases: %s", err.Error())
+	}
+
 	return nil
 }
 
@@ -76,7 +80,7 @@ func (i *Importer) Create() (*int, error) {
 func (i *Importer) Update(id int) error {
 	tag := i.tag
 	tag.ID = id
-	_, err := i.ReaderWriter.Update(tag)
+	_, err := i.ReaderWriter.UpdateFull(tag)
 	if err != nil {
 		return fmt.Errorf("error updating existing tag: %s", err.Error())
 	}

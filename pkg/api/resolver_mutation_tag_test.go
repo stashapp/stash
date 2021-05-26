@@ -30,11 +30,38 @@ func TestTagCreate(t *testing.T) {
 	r := newResolver()
 
 	tagRW := r.txnManager.(*mocks.TransactionManager).Tag().(*mocks.TagReaderWriter)
-	tagRW.On("FindByName", existingTagName, true).Return(&models.Tag{
-		ID:   existingTagID,
-		Name: existingTagName,
-	}, nil).Once()
-	tagRW.On("FindByName", errTagName, true).Return(nil, nil).Once()
+
+	pp := 1
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	tagFilterForName := func(n string) *models.TagFilterType {
+		return &models.TagFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    n,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+	}
+
+	tagFilterForAlias := func(n string) *models.TagFilterType {
+		return &models.TagFilterType{
+			Aliases: &models.StringCriterionInput{
+				Value:    n,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+	}
+
+	tagRW.On("Query", tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
+		{
+			ID:   existingTagID,
+			Name: existingTagName,
+		},
+	}, 1, nil).Once()
+	tagRW.On("Query", tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
 
 	expectedErr := errors.New("TagCreate error")
 	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
@@ -55,7 +82,8 @@ func TestTagCreate(t *testing.T) {
 	r = newResolver()
 	tagRW = r.txnManager.(*mocks.TransactionManager).Tag().(*mocks.TagReaderWriter)
 
-	tagRW.On("FindByName", tagName, true).Return(nil, nil).Once()
+	tagRW.On("Query", tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
 	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(&models.Tag{
 		ID:   newTagID,
 		Name: tagName,
