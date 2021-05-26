@@ -9,6 +9,8 @@ import Interface from "src/docs/en/Interface.md";
 import Galleries from "src/docs/en/Galleries.md";
 import Scraping from "src/docs/en/Scraping.md";
 import Plugins from "src/docs/en/Plugins.md";
+import ExternalPlugins from "src/docs/en/ExternalPlugins.md";
+import EmbeddedPlugins from "src/docs/en/EmbeddedPlugins.md";
 import Tagger from "src/docs/en/Tagger.md";
 import Contributing from "src/docs/en/Contributing.md";
 import SceneFilenameParser from "src/docs/en/SceneFilenameParser.md";
@@ -82,6 +84,18 @@ export const Manual: React.FC<IManualProps> = ({
       key: "Plugins.md",
       title: "Plugins",
       content: Plugins,
+    },
+    {
+      key: "ExternalPlugins.md",
+      title: "External",
+      content: ExternalPlugins,
+      className: "indent-1",
+    },
+    {
+      key: "EmbeddedPlugins.md",
+      title: "Embedded",
+      content: EmbeddedPlugins,
+      className: "indent-1",
     },
     {
       key: "Tagger.md",
