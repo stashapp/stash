@@ -360,6 +360,20 @@ func (_m *TagReaderWriter) GetImage(tagID int) ([]byte, error) {
 	return r0, r1
 }
 
+// MergeTags provides a mock function with given fields: source, destination
+func (_m *TagReaderWriter) MergeTags(source []int, destination int) error {
+	ret := _m.Called(source, destination)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func([]int, int) error); ok {
+		r0 = rf(source, destination)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Query provides a mock function with given fields: tagFilter, findFilter
 func (_m *TagReaderWriter) Query(tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, int, error) {
 	ret := _m.Called(tagFilter, findFilter)
