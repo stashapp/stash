@@ -10,7 +10,6 @@ import {
   useTagUpdate,
   useTagCreate,
   useTagDestroy,
-  mutateMetadataAutoTag,
 } from "src/core/StashService";
 import { ImageUtils } from "src/utils";
 import {
@@ -26,6 +25,7 @@ import { TagPerformersPanel } from "./TagPerformersPanel";
 import { TagGalleriesPanel } from "./TagGalleriesPanel";
 import { TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
+import { TagOperationsPanel } from "./TagOperationsPanel";
 
 interface ITabParams {
   id?: string;
@@ -57,7 +57,8 @@ export const Tag: React.FC = () => {
     tab === "markers" ||
     tab === "images" ||
     tab === "performers" ||
-    tab === "galleries"
+    tab === "galleries" ||
+    tab === "operations"
       ? tab
       : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
@@ -144,16 +145,6 @@ export const Tag: React.FC = () => {
     }
   }
 
-  async function onAutoTag() {
-    if (!tag?.id) return;
-    try {
-      await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success({ content: "Started auto tagging" });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
   async function onDelete() {
     try {
       await deleteTag();
@@ -226,7 +217,6 @@ export const Tag: React.FC = () => {
               onSave={() => {}}
               onImageChange={() => {}}
               onClearImage={() => {}}
-              onAutoTag={onAutoTag}
               onDelete={onDelete}
             />
           </>
@@ -262,6 +252,9 @@ export const Tag: React.FC = () => {
             </Tab>
             <Tab eventKey="performers" title="Performers">
               <TagPerformersPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="operations" title="Operations">
+              <TagOperationsPanel tag={tag} />
             </Tab>
           </Tabs>
         </div>
