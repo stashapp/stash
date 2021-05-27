@@ -50,8 +50,7 @@ func (t *rawPluginTask) Start() error {
 	go func() {
 		defer stdin.Close()
 
-		input := t.buildPluginInput()
-		inBytes, _ := json.Marshal(input)
+		inBytes, _ := json.Marshal(t.input)
 		io.WriteString(stdin, string(inBytes))
 	}()
 

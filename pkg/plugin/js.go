@@ -76,9 +76,7 @@ func (t *jsPluginTask) Start() error {
 		return err
 	}
 
-	input := t.buildPluginInput()
-
-	t.vm.Set("input", input)
+	t.vm.Set("input", t.input)
 	js.AddLogAPI(t.vm, t.progress)
 	js.AddUtilAPI(t.vm)
 	js.AddGQLAPI(t.vm, t.gqlHandler)

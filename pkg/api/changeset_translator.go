@@ -52,6 +52,16 @@ func getUpdateInputMaps(ctx context.Context) []map[string]interface{} {
 	return ret
 }
 
+func getInputFields(ctx context.Context) []string {
+	inputMap := getUpdateInputMap(ctx)
+	var ret []string
+	for k := range inputMap {
+		ret = append(ret, k)
+	}
+
+	return ret
+}
+
 type changesetTranslator struct {
 	inputMap map[string]interface{}
 }

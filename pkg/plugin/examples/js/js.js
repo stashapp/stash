@@ -11,6 +11,8 @@ function main() {
             doLongTask();
         } else if (modeArg == "indef") {
             doIndefiniteTask();
+        } else if (modeArg == "hook") {
+            doHookTask();
         }
     } catch (err) {
         return {
@@ -205,6 +207,11 @@ function doIndefiniteTask() {
 	while (true) {
 		util.Sleep(1000);
     }
+}
+
+function doHookTask() {
+    log.Info("JS Hook called!");
+    log.Info(input.Args);
 }
 
 main();

@@ -2,6 +2,10 @@ package common
 
 import "net/http"
 
+const (
+	HookContextKey = "hookContext"
+)
+
 // StashServerConnection represents the connection details needed for a
 // plugin instance to connect to its parent stash server.
 type StashServerConnection struct {
@@ -96,4 +100,17 @@ type PluginOutput struct {
 func (o *PluginOutput) SetError(err error) {
 	errStr := err.Error()
 	o.Error = &errStr
+}
+
+// HookContext is passed as a PluginArgValue and indicates what hook triggered
+// this plugin task.
+type HookContext struct {
+	Type  string      `json:"type"`
+	Input interface{} `json:"input"`
+}
+
+type PostHookInput struct {
+	ID          int         `json:"id"`
+	Input       interface{} `json:"input,omitempty"`
+	InputFields []string    `json:"inputFields,omitempty"`
 }

@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 
 	"github.com/gorilla/securecookie"
@@ -149,4 +150,19 @@ func createSessionCookie(username string) (*http.Cookie, error) {
 	}
 
 	return sessions.NewCookie(session.Name(), encoded, session.Options), nil
+}
+
+func makePluginCookie(ctx context.Context) *http.Cookie {
+	currentUser := getCurrentUserID(ctx)
+
+	var cookie *http.Cookie
+	var err error
+	if currentUser != nil {
+		cookie, err = createSessionCookie(*currentUser)
+		if err != nil {
+			logger.Errorf("error creating session cookie: %s", err.Error())
+		}
+	}
+
+	return cookie
 }

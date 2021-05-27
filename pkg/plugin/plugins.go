@@ -8,6 +8,7 @@
 package plugin
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -105,6 +106,15 @@ func (c Cache) ListPluginTasks() []*models.PluginTask {
 	return ret
 }
 
+func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args []*models.PluginArgInput) common.PluginInput {
+	args = applyDefaultArgs(args, operation.DefaultArgs)
+	serverConnection.PluginDir = plugin.getConfigPath()
+	return common.PluginInput{
+		ServerConnection: serverConnection,
+		Args:             toPluginArgs(args),
+	}
+}
+
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
@@ -122,14 +132,63 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 	}
 
 	task := pluginTask{
-		plugin:           plugin,
-		operation:        operation,
-		serverConnection: serverConnection,
-		args:             args,
-		progress:         progress,
-		gqlHandler:       c.gqlHandler,
+		plugin:     plugin,
+		operation:  operation,
+		input:      buildPluginInput(plugin, operation, serverConnection, args),
+		progress:   progress,
+		gqlHandler: c.gqlHandler,
 	}
 	return task.createTask(), nil
+}
+
+func (c Cache) ExecutePostHooks(ctx context.Context, serverConnection common.StashServerConnection, hookType HookTypeEnum, input interface{}) error {
+	for _, p := range c.plugins {
+		hooks := p.getHooks(hookType)
+		for _, h := range hooks {
+			pluginInput := buildPluginInput(&p, &h.OperationConfig, serverConnection, nil)
+			addHookContext(pluginInput.Args, hookType, input)
+
+			pt := pluginTask{
+				plugin:     &p,
+				operation:  &h.OperationConfig,
+				input:      pluginInput,
+				gqlHandler: c.gqlHandler,
+			}
+
+			task := pt.createTask()
+			if err := task.Start(); err != nil {
+				return err
+			}
+
+			// handle cancel from context
+			c := make(chan struct{})
+			go func() {
+				task.Wait()
+				close(c)
+			}()
+
+			select {
+			case <-ctx.Done():
+				task.Stop()
+				return fmt.Errorf("operation cancelled")
+			case <-c:
+				// task finished normally
+			}
+
+			output := task.GetResult()
+			if output == nil {
+				logger.Debug("%s [%s]: returned no result", hookType.String(), p.Name)
+			} else {
+				if output.Error != nil {
+					logger.Errorf("%s [%s]: returned error: %s", hookType.String(), p.Name, *output.Error)
+				} else if output.Output != nil {
+					logger.Debugf("%s [%s]: returned: %v", hookType.String(), p.Name, output.Output)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c Cache) getPlugin(pluginID string) *Config {

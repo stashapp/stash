@@ -54,6 +54,9 @@ type Config struct {
 
 	// The task configurations for tasks provided by this plugin.
 	Tasks []*OperationConfig `yaml:"tasks"`
+
+	// The hooks configurations for hooks registered by this plugin.
+	Hooks []*HookConfig `yaml:"hooks"`
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
@@ -101,6 +104,19 @@ func (c Config) getTask(name string) *OperationConfig {
 	}
 
 	return nil
+}
+
+func (c Config) getHooks(hookType HookTypeEnum) []*HookConfig {
+	var ret []*HookConfig
+	for _, h := range c.Hooks {
+		for _, t := range h.Hooks {
+			if hookType == t {
+				ret = append(ret, h)
+			}
+		}
+	}
+
+	return ret
 }
 
 func (c Config) getConfigPath() string {
@@ -192,6 +208,13 @@ type OperationConfig struct {
 	// used if the applicable argument is not provided during the operation
 	// call.
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
+}
+
+type HookConfig struct {
+	OperationConfig `yaml:",inline"`
+
+	// A list of stash operations that will be used to trigger this hook operation.
+	Hooks []HookTypeEnum `yaml:"hooks"`
 }
 
 func loadPluginFromYAML(reader io.Reader) (*Config, error) {

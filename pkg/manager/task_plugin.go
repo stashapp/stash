@@ -3,12 +3,29 @@ package manager
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
+
+func (s *singleton) MakeServerConnection(cookie *http.Cookie, hasTLSConfig bool) common.StashServerConnection {
+	config := s.Config
+	serverConnection := common.StashServerConnection{
+		Scheme:        "http",
+		Port:          config.GetPort(),
+		SessionCookie: cookie,
+		Dir:           config.GetConfigPath(),
+	}
+
+	if hasTLSConfig {
+		serverConnection.Scheme = "https"
+	}
+
+	return serverConnection
+}
 
 func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*models.PluginArgInput, serverConnection common.StashServerConnection) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {

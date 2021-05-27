@@ -7,9 +7,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -447,6 +450,17 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 	return true, nil
 }
 
+func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *models.SceneMarker, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.SceneMarker().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
 	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
 	if err != nil {
@@ -473,7 +487,19 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		return nil, err
 	}
 
-	return r.changeMarker(ctx, create, newSceneMarker, tagIDs)
+	ret, err := r.changeMarker(ctx, create, newSceneMarker, tagIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := manager.GetInstance().PluginCache.ExecutePostHooks(ctx, makeServerConnection(ctx), plugin.SceneMarkerCreatePost, common.PostHookInput{
+		ID:    ret.ID,
+		Input: input,
+	}); err != nil {
+		logger.Errorf("error executing post hooks: %s", err.Error())
+	}
+
+	return r.getSceneMarker(ctx, ret.ID)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.SceneMarkerUpdateInput) (*models.SceneMarker, error) {
@@ -507,7 +533,20 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		return nil, err
 	}
 
-	return r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	ret, err := r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := manager.GetInstance().PluginCache.ExecutePostHooks(ctx, makeServerConnection(ctx), plugin.SceneMarkerUpdatePost, common.PostHookInput{
+		ID:          ret.ID,
+		Input:       input,
+		InputFields: getInputFields(ctx),
+	}); err != nil {
+		logger.Errorf("error executing post hooks: %s", err.Error())
+	}
+
+	return r.getSceneMarker(ctx, ret.ID)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {

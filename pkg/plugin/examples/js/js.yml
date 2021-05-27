@@ -24,4 +24,13 @@ tasks:
     description: Sleeps for 100 seconds - interruptable
     defaultArgs:
       mode: long
-      
+hooks:
+  - name: Log scene marker create/update
+    description: Logs some stuff when creating/updating scene marker.
+    hooks: 
+      - SceneMarker.Create.Post
+      - SceneMarker.Update.Post
+    defaultArgs:
+      mode: hook
+    
+    
