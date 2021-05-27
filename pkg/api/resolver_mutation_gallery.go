@@ -102,7 +102,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 		return nil, err
 	}
 
-	executePostHooks(ctx, gallery.ID, plugin.GalleryCreatePost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, gallery.ID, plugin.GalleryCreatePost, input, nil)
 	return r.getGallery(ctx, gallery.ID)
 }
 
@@ -144,7 +144,7 @@ func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.Galle
 	}
 
 	// execute post hooks outside txn
-	executePostHooks(ctx, ret.ID, plugin.GalleryUpdatePost, input, translator.getFields())
+	pluginCache().ExecutePostHooks(ctx, ret.ID, plugin.GalleryUpdatePost, input, translator.getFields())
 	return r.getGallery(ctx, ret.ID)
 }
 
@@ -178,7 +178,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 			inputMap: inputMaps[i],
 		}
 
-		executePostHooks(ctx, gallery.ID, plugin.GalleryUpdatePost, input, translator.getFields())
+		pluginCache().ExecutePostHooks(ctx, gallery.ID, plugin.GalleryUpdatePost, input, translator.getFields())
 		gallery, err = r.getGallery(ctx, gallery.ID)
 		if err != nil {
 			return nil, err
@@ -348,7 +348,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 	// execute post hooks outside of txn
 	var newRet []*models.Gallery
 	for _, gallery := range ret {
-		executePostHooks(ctx, gallery.ID, plugin.GalleryUpdatePost, input, translator.getFields())
+		pluginCache().ExecutePostHooks(ctx, gallery.ID, plugin.GalleryUpdatePost, input, translator.getFields())
 
 		gallery, err := r.getGallery(ctx, gallery.ID)
 		if err != nil {
@@ -484,12 +484,12 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	// call post hook after performing the other actions
 	for _, gallery := range galleries {
-		executePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, input, nil)
+		pluginCache().ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, input, nil)
 	}
 
 	// call image destroy post hook as well
 	for _, img := range imgsToDelete {
-		executePostHooks(ctx, img.ID, plugin.ImageDestroyPost, nil, nil)
+		pluginCache().ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, nil, nil)
 	}
 
 	return true, nil

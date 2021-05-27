@@ -79,7 +79,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				userID = c.GetUsername()
 			} else {
 				// handle session
-				userID, err = getSessionUserID(w, r)
+				userID, err = manager.GetInstance().SessionStore.GetSessionUserID(w, r)
 			}
 
 			if err != nil {
@@ -128,7 +128,6 @@ func Start() {
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	loginUIBox = packr.New("Login UI Box", "../../ui/login")
 
-	initSessionStore()
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -356,15 +355,6 @@ func makeTLSConfig() *tls.Config {
 	}
 
 	return tlsConfig
-}
-
-func HasTLSConfig() bool {
-	ret, _ := utils.FileExists(paths.GetSSLCert())
-	if ret {
-		ret, _ = utils.FileExists(paths.GetSSLKey())
-	}
-
-	return ret
 }
 
 type contextKey struct {

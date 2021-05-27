@@ -80,7 +80,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		return nil, err
 	}
 
-	executePostHooks(ctx, t.ID, plugin.TagCreatePost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, t.ID, plugin.TagCreatePost, input, nil)
 	return r.getTag(ctx, t.ID)
 }
 
@@ -166,7 +166,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		return nil, err
 	}
 
-	executePostHooks(ctx, t.ID, plugin.TagUpdatePost, input, translator.getFields())
+	pluginCache().ExecutePostHooks(ctx, t.ID, plugin.TagUpdatePost, input, translator.getFields())
 	return r.getTag(ctx, t.ID)
 }
 
@@ -182,7 +182,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 		return false, err
 	}
 
-	executePostHooks(ctx, tagID, plugin.TagDestroyPost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, tagID, plugin.TagDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -207,7 +207,7 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 	}
 
 	for _, id := range ids {
-		executePostHooks(ctx, id, plugin.TagDestroyPost, tagIDs, nil)
+		pluginCache().ExecutePostHooks(ctx, id, plugin.TagDestroyPost, tagIDs, nil)
 	}
 
 	return true, nil

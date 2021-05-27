@@ -9,7 +9,8 @@ import (
 )
 
 func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*models.PluginArgInput) (string, error) {
-	manager.GetInstance().RunPluginTask(pluginID, taskName, args, makeServerConnection(ctx))
+	m := manager.GetInstance()
+	m.RunPluginTask(ctx, pluginID, taskName, args)
 	return "todo", nil
 }
 

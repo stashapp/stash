@@ -18,13 +18,15 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/session"
 )
 
 // Cache stores plugin details.
 type Cache struct {
-	config     *config.Instance
-	plugins    []Config
-	gqlHandler http.HandlerFunc
+	config       *config.Instance
+	plugins      []Config
+	sessionStore *session.Store
+	gqlHandler   http.HandlerFunc
 }
 
 // NewCache returns a new Cache.
@@ -42,6 +44,10 @@ func NewCache(config *config.Instance) *Cache {
 
 func (c *Cache) RegisterGQLHandler(handler http.HandlerFunc) {
 	c.gqlHandler = handler
+}
+
+func (c *Cache) RegisterSessionStore(sessionStore *session.Store) {
+	c.sessionStore = sessionStore
 }
 
 // LoadPlugins clears the plugin cache and loads from the plugin path.
@@ -115,10 +121,29 @@ func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnecti
 	}
 }
 
+func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConnection {
+	cookie := c.sessionStore.MakePluginCookie(ctx)
+
+	serverConnection := common.StashServerConnection{
+		Scheme:        "http",
+		Port:          c.config.GetPort(),
+		SessionCookie: cookie,
+		Dir:           c.config.GetConfigPath(),
+	}
+
+	if config.HasTLSConfig() {
+		serverConnection.Scheme = "https"
+	}
+
+	return serverConnection
+}
+
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput, progress chan float64) (Task, error) {
+func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*models.PluginArgInput, progress chan float64) (Task, error) {
+	serverConnection := c.makeServerConnection(ctx)
+
 	// find the plugin and operation
 	plugin := c.getPlugin(pluginID)
 
@@ -141,7 +166,19 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 	return task.createTask(), nil
 }
 
-func (c Cache) ExecutePostHooks(ctx context.Context, serverConnection common.StashServerConnection, hookType HookTypeEnum, input interface{}) error {
+func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTypeEnum, input interface{}, inputFields []string) {
+	if err := c.executePostHooks(ctx, hookType, common.PostHookInput{
+		ID:          id,
+		Input:       input,
+		InputFields: inputFields,
+	}); err != nil {
+		logger.Errorf("error executing post hooks: %s", err.Error())
+	}
+}
+
+func (c Cache) executePostHooks(ctx context.Context, hookType HookTypeEnum, input interface{}) error {
+	serverConnection := c.makeServerConnection(ctx)
+
 	for _, p := range c.plugins {
 		hooks := p.getHooks(hookType)
 		for _, h := range hooks {

@@ -38,7 +38,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	executePostHooks(ctx, ret.ID, plugin.SceneUpdatePost, input, translator.getFields())
+	pluginCache().ExecutePostHooks(ctx, ret.ID, plugin.SceneUpdatePost, input, translator.getFields())
 	return r.getScene(ctx, ret.ID)
 }
 
@@ -72,7 +72,7 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 			inputMap: inputMaps[i],
 		}
 
-		executePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
+		pluginCache().ExecutePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
 
 		scene, err = r.getScene(ctx, scene.ID)
 		if err != nil {
@@ -314,7 +314,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	// execute post hooks outside of txn
 	var newRet []*models.Scene
 	for _, scene := range ret {
-		executePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
+		pluginCache().ExecutePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
 
 		scene, err = r.getScene(ctx, scene.ID)
 		if err != nil {
@@ -437,7 +437,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	}
 
 	// call post hook after performing the other actions
-	executePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -490,7 +490,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		}
 
 		// call post hook after performing the other actions
-		executePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
+		pluginCache().ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
 	}
 
 	return true, nil
@@ -538,7 +538,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		return nil, err
 	}
 
-	executePostHooks(ctx, ret.ID, plugin.SceneMarkerCreatePost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerCreatePost, input, nil)
 	return r.getSceneMarker(ctx, ret.ID)
 }
 
@@ -581,7 +581,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
-	executePostHooks(ctx, ret.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
+	pluginCache().ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
 	return r.getSceneMarker(ctx, ret.ID)
 }
 
@@ -619,7 +619,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 
 	postCommitFunc()
 
-	executePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
+	pluginCache().ExecutePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
 
 	return true, nil
 }

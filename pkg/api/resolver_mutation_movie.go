@@ -116,7 +116,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 		return nil, err
 	}
 
-	executePostHooks(ctx, movie.ID, plugin.MovieCreatePost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, movie.ID, plugin.MovieCreatePost, input, nil)
 	return r.getMovie(ctx, movie.ID)
 }
 
@@ -216,7 +216,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		return nil, err
 	}
 
-	executePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
+	pluginCache().ExecutePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
 	return r.getMovie(ctx, movie.ID)
 }
 
@@ -232,7 +232,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieD
 		return false, err
 	}
 
-	executePostHooks(ctx, id, plugin.MovieDestroyPost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, id, plugin.MovieDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -257,7 +257,7 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 	}
 
 	for _, id := range ids {
-		executePostHooks(ctx, id, plugin.MovieDestroyPost, movieIDs, nil)
+		pluginCache().ExecutePostHooks(ctx, id, plugin.MovieDestroyPost, movieIDs, nil)
 	}
 
 	return true, nil

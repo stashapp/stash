@@ -158,7 +158,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	executePostHooks(ctx, performer.ID, plugin.PerformerCreatePost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, performer.ID, plugin.PerformerCreatePost, input, nil)
 	return r.getPerformer(ctx, performer.ID)
 }
 
@@ -280,7 +280,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	executePostHooks(ctx, p.ID, plugin.PerformerUpdatePost, input, translator.getFields())
+	pluginCache().ExecutePostHooks(ctx, p.ID, plugin.PerformerUpdatePost, input, translator.getFields())
 	return r.getPerformer(ctx, p.ID)
 }
 
@@ -389,7 +389,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	// execute post hooks outside of txn
 	var newRet []*models.Performer
 	for _, performer := range ret {
-		executePostHooks(ctx, performer.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		pluginCache().ExecutePostHooks(ctx, performer.ID, plugin.ImageUpdatePost, input, translator.getFields())
 
 		performer, err = r.getPerformer(ctx, performer.ID)
 		if err != nil {
@@ -414,7 +414,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 		return false, err
 	}
 
-	executePostHooks(ctx, id, plugin.PerformerDestroyPost, input, nil)
+	pluginCache().ExecutePostHooks(ctx, id, plugin.PerformerDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -439,7 +439,7 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 	}
 
 	for _, id := range ids {
-		executePostHooks(ctx, id, plugin.PerformerDestroyPost, performerIDs, nil)
+		pluginCache().ExecutePostHooks(ctx, id, plugin.PerformerDestroyPost, performerIDs, nil)
 	}
 
 	return true, nil
