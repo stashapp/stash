@@ -9,8 +9,20 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Performer().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
@@ -146,7 +158,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	return performer, nil
+	executePostHooks(ctx, performer.ID, plugin.PerformerCreatePost, input, nil)
+	return r.getPerformer(ctx, performer.ID)
 }
 
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
@@ -267,7 +280,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
-	return p, nil
+	executePostHooks(ctx, p.ID, plugin.PerformerUpdatePost, input, translator.getFields())
+	return r.getPerformer(ctx, p.ID)
 }
 
 func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, performerID int, tagsIDs []string) error {
@@ -372,7 +386,20 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 		return nil, err
 	}
 
-	return ret, nil
+	// execute post hooks outside of txn
+	var newRet []*models.Performer
+	for _, performer := range ret {
+		executePostHooks(ctx, performer.ID, plugin.ImageUpdatePost, input, translator.getFields())
+
+		performer, err = r.getPerformer(ctx, performer.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, performer)
+	}
+
+	return newRet, nil
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
@@ -386,6 +413,9 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 	}); err != nil {
 		return false, err
 	}
+
+	executePostHooks(ctx, id, plugin.PerformerDestroyPost, input, nil)
+
 	return true, nil
 }
 
@@ -407,5 +437,10 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 	}); err != nil {
 		return false, err
 	}
+
+	for _, id := range ids {
+		executePostHooks(ctx, id, plugin.PerformerDestroyPost, performerIDs, nil)
+	}
+
 	return true, nil
 }

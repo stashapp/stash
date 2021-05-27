@@ -52,16 +52,6 @@ func getUpdateInputMaps(ctx context.Context) []map[string]interface{} {
 	return ret
 }
 
-func getInputFields(ctx context.Context) []string {
-	inputMap := getUpdateInputMap(ctx)
-	var ret []string
-	for k := range inputMap {
-		ret = append(ret, k)
-	}
-
-	return ret
-}
-
 type changesetTranslator struct {
 	inputMap map[string]interface{}
 }
@@ -73,6 +63,15 @@ func (t changesetTranslator) hasField(field string) bool {
 
 	_, found := t.inputMap[field]
 	return found
+}
+
+func (t changesetTranslator) getFields() []string {
+	var ret []string
+	for k := range t.inputMap {
+		ret = append(ret, k)
+	}
+
+	return ret
 }
 
 func (t changesetTranslator) nullString(value *string, field string) *sql.NullString {

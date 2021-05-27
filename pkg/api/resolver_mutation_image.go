@@ -8,8 +8,20 @@ import (
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Image, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Image().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
 
 func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (ret *models.Image, err error) {
 	translator := changesetTranslator{
@@ -24,7 +36,9 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUp
 		return nil, err
 	}
 
-	return ret, nil
+	// execute post hooks outside txn
+	executePostHooks(ctx, ret.ID, plugin.ImageUpdatePost, input, translator.getFields())
+	return r.getImage(ctx, ret.ID)
 }
 
 func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) (ret []*models.Image, err error) {
@@ -50,7 +64,23 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.Ima
 		return nil, err
 	}
 
-	return ret, nil
+	// execute post hooks outside txn
+	var newRet []*models.Image
+	for i, image := range ret {
+		translator := changesetTranslator{
+			inputMap: inputMaps[i],
+		}
+
+		executePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		image, err = r.getImage(ctx, image.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, image)
+	}
+
+	return newRet, nil
 }
 
 func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Image, error) {
@@ -202,7 +232,20 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 		return nil, err
 	}
 
-	return ret, nil
+	// execute post hooks outside of txn
+	var newRet []*models.Image
+	for _, image := range ret {
+		executePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+
+		image, err = r.getImage(ctx, image.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, image)
+	}
+
+	return newRet, nil
 }
 
 func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
@@ -268,6 +311,9 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		manager.DeleteImageFile(image)
 	}
 
+	// call post hook after performing the other actions
+	executePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
+
 	return true, nil
 }
 
@@ -315,6 +361,9 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		if input.DeleteFile != nil && *input.DeleteFile {
 			manager.DeleteImageFile(image)
 		}
+
+		// call post hook after performing the other actions
+		executePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
 	}
 
 	return true, nil

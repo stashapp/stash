@@ -30,6 +30,28 @@ hooks:
     hooks: 
       - SceneMarker.Create.Post
       - SceneMarker.Update.Post
+      - SceneMarker.Delete.Post
+      - Scene.Create.Post
+      - Scene.Update.Post
+      - Scene.Destroy.Post
+      - Image.Create.Post
+      - Image.Update.Post
+      - Image.Destroy.Post
+      - Gallery.Create.Post
+      - Gallery.Update.Post
+      - Gallery.Destroy.Post
+      - Movie.Create.Post
+      - Movie.Update.Post
+      - Movie.Destroy.Post
+      - Performer.Create.Post
+      - Performer.Update.Post
+      - Performer.Destroy.Post
+      - Studio.Create.Post
+      - Studio.Update.Post
+      - Studio.Destroy.Post
+      - Tag.Create.Post
+      - Tag.Update.Post
+      - Tag.Destroy.Post
     defaultArgs:
       mode: hook
     

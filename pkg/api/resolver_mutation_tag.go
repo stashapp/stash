@@ -7,9 +7,21 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *mutationResolver) getTag(ctx context.Context, id int) (ret *models.Tag, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Tag().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
 
 func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
 	// Populate a new tag from the input
@@ -68,7 +80,8 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		return nil, err
 	}
 
-	return t, nil
+	executePostHooks(ctx, t.ID, plugin.TagCreatePost, input, nil)
+	return r.getTag(ctx, t.ID)
 }
 
 func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
@@ -153,7 +166,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		return nil, err
 	}
 
-	return t, nil
+	executePostHooks(ctx, t.ID, plugin.TagUpdatePost, input, translator.getFields())
+	return r.getTag(ctx, t.ID)
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
@@ -167,6 +181,9 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 	}); err != nil {
 		return false, err
 	}
+
+	executePostHooks(ctx, tagID, plugin.TagDestroyPost, input, nil)
+
 	return true, nil
 }
 
@@ -188,5 +205,10 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 	}); err != nil {
 		return false, err
 	}
+
+	for _, id := range ids {
+		executePostHooks(ctx, id, plugin.TagDestroyPost, tagIDs, nil)
+	}
+
 	return true, nil
 }

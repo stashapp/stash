@@ -7,8 +7,20 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Movie().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
 
 func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCreateInput) (*models.Movie, error) {
 	// generate checksum from movie name rather than image
@@ -104,7 +116,8 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 		return nil, err
 	}
 
-	return movie, nil
+	executePostHooks(ctx, movie.ID, plugin.MovieCreatePost, input, nil)
+	return r.getMovie(ctx, movie.ID)
 }
 
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUpdateInput) (*models.Movie, error) {
@@ -203,7 +216,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		return nil, err
 	}
 
-	return movie, nil
+	executePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
+	return r.getMovie(ctx, movie.ID)
 }
 
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieDestroyInput) (bool, error) {
@@ -217,6 +231,9 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieD
 	}); err != nil {
 		return false, err
 	}
+
+	executePostHooks(ctx, id, plugin.MovieDestroyPost, input, nil)
+
 	return true, nil
 }
 
@@ -238,5 +255,10 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 	}); err != nil {
 		return false, err
 	}
+
+	for _, id := range ids {
+		executePostHooks(ctx, id, plugin.MovieDestroyPost, movieIDs, nil)
+	}
+
 	return true, nil
 }
