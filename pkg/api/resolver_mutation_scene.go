@@ -728,9 +728,9 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
 	if at != nil {
-		manager.GetInstance().GenerateScreenshot(id, *at)
+		manager.GetInstance().GenerateScreenshot(ctx, id, *at)
 	} else {
-		manager.GetInstance().GenerateDefaultScreenshot(id)
+		manager.GetInstance().GenerateDefaultScreenshot(ctx, id)
 	}
 
 	return "todo", nil

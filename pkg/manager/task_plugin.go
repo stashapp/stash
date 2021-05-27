@@ -56,5 +56,5 @@ func (s *singleton) RunPluginTask(ctx context.Context, pluginID string, taskName
 		}
 	})
 
-	return s.JobManager.Add(fmt.Sprintf("Running plugin task: %s", taskName), j)
+	return s.JobManager.Add(ctx, fmt.Sprintf("Running plugin task: %s", taskName), j)
 }
