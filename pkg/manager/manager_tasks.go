@@ -488,6 +488,7 @@ func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) 
 			wg.Add(1)
 
 			task := CleanTask{
+				ctx:                 ctx,
 				TxnManager:          s.TxnManager,
 				Scene:               scene,
 				fileNamingAlgorithm: fileNamingAlgo,
@@ -514,6 +515,7 @@ func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) 
 			wg.Add(1)
 
 			task := CleanTask{
+				ctx:        ctx,
 				TxnManager: s.TxnManager,
 				Image:      img,
 			}
@@ -538,6 +540,7 @@ func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) 
 			wg.Add(1)
 
 			task := CleanTask{
+				ctx:        ctx,
 				TxnManager: s.TxnManager,
 				Gallery:    gallery,
 			}

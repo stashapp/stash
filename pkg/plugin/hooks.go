@@ -6,6 +6,9 @@ import (
 
 type HookTypeEnum string
 
+// Scan-related hooks are current disabled until post-hook execution is
+// integrated.
+
 const (
 	SceneMarkerCreatePost  HookTypeEnum = "SceneMarker.Create.Post"
 	SceneMarkerUpdatePost  HookTypeEnum = "SceneMarker.Update.Post"

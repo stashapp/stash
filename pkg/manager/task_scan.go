@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -102,6 +103,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
 				progress:             progress,
 				CaseSensitiveFs:      csFs,
+				ctx:                  ctx,
 			}
 
 			go func() {
@@ -201,6 +203,7 @@ func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (
 }
 
 type ScanTask struct {
+	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	FilePath             string
 	UseFileMetadata      bool
@@ -424,6 +427,8 @@ func (t *ScanTask) scanGallery() {
 					if err != nil {
 						return err
 					}
+
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
 				}
 			} else {
 				currentTime := time.Now()
@@ -461,6 +466,8 @@ func (t *ScanTask) scanGallery() {
 						return err
 					}
 					scanImages = true
+
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 				}
 			}
 
@@ -787,6 +794,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}); err != nil {
 				return logError(err)
 			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", t.FilePath)
@@ -826,6 +835,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 		}); err != nil {
 			return logError(err)
 		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
 	}
 
 	return retScene
@@ -894,6 +905,8 @@ func (t *ScanTask) rescanScene(s *models.Scene, fileModTime time.Time) (*models.
 		logger.Error(err.Error())
 		return nil, err
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.SceneUpdatePost, nil, nil)
 
 	// leave the generated files as is - the scene file may have been moved
 	// elsewhere
@@ -1081,6 +1094,8 @@ func (t *ScanTask) scanImage() {
 					logger.Error(err.Error())
 					return
 				}
+
+				GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
 			}
 		} else {
 			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
@@ -1111,6 +1126,8 @@ func (t *ScanTask) scanImage() {
 				logger.Error(err.Error())
 				return
 			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageCreatePost, nil, nil)
 		}
 
 		if t.zipGallery != nil {
@@ -1185,6 +1202,8 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 			logger.Errorf("Error deleting thumbnail image: %s", err)
 		}
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.ImageUpdatePost, nil, nil)
 
 	return ret, nil
 }
