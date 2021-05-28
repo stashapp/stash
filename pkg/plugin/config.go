@@ -77,6 +77,34 @@ func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
 	return ret
 }
 
+func (c Config) getPluginHooks(includePlugin bool) []*models.PluginHook {
+	var ret []*models.PluginHook
+
+	for _, o := range c.Hooks {
+		hook := &models.PluginHook{
+			Name:        o.Name,
+			Description: &o.Description,
+			Hooks:       convertHooks(o.Hooks),
+		}
+
+		if includePlugin {
+			hook.Plugin = c.toPlugin()
+		}
+		ret = append(ret, hook)
+	}
+
+	return ret
+}
+
+func convertHooks(hooks []HookTypeEnum) []string {
+	var ret []string
+	for _, h := range hooks {
+		ret = append(ret, h.String())
+	}
+
+	return ret
+}
+
 func (c Config) getName() string {
 	if c.Name != "" {
 		return c.Name
@@ -93,6 +121,7 @@ func (c Config) toPlugin() *models.Plugin {
 		URL:         c.URL,
 		Version:     c.Version,
 		Tasks:       c.getPluginTasks(false),
+		Hooks:       c.getPluginHooks(false),
 	}
 }
 
