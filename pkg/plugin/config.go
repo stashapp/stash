@@ -84,7 +84,7 @@ func (c Config) getPluginHooks(includePlugin bool) []*models.PluginHook {
 		hook := &models.PluginHook{
 			Name:        o.Name,
 			Description: &o.Description,
-			Hooks:       convertHooks(o.Hooks),
+			Hooks:       convertHooks(o.TriggeredBy),
 		}
 
 		if includePlugin {
@@ -96,7 +96,7 @@ func (c Config) getPluginHooks(includePlugin bool) []*models.PluginHook {
 	return ret
 }
 
-func convertHooks(hooks []HookTypeEnum) []string {
+func convertHooks(hooks []HookTriggerEnum) []string {
 	var ret []string
 	for _, h := range hooks {
 		ret = append(ret, h.String())
@@ -135,10 +135,10 @@ func (c Config) getTask(name string) *OperationConfig {
 	return nil
 }
 
-func (c Config) getHooks(hookType HookTypeEnum) []*HookConfig {
+func (c Config) getHooks(hookType HookTriggerEnum) []*HookConfig {
 	var ret []*HookConfig
 	for _, h := range c.Hooks {
-		for _, t := range h.Hooks {
+		for _, t := range h.TriggeredBy {
 			if hookType == t {
 				ret = append(ret, h)
 			}
@@ -243,7 +243,7 @@ type HookConfig struct {
 	OperationConfig `yaml:",inline"`
 
 	// A list of stash operations that will be used to trigger this hook operation.
-	Hooks []HookTypeEnum `yaml:"hooks"`
+	TriggeredBy []HookTriggerEnum `yaml:"triggeredBy"`
 }
 
 func loadPluginFromYAML(reader io.Reader) (*Config, error) {

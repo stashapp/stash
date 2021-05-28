@@ -4,46 +4,46 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-type HookTypeEnum string
+type HookTriggerEnum string
 
 // Scan-related hooks are current disabled until post-hook execution is
 // integrated.
 
 const (
-	SceneMarkerCreatePost  HookTypeEnum = "SceneMarker.Create.Post"
-	SceneMarkerUpdatePost  HookTypeEnum = "SceneMarker.Update.Post"
-	SceneMarkerDestroyPost HookTypeEnum = "SceneMarker.Destroy.Post"
+	SceneMarkerCreatePost  HookTriggerEnum = "SceneMarker.Create.Post"
+	SceneMarkerUpdatePost  HookTriggerEnum = "SceneMarker.Update.Post"
+	SceneMarkerDestroyPost HookTriggerEnum = "SceneMarker.Destroy.Post"
 
-	SceneCreatePost  HookTypeEnum = "Scene.Create.Post"
-	SceneUpdatePost  HookTypeEnum = "Scene.Update.Post"
-	SceneDestroyPost HookTypeEnum = "Scene.Destroy.Post"
+	SceneCreatePost  HookTriggerEnum = "Scene.Create.Post"
+	SceneUpdatePost  HookTriggerEnum = "Scene.Update.Post"
+	SceneDestroyPost HookTriggerEnum = "Scene.Destroy.Post"
 
-	ImageCreatePost  HookTypeEnum = "Image.Create.Post"
-	ImageUpdatePost  HookTypeEnum = "Image.Update.Post"
-	ImageDestroyPost HookTypeEnum = "Image.Destroy.Post"
+	ImageCreatePost  HookTriggerEnum = "Image.Create.Post"
+	ImageUpdatePost  HookTriggerEnum = "Image.Update.Post"
+	ImageDestroyPost HookTriggerEnum = "Image.Destroy.Post"
 
-	GalleryCreatePost  HookTypeEnum = "Gallery.Create.Post"
-	GalleryUpdatePost  HookTypeEnum = "Gallery.Update.Post"
-	GalleryDestroyPost HookTypeEnum = "Gallery.Destroy.Post"
+	GalleryCreatePost  HookTriggerEnum = "Gallery.Create.Post"
+	GalleryUpdatePost  HookTriggerEnum = "Gallery.Update.Post"
+	GalleryDestroyPost HookTriggerEnum = "Gallery.Destroy.Post"
 
-	MovieCreatePost  HookTypeEnum = "Movie.Create.Post"
-	MovieUpdatePost  HookTypeEnum = "Movie.Update.Post"
-	MovieDestroyPost HookTypeEnum = "Movie.Destroy.Post"
+	MovieCreatePost  HookTriggerEnum = "Movie.Create.Post"
+	MovieUpdatePost  HookTriggerEnum = "Movie.Update.Post"
+	MovieDestroyPost HookTriggerEnum = "Movie.Destroy.Post"
 
-	PerformerCreatePost  HookTypeEnum = "Performer.Create.Post"
-	PerformerUpdatePost  HookTypeEnum = "Performer.Update.Post"
-	PerformerDestroyPost HookTypeEnum = "Performer.Destroy.Post"
+	PerformerCreatePost  HookTriggerEnum = "Performer.Create.Post"
+	PerformerUpdatePost  HookTriggerEnum = "Performer.Update.Post"
+	PerformerDestroyPost HookTriggerEnum = "Performer.Destroy.Post"
 
-	StudioCreatePost  HookTypeEnum = "Studio.Create.Post"
-	StudioUpdatePost  HookTypeEnum = "Studio.Update.Post"
-	StudioDestroyPost HookTypeEnum = "Studio.Destroy.Post"
+	StudioCreatePost  HookTriggerEnum = "Studio.Create.Post"
+	StudioUpdatePost  HookTriggerEnum = "Studio.Update.Post"
+	StudioDestroyPost HookTriggerEnum = "Studio.Destroy.Post"
 
-	TagCreatePost  HookTypeEnum = "Tag.Create.Post"
-	TagUpdatePost  HookTypeEnum = "Tag.Update.Post"
-	TagDestroyPost HookTypeEnum = "Tag.Destroy.Post"
+	TagCreatePost  HookTriggerEnum = "Tag.Create.Post"
+	TagUpdatePost  HookTriggerEnum = "Tag.Update.Post"
+	TagDestroyPost HookTriggerEnum = "Tag.Destroy.Post"
 )
 
-var AllHookTypeEnum = []HookTypeEnum{
+var AllHookTriggerEnum = []HookTriggerEnum{
 	SceneMarkerCreatePost,
 	SceneMarkerUpdatePost,
 	SceneMarkerDestroyPost,
@@ -77,7 +77,7 @@ var AllHookTypeEnum = []HookTypeEnum{
 	TagDestroyPost,
 }
 
-func (e HookTypeEnum) IsValid() bool {
+func (e HookTriggerEnum) IsValid() bool {
 
 	switch e {
 	case SceneMarkerCreatePost,
@@ -116,11 +116,11 @@ func (e HookTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e HookTypeEnum) String() string {
+func (e HookTriggerEnum) String() string {
 	return string(e)
 }
 
-func addHookContext(argsMap common.ArgsMap, hookType HookTypeEnum, input interface{}) {
+func addHookContext(argsMap common.ArgsMap, hookType HookTriggerEnum, input interface{}) {
 	argsMap[common.HookContextKey] = common.HookContext{
 		Type:  string(hookType),
 		Input: input,

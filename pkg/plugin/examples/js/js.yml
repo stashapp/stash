@@ -27,7 +27,7 @@ tasks:
 hooks:
   - name: Log scene marker create/update
     description: Logs some stuff when creating/updating scene marker.
-    hooks: 
+    triggeredBy: 
       - SceneMarker.Create.Post
       - SceneMarker.Update.Post
       - SceneMarker.Delete.Post

@@ -167,7 +167,7 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName st
 	return task.createTask(), nil
 }
 
-func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTypeEnum, input interface{}, inputFields []string) {
+func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
 	if err := c.executePostHooks(ctx, hookType, common.PostHookInput{
 		ID:          id,
 		Input:       input,
@@ -177,7 +177,7 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTypeEn
 	}
 }
 
-func (c Cache) executePostHooks(ctx context.Context, hookType HookTypeEnum, input interface{}) error {
+func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, input interface{}) error {
 	visitedPlugins := session.GetVisitedPlugins(ctx)
 
 	for _, p := range c.plugins {
