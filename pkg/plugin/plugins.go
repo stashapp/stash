@@ -177,7 +177,7 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}
 }
 
-func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, input interface{}) error {
+func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, input common.PostHookInput) error {
 	visitedPlugins := session.GetVisitedPlugins(ctx)
 
 	for _, p := range c.plugins {
