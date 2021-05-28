@@ -225,7 +225,7 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, i
 
 			output := task.GetResult()
 			if output == nil {
-				logger.Debug("%s [%s]: returned no result", hookType.String(), p.Name)
+				logger.Debugf("%s [%s]: returned no result", hookType.String(), p.Name)
 			} else {
 				if output.Error != nil {
 					logger.Errorf("%s [%s]: returned error: %s", hookType.String(), p.Name, *output.Error)
