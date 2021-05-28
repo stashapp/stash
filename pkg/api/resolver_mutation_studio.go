@@ -94,7 +94,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	pluginCache().ExecutePostHooks(ctx, studio.ID, plugin.StudioCreatePost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, studio.ID, plugin.StudioCreatePost, input, nil)
 	return r.getStudio(ctx, studio.ID)
 }
 
@@ -175,7 +175,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	pluginCache().ExecutePostHooks(ctx, studio.ID, plugin.StudioUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, studio.ID, plugin.StudioUpdatePost, input, translator.getFields())
 	return r.getStudio(ctx, studio.ID)
 }
 
@@ -191,7 +191,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 		return false, err
 	}
 
-	pluginCache().ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -216,7 +216,7 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 	}
 
 	for _, id := range ids {
-		pluginCache().ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, studioIDs, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, studioIDs, nil)
 	}
 
 	return true, nil

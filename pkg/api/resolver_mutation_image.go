@@ -37,7 +37,7 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUp
 	}
 
 	// execute post hooks outside txn
-	pluginCache().ExecutePostHooks(ctx, ret.ID, plugin.ImageUpdatePost, input, translator.getFields())
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.ImageUpdatePost, input, translator.getFields())
 	return r.getImage(ctx, ret.ID)
 }
 
@@ -71,7 +71,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.Ima
 			inputMap: inputMaps[i],
 		}
 
-		pluginCache().ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
 		image, err = r.getImage(ctx, image.ID)
 		if err != nil {
 			return nil, err
@@ -235,7 +235,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 	// execute post hooks outside of txn
 	var newRet []*models.Image
 	for _, image := range ret {
-		pluginCache().ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageUpdatePost, input, translator.getFields())
 
 		image, err = r.getImage(ctx, image.ID)
 		if err != nil {
@@ -312,7 +312,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 	}
 
 	// call post hook after performing the other actions
-	pluginCache().ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
 
 	return true, nil
 }
@@ -363,7 +363,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		}
 
 		// call post hook after performing the other actions
-		pluginCache().ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
 	}
 
 	return true, nil

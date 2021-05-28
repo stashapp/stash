@@ -145,8 +145,10 @@ func Start() {
 	}
 
 	txnManager := manager.GetInstance().TxnManager
+	pluginCache := manager.GetInstance().PluginCache
 	resolver := &Resolver{
-		txnManager: txnManager,
+		txnManager:   txnManager,
+		hookExecutor: pluginCache,
 	}
 
 	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
