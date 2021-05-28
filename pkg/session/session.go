@@ -18,6 +18,11 @@ const (
 )
 
 const (
+	ApiKeyHeader    = "ApiKey"
+	ApiKeyParameter = "apikey"
+)
+
+const (
 	cookieName      = "session"
 	usernameFormKey = "username"
 	passwordFormKey = "password"
@@ -25,6 +30,7 @@ const (
 )
 
 var ErrInvalidCredentials = errors.New("invalid username or password")
+var ErrUnauthorized = errors.New("unauthorized")
 
 type Store struct {
 	sessionStore *sessions.CookieStore
@@ -106,6 +112,10 @@ func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (string
 	return "", nil
 }
 
+func SetCurrentUserID(ctx context.Context, userID string) context.Context {
+	return context.WithValue(ctx, ContextUser, userID)
+}
+
 // GetCurrentUserID gets the current user id from the provided context
 func GetCurrentUserID(ctx context.Context) *string {
 	userCtxVal := ctx.Value(ContextUser)
@@ -143,4 +153,36 @@ func (s *Store) MakePluginCookie(ctx context.Context) *http.Cookie {
 	}
 
 	return cookie
+}
+
+func (s *Store) Authenticate(w http.ResponseWriter, r *http.Request) (userID string, err error) {
+	c := s.config
+
+	// translate api key into current user, if present
+	apiKey := r.Header.Get(ApiKeyHeader)
+
+	// try getting the api key as a query parameter
+	if apiKey == "" {
+		apiKey = r.URL.Query().Get(ApiKeyParameter)
+	}
+
+	if apiKey != "" {
+		// match against configured API and set userID to the
+		// configured username. In future, we'll want to
+		// get the username from the key.
+		if c.GetAPIKey() != apiKey {
+			return "", ErrUnauthorized
+		}
+
+		userID = c.GetUsername()
+	} else {
+		// handle session
+		userID, err = s.GetSessionUserID(w, r)
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return
 }

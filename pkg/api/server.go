@@ -29,6 +29,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -41,11 +42,6 @@ var uiBox *packr.Box
 //var legacyUiBox *packr.Box
 var loginUIBox *packr.Box
 
-const (
-	ApiKeyHeader    = "ApiKey"
-	ApiKeyParameter = "apikey"
-)
-
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
 }
@@ -53,43 +49,25 @@ func allowUnauthenticated(r *http.Request) bool {
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
-			ctx := r.Context()
-
-			// translate api key into current user, if present
-			userID := ""
-			apiKey := r.Header.Get(ApiKeyHeader)
-			var err error
-
-			// try getting the api key as a query parameter
-			if apiKey == "" {
-				apiKey = r.URL.Query().Get(ApiKeyParameter)
-			}
-
-			if apiKey != "" {
-				// match against configured API and set userID to the
-				// configured username. In future, we'll want to
-				// get the username from the key.
-				if c.GetAPIKey() != apiKey {
-					w.Header().Add("WWW-Authenticate", `FormBased`)
-					w.WriteHeader(http.StatusUnauthorized)
+			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
+			if err != nil {
+				if err != session.ErrUnauthorized {
+					w.WriteHeader(http.StatusInternalServerError)
+					_, err = w.Write([]byte(err.Error()))
+					if err != nil {
+						logger.Error(err)
+					}
 					return
 				}
 
-				userID = c.GetUsername()
-			} else {
-				// handle session
-				userID, err = manager.GetInstance().SessionStore.GetSessionUserID(w, r)
-			}
-
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, err = w.Write([]byte(err.Error()))
-				if err != nil {
-					logger.Error(err)
-				}
+				// unauthorized error
+				w.Header().Add("WWW-Authenticate", `FormBased`)
+				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
+
+			c := config.GetInstance()
+			ctx := r.Context()
 
 			// handle redirect if no user and user is required
 			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
@@ -112,7 +90,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx = context.WithValue(ctx, ContextUser, userID)
+			ctx = session.SetCurrentUserID(ctx, userID)
 
 			r = r.WithContext(ctx)
 
