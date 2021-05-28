@@ -33,7 +33,7 @@ func throw(vm *otto.Otto, str string) {
 	panic(value)
 }
 
-func gqlRequestFunc(vm *otto.Otto, gqlHandler http.HandlerFunc) func(call otto.FunctionCall) otto.Value {
+func gqlRequestFunc(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) func(call otto.FunctionCall) otto.Value {
 	return func(call otto.FunctionCall) otto.Value {
 		if len(call.ArgumentList) == 0 {
 			throw(vm, "missing argument")
@@ -67,11 +67,15 @@ func gqlRequestFunc(vm *otto.Otto, gqlHandler http.HandlerFunc) func(call otto.F
 		}
 		r.Header.Set("Content-Type", "application/json")
 
+		if cookie != nil {
+			r.AddCookie(cookie)
+		}
+
 		w := &responseWriter{
 			header: make(http.Header),
 		}
 
-		gqlHandler(w, r)
+		gqlHandler.ServeHTTP(w, r)
 
 		if w.statusCode != http.StatusOK && w.statusCode != 0 {
 			throw(vm, fmt.Sprintf("graphQL query failed: %d - %s. Query: %s. Variables: %v", w.statusCode, w.r.String(), in.Query, in.Variables))
@@ -99,9 +103,9 @@ func gqlRequestFunc(vm *otto.Otto, gqlHandler http.HandlerFunc) func(call otto.F
 	}
 }
 
-func AddGQLAPI(vm *otto.Otto, gqlHandler http.HandlerFunc) {
+func AddGQLAPI(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) {
 	gql, _ := vm.Object("({})")
-	gql.Set("Do", gqlRequestFunc(vm, gqlHandler))
+	gql.Set("Do", gqlRequestFunc(vm, cookie, gqlHandler))
 
 	vm.Set("gql", gql)
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // Cache stores plugin details.
@@ -26,7 +27,7 @@ type Cache struct {
 	config       *config.Instance
 	plugins      []Config
 	sessionStore *session.Store
-	gqlHandler   http.HandlerFunc
+	gqlHandler   http.Handler
 }
 
 // NewCache returns a new Cache.
@@ -42,7 +43,7 @@ func NewCache(config *config.Instance) *Cache {
 	}
 }
 
-func (c *Cache) RegisterGQLHandler(handler http.HandlerFunc) {
+func (c *Cache) RegisterGQLHandler(handler http.Handler) {
 	c.gqlHandler = handler
 }
 
@@ -177,11 +178,20 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTypeEn
 }
 
 func (c Cache) executePostHooks(ctx context.Context, hookType HookTypeEnum, input interface{}) error {
-	serverConnection := c.makeServerConnection(ctx)
+	visitedPlugins := session.GetVisitedPlugins(ctx)
 
 	for _, p := range c.plugins {
+		// don't revisit a plugin we've already visited
+		if utils.StrInclude(visitedPlugins, p.id) {
+			logger.Debugf("plugin ID '%s' already triggered, not re-triggering", p.id)
+			continue
+		}
+
 		hooks := p.getHooks(hookType)
 		for _, h := range hooks {
+			newCtx := session.AddVisitedPlugin(ctx, p.id)
+			serverConnection := c.makeServerConnection(newCtx)
+
 			pluginInput := buildPluginInput(&p, &h.OperationConfig, serverConnection, nil)
 			addHookContext(pluginInput.Args, hookType, input)
 

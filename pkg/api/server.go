@@ -99,6 +99,16 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
+func visitedPluginHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// get the visited plugins and set them in the context
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 const loginEndPoint = "/login"
 
 func Start() {
@@ -112,6 +122,9 @@ func Start() {
 
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(authenticateHandler())
+	visitedPluginHandler := manager.GetInstance().SessionStore.VisitedPluginHandler()
+	r.Use(visitedPluginHandler)
+
 	r.Use(middleware.Recoverer)
 
 	c := config.GetInstance()
@@ -161,7 +174,8 @@ func Start() {
 	}
 
 	// register GQL handler with plugin cache
-	manager.GetInstance().PluginCache.RegisterGQLHandler(gqlHandlerFunc)
+	// chain the visited plugin handler
+	manager.GetInstance().PluginCache.RegisterGQLHandler(visitedPluginHandler(http.HandlerFunc(gqlHandlerFunc)))
 
 	r.HandleFunc("/graphql", gqlHandlerFunc)
 	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))

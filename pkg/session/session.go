@@ -9,12 +9,19 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type key int
 
 const (
-	ContextUser key = iota
+	contextUser key = iota
+	contextVisitedPlugins
+)
+
+const (
+	userIDKey         = "userID"
+	visitedPluginsKey = "visitedPlugins"
 )
 
 const (
@@ -26,7 +33,6 @@ const (
 	cookieName      = "session"
 	usernameFormKey = "username"
 	passwordFormKey = "password"
-	userIDKey       = "userID"
 )
 
 var ErrInvalidCredentials = errors.New("invalid username or password")
@@ -113,18 +119,58 @@ func (s *Store) GetSessionUserID(w http.ResponseWriter, r *http.Request) (string
 }
 
 func SetCurrentUserID(ctx context.Context, userID string) context.Context {
-	return context.WithValue(ctx, ContextUser, userID)
+	return context.WithValue(ctx, contextUser, userID)
 }
 
 // GetCurrentUserID gets the current user id from the provided context
 func GetCurrentUserID(ctx context.Context) *string {
-	userCtxVal := ctx.Value(ContextUser)
+	userCtxVal := ctx.Value(contextUser)
 	if userCtxVal != nil {
 		currentUser := userCtxVal.(string)
 		return &currentUser
 	}
 
 	return nil
+}
+
+func (s *Store) VisitedPluginHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// get the visited plugins from the cookie and set in the context
+			session, err := s.sessionStore.Get(r, cookieName)
+
+			// ignore errors
+			if err == nil {
+				val := session.Values[visitedPluginsKey]
+
+				visitedPlugins, _ := val.([]string)
+
+				ctx := setVisitedPlugins(r.Context(), visitedPlugins)
+				r = r.WithContext(ctx)
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func GetVisitedPlugins(ctx context.Context) []string {
+	ctxVal := ctx.Value(contextVisitedPlugins)
+	if ctxVal != nil {
+		return ctxVal.([]string)
+	}
+
+	return nil
+}
+
+func AddVisitedPlugin(ctx context.Context, pluginID string) context.Context {
+	curVal := GetVisitedPlugins(ctx)
+	curVal = utils.StrAppendUnique(curVal, pluginID)
+	return setVisitedPlugins(ctx, curVal)
+}
+
+func setVisitedPlugins(ctx context.Context, visitedPlugins []string) context.Context {
+	return context.WithValue(ctx, contextVisitedPlugins, visitedPlugins)
 }
 
 func (s *Store) createSessionCookie(username string) (*http.Cookie, error) {
@@ -142,17 +188,23 @@ func (s *Store) createSessionCookie(username string) (*http.Cookie, error) {
 
 func (s *Store) MakePluginCookie(ctx context.Context) *http.Cookie {
 	currentUser := GetCurrentUserID(ctx)
+	visitedPlugins := GetVisitedPlugins(ctx)
 
-	var cookie *http.Cookie
-	var err error
+	session := sessions.NewSession(s.sessionStore, cookieName)
 	if currentUser != nil {
-		cookie, err = s.createSessionCookie(*currentUser)
-		if err != nil {
-			logger.Errorf("error creating session cookie: %s", err.Error())
-		}
+		session.Values[userIDKey] = *currentUser
 	}
 
-	return cookie
+	session.Values[visitedPluginsKey] = visitedPlugins
+
+	encoded, err := securecookie.EncodeMulti(session.Name(), session.Values,
+		s.sessionStore.Codecs...)
+	if err != nil {
+		logger.Errorf("error creating session cookie: %s", err.Error())
+		return nil
+	}
+
+	return sessions.NewCookie(session.Name(), encoded, session.Options)
 }
 
 func (s *Store) Authenticate(w http.ResponseWriter, r *http.Request) (userID string, err error) {
