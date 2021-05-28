@@ -680,6 +680,11 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
+export const useTagsMerge = () =>
+  GQL.useTagsMergeMutation({
+    update: deleteCache(tagMutationImpactedQueries),
+  });
+
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
   GQL.useConfigureGeneralMutation({
     variables: { input },
