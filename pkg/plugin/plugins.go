@@ -181,13 +181,14 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTypeEnum, inpu
 	visitedPlugins := session.GetVisitedPlugins(ctx)
 
 	for _, p := range c.plugins {
+		hooks := p.getHooks(hookType)
 		// don't revisit a plugin we've already visited
-		if utils.StrInclude(visitedPlugins, p.id) {
+		// only log if there's hooks that we're skipping
+		if len(hooks) > 0 && utils.StrInclude(visitedPlugins, p.id) {
 			logger.Debugf("plugin ID '%s' already triggered, not re-triggering", p.id)
 			continue
 		}
 
-		hooks := p.getHooks(hookType)
 		for _, h := range hooks {
 			newCtx := session.AddVisitedPlugin(ctx, p.id)
 			serverConnection := c.makeServerConnection(newCtx)
