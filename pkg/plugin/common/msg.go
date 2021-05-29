@@ -105,12 +105,8 @@ func (o *PluginOutput) SetError(err error) {
 // HookContext is passed as a PluginArgValue and indicates what hook triggered
 // this plugin task.
 type HookContext struct {
-	Type  string      `json:"type"`
-	Input interface{} `json:"input"`
-}
-
-type PostHookInput struct {
-	ID          int         `json:"id"`
-	Input       interface{} `json:"input,omitempty"`
+	ID          int         `json:"id,omitempty"`
+	Type        string      `json:"type"`
+	Input       interface{} `json:"input"`
 	InputFields []string    `json:"inputFields,omitempty"`
 }

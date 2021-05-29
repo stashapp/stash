@@ -168,8 +168,9 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName st
 }
 
 func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
-	if err := c.executePostHooks(ctx, hookType, common.PostHookInput{
+	if err := c.executePostHooks(ctx, hookType, common.HookContext{
 		ID:          id,
+		Type:        hookType.String(),
 		Input:       input,
 		InputFields: inputFields,
 	}); err != nil {
@@ -177,7 +178,7 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}
 }
 
-func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, input common.PostHookInput) error {
+func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, hookContext common.HookContext) error {
 	visitedPlugins := session.GetVisitedPlugins(ctx)
 
 	for _, p := range c.plugins {
@@ -194,7 +195,7 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, i
 			serverConnection := c.makeServerConnection(newCtx)
 
 			pluginInput := buildPluginInput(&p, &h.OperationConfig, serverConnection, nil)
-			addHookContext(pluginInput.Args, hookType, input)
+			addHookContext(pluginInput.Args, hookContext)
 
 			pt := pluginTask{
 				plugin:     &p,

@@ -134,17 +134,9 @@ Plugin tasks triggered by a hook include an argument named `hookContext` in the 
 
 ```
 {
-    type: <trigger type>
-    input: <hook input>
-}
-```
-
-For `Post` hooks, `input` uses the following structure:
-
-```
-{
     "id": <object id>,
-    "input": <operation input>
+    "type": <trigger type>,
+    "input": <operation input>,
     "inputFields": <fields included in input>
 }
 ```
@@ -157,30 +149,28 @@ For example, here is the `args` values for a Scene update operation:
 {
     "hookContext": {
         "type":"Scene.Update.Post",
+        "id":45,
         "input":{
-            "id":45,
-            "input":{
-                "clientMutationId":null,
-                "id":"45",
-                "title":null,
-                "details":null,
-                "url":null,
-                "date":null,
-                "rating":null,
-                "organized":null,
-                "studio_id":null,
-                "gallery_ids":null,
-                "performer_ids":null,
-                "movies":null,
-                "tag_ids":["21"],
-                "cover_image":null,
-                "stash_ids":null
-            },
-            "inputFields":[
-                "tag_ids",
-                "id"
-            ]
-        }
+            "clientMutationId":null,
+            "id":"45",
+            "title":null,
+            "details":null,
+            "url":null,
+            "date":null,
+            "rating":null,
+            "organized":null,
+            "studio_id":null,
+            "gallery_ids":null,
+            "performer_ids":null,
+            "movies":null,
+            "tag_ids":["21"],
+            "cover_image":null,
+            "stash_ids":null
+        },
+        "inputFields":[
+            "tag_ids",
+            "id"
+        ]
     }
 }
 ```

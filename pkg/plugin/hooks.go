@@ -120,9 +120,6 @@ func (e HookTriggerEnum) String() string {
 	return string(e)
 }
 
-func addHookContext(argsMap common.ArgsMap, hookType HookTriggerEnum, input interface{}) {
-	argsMap[common.HookContextKey] = common.HookContext{
-		Type:  string(hookType),
-		Input: input,
-	}
+func addHookContext(argsMap common.ArgsMap, hookContext common.HookContext) {
+	argsMap[common.HookContextKey] = hookContext
 }
