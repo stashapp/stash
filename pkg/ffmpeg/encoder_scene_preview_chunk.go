@@ -70,8 +70,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-crf", "21",
 		"-threads", "4",
 		"-vf", fmt.Sprintf("scale=%v:-2", options.Width),
-		"-c:a", "aac",
-		"-b:a", "128k",
+		"-an",
 		"-strict", "-2",
 		options.OutputPath,
 	}
