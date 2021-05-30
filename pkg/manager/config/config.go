@@ -56,13 +56,16 @@ const CalculateMD5 = "calculate_md5"
 // should be used when generating and using generated files for scenes.
 const VideoFileNamingAlgorithm = "video_file_naming_algorithm"
 
-const PreviewPreset = "preview_preset"
-
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
 const ParallelTasks = "parallel_tasks"
 const parallelTasksDefault = 1
+
+const PreviewPreset = "preview_preset"
+
+const PreviewAudio = "preview_audio"
+const previewAudioDefault = true
 
 const PreviewSegmentDuration = "preview_segment_duration"
 const previewSegmentDurationDefault = 0.75
@@ -401,6 +404,11 @@ func (i *Instance) GetParallelTasksWithAutoDetection() int {
 		parallelTasks = (runtime.NumCPU() / 4) + 1
 	}
 	return parallelTasks
+}
+
+func (i *Instance) GetPreviewAudio() bool {
+	viper.SetDefault(PreviewAudio, previewAudioDefault)
+	return viper.GetBool(PreviewAudio)
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.

@@ -26,6 +26,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   const [overwrite, setOverwrite] = useState(true);
   const [imagePreviews, setImagePreviews] = useState(false);
 
+  const [previewAudio, setPreviewAudio] = useState(true);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -54,6 +55,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
       setPreviewExcludeStart(conf.general.previewExcludeStart);
       setPreviewExcludeEnd(conf.general.previewExcludeEnd);
       setPreviewPreset(conf.general.previewPreset);
+      setPreviewAudio(conf.general.previewAudio);
     }
   }, [data]);
 
@@ -69,6 +71,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
         overwrite,
         sceneIDs: props.selectedIds,
         previewOptions: {
+          previewAudio,
           previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
           previewSegments,
           previewSegmentDuration,
@@ -156,6 +159,17 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     The preset regulates size, quality and encoding time of
                     preview generation. Presets beyond “slow” have diminishing
                     returns and are not recommended.
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group id="preview-include-audio">
+                  <Form.Check
+                    checked={previewAudio}
+                    label="Include audio"
+                    onChange={() => setPreviewAudio(!previewAudio)}
+                  />
+                  <Form.Text className="text-muted">
+                    Includes audio stream when generating previews.
                   </Form.Text>
                 </Form.Group>
 

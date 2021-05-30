@@ -113,6 +113,8 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 		logger.Warnf("[generator] Segment duration (%f) too short.Using 0.75 instead.", g.Info.ChunkDuration)
 	}
 
+	includeAudio := g.Info.Audio
+
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		time := offset + (float64(i) * stepSize)
 		num := fmt.Sprintf("%.3d", i)
@@ -124,6 +126,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 			Duration:   durationSegment,
 			Width:      640,
 			OutputPath: chunkOutputPath,
+			Audio:      includeAudio,
 		}
 		if err := encoder.ScenePreviewVideoChunk(g.Info.VideoFile, options, g.PreviewPreset, fallback); err != nil {
 			return err

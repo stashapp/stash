@@ -50,6 +50,7 @@ func (t *GeneratePreviewTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	generator.Info.ChunkDuration = *t.Options.PreviewSegmentDuration
 	generator.Info.ExcludeStart = *t.Options.PreviewExcludeStart
 	generator.Info.ExcludeEnd = *t.Options.PreviewExcludeEnd
+	generator.Info.Audio = t.Options.PreviewAudio
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating preview: %s", err.Error())

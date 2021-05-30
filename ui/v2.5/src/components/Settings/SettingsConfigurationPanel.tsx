@@ -84,6 +84,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     GQL.HashAlgorithm | undefined
   >(undefined);
   const [parallelTasks, setParallelTasks] = useState<number>(0);
+  const [previewAudio, setPreviewAudio] = useState<boolean>(true);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -149,6 +150,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     videoFileNamingAlgorithm:
       (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
     parallelTasks,
+    previewAudio,
     previewSegments,
     previewSegmentDuration,
     previewExcludeStart,
@@ -194,6 +196,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
       setCalculateMD5(conf.general.calculateMD5);
       setParallelTasks(conf.general.parallelTasks);
+      setPreviewAudio(conf.general.previewAudio);
       setPreviewSegments(conf.general.previewSegments);
       setPreviewSegmentDuration(conf.general.previewSegmentDuration);
       setPreviewExcludeStart(conf.general.previewExcludeStart);
@@ -656,6 +659,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
             not recommended.
           </Form.Text>
         </Form.Group>
+
+        <Form.Group>
+          <Form.Check
+            id="preview-include-audio"
+            checked={previewAudio}
+            label="Include audio"
+            onChange={() => setPreviewAudio(!previewAudio)}
+          />
+          <Form.Text className="text-muted">
+            Includes audio stream when generating previews.
+          </Form.Text>
+        </Form.Group>
+
         <Form.Group id="preview-segments">
           <h6>Number of segments in preview</h6>
           <Form.Control

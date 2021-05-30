@@ -88,6 +88,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.ParallelTasks != nil {
 		c.Set(config.ParallelTasks, *input.ParallelTasks)
 	}
+
+	c.Set(config.PreviewAudio, input.PreviewAudio)
+
 	if input.PreviewSegments != nil {
 		c.Set(config.PreviewSegments, *input.PreviewSegments)
 	}
