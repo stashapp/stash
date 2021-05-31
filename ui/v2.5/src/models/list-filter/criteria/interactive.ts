@@ -1,8 +1,8 @@
 import { BooleanCriterion, CriterionOption } from "./criterion";
 
 export const InteractiveCriterionOption = new CriterionOption(
-  "organized",
-  "organized"
+  "interactive",
+  "interactive"
 );
 
 export class InteractiveCriterion extends BooleanCriterion {
