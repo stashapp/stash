@@ -9,7 +9,7 @@ export const performerFilterHook = (
     const performerValue = { id: performer.id!, label: performer.name! };
     // if performers is already present, then we modify it, otherwise add
     let performerCriterion = filter.criteria.find((c) => {
-      return c.type === "performers";
+      return c.criterionOption.value === "performers";
     }) as PerformersCriterion;
 
     if (
