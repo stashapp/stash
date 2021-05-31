@@ -459,7 +459,12 @@ func TestParseTagScenes(t *testing.T) {
 
 	for _, s := range tags {
 		if err := withTxn(func(r models.Repository) error {
-			return TagScenes(s, nil, r.Scene())
+			aliases, err := r.Tag().GetAliases(s.ID)
+			if err != nil {
+				return err
+			}
+
+			return TagScenes(s, nil, aliases, r.Scene())
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -481,7 +486,7 @@ func TestParseTagScenes(t *testing.T) {
 				t.Errorf("Error getting scene tags: %s", err.Error())
 			}
 
-			// title is only set on scenes where we expect performer to be set
+			// title is only set on scenes where we expect tag to be set
 			if scene.Title.String == scene.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
 			} else if scene.Title.String != scene.Path && len(tags) > 0 {
@@ -604,7 +609,12 @@ func TestParseTagImages(t *testing.T) {
 
 	for _, s := range tags {
 		if err := withTxn(func(r models.Repository) error {
-			return TagImages(s, nil, r.Image())
+			aliases, err := r.Tag().GetAliases(s.ID)
+			if err != nil {
+				return err
+			}
+
+			return TagImages(s, nil, aliases, r.Image())
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -749,7 +759,12 @@ func TestParseTagGalleries(t *testing.T) {
 
 	for _, s := range tags {
 		if err := withTxn(func(r models.Repository) error {
-			return TagGalleries(s, nil, r.Gallery())
+			aliases, err := r.Tag().GetAliases(s.ID)
+			if err != nil {
+				return err
+			}
+
+			return TagGalleries(s, nil, aliases, r.Gallery())
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}

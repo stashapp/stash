@@ -319,7 +319,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
   const [createStudio] = useStudioCreate({ name: "" });
   const [createPerformer] = usePerformerCreate();
   const [createMovie] = useMovieCreate();
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
 
   const Toast = useToast();
 
@@ -445,11 +445,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
   }
 
   async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
-    let tagInput: GQL.TagCreateInput = { name: "" };
+    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
-      tagInput = Object.assign(tagInput, toCreate);
       const result = await createTag({
-        variables: tagInput,
+        variables: {
+          input: tagInput,
+        },
       });
 
       // add the new tag to the new tags value

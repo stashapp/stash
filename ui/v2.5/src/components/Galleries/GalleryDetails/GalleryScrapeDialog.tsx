@@ -256,7 +256,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
 
   const [createStudio] = useStudioCreate({ name: "" });
   const [createPerformer] = usePerformerCreate();
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
 
   const Toast = useToast();
 
@@ -333,11 +333,12 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   }
 
   async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
-    let tagInput: GQL.TagCreateInput = { name: "" };
+    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
-      tagInput = Object.assign(tagInput, toCreate);
       const result = await createTag({
-        variables: tagInput,
+        variables: {
+          input: tagInput,
+        },
       });
 
       // add the new tag to the new tags value

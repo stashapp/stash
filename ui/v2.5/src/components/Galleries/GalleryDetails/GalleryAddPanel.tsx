@@ -22,7 +22,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
     };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {
-      return c.type === "galleries";
+      return c.criterionOption.value === "galleries";
     }) as GalleriesCriterion;
 
     if (

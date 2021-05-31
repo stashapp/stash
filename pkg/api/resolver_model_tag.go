@@ -10,6 +10,17 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) (ret []string, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Tag().GetAliases(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, err
+}
+
 func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var count int
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {

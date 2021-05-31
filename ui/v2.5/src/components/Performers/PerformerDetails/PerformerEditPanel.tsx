@@ -88,7 +88,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
 
   const genderOptions = [""].concat(getGenderStrings());
 
@@ -221,11 +221,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
-    let tagInput: GQL.TagCreateInput = { name: "" };
+    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
-      tagInput = Object.assign(tagInput, toCreate);
       const result = await createTag({
-        variables: tagInput,
+        variables: {
+          input: tagInput,
+        },
       });
 
       if (!result.data?.tagCreate) {

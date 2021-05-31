@@ -7,6 +7,7 @@ interface IStringListInputProps {
   setValue: (value: string[]) => void;
   defaultNewValue?: string;
   className?: string;
+  errors?: string;
 }
 
 export const StringListInput: React.FC<IStringListInputProps> = (props) => {
@@ -32,29 +33,34 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
 
   return (
     <>
-      <Form.Group>
-        {props.value &&
-          props.value.map((v, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <InputGroup className={props.className} key={i}>
-              <Form.Control
-                className="text-input"
-                value={v}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  valueChanged(i, e.currentTarget.value)
-                }
-              />
-              <InputGroup.Append>
-                <Button variant="danger" onClick={() => removeValue(i)}>
-                  <Icon icon="minus" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
-          ))}
-      </Form.Group>
-      <Button className="minimal" onClick={() => addValue()}>
-        <Icon icon="plus" />
-      </Button>
+      <div className={props.errors && "is-invalid"}>
+        {props.value && props.value.length > 0 && (
+          <Form.Group>
+            {props.value &&
+              props.value.map((v, i) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <InputGroup className={props.className} key={i}>
+                  <Form.Control
+                    className="text-input"
+                    value={v}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      valueChanged(i, e.currentTarget.value)
+                    }
+                  />
+                  <InputGroup.Append>
+                    <Button variant="danger" onClick={() => removeValue(i)}>
+                      <Icon icon="minus" />
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
+              ))}
+          </Form.Group>
+        )}
+        <Button className="minimal" size="sm" onClick={() => addValue()}>
+          <Icon icon="plus" />
+        </Button>
+      </div>
+      <div className="invalid-feedback">{props.errors}</div>
     </>
   );
 };

@@ -25,37 +25,62 @@ func getMatchingTags(path string, tagReader models.TagReader) ([]*models.Tag, er
 	return ret, nil
 }
 
-func getTagTagger(p *models.Tag) tagger {
-	return tagger{
+func getTagTaggers(p *models.Tag, aliases []string) []tagger {
+	ret := []tagger{{
 		ID:   p.ID,
 		Type: "tag",
 		Name: p.Name,
+	}}
+
+	for _, a := range aliases {
+		ret = append(ret, tagger{
+			ID:   p.ID,
+			Type: "tag",
+			Name: a,
+		})
 	}
+
+	return ret
 }
 
 // TagScenes searches for scenes whose path matches the provided tag name and tags the scene with the tag.
-func TagScenes(p *models.Tag, paths []string, rw models.SceneReaderWriter) error {
-	t := getTagTagger(p)
+func TagScenes(p *models.Tag, paths []string, aliases []string, rw models.SceneReaderWriter) error {
+	t := getTagTaggers(p, aliases)
 
-	return t.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
-		return scene.AddTag(rw, otherID, subjectID)
-	})
+	for _, tt := range t {
+		if err := tt.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
+			return scene.AddTag(rw, otherID, subjectID)
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // TagImages searches for images whose path matches the provided tag name and tags the image with the tag.
-func TagImages(p *models.Tag, paths []string, rw models.ImageReaderWriter) error {
-	t := getTagTagger(p)
+func TagImages(p *models.Tag, paths []string, aliases []string, rw models.ImageReaderWriter) error {
+	t := getTagTaggers(p, aliases)
 
-	return t.tagImages(paths, rw, func(subjectID, otherID int) (bool, error) {
-		return image.AddTag(rw, otherID, subjectID)
-	})
+	for _, tt := range t {
+		if err := tt.tagImages(paths, rw, func(subjectID, otherID int) (bool, error) {
+			return image.AddTag(rw, otherID, subjectID)
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // TagGalleries searches for galleries whose path matches the provided tag name and tags the gallery with the tag.
-func TagGalleries(p *models.Tag, paths []string, rw models.GalleryReaderWriter) error {
-	t := getTagTagger(p)
+func TagGalleries(p *models.Tag, paths []string, aliases []string, rw models.GalleryReaderWriter) error {
+	t := getTagTaggers(p, aliases)
 
-	return t.tagGalleries(paths, rw, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddTag(rw, otherID, subjectID)
-	})
+	for _, tt := range t {
+		if err := tt.tagGalleries(paths, rw, func(subjectID, otherID int) (bool, error) {
+			return gallery.AddTag(rw, otherID, subjectID)
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }

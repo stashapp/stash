@@ -1,16 +1,12 @@
-import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import { BooleanCriterion, CriterionOption } from "./criterion";
 
-export class InteractiveCriterion extends Criterion {
-  public type: CriterionType = "interactive";
-  public parameterName: string = "interactive";
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-  public options: string[] = [true.toString(), false.toString()];
-  public value: string = "";
-}
+export const InteractiveCriterionOption = new CriterionOption(
+  "organized",
+  "organized"
+);
 
-export class InteractiveCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("interactive");
-  public value: CriterionType = "interactive";
+export class InteractiveCriterion extends BooleanCriterion {
+  constructor() {
+    super(InteractiveCriterionOption);
+  }
 }

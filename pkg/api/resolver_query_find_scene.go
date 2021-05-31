@@ -19,6 +19,9 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 				return err
 			}
 			scene, err = qb.Find(idInt)
+			if err != nil {
+				return err
+			}
 		} else if checksum != nil {
 			scene, err = qb.FindByChecksum(*checksum)
 		}

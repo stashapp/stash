@@ -16,6 +16,13 @@ func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 		UpdatedAt: models.JSONTime{Time: tag.UpdatedAt.Timestamp},
 	}
 
+	aliases, err := reader.GetAliases(tag.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting tag aliases: %s", err.Error())
+	}
+
+	newTagJSON.Aliases = aliases
+
 	image, err := reader.GetImage(tag.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting tag image: %s", err.Error())

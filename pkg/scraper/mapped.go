@@ -368,10 +368,10 @@ func (p *postProcessParseDate) Apply(value string, q mappedQuery) string {
 
 	const internalDateFormat = "2006-01-02"
 
-	value = strings.ToLower(value)
-	if value == "today" || value == "yesterday" { // handle today, yesterday
+	valueLower := strings.ToLower(value)
+	if valueLower == "today" || valueLower == "yesterday" { // handle today, yesterday
 		dt := time.Now()
-		if value == "yesterday" { // subtract 1 day from now
+		if valueLower == "yesterday" { // subtract 1 day from now
 			dt = dt.AddDate(0, 0, -1)
 		}
 		return dt.Format(internalDateFormat)
