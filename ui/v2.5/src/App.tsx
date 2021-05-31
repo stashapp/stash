@@ -44,13 +44,27 @@ const intlFormats = {
   },
 };
 
+function languageMessageString(language: string) {
+  return language.replace(/-/, "");
+}
+
 export const App: React.FC = () => {
   const config = useConfiguration();
   const { data: systemStatusData } = useSystemStatus();
-  const language = config.data?.configuration?.interface?.language ?? "en-GB";
-  const messageLanguage = language.replace(/-/, "");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const messages = flattenMessages((locales as any)[messageLanguage]);
+  const defaultLocale = "en-GB";
+  const language =
+    config.data?.configuration?.interface?.language ?? defaultLocale;
+  const defaultMessageLanguage = languageMessageString(defaultLocale);
+  const messageLanguage = languageMessageString(language);
+
+  // use en-GB as default messages if any messages aren't found in the chosen language
+  const mergedMessages = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(locales as any)[defaultMessageLanguage],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(locales as any)[messageLanguage],
+  };
+  const messages = flattenMessages(mergedMessages);
 
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
