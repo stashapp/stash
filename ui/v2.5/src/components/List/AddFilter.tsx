@@ -227,6 +227,22 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     );
   };
 
+  function maybeRenderFilterCriterion() {
+    if (!props.editingCriterion) {
+      return;
+    }
+
+    return (
+      <Form.Group>
+        <strong>
+          {intl.formatMessage({
+            id: props.editingCriterion.criterionOption.messageID,
+          })}
+        </strong>
+      </Form.Group>
+    );
+  }
+
   function maybeRenderFilterSelect() {
     if (props.editingCriterion) {
       return;
@@ -281,6 +297,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         <Modal.Body>
           <div className="dialog-content">
             {maybeRenderFilterSelect()}
+            {maybeRenderFilterCriterion()}
             {maybeRenderFilterPopoverContents()}
           </div>
         </Modal.Body>
