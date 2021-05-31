@@ -227,6 +227,22 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     );
   };
 
+  function maybeRenderFilterCriterion() {
+    if (!props.editingCriterion) {
+      return;
+    }
+
+    return (
+      <Form.Group>
+        <strong>
+          {intl.formatMessage({
+            id: props.editingCriterion.criterionOption.messageID,
+          })}
+        </strong>
+      </Form.Group>
+    );
+  }
+
   function maybeRenderFilterSelect() {
     if (props.editingCriterion) {
       return;
@@ -239,7 +255,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           text: intl.formatMessage({ id: c.messageID }),
         };
       })
-      .sort((a, b) => a.text.localeCompare(b.text));
+      .sort((a, b) => {
+        if (a.value === "none") return -1;
+        if (b.value === "none") return 1;
+        return a.text.localeCompare(b.text);
+      });
 
     return (
       <Form.Group controlId="filter">
@@ -251,7 +271,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           className="btn-secondary"
         >
           {options.map((c) => (
-            <option key={c.value} value={c.value}>
+            <option key={c.value} value={c.value} disabled={c.value === "none"}>
               {c.text}
             </option>
           ))}
@@ -277,6 +297,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         <Modal.Body>
           <div className="dialog-content">
             {maybeRenderFilterSelect()}
+            {maybeRenderFilterCriterion()}
             {maybeRenderFilterPopoverContents()}
           </div>
         </Modal.Body>
