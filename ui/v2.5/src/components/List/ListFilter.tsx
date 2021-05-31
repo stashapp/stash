@@ -16,10 +16,15 @@ import {
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
+import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import { useIntl } from "react-intl";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
@@ -38,6 +43,7 @@ interface IListFilterProps {
   onDelete?: () => void;
   otherOperations?: IListFilterOperation[];
   filter: ListFilterModel;
+  filterOptions: ListFilterOptions;
   itemsSelected?: boolean;
 }
 
@@ -58,8 +64,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
-    Criterion | undefined
+    Criterion<CriterionValue> | undefined
   >(undefined);
+
+  const intl = useIntl();
 
   useEffect(() => {
     Mousetrap.bind("/", (e) => {
@@ -69,17 +77,17 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
     Mousetrap.bind("r", () => onReshuffleRandomSort());
     Mousetrap.bind("v g", () => {
-      if (props.filter.displayModeOptions.includes(DisplayMode.Grid)) {
+      if (props.filterOptions.displayModeOptions.includes(DisplayMode.Grid)) {
         onChangeDisplayMode(DisplayMode.Grid);
       }
     });
     Mousetrap.bind("v l", () => {
-      if (props.filter.displayModeOptions.includes(DisplayMode.List)) {
+      if (props.filterOptions.displayModeOptions.includes(DisplayMode.List)) {
         onChangeDisplayMode(DisplayMode.List);
       }
     });
     Mousetrap.bind("v w", () => {
-      if (props.filter.displayModeOptions.includes(DisplayMode.Wall)) {
+      if (props.filterOptions.displayModeOptions.includes(DisplayMode.Wall)) {
         onChangeDisplayMode(DisplayMode.Wall);
       }
     });
@@ -160,9 +168,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
     props.onFilterUpdate(newFilter);
   }
 
-  function onChangeSortBy(event: React.MouseEvent<HTMLAnchorElement>) {
+  function onChangeSortBy(eventKey: string | null) {
     const newFilter = _.cloneDeep(props.filter);
-    newFilter.sortBy = event.currentTarget.text;
+    newFilter.sortBy = eventKey ?? undefined;
     newFilter.currentPage = 1;
     props.onFilterUpdate(newFilter);
   }
@@ -180,7 +188,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
     props.onFilterUpdate(newFilter);
   }
 
-  function onAddCriterion(criterion: Criterion, oldId?: string) {
+  function onAddCriterion(
+    criterion: Criterion<CriterionValue>,
+    oldId?: string
+  ) {
     const newFilter = _.cloneDeep(props.filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
@@ -208,7 +219,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     setEditingCriterion(undefined);
   }
 
-  function onRemoveCriterion(removedCriterion: Criterion) {
+  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.criteria = newFilter.criteria.filter(
       (criterion) => criterion.getId() !== removedCriterion.getId()
@@ -218,7 +229,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   let removedCriterionId = "";
-  function onRemoveCriterionTag(criterion?: Criterion) {
+  function onRemoveCriterionTag(criterion?: Criterion<CriterionValue>) {
     if (!criterion) {
       return;
     }
@@ -227,7 +238,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     onRemoveCriterion(criterion);
   }
 
-  function onClickCriterionTag(criterion?: Criterion) {
+  function onClickCriterionTag(criterion?: Criterion<CriterionValue>) {
     if (!criterion || removedCriterionId !== "") {
       return;
     }
@@ -235,15 +246,24 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
-    return props.filter.sortByOptions.map((option) => (
-      <Dropdown.Item
-        onClick={onChangeSortBy}
-        key={option}
-        className="bg-secondary text-white"
-      >
-        {option}
-      </Dropdown.Item>
-    ));
+    return props.filterOptions.sortByOptions
+      .map((o) => {
+        return {
+          message: intl.formatMessage({ id: o.messageID }),
+          value: o.value,
+        };
+      })
+      .sort((a, b) => a.message.localeCompare(b.message))
+      .map((option) => (
+        <Dropdown.Item
+          onSelect={onChangeSortBy}
+          key={option.value}
+          className="bg-secondary text-white"
+          eventKey={option.value}
+        >
+          {option.message}
+        </Dropdown.Item>
+      ));
   }
 
   function renderDisplayModeOptions() {
@@ -272,7 +292,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
       }
     }
 
-    return props.filter.displayModeOptions.map((option) => (
+    return props.filterOptions.displayModeOptions.map((option) => (
       <OverlayTrigger
         key={option}
         overlay={
@@ -298,7 +318,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
         key={criterion.getId()}
         onClick={() => onClickCriterionTag(criterion)}
       >
-        {criterion.getLabel()}
+        {criterion.getLabel(intl)}
         <Button
           variant="secondary"
           onClick={() => onRemoveCriterionTag(criterion)}
@@ -450,6 +470,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function render() {
+    const currentSortBy = props.filterOptions.sortByOptions.find(
+      (o) => o.value === props.filter.sortBy
+    );
+
     return (
       <>
         <ButtonToolbar className="align-items-center justify-content-center mb-2">
@@ -465,7 +489,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
               <InputGroup.Append>
                 <AddFilter
-                  filter={props.filter}
+                  filterOptions={props.filterOptions}
                   onAddCriterion={onAddCriterion}
                   onCancel={onCancelAddCriterion}
                   editingCriterion={editingCriterion}
@@ -475,7 +499,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
             <Dropdown as={ButtonGroup} className="mr-2">
               <Dropdown.Toggle split variant="secondary" id="more-menu">
-                {props.filter.sortBy}
+                {intl.formatMessage({ id: currentSortBy?.messageID })}
               </Dropdown.Toggle>
               <Dropdown.Menu className="bg-secondary text-white">
                 {renderSortByOptions()}

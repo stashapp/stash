@@ -1,20 +1,6 @@
 {
-  "developmentVersion": "Development Version",
-  "images": "Images",
-  "images-size": "Images size",
-  "galleries": "Galleries",
-  "library-size": "Library size",
-  "markers": "Markers",
-  "movies": "Movies",
-  "new": "New",
-  "organized": "Organized",
-  "performers": "Performers",
-  "scenes": "Scenes",
-  "scenes-size": "Scenes size",
-  "studios": "Studios",
-  "tags": "Tags",
-  "up-dir": "Up a directory",
-  "favourite": "FAVORITE",
-  "sceneTagger": "Scene Tagger",
-  "donate": "Donate"
+  "eye_color": "Eye Color",
+  "favourite": "Favorite",
+  "hair_color": "Hair Color",
+  "organized": "Organized"
 }

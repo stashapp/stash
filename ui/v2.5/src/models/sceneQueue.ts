@@ -1,7 +1,7 @@
 import queryString from "query-string";
 import { RouteComponentProps } from "react-router-dom";
 import { ListFilterModel } from "./list-filter/filter";
-import { FilterMode } from "./list-filter/types";
+import { SceneListFilterOptions } from "./list-filter/scenes";
 
 interface IQueryParameters {
   qsort?: string;
@@ -27,10 +27,7 @@ export class SceneQueue {
   public static fromListFilterModel(filter: ListFilterModel) {
     const ret = new SceneQueue();
 
-    const filterCopy = Object.assign(
-      new ListFilterModel(filter.filterMode),
-      filter
-    );
+    const filterCopy = Object.assign(new ListFilterModel(), filter);
     filterCopy.itemsPerPage = 40;
 
     ret.originalQueryPage = filter.currentPage;
@@ -98,8 +95,8 @@ export class SceneQueue {
 
     if (parsed.qfp) {
       const query = new ListFilterModel(
-        FilterMode.Scenes,
-        translated as queryString.ParsedQuery
+        translated as queryString.ParsedQuery,
+        SceneListFilterOptions.defaultSortBy
       );
       ret.query = query;
     } else if (parsed.qs) {

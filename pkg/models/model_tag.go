@@ -9,6 +9,13 @@ type Tag struct {
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+type TagPartial struct {
+	ID        int              `db:"id" json:"id"`
+	Name      *string          `db:"name" json:"name"` // TODO make schema not null
+	CreatedAt *SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+}
+
 func NewTag(name string) *Tag {
 	currentTime := time.Now()
 	return &Tag{

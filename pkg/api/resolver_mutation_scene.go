@@ -406,6 +406,9 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			sceneID, _ := strconv.Atoi(id)
 
 			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
+			}
 			if scene != nil {
 				scenes = append(scenes, scene)
 			}
