@@ -160,11 +160,6 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 }
 
-// used in various places, to eliminate the need to disable eslint rules
-// every time its used.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CriterionAny = Criterion<any>;
-
 export class CriterionOption {
   public readonly messageID: string;
   public readonly value: CriterionType;

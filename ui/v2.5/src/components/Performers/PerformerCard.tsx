@@ -11,13 +11,16 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { CriterionAny } from "src/models/list-filter/criteria/criterion";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 export interface IPerformerCardExtraCriteria {
-  scenes: CriterionAny[];
-  images: CriterionAny[];
-  galleries: CriterionAny[];
+  scenes: Criterion<CriterionValue>[];
+  images: Criterion<CriterionValue>[];
+  galleries: Criterion<CriterionValue>[];
 }
 
 interface IPerformerCardProps {

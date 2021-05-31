@@ -7,7 +7,7 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
   CriterionValue,
-  CriterionAny,
+  Criterion,
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
@@ -16,12 +16,13 @@ import { useIntl } from "react-intl";
 import { CriterionType } from "src/models/list-filter/types";
 
 interface IAddFilterProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onAddCriterion: (criterion: CriterionAny, oldId?: string) => void;
+  onAddCriterion: (
+    criterion: Criterion<CriterionValue>,
+    oldId?: string
+  ) => void;
   onCancel: () => void;
   filterOptions: ListFilterOptions;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  editingCriterion?: CriterionAny;
+  editingCriterion?: Criterion<CriterionValue>;
 }
 
 export const AddFilter: React.FC<IAddFilterProps> = (
@@ -30,8 +31,9 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   const defaultValue = useRef<string | number | undefined>();
 
   const [isOpen, setIsOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [criterion, setCriterion] = useState<CriterionAny>(new NoneCriterion());
+  const [criterion, setCriterion] = useState<Criterion<CriterionValue>>(
+    new NoneCriterion()
+  );
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 

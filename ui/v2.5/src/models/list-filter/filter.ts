@@ -1,6 +1,6 @@
 import queryString, { ParsedQuery } from "query-string";
 import { FindFilterType, SortDirectionEnum } from "src/core/generated-graphql";
-import { CriterionAny } from "./criteria/criterion";
+import { Criterion, CriterionValue } from "./criteria/criterion";
 import { makeCriteria } from "./criteria/factory";
 import { DisplayMode } from "./types";
 
@@ -29,8 +29,7 @@ export class ListFilterModel {
   public sortDirection: SortDirectionEnum = SortDirectionEnum.Asc;
   public sortBy?: string;
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public criteria: Array<CriterionAny> = [];
+  public criteria: Array<Criterion<CriterionValue>> = [];
   public randomSeed = -1;
 
   public constructor(rawParms?: ParsedQuery<string>, defaultSort?: string) {

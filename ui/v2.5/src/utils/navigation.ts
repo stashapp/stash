@@ -11,9 +11,15 @@ import {
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
-import { CriterionAny } from "src/models/list-filter/criteria/criterion";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 
-function addExtraCriteria(dest: CriterionAny[], src?: CriterionAny[]) {
+function addExtraCriteria(
+  dest: Criterion<CriterionValue>[],
+  src?: Criterion<CriterionValue>[]
+) {
   if (src && src.length > 0) {
     dest.push(...src);
   }
@@ -21,7 +27,7 @@ function addExtraCriteria(dest: CriterionAny[], src?: CriterionAny[]) {
 
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: CriterionAny[]
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel();
@@ -36,7 +42,7 @@ const makePerformerScenesUrl = (
 
 const makePerformerImagesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: CriterionAny[]
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel();
@@ -51,7 +57,7 @@ const makePerformerImagesUrl = (
 
 const makePerformerGalleriesUrl = (
   performer: Partial<GQL.PerformerDataFragment>,
-  extraCriteria?: CriterionAny[]
+  extraCriteria?: Criterion<CriterionValue>[]
 ) => {
   if (!performer.id) return "#";
   const filter = new ListFilterModel();

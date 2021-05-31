@@ -16,12 +16,15 @@ import {
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
-import { CriterionAny } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
@@ -61,7 +64,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
-    CriterionAny | undefined
+    Criterion<CriterionValue> | undefined
   >(undefined);
 
   const intl = useIntl();
@@ -185,8 +188,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
     props.onFilterUpdate(newFilter);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onAddCriterion(criterion: CriterionAny, oldId?: string) {
+  function onAddCriterion(
+    criterion: Criterion<CriterionValue>,
+    oldId?: string
+  ) {
     const newFilter = _.cloneDeep(props.filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
@@ -214,8 +219,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     setEditingCriterion(undefined);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onRemoveCriterion(removedCriterion: CriterionAny) {
+  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.criteria = newFilter.criteria.filter(
       (criterion) => criterion.getId() !== removedCriterion.getId()
@@ -225,8 +229,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   let removedCriterionId = "";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onRemoveCriterionTag(criterion?: CriterionAny) {
+  function onRemoveCriterionTag(criterion?: Criterion<CriterionValue>) {
     if (!criterion) {
       return;
     }
@@ -235,8 +238,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     onRemoveCriterion(criterion);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onClickCriterionTag(criterion?: CriterionAny) {
+  function onClickCriterionTag(criterion?: Criterion<CriterionValue>) {
     if (!criterion || removedCriterionId !== "") {
       return;
     }
