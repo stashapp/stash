@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/tag"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -583,7 +584,7 @@ func (p *SceneFilenameParser) queryMovie(qb models.MovieReader, movieName string
 }
 
 func (p *SceneFilenameParser) queryTag(qb models.TagReader, tagName string) *models.Tag {
-	// massage the performer name
+	// massage the tag name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
 
 	// check cache first
@@ -592,7 +593,12 @@ func (p *SceneFilenameParser) queryTag(qb models.TagReader, tagName string) *mod
 	}
 
 	// match tag name exactly
-	ret, _ := qb.FindByName(tagName, true)
+	ret, _ := tag.ByName(qb, tagName)
+
+	// try to match on alias
+	if ret == nil {
+		ret, _ = tag.ByAlias(qb, tagName)
+	}
 
 	// add result to cache
 	p.tagCache[tagName] = ret

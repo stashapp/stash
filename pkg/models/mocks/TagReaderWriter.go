@@ -314,6 +314,29 @@ func (_m *TagReaderWriter) FindMany(ids []int) ([]*models.Tag, error) {
 	return r0, r1
 }
 
+// GetAliases provides a mock function with given fields: tagID
+func (_m *TagReaderWriter) GetAliases(tagID int) ([]string, error) {
+	ret := _m.Called(tagID)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(int) []string); ok {
+		r0 = rf(tagID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(tagID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetImage provides a mock function with given fields: tagID
 func (_m *TagReaderWriter) GetImage(tagID int) ([]byte, error) {
 	ret := _m.Called(tagID)
@@ -390,8 +413,45 @@ func (_m *TagReaderWriter) QueryForAutoTag(words []string) ([]*models.Tag, error
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: updatedTag
-func (_m *TagReaderWriter) Update(updatedTag models.Tag) (*models.Tag, error) {
+// Update provides a mock function with given fields: updateTag
+func (_m *TagReaderWriter) Update(updateTag models.TagPartial) (*models.Tag, error) {
+	ret := _m.Called(updateTag)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(models.TagPartial) *models.Tag); ok {
+		r0 = rf(updateTag)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.TagPartial) error); ok {
+		r1 = rf(updateTag)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateAliases provides a mock function with given fields: tagID, aliases
+func (_m *TagReaderWriter) UpdateAliases(tagID int, aliases []string) error {
+	ret := _m.Called(tagID, aliases)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []string) error); ok {
+		r0 = rf(tagID, aliases)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateFull provides a mock function with given fields: updatedTag
+func (_m *TagReaderWriter) UpdateFull(updatedTag models.Tag) (*models.Tag, error) {
 	ret := _m.Called(updatedTag)
 
 	var r0 *models.Tag

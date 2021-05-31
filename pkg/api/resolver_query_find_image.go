@@ -21,6 +21,9 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 			}
 
 			image, err = qb.Find(idInt)
+			if err != nil {
+				return err
+			}
 		} else if checksum != nil {
 			image, err = qb.FindByChecksum(*checksum)
 		}

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/tag"
 )
 
 // MatchScrapedScenePerformer matches the provided performer with the
@@ -66,18 +67,26 @@ func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedSceneMovie) 
 // MatchScrapedSceneTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
 func MatchScrapedSceneTag(qb models.TagReader, s *models.ScrapedSceneTag) error {
-	tag, err := qb.FindByName(s.Name, true)
+	t, err := tag.ByName(qb, s.Name)
 
 	if err != nil {
 		return err
 	}
 
-	if tag == nil {
+	if t == nil {
+		// try matching by alias
+		t, err = tag.ByAlias(qb, s.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if t == nil {
 		// ignore - cannot match
 		return nil
 	}
 
-	id := strconv.Itoa(tag.ID)
+	id := strconv.Itoa(t.ID)
 	s.ID = &id
 	return nil
 }

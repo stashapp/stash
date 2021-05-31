@@ -343,6 +343,45 @@ func (r *imageRepository) replace(id int, image []byte) error {
 	return err
 }
 
+type stringRepository struct {
+	repository
+	stringColumn string
+}
+
+func (r *stringRepository) get(id int) ([]string, error) {
+	query := fmt.Sprintf("SELECT %s from %s WHERE %s = ?", r.stringColumn, r.tableName, r.idColumn)
+	var ret []string
+	err := r.queryFunc(query, []interface{}{id}, func(rows *sqlx.Rows) error {
+		var out string
+		if err := rows.Scan(&out); err != nil {
+			return err
+		}
+
+		ret = append(ret, out)
+		return nil
+	})
+	return ret, err
+}
+
+func (r *stringRepository) insert(id int, s string) (sql.Result, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.stringColumn)
+	return r.tx.Exec(stmt, id, s)
+}
+
+func (r *stringRepository) replace(id int, newStrings []string) error {
+	if err := r.destroy([]int{id}); err != nil {
+		return err
+	}
+
+	for _, s := range newStrings {
+		if _, err := r.insert(id, s); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type stashIDRepository struct {
 	repository
 }

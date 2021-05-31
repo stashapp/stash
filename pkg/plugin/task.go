@@ -1,6 +1,8 @@
 package plugin
 
 import (
+	"net/http"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
@@ -33,6 +35,7 @@ type pluginTask struct {
 	operation        *OperationConfig
 	serverConnection common.StashServerConnection
 	args             []*models.PluginArgInput
+	gqlHandler       http.HandlerFunc
 
 	progress chan float64
 	result   *common.PluginOutput

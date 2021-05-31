@@ -852,6 +852,12 @@ func createTags(tqb models.TagReaderWriter, n int, o int) error {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
 		}
 
+		// add alias
+		alias := getTagStringValue(i, "Alias")
+		if err := tqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+			return fmt.Errorf("error setting tag alias: %s", err.Error())
+		}
+
 		tagIDs = append(tagIDs, created.ID)
 		tagNames = append(tagNames, created.Name)
 	}
