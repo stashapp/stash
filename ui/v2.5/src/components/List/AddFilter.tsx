@@ -239,7 +239,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           text: intl.formatMessage({ id: c.messageID }),
         };
       })
-      .sort((a, b) => a.text.localeCompare(b.text));
+      .sort((a, b) => {
+        if (a.value === "none") return -1;
+        if (b.value === "none") return 1;
+        return a.text.localeCompare(b.text);
+      });
 
     return (
       <Form.Group controlId="filter">
@@ -251,7 +255,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           className="btn-secondary"
         >
           {options.map((c) => (
-            <option key={c.value} value={c.value}>
+            <option key={c.value} value={c.value} disabled={c.value === "none"}>
               {c.text}
             </option>
           ))}
