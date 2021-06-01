@@ -50,7 +50,7 @@ export const Scene: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
 
-  const { data, error, loading } = useFindScene(id);
+  const { data, error, loading, refetch } = useFindScene(id);
   const scene = data?.findScene;
   const {
     data: sceneStreams,
@@ -505,6 +505,7 @@ export const Scene: React.FC = () => {
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onDelete={() => setIsDeleteAlertOpen(true)}
+              onUpdate={() => refetch()}
             />
           </Tab.Pane>
         </Tab.Content>
