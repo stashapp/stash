@@ -43,9 +43,11 @@ import {
   useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
+import { DisplayMode, FilterMode } from "src/models/list-filter/types";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { getFilterOptions } from "src/models/list-filter/factory";
+import { ButtonToolbar } from "react-bootstrap";
+import { ListViewOptions } from "src/components/List/ListViewOptions";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -397,21 +399,34 @@ const RenderList = <
     );
   }
 
+  function onChangeDisplayMode(displayMode: DisplayMode) {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.displayMode = displayMode;
+    updateQueryParams(newFilter);
+  }
+
   const content = (
     <div>
-      <ListFilter
-        onFilterUpdate={updateQueryParams}
-        onSelectAll={selectable ? onSelectAll : undefined}
-        onSelectNone={selectable ? onSelectNone : undefined}
-        zoomIndex={zoomable ? zoomIndex : undefined}
-        onChangeZoom={zoomable ? onChangeZoom : undefined}
-        otherOperations={operations}
-        itemsSelected={selectedIds.size > 0}
-        onEdit={renderEditDialog ? onEdit : undefined}
-        onDelete={renderDeleteDialog ? onDelete : undefined}
-        filter={filter}
-        filterOptions={filterOptions}
-      />
+      <ButtonToolbar className="align-items-center justify-content-center mb-2">
+        <ListFilter
+          onFilterUpdate={updateQueryParams}
+          onSelectAll={selectable ? onSelectAll : undefined}
+          onSelectNone={selectable ? onSelectNone : undefined}
+          otherOperations={operations}
+          itemsSelected={selectedIds.size > 0}
+          onEdit={renderEditDialog ? onEdit : undefined}
+          onDelete={renderDeleteDialog ? onDelete : undefined}
+          filter={filter}
+          filterOptions={filterOptions}
+        />
+        <ListViewOptions
+          displayMode={filter.displayMode}
+          displayModeOptions={filterOptions.displayModeOptions}
+          onSetDisplayMode={onChangeDisplayMode}
+          zoomIndex={zoomable ? zoomIndex : undefined}
+          onSetZoom={zoomable ? onChangeZoom : undefined}
+        />
+      </ButtonToolbar>
       {isEditDialogOpen &&
         renderEditDialog &&
         renderEditDialog(

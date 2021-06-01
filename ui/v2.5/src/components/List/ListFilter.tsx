@@ -12,12 +12,10 @@ import {
   Tooltip,
   InputGroup,
   FormControl,
-  ButtonToolbar,
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
@@ -35,8 +33,6 @@ interface IListFilterOperation {
 
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
-  zoomIndex?: number;
-  onChangeZoom?: (zoomIndex: number) => void;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
   onEdit?: () => void;
@@ -48,8 +44,6 @@ interface IListFilterProps {
 }
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120", "250", "500", "1000"];
-const minZoom = 0;
-const maxZoom = 3;
 
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
@@ -76,39 +70,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
     });
 
     Mousetrap.bind("r", () => onReshuffleRandomSort());
-    Mousetrap.bind("v g", () => {
-      if (props.filterOptions.displayModeOptions.includes(DisplayMode.Grid)) {
-        onChangeDisplayMode(DisplayMode.Grid);
-      }
-    });
-    Mousetrap.bind("v l", () => {
-      if (props.filterOptions.displayModeOptions.includes(DisplayMode.List)) {
-        onChangeDisplayMode(DisplayMode.List);
-      }
-    });
-    Mousetrap.bind("v w", () => {
-      if (props.filterOptions.displayModeOptions.includes(DisplayMode.Wall)) {
-        onChangeDisplayMode(DisplayMode.Wall);
-      }
-    });
-    Mousetrap.bind("+", () => {
-      if (
-        props.onChangeZoom &&
-        props.zoomIndex !== undefined &&
-        props.zoomIndex < maxZoom
-      ) {
-        props.onChangeZoom(props.zoomIndex + 1);
-      }
-    });
-    Mousetrap.bind("-", () => {
-      if (
-        props.onChangeZoom &&
-        props.zoomIndex !== undefined &&
-        props.zoomIndex > minZoom
-      ) {
-        props.onChangeZoom(props.zoomIndex - 1);
-      }
-    });
     Mousetrap.bind("s a", () => onSelectAll());
     Mousetrap.bind("s n", () => onSelectNone());
 
@@ -129,11 +90,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
     return () => {
       Mousetrap.unbind("/");
       Mousetrap.unbind("r");
-      Mousetrap.unbind("v g");
-      Mousetrap.unbind("v l");
-      Mousetrap.unbind("v w");
-      Mousetrap.unbind("+");
-      Mousetrap.unbind("-");
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
 
@@ -179,12 +135,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
     const newFilter = _.cloneDeep(props.filter);
     newFilter.currentPage = 1;
     newFilter.randomSeed = -1;
-    props.onFilterUpdate(newFilter);
-  }
-
-  function onChangeDisplayMode(displayMode: DisplayMode) {
-    const newFilter = _.cloneDeep(props.filter);
-    newFilter.displayMode = displayMode;
     props.onFilterUpdate(newFilter);
   }
 
@@ -264,50 +214,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
           {option.message}
         </Dropdown.Item>
       ));
-  }
-
-  function renderDisplayModeOptions() {
-    function getIcon(option: DisplayMode) {
-      switch (option) {
-        case DisplayMode.Grid:
-          return "th-large";
-        case DisplayMode.List:
-          return "list";
-        case DisplayMode.Wall:
-          return "square";
-        case DisplayMode.Tagger:
-          return "tags";
-      }
-    }
-    function getLabel(option: DisplayMode) {
-      switch (option) {
-        case DisplayMode.Grid:
-          return "Grid";
-        case DisplayMode.List:
-          return "List";
-        case DisplayMode.Wall:
-          return "Wall";
-        case DisplayMode.Tagger:
-          return "Tagger";
-      }
-    }
-
-    return props.filterOptions.displayModeOptions.map((option) => (
-      <OverlayTrigger
-        key={option}
-        overlay={
-          <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
-        }
-      >
-        <Button
-          variant="secondary"
-          active={props.filter.displayMode === option}
-          onClick={() => onChangeDisplayMode(option)}
-        >
-          <Icon icon={getIcon(option)} />
-        </Button>
-      </OverlayTrigger>
-    ));
   }
 
   function renderFilterTags() {
@@ -420,31 +326,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
-  function onChangeZoom(v: number) {
-    if (props.onChangeZoom) {
-      props.onChangeZoom(v);
-    }
-  }
-
-  function maybeRenderZoom() {
-    if (props.onChangeZoom && props.filter.displayMode === DisplayMode.Grid) {
-      return (
-        <div className="align-middle">
-          <Form.Control
-            className="zoom-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={minZoom}
-            max={maxZoom}
-            value={props.zoomIndex}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </div>
-      );
-    }
-  }
-
   function maybeRenderSelectedButtons() {
     if (props.itemsSelected && (props.onEdit || props.onDelete)) {
       return (
@@ -476,89 +357,84 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
     return (
       <>
-        <ButtonToolbar className="align-items-center justify-content-center mb-2">
-          <div className="d-flex">
-            <InputGroup className="mr-2 flex-grow-1">
-              <FormControl
-                ref={queryRef}
-                placeholder="Search..."
-                defaultValue={props.filter.searchTerm}
-                onInput={onChangeQuery}
-                className="bg-secondary text-white border-secondary w-50"
+        <div className="d-flex">
+          <InputGroup className="mr-2 flex-grow-1">
+            <FormControl
+              ref={queryRef}
+              placeholder="Search..."
+              defaultValue={props.filter.searchTerm}
+              onInput={onChangeQuery}
+              className="bg-secondary text-white border-secondary w-50"
+            />
+
+            <InputGroup.Append>
+              <AddFilter
+                filterOptions={props.filterOptions}
+                onAddCriterion={onAddCriterion}
+                onCancel={onCancelAddCriterion}
+                editingCriterion={editingCriterion}
               />
+            </InputGroup.Append>
+          </InputGroup>
 
-              <InputGroup.Append>
-                <AddFilter
-                  filterOptions={props.filterOptions}
-                  onAddCriterion={onAddCriterion}
-                  onCancel={onCancelAddCriterion}
-                  editingCriterion={editingCriterion}
+          <Dropdown as={ButtonGroup} className="mr-2">
+            <Dropdown.Toggle split variant="secondary" id="more-menu">
+              {currentSortBy
+                ? intl.formatMessage({ id: currentSortBy.messageID })
+                : ""}
+            </Dropdown.Toggle>
+            <Dropdown.Menu className="bg-secondary text-white">
+              {renderSortByOptions()}
+            </Dropdown.Menu>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="sort-direction-tooltip">
+                  {props.filter.sortDirection === SortDirectionEnum.Asc
+                    ? "Ascending"
+                    : "Descending"}
+                </Tooltip>
+              }
+            >
+              <Button variant="secondary" onClick={onChangeSortDirection}>
+                <Icon
+                  icon={
+                    props.filter.sortDirection === SortDirectionEnum.Asc
+                      ? "caret-up"
+                      : "caret-down"
+                  }
                 />
-              </InputGroup.Append>
-            </InputGroup>
-
-            <Dropdown as={ButtonGroup} className="mr-2">
-              <Dropdown.Toggle split variant="secondary" id="more-menu">
-                {currentSortBy
-                  ? intl.formatMessage({ id: currentSortBy.messageID })
-                  : ""}
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="bg-secondary text-white">
-                {renderSortByOptions()}
-              </Dropdown.Menu>
+              </Button>
+            </OverlayTrigger>
+            {props.filter.sortBy === "random" && (
               <OverlayTrigger
                 overlay={
-                  <Tooltip id="sort-direction-tooltip">
-                    {props.filter.sortDirection === SortDirectionEnum.Asc
-                      ? "Ascending"
-                      : "Descending"}
-                  </Tooltip>
+                  <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
                 }
               >
-                <Button variant="secondary" onClick={onChangeSortDirection}>
-                  <Icon
-                    icon={
-                      props.filter.sortDirection === SortDirectionEnum.Asc
-                        ? "caret-up"
-                        : "caret-down"
-                    }
-                  />
+                <Button variant="secondary" onClick={onReshuffleRandomSort}>
+                  <Icon icon="random" />
                 </Button>
               </OverlayTrigger>
-              {props.filter.sortBy === "random" && (
-                <OverlayTrigger
-                  overlay={
-                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
-                  }
-                >
-                  <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                    <Icon icon="random" />
-                  </Button>
-                </OverlayTrigger>
-              )}
-            </Dropdown>
-          </div>
+            )}
+          </Dropdown>
+        </div>
 
-          <Form.Control
-            as="select"
-            onChange={onChangePageSize}
-            value={props.filter.itemsPerPage.toString()}
-            className="btn-secondary mx-1"
-          >
-            {PAGE_SIZE_OPTIONS.map((s) => (
-              <option value={s} key={s}>
-                {s}
-              </option>
-            ))}
-          </Form.Control>
+        <Form.Control
+          as="select"
+          onChange={onChangePageSize}
+          value={props.filter.itemsPerPage.toString()}
+          className="btn-secondary mx-1"
+        >
+          {PAGE_SIZE_OPTIONS.map((s) => (
+            <option value={s} key={s}>
+              {s}
+            </option>
+          ))}
+        </Form.Control>
 
-          {maybeRenderSelectedButtons()}
+        {maybeRenderSelectedButtons()}
 
-          <div className="mx-2">{renderMore()}</div>
-
-          <ButtonGroup>{renderDisplayModeOptions()}</ButtonGroup>
-          {maybeRenderZoom()}
-        </ButtonToolbar>
+        <div className="mx-2">{renderMore()}</div>
 
         <div className="d-flex justify-content-center">
           {renderFilterTags()}
