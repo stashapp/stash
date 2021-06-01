@@ -31,6 +31,7 @@ import {
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
+import { FilterTags } from "src/components/List/FilterTags";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import {
   useFindScenes,
@@ -48,6 +49,12 @@ import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { ButtonToolbar } from "react-bootstrap";
 import { ListViewOptions } from "src/components/List/ListViewOptions";
+import { ListOperationButtons } from "src/components/List/ListOperationButtons";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
+import { AddFilterDialog } from "src/components/List/AddFilterDialog";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -178,6 +185,11 @@ const RenderList = <
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
   const [zoomIndex, setZoomIndex] = useState<number>(defaultZoomIndex ?? 1);
 
+  const [editingCriterion, setEditingCriterion] = useState<
+    Criterion<CriterionValue> | undefined
+  >(undefined);
+  const [newCriterion, setNewCriterion] = useState(false);
+
   const result = useData(filter);
   const totalCount = getCount(result);
   const items = getData(result);
@@ -191,6 +203,7 @@ const RenderList = <
   }, [pages, filter.currentPage, onChangePage]);
 
   useEffect(() => {
+    Mousetrap.bind("f", () => setNewCriterion(true));
     Mousetrap.bind("right", () => {
       const maxPage = totalCount / filter.itemsPerPage;
       if (filter.currentPage < maxPage) {
@@ -405,19 +418,66 @@ const RenderList = <
     updateQueryParams(newFilter);
   }
 
+  function onAddCriterion(
+    criterion: Criterion<CriterionValue>,
+    oldId?: string
+  ) {
+    const newFilter = _.cloneDeep(filter);
+
+    // Find if we are editing an existing criteria, then modify that.  Or create a new one.
+    const existingIndex = newFilter.criteria.findIndex((c) => {
+      // If we modified an existing criterion, then look for the old id.
+      const id = oldId || criterion.getId();
+      return c.getId() === id;
+    });
+    if (existingIndex === -1) {
+      newFilter.criteria.push(criterion);
+    } else {
+      newFilter.criteria[existingIndex] = criterion;
+    }
+
+    // Remove duplicate modifiers
+    newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
+      return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
+    });
+
+    newFilter.currentPage = 1;
+    updateQueryParams(newFilter);
+    setEditingCriterion(undefined);
+    setNewCriterion(false);
+  }
+
+  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.criteria = newFilter.criteria.filter(
+      (criterion) => criterion.getId() !== removedCriterion.getId()
+    );
+    newFilter.currentPage = 1;
+    updateQueryParams(newFilter);
+  }
+
+  function onCancelAddCriterion() {
+    setEditingCriterion(undefined);
+    setNewCriterion(false);
+  }
+
   const content = (
     <div>
       <ButtonToolbar className="align-items-center justify-content-center mb-2">
         <ListFilter
           onFilterUpdate={updateQueryParams}
+          filter={filter}
+          filterOptions={filterOptions}
+          openFilterDialog={() => setNewCriterion(true)}
+          filterDialogOpen={newCriterion ?? editingCriterion}
+        />
+        <ListOperationButtons
           onSelectAll={selectable ? onSelectAll : undefined}
           onSelectNone={selectable ? onSelectNone : undefined}
           otherOperations={operations}
           itemsSelected={selectedIds.size > 0}
           onEdit={renderEditDialog ? onEdit : undefined}
           onDelete={renderDeleteDialog ? onDelete : undefined}
-          filter={filter}
-          filterOptions={filterOptions}
         />
         <ListViewOptions
           displayMode={filter.displayMode}
@@ -427,6 +487,19 @@ const RenderList = <
           onSetZoom={zoomable ? onChangeZoom : undefined}
         />
       </ButtonToolbar>
+      <FilterTags
+        criteria={filter.criteria}
+        onEditCriterion={(c) => setEditingCriterion(c)}
+        onRemoveCriterion={onRemoveCriterion}
+      />
+      {(newCriterion || editingCriterion) && (
+        <AddFilterDialog
+          filterOptions={filterOptions}
+          onAddCriterion={onAddCriterion}
+          onCancel={onCancelAddCriterion}
+          editingCriterion={editingCriterion}
+        />
+      )}
       {isEditDialogOpen &&
         renderEditDialog &&
         renderEditDialog(

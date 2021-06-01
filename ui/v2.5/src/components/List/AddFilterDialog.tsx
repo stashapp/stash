@@ -1,8 +1,7 @@
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Form, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import Mousetrap from "mousetrap";
-import { Icon, FilterSelect, DurationInput } from "src/components/Shared";
+import { Button, Form, Modal } from "react-bootstrap";
+import { FilterSelect, DurationInput } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
@@ -29,12 +28,14 @@ interface IAddFilterProps {
   editingCriterion?: Criterion<CriterionValue>;
 }
 
-export const AddFilter: React.FC<IAddFilterProps> = (
-  props: IAddFilterProps
-) => {
+export const AddFilterDialog: React.FC<IAddFilterProps> = ({
+  onAddCriterion,
+  onCancel,
+  filterOptions,
+  editingCriterion,
+}) => {
   const defaultValue = useRef<string | number | undefined>();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>(
     new NoneCriterion()
   );
@@ -49,24 +50,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       defaultMessage: "Levels (empty for all)",
     },
   });
-
-  // configure keyboard shortcuts
-  useEffect(() => {
-    Mousetrap.bind("f", () => setIsOpen(true));
-
-    return () => {
-      Mousetrap.unbind("f");
-    };
-  });
-
+  
   // Configure if we are editing an existing criterion
   useEffect(() => {
-    if (!props.editingCriterion) {
-      return;
+    if (!editingCriterion) {
+      setCriterion(makeCriteria());
+    } else {
+      setCriterion(editingCriterion);
     }
-    setIsOpen(true);
-    setCriterion(props.editingCriterion);
-  }, [props.editingCriterion]);
+  }, [editingCriterion]);
 
   function onChangedCriteriaType(event: React.ChangeEvent<HTMLSelectElement>) {
     const newCriterionType = event.target.value as CriterionType;
@@ -117,19 +109,8 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         criterion.value = "";
       }
     }
-    const oldId = props.editingCriterion
-      ? props.editingCriterion.getId()
-      : undefined;
-    props.onAddCriterion(criterion, oldId);
-    onToggle();
-  }
-
-  function onToggle() {
-    if (isOpen) {
-      props.onCancel();
-    }
-    setIsOpen(!isOpen);
-    setCriterion(makeCriteria());
+    const oldId = editingCriterion ? editingCriterion.getId() : undefined;
+    onAddCriterion(criterion, oldId);
   }
 
   const maybeRenderFilterPopoverContents = () => {
@@ -304,7 +285,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   };
 
   function maybeRenderFilterCriterion() {
-    if (!props.editingCriterion) {
+    if (!editingCriterion) {
       return;
     }
 
@@ -312,7 +293,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       <Form.Group>
         <strong>
           {intl.formatMessage({
-            id: props.editingCriterion.criterionOption.messageID,
+            id: editingCriterion.criterionOption.messageID,
           })}
         </strong>
       </Form.Group>
@@ -320,11 +301,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   }
 
   function maybeRenderFilterSelect() {
-    if (props.editingCriterion) {
+    if (editingCriterion) {
       return;
     }
 
-    const options = props.filterOptions.criterionOptions
+    const options = filterOptions.criterionOptions
       .map((c) => {
         return {
           value: c.value,
@@ -356,19 +337,10 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     );
   }
 
-  const title = !props.editingCriterion ? "Add Filter" : "Update Filter";
+  const title = !editingCriterion ? "Add Filter" : "Update Filter";
   return (
     <>
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip id="filter-tooltip">Filter</Tooltip>}
-      >
-        <Button variant="secondary" onClick={() => onToggle()} active={isOpen}>
-          <Icon icon="filter" />
-        </Button>
-      </OverlayTrigger>
-
-      <Modal show={isOpen} onHide={() => onToggle()}>
+      <Modal show onHide={() => onCancel()}>
         <Modal.Header>{title}</Modal.Header>
         <Modal.Body>
           <div className="dialog-content">
