@@ -129,6 +129,20 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       <>
         <div className="d-flex">
           <InputGroup className="mr-2 flex-grow-1">
+            <InputGroup.Prepend>
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id="filter-tooltip">Saved filters</Tooltip>}
+              >
+                <Button
+                  variant="secondary"
+                  onClick={() => openFilterDialog()}
+                  active={filterDialogOpen}
+                >
+                  <Icon icon="bookmark" />
+                </Button>
+              </OverlayTrigger>
+            </InputGroup.Prepend>
             <FormControl
               ref={queryRef}
               placeholder="Search..."
