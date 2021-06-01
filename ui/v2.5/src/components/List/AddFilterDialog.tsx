@@ -9,7 +9,7 @@ import {
   Criterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
-import { NoneCriterion } from "src/models/list-filter/criteria/none";
+import { NoneCriterion, NoneCriterionOption } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { defineMessages, useIntl } from "react-intl";
@@ -224,7 +224,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       return (
         <Form.Control
           className="btn-secondary"
-          type={criterion.inputType}
+          type={criterion.criterionOption.inputType}
           onChange={onChangedInput}
           onBlur={onBlurInput}
           defaultValue={criterion.value ? criterion.value.toString() : ""}
@@ -303,7 +303,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       return;
     }
 
-    const thisOptions = filterOptions.criterionOptions
+    const thisOptions = [NoneCriterionOption].concat(filterOptions.criterionOptions)
       .map((c) => {
         return {
           value: c.type,

@@ -1,6 +1,5 @@
 import { createStringCriterionOption } from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
@@ -17,7 +16,6 @@ const sortByOptions = ["name", "random"]
   ]);
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
-  NoneCriterionOption,
   StudiosCriterionOption,
   MovieIsMissingCriterionOption,
   createStringCriterionOption("url"),

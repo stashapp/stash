@@ -1,4 +1,3 @@
-import { NoneCriterionOption } from "./criteria/none";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { SceneTagsCriterionOption, TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
@@ -14,7 +13,6 @@ const sortByOptions = [
 ].map(ListFilterOptions.createSortBy);
 const displayModeOptions = [DisplayMode.Wall];
 const criterionOptions = [
-  NoneCriterionOption,
   TagsCriterionOption,
   SceneTagsCriterionOption,
   PerformersCriterionOption,

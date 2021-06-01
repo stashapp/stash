@@ -5,7 +5,6 @@ import {
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
-import { NoneCriterionOption } from "./criteria/none";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -47,7 +46,6 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
-  NoneCriterionOption,
   createStringCriterionOption("path"),
   RatingCriterionOption,
   OrganizedCriterionOption,

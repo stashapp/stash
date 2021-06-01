@@ -3,7 +3,6 @@ import {
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -32,7 +31,6 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
-  NoneCriterionOption,
   createStringCriterionOption("path"),
   RatingCriterionOption,
   OrganizedCriterionOption,

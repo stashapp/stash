@@ -1,6 +1,5 @@
 import { createMandatoryNumberCriterionOption } from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
@@ -34,7 +33,6 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
-  NoneCriterionOption,
   TagIsMissingCriterionOption,
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
