@@ -1,27 +1,8 @@
-import { CriterionModifier, ResolutionEnum } from "src/core/generated-graphql";
+import { ResolutionEnum } from "src/core/generated-graphql";
+import { CriterionType } from "../types";
 import { CriterionOption, StringCriterion } from "./criterion";
 
 abstract class AbstractResolutionCriterion extends StringCriterion {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-
-  constructor(type: CriterionOption) {
-    super(type, [
-      "144p",
-      "240p",
-      "360p",
-      "480p",
-      "540p",
-      "720p",
-      "1080p",
-      "1440p",
-      "4k",
-      "5k",
-      "6k",
-      "8k",
-    ]);
-  }
-
   protected toCriterionInput(): ResolutionEnum | undefined {
     switch (this.value) {
       case "144p":
@@ -55,21 +36,40 @@ abstract class AbstractResolutionCriterion extends StringCriterion {
   }
 }
 
-export const ResolutionCriterionOption = new CriterionOption(
-  "resolution",
+class ResolutionCriterionOptionType extends CriterionOption {
+  constructor(value: CriterionType) {
+    super({
+      messageID: value,
+      value,
+      parameterName: value,
+      options: [
+        "144p",
+        "240p",
+        "360p",
+        "480p",
+        "540p",
+        "720p",
+        "1080p",
+        "1440p",
+        "4k",
+        "5k",
+        "6k",
+        "8k",
+      ],
+    });
+  }
+}
+
+export const ResolutionCriterionOption = new ResolutionCriterionOptionType(
   "resolution"
 );
 export class ResolutionCriterion extends AbstractResolutionCriterion {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-
   constructor() {
     super(ResolutionCriterionOption);
   }
 }
 
-export const AverageResolutionCriterionOption = new CriterionOption(
-  "average_resolution",
+export const AverageResolutionCriterionOption = new ResolutionCriterionOptionType(
   "average_resolution"
 );
 

@@ -1,4 +1,4 @@
-import { createCriterionOption } from "./criteria/criterion";
+import { createStringCriterionOption } from "./criteria/criterion";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import { OrganizedCriterionOption } from "./criteria/organized";
@@ -40,19 +40,19 @@ const displayModeOptions = [
 
 const criterionOptions = [
   NoneCriterionOption,
-  createCriterionOption("path"),
+  createStringCriterionOption("path"),
   RatingCriterionOption,
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
   TagsCriterionOption,
-  createCriterionOption("tag_count"),
+  createStringCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
-  createCriterionOption("performer_count"),
-  createCriterionOption("image_count"),
+  createStringCriterionOption("performer_count"),
+  createStringCriterionOption("image_count"),
   StudiosCriterionOption,
-  createCriterionOption("url"),
+  createStringCriterionOption("url"),
 ];
 
 export const GalleryListFilterOptions = new ListFilterOptions(

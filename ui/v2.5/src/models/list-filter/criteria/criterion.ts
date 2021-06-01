@@ -16,7 +16,7 @@ import {
   IHierarchicalLabelValue,
 } from "../types";
 
-type Option = string | number | IOptionType;
+export type Option = string | number | IOptionType;
 export type CriterionValue =
   | string
   | number
@@ -61,16 +61,16 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public criterionOption: CriterionOption;
-  public abstract modifier: CriterionModifier;
-  public abstract modifierOptions: ILabeledValue[];
-  public abstract options: Option[] | undefined;
-  public abstract value: V;
+  public modifier: CriterionModifier;
+  public value: V;
   public inputType: "number" | "text" | undefined;
 
   public abstract getLabelValue(): string;
 
-  constructor(type: CriterionOption) {
+  constructor(type: CriterionOption, value: V) {
     this.criterionOption = type;
+    this.modifier = type.defaultModifier;
+    this.value = value;
   }
 
   public getLabel(intl: IntlShape): string {
@@ -166,37 +166,66 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 }
 
+interface ICriterionOptionsParams {
+  messageID: string;
+  value: CriterionType;
+  parameterName?: string;
+  modifierOptions?: CriterionModifier[];
+  defaultModifier?: CriterionModifier;
+  options?: Option[];
+}
 export class CriterionOption {
   public readonly messageID: string;
   public readonly value: CriterionType;
   public readonly parameterName: string;
+  public readonly modifierOptions: ILabeledValue[];
+  public readonly defaultModifier: CriterionModifier;
+  public readonly options: Option[] | undefined;
 
-  constructor(messageID: string, value: CriterionType, parameterName?: string) {
-    this.messageID = messageID;
-    this.value = value;
-    this.parameterName = parameterName ?? value;
+  constructor(options: ICriterionOptionsParams) {
+    this.messageID = options.messageID;
+    this.value = options.value;
+    this.parameterName = options.parameterName ?? options.value;
+    this.modifierOptions = (options.modifierOptions ?? []).map((o) =>
+      Criterion.getModifierOption(o)
+    );
+    this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
+    this.options = options.options;
   }
 }
 
-export function createCriterionOption(value: CriterionType) {
-  return new CriterionOption(value, value);
+export class StringCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.Includes,
+        CriterionModifier.Excludes,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+        CriterionModifier.MatchesRegex,
+        CriterionModifier.NotMatchesRegex,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      options,
+    });
+  }
+}
+
+export function createStringCriterionOption(value: CriterionType) {
+  return new StringCriterionOption(value, value, value);
 }
 
 export class StringCriterion extends Criterion<string> {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [
-    StringCriterion.getModifierOption(CriterionModifier.Equals),
-    StringCriterion.getModifierOption(CriterionModifier.NotEquals),
-    StringCriterion.getModifierOption(CriterionModifier.Includes),
-    StringCriterion.getModifierOption(CriterionModifier.Excludes),
-    StringCriterion.getModifierOption(CriterionModifier.IsNull),
-    StringCriterion.getModifierOption(CriterionModifier.NotNull),
-    StringCriterion.getModifierOption(CriterionModifier.MatchesRegex),
-    StringCriterion.getModifierOption(CriterionModifier.NotMatchesRegex),
-  ];
-  public options: string[] | undefined;
-  public value: string = "";
-
   public getLabelValue() {
     return this.value;
   }
@@ -213,74 +242,125 @@ export class StringCriterion extends Criterion<string> {
     return str.replaceAll(c, encodeURIComponent(c));
   }
 
-  constructor(type: CriterionOption, options?: string[]) {
-    super(type);
+  constructor(type: CriterionOption) {
+    super(type, "");
 
-    this.options = options;
     this.inputType = "text";
   }
 }
 
-export class MandatoryStringCriterion extends StringCriterion {
-  public modifierOptions = [
-    StringCriterion.getModifierOption(CriterionModifier.Equals),
-    StringCriterion.getModifierOption(CriterionModifier.NotEquals),
-    StringCriterion.getModifierOption(CriterionModifier.Includes),
-    StringCriterion.getModifierOption(CriterionModifier.Excludes),
-    StringCriterion.getModifierOption(CriterionModifier.MatchesRegex),
-    StringCriterion.getModifierOption(CriterionModifier.NotMatchesRegex),
-  ];
+export class MandatoryStringCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.Includes,
+        CriterionModifier.Excludes,
+        CriterionModifier.MatchesRegex,
+        CriterionModifier.NotMatchesRegex,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      options,
+    });
+  }
+}
+
+export class BooleanCriterionOption extends CriterionOption {
+  constructor(messageID: string, value: CriterionType, parameterName?: string) {
+    super({
+      messageID,
+      value,
+      parameterName,
+      modifierOptions: [],
+      defaultModifier: CriterionModifier.Equals,
+      options: [true.toString(), false.toString()],
+    });
+  }
 }
 
 export class BooleanCriterion extends StringCriterion {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-
-  constructor(type: CriterionOption) {
-    super(type, [true.toString(), false.toString()]);
-  }
-
   protected toCriterionInput(): boolean {
     return this.value === "true";
   }
 }
 
-export class NumberCriterion extends Criterion<number> {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.Equals),
-    Criterion.getModifierOption(CriterionModifier.NotEquals),
-    Criterion.getModifierOption(CriterionModifier.GreaterThan),
-    Criterion.getModifierOption(CriterionModifier.LessThan),
-    Criterion.getModifierOption(CriterionModifier.IsNull),
-    Criterion.getModifierOption(CriterionModifier.NotNull),
-  ];
-  public options: number[] | undefined;
-  public value: number = 0;
+export class NumberCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      options,
+    });
+  }
+}
 
+export function createNumberCriterionOption(value: CriterionType) {
+  return new NumberCriterionOption(value, value, value);
+}
+
+export class NumberCriterion extends Criterion<number> {
   public getLabelValue() {
     return this.value.toString();
   }
 
-  constructor(type: CriterionOption, options?: number[]) {
-    super(type);
+  constructor(type: CriterionOption) {
+    super(type, 0);
 
-    this.options = options;
     this.inputType = "number";
   }
 }
 
-export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
-  public modifier = CriterionModifier.IncludesAll;
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.IncludesAll),
-    Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes),
-  ];
+export class ILabeledIdCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName: string,
+    includeAll: boolean
+  ) {
+    const modifierOptions = [
+      CriterionModifier.Includes,
+      CriterionModifier.Excludes,
+    ];
 
-  public options: IOptionType[] = [];
-  public value: ILabeledId[] = [];
+    if (includeAll) {
+      modifierOptions.unshift(CriterionModifier.IncludesAll);
+    }
 
+    super({
+      messageID,
+      value,
+      parameterName,
+      modifierOptions,
+      defaultModifier: CriterionModifier.IncludesAll,
+    });
+  }
+}
+
+export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
   public getLabelValue(): string {
     return this.value.map((v) => v.label).join(", ");
   }
@@ -298,33 +378,12 @@ export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
     });
   }
 
-  constructor(type: CriterionOption, includeAll: boolean) {
-    super(type);
-
-    if (!includeAll) {
-      this.modifier = CriterionModifier.Includes;
-      this.modifierOptions = [
-        Criterion.getModifierOption(CriterionModifier.Includes),
-        Criterion.getModifierOption(CriterionModifier.Excludes),
-      ];
-    }
+  constructor(type: CriterionOption) {
+    super(type, []);
   }
 }
 
-export abstract class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  public modifier = CriterionModifier.IncludesAll;
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.IncludesAll),
-    Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes),
-  ];
-
-  public options: IOptionType[] = [];
-  public value: IHierarchicalLabelValue = {
-    items: [],
-    depth: 0,
-  };
-
+export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
   public encodeValue() {
     return {
       items: this.value.items.map((o) => {
@@ -352,52 +411,40 @@ export abstract class IHierarchicalLabeledIdCriterion extends Criterion<IHierarc
     return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
   }
 
-  public toJSON() {
-    const encodedCriterion = {
-      type: this.criterionOption.value,
-      value: this.encodeValue(),
-      modifier: this.modifier,
+  constructor(type: CriterionOption) {
+    const value: IHierarchicalLabelValue = {
+      items: [],
+      depth: 0,
     };
-    return JSON.stringify(encodedCriterion);
-  }
 
-  constructor(type: CriterionOption, includeAll: boolean) {
-    super(type);
-
-    if (!includeAll) {
-      this.modifier = CriterionModifier.Includes;
-      this.modifierOptions = [
-        Criterion.getModifierOption(CriterionModifier.Includes),
-        Criterion.getModifierOption(CriterionModifier.Excludes),
-      ];
-    }
+    super(type, value);
   }
 }
 
-export class MandatoryNumberCriterion extends NumberCriterion {
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.Equals),
-    Criterion.getModifierOption(CriterionModifier.NotEquals),
-    Criterion.getModifierOption(CriterionModifier.GreaterThan),
-    Criterion.getModifierOption(CriterionModifier.LessThan),
-  ];
+export class MandatoryNumberCriterionOption extends CriterionOption {
+  constructor(messageID: string, value: CriterionType, parameterName?: string) {
+    super({
+      messageID,
+      value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+    });
+  }
+}
+
+export function createMandatoryNumberCriterionOption(value: CriterionType) {
+  return new MandatoryNumberCriterionOption(value, value, value);
 }
 
 export class DurationCriterion extends Criterion<number> {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.Equals),
-    Criterion.getModifierOption(CriterionModifier.NotEquals),
-    Criterion.getModifierOption(CriterionModifier.GreaterThan),
-    Criterion.getModifierOption(CriterionModifier.LessThan),
-  ];
-  public options: number[] | undefined;
-  public value: number = 0;
-
-  constructor(type: CriterionOption, options?: number[]) {
-    super(type);
-
-    this.options = options;
+  constructor(type: CriterionOption) {
+    super(type, 0);
   }
 
   public getLabelValue() {

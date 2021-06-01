@@ -39,6 +39,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>(
     new NoneCriterion()
   );
+  const { options, modifierOptions } = criterion.criterionOption;
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 
@@ -50,7 +51,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       defaultMessage: "Levels (empty for all)",
     },
   });
-  
+
   // Configure if we are editing an existing criterion
   useEffect(() => {
     if (!editingCriterion) {
@@ -99,10 +100,10 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     if (!Array.isArray(criterion.value) && defaultValue.current !== undefined) {
       const value = defaultValue.current;
       if (
-        criterion.options &&
+        options &&
         (value === undefined || value === "" || typeof value === "number")
       ) {
-        criterion.value = criterion.options[0].toString();
+        criterion.value = options[0].toString();
       } else if (typeof value === "number" && value === undefined) {
         criterion.value = 0;
       } else if (value === undefined) {
@@ -119,7 +120,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     }
 
     function renderModifier() {
-      if (criterion.modifierOptions.length === 0) {
+      if (modifierOptions.length === 0) {
         return;
       }
       return (
@@ -129,7 +130,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           value={criterion.modifier}
           className="btn-secondary"
         >
-          {criterion.modifierOptions.map((c) => (
+          {modifierOptions.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
             </option>
@@ -194,10 +195,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           />
         );
       }
-      if (
-        criterion.options &&
-        !criterionIsHierarchicalLabelValue(criterion.value)
-      ) {
+      if (options && !criterionIsHierarchicalLabelValue(criterion.value)) {
         defaultValue.current = criterion.value;
         return (
           <Form.Control
@@ -206,7 +204,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
             value={criterion.value.toString()}
             className="btn-secondary"
           >
-            {criterion.options.map((c) => (
+            {options.map((c) => (
               <option key={c.toString()} value={c.toString()}>
                 {c}
               </option>
@@ -305,7 +303,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       return;
     }
 
-    const options = filterOptions.criterionOptions
+    const thisOptions = filterOptions.criterionOptions
       .map((c) => {
         return {
           value: c.value,
@@ -327,7 +325,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           value={criterion.criterionOption.value}
           className="btn-secondary"
         >
-          {options.map((c) => (
+          {thisOptions.map((c) => (
             <option key={c.value} value={c.value} disabled={c.value === "none"}>
               {c.text}
             </option>

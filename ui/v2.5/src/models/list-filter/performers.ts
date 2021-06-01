@@ -1,4 +1,8 @@
-import { createCriterionOption } from "./criteria/criterion";
+import {
+  createNumberCriterionOption,
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
@@ -62,12 +66,13 @@ const criterionOptions = [
   TagsCriterionOption,
   RatingCriterionOption,
   StudiosCriterionOption,
-  createCriterionOption("url"),
-  createCriterionOption("tag_count"),
-  createCriterionOption("scene_count"),
-  createCriterionOption("image_count"),
-  createCriterionOption("gallery_count"),
-  ...numberCriteria.concat(stringCriteria).map((c) => createCriterionOption(c)),
+  createStringCriterionOption("url"),
+  createMandatoryNumberCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("scene_count"),
+  createMandatoryNumberCriterionOption("image_count"),
+  createMandatoryNumberCriterionOption("gallery_count"),
+  ...numberCriteria.map((c) => createNumberCriterionOption(c)),
+  ...stringCriteria.map((c) => createStringCriterionOption(c)),
 ];
 export const PerformerListFilterOptions = new ListFilterOptions(
   defaultSortBy,

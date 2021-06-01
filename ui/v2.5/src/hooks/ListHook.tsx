@@ -107,6 +107,10 @@ interface IListHookOptions<T, E> {
   persistanceKey?: string;
   defaultSort?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  filterDialog?: (
+    criteria: Criterion<CriterionValue>[],
+    setCriteria: (v: Criterion<CriterionValue>[]) => void
+  ) => React.ReactNode;
   zoomable?: boolean;
   selectable?: boolean;
   defaultZoomIndex?: number;
@@ -176,6 +180,7 @@ const RenderList = <
   renderEditDialog,
   renderDeleteDialog,
   updateQueryParams,
+  filterDialog,
 }: IListHookOptions<QueryResult, QueryData> &
   IQuery<QueryResult, QueryData> &
   IRenderListProps) => {
@@ -456,6 +461,12 @@ const RenderList = <
     updateQueryParams(newFilter);
   }
 
+  function updateCriteria(c: Criterion<CriterionValue>[]) {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.criteria = c.slice();
+    setNewCriterion(false);
+  }
+
   function onCancelAddCriterion() {
     setEditingCriterion(undefined);
     setNewCriterion(false);
@@ -492,7 +503,7 @@ const RenderList = <
         onEditCriterion={(c) => setEditingCriterion(c)}
         onRemoveCriterion={onRemoveCriterion}
       />
-      {(newCriterion || editingCriterion) && (
+      {(newCriterion || editingCriterion) && !filterDialog && (
         <AddFilterDialog
           filterOptions={filterOptions}
           onAddCriterion={onAddCriterion}
@@ -500,6 +511,9 @@ const RenderList = <
           editingCriterion={editingCriterion}
         />
       )}
+      {newCriterion &&
+        filterDialog &&
+        filterDialog(filter.criteria, (c) => updateCriteria(c))}
       {isEditDialogOpen &&
         renderEditDialog &&
         renderEditDialog(

@@ -1,6 +1,6 @@
-import { BooleanCriterion, CriterionOption } from "./criterion";
+import { BooleanCriterion, BooleanCriterionOption } from "./criterion";
 
-export const InteractiveCriterionOption = new CriterionOption(
+export const InteractiveCriterionOption = new BooleanCriterionOption(
   "interactive",
   "interactive"
 );

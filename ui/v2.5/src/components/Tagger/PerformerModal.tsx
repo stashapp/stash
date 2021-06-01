@@ -10,8 +10,8 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
+import { genderToString } from "src/utils/gender";
 import { IStashBoxPerformer } from "./utils";
 
 interface IPerformerModalProps {

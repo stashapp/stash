@@ -1,4 +1,7 @@
-import { createCriterionOption } from "./criteria/criterion";
+import {
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
@@ -45,23 +48,23 @@ const displayModeOptions = [
 
 const criterionOptions = [
   NoneCriterionOption,
-  createCriterionOption("path"),
+  createStringCriterionOption("path"),
   RatingCriterionOption,
   OrganizedCriterionOption,
-  createCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
-  createCriterionOption("duration"),
+  createMandatoryNumberCriterionOption("duration"),
   HasMarkersCriterionOption,
   SceneIsMissingCriterionOption,
   TagsCriterionOption,
-  createCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
-  createCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_count"),
   StudiosCriterionOption,
   MoviesCriterionOption,
-  createCriterionOption("url"),
-  createCriterionOption("stash_id"),
+  createStringCriterionOption("url"),
+  createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
 ];
 

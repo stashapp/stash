@@ -1,4 +1,4 @@
-import { createCriterionOption } from "./criteria/criterion";
+import { createStringCriterionOption } from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import { StudiosCriterionOption } from "./criteria/studios";
@@ -20,7 +20,7 @@ const criterionOptions = [
   NoneCriterionOption,
   StudiosCriterionOption,
   MovieIsMissingCriterionOption,
-  createCriterionOption("url"),
+  createStringCriterionOption("url"),
 ];
 
 export const MovieListFilterOptions = new ListFilterOptions(

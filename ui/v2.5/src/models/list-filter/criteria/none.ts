@@ -1,15 +1,13 @@
-import { CriterionModifier } from "src/core/generated-graphql";
-import { Criterion, CriterionOption } from "./criterion";
+import { Criterion, StringCriterionOption } from "./criterion";
 
-export const NoneCriterionOption = new CriterionOption("none", "none");
+export const NoneCriterionOption = new StringCriterionOption(
+  "none",
+  "none",
+  "none"
+);
 export class NoneCriterion extends Criterion<string> {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-  public options: undefined;
-  public value: string = "none";
-
   constructor() {
-    super(NoneCriterionOption);
+    super(NoneCriterionOption, "none");
   }
 
   // eslint-disable-next-line class-methods-use-this

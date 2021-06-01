@@ -1,7 +1,8 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption, StringCriterion } from "./criterion";
+import { CriterionType } from "../types";
+import { CriterionOption, StringCriterion, Option } from "./criterion";
 
-export abstract class IsMissingCriterion extends StringCriterion {
+export class IsMissingCriterion extends StringCriterion {
   public modifierOptions = [];
   public modifier = CriterionModifier.Equals;
 
@@ -10,136 +11,98 @@ export abstract class IsMissingCriterion extends StringCriterion {
   }
 }
 
-export const SceneIsMissingCriterionOption = new CriterionOption(
+class IsMissingCriterionOptionClass extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName: string,
+    options: Option[]
+  ) {
+    super({
+      messageID,
+      value,
+      parameterName,
+      options,
+    });
+  }
+}
+
+export const SceneIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "sceneIsMissing",
-  "is_missing"
+  "is_missing",
+  [
+    "title",
+    "details",
+    "url",
+    "date",
+    "galleries",
+    "studio",
+    "movie",
+    "performers",
+    "tags",
+    "stash_id",
+  ]
 );
 
-export class SceneIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(SceneIsMissingCriterionOption, [
-      "title",
-      "details",
-      "url",
-      "date",
-      "galleries",
-      "studio",
-      "movie",
-      "performers",
-      "tags",
-      "stash_id",
-    ]);
-  }
-}
-
-export const ImageIsMissingCriterionOption = new CriterionOption(
+export const ImageIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "imageIsMissing",
-  "is_missing"
+  "is_missing",
+  ["title", "galleries", "studio", "performers", "tags"]
 );
 
-export class ImageIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(ImageIsMissingCriterionOption, [
-      "title",
-      "galleries",
-      "studio",
-      "performers",
-      "tags",
-    ]);
-  }
-}
-
-export const PerformerIsMissingCriterionOption = new CriterionOption(
+export const PerformerIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "performerIsMissing",
-  "is_missing"
+  "is_missing",
+  [
+    "url",
+    "twitter",
+    "instagram",
+    "ethnicity",
+    "country",
+    "hair_color",
+    "eye_color",
+    "height",
+    "weight",
+    "measurements",
+    "fake_tits",
+    "career_length",
+    "tattoos",
+    "piercings",
+    "aliases",
+    "gender",
+    "image",
+    "details",
+    "stash_id",
+  ]
 );
 
-export class PerformerIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(PerformerIsMissingCriterionOption, [
-      "url",
-      "twitter",
-      "instagram",
-      "ethnicity",
-      "country",
-      "hair_color",
-      "eye_color",
-      "height",
-      "weight",
-      "measurements",
-      "fake_tits",
-      "career_length",
-      "tattoos",
-      "piercings",
-      "aliases",
-      "gender",
-      "image",
-      "details",
-      "stash_id",
-    ]);
-  }
-}
-
-export const GalleryIsMissingCriterionOption = new CriterionOption(
+export const GalleryIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "galleryIsMissing",
-  "is_missing"
+  "is_missing",
+  ["title", "details", "url", "date", "studio", "performers", "tags", "scenes"]
 );
 
-export class GalleryIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(GalleryIsMissingCriterionOption, [
-      "title",
-      "details",
-      "url",
-      "date",
-      "studio",
-      "performers",
-      "tags",
-      "scenes",
-    ]);
-  }
-}
-
-export const TagIsMissingCriterionOption = new CriterionOption(
+export const TagIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "tagIsMissing",
-  "is_missing"
+  "is_missing",
+  ["image"]
 );
 
-export class TagIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(TagIsMissingCriterionOption, ["image"]);
-  }
-}
-
-export const StudioIsMissingCriterionOption = new CriterionOption(
+export const StudioIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "studioIsMissing",
-  "is_missing"
+  "is_missing",
+  ["image", "stash_id", "details"]
 );
 
-export class StudioIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(StudioIsMissingCriterionOption, ["image", "stash_id", "details"]);
-  }
-}
-
-export const MovieIsMissingCriterionOption = new CriterionOption(
+export const MovieIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "movieIsMissing",
-  "is_missing"
+  "is_missing",
+  ["front_image", "back_image", "scenes"]
 );
-
-export class MovieIsMissingCriterion extends IsMissingCriterion {
-  constructor() {
-    super(MovieIsMissingCriterionOption, [
-      "front_image",
-      "back_image",
-      "scenes",
-    ]);
-  }
-}
