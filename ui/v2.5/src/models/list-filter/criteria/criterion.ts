@@ -216,7 +216,7 @@ export class StringCriterionOption extends CriterionOption {
         CriterionModifier.NotMatchesRegex,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options: options,
+      options,
     });
   }
 }
@@ -269,7 +269,7 @@ export class MandatoryStringCriterionOption extends CriterionOption {
         CriterionModifier.NotMatchesRegex,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options: options,
+      options,
     });
   }
 }
@@ -313,7 +313,7 @@ export class NumberCriterionOption extends CriterionOption {
         CriterionModifier.NotNull,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options: options,
+      options,
     });
   }
 }

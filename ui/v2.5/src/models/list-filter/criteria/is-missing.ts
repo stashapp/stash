@@ -22,7 +22,7 @@ class IsMissingCriterionOptionClass extends CriterionOption {
       messageID,
       type: value,
       parameterName,
-      options: options,
+      options,
     });
   }
 }
