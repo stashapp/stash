@@ -9,7 +9,10 @@ import {
   Criterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
-import { NoneCriterion, NoneCriterionOption } from "src/models/list-filter/criteria/none";
+import {
+  NoneCriterion,
+  NoneCriterionOption,
+} from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { defineMessages, useIntl } from "react-intl";
@@ -303,7 +306,8 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       return;
     }
 
-    const thisOptions = [NoneCriterionOption].concat(filterOptions.criterionOptions)
+    const thisOptions = [NoneCriterionOption]
+      .concat(filterOptions.criterionOptions)
       .map((c) => {
         return {
           value: c.type,
