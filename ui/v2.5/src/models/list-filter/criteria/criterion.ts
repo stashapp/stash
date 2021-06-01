@@ -140,7 +140,7 @@ export abstract class Criterion<V extends CriterionValue> {
 
   public toJSON() {
     const encodedCriterion = {
-      type: this.criterionOption.value,
+      type: this.criterionOption.type,
       // #394 - the presence of a # symbol results in the query URL being
       // malformed. We could set encode: true in the queryString.stringify
       // call below, but this results in a URL that gets pretty long and ugly.
@@ -168,7 +168,7 @@ export abstract class Criterion<V extends CriterionValue> {
 
 interface ICriterionOptionsParams {
   messageID: string;
-  value: CriterionType;
+  type: CriterionType;
   parameterName?: string;
   modifierOptions?: CriterionModifier[];
   defaultModifier?: CriterionModifier;
@@ -176,7 +176,7 @@ interface ICriterionOptionsParams {
 }
 export class CriterionOption {
   public readonly messageID: string;
-  public readonly value: CriterionType;
+  public readonly type: CriterionType;
   public readonly parameterName: string;
   public readonly modifierOptions: ILabeledValue[];
   public readonly defaultModifier: CriterionModifier;
@@ -184,8 +184,8 @@ export class CriterionOption {
 
   constructor(options: ICriterionOptionsParams) {
     this.messageID = options.messageID;
-    this.value = options.value;
-    this.parameterName = options.parameterName ?? options.value;
+    this.type = options.type;
+    this.parameterName = options.parameterName ?? options.type;
     this.modifierOptions = (options.modifierOptions ?? []).map((o) =>
       Criterion.getModifierOption(o)
     );
@@ -203,7 +203,7 @@ export class StringCriterionOption extends CriterionOption {
   ) {
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
       modifierOptions: [
         CriterionModifier.Equals,
@@ -216,7 +216,7 @@ export class StringCriterionOption extends CriterionOption {
         CriterionModifier.NotMatchesRegex,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options,
+      options: options,
     });
   }
 }
@@ -258,7 +258,7 @@ export class MandatoryStringCriterionOption extends CriterionOption {
   ) {
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
       modifierOptions: [
         CriterionModifier.Equals,
@@ -269,7 +269,7 @@ export class MandatoryStringCriterionOption extends CriterionOption {
         CriterionModifier.NotMatchesRegex,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options,
+      options: options,
     });
   }
 }
@@ -278,7 +278,7 @@ export class BooleanCriterionOption extends CriterionOption {
   constructor(messageID: string, value: CriterionType, parameterName?: string) {
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
       modifierOptions: [],
       defaultModifier: CriterionModifier.Equals,
@@ -302,7 +302,7 @@ export class NumberCriterionOption extends CriterionOption {
   ) {
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
       modifierOptions: [
         CriterionModifier.Equals,
@@ -313,7 +313,7 @@ export class NumberCriterionOption extends CriterionOption {
         CriterionModifier.NotNull,
       ],
       defaultModifier: CriterionModifier.Equals,
-      options,
+      options: options,
     });
   }
 }
@@ -352,7 +352,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
       modifierOptions,
       defaultModifier: CriterionModifier.IncludesAll,
@@ -425,7 +425,7 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
   constructor(messageID: string, value: CriterionType, parameterName?: string) {
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
       modifierOptions: [
         CriterionModifier.Equals,

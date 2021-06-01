@@ -4,7 +4,7 @@ import { CriterionOption, StringCriterion } from "./criterion";
 
 export const GenderCriterionOption = new CriterionOption({
   messageID: "gender",
-  value: "gender",
+  type: "gender",
   options: genderStrings,
 });
 

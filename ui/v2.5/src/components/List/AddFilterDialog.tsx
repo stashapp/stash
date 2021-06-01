@@ -115,7 +115,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   }
 
   const maybeRenderFilterPopoverContents = () => {
-    if (criterion.criterionOption.value === "none") {
+    if (criterion.criterionOption.type === "none") {
       return;
     }
 
@@ -150,19 +150,19 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
 
       if (Array.isArray(criterion.value)) {
         if (
-          criterion.criterionOption.value !== "performers" &&
-          criterion.criterionOption.value !== "studios" &&
-          criterion.criterionOption.value !== "parent_studios" &&
-          criterion.criterionOption.value !== "tags" &&
-          criterion.criterionOption.value !== "sceneTags" &&
-          criterion.criterionOption.value !== "performerTags" &&
-          criterion.criterionOption.value !== "movies"
+          criterion.criterionOption.type !== "performers" &&
+          criterion.criterionOption.type !== "studios" &&
+          criterion.criterionOption.type !== "parent_studios" &&
+          criterion.criterionOption.type !== "tags" &&
+          criterion.criterionOption.type !== "sceneTags" &&
+          criterion.criterionOption.type !== "performerTags" &&
+          criterion.criterionOption.type !== "movies"
         )
           return;
 
         return (
           <FilterSelect
-            type={criterion.criterionOption.value}
+            type={criterion.criterionOption.type}
             isMulti
             onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);
@@ -306,7 +306,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     const thisOptions = filterOptions.criterionOptions
       .map((c) => {
         return {
-          value: c.value,
+          value: c.type,
           text: intl.formatMessage({ id: c.messageID }),
         };
       })
@@ -322,7 +322,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
-          value={criterion.criterionOption.value}
+          value={criterion.criterionOption.type}
           className="btn-secondary"
         >
           {thisOptions.map((c) => (
@@ -350,7 +350,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         <Modal.Footer>
           <Button
             onClick={onAddFilter}
-            disabled={criterion.criterionOption.value === "none"}
+            disabled={criterion.criterionOption.type === "none"}
           >
             {title}
           </Button>

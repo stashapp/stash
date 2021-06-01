@@ -40,7 +40,7 @@ class ResolutionCriterionOptionType extends CriterionOption {
   constructor(value: CriterionType) {
     super({
       messageID: value,
-      value,
+      type: value,
       parameterName: value,
       options: [
         "144p",

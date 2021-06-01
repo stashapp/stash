@@ -20,9 +20,9 @@ class IsMissingCriterionOptionClass extends CriterionOption {
   ) {
     super({
       messageID,
-      value,
+      type: value,
       parameterName,
-      options,
+      options: options,
     });
   }
 }

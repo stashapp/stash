@@ -2,7 +2,7 @@ import { CriterionOption, StringCriterion } from "./criterion";
 
 export const HasMarkersCriterionOption = new CriterionOption({
   messageID: "hasMarkers",
-  value: "hasMarkers",
+  type: "hasMarkers",
   parameterName: "has_markers",
   options: [true.toString(), false.toString()],
 });
