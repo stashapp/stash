@@ -63,7 +63,6 @@ export abstract class Criterion<V extends CriterionValue> {
   public criterionOption: CriterionOption;
   public modifier: CriterionModifier;
   public value: V;
-  public inputType: "number" | "text" | undefined;
 
   public abstract getLabelValue(): string;
 
@@ -73,9 +72,9 @@ export abstract class Criterion<V extends CriterionValue> {
     this.value = value;
   }
 
-  public getLabel(intl: IntlShape): string {
+  public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
     let modifierMessageID: string;
-    switch (this.modifier) {
+    switch (modifier) {
       case CriterionModifier.Equals:
         modifierMessageID = "criterion_modifier.equals";
         break;
@@ -113,9 +112,13 @@ export abstract class Criterion<V extends CriterionValue> {
         modifierMessageID = "";
     }
 
-    const modifierString = modifierMessageID
+    return modifierMessageID
       ? intl.formatMessage({ id: modifierMessageID })
       : "";
+  }
+
+  public getLabel(intl: IntlShape): string {
+    const modifierString = Criterion.getModifierLabel(intl, this.modifier);
     let valueString = "";
 
     if (
@@ -166,9 +169,12 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 }
 
+export type InputType = "number" | "text" | undefined;
+
 interface ICriterionOptionsParams {
   messageID: string;
   type: CriterionType;
+  inputType?: InputType;
   parameterName?: string;
   modifierOptions?: CriterionModifier[];
   defaultModifier?: CriterionModifier;
@@ -181,6 +187,7 @@ export class CriterionOption {
   public readonly modifierOptions: ILabeledValue[];
   public readonly defaultModifier: CriterionModifier;
   public readonly options: Option[] | undefined;
+  public readonly inputType: InputType;
 
   constructor(options: ICriterionOptionsParams) {
     this.messageID = options.messageID;
@@ -191,6 +198,7 @@ export class CriterionOption {
     );
     this.defaultModifier = options.defaultModifier ?? CriterionModifier.Equals;
     this.options = options.options;
+    this.inputType = options.inputType;
   }
 }
 
@@ -217,6 +225,7 @@ export class StringCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       options,
+      inputType: "text",
     });
   }
 }
@@ -244,8 +253,6 @@ export class StringCriterion extends Criterion<string> {
 
   constructor(type: CriterionOption) {
     super(type, "");
-
-    this.inputType = "text";
   }
 }
 
@@ -270,6 +277,7 @@ export class MandatoryStringCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       options,
+      inputType: "text",
     });
   }
 }
@@ -314,6 +322,7 @@ export class NumberCriterionOption extends CriterionOption {
       ],
       defaultModifier: CriterionModifier.Equals,
       options,
+      inputType: "number",
     });
   }
 }
@@ -329,8 +338,6 @@ export class NumberCriterion extends Criterion<number> {
 
   constructor(type: CriterionOption) {
     super(type, 0);
-
-    this.inputType = "number";
   }
 }
 
@@ -434,6 +441,7 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
         CriterionModifier.LessThan,
       ],
       defaultModifier: CriterionModifier.Equals,
+      inputType: "number",
     });
   }
 }
