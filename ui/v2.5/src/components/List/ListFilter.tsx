@@ -148,7 +148,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               placeholder="Search..."
               defaultValue={filter.searchTerm}
               onInput={onChangeQuery}
-              className="bg-secondary text-white border-secondary w-50"
+              className="query-text-field bg-secondary text-white border-secondary"
             />
 
             <InputGroup.Append>
