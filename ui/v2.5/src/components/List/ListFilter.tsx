@@ -18,7 +18,6 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
-import { FilterMode } from "src/models/list-filter/types";
 import { SavedFilterList } from "./SavedFilterList";
 
 interface IListFilterProps {
@@ -127,7 +126,12 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     HTMLAttributes<HTMLDivElement>
   >(({ style, className }, ref) => (
     <div ref={ref} style={style} className={className}>
-      <SavedFilterList filterMode={FilterMode.Scenes} onSetFilter={() => {}} />
+      <SavedFilterList
+        filter={filter}
+        onSetFilter={(f) => {
+          onFilterUpdate(f);
+        }}
+      />
     </div>
   ));
 

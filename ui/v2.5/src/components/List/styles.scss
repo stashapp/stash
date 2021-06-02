@@ -36,6 +36,16 @@ input[type="range"].zoom-slider {
   .set-as-default-button {
     float: right;
   }
+
+  .LoadingIndicator {
+    height: auto;
+    text-align: center;
+
+    .spinner-border {
+      height: 1.5rem;
+      width: 1.5rem;
+    }
+  }
 }
 
 .saved-filter-list {
@@ -43,8 +53,13 @@ input[type="range"].zoom-slider {
   margin-bottom: 0;
   padding-left: 0;
 
-  .dropdown-item {
-    padding-right: 0.25rem;
+  .dropdown-item-container {
+    display: flex;
+
+    .dropdown-item {
+      align-items: center;
+      padding-right: 0.25rem;
+    }
 
     .btn-group {
       margin-left: auto;

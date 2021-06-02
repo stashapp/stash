@@ -27,6 +27,7 @@ import {
   TagDataFragment,
   FindImagesQueryResult,
   SlimImageDataFragment,
+  FilterMode,
 } from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
@@ -44,7 +45,7 @@ import {
   useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { getFilterOptions } from "src/models/list-filter/factory";
 import { ButtonToolbar } from "react-bootstrap";
@@ -556,6 +557,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const defaultDisplayMode = filterOptions.displayModeOptions[0];
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
+      options.filterMode,
       queryString.parse(location.search),
       defaultSort,
       defaultDisplayMode
@@ -621,6 +623,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       : activeFilter;
 
     const newFilter = new ListFilterModel(
+      options.filterMode,
       query,
       defaultSort,
       defaultDisplayMode

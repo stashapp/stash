@@ -219,7 +219,7 @@ export const Scene: React.FC = () => {
       return;
     }
 
-    const filterCopy = Object.assign(new ListFilterModel(), sceneQueue.query);
+    const filterCopy = sceneQueue.query.clone();
     const newStart = queueStart - filterCopy.itemsPerPage;
     filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
     const query = await queryFindScenes(filterCopy);
@@ -240,7 +240,7 @@ export const Scene: React.FC = () => {
       return;
     }
 
-    const filterCopy = Object.assign(new ListFilterModel(), sceneQueue.query);
+    const filterCopy = sceneQueue.query.clone();
     const newStart = queueStart + queueScenes.length;
     filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
     const query = await queryFindScenes(filterCopy);
@@ -277,7 +277,7 @@ export const Scene: React.FC = () => {
       const pages = Math.ceil(queueTotal / query.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
       const index = Math.floor(Math.random() * query.itemsPerPage);
-      const filterCopy = Object.assign(new ListFilterModel(), sceneQueue.query);
+      const filterCopy = sceneQueue.query.clone();
       filterCopy.currentPage = page;
       const queryResults = await queryFindScenes(filterCopy);
       if (queryResults.data.findScenes.scenes.length > index) {

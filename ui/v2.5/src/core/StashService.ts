@@ -44,6 +44,20 @@ const deleteCache = (queries: DocumentNode[]) => {
     });
 };
 
+export const useFindSavedFilters = (mode: GQL.FilterMode) =>
+  GQL.useFindSavedFiltersQuery({
+    variables: {
+      mode,
+    },
+  });
+
+export const useDefaultSavedFilter = (mode: GQL.FilterMode) =>
+  GQL.useFindDefaultFilterQuery({
+    variables: {
+      mode,
+    },
+  });
+
 export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
@@ -679,6 +693,29 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
   GQL.useTagsDestroyMutation({
     variables: input,
     update: deleteCache(tagMutationImpactedQueries),
+  });
+
+export const savedFilterMutationImpactedQueries = [
+  GQL.FindSavedFiltersDocument,
+];
+
+export const useSaveFilter = () =>
+  GQL.useSaveFilterMutation({
+    update: deleteCache(savedFilterMutationImpactedQueries),
+  });
+
+export const savedFilterDefaultMutationImpactedQueries = [
+  GQL.FindDefaultFilterDocument,
+];
+
+export const useSetDefaultFilter = () =>
+  GQL.useSetDefaultFilterMutation({
+    update: deleteCache(savedFilterDefaultMutationImpactedQueries),
+  });
+
+export const useSavedFilterDestroy = () =>
+  GQL.useDestroySavedFilterMutation({
+    update: deleteCache(savedFilterMutationImpactedQueries),
   });
 
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
