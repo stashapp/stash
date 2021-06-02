@@ -1,6 +1,7 @@
 import { Button, Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
+import { useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -36,6 +37,7 @@ interface IStudioParams {
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
@@ -229,7 +231,7 @@ export const Studio: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{ text: intl.formatMessage({ id: 'actions.delete' }), variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
         <p>Are you sure you want to delete {name ?? "studio"}?</p>
@@ -411,16 +413,16 @@ export const Studio: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title="Scenes">
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: 'scenes' })}>
               <StudioScenesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="galleries" title="Galleries">
+            <Tab eventKey="galleries" title={intl.formatMessage({ id: 'galleries' })}>
               <StudioGalleriesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="images" title="Images">
+            <Tab eventKey="images" title={intl.formatMessage({ id: 'images' })}>
               <StudioImagesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="performers" title="Performers">
+            <Tab eventKey="performers" title={intl.formatMessage({ id: 'performers' })}>
               <StudioPerformersPanel studio={studio} />
             </Tab>
             <Tab eventKey="childstudios" title="Child Studios">

@@ -1,5 +1,6 @@
 import { Button, Modal } from "react-bootstrap";
 import React, { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { ImageInput } from "src/components/Shared";
 
 interface IProps {
@@ -21,6 +22,7 @@ interface IProps {
 }
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
+  const intl = useIntl();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   function renderEditButton() {
@@ -31,7 +33,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         className="edit"
         onClick={() => props.onToggleEdit()}
       >
-        {props.isEditing ? "Cancel" : "Edit"}
+        {props.isEditing ? intl.formatMessage({ id: 'actions.cancel' }) : intl.formatMessage({ id: 'actions.edit' })}
       </Button>
     );
   }
@@ -46,7 +48,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         disabled={props.saveDisabled}
         onClick={() => props.onSave()}
       >
-        Save
+        <FormattedMessage id='actions.save' />
       </Button>
     );
   }
@@ -59,7 +61,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         className="delete d-none d-sm-block"
         onClick={() => setIsDeleteAlertOpen(true)}
       >
-        Delete
+        <FormattedMessage id='actions.delete' />
       </Button>
     );
   }
@@ -91,7 +93,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
             }
           }}
         >
-          Auto Tag
+          <FormattedMessage id="actions.auto_tag" />
         </Button>
       );
     }
@@ -105,13 +107,13 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={props.onDelete}>
-            Delete
+            <FormattedMessage id='actions.delete' />
           </Button>
           <Button
             variant="secondary"
             onClick={() => setIsDeleteAlertOpen(false)}
           >
-            Cancel
+            <FormattedMessage id='actions.cancel' />
           </Button>
         </Modal.Footer>
       </Modal>

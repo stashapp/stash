@@ -19,7 +19,7 @@ import {
   useTagsDestroy,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { NavUtils } from "src/utils";
 import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
 import { TagCard } from "./TagCard";
@@ -38,6 +38,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
 
   const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
 
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -212,7 +213,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
           onHide={() => {}}
           show={!!deletingTag}
           icon="trash-alt"
-          accept={{ onClick: onDelete, variant: "danger", text: "Delete" }}
+          accept={{ onClick: onDelete, variant: "danger", text: intl.formatMessage({ id: 'actions.delete' }) }}
           cancel={{ onClick: () => setDeletingTag(null) }}
         >
           <span>
@@ -232,7 +233,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
                 className="tag-list-button"
                 onClick={() => onAutoTag(tag)}
               >
-                Auto Tag
+                <FormattedMessage id="actions.auto_tag" />
               </Button>
               <Button variant="secondary" className="tag-list-button">
                 <Link

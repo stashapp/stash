@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
@@ -21,6 +22,7 @@ const Stash: React.FC<IStashProps> = ({ index, stash, onSave, onDelete }) => {
     onSave(newObj);
   };
 
+  const intl = useIntl();
   const classAdd = index % 2 === 1 ? "bg-dark" : "";
 
   return (
@@ -47,7 +49,7 @@ const Stash: React.FC<IStashProps> = ({ index, stash, onSave, onDelete }) => {
         <Button
           size="sm"
           variant="danger"
-          title="Delete"
+          title={intl.formatMessage({ id: 'actions.delete' })}
           onClick={() => onDelete()}
         >
           <Icon icon="minus" />

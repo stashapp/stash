@@ -1,6 +1,7 @@
 import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
+import { useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -35,6 +36,7 @@ interface ITabParams {
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const { tab = "scenes", id = "new" } = useParams<ITabParams>();
   const isNew = id === "new";
 
@@ -170,7 +172,7 @@ export const Tag: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{ text: intl.formatMessage({ id: 'actions.delete' }), variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
         <p>Are you sure you want to delete {tag?.name ?? "tag"}?</p>
@@ -248,19 +250,19 @@ export const Tag: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title="Scenes">
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: 'scenes' })}>
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="images" title="Images">
+            <Tab eventKey="images" title={intl.formatMessage({ id: 'images' })}>
               <TagImagesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="galleries" title="Galleries">
+            <Tab eventKey="galleries" title={intl.formatMessage({ id: 'galleries' })}>
               <TagGalleriesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="markers" title="Markers">
+            <Tab eventKey="markers" title={intl.formatMessage({ id: 'markers' })}>
               <TagMarkersPanel tag={tag} />
             </Tab>
-            <Tab eventKey="performers" title="Performers">
+            <Tab eventKey="performers" title={intl.formatMessage({ id: 'performers' })}>
               <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>

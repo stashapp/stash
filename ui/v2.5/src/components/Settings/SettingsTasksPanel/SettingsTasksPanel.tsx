@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataImport,
@@ -399,7 +400,7 @@ export const SettingsTasksPanel: React.FC = () => {
           className="mr-2"
           onClick={() => onAutoTag()}
         >
-          Auto Tag
+          <FormattedMessage id="actions.auto_tag" />
         </Button>
         <Button
           variant="secondary"

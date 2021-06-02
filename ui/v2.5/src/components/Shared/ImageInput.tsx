@@ -7,6 +7,7 @@ import {
   Popover,
   Row,
 } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Modal } from ".";
 import Icon from "./Icon";
 
@@ -27,6 +28,7 @@ export const ImageInput: React.FC<IImageInput> = ({
 }) => {
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [url, setURL] = useState("");
+  const intl = useIntl();
 
   if (!isEditing) return <div />;
 
@@ -120,7 +122,7 @@ export const ImageInput: React.FC<IImageInput> = ({
         rootClose
       >
         <Button variant="secondary" className="mr-2">
-          {text ?? "Set image..."}
+          {text ?? intl.formatMessage({ id: 'actions.set_image' })}
         </Button>
       </OverlayTrigger>
     </>

@@ -87,7 +87,7 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
         singularEntity,
         pluralEntity,
       })}
-      accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
+      accept={{ variant: "danger", onClick: onDelete, text: intl.formatMessage({ id: 'actions.delete' }) }}
       cancel={{
         onClick: () => onClose(false),
         text: "Cancel",

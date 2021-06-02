@@ -4,7 +4,7 @@ import { useScenesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IDeleteSceneDialogProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -32,6 +32,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
+  const intl = useIntl();
   const Toast = useToast();
   const [deleteScene] = useScenesDestroy(getScenesDeleteInput());
 
@@ -63,7 +64,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
       show
       icon="trash-alt"
       header={header}
-      accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
+      accept={{ variant: "danger", onClick: onDelete, text: intl.formatMessage({ id: 'actions.delete' }) }}
       cancel={{
         onClick: () => props.onClose(false),
         text: "Cancel",

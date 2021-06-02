@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 
 interface IInstanceProps {
@@ -15,6 +16,7 @@ const Instance: React.FC<IInstanceProps> = ({
   onDelete,
   isMulti,
 }) => {
+  const intl = useIntl();
   const handleInput = (key: string, value: string) => {
     const newObj = {
       ...instance,
@@ -57,7 +59,7 @@ const Instance: React.FC<IInstanceProps> = ({
           <Button
             className=""
             variant="danger"
-            title="Delete"
+            title={intl.formatMessage({ id: 'actions.delete' })}
             onClick={() => onDelete(instance.index)}
           >
             <Icon icon="minus" />

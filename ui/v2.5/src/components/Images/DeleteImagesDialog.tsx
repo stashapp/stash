@@ -4,7 +4,7 @@ import { useImagesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IDeleteImageDialogProps {
   selected: GQL.SlimImageDataFragment[];
@@ -32,6 +32,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
+  const intl = useIntl();
   const Toast = useToast();
   const [deleteImage] = useImagesDestroy(getImagesDeleteInput());
 
@@ -63,7 +64,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
       show
       icon="trash-alt"
       header={header}
-      accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
+      accept={{ variant: "danger", onClick: onDelete, text: intl.formatMessage({ id: 'actions.delete' }) }}
       cancel={{
         onClick: () => props.onClose(false),
         text: "Cancel",

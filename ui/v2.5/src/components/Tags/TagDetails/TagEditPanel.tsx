@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { DetailsEditNavbar } from "src/components/Shared";
@@ -102,7 +103,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   // TODO: CSS class
   return (
     <div>
-      {isNew && <h2>Add Tag</h2>}
+      {isNew && <h2><FormattedMessage id='actions.add_tag' /></h2>}
 
       <Prompt
         when={formik.dirty}
@@ -117,7 +118,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
         <Form.Group controlId="name" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Name
+            <FormattedMessage id='name' />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -134,7 +135,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
         <Form.Group controlId="aliases" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Aliases
+            <FormattedMessage id='aliases' />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <StringListInput
