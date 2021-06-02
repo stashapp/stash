@@ -108,9 +108,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }),
     tag_ids: (scene.tags ?? []).map((t) => t.id),
     cover_image: undefined,
-    stash_ids: (scene.stash_ids ?? []).map(s => ({
-        stash_id: s.stash_id,
-        endpoint: s.endpoint,
+    stash_ids: (scene.stash_ids ?? []).map((s) => ({
+      stash_id: s.stash_id,
+      endpoint: s.endpoint,
     })),
   };
 
