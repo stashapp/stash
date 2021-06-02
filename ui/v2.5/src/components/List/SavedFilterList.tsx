@@ -13,21 +13,25 @@ import {
   useFindSavedFilters,
   useSavedFilterDestroy,
   useSaveFilter,
+  useSetDefaultFilter,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SavedFilterDataFragment } from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
+import { PersistanceLevel } from "src/hooks/ListHook";
 import { Icon } from "../Shared";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
+  persistState?: PersistanceLevel;
 }
 
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
+  persistState,
 }) => {
   const Toast = useToast();
   const { data, error, loading, refetch } = useFindSavedFilters(filter.mode);
@@ -44,6 +48,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   const [saveFilter] = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
+  const [setDefaultFilter] = useSetDefaultFilter();
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -102,6 +107,30 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     } finally {
       setSaving(false);
       setDeletingFilter(undefined);
+    }
+  }
+
+  async function onSetDefaultFilter() {
+    const filterCopy = filter.clone();
+    filterCopy.currentPage = 1;
+
+    try {
+      setSaving(true);
+
+      await setDefaultFilter({
+        variables: {
+          input: {
+            mode: filter.mode,
+            filter: JSON.stringify(filterCopy.getSavedQueryParameters()),
+          },
+        },
+      });
+
+      Toast.success({ content: "Default filter set" });
+    } catch (err) {
+      Toast.error(err);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -234,6 +263,21 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     );
   }
 
+  function maybeRenderSetDefaultButton() {
+    if (persistState === PersistanceLevel.ALL) {
+      return (
+        <Button
+          className="set-as-default-button"
+          variant="secondary"
+          size="sm"
+          onClick={() => onSetDefaultFilter()}
+        >
+          Set as default
+        </Button>
+      );
+    }
+  }
+
   return (
     <div>
       {maybeRenderDeleteAlert()}
@@ -265,9 +309,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         </InputGroup.Append>
       </InputGroup>
       {renderSavedFilters()}
-      <Button className="set-as-default-button" variant="secondary" size="sm">
-        Set as default
-      </Button>
+      {maybeRenderSetDefaultButton()}
     </div>
   );
 };

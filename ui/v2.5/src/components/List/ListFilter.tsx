@@ -18,6 +18,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
+import { PersistanceLevel } from "src/hooks/ListHook";
 import { SavedFilterList } from "./SavedFilterList";
 
 interface IListFilterProps {
@@ -25,6 +26,7 @@ interface IListFilterProps {
   filter: ListFilterModel;
   filterOptions: ListFilterOptions;
   filterDialogOpen?: boolean;
+  persistState?: PersistanceLevel;
   openFilterDialog: () => void;
 }
 
@@ -36,6 +38,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   filterOptions,
   filterDialogOpen,
   openFilterDialog,
+  persistState,
 }) => {
   const [queryRef, setQueryFocus] = useFocus();
 
@@ -131,6 +134,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         onSetFilter={(f) => {
           onFilterUpdate(f);
         }}
+        persistState={persistState}
       />
     </div>
   ));

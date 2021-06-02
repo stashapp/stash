@@ -35,6 +35,7 @@ import { ListFilter } from "src/components/List/ListFilter";
 import { FilterTags } from "src/components/List/FilterTags";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import {
+  useFindDefaultFilter,
   useFindScenes,
   useFindSceneMarkers,
   useFindImages,
@@ -98,8 +99,11 @@ export interface IListHookOperation<T> {
 }
 
 export enum PersistanceLevel {
+  // do not load default query or persist display mode
   NONE,
+  // load default query, don't load or persist display mode
   ALL,
+  // load and persist display mode only
   VIEW,
 }
 
@@ -182,6 +186,7 @@ const RenderList = <
   renderDeleteDialog,
   updateQueryParams,
   filterDialog,
+  persistState,
 }: IListHookOptions<QueryResult, QueryData> &
   IQuery<QueryResult, QueryData> &
   IRenderListProps) => {
@@ -482,6 +487,7 @@ const RenderList = <
           filterOptions={filterOptions}
           openFilterDialog={() => setNewCriterion(true)}
           filterDialogOpen={newCriterion ?? editingCriterion}
+          persistState={persistState}
         />
         <ListOperationButtons
           onSelectAll={selectable ? onSelectAll : undefined}
@@ -566,8 +572,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   const updateInterfaceConfig = useCallback(
     (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
-      setInterfaceState((prevState) => {
-        if (level === PersistanceLevel.VIEW) {
+      if (level === PersistanceLevel.VIEW) {
+        setInterfaceState((prevState) => {
           return {
             [persistanceKey]: {
               ...prevState[persistanceKey],
@@ -577,85 +583,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
               }),
             },
           };
-        }
-        return {
-          [persistanceKey]: {
-            filter: updatedFilter.makeQueryParameters(),
-            itemsPerPage: updatedFilter.itemsPerPage,
-            currentPage: updatedFilter.currentPage,
-          },
-        };
-      });
+        });
+      }
     },
     [persistanceKey, setInterfaceState]
   );
 
-  useEffect(() => {
-    if (
-      interfaceState.loading ||
-      // Only update query params on page the hook was mounted on
-      history.location.pathname !== originalPathName.current
-    )
-      return;
-
-    if (!forageInitialised) setForageInitialised(true);
-
-    if (!options.persistState) return;
-
-    const storedQuery = interfaceState.data?.[persistanceKey];
-    if (!storedQuery) return;
-
-    const queryFilter = queryString.parse(history.location.search);
-    const storedFilter = queryString.parse(storedQuery.filter);
-
-    const activeFilter =
-      options.persistState === PersistanceLevel.ALL
-        ? storedFilter
-        : { disp: storedFilter.disp };
-    const query = history.location.search
-      ? {
-          sortby: activeFilter.sortby,
-          sortdir: activeFilter.sortdir,
-          disp: activeFilter.disp,
-          perPage: activeFilter.perPage,
-          ...queryFilter,
-        }
-      : activeFilter;
-
-    const newFilter = new ListFilterModel(
-      options.filterMode,
-      query,
-      defaultSort,
-      defaultDisplayMode
-    );
-
-    // Compare constructed filter with current filter.
-    // If different it's the result of navigation, and we update the filter.
-    const newLocation = { ...history.location };
-    newLocation.search = newFilter.makeQueryParameters();
-    if (newLocation.search !== filter.makeQueryParameters()) {
-      setFilter(newFilter);
-      updateInterfaceConfig(newFilter, options.persistState);
-    }
-    // If constructed search is different from current, update it as well
-    if (newLocation.search !== location.search) {
-      newLocation.search = newFilter.makeQueryParameters();
-      history.replace(newLocation);
-    }
-  }, [
-    defaultSort,
-    defaultDisplayMode,
-    filter,
-    interfaceState.data,
-    interfaceState.loading,
-    history,
-    location.search,
-    options.filterMode,
-    persistanceKey,
-    forageInitialised,
-    updateInterfaceConfig,
-    options.persistState,
-  ]);
+  const {
+    data: defaultFilter,
+    loading: defaultFilterLoading,
+  } = useFindDefaultFilter(options.filterMode);
 
   const updateQueryParams = useCallback(
     (listFilter: ListFilterModel) => {
@@ -669,6 +606,67 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     },
     [setFilter, history, location, options.persistState, updateInterfaceConfig]
   );
+
+  useEffect(() => {
+    if (
+      // defer processing this until forage is initialised and
+      // default filter is loaded
+      interfaceState.loading ||
+      defaultFilterLoading ||
+      // Only update query params on page the hook was mounted on
+      history.location.pathname !== originalPathName.current
+    )
+      return;
+
+    if (!forageInitialised) setForageInitialised(true);
+
+    if (!options.persistState) return;
+
+    const newFilter = filter.clone();
+    let update = false;
+
+    // if default query is set and no search params are set, then
+    // load the default query
+    if (!location.search && defaultFilter?.findDefaultFilter) {
+      newFilter.currentPage = 1;
+      newFilter.configureFromQueryParameters(
+        JSON.parse(defaultFilter.findDefaultFilter.filter)
+      );
+      update = true;
+    }
+
+    // set the display type if persisted
+    const storedQuery = interfaceState.data?.[persistanceKey];
+
+    if (options.persistState === PersistanceLevel.VIEW && storedQuery) {
+      const storedFilter = queryString.parse(storedQuery.filter);
+
+      if (storedFilter.disp !== undefined) {
+        const displayMode = Number.parseInt(storedFilter.disp as string, 10);
+        if (displayMode !== newFilter.displayMode) {
+          newFilter.displayMode = displayMode;
+          update = true;
+        }
+      }
+    }
+
+    if (update) {
+      updateQueryParams(newFilter);
+    }
+  }, [
+    defaultSort,
+    defaultDisplayMode,
+    filter,
+    interfaceState,
+    history,
+    location.search,
+    updateQueryParams,
+    defaultFilter,
+    defaultFilterLoading,
+    persistanceKey,
+    forageInitialised,
+    options.persistState,
+  ]);
 
   const onChangePage = useCallback(
     (page: number) => {
