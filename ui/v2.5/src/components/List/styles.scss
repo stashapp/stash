@@ -51,6 +51,8 @@ input[type="range"].zoom-slider {
 .saved-filter-list {
   list-style: none;
   margin-bottom: 0;
+  max-height: 230px;
+  overflow-y: auto;
   padding-left: 0;
 
   .dropdown-item-container {
