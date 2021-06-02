@@ -180,11 +180,11 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         );
       }
       if (criterion instanceof IHierarchicalLabeledIdCriterion) {
-        if (criterion.criterionOption.value !== "studios") return;
+        if (criterion.criterionOption.type !== "studios") return;
 
         return (
           <FilterSelect
-            type={criterion.criterionOption.value}
+            type={criterion.criterionOption.type}
             isMulti
             onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);

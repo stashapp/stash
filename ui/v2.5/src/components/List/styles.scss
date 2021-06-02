@@ -29,3 +29,29 @@ input[type="range"].zoom-slider {
   border: 0;
   width: 50%;
 }
+
+.saved-filter-list-menu {
+  width: 300px;
+
+  .set-as-default-button {
+    float: right;
+  }
+}
+
+.saved-filter-list {
+  list-style: none;
+  margin-bottom: 0;
+  padding-left: 0;
+
+  .dropdown-item {
+    padding-right: 0.25rem;
+
+    .btn-group {
+      margin-left: auto;
+    }
+
+    .delete-button {
+      color: $danger;
+    }
+  }
+}

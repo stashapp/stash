@@ -1,5 +1,5 @@
 import _, { debounce } from "lodash";
-import React, { useEffect } from "react";
+import React, { HTMLAttributes, useEffect } from "react";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -18,6 +18,8 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { useIntl } from "react-intl";
+import { FilterMode } from "src/models/list-filter/types";
+import { SavedFilterList } from "./SavedFilterList";
 
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
@@ -120,6 +122,15 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       ));
   }
 
+  const SavedFilterDropdown = React.forwardRef<
+    HTMLDivElement,
+    HTMLAttributes<HTMLDivElement>
+  >(({ style, className }, ref) => (
+    <div ref={ref} style={style} className={className}>
+      <SavedFilterList filterMode={FilterMode.Scenes} onSetFilter={() => {}} />
+    </div>
+  ));
+
   function render() {
     const currentSortBy = filterOptions.sortByOptions.find(
       (o) => o.value === filter.sortBy
@@ -130,18 +141,20 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         <div className="d-flex">
           <InputGroup className="mr-2 flex-grow-1">
             <InputGroup.Prepend>
-              <OverlayTrigger
-                placement="top"
-                overlay={<Tooltip id="filter-tooltip">Saved filters</Tooltip>}
-              >
-                <Button
-                  variant="secondary"
-                  onClick={() => openFilterDialog()}
-                  active={filterDialogOpen}
+              <Dropdown>
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<Tooltip id="filter-tooltip">Saved filters</Tooltip>}
                 >
-                  <Icon icon="bookmark" />
-                </Button>
-              </OverlayTrigger>
+                  <Dropdown.Toggle variant="secondary">
+                    <Icon icon="bookmark" />
+                  </Dropdown.Toggle>
+                </OverlayTrigger>
+                <Dropdown.Menu
+                  as={SavedFilterDropdown}
+                  className="saved-filter-list-menu"
+                />
+              </Dropdown>
             </InputGroup.Prepend>
             <FormControl
               ref={queryRef}
@@ -168,7 +181,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </InputGroup>
 
           <Dropdown as={ButtonGroup} className="mr-2">
-            <Dropdown.Toggle split variant="secondary" id="more-menu">
+            <Dropdown.Toggle variant="secondary">
               {currentSortBy
                 ? intl.formatMessage({ id: currentSortBy.messageID })
                 : ""}
