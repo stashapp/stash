@@ -148,7 +148,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const SavedFilterItem: React.FC<ISavedFilterItem> = ({ item }) => {
     return (
       <div className="dropdown-item-container">
-        <Dropdown.Item onClick={() => filterClicked(item)}>
+        <Dropdown.Item onClick={() => filterClicked(item)} title={item.name}>
           <span>{item.name}</span>
         </Dropdown.Item>
         <ButtonGroup>
