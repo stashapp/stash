@@ -1,5 +1,9 @@
 """The query root for this schema"""
 type Query {
+  # Filters
+  findSavedFilters(mode: FilterMode!): [SavedFilter!]!
+  findDefaultFilter(mode: FilterMode!): SavedFilter
+
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
   findSceneByHash(input: SceneHashInput!): Scene
@@ -197,6 +201,11 @@ type Mutation {
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
+
+  # Saved filters
+  saveFilter(input: SaveFilterInput!): SavedFilter!
+  destroySavedFilter(input: DestroyFilterInput!): Boolean!
+  setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!

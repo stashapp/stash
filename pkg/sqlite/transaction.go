@@ -125,6 +125,11 @@ func (t *transaction) Tag() models.TagReaderWriter {
 	return NewTagReaderWriter(t.tx)
 }
 
+func (t *transaction) SavedFilter() models.SavedFilterReaderWriter {
+	t.ensureTx()
+	return NewSavedFilterReaderWriter(t.tx)
+}
+
 type ReadTransaction struct{}
 
 func (t *ReadTransaction) Begin() error {
@@ -181,6 +186,10 @@ func (t *ReadTransaction) Studio() models.StudioReader {
 
 func (t *ReadTransaction) Tag() models.TagReader {
 	return NewTagReaderWriter(database.DB)
+}
+
+func (t *ReadTransaction) SavedFilter() models.SavedFilterReader {
+	return NewSavedFilterReaderWriter(database.DB)
 }
 
 type TransactionManager struct {

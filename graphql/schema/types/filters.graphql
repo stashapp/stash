@@ -317,3 +317,41 @@ input HierarchicalMultiCriterionInput {
   modifier: CriterionModifier!
   depth: Int!
 }
+
+enum FilterMode {
+  SCENES,
+  PERFORMERS,
+  STUDIOS,
+  GALLERIES,
+  SCENE_MARKERS,
+  MOVIES,
+  TAGS,
+  IMAGES,
+}
+
+type SavedFilter {
+  id: ID!
+  mode: FilterMode!
+  name: String!
+  """JSON-encoded filter string"""
+  filter: String!
+}
+
+input SaveFilterInput {
+  """provide ID to overwrite existing filter"""
+  id: ID
+  mode: FilterMode!
+  name: String!
+  """JSON-encoded filter string"""
+  filter: String!
+}
+
+input DestroyFilterInput {
+  id: ID!
+}
+
+input SetDefaultFilterInput {
+  mode: FilterMode!
+  """JSON-encoded filter string - null to clear"""
+  filter: String
+}
