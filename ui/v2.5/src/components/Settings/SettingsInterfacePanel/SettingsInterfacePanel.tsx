@@ -106,10 +106,10 @@ export const SettingsInterfacePanel: React.FC = () => {
             setLanguage(e.currentTarget.value)
           }
         >
-          <option value="zh-TW">Chinese (Taiwan) (国语)</option>
+          <option value="zh-TW">Chinese (Taiwan)</option>
           <option value="en-GB">English (United Kingdom)</option>
           <option value="en-US">English (United States)</option>
-          <option value="es-ES">Spanish (Spain) (Español)</option>
+          <option value="es-ES">Spanish (Spain)</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>
