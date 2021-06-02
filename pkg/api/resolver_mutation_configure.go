@@ -192,6 +192,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
 	}
+	manager.GetInstance().PluginCache.ReloadPlugins()
 
 	return makeConfigGeneralResult(), nil
 }

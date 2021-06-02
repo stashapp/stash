@@ -79,6 +79,7 @@ func Initialize() *singleton {
 			TXNManager: instance.TxnManager,
 		}
 		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+		instance.PluginCache = initPluginCache()
 
 		if !cfg.IsNewSystem() {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
