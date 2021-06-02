@@ -58,7 +58,9 @@ input[type="range"].zoom-slider {
 
     .dropdown-item {
       align-items: center;
+      overflow-x: hidden;
       padding-right: 0.25rem;
+      text-overflow: ellipsis;
     }
 
     .btn-group {

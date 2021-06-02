@@ -75,7 +75,7 @@ export class ListFilterModel {
       params.sortdir === "desc"
         ? SortDirectionEnum.Desc
         : SortDirectionEnum.Asc;
-    if (params.disp) {
+    if (params.disp !== undefined) {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
@@ -158,6 +158,24 @@ export class ListFilterModel {
         this.currentPage !== DEFAULT_PARAMS.currentPage
           ? this.currentPage
           : undefined,
+      c: encodedCriteria,
+    };
+
+    return result;
+  }
+
+  public getSavedQueryParameters() {
+    const encodedCriteria: string[] = this.criteria.map((criterion) =>
+      criterion.toJSON()
+    );
+
+    const result = {
+      perPage: this.itemsPerPage,
+      sortby: this.getSortBy() ?? undefined,
+      sortdir:
+        this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+      disp: this.displayMode,
+      q: this.searchTerm,
       c: encodedCriteria,
     };
 

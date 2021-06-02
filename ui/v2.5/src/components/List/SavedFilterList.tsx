@@ -67,7 +67,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             id,
             mode: filter.mode,
             name,
-            filter: JSON.stringify(filterCopy.getQueryParameters()),
+            filter: JSON.stringify(filterCopy.getSavedQueryParameters()),
           },
         },
       });
@@ -107,6 +107,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 
   function filterClicked(f: SavedFilterDataFragment) {
     const newFilter = filter.clone();
+    newFilter.currentPage = 1;
     newFilter.configureFromQueryParameters(JSON.parse(f.filter));
 
     onSetFilter(newFilter);
