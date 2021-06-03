@@ -612,7 +612,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 <span className="fa-icon">
                   <Icon icon="sync-alt" />
                 </span>
-                <span><FormattedMessage id="actions.reload_scrapers" /></span>
+                <span>
+                  <FormattedMessage id="actions.reload_scrapers" />
+                </span>
               </Button>
             </div>
           </>
@@ -749,7 +751,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: intl.formatMessage({ id: 'actions.delete' }), variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
         <p>Are you sure you want to delete {performer.name}?</p>
@@ -761,7 +767,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Form.Group controlId="tags" as={Row}>
         <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="tags" defaultMessage="Tags" />
+          <FormattedMessage id="tags" defaultMessage="Tags" />
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <TagSelect

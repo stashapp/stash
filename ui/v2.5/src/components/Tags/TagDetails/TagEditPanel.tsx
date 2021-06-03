@@ -103,7 +103,11 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   // TODO: CSS class
   return (
     <div>
-      {isNew && <h2><FormattedMessage id='actions.add_tag' /></h2>}
+      {isNew && (
+        <h2>
+          <FormattedMessage id="actions.add_tag" />
+        </h2>
+      )}
 
       <Prompt
         when={formik.dirty}
@@ -118,7 +122,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       <Form noValidate onSubmit={formik.handleSubmit} id="tag-edit">
         <Form.Group controlId="name" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id='name' />
+            <FormattedMessage id="name" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -135,7 +139,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
         <Form.Group controlId="aliases" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id='aliases' />
+            <FormattedMessage id="aliases" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <StringListInput

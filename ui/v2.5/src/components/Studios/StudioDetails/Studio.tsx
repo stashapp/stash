@@ -231,7 +231,11 @@ export const Studio: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: intl.formatMessage({ id: 'actions.delete' }), variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
         <p>Are you sure you want to delete {name ?? "studio"}?</p>
@@ -413,16 +417,22 @@ export const Studio: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title={intl.formatMessage({ id: 'scenes' })}>
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
               <StudioScenesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="galleries" title={intl.formatMessage({ id: 'galleries' })}>
+            <Tab
+              eventKey="galleries"
+              title={intl.formatMessage({ id: "galleries" })}
+            >
               <StudioGalleriesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="images" title={intl.formatMessage({ id: 'images' })}>
+            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
               <StudioImagesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="performers" title={intl.formatMessage({ id: 'performers' })}>
+            <Tab
+              eventKey="performers"
+              title={intl.formatMessage({ id: "performers" })}
+            >
               <StudioPerformersPanel studio={studio} />
             </Tab>
             <Tab eventKey="childstudios" title="Child Studios">

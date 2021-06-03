@@ -64,7 +64,11 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       show
       icon="trash-alt"
       header={header}
-      accept={{ variant: "danger", onClick: onDelete, text: intl.formatMessage({ id: 'actions.delete' }) }}
+      accept={{
+        variant: "danger",
+        onClick: onDelete,
+        text: intl.formatMessage({ id: "actions.delete" }),
+      }}
       cancel={{
         onClick: () => props.onClose(false),
         text: "Cancel",

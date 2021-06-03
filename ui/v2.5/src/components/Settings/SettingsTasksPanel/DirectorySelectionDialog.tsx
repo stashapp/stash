@@ -59,7 +59,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
                 className="ml-auto"
                 size="sm"
                 variant="danger"
-                title={intl.formatMessage({ id: 'actions.delete' })}
+                title={intl.formatMessage({ id: "actions.delete" })}
                 onClick={() => removePath(p)}
               >
                 <Icon icon="minus" />

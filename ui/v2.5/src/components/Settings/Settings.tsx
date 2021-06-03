@@ -31,31 +31,47 @@ export const Settings: React.FC = () => {
           <Col sm={3} md={2}>
             <Nav variant="pills" className="flex-column">
               <Nav.Item>
-                <Nav.Link eventKey="configuration"><FormattedMessage id="config.categories.configuration" /></Nav.Link>
+                <Nav.Link eventKey="configuration">
+                  <FormattedMessage id="config.categories.configuration" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="interface"><FormattedMessage id="config.categories.interface" /></Nav.Link>
+                <Nav.Link eventKey="interface">
+                  <FormattedMessage id="config.categories.interface" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="tasks"><FormattedMessage id="config.categories.tasks" /></Nav.Link>
+                <Nav.Link eventKey="tasks">
+                  <FormattedMessage id="config.categories.tasks" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="dlna">DLNA</Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="tools"><FormattedMessage id="config.categories.tools" /></Nav.Link>
+                <Nav.Link eventKey="tools">
+                  <FormattedMessage id="config.categories.tools" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="scrapers"><FormattedMessage id="config.categories.scrapers" /></Nav.Link>
+                <Nav.Link eventKey="scrapers">
+                  <FormattedMessage id="config.categories.scrapers" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="plugins"><FormattedMessage id="config.categories.plugins" /></Nav.Link>
+                <Nav.Link eventKey="plugins">
+                  <FormattedMessage id="config.categories.plugins" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="logs"><FormattedMessage id="config.categories.logs" /></Nav.Link>
+                <Nav.Link eventKey="logs">
+                  <FormattedMessage id="config.categories.logs" />
+                </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="about"><FormattedMessage id="config.categories.about" /></Nav.Link>
+                <Nav.Link eventKey="about">
+                  <FormattedMessage id="config.categories.about" />
+                </Nav.Link>
               </Nav.Item>
               <hr className="d-sm-none" />
             </Nav>

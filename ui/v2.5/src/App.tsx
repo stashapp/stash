@@ -59,8 +59,12 @@ export const App: React.FC = () => {
   const messageLanguage = languageMessageString(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
-  // eslint-disable-next-line
-  const mergedMessages = merge((locales as any)[defaultMessageLanguage], (locales as any)[messageLanguage]);
+  const mergedMessages = merge(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (locales as any)[defaultMessageLanguage],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (locales as any)[messageLanguage]
+  );
   const messages = flattenMessages(mergedMessages);
 
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);

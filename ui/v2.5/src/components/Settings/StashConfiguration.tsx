@@ -49,7 +49,7 @@ const Stash: React.FC<IStashProps> = ({ index, stash, onSave, onDelete }) => {
         <Button
           size="sm"
           variant="danger"
-          title={intl.formatMessage({ id: 'actions.delete' })}
+          title={intl.formatMessage({ id: "actions.delete" })}
           onClick={() => onDelete()}
         >
           <Icon icon="minus" />
@@ -105,7 +105,9 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
       <Form.Group>
         {stashes.length > 0 && (
           <Row>
-            <h6 className="col-4"><FormattedMessage id="path" /></h6>
+            <h6 className="col-4">
+              <FormattedMessage id="path" />
+            </h6>
             <h6 className="col-3">Exclude Video</h6>
             <h6 className="col-3">Exclude Image</h6>
           </Row>

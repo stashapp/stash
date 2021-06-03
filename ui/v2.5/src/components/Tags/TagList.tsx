@@ -213,7 +213,11 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
           onHide={() => {}}
           show={!!deletingTag}
           icon="trash-alt"
-          accept={{ onClick: onDelete, variant: "danger", text: intl.formatMessage({ id: 'actions.delete' }) }}
+          accept={{
+            onClick: onDelete,
+            variant: "danger",
+            text: intl.formatMessage({ id: "actions.delete" }),
+          }}
           cancel={{ onClick: () => setDeletingTag(null) }}
         >
           <span>

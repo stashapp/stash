@@ -128,19 +128,19 @@ export const Performer: React.FC = () => {
       id="performer-details"
       unmountOnExit
     >
-      <Tab eventKey="details" title={intl.formatMessage({ id: 'details' })}>
+      <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
         <PerformerDetailsPanel performer={performer} />
       </Tab>
-      <Tab eventKey="scenes" title={intl.formatMessage({ id: 'scenes' })}>
+      <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
         <PerformerScenesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="galleries" title={intl.formatMessage({ id: 'galleries' })}>
+      <Tab eventKey="galleries" title={intl.formatMessage({ id: "galleries" })}>
         <PerformerGalleriesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="images" title={intl.formatMessage({ id: 'images' })}>
+      <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
         <PerformerImagesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="edit" title={intl.formatMessage({ id: 'edit' })}>
+      <Tab eventKey="edit" title={intl.formatMessage({ id: "edit" })}>
         <PerformerEditPanel
           performer={performer}
           isVisible={activeTabKey === "edit"}
@@ -150,7 +150,10 @@ export const Performer: React.FC = () => {
           onImageEncoding={onImageEncoding}
         />
       </Tab>
-      <Tab eventKey="operations" title={intl.formatMessage({ id: 'operations' })}>
+      <Tab
+        eventKey="operations"
+        title={intl.formatMessage({ id: "operations" })}
+      >
         <PerformerOperationsPanel performer={performer} />
       </Tab>
     </Tabs>
@@ -165,7 +168,10 @@ export const Performer: React.FC = () => {
           <span className="age">
             {TextUtils.age(performer.birthdate, performer.death_date)}
           </span>
-          <span className="age-tail"> <FormattedMessage id="years_old" /></span>
+          <span className="age-tail">
+            {" "}
+            <FormattedMessage id="years_old" />
+          </span>
         </div>
       );
     }
@@ -175,7 +181,9 @@ export const Performer: React.FC = () => {
     if (performer?.aliases) {
       return (
         <div>
-          <span className="alias-head"><FormattedMessage id="also_known_as" /> </span>
+          <span className="alias-head">
+            <FormattedMessage id="also_known_as" />{" "}
+          </span>
           <span className="alias">{performer.aliases}</span>
         </div>
       );

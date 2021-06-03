@@ -122,7 +122,7 @@ export const ImageInput: React.FC<IImageInput> = ({
         rootClose
       >
         <Button variant="secondary" className="mr-2">
-          {text ?? intl.formatMessage({ id: 'actions.set_image' })}
+          {text ?? intl.formatMessage({ id: "actions.set_image" })}
         </Button>
       </OverlayTrigger>
     </>

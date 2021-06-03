@@ -75,7 +75,9 @@ export const Pagination: React.FC<IPaginationProps> = ({
         disabled={currentPage === 1}
         onClick={() => onChangePage(1)}
       >
-        <span className="d-none d-sm-inline"><FormattedMessage id="pagination.first" /></span>
+        <span className="d-none d-sm-inline">
+          <FormattedMessage id="pagination.first" />
+        </span>
         <span className="d-inline d-sm-none">&#x300a;</span>
       </Button>
       <Button
@@ -100,7 +102,9 @@ export const Pagination: React.FC<IPaginationProps> = ({
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(totalPages)}
       >
-        <span className="d-none d-sm-inline"><FormattedMessage id="pagination.last" /></span>
+        <span className="d-none d-sm-inline">
+          <FormattedMessage id="pagination.last" />
+        </span>
         <span className="d-inline d-sm-none">&#x300b;</span>
       </Button>
     </ButtonGroup>

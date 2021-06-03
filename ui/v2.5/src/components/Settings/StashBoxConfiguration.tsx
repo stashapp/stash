@@ -59,7 +59,7 @@ const Instance: React.FC<IInstanceProps> = ({
           <Button
             className=""
             variant="danger"
-            title={intl.formatMessage({ id: 'actions.delete' })}
+            title={intl.formatMessage({ id: "actions.delete" })}
             onClick={() => onDelete(instance.index)}
           >
             <Icon icon="minus" />

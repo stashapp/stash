@@ -97,9 +97,13 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   return (
     <>
-      <h4><FormattedMessage id="config.ui.title" /></h4>
+      <h4>
+        <FormattedMessage id="config.ui.title" />
+      </h4>
       <Form.Group controlId="language">
-        <h5><FormattedMessage id="config.ui.language.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.language.heading" />
+        </h5>
         <Form.Control
           as="select"
           className="col-4 input-control"
@@ -114,7 +118,9 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Control>
       </Form.Group>
       <Form.Group>
-        <h5><FormattedMessage id="config.ui.menu_items.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.menu_items.heading" />
+        </h5>
         <CheckboxGroup
           groupId="menu-items"
           items={allMenuItems}
@@ -126,21 +132,29 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
       <Form.Group>
-        <h5><FormattedMessage id="config.ui.scene_wall.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.scene_wall.heading" />
+        </h5>
         <Form.Check
           id="wall-show-title"
           checked={wallShowTitle}
-          label={intl.formatMessage({id: 'config.ui.scene_wall.options.display_title'})}
+          label={intl.formatMessage({
+            id: "config.ui.scene_wall.options.display_title",
+          })}
           onChange={() => setWallShowTitle(!wallShowTitle)}
         />
         <Form.Check
           id="wall-sound-enabled"
           checked={soundOnPreview}
-          label={intl.formatMessage({id: 'config.ui.scene_wall.options.toggle_sound'})}
+          label={intl.formatMessage({
+            id: "config.ui.scene_wall.options.toggle_sound",
+          })}
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
         <Form.Label htmlFor="wall-preview">
-          <h6><FormattedMessage id="config.ui.preview_type.heading" /></h6>
+          <h6>
+            <FormattedMessage id="config.ui.preview_type.heading" />
+          </h6>
         </Form.Label>
         <Form.Control
           as="select"
@@ -151,9 +165,19 @@ export const SettingsInterfacePanel: React.FC = () => {
             setWallPlayback(e.currentTarget.value)
           }
         >
-          <option value="video">{intl.formatMessage({id: 'config.ui.preview_type.options.video'})}</option>
-          <option value="animation">{intl.formatMessage({id: 'config.ui.preview_type.options.animated'})}</option>
-          <option value="image">{intl.formatMessage({id: 'config.ui.preview_type.options.static'})}</option>
+          <option value="video">
+            {intl.formatMessage({ id: "config.ui.preview_type.options.video" })}
+          </option>
+          <option value="animation">
+            {intl.formatMessage({
+              id: "config.ui.preview_type.options.animated",
+            })}
+          </option>
+          <option value="image">
+            {intl.formatMessage({
+              id: "config.ui.preview_type.options.static",
+            })}
+          </option>
         </Form.Control>
         <Form.Text className="text-muted">
           <FormattedMessage id="config.ui.preview_type.description" />
@@ -161,11 +185,15 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h5><FormattedMessage id="config.ui.scene_list.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.scene_list.heading" />
+        </h5>
         <Form.Check
           id="show-text-studios"
           checked={showStudioAsText}
-          label={intl.formatMessage({id:"config.ui.scene_list.options.show_studio_as_text"})}
+          label={intl.formatMessage({
+            id: "config.ui.scene_list.options.show_studio_as_text",
+          })}
           onChange={() => {
             setShowStudioAsText(!showStudioAsText);
           }}
@@ -173,11 +201,15 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h5><FormattedMessage id="config.ui.scene_player.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.scene_player.heading" />
+        </h5>
         <Form.Group id="auto-start-video">
           <Form.Check
             checked={autostartVideo}
-            label={intl.formatMessage({id:"config.ui.scene_player.options.auto_start_video"})}
+            label={intl.formatMessage({
+              id: "config.ui.scene_player.options.auto_start_video",
+            })}
             onChange={() => {
               setAutostartVideo(!autostartVideo);
             }}
@@ -185,7 +217,9 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="max-loop-duration">
-          <h6><FormattedMessage id="config.ui.max_loop_duration.heading" /></h6>
+          <h6>
+            <FormattedMessage id="config.ui.max_loop_duration.heading" />
+          </h6>
           <DurationInput
             className="row col col-4"
             numericValue={maximumLoopDuration}
@@ -198,7 +232,9 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group id="slideshow-delay">
-        <h5><FormattedMessage id="config.ui.slideshow_delay.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.slideshow_delay.heading" />
+        </h5>
         <Form.Control
           className="col col-sm-6 text-input"
           type="number"
@@ -215,11 +251,15 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h5><FormattedMessage id="config.ui.custom_css.heading" /></h5>
+        <h5>
+          <FormattedMessage id="config.ui.custom_css.heading" />
+        </h5>
         <Form.Check
           id="custom-css"
           checked={cssEnabled}
-          label={intl.formatMessage({id:"config.ui.custom_css.option_label"})}
+          label={intl.formatMessage({
+            id: "config.ui.custom_css.option_label",
+          })}
           onChange={() => {
             setCSSEnabled(!cssEnabled);
           }}

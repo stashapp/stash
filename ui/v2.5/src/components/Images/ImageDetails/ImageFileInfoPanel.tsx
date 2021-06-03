@@ -26,7 +26,9 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
     } = props;
     return (
       <div className="row">
-        <span className="col-4"><FormattedMessage id="path"/></span>
+        <span className="col-4">
+          <FormattedMessage id="path" />
+        </span>
         <a href={`file://${path}`} className="col-8">
           <TruncatedText text={`file://${props.image.path}`} />
         </a>{" "}

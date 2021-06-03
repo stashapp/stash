@@ -26,5 +26,9 @@ export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
     }
   }
 
-  return <Button onClick={onAutoTag}><FormattedMessage id="actions.auto_tag" /></Button>;
+  return (
+    <Button onClick={onAutoTag}>
+      <FormattedMessage id="actions.auto_tag" />
+    </Button>
+  );
 };

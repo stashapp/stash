@@ -361,7 +361,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   return (
     <>
-      <h4><FormattedMessage id="library" /></h4>
+      <h4>
+        <FormattedMessage id="library" />
+      </h4>
       <Form.Group>
         <Form.Group id="stashes">
           <h6>Stashes</h6>
@@ -375,7 +377,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="database-path">
-          <h6><FormattedMessage id="config.general.db_path_head" /></h6>
+          <h6>
+            <FormattedMessage id="config.general.db_path_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={databasePath}
@@ -389,7 +393,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="generated-path">
-          <h6><FormattedMessage id="config.general.generated_path_head" /></h6>
+          <h6>
+            <FormattedMessage id="config.general.generated_path_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={generatedPath}
@@ -404,7 +410,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="cache-path">
-          <h6><FormattedMessage id="config.general.cache_path_head" /></h6>
+          <h6>
+            <FormattedMessage id="config.general.cache_path_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={cachePath}
@@ -418,7 +426,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="video-extensions">
-          <h6><FormattedMessage id="config.general.video_ext_head" /></h6>
+          <h6>
+            <FormattedMessage id="config.general.video_ext_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={videoExtensions}
@@ -433,7 +443,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="image-extensions">
-          <h6><FormattedMessage id="config.general.image_ext_head" /></h6>
+          <h6>
+            <FormattedMessage id="config.general.image_ext_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={imageExtensions}

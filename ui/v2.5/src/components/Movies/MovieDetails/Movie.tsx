@@ -143,7 +143,11 @@ export const Movie: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: intl.formatMessage({ id: 'actions.delete' }), variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
         <p>Are you sure you want to delete {movie?.name ?? "movie"}?</p>

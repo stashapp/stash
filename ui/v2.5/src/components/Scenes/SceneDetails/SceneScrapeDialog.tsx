@@ -526,51 +526,51 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     return (
       <>
         <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: 'title' })}
+          title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: 'url' })}
+          title={intl.formatMessage({ id: "url" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: 'date' })}
+          title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         {renderScrapedStudioRow(
-          intl.formatMessage({ id: 'studio' }),
+          intl.formatMessage({ id: "studio" }),
           studio,
           (value) => setStudio(value),
           newStudio,
           createNewStudio
         )}
         {renderScrapedPerformersRow(
-          intl.formatMessage({ id: 'performers' }),
+          intl.formatMessage({ id: "performers" }),
           performers,
           (value) => setPerformers(value),
           newPerformers,
           createNewPerformer
         )}
         {renderScrapedMoviesRow(
-          intl.formatMessage({ id: 'movies' }),
+          intl.formatMessage({ id: "movies" }),
           movies,
           (value) => setMovies(value),
           newMovies,
           createNewMovie
         )}
         {renderScrapedTagsRow(
-          intl.formatMessage({ id: 'tags' }),
+          intl.formatMessage({ id: "tags" }),
           tags,
           (value) => setTags(value),
           newTags,
           createNewTag
         )}
         <ScrapedTextAreaRow
-          title={intl.formatMessage({ id: 'details' })}
+          title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />

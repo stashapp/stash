@@ -24,7 +24,9 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
 
     return (
       <div className="row">
-        <span className="col-4"><FormattedMessage id="path"/></span>
+        <span className="col-4">
+          <FormattedMessage id="path" />
+        </span>
         <a href={filePath} className="col-8">
           <TruncatedText text={filePath} />
         </a>

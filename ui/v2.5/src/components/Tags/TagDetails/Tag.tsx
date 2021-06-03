@@ -172,7 +172,11 @@ export const Tag: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: intl.formatMessage({ id: 'actions.delete' }), variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
         <p>Are you sure you want to delete {tag?.name ?? "tag"}?</p>
@@ -250,19 +254,28 @@ export const Tag: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title={intl.formatMessage({ id: 'scenes' })}>
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="images" title={intl.formatMessage({ id: 'images' })}>
+            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
               <TagImagesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="galleries" title={intl.formatMessage({ id: 'galleries' })}>
+            <Tab
+              eventKey="galleries"
+              title={intl.formatMessage({ id: "galleries" })}
+            >
               <TagGalleriesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="markers" title={intl.formatMessage({ id: 'markers' })}>
+            <Tab
+              eventKey="markers"
+              title={intl.formatMessage({ id: "markers" })}
+            >
               <TagMarkersPanel tag={tag} />
             </Tab>
-            <Tab eventKey="performers" title={intl.formatMessage({ id: 'performers' })}>
+            <Tab
+              eventKey="performers"
+              title={intl.formatMessage({ id: "performers" })}
+            >
               <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>

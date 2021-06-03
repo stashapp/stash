@@ -33,7 +33,9 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         className="edit"
         onClick={() => props.onToggleEdit()}
       >
-        {props.isEditing ? intl.formatMessage({ id: 'actions.cancel' }) : intl.formatMessage({ id: 'actions.edit' })}
+        {props.isEditing
+          ? intl.formatMessage({ id: "actions.cancel" })
+          : intl.formatMessage({ id: "actions.edit" })}
       </Button>
     );
   }
@@ -48,7 +50,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         disabled={props.saveDisabled}
         onClick={() => props.onSave()}
       >
-        <FormattedMessage id='actions.save' />
+        <FormattedMessage id="actions.save" />
       </Button>
     );
   }
@@ -61,7 +63,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         className="delete d-none d-sm-block"
         onClick={() => setIsDeleteAlertOpen(true)}
       >
-        <FormattedMessage id='actions.delete' />
+        <FormattedMessage id="actions.delete" />
       </Button>
     );
   }
@@ -107,13 +109,13 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={props.onDelete}>
-            <FormattedMessage id='actions.delete' />
+            <FormattedMessage id="actions.delete" />
           </Button>
           <Button
             variant="secondary"
             onClick={() => setIsDeleteAlertOpen(false)}
           >
-            <FormattedMessage id='actions.cancel' />
+            <FormattedMessage id="actions.cancel" />
           </Button>
         </Modal.Footer>
       </Modal>
