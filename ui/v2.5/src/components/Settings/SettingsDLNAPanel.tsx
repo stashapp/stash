@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Formik, useFormikContext } from "formik";
 import { Button, Form } from "react-bootstrap";
 import { Prompt } from "react-router";
+import { FormattedMessage } from "react-intl";
 import * as yup from "yup";
 import {
   useConfiguration,
@@ -181,14 +182,14 @@ export const SettingsDLNAPanel: React.FC = () => {
     if (data?.configuration.dlna.enabled) {
       return (
         <Button onClick={() => setEnableDisable(false)} className="mr-1">
-          Disable temporarily...
+          <FormattedMessage id="actions.temp_disable" />
         </Button>
       );
     }
 
     return (
       <Button onClick={() => setEnableDisable(true)} className="mr-1">
-        Enable temporarily...
+        <FormattedMessage id="actions.temp_enable" />
       </Button>
     );
   }
@@ -481,7 +482,7 @@ export const SettingsDLNAPanel: React.FC = () => {
         <hr />
 
         <Button variant="primary" type="submit" disabled={!dirty}>
-          Save
+          <FormattedMessage id="actions.save" />
         </Button>
       </Form>
     );
@@ -512,7 +513,9 @@ export const SettingsDLNAPanel: React.FC = () => {
           <h6>Recent IP addresses</h6>
           <Form.Group>{renderRecentIPs()}</Form.Group>
           <Form.Group>
-            <Button onClick={() => statusRefetch()}>Refresh</Button>
+            <Button onClick={() => statusRefetch()}>
+              <FormattedMessage id="actions.refresh" />
+            </Button>
           </Form.Group>
         </Form.Group>
       </Form.Group>

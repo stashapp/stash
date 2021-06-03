@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import { mutateReloadPlugins, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
@@ -58,7 +59,9 @@ export const SettingsPluginsPanel: React.FC = () => {
         <span className="fa-icon">
           <Icon icon="sync-alt" />
         </span>
-        <span>Reload plugins</span>
+        <span>
+          <FormattedMessage id="actions.reload_plugins" />
+        </span>
       </Button>
     </>
   );

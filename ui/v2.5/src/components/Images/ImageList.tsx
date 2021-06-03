@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { useIntl } from "react-intl";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -118,6 +119,7 @@ export const ImageList: React.FC<IImageList> = ({
   persistanceKey,
   extraOperations,
 }) => {
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -128,12 +130,12 @@ export const ImageList: React.FC<IImageList> = ({
       onClick: viewRandom,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ]);

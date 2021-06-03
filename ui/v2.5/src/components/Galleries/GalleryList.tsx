@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 import _ from "lodash";
 import { Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
@@ -28,6 +29,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   filterHook,
   persistState,
 }) => {
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -38,12 +40,12 @@ export const GalleryList: React.FC<IGalleryList> = ({
       onClick: viewRandom,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ];

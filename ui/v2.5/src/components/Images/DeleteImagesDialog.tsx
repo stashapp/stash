@@ -71,7 +71,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
       }}
       cancel={{
         onClick: () => props.onClose(false),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
       isRunning={isDeleting}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataImport,
@@ -25,6 +25,7 @@ type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
 
 export const SettingsTasksPanel: React.FC = () => {
+  const intl = useIntl();
   const Toast = useToast();
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
@@ -72,7 +73,11 @@ export const SettingsTasksPanel: React.FC = () => {
       <Modal
         show={isImportAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Import", variant: "danger", onClick: onImport }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.import" }),
+          variant: "danger",
+          onClick: onImport,
+        }}
         cancel={{ onClick: () => setIsImportAlertOpen(false) }}
       >
         <p>
@@ -355,14 +360,14 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onScan()}
         >
-          Scan
+          <FormattedMessage id="actions.scan" />
         </Button>
         <Button
           variant="secondary"
           type="submit"
           onClick={() => setIsScanDialogOpen(true)}
         >
-          Selective Scan
+          <FormattedMessage id="actions.selective_scan" />
         </Button>
         <Form.Text className="text-muted">
           Scan for new content and add it to the database.
@@ -407,7 +412,7 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => setIsAutoTagDialogOpen(true)}
         >
-          Selective Auto Tag
+          <FormattedMessage id="actions.selective_auto_tag" />
         </Button>
         <Form.Text className="text-muted">
           Auto-tag content based on filenames.
@@ -435,7 +440,7 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsCleanAlertOpen(true)}
         >
-          Clean
+          <FormattedMessage id="actions.clean" />
         </Button>
         <Form.Text className="text-muted">
           Check for missing files and remove them from the database. This is a
@@ -453,7 +458,7 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onExport()}
         >
-          Full Export
+          <FormattedMessage id="actions.full_export" />
         </Button>
         <Form.Text className="text-muted">
           Exports the database content into JSON format in the metadata
@@ -467,7 +472,7 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsImportAlertOpen(true)}
         >
-          Full Import
+          <FormattedMessage id="actions.full_import" />
         </Button>
         <Form.Text className="text-muted">
           Import from exported JSON in the metadata directory. Wipes the
@@ -481,7 +486,7 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsImportDialogOpen(true)}
         >
-          Import from file
+          <FormattedMessage id="actions.import_from_file" />
         </Button>
         <Form.Text className="text-muted">
           Incremental import from a supplied export zip file.
@@ -498,7 +503,7 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onBackup()}
         >
-          Backup
+          <FormattedMessage id="actions.backup" />
         </Button>
         <Form.Text className="text-muted">
           Performs a backup of the database to the same directory as the
@@ -514,7 +519,7 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onBackup(true)}
         >
-          Download Backup
+          <FormattedMessage id="actions.download_backup" />
         </Button>
         <Form.Text className="text-muted">
           Performs a backup of the database and downloads the resulting file.
@@ -533,7 +538,7 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => onMigrateHashNaming()}
         >
-          Rename generated files
+          <FormattedMessage id="actions.rename_gen_files" />
         </Button>
         <Form.Text className="text-muted">
           Used after changing the Generated file naming hash to rename existing

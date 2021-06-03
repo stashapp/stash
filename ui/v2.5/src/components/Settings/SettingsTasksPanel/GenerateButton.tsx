@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import { mutateMetadataGenerate } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
@@ -80,7 +81,7 @@ export const GenerateButton: React.FC = () => {
           type="submit"
           onClick={() => onGenerate()}
         >
-          Generate
+          <FormattedMessage id="actions.generate" />
         </Button>
         <Form.Text className="text-muted">
           Generate supporting image, sprite, video, vtt and other files.

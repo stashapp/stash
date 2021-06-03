@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import querystring from "query-string";
 
 import * as GQL from "src/core/generated-graphql";
@@ -494,7 +494,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                         variant="danger"
                         onClick={() => handleDeleteScene(scene)}
                       >
-                        Delete
+                        <FormattedMessage id="actions.delete" />
                       </Button>
                     </td>
                   </tr>

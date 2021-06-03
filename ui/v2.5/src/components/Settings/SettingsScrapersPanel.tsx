@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { Button } from "react-bootstrap";
 import {
   mutateReloadScrapers,
@@ -264,7 +265,9 @@ export const SettingsScrapersPanel: React.FC = () => {
           <span className="fa-icon">
             <Icon icon="sync-alt" />
           </span>
-          <span>Reload scrapers</span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
         </Button>
       </div>
 

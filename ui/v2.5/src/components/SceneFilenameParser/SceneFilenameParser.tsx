@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Button, Card, Form, Table } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import _ from "lodash";
 import {
   queryParseSceneFilenames,
@@ -365,7 +366,7 @@ export const SceneFilenameParser: React.FC = () => {
           onChangePage={(page) => onPageChanged(page)}
         />
         <Button variant="primary" onClick={onApply}>
-          Apply
+          <FormattedMessage id="actions.apply" />
         </Button>
       </>
     );

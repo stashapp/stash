@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Col, Row } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { useImageUpdate } from "src/core/StashService";
@@ -117,14 +118,14 @@ export const ImageEditPanel: React.FC<IProps> = ({
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
-            Save
+            <FormattedMessage id="actions.save" />
           </Button>
           <Button
             className="edit-button"
             variant="danger"
             onClick={() => onDelete()}
           >
-            Delete
+            <FormattedMessage id="actions.delete" />
           </Button>
         </div>
       </div>

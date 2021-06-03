@@ -934,7 +934,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Button variant="primary" onClick={() => onSave()}>
-        Save
+        <FormattedMessage id="actions.save" />
       </Button>
     </>
   );

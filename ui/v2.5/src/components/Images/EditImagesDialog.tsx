@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import _ from "lodash";
 import { useBulkImageUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -17,6 +18,7 @@ interface IListOperationProps {
 export const EditImagesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
+  const intl = useIntl();
   const Toast = useToast();
   const [rating, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
@@ -345,10 +347,13 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         show
         icon="pencil-alt"
         header="Edit Images"
-        accept={{ onClick: onSave, text: "Apply" }}
+        accept={{
+          onClick: onSave,
+          text: intl.formatMessage({ id: "actions.apply" }),
+        }}
         cancel={{
           onClick: () => props.onClose(false),
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "secondary",
         }}
         isRunning={isUpdating}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
@@ -332,7 +333,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
               variant="secondary"
               onClick={() => setIsImageAlertOpen(false)}
             >
-              Cancel
+              <FormattedMessage id="actions.cancel" />
             </Button>
 
             <Button

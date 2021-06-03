@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
   Dropdown,
@@ -49,6 +50,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   isVisible,
   onDelete,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     scene.galleries.map((g) => ({
@@ -347,7 +349,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <DropdownButton
         className="d-inline-block"
         id="scene-scrape"
-        title="Scrape with..."
+        title={intl.formatMessage({ id: "actions.scrape_with" })}
       >
         {stashBoxes.map((s, index) => (
           <Dropdown.Item
@@ -366,7 +368,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
           <span className="fa-icon">
             <Icon icon="sync-alt" />
           </span>
-          <span>Reload scrapers</span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
         </Dropdown.Item>
       </DropdownButton>
     );
@@ -549,14 +553,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
               disabled={!formik.dirty}
               onClick={() => formik.submitForm()}
             >
-              Save
+              <FormattedMessage id="actions.save" />
             </Button>
             <Button
               className="edit-button"
               variant="danger"
               onClick={() => onDelete()}
             >
-              Delete
+              <FormattedMessage id="actions.delete" />
             </Button>
           </div>
           <Col xs={6} className="text-right">

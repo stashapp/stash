@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import {
   Button,
@@ -49,6 +50,7 @@ interface IExistingProps {
 export const GalleryEditPanel: React.FC<
   IProps & (INewProps | IExistingProps)
 > = ({ gallery, isNew, isVisible, onDelete }) => {
+  const intl = useIntl();
   const Toast = useToast();
   const history = useHistory();
   const [title, setTitle] = useState<string>(gallery?.title ?? "");
@@ -249,7 +251,7 @@ export const GalleryEditPanel: React.FC<
       <DropdownButton
         className="d-inline-block"
         id="gallery-scrape"
-        title="Scrape with..."
+        title={intl.formatMessage({ id: "actions.scrape_with" })}
       >
         {queryableScrapers.map((s) => (
           <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
@@ -260,7 +262,9 @@ export const GalleryEditPanel: React.FC<
           <span className="fa-icon">
             <Icon icon="sync-alt" />
           </span>
-          <span>Reload scrapers</span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
         </Dropdown.Item>
       </DropdownButton>
     );
@@ -359,14 +363,14 @@ export const GalleryEditPanel: React.FC<
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
-            Save
+            <FormattedMessage id="actions.save" />
           </Button>
           <Button
             className="edit-button"
             variant="danger"
             onClick={() => onDelete()}
           >
-            Delete
+            <FormattedMessage id="actions.delete" />
           </Button>
         </div>
         <Col xs={6} className="text-right">

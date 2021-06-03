@@ -44,7 +44,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
       }}
       cancel={{
         onClick: () => props.onClose(),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
     >

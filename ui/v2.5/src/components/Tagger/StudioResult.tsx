@@ -1,5 +1,6 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import cx from "classnames";
 
 import { SuccessIcon, Modal, StudioSelect } from "src/components/Shared";
@@ -19,6 +20,7 @@ interface IStudioResultProps {
 }
 
 const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
+  const intl = useIntl();
   const [selectedStudio, setSelectedStudio] = useState<string | null>();
   const [modalVisible, showModal] = useState(false);
   const [selectedSource, setSelectedSource] = useState<
@@ -112,7 +114,10 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
     <div className="row no-gutters align-items-center mt-2">
       <Modal
         show={modalVisible}
-        accept={{ text: "Save", onClick: handleStudioCreate }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.save" }),
+          onClick: handleStudioCreate,
+        }}
         cancel={{ onClick: () => showModal(false), variant: "secondary" }}
       >
         <div className="row">

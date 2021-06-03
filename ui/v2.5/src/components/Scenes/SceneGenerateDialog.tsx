@@ -7,6 +7,7 @@ import {
 import { Modal, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
+import { useIntl } from "react-intl";
 
 interface ISceneGenerateDialogProps {
   selectedIds: string[];
@@ -42,6 +43,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
 
   const [previewOptionsOpen, setPreviewOptionsOpen] = useState(false);
 
+  const intl = useIntl();
   const Toast = useToast();
 
   useEffect(() => {
@@ -98,10 +100,13 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
       show
       icon="cogs"
       header="Generate"
-      accept={{ onClick: onGenerate, text: "Generate" }}
+      accept={{
+        onClick: onGenerate,
+        text: intl.formatMessage({ id: "actions.generate" }),
+      }}
       cancel={{
         onClick: () => props.onClose(),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
     >
