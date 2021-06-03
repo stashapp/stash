@@ -13,7 +13,7 @@ import {
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
-import { useIntl } from "react-intl";
+import { defineMessages, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   CriterionType,
@@ -42,6 +42,13 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   const valueStage = useRef<CriterionValue>(criterion.value);
 
   const intl = useIntl();
+
+  const messages = defineMessages({
+    studio_depth: {
+      id: "studio_depth",
+      defaultMessage: "Levels (empty for all)",
+    },
+  });
 
   // configure keyboard shortcuts
   useEffect(() => {
@@ -266,6 +273,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
                 <Form.Control
                   className="btn-secondary"
                   type="number"
+                  placeholder={intl.formatMessage(messages.studio_depth)}
                   onChange={(e) => {
                     const newCriterion = _.cloneDeep(criterion);
                     newCriterion.value.depth = e.target.value
