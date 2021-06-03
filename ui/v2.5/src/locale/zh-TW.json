@@ -1,6 +1,8 @@
 {
   "actions": {
+    "add_directory": "新增路徑",
     "add_tag": "新增標籤",
+    "add": "新增",
     "auto_tag": "自動標籤",
     "cancel": "取消",
     "clear_image": "清除現有圖像",

@@ -1,6 +1,8 @@
 {
-  "actions":{
+  "actions": {
+    "add_directory": "Add Directory",
     "add_tag": "Add Tag",
+    "add": "Add",
     "auto_tag": "Auto Tag",
     "cancel": "Cancel",
     "clear_image": "Clear Image",

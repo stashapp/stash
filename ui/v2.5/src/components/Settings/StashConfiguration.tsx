@@ -124,7 +124,7 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
           variant="secondary"
           onClick={() => setIsDisplayingDialog(true)}
         >
-          Add Directory
+          <FormattedMessage id="actions.add_directory" />
         </Button>
       </Form.Group>
     </>
