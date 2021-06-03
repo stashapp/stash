@@ -210,12 +210,14 @@ func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) str
 		direction = findFilter.GetDirection()
 	}
 
-	// #943 - override name sorting to use natural sort
-	if sort == "name" {
+	switch sort {
+	case "name": // #943 - override name sorting to use natural sort
 		return " ORDER BY " + getColumn("movies", sort) + " COLLATE NATURAL_CS " + direction
+	case "scenes_count": // generic getSort won't work for this
+		return getCountSort(movieTable, moviesScenesTable, movieIDColumn, direction)
+	default:
+		return getSort(sort, direction, "movies")
 	}
-
-	return getSort(sort, direction, "movies")
 }
 
 func (qb *movieQueryBuilder) queryMovie(query string, args []interface{}) (*models.Movie, error) {

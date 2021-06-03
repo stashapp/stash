@@ -618,7 +618,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   onSelect={(items) =>
                     formik.setFieldValue(
                       "studio_id",
-                      items.length > 0 ? items[0]?.id : undefined
+                      items.length > 0 ? items[0]?.id : null
                     )
                   }
                   ids={formik.values.studio_id ? [formik.values.studio_id] : []}

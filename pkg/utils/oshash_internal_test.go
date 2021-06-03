@@ -6,7 +6,7 @@ import (
 
 // Note that the public API returns "" instead.
 func TestOshashEmpty(t *testing.T) {
-	var size int64 = 0
+	var size int64
 	head := make([]byte, chunkSize)
 	tail := make([]byte, chunkSize)
 	want := "0000000000000000"
@@ -23,7 +23,7 @@ func TestOshashEmpty(t *testing.T) {
 func TestOshashCollisions(t *testing.T) {
 	buf1 := []byte("this is dumb")
 	buf2 := []byte("dumb is this")
-	var size int64 = int64(len(buf1))
+	var size = int64(len(buf1))
 	head := make([]byte, chunkSize)
 
 	tail1 := make([]byte, chunkSize)
