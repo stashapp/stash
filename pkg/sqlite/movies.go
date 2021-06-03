@@ -136,7 +136,7 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs("movies")
-	query.body += "left join movies_scenes as scenes_join on scenes_join.movie_id = movies.id"
+	query.body += "left join movies_scenes as scenes_join on scenes_join.movie_id = movies.id "
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
