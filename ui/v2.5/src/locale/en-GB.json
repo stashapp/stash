@@ -22,6 +22,76 @@
   "bitrate": "Bit Rate",
   "career_length": "Career Length",
   "country": "Country",
+  "config": {
+    "categories": {
+      "about": "About",
+      "configuration": "Configuration",
+      "interface": "Interface",
+      "logs": "Logs",
+      "plugins": "Plugins",
+      "scrapers": "Scrapers",
+      "tasks": "Tasks",
+      "tools": "Tools"
+    },
+    "ui": {
+      "title": "User Interface",
+      "language": {
+        "heading": "Language"
+      },
+      "menu_items": {
+        "heading": "Menu Items",
+        "description": "Show or hide different types of content on the navigation bar"
+      },
+      "scene_wall": {
+        "heading": "Scene / Marker Wall",
+        "options": {
+          "display_title": "Display title and tags",
+          "toggle_sound": "Enable sound"
+        }
+      },
+      "preview_type": {
+        "heading": "Preview Type",
+        "description": "Configuration for wall items",
+        "options": {
+          "animated": "Animated Image",
+          "static": "Static Image",
+          "video": "Video"
+        }
+      },
+      "scene_list": {
+        "heading": "Scene List",
+        "options": {
+          "show_studio_as_text": "Show Studios as text"
+        }
+      },
+      "scene_player": {
+        "heading": "Scene Player",
+        "options": {
+          "auto_start_video": "Auto-start video"
+        }
+      },
+      "max_loop_duration": {
+        "heading": "Maximum loop duration",
+        "description": "Maximum scene duration where scene player will loop the video - 0 to disable"
+      },
+      "slideshow_delay": {
+        "heading": "Slideshow Delay",
+        "description": "Slideshow is available in galleries when in wall view mode"
+      },
+      "custom_css": {
+        "heading": "Custom CSS",
+        "option_label": "Custom CSS enabled",
+        "description": "Page must be reloaded for changes to take effect."
+      }
+    },
+    "general": {
+      "cache_path_head": "Cache Path",
+      "db_path_head": "Databae Path",
+      "generated_path_head": "Generated Path",
+      "image_ext_head": "Image Extensions",
+      "video_ext_head": "Video Extensions"
+    }
+  },
   "created_at": "Created At",
   "criterion_modifier": {
     "equals": "is",

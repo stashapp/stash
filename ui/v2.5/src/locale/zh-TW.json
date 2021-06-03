@@ -22,6 +22,76 @@
   "bitrate": "位元率",
   "career_length": "活躍年代",
   "country": "國家",
+  "config": {
+    "categories": {
+      "about": "關於",
+      "configuration": "設定",
+      "interface": "介面",
+      "logs": "日誌",
+      "plugins": "插件",
+      "scrapers": "爬蟲",
+      "tasks": "排程",
+      "tools": "工具"
+    },
+    "ui": {
+      "title": "使用者介面",
+      "language": {
+        "heading": "語言"
+      },
+      "menu_items": {
+        "heading": "選單項目",
+        "description": "顯示或隱藏導覽列表中的項目"
+      },
+      "scene_wall": {
+        "heading": "短片 / 章節標記預覽牆",
+        "options": {
+          "display_title": "顯示影片標題及標籤",
+          "toggle_sound": "播放聲音"
+        }
+      },
+      "preview_type": {
+        "heading": "預覽種類",
+        "description": "影片預覽設定",
+        "options": {
+          "animated": "動圖",
+          "static": "靜態",
+          "video": "影片"
+        }
+      },
+      "scene_list": {
+        "heading": "短片列表",
+        "options": {
+          "show_studio_as_text": "顯示短片所屬工作室名稱"
+        }
+      },
+      "scene_player": {
+        "heading": "短片播放器",
+        "options": {
+          "auto_start_video": "自動播放"
+        }
+      },
+      "max_loop_duration": {
+        "heading": "重新播放門檻",
+        "description": "如果影片長度低於該臨界值，則影片結束時，將自動重新播放 (適用於長度較短的影片)－設為 0 以關閉此功能"
+      },
+      "slideshow_delay": {
+        "heading": "幻燈片延遲",
+        "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式"
+      },
+      "custom_css": {
+        "heading": "自定義 CSS",
+        "option_label": "啟用自定義 CSS",
+        "description": "如需套用，請重新整理頁面。"
+      }
+    },
+    "general": {
+      "cache_path_head": "快取路徑",
+      "db_path_head": "資料庫路徑",
+      "generated_path_head": "生成檔案儲存路徑",
+      "image_ext_head": "圖片副檔名",
+      "video_ext_head": "影片副檔名"
+    }
+  },
   "created_at": "建立於",
   "criterion_modifier": {
     "equals": "是",
