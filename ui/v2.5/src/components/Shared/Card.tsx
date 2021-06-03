@@ -1,13 +1,15 @@
 import React from "react";
-import { Card, Form } from "react-bootstrap";
+import { Card as BSCard, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import TruncatedText from "./TruncatedText";
 
-interface IBasicCardProps {
+interface ICardProps {
   className?: string;
   linkClassName?: string;
   url: string;
+  title: string;
   image: JSX.Element;
-  details: JSX.Element;
+  details?: JSX.Element;
   overlays?: JSX.Element;
   popovers?: JSX.Element;
   selecting?: boolean;
@@ -15,12 +17,8 @@ interface IBasicCardProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const BasicCard: React.FC<IBasicCardProps> = (
-  props: IBasicCardProps
-) => {
-  function handleImageClick(
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) {
+export const Card: React.FC<ICardProps> = (props: ICardProps) => {
+  function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     const { shiftKey } = event;
 
     if (!props.onSelectedChanged) {
@@ -33,14 +31,14 @@ export const BasicCard: React.FC<IBasicCardProps> = (
     }
   }
 
-  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
+  function handleDrag(event: React.DragEvent<HTMLElement>) {
     if (props.selecting) {
       event.dataTransfer.setData("text/plain", "");
       event.dataTransfer.setDragImage(new Image(), 0, 0);
     }
   }
 
-  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
+  function handleDragOver(event: React.DragEvent<HTMLElement>) {
     const ev = event;
     const shiftKey = false;
 
@@ -77,25 +75,35 @@ export const BasicCard: React.FC<IBasicCardProps> = (
   }
 
   return (
-    <Card className={props.className}>
+    <BSCard
+      className={`${props.className} stash-card`}
+      onClick={handleImageClick}
+      onDragStart={handleDrag}
+      onDragOver={handleDragOver}
+      draggable={props.onSelectedChanged && props.selecting}
+    >
       {maybeRenderCheckbox()}
 
-      <div className="image-section">
+      <div className="thumbnail-section">
         <Link
           to={props.url}
           className={props.linkClassName}
           onClick={handleImageClick}
-          onDragStart={handleDrag}
-          onDragOver={handleDragOver}
-          draggable={props.onSelectedChanged && props.selecting}
         >
           {props.image}
         </Link>
         {props.overlays}
       </div>
-      <div className="card-section">{props.details}</div>
+      <div className="card-section">
+        <Link to={props.url} onClick={handleImageClick}>
+          <h5 className="card-section-title">
+            <TruncatedText text={props.title} lineCount={2} />
+          </h5>
+        </Link>
+        {props.details}
+      </div>
 
       {props.popovers}
-    </Card>
+    </BSCard>
   );
 };

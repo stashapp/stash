@@ -3,8 +3,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
-import { Icon, TruncatedText } from "../Shared";
-import { BasicCard } from "../Shared/BasicCard";
+import { Icon } from "../Shared";
+import { Card } from "../Shared/Card";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 interface IProps {
@@ -102,9 +102,10 @@ export const TagCard: React.FC<IProps> = ({
   }
 
   return (
-    <BasicCard
+    <Card
       className={`tag-card zoom-${zoomIndex}`}
       url={`/tags/${tag.id}`}
+      title={tag.name ?? ""}
       linkClassName="tag-card-header"
       image={
         <img
@@ -112,11 +113,6 @@ export const TagCard: React.FC<IProps> = ({
           alt={tag.name}
           src={tag.image_path ?? ""}
         />
-      }
-      details={
-        <h5>
-          <TruncatedText text={tag.name} />
-        </h5>
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}

@@ -163,7 +163,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
         }}
       />
 
-      <div className="image-section">
+      <div className="thumbnail-section">
         <Link
           to={`/images/${props.image.id}`}
           className="image-card-link"

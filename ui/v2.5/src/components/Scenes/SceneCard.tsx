@@ -294,9 +294,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
-  function handleSceneClick(
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) {
+  function handleSceneClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     const { shiftKey } = event;
 
     if (props.selecting && props.onSelectedChanged) {
@@ -305,14 +303,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
-  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
+  function handleDrag(event: React.DragEvent<HTMLElement>) {
     if (props.selecting) {
       event.dataTransfer.setData("text/plain", "");
       event.dataTransfer.setDragImage(new Image(), 0, 0);
     }
   }
 
-  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
+  function handleDragOver(event: React.DragEvent<HTMLElement>) {
     const ev = event;
     const shiftKey = false;
 
@@ -344,7 +342,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     : `/scenes/${props.scene.id}`;
 
   return (
-    <Card className={`scene-card ${zoomIndex()}`}>
+    <Card
+      className={`scene-card ${zoomIndex()}`}
+      onClick={handleSceneClick}
+      onDragStart={handleDrag}
+      onDragOver={handleDragOver}
+      draggable={props.selecting}
+    >
       <Form.Control
         type="checkbox"
         className="scene-card-check"
@@ -362,9 +366,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           to={sceneLink}
           className="scene-card-link"
           onClick={handleSceneClick}
-          onDragStart={handleDrag}
-          onDragOver={handleDragOver}
-          draggable={props.selecting}
         >
           <ScenePreview
             image={props.scene.paths.screenshot ?? undefined}
@@ -381,7 +382,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       </div>
       <div className="card-section">
         <h5 className="card-section-title">
-          <Link to={`/scenes/${props.scene.id}`}>
+          <Link to={`/scenes/${props.scene.id}`} onClick={handleSceneClick}>
             <TruncatedText
               text={
                 props.scene.title
