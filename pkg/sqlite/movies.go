@@ -136,6 +136,7 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs("movies")
+	query.body += "left join movies_scenes as scenes_join on scenes_join.movie_id = movies.id"
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
@@ -210,12 +211,14 @@ func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) str
 		direction = findFilter.GetDirection()
 	}
 
-	// #943 - override name sorting to use natural sort
-	if sort == "name" {
+	switch sort {
+	case "name": // #943 - override name sorting to use natural sort
 		return " ORDER BY " + getColumn("movies", sort) + " COLLATE NATURAL_CS " + direction
+	case "scenes_count": // generic getSort won't work for this
+		return " ORDER BY COUNT(distinct scenes_join.scene_id) " + direction
+	default:
+		return getSort(sort, direction, "movies")
 	}
-
-	return getSort(sort, direction, "movies")
 }
 
 func (qb *movieQueryBuilder) queryMovie(query string, args []interface{}) (*models.Movie, error) {
