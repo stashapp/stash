@@ -10,8 +10,8 @@
     "edit": "編輯",
     "reload_scrapers": "重新載入爬蟲",
     "save": "儲存",
-    "scrape_with": "透過爬蟲取得資訊...",
-    "set_image": "設定圖像..."
+    "scrape_with": "透過爬蟲取得資訊…",
+    "set_image": "設定圖像…"
   },
   "aliases": "別名",
   "average_resolution": "平均解析度",
