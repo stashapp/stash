@@ -164,21 +164,6 @@ textarea.scene-description {
     text-decoration: none;
   }
 
-  &-check {
-    left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
-    position: absolute;
-    top: 0.7rem;
-    width: 1.2rem;
-    z-index: 1;
-
-    &:checked {
-      opacity: 0.75;
-    }
-  }
-
   .scene-specs-overlay,
   .rating-banner,
   .scene-studio-overlay {

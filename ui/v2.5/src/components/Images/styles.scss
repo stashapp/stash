@@ -19,21 +19,6 @@
     padding: 0;
   }
 
-  &-check {
-    left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
-    position: absolute;
-    top: 0.7rem;
-    width: 1.2rem;
-    z-index: 1;
-
-    &:checked {
-      opacity: 0.75;
-    }
-  }
-
   .rating-banner {
     transition: opacity 0.5s;
   }
