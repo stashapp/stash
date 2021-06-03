@@ -35,7 +35,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
       entries.forEach((entry) => {
         if (entry.intersectionRatio > 0)
           // Catch is necessary due to DOMException if user hovers before clicking on page
-          videoEl.current?.play().catch(() => {});
+          videoEl.current?.play()?.catch(() => {});
         else videoEl.current?.pause();
       });
     });
