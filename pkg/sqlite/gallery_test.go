@@ -714,6 +714,64 @@ func TestGalleryQueryStudio(t *testing.T) {
 	})
 }
 
+func TestGalleryQueryStudioDepth(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		studioCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    2,
+		}
+
+		galleryFilter := models.GalleryFilterType{
+			Studios: &studioCriterion,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Len(t, galleries, 1)
+
+		studioCriterion.Depth = 1
+
+		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Len(t, galleries, 0)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		assert.Len(t, galleries, 1)
+
+		// ensure id is correct
+		assert.Equal(t, galleryIDs[galleryIdxWithGrandChildStudio], galleries[0].ID)
+
+		studioCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+			Depth:    2,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithGrandChildStudio, pathField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		studioCriterion.Depth = 1
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 1)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		return nil
+	})
+}
+
 func TestGalleryQueryPerformerTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()

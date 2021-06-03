@@ -828,6 +828,64 @@ func TestImageQueryStudio(t *testing.T) {
 	})
 }
 
+func TestImageQueryStudioDepth(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		studioCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    2,
+		}
+
+		imageFilter := models.ImageFilterType{
+			Studios: &studioCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 1)
+
+		studioCriterion.Depth = 1
+
+		images = queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 0)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		images = queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 1)
+
+		// ensure id is correct
+		assert.Equal(t, imageIDs[imageIdxWithGrandChildStudio], images[0].ID)
+
+		studioCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+			Depth:    2,
+		}
+
+		q := getImageStringValue(imageIdxWithGrandChildStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		studioCriterion.Depth = 1
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
 func queryImages(t *testing.T, sqb models.ImageReader, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) []*models.Image {
 	images, _, err := sqb.Query(imageFilter, findFilter)
 	if err != nil {

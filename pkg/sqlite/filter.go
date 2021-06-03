@@ -551,14 +551,14 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 
 			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
 
-			depthCondition := "1"
+			var depthCondition string
 			if criterion.Depth != -1 {
-				depthCondition = "depth < ?"
+				depthCondition = "WHERE depth < ?"
 				args = append(args, criterion.Depth)
 			}
 
 			withClause := fmt.Sprintf(
-				"RECURSIVE %s AS (SELECT id as id, id as child_id, 0 as depth FROM %s WHERE id in %s UNION SELECT p.id, c.id, depth + 1 FROM %s as c INNER JOIN %s as p ON c.%s = p.child_id WHERE %s)",
+				"RECURSIVE %s AS (SELECT id as id, id as child_id, 0 as depth FROM %s WHERE id in %s UNION SELECT p.id, c.id, depth + 1 FROM %s as c INNER JOIN %s as p ON c.%s = p.child_id %s)",
 				m.derivedTable,
 				m.foreignTable,
 				getInBinding(inCount),
