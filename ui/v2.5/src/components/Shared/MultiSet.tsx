@@ -1,8 +1,7 @@
 import * as React from "react";
 
 import * as GQL from "src/core/generated-graphql";
-import { Button, InputGroup } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { FilterSelect } from "./Select";
 
 type ValidTypes =
@@ -23,25 +22,20 @@ interface IMultiSetProps {
 const MultiSet: React.FunctionComponent<IMultiSetProps> = (
   props: IMultiSetProps
 ) => {
+  const modes = [
+    GQL.BulkUpdateIdMode.Set,
+    GQL.BulkUpdateIdMode.Add,
+    GQL.BulkUpdateIdMode.Remove,
+  ];
+
   function onUpdate(items: ValidTypes[]) {
     props.onUpdate(items);
   }
 
-  function getModeIcon() {
-    switch (props.mode) {
+  function getModeText(mode: GQL.BulkUpdateIdMode) {
+    switch (mode) {
       case GQL.BulkUpdateIdMode.Set:
-        return "pencil-alt";
-      case GQL.BulkUpdateIdMode.Add:
-        return "plus";
-      case GQL.BulkUpdateIdMode.Remove:
-        return "times";
-    }
-  }
-
-  function getModeText() {
-    switch (props.mode) {
-      case GQL.BulkUpdateIdMode.Set:
-        return "Set";
+        return "Overwrite";
       case GQL.BulkUpdateIdMode.Add:
         return "Add";
       case GQL.BulkUpdateIdMode.Remove:
@@ -49,31 +43,25 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
     }
   }
 
-  function nextMode() {
-    switch (props.mode) {
-      case GQL.BulkUpdateIdMode.Set:
-        return GQL.BulkUpdateIdMode.Add;
-      case GQL.BulkUpdateIdMode.Add:
-        return GQL.BulkUpdateIdMode.Remove;
-      case GQL.BulkUpdateIdMode.Remove:
-        return GQL.BulkUpdateIdMode.Set;
-    }
+  function renderModeButton(mode: GQL.BulkUpdateIdMode) {
+    return (
+      <Button
+        variant="primary"
+        active={props.mode === mode}
+        size="sm"
+        onClick={() => props.onSetMode(mode)}
+        disabled={props.disabled}
+      >
+        {getModeText(mode)}
+      </Button>
+    );
   }
 
   return (
-    <InputGroup className="multi-set">
-      <InputGroup.Prepend>
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => props.onSetMode(nextMode())}
-          title={getModeText()}
-          disabled={props.disabled}
-        >
-          <Icon icon={getModeIcon()} className="fa-fw" />
-        </Button>
-      </InputGroup.Prepend>
-
+    <div>
+      <ButtonGroup className="button-group-above">
+        {modes.map((m) => renderModeButton(m))}
+      </ButtonGroup>
       <FilterSelect
         type={props.type}
         isDisabled={props.disabled}
@@ -82,7 +70,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
         onSelect={onUpdate}
         ids={props.ids ?? []}
       />
-    </InputGroup>
+    </div>
   );
 };
 

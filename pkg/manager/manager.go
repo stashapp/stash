@@ -69,6 +69,7 @@ func Initialize() *singleton {
 			Config:        cfg,
 			JobManager:    job.NewManager(),
 			DownloadStore: NewDownloadStore(),
+			PluginCache:   plugin.NewCache(cfg),
 
 			TxnManager: sqlite.NewTransactionManager(),
 
@@ -170,17 +171,6 @@ func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
-func initPluginCache() *plugin.Cache {
-	config := config.GetInstance()
-	ret, err := plugin.NewCache(config.GetPluginsPath())
-
-	if err != nil {
-		logger.Errorf("Error reading plugin configs: %s", err.Error())
-	}
-
-	return ret
-}
-
 // PostInit initialises the paths, caches and txnManager after the initial
 // configuration has been set. Should only be called if the configuration
 // is valid.
@@ -188,10 +178,13 @@ func (s *singleton) PostInit() error {
 	s.Config.SetInitialConfig()
 
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
-	s.PluginCache = initPluginCache()
-	s.ScraperCache = instance.initScraperCache()
-
 	s.RefreshConfig()
+
+	if err := s.PluginCache.LoadPlugins(); err != nil {
+		logger.Errorf("Error reading plugin configs: %s", err.Error())
+	}
+
+	s.ScraperCache = instance.initScraperCache()
 
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
