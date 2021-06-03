@@ -19,9 +19,10 @@ func CountByPerformerID(r models.GalleryReader, id int) (int, error) {
 
 func CountByStudioID(r models.GalleryReader, id int) (int, error) {
 	filter := &models.GalleryFilterType{
-		Studios: &models.MultiCriterionInput{
+		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		},
 	}
 

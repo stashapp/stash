@@ -3,6 +3,7 @@
 import { IntlShape } from "react-intl";
 import {
   CriterionModifier,
+  HierarchicalMultiCriterionInput,
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
@@ -12,10 +13,15 @@ import {
   ILabeledId,
   ILabeledValue,
   IOptionType,
+  IHierarchicalLabelValue,
 } from "../types";
 
 type Option = string | number | IOptionType;
-export type CriterionValue = string | number | ILabeledId[];
+export type CriterionValue =
+  | string
+  | number
+  | ILabeledId[]
+  | IHierarchicalLabelValue;
 
 // V = criterion value type
 export abstract class Criterion<V extends CriterionValue> {
@@ -290,6 +296,69 @@ export abstract class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
     return this.value.map((o) => {
       return encodeILabeledId(o);
     });
+  }
+
+  constructor(type: CriterionOption, includeAll: boolean) {
+    super(type);
+
+    if (!includeAll) {
+      this.modifier = CriterionModifier.Includes;
+      this.modifierOptions = [
+        Criterion.getModifierOption(CriterionModifier.Includes),
+        Criterion.getModifierOption(CriterionModifier.Excludes),
+      ];
+    }
+  }
+}
+
+export abstract class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
+  public modifier = CriterionModifier.IncludesAll;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.IncludesAll),
+    Criterion.getModifierOption(CriterionModifier.Includes),
+    Criterion.getModifierOption(CriterionModifier.Excludes),
+  ];
+
+  public options: IOptionType[] = [];
+  public value: IHierarchicalLabelValue = {
+    items: [],
+    depth: 0,
+  };
+
+  public encodeValue() {
+    return {
+      items: this.value.items.map((o) => {
+        return encodeILabeledId(o);
+      }),
+      depth: this.value.depth,
+    };
+  }
+
+  protected toCriterionInput(): HierarchicalMultiCriterionInput {
+    return {
+      value: this.value.items.map((v) => v.id),
+      modifier: this.modifier,
+      depth: this.value.depth,
+    };
+  }
+
+  public getLabelValue(): string {
+    const labels = this.value.items.map((v) => v.label).join(", ");
+
+    if (this.value.depth === 0) {
+      return labels;
+    }
+
+    return `${labels} (+${this.value.depth > 0 ? this.value.depth : "all"})`;
+  }
+
+  public toJSON() {
+    const encodedCriterion = {
+      type: this.criterionOption.value,
+      value: this.encodeValue(),
+      modifier: this.modifier,
+    };
+    return JSON.stringify(encodedCriterion);
   }
 
   constructor(type: CriterionOption, includeAll: boolean) {

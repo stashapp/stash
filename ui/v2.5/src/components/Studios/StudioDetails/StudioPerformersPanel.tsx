@@ -12,9 +12,10 @@ export const StudioPerformersPanel: React.FC<IStudioPerformersPanel> = ({
   studio,
 }) => {
   const studioCriterion = new StudiosCriterion();
-  studioCriterion.value = [
-    { id: studio.id!, label: studio.name || `Studio ${studio.id}` },
-  ];
+  studioCriterion.value = {
+    items: [{ id: studio.id!, label: studio.name || `Studio ${studio.id}` }],
+    depth: 0,
+  };
 
   const extraCriteria = {
     scenes: [studioCriterion],

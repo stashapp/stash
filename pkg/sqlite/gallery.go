@@ -382,11 +382,14 @@ func galleryImageCountCriterionHandler(qb *galleryQueryBuilder, imageCount *mode
 	return h.handler(imageCount)
 }
 
-func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addJoin(studioTable, "studio", "studio.id = galleries.studio_id")
+func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := hierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+		derivedTable: "studio",
+		parentFK:     "parent_id",
 	}
-	h := qb.getMultiCriterionHandlerBuilder("studio", "", studioIDColumn, addJoinsFunc)
 
 	return h.handler(studios)
 }

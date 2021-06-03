@@ -73,6 +73,7 @@
   "scenes_updated_at": "Scene Updated At",
   "seconds": "Seconds",
   "stash_id": "Stash ID",
+  "studio_depth": "Levels (empty for all)",
   "studios": "Studios",
   "tag_count": "Tag Count",
   "tags": "Tags",

@@ -41,6 +41,7 @@ const (
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
+	sceneIdxWithGrandChildStudio
 	// new indexes above
 	lastSceneIdx
 
@@ -65,6 +66,7 @@ const (
 	imageIdxInZip // TODO - not implemented
 	imageIdxWithPerformerTag
 	imageIdxWithPerformerTwoTags
+	imageIdxWithGrandChildStudio
 	// new indexes above
 	totalImages
 )
@@ -125,6 +127,7 @@ const (
 	galleryIdxWithPerformerTag
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
+	galleryIdxWithGrandChildStudio
 	// new indexes above
 	lastGalleryIdx
 
@@ -169,6 +172,9 @@ const (
 	studioIdxWithScenePerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
+	studioIdxWithGrandChild
+	studioIdxWithParentAndChild
+	studioIdxWithGrandParent
 	// new indexes above
 	// studios with dup names start from the end
 	studioIdxWithDupName
@@ -241,6 +247,7 @@ var (
 		{sceneIdx1WithStudio, studioIdxWithTwoScenes},
 		{sceneIdx2WithStudio, studioIdxWithTwoScenes},
 		{sceneIdxWithStudioPerformer, studioIdxWithScenePerformer},
+		{sceneIdxWithGrandChildStudio, studioIdxWithGrandParent},
 	}
 )
 
@@ -257,6 +264,7 @@ var (
 		{imageIdx1WithStudio, studioIdxWithTwoImages},
 		{imageIdx2WithStudio, studioIdxWithTwoImages},
 		{imageIdxWithStudioPerformer, studioIdxWithImagePerformer},
+		{imageIdxWithGrandChildStudio, studioIdxWithGrandParent},
 	}
 	imageTagLinks = [][2]int{
 		{imageIdxWithTag, tagIdxWithImage},
@@ -292,6 +300,7 @@ var (
 		{galleryIdx1WithStudio, studioIdxWithTwoGalleries},
 		{galleryIdx2WithStudio, studioIdxWithTwoGalleries},
 		{galleryIdxWithStudioPerformer, studioIdxWithGalleryPerformer},
+		{galleryIdxWithGrandChildStudio, studioIdxWithGrandParent},
 	}
 
 	galleryTagLinks = [][2]int{
@@ -310,6 +319,8 @@ var (
 var (
 	studioParentLinks = [][2]int{
 		{studioIdxWithChildStudio, studioIdxWithParentStudio},
+		{studioIdxWithGrandChild, studioIdxWithParentAndChild},
+		{studioIdxWithParentAndChild, studioIdxWithGrandParent},
 	}
 )
 
