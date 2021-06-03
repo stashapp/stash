@@ -840,7 +840,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
-          <FormattedMessage id={`performer_bio.${field}`} defaultMessage={title} />
+          <FormattedMessage id={field} defaultMessage={title} />
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <Form.Control
@@ -868,7 +868,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
         <Form.Group controlId="name" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="performer_bio.name" />
+            <FormattedMessage id="name" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -885,7 +885,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="aliases" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="performer_bio.aliases" />
+            <FormattedMessage id="aliases" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -899,7 +899,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="performer_bio.gender" />
+            <FormattedMessage id="gender" />
           </Form.Label>
           <Col xs="auto">
             <Form.Control
@@ -929,7 +929,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="tattoos" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="performer_bio.tattoos" />
+            <FormattedMessage id="tattoos" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -943,7 +943,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="piercings" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="performer_bio.piercings" />
+            <FormattedMessage id="piercings" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control

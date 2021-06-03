@@ -165,7 +165,7 @@ export const Performer: React.FC = () => {
           <span className="age">
             {TextUtils.age(performer.birthdate, performer.death_date)}
           </span>
-          <span className="age-tail"> <FormattedMessage id="performer_bio.years_old" /></span>
+          <span className="age-tail"> <FormattedMessage id="years_old" /></span>
         </div>
       );
     }
@@ -175,7 +175,7 @@ export const Performer: React.FC = () => {
     if (performer?.aliases) {
       return (
         <div>
-          <span className="alias-head"><FormattedMessage id="performer_bio.also_known_as" /> </span>
+          <span className="alias-head"><FormattedMessage id="also_known_as" /> </span>
           <span className="alias">{performer.aliases}</span>
         </div>
       );
