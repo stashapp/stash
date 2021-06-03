@@ -11,10 +11,9 @@ export const TextField: React.FC<ITextField> = ({ id, name, value }) => {
   if (!value) {
     return null;
   }
-
   return (
     <dl className="row mb-0">
-      <dt className="col-3 col-xl-2"><FormattedMessage id={id} defaultMessage={name} />:</dt>
+      <dt className="col-3 col-xl-2">{id == null ? <FormattedMessage id={id} defaultMessage={name} /> : name }:</dt>
       <dd className="col-9 col-xl-10">{value ?? undefined}</dd>
     </dl>
   );
@@ -33,7 +32,7 @@ export const URLField: React.FC<IURLField> = ({ id, name, value, url }) => {
   }
   return (
     <dl className="row mb-0">
-      <dt className="col-3 col-xl-2"><FormattedMessage id={id} defaultMessage={name} />:</dt>
+      <dt className="col-3 col-xl-2">{id == null ? <FormattedMessage id={id} defaultMessage={name} /> : name }:</dt>
       <dd className="col-9 col-xl-10">
         {url ? (
           <a href={url} target="_blank" rel="noopener noreferrer">
