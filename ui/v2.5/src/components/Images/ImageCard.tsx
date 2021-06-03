@@ -5,7 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { Card } from "../Shared/Card";
+import { GridCard } from "../Shared/GridCard";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -112,7 +112,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
   }
 
   return (
-    <Card
+    <GridCard
       className={`image-card zoom-${props.zoomIndex}`}
       url={`/images/${props.image.id}`}
       title={

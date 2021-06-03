@@ -14,7 +14,7 @@ import {
 import { TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
-import { Card } from "../Shared/Card";
+import { GridCard } from "../Shared/GridCard";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -313,7 +313,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     : `/scenes/${props.scene.id}`;
 
   return (
-    <Card
+    <GridCard
       className={`scene-card ${zoomIndex()}`}
       url={sceneLink}
       title={

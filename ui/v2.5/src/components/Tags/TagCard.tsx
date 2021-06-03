@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
 import { Icon } from "../Shared";
-import { Card } from "../Shared/Card";
+import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 interface IProps {
@@ -102,7 +102,7 @@ export const TagCard: React.FC<IProps> = ({
   }
 
   return (
-    <Card
+    <GridCard
       className={`tag-card zoom-${zoomIndex}`}
       url={`/tags/${tag.id}`}
       title={tag.name ?? ""}

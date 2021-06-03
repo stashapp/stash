@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
 import { useConfiguration } from "src/core/StashService";
-import { Card, HoverPopover, Icon, TagLink } from "src/components/Shared";
+import { GridCard, HoverPopover, Icon, TagLink } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
@@ -130,7 +130,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   }
 
   return (
-    <Card
+    <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
       title={

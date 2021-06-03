@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
-import { Card } from "src/components/Shared";
+import { GridCard } from "src/components/Shared";
 import { ButtonGroup } from "react-bootstrap";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
@@ -119,7 +119,7 @@ export const StudioCard: React.FC<IProps> = ({
   }
 
   return (
-    <Card
+    <GridCard
       className="studio-card"
       url={`/studios/${studio.id}`}
       title={studio.name}

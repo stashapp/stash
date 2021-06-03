@@ -1,5 +1,5 @@
 import React from "react";
-import { Card as BSCard, Form } from "react-bootstrap";
+import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import TruncatedText from "./TruncatedText";
 
@@ -18,7 +18,7 @@ interface ICardProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const Card: React.FC<ICardProps> = (props: ICardProps) => {
+export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   function handleImageClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     const { shiftKey } = event;
 
@@ -76,8 +76,8 @@ export const Card: React.FC<ICardProps> = (props: ICardProps) => {
   }
 
   return (
-    <BSCard
-      className={`${props.className} stash-card`}
+    <Card
+      className={`${props.className} grid-card`}
       onClick={handleImageClick}
       onDragStart={handleDrag}
       onDragOver={handleDragOver}
@@ -105,6 +105,6 @@ export const Card: React.FC<ICardProps> = (props: ICardProps) => {
       </div>
 
       {props.popovers}
-    </BSCard>
+    </Card>
   );
 };

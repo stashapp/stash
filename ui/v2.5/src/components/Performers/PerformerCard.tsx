@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
-  Card,
+  GridCard,
   CountryFlag,
   HoverPopover,
   Icon,
@@ -149,7 +149,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   return (
-    <Card
+    <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
       title={performer.name ?? ""}
