@@ -74,6 +74,12 @@
   "o_counter": "尻尻計數",
   "operations": "動作",
   "organized": "是否已整理",
+  "pagination": {
+    "next": "下一頁",
+    "previous": "上一頁",
+    "last": "最後一頁",
+    "first": "最前一頁"
+  },
   "parent_studios": "母公司",
   "path": "路徑",
   "performer_count": "演員數量",
