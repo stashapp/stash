@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
@@ -105,7 +105,7 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
       <Form.Group>
         {stashes.length > 0 && (
           <Row>
-            <h6 className="col-4">Path</h6>
+            <h6 className="col-4"><FormattedMessage id="path" /></h6>
             <h6 className="col-3">Exclude Video</h6>
             <h6 className="col-3">Exclude Image</h6>
           </Row>

@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TruncatedText } from "src/components/Shared";
@@ -39,7 +39,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     } = props;
     return (
       <div className="row">
-        <span className="col-4">Path</span>
+        <span className="col-4"><FormattedMessage id="path"/></span>
         <a href={`file://${path}`} className="col-8">
           <TruncatedText text={`file://${props.scene.path}`} />
         </a>{" "}
