@@ -1,17 +1,11 @@
 import React from "react";
-import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import {
-  Icon,
-  TagLink,
-  HoverPopover,
-  SweatDrops,
-  TruncatedText,
-} from "src/components/Shared";
+import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import { Card } from "../Shared/Card";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -110,36 +104,6 @@ export const ImageCard: React.FC<IImageCardProps> = (
     }
   }
 
-  function handleImageClick(
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) {
-    const { shiftKey } = event;
-
-    if (props.selecting) {
-      props.onSelectedChanged(!props.selected, shiftKey);
-      event.preventDefault();
-    }
-  }
-
-  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
-    if (props.selecting) {
-      event.dataTransfer.setData("text/plain", "");
-      event.dataTransfer.setDragImage(new Image(), 0, 0);
-    }
-  }
-
-  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
-    const ev = event;
-    const shiftKey = false;
-
-    if (props.selecting && !props.selected) {
-      props.onSelectedChanged(true, shiftKey);
-    }
-
-    ev.dataTransfer.dropEffect = "move";
-    ev.preventDefault();
-  }
-
   function isPortrait() {
     const { file } = props.image;
     const width = file.width ? file.width : 0;
@@ -147,31 +111,18 @@ export const ImageCard: React.FC<IImageCardProps> = (
     return height > width;
   }
 
-  let shiftKey = false;
-
   return (
-    <Card className={`image-card zoom-${props.zoomIndex}`}>
-      <Form.Control
-        type="checkbox"
-        className="image-card-check"
-        checked={props.selected}
-        onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
-        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-          // eslint-disable-next-line prefer-destructuring
-          shiftKey = event.shiftKey;
-          event.stopPropagation();
-        }}
-      />
-
-      <div className="thumbnail-section">
-        <Link
-          to={`/images/${props.image.id}`}
-          className="image-card-link"
-          onClick={handleImageClick}
-          onDragStart={handleDrag}
-          onDragOver={handleDragOver}
-          draggable={props.selecting}
-        >
+    <Card
+      className={`image-card zoom-${props.zoomIndex}`}
+      url={`/images/${props.image.id}`}
+      title={
+        props.image.title
+          ? props.image.title
+          : TextUtils.fileNameFromPath(props.image.path)
+      }
+      linkClassName="image-card-link"
+      image={
+        <>
           <div className={cx("image-card-preview", { portrait: isPortrait() })}>
             <img
               className="image-card-preview-image"
@@ -180,22 +131,12 @@ export const ImageCard: React.FC<IImageCardProps> = (
             />
           </div>
           {maybeRenderRatingBanner()}
-        </Link>
-      </div>
-      <div className="card-section">
-        <h5 className="card-section-title">
-          <TruncatedText
-            text={
-              props.image.title
-                ? props.image.title
-                : TextUtils.fileNameFromPath(props.image.path)
-            }
-            lineCount={2}
-          />
-        </h5>
-      </div>
-
-      {maybeRenderPopoverButtonGroup()}
-    </Card>
+        </>
+      }
+      popovers={maybeRenderPopoverButtonGroup()}
+      selected={props.selected}
+      selecting={props.selecting}
+      onSelectedChanged={props.onSelectedChanged}
+    />
   );
 };

@@ -6,6 +6,7 @@ import TruncatedText from "./TruncatedText";
 interface ICardProps {
   className?: string;
   linkClassName?: string;
+  thumbnailSectionClassName?: string;
   url: string;
   title: string;
   image: JSX.Element;
@@ -84,7 +85,7 @@ export const Card: React.FC<ICardProps> = (props: ICardProps) => {
     >
       {maybeRenderCheckbox()}
 
-      <div className="thumbnail-section">
+      <div className={`${props.thumbnailSectionClassName} thumbnail-section`}>
         <Link
           to={props.url}
           className={props.linkClassName}
