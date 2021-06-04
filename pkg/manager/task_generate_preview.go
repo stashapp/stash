@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -50,7 +51,7 @@ func (t *GeneratePreviewTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	generator.Info.ChunkDuration = *t.Options.PreviewSegmentDuration
 	generator.Info.ExcludeStart = *t.Options.PreviewExcludeStart
 	generator.Info.ExcludeEnd = *t.Options.PreviewExcludeEnd
-	generator.Info.Audio = t.Options.PreviewAudio
+	generator.Info.Audio = config.GetInstance().GetPreviewAudio()
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating preview: %s", err.Error())
