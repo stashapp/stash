@@ -537,18 +537,19 @@ func (qb *tagQueryBuilder) UpdateAliases(tagID int, aliases []string) error {
 	return qb.aliasRepository().replace(tagID, aliases)
 }
 
-func (qb *tagQueryBuilder) MergeTags(source []int, destination int) error {
+func (qb *tagQueryBuilder) Merge(source []int, destination int) error {
+	if len(source) == 0 {
+		return nil
+	}
+
 	inBinding := getInBinding(len(source))
 
 	args := []interface{}{destination}
 	for _, id := range source {
-		if id != destination {
-			args = append(args, id)
+		if id == destination {
+			return errors.New("cannot merge where source == destination")
 		}
-	}
-
-	if len(args) == 1 {
-		return nil
+		args = append(args, id)
 	}
 
 	tagTables := map[string]string{

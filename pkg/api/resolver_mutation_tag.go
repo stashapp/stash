@@ -220,7 +220,7 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMerge
 			return fmt.Errorf("Tag with ID %d not found", destination)
 		}
 
-		if err = qb.MergeTags(source, destination); err != nil {
+		if err = qb.Merge(source, destination); err != nil {
 			return err
 		}
 
