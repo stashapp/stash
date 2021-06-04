@@ -114,8 +114,8 @@ export const PerformerList: React.FC<IPerformerList> = ({
     <DeleteEntityDialog
       selected={selectedPerformers}
       onClose={onClose}
-      singularEntity={intl.formatMessage({id: 'performer'})}
-      pluralEntity={intl.formatMessage({id: 'performers'})}
+      singularEntity={intl.formatMessage({ id: "performer" })}
+      pluralEntity={intl.formatMessage({ id: "performers" })}
       destroyMutation={usePerformersDestroy}
     />
   );

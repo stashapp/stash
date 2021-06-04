@@ -460,7 +460,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               {saveState ? (
                 <LoadingIndicator inline small message="" />
               ) : (
-                <FormattedMessage id="actions.save"/>
+                <FormattedMessage id="actions.save" />
               )}
             </Button>
           </div>

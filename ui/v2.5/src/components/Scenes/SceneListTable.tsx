@@ -98,14 +98,30 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         <thead>
           <tr>
             <th />
-            <th className="text-left"><FormattedMessage id="title"/></th>
-            <th><FormattedMessage id="rating"/></th>
-            <th><FormattedMessage id="duration"/></th>
-            <th><FormattedMessage id="tags"/></th>
-            <th><FormattedMessage id="performers"/></th>
-            <th><FormattedMessage id="studio"/></th>
-            <th><FormattedMessage id="movies"/></th>
-            <th><FormattedMessage id="gallery"/></th>
+            <th className="text-left">
+              <FormattedMessage id="title" />
+            </th>
+            <th>
+              <FormattedMessage id="rating" />
+            </th>
+            <th>
+              <FormattedMessage id="duration" />
+            </th>
+            <th>
+              <FormattedMessage id="tags" />
+            </th>
+            <th>
+              <FormattedMessage id="performers" />
+            </th>
+            <th>
+              <FormattedMessage id="studio" />
+            </th>
+            <th>
+              <FormattedMessage id="movies" />
+            </th>
+            <th>
+              <FormattedMessage id="gallery" />
+            </th>
           </tr>
         </thead>
         <tbody>{props.scenes.map(renderSceneRow)}</tbody>

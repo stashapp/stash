@@ -36,7 +36,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
 
   const otherOperations = [
     {
-      text: intl.formatMessage({id:'actions.view_random'}),
+      text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
     },
     {
@@ -185,8 +185,10 @@ export const GalleryList: React.FC<IGalleryList> = ({
         <Table className="col col-sm-6 mx-auto">
           <thead>
             <tr>
-              <th>{intl.formatMessage({id:'actions.preview'})}</th>
-              <th className="d-none d-sm-none">{intl.formatMessage({id:'title'})}</th>
+              <th>{intl.formatMessage({ id: "actions.preview" })}</th>
+              <th className="d-none d-sm-none">
+                {intl.formatMessage({ id: "title" })}
+              </th>
             </tr>
           </thead>
           <tbody>

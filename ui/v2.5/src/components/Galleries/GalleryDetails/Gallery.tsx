@@ -75,7 +75,9 @@ export const Gallery: React.FC = () => {
       paths: [gallery.path],
     });
 
-    Toast.success({ content: intl.formatMessage({id:'toast.rescanning_gallery'}) });
+    Toast.success({
+      content: intl.formatMessage({ id: "toast.rescanning_gallery" }),
+    });
   }
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
@@ -116,7 +118,7 @@ export const Gallery: React.FC = () => {
               className="bg-secondary text-white"
               onClick={() => onRescan()}
             >
-              <FormattedMessage id='actions.rescan'/>
+              <FormattedMessage id="actions.rescan" />
             </Dropdown.Item>
           ) : undefined}
           <Dropdown.Item
@@ -124,7 +126,7 @@ export const Gallery: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <FormattedMessage id='actions.delete_gallery'/>
+            <FormattedMessage id="actions.delete_gallery" />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -144,11 +146,15 @@ export const Gallery: React.FC = () => {
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
-              <Nav.Link eventKey="gallery-details-panel"><FormattedMessage id='details'/></Nav.Link>
+              <Nav.Link eventKey="gallery-details-panel">
+                <FormattedMessage id="details" />
+              </Nav.Link>
             </Nav.Item>
             {gallery.scenes.length > 0 && (
               <Nav.Item>
-                <Nav.Link eventKey="gallery-scenes-panel"><FormattedMessage id='scenes'/></Nav.Link>
+                <Nav.Link eventKey="gallery-scenes-panel">
+                  <FormattedMessage id="scenes" />
+                </Nav.Link>
               </Nav.Item>
             )}
             {gallery.path ? (
@@ -159,7 +165,9 @@ export const Gallery: React.FC = () => {
               </Nav.Item>
             ) : undefined}
             <Nav.Item>
-              <Nav.Link eventKey="gallery-edit-panel"><FormattedMessage id='actions.edit'/></Nav.Link>
+              <Nav.Link eventKey="gallery-edit-panel">
+                <FormattedMessage id="actions.edit" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item className="ml-auto">
               <OrganizedButton
@@ -214,10 +222,14 @@ export const Gallery: React.FC = () => {
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
-              <Nav.Link eventKey="images"><FormattedMessage id='images'/></Nav.Link>
+              <Nav.Link eventKey="images">
+                <FormattedMessage id="images" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="add"><FormattedMessage id='actions.add'/></Nav.Link>
+              <Nav.Link eventKey="add">
+                <FormattedMessage id="actions.add" />
+              </Nav.Link>
             </Nav.Item>
           </Nav>
         </div>
@@ -257,7 +269,9 @@ export const Gallery: React.FC = () => {
     return (
       <div className="row new-view">
         <div className="col-6">
-          <h2><FormattedMessage id='actions.create_gallery'/></h2>
+          <h2>
+            <FormattedMessage id="actions.create_gallery" />
+          </h2>
           <GalleryEditPanel
             isNew
             gallery={undefined}

@@ -30,7 +30,7 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
       className="minimal pr-1"
       onClick={props.onIncrement}
       variant="secondary"
-      title={intl.formatMessage({id: "o_counter"})}
+      title={intl.formatMessage({ id: "o_counter" })}
     >
       <SweatDrops />
       <span className="ml-2">{props.value}</span>

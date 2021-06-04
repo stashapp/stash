@@ -247,7 +247,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
                   )
                 }
               >
-                <FormattedMessage id="actions.search"/>
+                <FormattedMessage id="actions.search" />
               </Button>
             </InputGroup.Append>
           </InputGroup>

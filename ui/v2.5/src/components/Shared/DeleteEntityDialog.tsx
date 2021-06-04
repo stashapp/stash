@@ -27,7 +27,7 @@ const messages = defineMessages({
     id: "dialogs.delete_object_title",
   },
   deleteToast: {
-    id: "toast.delete_past_tense"
+    id: "toast.delete_past_tense",
   },
   deleteMessage: {
     id: "dialogs.delete_object_desc",

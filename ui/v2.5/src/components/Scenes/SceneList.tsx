@@ -41,12 +41,12 @@ export const SceneList: React.FC<ISceneList> = ({
 
   const otherOperations = [
     {
-      text: intl.formatMessage({id:'actions.play_selected'}),
+      text: intl.formatMessage({ id: "actions.play_selected" }),
       onClick: playSelected,
       isDisplayed: showWhenSelected,
     },
     {
-      text: intl.formatMessage({id:'actions.play_random'}),
+      text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
     },
     {

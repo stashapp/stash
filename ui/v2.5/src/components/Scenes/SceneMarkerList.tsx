@@ -21,7 +21,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   const history = useHistory();
   const otherOperations = [
     {
-      text: intl.formatMessage({id:'actions.play_random'}),
+      text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
     },
   ];

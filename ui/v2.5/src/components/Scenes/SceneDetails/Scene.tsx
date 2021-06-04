@@ -199,7 +199,9 @@ export const Scene: React.FC = () => {
       paths: [scene.path],
     });
 
-    Toast.success({ content: intl.formatMessage({id:'toast.rescanning_scene'}) });
+    Toast.success({
+      content: intl.formatMessage({ id: "toast.rescanning_scene" }),
+    });
   }
 
   async function onGenerateScreenshot(at?: number) {
@@ -213,7 +215,9 @@ export const Scene: React.FC = () => {
         at,
       },
     });
-    Toast.success({ content: intl.formatMessage({id:'toast.generating_screenshot'}) });
+    Toast.success({
+      content: intl.formatMessage({ id: "toast.generating_screenshot" }),
+    });
   }
 
   async function onQueueLessScenes() {
@@ -345,14 +349,14 @@ export const Scene: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => onRescan()}
           >
-            <FormattedMessage id='actions.rescan'/>
+            <FormattedMessage id="actions.rescan" />
           </Dropdown.Item>
           <Dropdown.Item
             key="generate"
             className="bg-secondary text-white"
             onClick={() => setIsGenerateDialogOpen(true)}
           >
-            <FormattedMessage id='actions.generate'/>
+            <FormattedMessage id="actions.generate" />
           </Dropdown.Item>
           <Dropdown.Item
             key="generate-screenshot"
@@ -361,21 +365,21 @@ export const Scene: React.FC = () => {
               onGenerateScreenshot(JWUtils.getPlayer().getPosition())
             }
           >
-            <FormattedMessage id='actions.generate_thumb_from_current'/>
+            <FormattedMessage id="actions.generate_thumb_from_current" />
           </Dropdown.Item>
           <Dropdown.Item
             key="generate-default"
             className="bg-secondary text-white"
             onClick={() => onGenerateScreenshot()}
           >
-            <FormattedMessage id='actions.generate_thumb_default'/>
+            <FormattedMessage id="actions.generate_thumb_default" />
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-scene"
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <FormattedMessage id='actions.delete_scene'/>
+            <FormattedMessage id="actions.delete_scene" />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>

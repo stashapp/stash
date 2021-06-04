@@ -45,7 +45,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
 
   const otherOperations = [
     {
-      text: intl.formatMessage({id:"actions.view_random"}),
+      text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
     },
     {
@@ -135,8 +135,8 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     <DeleteEntityDialog
       selected={selectedTags}
       onClose={onClose}
-      singularEntity={intl.formatMessage({id: 'tag'})}
-      pluralEntity={intl.formatMessage({id: 'tags'})}
+      singularEntity={intl.formatMessage({ id: "tag" })}
+      pluralEntity={intl.formatMessage({ id: "tags" })}
       destroyMutation={useTagsDestroy}
     />
   );
@@ -165,7 +165,9 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     if (!tag) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success({ content: intl.formatMessage({id:'toast.started_auto_tagging'}) });
+      Toast.success({
+        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -174,7 +176,9 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   async function onDelete() {
     try {
       await deleteTag();
-      Toast.success({ content: intl.formatMessage({id:'toast.deleted_tag'}) });
+      Toast.success({
+        content: intl.formatMessage({ id: "toast.deleted_tag" }),
+      });
       setDeletingTag(null);
     } catch (e) {
       Toast.error(e);

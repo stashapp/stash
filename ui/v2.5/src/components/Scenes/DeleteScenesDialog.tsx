@@ -16,9 +16,18 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
 ) => {
   const intl = useIntl();
 
-  const header = intl.formatMessage({id: 'dialogs.delete_scene_title'}, {sceneCount: props.selected.length})
-  const toastMessage = intl.formatMessage({id: 'toast.delete_scene'}, {sceneCount: props.selected.length})
-  const message = intl.formatMessage({id:'dialogs.delete_scene_desc'}, {sceneCount: props.selected.length})
+  const header = intl.formatMessage(
+    { id: "dialogs.delete_scene_title" },
+    { sceneCount: props.selected.length }
+  );
+  const toastMessage = intl.formatMessage(
+    { id: "toast.delete_scene" },
+    { sceneCount: props.selected.length }
+  );
+  const message = intl.formatMessage(
+    { id: "dialogs.delete_scene_desc" },
+    { sceneCount: props.selected.length }
+  );
 
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
@@ -66,20 +75,20 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
       }}
       isRunning={isDeleting}
     >
-      <p>
-        {message}
-      </p>
+      <p>{message}</p>
       <Form>
         <Form.Check
           id="delete-file"
           checked={deleteFile}
-          label={intl.formatMessage({id:'actions.delete_file'})}
+          label={intl.formatMessage({ id: "actions.delete_file" })}
           onChange={() => setDeleteFile(!deleteFile)}
         />
         <Form.Check
           id="delete-generated"
           checked={deleteGenerated}
-          label={intl.formatMessage({id:'actions.delete_generated_supporting_files'})}
+          label={intl.formatMessage({
+            id: "actions.delete_generated_supporting_files",
+          })}
           onChange={() => setDeleteGenerated(!deleteGenerated)}
         />
       </Form>

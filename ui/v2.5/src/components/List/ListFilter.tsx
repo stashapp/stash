@@ -283,19 +283,19 @@ export const ListFilter: React.FC<IListFilterProps> = (
       let displayModeId = "unknown";
       switch (option) {
         case DisplayMode.Grid:
-          displayModeId = 'grid';
+          displayModeId = "grid";
           break;
         case DisplayMode.List:
-          displayModeId= "list";
+          displayModeId = "list";
           break;
         case DisplayMode.Wall:
-          displayModeId= "wall";
+          displayModeId = "wall";
           break;
         case DisplayMode.Tagger:
-          displayModeId= "tagger";
+          displayModeId = "tagger";
           break;
       }
-      return intl.formatMessage({id: `display_mode.${displayModeId}`});
+      return intl.formatMessage({ id: `display_mode.${displayModeId}` });
     }
 
     return props.filterOptions.displayModeOptions.map((option) => (
@@ -367,7 +367,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           className="bg-secondary text-white"
           onClick={() => onSelectAll()}
         >
-          <FormattedMessage id='actions.select_all'/>
+          <FormattedMessage id="actions.select_all" />
         </Dropdown.Item>
       );
     }
@@ -381,7 +381,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           className="bg-secondary text-white"
           onClick={() => onSelectNone()}
         >
-          <FormattedMessage id='actions.select_none'/>
+          <FormattedMessage id="actions.select_none" />
         </Dropdown.Item>
       );
     }
@@ -487,7 +487,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             <InputGroup className="mr-2 flex-grow-1">
               <FormControl
                 ref={queryRef}
-                placeholder={`${intl.formatMessage({id: 'actions.search'})}…`}
+                placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
                 defaultValue={props.filter.searchTerm}
                 onInput={onChangeQuery}
                 className="bg-secondary text-white border-secondary w-50"
@@ -516,8 +516,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
                 overlay={
                   <Tooltip id="sort-direction-tooltip">
                     {props.filter.sortDirection === SortDirectionEnum.Asc
-                      ? intl.formatMessage({id:'ascending'})
-                      : intl.formatMessage({id:'descending'})}
+                      ? intl.formatMessage({ id: "ascending" })
+                      : intl.formatMessage({ id: "descending" })}
                   </Tooltip>
                 }
               >

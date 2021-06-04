@@ -364,14 +364,18 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       if (!isTagged && hasStashIDs) {
         mainContent = (
           <div className="text-right">
-            <h5 className="text-bold"><FormattedMessage id="component_tagger.results.match_failed_already_tagged"/></h5>
+            <h5 className="text-bold">
+              <FormattedMessage id="component_tagger.results.match_failed_already_tagged" />
+            </h5>
           </div>
         );
       } else if (!isTagged && !hasStashIDs) {
         mainContent = (
           <InputGroup>
             <InputGroup.Prepend>
-              <InputGroup.Text><FormattedMessage id="component_tagger.noun_query"/></InputGroup.Text>
+              <InputGroup.Text>
+                <FormattedMessage id="component_tagger.noun_query" />
+              </InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
               className="text-input"
@@ -397,7 +401,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                   )
                 }
               >
-                <FormattedMessage id="actions.search"/>
+                <FormattedMessage id="actions.search" />
               </Button>
             </InputGroup.Append>
           </InputGroup>
@@ -405,7 +409,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       } else if (isTagged) {
         mainContent = (
           <div className="d-flex flex-column text-right">
-            <h5><FormattedMessage id="component_tagger.results.match_success"/></h5>
+            <h5>
+              <FormattedMessage id="component_tagger.results.match_success" />
+            </h5>
             <h6>
               <Link className="bold" to={sceneLink}>
                 {taggedScenes[scene.id].title}
@@ -443,7 +449,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         );
       } else if (searchResults[scene.id]?.length === 0) {
         subContent = (
-          <div className="text-danger font-weight-bold"><FormattedMessage id="component_tagger.results.match_failed_no_result"/></div>
+          <div className="text-danger font-weight-bold">
+            <FormattedMessage id="component_tagger.results.match_failed_no_result" />
+          </div>
         );
       }
 
@@ -549,10 +557,16 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         <div className="mr-2">
           {(getFingerprintCount() > 0 || hideUnmatched) && (
             <Button onClick={toggleHideUnmatchedScenes}>
-                <FormattedMessage
-                  id="component_tagger.verb_toggle_unmatched"
-                  values={{toggle: (<FormattedMessage id={`actions.${hideUnmatched ? "hide" : "show"}`}/>)}}
-                />
+              <FormattedMessage
+                id="component_tagger.verb_toggle_unmatched"
+                values={{
+                  toggle: (
+                    <FormattedMessage
+                      id={`actions.${hideUnmatched ? "hide" : "show"}`}
+                    />
+                  ),
+                }}
+              />
             </Button>
           )}
         </div>

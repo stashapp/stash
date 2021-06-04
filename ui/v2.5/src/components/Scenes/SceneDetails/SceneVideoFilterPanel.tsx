@@ -345,7 +345,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderBlur() {
     return renderSlider({
-      title: intl.formatMessage({id:'effect_filters.blur'}),
+      title: intl.formatMessage({ id: "effect_filters.blur" }),
       range: blurRange,
       value: blurValue,
       setValue: setBlurValue,
@@ -355,7 +355,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderContrast() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.contrast"}),
+      title: intl.formatMessage({ id: "effect_filters.contrast" }),
       className: "contrast-slider",
       range: contrastRange,
       value: contrastValue,
@@ -366,7 +366,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderBrightness() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.brightness"}),
+      title: intl.formatMessage({ id: "effect_filters.brightness" }),
       className: "brightness-slider",
       range: brightnessRange,
       value: brightnessValue,
@@ -377,7 +377,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderGammaSlider() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.gamma"}),
+      title: intl.formatMessage({ id: "effect_filters.gamma" }),
       className: "gamma-slider",
       range: gammaRange,
       value: gammaValue,
@@ -388,7 +388,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderSaturate() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.saturation"}),
+      title: intl.formatMessage({ id: "effect_filters.saturation" }),
       className: "saturation-slider",
       range: saturateRange,
       value: saturateValue,
@@ -399,7 +399,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderHueRotateSlider() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.hue"}),
+      title: intl.formatMessage({ id: "effect_filters.hue" }),
       className: "hue-rotate-slider",
       range: hueRotateRange,
       value: hueRotateValue,
@@ -410,7 +410,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderWhiteBalance() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.warmth"}),
+      title: intl.formatMessage({ id: "effect_filters.warmth" }),
       className: "white-balance-slider",
       range: whiteBalanceRange,
       value: whiteBalanceValue,
@@ -424,7 +424,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderRedSlider() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.red"}),
+      title: intl.formatMessage({ id: "effect_filters.red" }),
       className: "red-slider",
       range: colourRange,
       value: redValue,
@@ -437,7 +437,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderGreenSlider() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.green"}),
+      title: intl.formatMessage({ id: "effect_filters.green" }),
       className: "green-slider",
       range: colourRange,
       value: greenValue,
@@ -450,7 +450,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderBlueSlider() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.blue"}),
+      title: intl.formatMessage({ id: "effect_filters.blue" }),
       className: "blue-slider",
       range: colourRange,
       value: blueValue,
@@ -463,7 +463,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderRotate() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.rotate"}),
+      title: intl.formatMessage({ id: "effect_filters.rotate" }),
       range: rotateRange,
       value: rotateValue,
       setValue: setRotateValue,
@@ -475,7 +475,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderScale() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.scale"}),
+      title: intl.formatMessage({ id: "effect_filters.scale" }),
       range: scaleRange,
       value: scaleValue,
       setValue: setScaleValue,
@@ -485,7 +485,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
 
   function renderAspectRatio() {
     return renderSlider({
-      title: intl.formatMessage({id:"effect_filters.aspect"}),
+      title: intl.formatMessage({ id: "effect_filters.aspect" }),
       range: aspectRatioRange,
       value: aspectRatioValue,
       setValue: setAspectRatioValue,
@@ -560,7 +560,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
             type="button"
             onClick={() => onRotateAndScale(0)}
           >
-            <FormattedMessage id='effect_filters.rotate_left_and_scale'/>
+            <FormattedMessage id="effect_filters.rotate_left_and_scale" />
           </Button>
         </span>
         <span className="col-6">
@@ -570,7 +570,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
             type="button"
             onClick={() => onRotateAndScale(1)}
           >
-            <FormattedMessage id='effect_filters.rotate_right_and_scale'/>
+            <FormattedMessage id="effect_filters.rotate_right_and_scale" />
           </Button>
         </span>
       </div>
@@ -606,7 +606,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
             type="button"
             onClick={() => onResetFilters()}
           >
-            <FormattedMessage id='effect_filters.reset_filters'/>
+            <FormattedMessage id="effect_filters.reset_filters" />
           </Button>
         </span>
         <span className="col-6">
@@ -616,7 +616,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
             type="button"
             onClick={() => onResetTransforms()}
           >
-            <FormattedMessage id='effect_filters.reset_transforms'/>
+            <FormattedMessage id="effect_filters.reset_transforms" />
           </Button>
         </span>
       </div>
@@ -635,7 +635,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     <div className="container scene-video-filter">
       <div className="row form-group">
         <span className="col-12">
-          <h5><FormattedMessage id='effect_filters.name'/></h5>
+          <h5>
+            <FormattedMessage id="effect_filters.name" />
+          </h5>
         </span>
       </div>
       {renderBrightness()}
@@ -650,7 +652,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       {renderBlur()}
       <div className="row form-group">
         <span className="col-12">
-          <h5><FormattedMessage id='effect_filters.name_transforms'/></h5>
+          <h5>
+            <FormattedMessage id="effect_filters.name_transforms" />
+          </h5>
         </span>
       </div>
       {renderRotate()}
@@ -658,7 +662,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       {renderAspectRatio()}
       <div className="row form-group">
         <span className="col-12">
-          <h5><FormattedMessage id='effect_filters.name_actions'/></h5>
+          <h5>
+            <FormattedMessage id="effect_filters.name_actions" />
+          </h5>
         </span>
       </div>
       {renderRotateAndScale()}

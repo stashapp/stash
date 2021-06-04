@@ -29,7 +29,7 @@ export const Image: React.FC = () => {
   const { id = "new" } = useParams<IImageParams>();
   const history = useHistory();
   const Toast = useToast();
-  const intl=useIntl();
+  const intl = useIntl();
 
   const { data, error, loading } = useFindImage(id);
   const image = data?.findImage;
@@ -55,7 +55,9 @@ export const Image: React.FC = () => {
       paths: [image.path],
     });
 
-    Toast.success({ content:intl.formatMessage({id:'toast.rescanning_image'}) });
+    Toast.success({
+      content: intl.formatMessage({ id: "toast.rescanning_image" }),
+    });
   }
 
   const onOrganizedClick = async () => {
@@ -141,14 +143,14 @@ export const Image: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => onRescan()}
           >
-            <FormattedMessage id='actions.rescan'/>
+            <FormattedMessage id="actions.rescan" />
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-image"
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <FormattedMessage id='actions.delete_image'/>
+            <FormattedMessage id="actions.delete_image" />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -168,13 +170,19 @@ export const Image: React.FC = () => {
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
-              <Nav.Link eventKey="image-details-panel"><FormattedMessage id='details'/></Nav.Link>
+              <Nav.Link eventKey="image-details-panel">
+                <FormattedMessage id="details" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="image-file-info-panel"><FormattedMessage id='file_info'/></Nav.Link>
+              <Nav.Link eventKey="image-file-info-panel">
+                <FormattedMessage id="file_info" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="image-edit-panel"><FormattedMessage id='actions.edit'/></Nav.Link>
+              <Nav.Link eventKey="image-edit-panel">
+                <FormattedMessage id="actions.edit" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item className="ml-auto">
               <OCounterButton
