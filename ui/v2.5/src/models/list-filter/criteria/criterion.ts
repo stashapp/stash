@@ -125,9 +125,14 @@ export abstract class Criterion<V extends CriterionValue> {
       valueString = this.getLabelValue();
     }
 
-    return `${intl.formatMessage({
-      id: this.criterionOption.messageID,
-    })} ${modifierString} ${valueString}`;
+    return intl.formatMessage(
+      { id: "criterion_modifier.format_string" },
+      {
+        criterion: intl.formatMessage({ id: this.criterionOption.messageID }),
+        modifierString,
+        valueString,
+      }
+    );
   }
 
   public getId(): string {

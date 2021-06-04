@@ -60,13 +60,13 @@ export const ImageInput: React.FC<IImageInput> = ({
       <Modal
         show={!!isShowDialog}
         onHide={() => setIsShowDialog(false)}
-        header="Image URL"
+        header={intl.formatMessage({ id: "dialogs.title_set_image_url" })}
         accept={{ onClick: onConfirmURL, text: "Confirm" }}
       >
         <div className="dialog-content">
           <Form.Group controlId="url" as={Row}>
             <Form.Label column xs={3}>
-              URL
+              {intl.formatMessage({ id: "url" })}
             </Form.Label>
             <Col xs={9}>
               <Form.Control
@@ -75,7 +75,7 @@ export const ImageInput: React.FC<IImageInput> = ({
                   setURL(event.currentTarget.value)
                 }
                 value={url}
-                placeholder="URL"
+                placeholder={intl.formatMessage({ id: "url" })}
               />
             </Col>
           </Form.Group>
@@ -92,7 +92,7 @@ export const ImageInput: React.FC<IImageInput> = ({
             <Form.Label className="image-input">
               <Button variant="secondary">
                 <Icon icon="file" className="fa-fw" />
-                <span>From file...</span>
+                <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
               </Button>
               <Form.Control
                 type="file"
@@ -104,7 +104,7 @@ export const ImageInput: React.FC<IImageInput> = ({
           <div>
             <Button className="minimal" onClick={() => setIsShowDialog(true)}>
               <Icon icon="link" className="fa-fw" />
-              <span>From URL...</span>
+              <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
             </Button>
           </div>
         </>

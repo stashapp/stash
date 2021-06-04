@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
@@ -39,11 +40,22 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   onSelectedChanged,
   extraCriteria,
 }) => {
+  const intl = useIntl();
   const age = TextUtils.age(
     performer.birthdate,
     ageFromDate ?? performer.death_date
   );
-  const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
+  const ageL10nId = ageFromDate
+    ? "scene_info.performer_card.age_context"
+    : "scene_info.performer_card.age";
+  const ageL10String = intl.formatMessage({
+    id: "years_old",
+    defaultMessage: "years old",
+  });
+  const ageString = intl.formatMessage(
+    { id: ageL10nId },
+    { age, years_old: ageL10String }
+  );
 
   function maybeRenderFavoriteIcon() {
     if (performer.favorite === false) {
@@ -143,7 +155,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           performer.rating ? `rating-${performer.rating}` : ""
         }`}
       >
-        RATING: {performer.rating}
+        <FormattedMessage id="rating" />: {performer.rating}
       </div>
     );
   }

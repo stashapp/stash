@@ -1,24 +1,27 @@
 {
   "actions": {
+    "add": "Add",
     "add_directory": "Add Directory",
     "add_tag": "Add Tag",
-    "add": "Add",
     "apply": "Apply",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
     "cancel": "Cancel",
     "clean": "Clean",
     "clear_image": "Clear Image",
+    "create": "Create",
     "create_marker": "Create Marker",
     "delete": "Delete",
     "download_backup": "Download Backup",
     "edit": "Edit",
     "export": "Export…",
     "export_all": "Export all…",
-    "import": "Import…",
+    "from_file": "From file…",
+    "from_url": "From URL…",
     "full_export": "Full Export",
     "full_import": "Full Import",
     "generate": "Generate",
+    "import": "Import…",
     "import_from_file": "Import from file",
     "refresh": "Refresh",
     "reload_plugins": "Reload plugins",
@@ -30,6 +33,7 @@
     "selective_auto_tag": "Selective Auto Tag",
     "selective_scan": "Selective Scan",
     "set_image": "Set image…",
+    "skip": "Skip",
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…"
   },
@@ -41,7 +45,6 @@
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
   "career_length": "Career Length",
-  "country": "Country",
   "config": {
     "categories": {
       "about": "About",
@@ -53,25 +56,33 @@
       "tasks": "Tasks",
       "tools": "Tools"
     },
+    "general": {
+      "cache_path_head": "Cache Path",
+      "db_path_head": "Databae Path",
+      "generated_path_head": "Generated Path",
+      "image_ext_head": "Image Extensions",
+      "video_ext_head": "Video Extensions"
+    },
     "ui": {
-      "title": "User Interface",
+      "custom_css": {
+        "description": "Page must be reloaded for changes to take effect.",
+        "heading": "Custom CSS",
+        "option_label": "Custom CSS enabled"
+      },
       "language": {
         "heading": "Language"
       },
-      "menu_items": {
-        "heading": "Menu Items",
-        "description": "Show or hide different types of content on the navigation bar"
+      "max_loop_duration": {
+        "description": "Maximum scene duration where scene player will loop the video - 0 to disable",
+        "heading": "Maximum loop duration"
       },
-      "scene_wall": {
-        "heading": "Scene / Marker Wall",
-        "options": {
-          "display_title": "Display title and tags",
-          "toggle_sound": "Enable sound"
-        }
+      "menu_items": {
+        "description": "Show or hide different types of content on the navigation bar",
+        "heading": "Menu Items"
       },
       "preview_type": {
-        "heading": "Preview Type",
         "description": "Configuration for wall items",
+        "heading": "Preview Type",
         "options": {
           "animated": "Animated Image",
           "static": "Static Image",
@@ -90,54 +101,68 @@
           "auto_start_video": "Auto-start video"
         }
       },
-      "max_loop_duration": {
-        "heading": "Maximum loop duration",
-        "description": "Maximum scene duration where scene player will loop the video - 0 to disable"
+      "scene_wall": {
+        "heading": "Scene / Marker Wall",
+        "options": {
+          "display_title": "Display title and tags",
+          "toggle_sound": "Enable sound"
+        }
       },
       "slideshow_delay": {
-        "heading": "Slideshow Delay",
-        "description": "Slideshow is available in galleries when in wall view mode"
+        "description": "Slideshow is available in galleries when in wall view mode",
+        "heading": "Slideshow Delay"
       },
-      "custom_css": {
-        "heading": "Custom CSS",
-        "option_label": "Custom CSS enabled",
-        "description": "Page must be reloaded for changes to take effect."
-      }
-    },
-    "general": {
-      "cache_path_head": "Cache Path",
-      "db_path_head": "Databae Path",
-      "generated_path_head": "Generated Path",
-      "image_ext_head": "Image Extensions",
-      "video_ext_head": "Video Extensions"
+      "title": "User Interface"
     }
   },
+  "countables": {
+    "galleries": "{count, plural, =1 {Gallery}, other {Galleries}}",
+    "images": "{count, plural, =1 {Image}, other {Images}}",
+    "markers": "{count, plural, =1 {Marker}, other {Markers}}",
+    "movies": "{count, plural, =1 {Movie}, other {Movies}}",
+    "performers": "{count, plural, =1 {Performer}, other {Performers}}",
+    "scenes": "{count, plural, =1 {Scene}, other {Scenes}}",
+    "studios": "{count, plural, =1 {Studio}, other {Studios}}",
+    "tags": "{count, plural, =1 {Tag}, other {Tags}}"
+  },
+  "country": "Country",
+  "cover_image": "Cover Image",
   "created_at": "Created At",
   "criterion_modifier": {
     "equals": "is",
-    "not_equals": "is not",
+    "excludes": "excludes",
+    "format_string": "{criterion} {modifierString} {valueString}",
     "greater_than": "is greater than",
-    "less_than": "is less than",
-    "is_null": "is null",
-    "not_null": "is not null",
     "includes": "includes",
     "includes_all": "includes all",
-    "excludes": "excludes",
+    "is_null": "is null",
+    "less_than": "is less than",
     "matches_regex": "matches regex",
-    "not_matches_regex": "not matches regex"
+    "not_equals": "is not",
+    "not_matches_regex": "not matches regex",
+    "not_null": "is not null"
   },
   "date": "Date",
   "death_date": "Death Date",
   "death_year": "Death Year",
   "details": "Details",
   "developmentVersion": "Development Version",
+  "dialogs": {
+    "scrape_results_existing": "Existing",
+    "scrape_results_scraped": "Scraped",
+    "title_performer_scrape": "Performer Scrape Results",
+    "title_scene_scrape": "Scene Scrape Results",
+    "title_set_image_url": "Image URL"
+  },
+  "dimensions": "Dimensions",
   "donate": "Donate",
   "duration": "Duration",
-  "edit": "Edit",
+  "effect_filters": "Filters",
   "ethnicity": "Ethnicity",
   "eye_color": "Eye Colour",
   "fake_tits": "Fake Tits",
   "favourite": "Favourite",
+  "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "filesize": "File Size",
   "framerate": "Frame Rate",
@@ -148,12 +173,15 @@
   "hasMarkers": "Has Markers",
   "height": "Height",
   "image_count": "Image Count",
-  "images-size": "Images size",
   "images": "Images",
+  "images-size": "Images size",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "isMissing": "Is Missing",
   "library": "Library",
+  "loading": {
+    "generic": "Loading…"
+  },
   "marker_count": "Marker Count",
   "markers": "Markers",
   "measurements": "Measurements",
@@ -166,25 +194,40 @@
   "operations": "Operations",
   "organized": "Organised",
   "pagination": {
-    "next": "Next",
-    "previous": "Previous",
+    "first": "First",
     "last": "Last",
-    "first": "First"
+    "next": "Next",
+    "previous": "Previous"
   },
   "parent_studios": "Parent Studios",
   "path": "Path",
   "performer_count": "Performer Count",
+  "performer_image": "Performer Image",
   "performers": "Performers",
   "performerTags": "Performer Tags",
   "piercings": "Piercings",
+  "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
   "resolution": "Resolution",
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
-  "scenes_updated_at": "Scene Updated At",
-  "scenes-size": "Scenes size",
+  "scene_info": {
+    "audio_codec": "Audio Codec",
+    "checksum": "Checksum",
+    "downloaded_from": "Downloaded From",
+    "hash": "Hash",
+    "performer_card": {
+      "age": "{age} {years_old}",
+      "age_context": "{age} {years_old} in this scene"
+    },
+    "phash": "PHash",
+    "stream": "Stream",
+    "video_codec": "Video Codec"
+  },
   "scenes": "Scenes",
+  "scenes-size": "Scenes size",
+  "scenes_updated_at": "Scene Updated At",
   "sceneTagger": "Scene Tagger",
   "sceneTags": "Scene Tags",
   "seconds": "Seconds",

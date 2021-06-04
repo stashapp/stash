@@ -422,7 +422,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
           onChange={(value) => setDate(value)}
         />
         {renderScrapedStudioRow(
-          intl.formatMessage({ id: "studio" }),
+          intl.formatMessage({ id: "studios" }),
           studio,
           (value) => setStudio(value),
           newStudio,

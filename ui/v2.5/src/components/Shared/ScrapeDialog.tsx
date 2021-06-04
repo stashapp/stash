@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import { CollapseButton, Icon, Modal } from "src/components/Shared";
 import _ from "lodash";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -362,10 +362,10 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
             <Col lg={{ span: 9, offset: 3 }}>
               <Row>
                 <Form.Label column xs="6">
-                  Existing
+                  <FormattedMessage id="dialogs.scrape_results_existing" />
                 </Form.Label>
                 <Form.Label column xs="6">
-                  Scraped
+                  <FormattedMessage id="dialogs.scrape_results_scraped" />
                 </Form.Label>
               </Row>
             </Col>

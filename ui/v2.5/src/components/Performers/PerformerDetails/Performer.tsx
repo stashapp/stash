@@ -140,7 +140,7 @@ export const Performer: React.FC = () => {
       <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
         <PerformerImagesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="edit" title={intl.formatMessage({ id: "edit" })}>
+      <Tab eventKey="edit" title={intl.formatMessage({ id: "actions.edit" })}>
         <PerformerEditPanel
           performer={performer}
           isVisible={activeTabKey === "edit"}

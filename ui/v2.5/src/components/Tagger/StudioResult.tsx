@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 
 import { SuccessIcon, Modal, StudioSelect } from "src/components/Shared";
@@ -96,8 +96,11 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
     return (
       <div className="row no-gutters my-2">
         <div className="entity-name">
-          Studio:
-          <b className="ml-2">{studio?.name}</b>
+          <FormattedMessage
+            id="countables.studios"
+            values={{ count: stashIDData?.findStudios.studios.length }}
+          />
+          :<b className="ml-2">{studio?.name}</b>
         </div>
         <span className="ml-auto">
           <SuccessIcon className="mr-2" />
@@ -121,11 +124,15 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
         cancel={{ onClick: () => showModal(false), variant: "secondary" }}
       >
         <div className="row">
-          <strong className="col-2">Name:</strong>
+          <strong className="col-2">
+            <FormattedMessage id="name" />:
+          </strong>
           <span className="col-10">{studio?.name}</span>
         </div>
         <div className="row">
-          <strong className="col-2">URL:</strong>
+          <strong className="col-2">
+            <FormattedMessage id="url" />:
+          </strong>
           <span className="col-10">{studio?.url ?? ""}</span>
         </div>
         <div className="row">
@@ -137,21 +144,20 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
       </Modal>
 
       <div className="entity-name">
-        Studio:
-        <b className="ml-2">{studio?.name}</b>
+        <FormattedMessage id="studios" />:<b className="ml-2">{studio?.name}</b>
       </div>
       <ButtonGroup>
         <Button
           variant={selectedSource === "create" ? "primary" : "secondary"}
           onClick={() => showModal(true)}
         >
-          Create
+          <FormattedMessage id="actions.create" />
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
           onClick={() => handleStudioSkip()}
         >
-          Skip
+          <FormattedMessage id="actions.skip" />
         </Button>
         <StudioSelect
           ids={selectedStudio ? [selectedStudio] : []}

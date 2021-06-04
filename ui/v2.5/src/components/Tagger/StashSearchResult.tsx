@@ -1,6 +1,7 @@
 import React, { useState, useReducer } from "react";
 import cx from "classnames";
 import { Button } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { uniq } from "lodash";
 import { blobToBase64 } from "base64-blob";
 
@@ -116,6 +117,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     {}
   );
 
+  const intl = useIntl();
   const createStudio = useCreateStudio();
   const createPerformer = useCreatePerformer();
   const createTag = useCreateTag();
@@ -400,7 +402,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               {scene?.studio?.name} • {scene?.date}
             </h5>
             <div>
-              Performers: {scene?.performers?.map((p) => p.name).join(", ")}
+              {intl.formatMessage(
+                { id: "countables.performers" },
+                { count: scene?.performers?.length }
+              )}
+              : {scene?.performers?.map((p) => p.name).join(", ")}
             </div>
             {getDurationStatus(scene, stashScene.file?.duration)}
             {getFingerprintStatus(scene, stashScene)}

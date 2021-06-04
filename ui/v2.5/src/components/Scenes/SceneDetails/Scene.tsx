@@ -1,6 +1,7 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -393,43 +394,60 @@ export const Scene: React.FC = () => {
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
-              <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
+              <Nav.Link eventKey="scene-details-panel">
+                <FormattedMessage id="scenes" />
+              </Nav.Link>
             </Nav.Item>
             {(queueScenes ?? []).length > 0 ? (
               <Nav.Item>
-                <Nav.Link eventKey="scene-queue-panel">Queue</Nav.Link>
+                <Nav.Link eventKey="scene-queue-panel">
+                  <FormattedMessage id="queue" />
+                </Nav.Link>
               </Nav.Item>
             ) : (
               ""
             )}
             <Nav.Item>
-              <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
+              <Nav.Link eventKey="scene-markers-panel">
+                <FormattedMessage id="markers" />
+              </Nav.Link>
             </Nav.Item>
             {scene.movies.length > 0 ? (
               <Nav.Item>
-                <Nav.Link eventKey="scene-movie-panel">Movies</Nav.Link>
+                <Nav.Link eventKey="scene-movie-panel">
+                  <FormattedMessage
+                    id="countables.movie"
+                    values={{ count: scene.movies.length }}
+                  />
+                </Nav.Link>
               </Nav.Item>
             ) : (
               ""
             )}
-            {scene.galleries.length === 1 ? (
+            {scene.galleries.length >= 1 ? (
               <Nav.Item>
-                <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
+                <Nav.Link eventKey="scene-galleries-panel">
+                  <FormattedMessage
+                    id="countables.gallery"
+                    values={{ count: scene.galleries.length }}
+                  />
+                </Nav.Link>
               </Nav.Item>
             ) : undefined}
-            {scene.galleries.length > 1 ? (
-              <Nav.Item>
-                <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
-              </Nav.Item>
-            ) : undefined}
             <Nav.Item>
-              <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
+              <Nav.Link eventKey="scene-video-filter-panel">
+                <FormattedMessage id="effect_filters" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
+              <Nav.Link eventKey="scene-file-info-panel">
+                <FormattedMessage id="file_info" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
+              <Nav.Link eventKey="scene-edit-panel">
+                <FormattedMessage id="actions.edit" />
+              </Nav.Link>
             </Nav.Item>
             <ButtonGroup className="ml-auto">
               <Nav.Item className="ml-auto">

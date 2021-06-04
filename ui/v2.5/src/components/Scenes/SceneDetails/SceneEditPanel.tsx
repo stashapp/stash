@@ -570,10 +570,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </div>
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
-            {renderTextField("title", "Title")}
+            {renderTextField("title", intl.formatMessage({ id: "title" }))}
             <Form.Group controlId="url" as={Row}>
               <Col xs={3} className="pr-0 url-label">
-                <Form.Label className="col-form-label">URL</Form.Label>
+                <Form.Label className="col-form-label">
+                  <FormattedMessage id="url" />
+                </Form.Label>
                 <div className="float-right scrape-button-container">
                   {maybeRenderScrapeButton()}
                 </div>
@@ -587,10 +589,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            {renderTextField("date", "Date", "YYYY-MM-DD")}
+            {renderTextField(
+              "date",
+              intl.formatMessage({ id: "date" }),
+              "YYYY-MM-DD"
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
-                title: "Rating",
+                title: intl.formatMessage({ id: "rating" }),
               })}
               <Col xs={9}>
                 <RatingStars
@@ -603,7 +609,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </Form.Group>
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({
-                title: "Galleries",
+                title: intl.formatMessage({ id: "galleries" }),
               })}
               <Col xs={9}>
                 <GallerySelect
@@ -615,7 +621,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
-                title: "Studio",
+                title: intl.formatMessage({ id: "studios" }),
               })}
               <Col xs={9}>
                 <StudioSelect
@@ -632,7 +638,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="performers" as={Row}>
               {FormUtils.renderLabel({
-                title: "Performers",
+                title: intl.formatMessage({ id: "performers" }),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -655,7 +661,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="moviesScenes" as={Row}>
               {FormUtils.renderLabel({
-                title: "Movies/Scenes",
+                title: `${intl.formatMessage({
+                  id: "movies",
+                })}/${intl.formatMessage({ id: "scenes" })}`,
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -676,7 +684,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="tags" as={Row}>
               {FormUtils.renderLabel({
-                title: "Tags",
+                title: intl.formatMessage({ id: "tags" }),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -731,7 +739,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
           </div>
           <div className="col-12 col-lg-6 col-xl-12">
             <Form.Group controlId="details">
-              <Form.Label>Details</Form.Label>
+              <Form.Label>
+                <FormattedMessage id="details" />
+              </Form.Label>
               <Form.Control
                 as="textarea"
                 className="scene-description text-input"
@@ -743,7 +753,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </Form.Group>
             <div>
               <Form.Group controlId="cover">
-                <Form.Label>Cover Image</Form.Label>
+                <Form.Label>
+                  <FormattedMessage id="cover_image" />
+                </Form.Label>
                 {imageEncoding ? (
                   <LoadingIndicator message="Encoding image..." />
                 ) : (

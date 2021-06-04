@@ -542,7 +542,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
           onChange={(value) => setDate(value)}
         />
         {renderScrapedStudioRow(
-          intl.formatMessage({ id: "studio" }),
+          intl.formatMessage({ id: "studios" }),
           studio,
           (value) => setStudio(value),
           newStudio,
@@ -575,7 +575,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
           onChange={(value) => setDetails(value)}
         />
         <ScrapedImageRow
-          title="Cover Image"
+          title={intl.formatMessage({ id: "cover_image" })}
           className="scene-cover"
           result={image}
           onChange={(value) => setImage(value)}
@@ -586,7 +586,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title="Scene Scrape Results"
+      title={intl.formatMessage({ id: "dialogs.title_scene_scrape" })}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);
