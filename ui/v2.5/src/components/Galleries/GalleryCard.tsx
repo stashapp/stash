@@ -4,13 +4,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
 import { useConfiguration } from "src/core/StashService";
-import {
-  BasicCard,
-  HoverPopover,
-  Icon,
-  TagLink,
-  TruncatedText,
-} from "src/components/Shared";
+import { GridCard, HoverPopover, Icon, TagLink } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 
@@ -136,9 +130,14 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   }
 
   return (
-    <BasicCard
+    <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
+      title={
+        props.gallery.title
+          ? props.gallery.title
+          : TextUtils.fileNameFromPath(props.gallery.path ?? "")
+      }
       linkClassName="gallery-card-header"
       image={
         <>
@@ -155,18 +154,6 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       overlays={maybeRenderSceneStudioOverlay()}
       details={
         <>
-          <Link to={`/galleries/${props.gallery.id}`}>
-            <h5 className="card-section-title">
-              <TruncatedText
-                text={
-                  props.gallery.title
-                    ? props.gallery.title
-                    : TextUtils.fileNameFromPath(props.gallery.path ?? "")
-                }
-                lineCount={2}
-              />
-            </h5>
-          </Link>
           <span>
             {props.gallery.image_count}&nbsp;
             <FormattedPlural
