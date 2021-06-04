@@ -1,4 +1,4 @@
-import { Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -17,8 +17,10 @@ import {
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
+  Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { FormattedMessage } from "react-intl";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
@@ -26,6 +28,7 @@ import { TagPerformersPanel } from "./TagPerformersPanel";
 import { TagGalleriesPanel } from "./TagGalleriesPanel";
 import { TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
+import { TagMergeModal } from "./TagMergeDialog";
 
 interface ITabParams {
   id?: string;
@@ -41,6 +44,7 @@ export const Tag: React.FC = () => {
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
@@ -198,6 +202,44 @@ export const Tag: React.FC = () => {
     }
   }
 
+  function renderMergeButton() {
+    return (
+      <Dropdown drop="up">
+        <Dropdown.Toggle variant="secondary">Merge...</Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white" id="tag-merge-menu">
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => setMergeType("from")}
+          >
+            <Icon icon="sign-in-alt" />
+            <FormattedMessage id="merge_from" />
+            ...
+          </Dropdown.Item>
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => setMergeType("into")}
+          >
+            <Icon icon="sign-out-alt" />
+            <FormattedMessage id="merge_into" />
+            ...
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  function renderMergeDialog() {
+    if (!tag || !mergeType) return;
+    return (
+      <TagMergeModal
+        tag={tag}
+        onClose={() => setMergeType(undefined)}
+        show={!!mergeType}
+        mergeType={mergeType}
+      />
+    );
+  }
+
   return (
     <div className="row">
       <div
@@ -228,6 +270,7 @@ export const Tag: React.FC = () => {
               onClearImage={() => {}}
               onAutoTag={onAutoTag}
               onDelete={onDelete}
+              customButtons={renderMergeButton()}
             />
           </>
         ) : (
@@ -267,6 +310,7 @@ export const Tag: React.FC = () => {
         </div>
       )}
       {renderDeleteAlert()}
+      {renderMergeDialog()}
     </div>
   );
 };
