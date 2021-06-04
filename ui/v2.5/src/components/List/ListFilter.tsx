@@ -499,7 +499,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
             <Dropdown as={ButtonGroup} className="mr-2">
               <Dropdown.Toggle split variant="secondary" id="more-menu">
-                {intl.formatMessage({ id: currentSortBy?.messageID })}
+                {currentSortBy
+                  ? intl.formatMessage({ id: currentSortBy.messageID })
+                  : ""}
               </Dropdown.Toggle>
               <Dropdown.Menu className="bg-secondary text-white">
                 {renderSortByOptions()}

@@ -1070,11 +1070,12 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 func TestSceneQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1088,11 +1089,12 @@ func TestSceneQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithStudio, titleField)
@@ -1100,6 +1102,64 @@ func TestSceneQueryStudio(t *testing.T) {
 			Q: &q,
 		}
 
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
+}
+
+func TestSceneQueryStudioDepth(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		studioCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    2,
+		}
+
+		sceneFilter := models.SceneFilterType{
+			Studios: &studioCriterion,
+		}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 1)
+
+		studioCriterion.Depth = 1
+
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 0)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 1)
+
+		// ensure id is correct
+		assert.Equal(t, sceneIDs[sceneIdxWithGrandChildStudio], scenes[0].ID)
+
+		studioCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+			Depth:    2,
+		}
+
+		q := getSceneStringValue(sceneIdxWithGrandChildStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		studioCriterion.Depth = 1
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 1)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 

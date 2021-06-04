@@ -107,7 +107,7 @@ func (m *Manager) notifyNewJob(j *Job) {
 }
 
 func (m *Manager) nextID() int {
-	m.lastID += 1
+	m.lastID++
 	return m.lastID
 }
 

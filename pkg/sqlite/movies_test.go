@@ -76,11 +76,12 @@ func TestMovieFindByNames(t *testing.T) {
 func TestMovieQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		mqb := r.Movie()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		movieFilter := models.MovieFilterType{
@@ -97,11 +98,12 @@ func TestMovieQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, movieIDs[movieIdxWithStudio], movies[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getMovieStringValue(movieIdxWithStudio, titleField)
@@ -182,6 +184,35 @@ func queryMovie(t *testing.T, sqb models.MovieReader, movieFilter *models.MovieF
 	}
 
 	return movies
+}
+
+func TestMovieQuerySorting(t *testing.T) {
+	sort := "scenes_count"
+	direction := models.SortDirectionEnumDesc
+	findFilter := models.FindFilterType{
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Movie()
+		movies := queryMovie(t, sqb, nil, &findFilter)
+
+		// scenes should be in same order as indexes
+		firstMovie := movies[0]
+
+		assert.Equal(t, movieIDs[movieIdxWithScene], firstMovie.ID)
+
+		// sort in descending order
+		direction = models.SortDirectionEnumAsc
+
+		movies = queryMovie(t, sqb, nil, &findFilter)
+		lastMovie := movies[len(movies)-1]
+
+		assert.Equal(t, movieIDs[movieIdxWithScene], lastMovie.ID)
+
+		return nil
+	})
 }
 
 func TestMovieUpdateMovieImages(t *testing.T) {
