@@ -8,7 +8,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { initPolyfills } from "src/polyfills";
 
-import locales from "src/locale";
+import locales from "src/locales";
 import { useConfiguration, useSystemStatus } from "src/core/StashService";
 import { flattenMessages } from "src/utils";
 import Mousetrap from "mousetrap";
