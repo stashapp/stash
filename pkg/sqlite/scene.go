@@ -588,11 +588,14 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 	return h.handler(performerCount)
 }
 
-func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addJoin("studios", "studio", "studio.id = scenes.studio_id")
+func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := hierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+		derivedTable: "studio",
+		parentFK:     "parent_id",
 	}
-	h := qb.getMultiCriterionHandlerBuilder("studio", "", studioIDColumn, addJoinsFunc)
 
 	return h.handler(studios)
 }
@@ -673,7 +676,7 @@ func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *model
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
-		query.join(moviesScenesTable, "movies_join", "scenes.id")
+		query.join(moviesScenesTable, "movies_join", "scenes.id = movies_join.scene_id")
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY movies_join.scene_index %s", getSortDirection(direction))
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)

@@ -22,7 +22,6 @@ import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
 import { SceneQueue } from "src/models/sceneQueue";
 import { QueueViewer } from "./QueueViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
@@ -51,7 +50,7 @@ export const Scene: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
 
-  const { data, error, loading } = useFindScene(id);
+  const { data, error, loading, refetch } = useFindScene(id);
   const scene = data?.findScene;
   const {
     data: sceneStreams,
@@ -220,10 +219,7 @@ export const Scene: React.FC = () => {
       return;
     }
 
-    const filterCopy = Object.assign(
-      new ListFilterModel(FilterMode.Scenes),
-      sceneQueue.query
-    );
+    const filterCopy = Object.assign(new ListFilterModel(), sceneQueue.query);
     const newStart = queueStart - filterCopy.itemsPerPage;
     filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
     const query = await queryFindScenes(filterCopy);
@@ -244,10 +240,7 @@ export const Scene: React.FC = () => {
       return;
     }
 
-    const filterCopy = Object.assign(
-      new ListFilterModel(FilterMode.Scenes),
-      sceneQueue.query
-    );
+    const filterCopy = Object.assign(new ListFilterModel(), sceneQueue.query);
     const newStart = queueStart + queueScenes.length;
     filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
     const query = await queryFindScenes(filterCopy);
@@ -284,10 +277,7 @@ export const Scene: React.FC = () => {
       const pages = Math.ceil(queueTotal / query.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
       const index = Math.floor(Math.random() * query.itemsPerPage);
-      const filterCopy = Object.assign(
-        new ListFilterModel(FilterMode.Scenes),
-        sceneQueue.query
-      );
+      const filterCopy = Object.assign(new ListFilterModel(), sceneQueue.query);
       filterCopy.currentPage = page;
       const queryResults = await queryFindScenes(filterCopy);
       if (queryResults.data.findScenes.scenes.length > index) {
@@ -515,6 +505,7 @@ export const Scene: React.FC = () => {
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onDelete={() => setIsDeleteAlertOpen(true)}
+              onUpdate={() => refetch()}
             />
           </Tab.Pane>
         </Tab.Content>

@@ -14,7 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/99designs/gqlgen/handler"
+	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
+	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"
+	gqlLru "github.com/99designs/gqlgen/graphql/handler/lru"
+	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
+	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gobuffalo/packr/v2"
@@ -80,7 +84,10 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
+				_, err = w.Write([]byte(err.Error()))
+				if err != nil {
+					logger.Error(err)
+				}
 				return
 			}
 
@@ -139,33 +146,48 @@ func Start() {
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 
-	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
+	recoverFunc := func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
 		debug.PrintStack()
 
 		message := fmt.Sprintf("Internal system error. Error <%v>", err)
 		return errors.New(message)
-	})
-	websocketUpgrader := handler.WebsocketUpgrader(websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	})
-	maxUploadSize := handler.UploadMaxSize(c.GetMaxUploadSize())
-	websocketKeepAliveDuration := handler.WebsocketKeepAliveDuration(10 * time.Second)
+	}
 
 	txnManager := manager.GetInstance().TxnManager
 	resolver := &Resolver{
 		txnManager: txnManager,
 	}
 
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, websocketKeepAliveDuration, maxUploadSize)
+	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	gqlSrv.SetRecoverFunc(recoverFunc)
+	gqlSrv.AddTransport(gqlTransport.Websocket{
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		KeepAlivePingInterval: 10 * time.Second,
+	})
+	gqlSrv.AddTransport(gqlTransport.Options{})
+	gqlSrv.AddTransport(gqlTransport.GET{})
+	gqlSrv.AddTransport(gqlTransport.POST{})
+	gqlSrv.AddTransport(gqlTransport.MultipartForm{
+		MaxUploadSize: c.GetMaxUploadSize(),
+	})
+
+	gqlSrv.SetQueryCache(gqlLru.New(1000))
+	gqlSrv.Use(gqlExtension.Introspection{})
+
+	gqlHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		gqlSrv.ServeHTTP(w, r)
+	}
 
 	// register GQL handler with plugin cache
-	manager.GetInstance().PluginCache.RegisterGQLHandler(gqlHandler)
+	manager.GetInstance().PluginCache.RegisterGQLHandler(gqlHandlerFunc)
 
-	r.Handle("/graphql", gqlHandler)
-	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+	r.HandleFunc("/graphql", gqlHandlerFunc)
+	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 
 	// session handlers
 	r.Post(loginEndPoint, handleLogin)

@@ -44,6 +44,8 @@ import {
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
+import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import { getFilterOptions } from "src/models/list-filter/factory";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -141,6 +143,7 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
 
 interface IRenderListProps {
   filter: ListFilterModel;
+  filterOptions: ListFilterOptions;
   onChangePage: (page: number) => void;
   updateQueryParams: (filter: ListFilterModel) => void;
 }
@@ -151,6 +154,7 @@ const RenderList = <
 >({
   defaultZoomIndex,
   filter,
+  filterOptions,
   onChangePage,
   addKeybinds,
   useData,
@@ -406,6 +410,7 @@ const RenderList = <
         onEdit={renderEditDialog ? onEdit : undefined}
         onDelete={renderDeleteDialog ? onDelete : undefined}
         filter={filter}
+        filterOptions={filterOptions}
       />
       {isEditDialogOpen &&
         renderEditDialog &&
@@ -432,6 +437,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult, QueryData> &
     IQuery<QueryResult, QueryData>
 ): IListHookData => {
+  const filterOptions = getFilterOptions(options.filterMode);
+
   const history = useHistory();
   const location = useLocation();
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
@@ -443,12 +450,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const originalPathName = useRef(location.pathname);
   const persistanceKey = options.persistanceKey ?? options.filterMode;
 
+  const defaultSort = options.defaultSort ?? filterOptions.defaultSortBy;
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(
-      options.filterMode,
-      queryString.parse(location.search),
-      options.defaultSort
-    )
+    new ListFilterModel(queryString.parse(location.search), defaultSort)
   );
 
   const updateInterfaceConfig = useCallback(
@@ -509,7 +513,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         }
       : activeFilter;
 
-    const newFilter = new ListFilterModel(options.filterMode, query);
+    const newFilter = new ListFilterModel(query, defaultSort);
 
     // Compare constructed filter with current filter.
     // If different it's the result of navigation, and we update the filter.
@@ -525,6 +529,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       history.replace(newLocation);
     }
   }, [
+    defaultSort,
     filter,
     interfaceState.data,
     interfaceState.loading,
@@ -569,6 +574,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const { contentTemplate, onSelectChange } = RenderList({
     ...options,
     filter: renderFilter,
+    filterOptions,
     onChangePage,
     updateQueryParams,
   });

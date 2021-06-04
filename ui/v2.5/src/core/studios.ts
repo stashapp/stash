@@ -7,7 +7,7 @@ export const studioFilterHook = (studio: Partial<GQL.StudioDataFragment>) => {
     const studioValue = { id: studio.id!, label: studio.name! };
     // if studio is already present, then we modify it, otherwise add
     let studioCriterion = filter.criteria.find((c) => {
-      return c.type === "studios";
+      return c.criterionOption.value === "studios";
     }) as StudiosCriterion;
 
     if (
@@ -17,18 +17,21 @@ export const studioFilterHook = (studio: Partial<GQL.StudioDataFragment>) => {
     ) {
       // add the studio if not present
       if (
-        !studioCriterion.value.find((p) => {
+        !studioCriterion.value.items.find((p) => {
           return p.id === studio.id;
         })
       ) {
-        studioCriterion.value.push(studioValue);
+        studioCriterion.value.items.push(studioValue);
       }
 
       studioCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
       studioCriterion = new StudiosCriterion();
-      studioCriterion.value = [studioValue];
+      studioCriterion.value = {
+        items: [studioValue],
+        depth: 0,
+      };
       filter.criteria.push(studioCriterion);
     }
 

@@ -1,5 +1,7 @@
 {
   "developmentVersion": "開發版本",
+  "donate": "贊助",
+  "favourite": "最愛",
   "images": "圖片",
   "images-size": "圖片大小",
   "galleries": "圖庫",
@@ -11,10 +13,8 @@
   "performers": "演員",
   "scenes": "場景",
   "scenes-size": "場景收藏大小",
+  "sceneTagger": "標記場景",
   "studios": "工作室",
   "tags": "標籤",
-  "up-dir": "往上一層",
-  "favourite": "最愛",
-  "sceneTagger": "標記場景",
-  "donate": "贊助"
+  "up-dir": "往上一層"
 }

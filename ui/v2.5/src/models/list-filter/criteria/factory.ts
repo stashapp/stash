@@ -1,11 +1,11 @@
 /* eslint-disable consistent-return, default-case */
 import {
-  CriterionType,
   StringCriterion,
   NumberCriterion,
   DurationCriterion,
   MandatoryStringCriterion,
   MandatoryNumberCriterion,
+  CriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion } from "./favorite";
@@ -24,10 +24,16 @@ import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
 import { AverageResolutionCriterion, ResolutionCriterion } from "./resolution";
 import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
-import { TagsCriterion } from "./tags";
+import {
+  PerformerTagsCriterionOption,
+  SceneTagsCriterionOption,
+  TagsCriterion,
+  TagsCriterionOption,
+} from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
 import { GalleriesCriterion } from "./galleries";
+import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
 
 export function makeCriteria(type: CriterionType = "none") {
@@ -35,7 +41,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "none":
       return new NoneCriterion();
     case "path":
-      return new MandatoryStringCriterion(type, type);
+      return new MandatoryStringCriterion(new CriterionOption(type, type));
     case "rating":
       return new RatingCriterion();
     case "organized":
@@ -47,13 +53,13 @@ export function makeCriteria(type: CriterionType = "none") {
     case "gallery_count":
     case "performer_count":
     case "tag_count":
-      return new MandatoryNumberCriterion(type, type);
+      return new MandatoryNumberCriterion(new CriterionOption(type, type));
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":
       return new AverageResolutionCriterion();
     case "duration":
-      return new DurationCriterion(type, type);
+      return new DurationCriterion(new CriterionOption(type, type));
     case "favorite":
       return new FavoriteCriterion();
     case "hasMarkers":
@@ -73,11 +79,11 @@ export function makeCriteria(type: CriterionType = "none") {
     case "movieIsMissing":
       return new MovieIsMissingCriterion();
     case "tags":
-      return new TagsCriterion("tags");
+      return new TagsCriterion(TagsCriterionOption);
     case "sceneTags":
-      return new TagsCriterion("sceneTags");
+      return new TagsCriterion(SceneTagsCriterionOption);
     case "performerTags":
-      return new TagsCriterion("performerTags");
+      return new TagsCriterion(PerformerTagsCriterionOption);
     case "performers":
       return new PerformersCriterion();
     case "studios":
@@ -91,9 +97,9 @@ export function makeCriteria(type: CriterionType = "none") {
     case "birth_year":
     case "death_year":
     case "weight":
-      return new NumberCriterion(type, type);
+      return new NumberCriterion(new CriterionOption(type, type));
     case "age":
-      return new MandatoryNumberCriterion(type, type);
+      return new MandatoryNumberCriterion(new CriterionOption(type, type));
     case "gender":
       return new GenderCriterion();
     case "ethnicity":
@@ -109,7 +115,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "aliases":
     case "url":
     case "stash_id":
-      return new StringCriterion(type, type);
+      return new StringCriterion(new CriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
   }

@@ -87,6 +87,7 @@ type filterBuilder struct {
 	joins         joins
 	whereClauses  []sqlClause
 	havingClauses []sqlClause
+	withClauses   []sqlClause
 
 	err error
 }
@@ -169,6 +170,15 @@ func (f *filterBuilder) addHaving(sql string, args ...interface{}) {
 	f.havingClauses = append(f.havingClauses, makeClause(sql, args...))
 }
 
+// addWith adds a with clause and arguments to the filter
+func (f *filterBuilder) addWith(sql string, args ...interface{}) {
+	if sql == "" {
+		return
+	}
+
+	f.withClauses = append(f.withClauses, makeClause(sql, args...))
+}
+
 func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) string {
 	ret := clause
 
@@ -224,6 +234,21 @@ func (f *filterBuilder) generateHavingClauses() (string, []interface{}) {
 	}
 
 	return clause, args
+}
+
+func (f *filterBuilder) generateWithClauses() (string, []interface{}) {
+	var clauses []string
+	var args []interface{}
+	for _, w := range f.withClauses {
+		clauses = append(clauses, w.sql)
+		args = append(args, w.args...)
+	}
+
+	if len(clauses) > 0 {
+		return strings.Join(clauses, ", "), args
+	}
+
+	return "", nil
 }
 
 // getAllJoins returns all of the joins in this filter and any sub-filter(s).
@@ -501,6 +526,58 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 			m.addJoinTable(f)
 
 			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(f)
+
+		}
+	}
+}
+
+type hierarchicalMultiCriterionHandlerBuilder struct {
+	primaryTable string
+	foreignTable string
+	foreignFK    string
+
+	derivedTable string
+	parentFK     string
+}
+
+func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil && len(criterion.Value) > 0 {
+			var args []interface{}
+			for _, value := range criterion.Value {
+				args = append(args, value)
+			}
+			inCount := len(args)
+
+			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
+
+			var depthCondition string
+			if criterion.Depth != -1 {
+				depthCondition = "WHERE depth < ?"
+				args = append(args, criterion.Depth)
+			}
+
+			withClause := fmt.Sprintf(
+				"RECURSIVE %s AS (SELECT id as id, id as child_id, 0 as depth FROM %s WHERE id in %s UNION SELECT p.id, c.id, depth + 1 FROM %s as c INNER JOIN %s as p ON c.%s = p.child_id %s)",
+				m.derivedTable,
+				m.foreignTable,
+				getInBinding(inCount),
+				m.foreignTable,
+				m.derivedTable,
+				m.parentFK,
+				depthCondition,
+			)
+
+			f.addWith(withClause, args...)
+
+			if criterion.Modifier == models.CriterionModifierIncludes {
+				f.addWhere(fmt.Sprintf("%s.id IS NOT NULL", m.derivedTable))
+			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+				f.addWhere(fmt.Sprintf("%s.id IS NOT NULL", m.derivedTable))
+				f.addHaving(fmt.Sprintf("count(distinct %s.id) IS %d", m.derivedTable, inCount))
+			} else if criterion.Modifier == models.CriterionModifierExcludes {
+				f.addWhere(fmt.Sprintf("%s.id IS NULL", m.derivedTable))
+			}
 		}
 	}
 }
