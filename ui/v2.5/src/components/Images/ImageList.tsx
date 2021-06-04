@@ -126,7 +126,7 @@ export const ImageList: React.FC<IImageList> = ({
 
   const otherOperations = (extraOperations ?? []).concat([
     {
-      text: "View Random",
+      text: intl.formatMessage({id:'actions.view_random'}),
       onClick: viewRandom,
     },
     {

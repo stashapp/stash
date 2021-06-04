@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useLocalForage } from "src/hooks";
@@ -247,7 +247,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
                   )
                 }
               >
-                Search
+                <FormattedMessage id="actions.search"/>
               </Button>
             </InputGroup.Append>
           </InputGroup>

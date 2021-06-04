@@ -1,7 +1,7 @@
 import React, { useState, useReducer } from "react";
 import cx from "classnames";
 import { Button } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { uniq } from "lodash";
 import { blobToBase64 } from "base64-blob";
 
@@ -35,9 +35,14 @@ const getDurationStatus = (
 
   let match;
   if (matchCount > 0)
-    match = `Duration matches ${matchCount}/${durations.length} fingerprints`;
+    match = (
+      <FormattedMessage
+        id="component_tagger.results.fp_matches_multi"
+        values={{ matchCount, durationsLength: durations.length }}
+      />
+    );
   else if (Math.abs(scene.duration - stashDuration) < 5)
-    match = "Duration is a match";
+    match = <FormattedMessage id="component_tagger.results.fp_matches" />;
 
   if (match)
     return (
@@ -68,7 +73,16 @@ const getFingerprintStatus = (
     return (
       <div className="font-weight-bold">
         <SuccessIcon className="mr-2" />
-        {phashMatch ? "PHash" : "Checksum"} is a match
+        <FormattedMessage
+          id="component_tagger.results.hash_matches"
+          values={{
+            hash_type: (
+              <FormattedMessage
+                id={`media_info.${phashMatch ? "phash" : "checksum"}`}
+              />
+            ),
+          }}
+        />
       </div>
     );
 };
@@ -446,7 +460,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               {saveState ? (
                 <LoadingIndicator inline small message="" />
               ) : (
-                "Save"
+                <FormattedMessage id="actions.save"/>
               )}
             </Button>
           </div>

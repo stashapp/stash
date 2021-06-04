@@ -508,7 +508,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title={intl.formatMessage({ id: "dialogs.title_performer_scrape" })}
+      title={intl.formatMessage({ id: "dialogs.performer_scrape_title" })}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);

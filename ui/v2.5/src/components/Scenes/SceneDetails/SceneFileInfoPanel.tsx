@@ -16,7 +16,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return (
         <div className="row">
           <span className="col-4">
-            <FormattedMessage id="scene_info.hash" />
+            <FormattedMessage id="media_info.hash" />
           </span>
           <TruncatedText className="col-8" text={props.scene.oshash} />
         </div>
@@ -29,7 +29,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return (
         <div className="row">
           <span className="col-4">
-            <FormattedMessage id="scene_info.checksum" />
+            <FormattedMessage id="media_info.checksum" />
           </span>
           <TruncatedText className="col-8" text={props.scene.checksum} />
         </div>
@@ -57,7 +57,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">
-          <FormattedMessage id="scene_info.stream" />
+          <FormattedMessage id="media_info.stream" />
         </span>
         <a href={props.scene.paths.stream ?? ""} className="col-8">
           <TruncatedText text={props.scene.paths.stream} />
@@ -173,7 +173,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">
-          <FormattedMessage id="scene_info.video_codec" />
+          <FormattedMessage id="media_info.video_codec" />
         </span>
         <TruncatedText className="col-8" text={props.scene.file.video_codec} />
       </div>
@@ -187,7 +187,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">
-          <FormattedMessage id="scene_info.audio_codec" />
+          <FormattedMessage id="media_info.audio_codec" />
         </span>
         <TruncatedText className="col-8" text={props.scene.file.audio_codec} />
       </div>
@@ -201,7 +201,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">
-          <FormattedMessage id="scene_info.downloaded_from" />
+          <FormattedMessage id="media_info.downloaded_from" />
         </span>
         <a href={TextUtils.sanitiseURL(props.scene.url)} className="col-8">
           <TruncatedText text={props.scene.url} />
@@ -248,7 +248,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return (
         <div className="row">
           <abbr className="col-4" title="Perceptual hash">
-            <FormattedMessage id="scene_info.phash" />
+            <FormattedMessage id="media_info.phash" />
           </abbr>
           <TruncatedText className="col-8" text={props.scene.phash} />
         </div>

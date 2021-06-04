@@ -26,7 +26,7 @@ export const MovieList: React.FC = () => {
 
   const otherOperations = [
     {
-      text: "View Random",
+      text: intl.formatMessage({id:"actions.view_random"}),
       onClick: viewRandom,
     },
     {
@@ -60,8 +60,8 @@ export const MovieList: React.FC = () => {
     <DeleteEntityDialog
       selected={selectedMovies}
       onClose={onClose}
-      singularEntity="movie"
-      pluralEntity="movies"
+      singularEntity={intl.formatMessage({id: 'movie'})}
+      pluralEntity={intl.formatMessage({id: 'movies'})}
       destroyMutation={useMoviesDestroy}
     />
   );

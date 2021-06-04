@@ -46,8 +46,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     ageFromDate ?? performer.death_date
   );
   const ageL10nId = ageFromDate
-    ? "scene_info.performer_card.age_context"
-    : "scene_info.performer_card.age";
+    ? "media_info.performer_card.age_context"
+    : "media_info.performer_card.age";
   const ageL10String = intl.formatMessage({
     id: "years_old",
     defaultMessage: "years old",

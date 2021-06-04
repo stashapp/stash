@@ -1,7 +1,7 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -46,6 +46,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
@@ -198,7 +199,7 @@ export const Scene: React.FC = () => {
       paths: [scene.path],
     });
 
-    Toast.success({ content: "Rescanning scene" });
+    Toast.success({ content: intl.formatMessage({id:'toast.rescanning_scene'}) });
   }
 
   async function onGenerateScreenshot(at?: number) {
@@ -212,7 +213,7 @@ export const Scene: React.FC = () => {
         at,
       },
     });
-    Toast.success({ content: "Generating screenshot" });
+    Toast.success({ content: intl.formatMessage({id:'toast.generating_screenshot'}) });
   }
 
   async function onQueueLessScenes() {
@@ -344,14 +345,14 @@ export const Scene: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => onRescan()}
           >
-            Rescan
+            <FormattedMessage id='actions.rescan'/>
           </Dropdown.Item>
           <Dropdown.Item
             key="generate"
             className="bg-secondary text-white"
             onClick={() => setIsGenerateDialogOpen(true)}
           >
-            Generate...
+            <FormattedMessage id='actions.generate'/>
           </Dropdown.Item>
           <Dropdown.Item
             key="generate-screenshot"
@@ -360,21 +361,21 @@ export const Scene: React.FC = () => {
               onGenerateScreenshot(JWUtils.getPlayer().getPosition())
             }
           >
-            Generate thumbnail from current
+            <FormattedMessage id='actions.generate_thumb_from_current'/>
           </Dropdown.Item>
           <Dropdown.Item
             key="generate-default"
             className="bg-secondary text-white"
             onClick={() => onGenerateScreenshot()}
           >
-            Generate default thumbnail
+            <FormattedMessage id='actions.generate_thumb_default'/>
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-scene"
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            Delete Scene
+            <FormattedMessage id='actions.delete_scene'/>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -436,7 +437,7 @@ export const Scene: React.FC = () => {
             ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="scene-video-filter-panel">
-                <FormattedMessage id="effect_filters" />
+                <FormattedMessage id="effect_filters.name" />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>

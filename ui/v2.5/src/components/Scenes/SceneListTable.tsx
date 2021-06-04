@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import { Icon, TruncatedText } from "src/components/Shared";
+import { FormattedMessage } from "react-intl";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -97,14 +98,14 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         <thead>
           <tr>
             <th />
-            <th className="text-left">Title</th>
-            <th>Rating</th>
-            <th>Duration</th>
-            <th>Tags</th>
-            <th>Performers</th>
-            <th>Studio</th>
-            <th>Movies</th>
-            <th>Gallery</th>
+            <th className="text-left"><FormattedMessage id="title"/></th>
+            <th><FormattedMessage id="rating"/></th>
+            <th><FormattedMessage id="duration"/></th>
+            <th><FormattedMessage id="tags"/></th>
+            <th><FormattedMessage id="performers"/></th>
+            <th><FormattedMessage id="studio"/></th>
+            <th><FormattedMessage id="movies"/></th>
+            <th><FormattedMessage id="gallery"/></th>
           </tr>
         </thead>
         <tbody>{props.scenes.map(renderSceneRow)}</tbody>

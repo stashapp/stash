@@ -339,7 +339,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
     return (
       <Form.Group controlId="filter">
-        <Form.Label>Filter</Form.Label>
+        <Form.Label><FormattedMessage id="search_filter.name"/></Form.Label>
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
@@ -356,14 +356,14 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     );
   }
 
-  const title = !props.editingCriterion ? "Add Filter" : "Update Filter";
+  const title = !props.editingCriterion ? intl.formatMessage({id:'search_filter.add_filter'}) : intl.formatMessage({id:'search_filter.update_filter'});
   return (
     <>
       <OverlayTrigger
         placement="top"
         overlay={
           <Tooltip id="filter-tooltip">
-            <FormattedMessage id="search_filter" />
+            <FormattedMessage id="search_filter.name" />
           </Tooltip>
         }
       >

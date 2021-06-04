@@ -48,7 +48,7 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
     <Modal
       show
       icon="cogs"
-      header="Export"
+      header={intl.formatMessage({id:'dialogs.export_title'})}
       accept={{
         onClick: onExport,
         text: intl.formatMessage({ id: "actions.export" }),
@@ -65,7 +65,7 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
           <Form.Check
             id="include-dependencies"
             checked={includeDependencies}
-            label="Include related objects in export"
+            label={intl.formatMessage({id:'dialogs.export_include_related_objects'})}
             onChange={() => setIncludeDependencies(!includeDependencies)}
           />
         </Form.Group>

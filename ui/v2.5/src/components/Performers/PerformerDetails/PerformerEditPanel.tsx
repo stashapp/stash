@@ -963,7 +963,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderTextField("career_length", "Career Length")}
 
-        <Form.Group controlId="name" as={Row}>
+        <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
             <FormattedMessage id="url" />
           </Form.Label>

@@ -14,7 +14,9 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   function renderChecksum() {
     return (
       <div className="row">
-        <span className="col-4">Checksum</span>
+        <span className="col-4">
+          <FormattedMessage id="media_info.checksum" />
+        </span>
         <TruncatedText className="col-8" text={props.image.checksum} />
       </div>
     );

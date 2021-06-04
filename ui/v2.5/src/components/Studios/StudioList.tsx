@@ -31,7 +31,7 @@ export const StudioList: React.FC<IStudioList> = ({
 
   const otherOperations = [
     {
-      text: "View Random",
+      text: intl.formatMessage({id: "actions.view_random"}),
       onClick: viewRandom,
     },
     {
@@ -121,8 +121,8 @@ export const StudioList: React.FC<IStudioList> = ({
     <DeleteEntityDialog
       selected={selectedStudios}
       onClose={onClose}
-      singularEntity="studio"
-      pluralEntity="studios"
+      singularEntity={intl.formatMessage({id: 'studio'})}
+      pluralEntity={intl.formatMessage({id: 'studios'})}
       destroyMutation={useStudiosDestroy}
     />
   );

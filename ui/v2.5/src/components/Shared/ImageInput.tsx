@@ -60,7 +60,7 @@ export const ImageInput: React.FC<IImageInput> = ({
       <Modal
         show={!!isShowDialog}
         onHide={() => setIsShowDialog(false)}
-        header={intl.formatMessage({ id: "dialogs.title_set_image_url" })}
+        header={intl.formatMessage({ id: "dialogs.set_image_url_title" })}
         accept={{ onClick: onConfirmURL, text: "Confirm" }}
       >
         <div className="dialog-content">

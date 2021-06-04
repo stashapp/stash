@@ -118,7 +118,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         </div>
         <span className="ml-auto">
           <SuccessIcon />
-          Matched:
+          <FormattedMessage id="component_tagger.verb_matched" />:
         </span>
         <b className="col-3 text-right">
           {stashData.findPerformers.performers[0].name}

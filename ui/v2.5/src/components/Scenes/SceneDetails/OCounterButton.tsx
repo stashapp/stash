@@ -6,6 +6,7 @@ import {
   DropdownButton,
   Spinner,
 } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Icon, SweatDrops } from "src/components/Shared";
 
 export interface IOCounterButtonProps {
@@ -21,6 +22,7 @@ export interface IOCounterButtonProps {
 export const OCounterButton: React.FC<IOCounterButtonProps> = (
   props: IOCounterButtonProps
 ) => {
+  const intl = useIntl();
   if (props.loading) return <Spinner animation="border" role="status" />;
 
   const renderButton = () => (
@@ -28,7 +30,7 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
       className="minimal pr-1"
       onClick={props.onIncrement}
       variant="secondary"
-      title="O-Counter"
+      title={intl.formatMessage({id: "o_counter"})}
     >
       <SweatDrops />
       <span className="ml-2">{props.value}</span>

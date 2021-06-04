@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Modal, Spinner, ModalProps } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { FormattedMessage } from "react-intl";
 
 interface IButton {
   text?: string;
@@ -58,7 +59,7 @@ const ModalComponent: React.FC<IModal> = ({
             onClick={cancel.onClick}
             className="mr-2"
           >
-            {cancel.text ?? "Cancel"}
+            {cancel.text ?? <FormattedMessage id='actions.cancel' defaultMessage="Cancel" description="Cancels the current action and dismisses the modal."/>}
           </Button>
         ) : (
           ""
@@ -72,7 +73,7 @@ const ModalComponent: React.FC<IModal> = ({
           {isRunning ? (
             <Spinner animation="border" role="status" size="sm" />
           ) : (
-            accept?.text ?? "Close"
+            accept?.text ?? <FormattedMessage id='actions.close' defaultMessage="Close" description="Closes the current modal."/>
           )}
         </Button>
       </div>

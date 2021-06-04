@@ -32,7 +32,7 @@ export const Settings: React.FC = () => {
             <Nav variant="pills" className="flex-column">
               <Nav.Item>
                 <Nav.Link eventKey="configuration">
-                  <FormattedMessage id="config.categories.configuration" />
+                  <FormattedMessage id="configuration" />
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
