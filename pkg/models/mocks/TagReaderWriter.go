@@ -360,8 +360,8 @@ func (_m *TagReaderWriter) GetImage(tagID int) ([]byte, error) {
 	return r0, r1
 }
 
-// MergeTags provides a mock function with given fields: source, destination
-func (_m *TagReaderWriter) MergeTags(source []int, destination int) error {
+// Merge provides a mock function with given fields: source, destination
+func (_m *TagReaderWriter) Merge(source []int, destination int) error {
 	ret := _m.Called(source, destination)
 
 	var r0 error
