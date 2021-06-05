@@ -56,7 +56,13 @@ export const Image: React.FC = () => {
     });
 
     Toast.success({
-      content: intl.formatMessage({ id: "toast.rescanning_image" }),
+      content: intl.formatMessage(
+        { id: "toast.rescanning_entity" },
+        {
+          count: 1,
+          singularEntity: intl.formatMessage({ id: "image" }),
+        }
+      ),
     });
   }
 
@@ -150,7 +156,10 @@ export const Image: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <FormattedMessage id="actions.delete_image" />
+            <FormattedMessage
+              id="actions.delete_entity"
+              values={{ entityType: intl.formatMessage({ id: "image" }) }}
+            />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>

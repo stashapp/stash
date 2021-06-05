@@ -758,7 +758,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {performer.name}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{ entityName: performer.name }}
+          />
+        </p>
       </Modal>
     );
   }

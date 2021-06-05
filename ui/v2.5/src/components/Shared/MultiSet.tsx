@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { Button, ButtonGroup } from "react-bootstrap";
@@ -22,6 +23,7 @@ interface IMultiSetProps {
 const MultiSet: React.FunctionComponent<IMultiSetProps> = (
   props: IMultiSetProps
 ) => {
+  const intl = useIntl();
   const modes = [
     GQL.BulkUpdateIdMode.Set,
     GQL.BulkUpdateIdMode.Add,
@@ -35,11 +37,17 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
   function getModeText(mode: GQL.BulkUpdateIdMode) {
     switch (mode) {
       case GQL.BulkUpdateIdMode.Set:
-        return "Overwrite";
+        return intl.formatMessage({
+          id: "actions.overwrite",
+          defaultMessage: "Overwrite",
+        });
       case GQL.BulkUpdateIdMode.Add:
-        return "Add";
+        return intl.formatMessage({ id: "actions.add", defaultMessage: "Add" });
       case GQL.BulkUpdateIdMode.Remove:
-        return "Remove";
+        return intl.formatMessage({
+          id: "actions.remove",
+          defaultMessage: "Remove",
+        });
     }
   }
 

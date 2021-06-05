@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import {
   mutateReloadScrapers,
@@ -69,6 +69,7 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
 
 export const SettingsScrapersPanel: React.FC = () => {
   const Toast = useToast();
+  const intl = useIntl();
   const {
     data: performerScrapers,
     loading: loadingPerformers,
@@ -96,7 +97,7 @@ export const SettingsScrapersPanel: React.FC = () => {
       .map((t) => {
         switch (t) {
           case ScrapeType.Name:
-            return "Search by name";
+            return intl.formatMessage({ id: "config.scrapers.search_by_name" });
           default:
             return t;
         }
@@ -115,7 +116,10 @@ export const SettingsScrapersPanel: React.FC = () => {
     const typeStrings = types.map((t) => {
       switch (t) {
         case ScrapeType.Fragment:
-          return "Scene Metadata";
+          return intl.formatMessage(
+            { id: "config.scrapers.entity_metadata" },
+            { entityType: intl.formatMessage({ id: "scene" }) }
+          );
         default:
           return t;
       }
@@ -134,7 +138,10 @@ export const SettingsScrapersPanel: React.FC = () => {
     const typeStrings = types.map((t) => {
       switch (t) {
         case ScrapeType.Fragment:
-          return "Gallery Metadata";
+          return intl.formatMessage(
+            { id: "config.scrapers.entity_metadata" },
+            { entityType: intl.formatMessage({ id: "gallery" }) }
+          );
         default:
           return t;
       }
@@ -153,7 +160,10 @@ export const SettingsScrapersPanel: React.FC = () => {
     const typeStrings = types.map((t) => {
       switch (t) {
         case ScrapeType.Fragment:
-          return "Movie Metadata";
+          return intl.formatMessage(
+            { id: "config.scrapers.entity_metadata" },
+            { entityType: intl.formatMessage({ id: "movie" }) }
+          );
         default:
           return t;
       }
@@ -183,7 +193,13 @@ export const SettingsScrapersPanel: React.FC = () => {
       </tr>
     ));
 
-    return renderTable("Scene scrapers", elements);
+    return renderTable(
+      intl.formatMessage(
+        { id: "config.scrapers.entity_scrapers" },
+        { entityType: intl.formatMessage({ id: "scene" }) }
+      ),
+      elements
+    );
   }
 
   function renderGalleryScrapers() {
@@ -199,7 +215,13 @@ export const SettingsScrapersPanel: React.FC = () => {
       )
     );
 
-    return renderTable("Gallery Scrapers", elements);
+    return renderTable(
+      intl.formatMessage(
+        { id: "config.scrapers.entity_scrapers" },
+        { entityType: intl.formatMessage({ id: "gallery" }) }
+      ),
+      elements
+    );
   }
 
   function renderPerformerScrapers() {
@@ -217,7 +239,13 @@ export const SettingsScrapersPanel: React.FC = () => {
       )
     );
 
-    return renderTable("Performer scrapers", elements);
+    return renderTable(
+      intl.formatMessage(
+        { id: "config.scrapers.entity_scrapers" },
+        { entityType: intl.formatMessage({ id: "performer" }) }
+      ),
+      elements
+    );
   }
 
   function renderMovieScrapers() {
@@ -231,7 +259,13 @@ export const SettingsScrapersPanel: React.FC = () => {
       </tr>
     ));
 
-    return renderTable("Movie scrapers", elements);
+    return renderTable(
+      intl.formatMessage(
+        { id: "config.scrapers.entity_scrapers" },
+        { entityType: intl.formatMessage({ id: "movie" }) }
+      ),
+      elements
+    );
   }
 
   function renderTable(title: string, elements: JSX.Element[]) {
@@ -242,9 +276,15 @@ export const SettingsScrapersPanel: React.FC = () => {
           <table className="scraper-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Supported types</th>
-                <th>URLs</th>
+                <th>{intl.formatMessage({ id: "name" })}</th>
+                <th>
+                  {intl.formatMessage({
+                    id: "config.scrapers.supported_types",
+                  })}
+                </th>
+                <th>
+                  {intl.formatMessage({ id: "config.scrapers.supported_urls" })}
+                </th>
               </tr>
             </thead>
             <tbody>{elements}</tbody>
@@ -259,7 +299,7 @@ export const SettingsScrapersPanel: React.FC = () => {
 
   return (
     <>
-      <h4>Scrapers</h4>
+      <h4>{intl.formatMessage({ id: "config.categories.scrapers" })}</h4>
       <div className="mb-3">
         <Button onClick={() => onReloadScrapers()}>
           <span className="fa-icon">

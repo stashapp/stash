@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -150,7 +150,16 @@ export const Movie: React.FC = () => {
         }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {movie?.name ?? "movie"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                movie?.name ??
+                intl.formatMessage({ id: "movie" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }

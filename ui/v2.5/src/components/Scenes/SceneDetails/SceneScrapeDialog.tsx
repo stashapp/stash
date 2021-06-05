@@ -586,7 +586,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title={intl.formatMessage({ id: "dialogs.scene_scrape_title" })}
+      title={intl.formatMessage({ id: "dialogs.scrape_entity_title" })}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);

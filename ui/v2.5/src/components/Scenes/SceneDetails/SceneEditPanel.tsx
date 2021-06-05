@@ -218,7 +218,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
         },
       });
       if (result.data?.sceneUpdate) {
-        Toast.success({ content: "Updated scene" });
+        Toast.success({
+          content: intl.formatMessage(
+            { id: "toast.updated_entity" },
+            { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+          ),
+        });
         // clear the cover image so that it doesn't appear dirty
         formik.resetForm({ values: formik.values });
       }
@@ -540,7 +545,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     <div id="scene-edit-details">
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
       {maybeRenderScrapeDialog()}
@@ -583,7 +588,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col xs={9}>
                 <Form.Control
                   className="text-input"
-                  placeholder="URL"
+                  placeholder={intl.formatMessage({ id: "url" })}
                   {...formik.getFieldProps("url")}
                   isInvalid={!!formik.getFieldMeta("url").error}
                 />
@@ -725,7 +730,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
                       <Button
                         variant="danger"
                         className="mr-2 py-0"
-                        title="Delete StashID"
+                        title={intl.formatMessage(
+                          { id: "actions.delete_entity" },
+                          { entityType: intl.formatMessage({ id: "stash_id" }) }
+                        )}
                         onClick={() => removeStashID(stashID)}
                       >
                         <Icon icon="trash-alt" />
@@ -762,7 +770,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   <img
                     className="scene-cover"
                     src={coverImagePreview}
-                    alt="Scene cover"
+                    alt={intl.formatMessage({ id: "cover_image" })}
                   />
                 )}
                 <ImageInput

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import { DetailsEditNavbar } from "src/components/Shared";
@@ -28,6 +28,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   onDelete,
   setImage,
 }) => {
+  const intl = useIntl();
   const history = useHistory();
 
   const isNew = tag === undefined;
@@ -105,7 +106,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     <div>
       {isNew && (
         <h2>
-          <FormattedMessage id="actions.add_tag" />
+          <FormattedMessage
+            id="actions.add_entity"
+            values={{ entityType: intl.formatMessage({ id: "tag" }) }}
+          />
         </h2>
       )}
 

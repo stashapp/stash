@@ -456,7 +456,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
       return (
         <ButtonGroup className="ml-2">
           {props.onEdit && (
-            <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="edit">
+                  {intl.formatMessage({ id: "actions.edit" })}
+                </Tooltip>
+              }
+            >
               <Button variant="secondary" onClick={onEdit}>
                 <Icon icon="pencil-alt" />
               </Button>
@@ -464,7 +470,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
           )}
 
           {props.onDelete && (
-            <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="delete">
+                  {intl.formatMessage({ id: "actions.delete" })}
+                </Tooltip>
+              }
+            >
               <Button variant="danger" onClick={onDelete}>
                 <Icon icon="trash" />
               </Button>
@@ -534,7 +546,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
               {props.filter.sortBy === "random" && (
                 <OverlayTrigger
                   overlay={
-                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
+                    <Tooltip id="sort-reshuffle-tooltip">
+                      {intl.formatMessage({ id: "actions.reshuffle" })}
+                    </Tooltip>
                   }
                 >
                   <Button variant="secondary" onClick={onReshuffleRandomSort}>

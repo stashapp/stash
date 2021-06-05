@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { StudioSelect, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TagSelect } from "src/components/Shared/Select";
@@ -293,7 +293,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       Toast.success({
         content: (
           <span>
-            Created studio: <b>{toCreate.name}</b>
+            <FormattedMessage
+              id="actions.created_entity"
+              values={{
+                entity_type: intl.formatMessage({ id: "studio" }),
+                entity_name: <b>{toCreate.name}</b>,
+              }}
+            />
           </span>
         ),
       });
@@ -328,7 +334,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       Toast.success({
         content: (
           <span>
-            Created performer: <b>{toCreate.name}</b>
+            <FormattedMessage
+              id="actions.created_entity"
+              values={{
+                entity_type: intl.formatMessage({ id: "performer" }),
+                entity_name: <b>{toCreate.name}</b>,
+              }}
+            />
           </span>
         ),
       });
@@ -364,7 +376,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       Toast.success({
         content: (
           <span>
-            Created tag: <b>{toCreate.name}</b>
+            <FormattedMessage
+              id="actions.created_entity"
+              values={{
+                entity_type: intl.formatMessage({ id: "tag" }),
+                entity_name: <b>{toCreate.name}</b>,
+              }}
+            />
           </span>
         ),
       });

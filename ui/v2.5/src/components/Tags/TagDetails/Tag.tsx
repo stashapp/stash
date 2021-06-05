@@ -1,7 +1,7 @@
 import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -179,7 +179,16 @@ export const Tag: React.FC = () => {
         }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {tag?.name ?? "tag"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                tag?.name ??
+                intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }

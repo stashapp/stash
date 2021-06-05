@@ -86,6 +86,7 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
   boxes,
   saveBoxes,
 }) => {
+  const intl = useIntl();
   const [index, setIndex] = useState(1000);
 
   const handleSave = (instance: IStashBoxInstance) =>
@@ -101,12 +102,18 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
 
   return (
     <Form.Group>
-      <h6>Stash-box Endpoints</h6>
+      <h6>{intl.formatMessage({ id: "config.stashbox.title" })}</h6>
       {boxes.length > 0 && (
         <div className="row no-gutters">
-          <h6 className="col-3 ml-1">Name</h6>
-          <h6 className="col-3 ml-1">Endpoint</h6>
-          <h6 className="col-3 ml-1">API Key</h6>
+          <h6 className="col-3 ml-1">
+            {intl.formatMessage({ id: "config.stashbox.name" })}
+          </h6>
+          <h6 className="col-3 ml-1">
+            {intl.formatMessage({ id: "config.stashbox.endpoint" })}
+          </h6>
+          <h6 className="col-3 ml-1">
+            {intl.formatMessage({ id: "config.general.auth.api_key" })}
+          </h6>
         </div>
       )}
       {boxes.map((instance) => (
@@ -120,17 +127,13 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
       ))}
       <Button
         className="minimal"
-        title="Add stash-box instance"
+        title={intl.formatMessage({ id: "config.stashbox.add_instance" })}
         onClick={handleAdd}
       >
         <Icon icon="plus" />
       </Button>
       <Form.Text className="text-muted">
-        Stash-box facilitates automated tagging of scenes and performers based
-        on fingerprints and filenames.
-        <br />
-        Endpoint and API key can be found on your account page on the stash-box
-        instance. Names are required when more than one instance is added.
+        {intl.formatMessage({ id: "config.stashbox.description" })}
       </Form.Text>
     </Form.Group>
   );

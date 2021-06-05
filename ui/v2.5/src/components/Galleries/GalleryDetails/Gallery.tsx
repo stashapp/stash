@@ -76,7 +76,13 @@ export const Gallery: React.FC = () => {
     });
 
     Toast.success({
-      content: intl.formatMessage({ id: "toast.rescanning_gallery" }),
+      content: intl.formatMessage(
+        { id: "toast.rescanning_entity" },
+        {
+          count: 1,
+          singularEntity: intl.formatMessage({ id: "gallery" }),
+        }
+      ),
     });
   }
 
@@ -107,7 +113,7 @@ export const Gallery: React.FC = () => {
           variant="secondary"
           id="operation-menu"
           className="minimal"
-          title="Operations"
+          title={intl.formatMessage({ id: "operations" })}
         >
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
@@ -126,7 +132,10 @@ export const Gallery: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <FormattedMessage id="actions.delete_gallery" />
+            <FormattedMessage
+              id="actions.delete_entity"
+              values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
+            />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -160,7 +169,7 @@ export const Gallery: React.FC = () => {
             {gallery.path ? (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">
-                  File Info
+                  <FormattedMessage id="file_info" />
                 </Nav.Link>
               </Nav.Item>
             ) : undefined}
@@ -270,7 +279,10 @@ export const Gallery: React.FC = () => {
       <div className="row new-view">
         <div className="col-6">
           <h2>
-            <FormattedMessage id="actions.create_gallery" />
+            <FormattedMessage
+              id="actions.create_entity"
+              values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
+            />
           </h2>
           <GalleryEditPanel
             isNew

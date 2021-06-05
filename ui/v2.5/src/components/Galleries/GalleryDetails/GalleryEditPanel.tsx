@@ -175,7 +175,16 @@ export const GalleryEditPanel: React.FC<
           },
         });
         if (result.data?.galleryUpdate) {
-          Toast.success({ content: "Updated gallery" });
+          Toast.success({
+            content: intl.formatMessage(
+              { id: "toast.updated_entity" },
+              {
+                entity: intl
+                  .formatMessage({ id: "gallery" })
+                  .toLocaleLowerCase(),
+              }
+            ),
+          });
         }
       }
     } catch (e) {
@@ -380,21 +389,23 @@ export const GalleryEditPanel: React.FC<
       <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
           {FormUtils.renderInputGroup({
-            title: "Title",
+            title: intl.formatMessage({ id: "title" }),
             value: title,
             onChange: setTitle,
             isEditing: true,
           })}
           <Form.Group controlId="url" as={Row}>
             <Col xs={3} className="pr-0 url-label">
-              <Form.Label className="col-form-label">URL</Form.Label>
+              <Form.Label className="col-form-label">
+                {intl.formatMessage({ id: "url" })}
+              </Form.Label>
               <div className="float-right scrape-button-container">
                 {maybeRenderScrapeButton()}
               </div>
             </Col>
             <Col xs={9}>
               {EditableTextUtils.renderInputGroup({
-                title: "URL",
+                title: intl.formatMessage({ id: "url" }),
                 value: url,
                 onChange: setUrl,
                 isEditing: true,
@@ -402,7 +413,7 @@ export const GalleryEditPanel: React.FC<
             </Col>
           </Form.Group>
           {FormUtils.renderInputGroup({
-            title: "Date",
+            title: intl.formatMessage({ id: "date" }),
             value: date,
             isEditing: true,
             onChange: setDate,
@@ -410,7 +421,7 @@ export const GalleryEditPanel: React.FC<
           })}
           <Form.Group controlId="rating" as={Row}>
             {FormUtils.renderLabel({
-              title: "Rating",
+              title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
               <RatingStars
@@ -422,7 +433,7 @@ export const GalleryEditPanel: React.FC<
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
-              title: "Studio",
+              title: intl.formatMessage({ id: "studio" }),
             })}
             <Col xs={9}>
               <StudioSelect
@@ -436,7 +447,7 @@ export const GalleryEditPanel: React.FC<
 
           <Form.Group controlId="performers" as={Row}>
             {FormUtils.renderLabel({
-              title: "Performers",
+              title: intl.formatMessage({ id: "performers" }),
               labelProps: {
                 column: true,
                 sm: 3,
@@ -456,7 +467,7 @@ export const GalleryEditPanel: React.FC<
 
           <Form.Group controlId="tags" as={Row}>
             {FormUtils.renderLabel({
-              title: "Tags",
+              title: intl.formatMessage({ id: "tags" }),
               labelProps: {
                 column: true,
                 sm: 3,
@@ -474,7 +485,7 @@ export const GalleryEditPanel: React.FC<
 
           <Form.Group controlId="scenes" as={Row}>
             {FormUtils.renderLabel({
-              title: "Scenes",
+              title: intl.formatMessage({ id: "scenes" }),
               labelProps: {
                 column: true,
                 sm: 3,
@@ -491,7 +502,9 @@ export const GalleryEditPanel: React.FC<
         </div>
         <div className="col-12 col-lg-6 col-xl-12">
           <Form.Group controlId="details">
-            <Form.Label>Details</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="details" />
+            </Form.Label>
             <Form.Control
               as="textarea"
               className="gallery-description text-input"

@@ -663,7 +663,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       <div className="row form-group">
         <span className="col-12">
           <h5>
-            <FormattedMessage id="effect_filters.name_actions" />
+            <FormattedMessage id="actions_name" />
           </h5>
         </span>
       </div>

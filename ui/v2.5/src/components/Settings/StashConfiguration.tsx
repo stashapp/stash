@@ -108,8 +108,12 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
             <h6 className="col-4">
               <FormattedMessage id="path" />
             </h6>
-            <h6 className="col-3">Exclude Video</h6>
-            <h6 className="col-3">Exclude Image</h6>
+            <h6 className="col-3">
+              <FormattedMessage id="config.general.exclude_video" />
+            </h6>
+            <h6 className="col-3">
+              <FormattedMessage id="config.general.exclude_image" />
+            </h6>
           </Row>
         )}
         {stashes.map((stash, index) => (

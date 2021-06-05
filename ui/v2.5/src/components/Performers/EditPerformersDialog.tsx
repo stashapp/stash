@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import _ from "lodash";
 import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -94,7 +94,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updatePerformers();
-      Toast.success({ content: "Updated performers" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl
+              .formatMessage({ id: "performers" })
+              .toLocaleLowerCase(),
+          }
+        ),
+      });
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -247,7 +256,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       >
         <Form.Group controlId="rating" as={Row}>
           {FormUtils.renderLabel({
-            title: "Rating",
+            title: intl.formatMessage({ id: "rating" }),
           })}
           <Col xs={9}>
             <RatingStars
@@ -259,7 +268,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         </Form.Group>
         <Form>
           <Form.Group controlId="tags">
-            <Form.Label>Tags</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="tags" />
+            </Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 

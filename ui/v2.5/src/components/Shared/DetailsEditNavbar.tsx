@@ -105,7 +105,10 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     return (
       <Modal show={isDeleteAlertOpen}>
         <Modal.Body>
-          Are you sure you want to delete {props.objectName}?
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{ entityName: props.objectName }}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={props.onDelete}>

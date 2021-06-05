@@ -1,7 +1,7 @@
 import { Button, Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -196,7 +196,9 @@ export const Studio: React.FC = () => {
     if (!studio.id) return;
     try {
       await mutateMetadataAutoTag({ studios: [studio.id] });
-      Toast.success({ content: "Started auto tagging" });
+      Toast.success({
+        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -238,7 +240,16 @@ export const Studio: React.FC = () => {
         }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {name ?? "studio"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                name ??
+                intl.formatMessage({ id: "studio" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }
@@ -272,7 +283,10 @@ export const Studio: React.FC = () => {
                     <Button
                       variant="danger"
                       className="mr-2 py-0"
-                      title="Delete StashID"
+                      title={intl.formatMessage(
+                        { id: "actions.delete_entity" },
+                        { entityType: intl.formatMessage({ id: "stash_id" }) }
+                      )}
                       onClick={() => removeStashID(stashID)}
                     >
                       <Icon icon="trash-alt" />
@@ -345,7 +359,14 @@ export const Studio: React.FC = () => {
           "col-8": isNew,
         })}
       >
-        {isNew && <h2>Add Studio</h2>}
+        {isNew && (
+          <h2>
+            {intl.formatMessage(
+              { id: "actions.add_entity" },
+              { entityType: intl.formatMessage({ id: "studio" }) }
+            )}
+          </h2>
+        )}
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
@@ -358,29 +379,29 @@ export const Studio: React.FC = () => {
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({
-              title: "Name",
+              title: intl.formatMessage({ id: "name" }),
               value: name ?? "",
               isEditing: !!isEditing,
               onChange: setName,
             })}
             {TableUtils.renderInputGroup({
-              title: "URL",
+              title: intl.formatMessage({ id: "url" }),
               value: url,
               isEditing: !!isEditing,
               onChange: setUrl,
             })}
             {TableUtils.renderTextArea({
-              title: "Details",
+              title: intl.formatMessage({ id: "details" }),
               value: details,
               isEditing: !!isEditing,
               onChange: setDetails,
             })}
             <tr>
-              <td>Parent Studio</td>
+              <td>{intl.formatMessage({ id: "parent_studios" })}</td>
               <td>{renderStudio()}</td>
             </tr>
             <tr>
-              <td>Rating:</td>
+              <td>{intl.formatMessage({ id: "rating" })}:</td>
               <td>
                 <RatingStars
                   value={rating}
@@ -435,7 +456,10 @@ export const Studio: React.FC = () => {
             >
               <StudioPerformersPanel studio={studio} />
             </Tab>
-            <Tab eventKey="childstudios" title="Child Studios">
+            <Tab
+              eventKey="childstudios"
+              title={intl.formatMessage({ id: "child_studios" })}
+            >
               <StudioChildrenPanel studio={studio} />
             </Tab>
           </Tabs>

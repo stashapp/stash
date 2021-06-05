@@ -177,7 +177,14 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     try {
       await deleteTag();
       Toast.success({
-        content: intl.formatMessage({ id: "toast.deleted_tag" }),
+        content: intl.formatMessage(
+          { id: "toast.delete_past_tense" },
+          {
+            count: 1,
+            singularEntity: intl.formatMessage({ id: "tag" }),
+            pluralEntity: intl.formatMessage({ id: "tags" }),
+          }
+        ),
       });
       setDeletingTag(null);
     } catch (e) {
@@ -225,7 +232,10 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
           cancel={{ onClick: () => setDeletingTag(null) }}
         >
           <span>
-            Are you sure you want to delete {deletingTag && deletingTag.name}?
+            <FormattedMessage
+              id="dialogs.delete_confirm"
+              values={{ entityName: deletingTag && deletingTag.name }}
+            />
           </span>
         </Modal>
       );
@@ -248,7 +258,13 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
                   to={NavUtils.makeTagScenesUrl(tag)}
                   className="tag-list-anchor"
                 >
-                  Scenes: <FormattedNumber value={tag.scene_count ?? 0} />
+                  <FormattedMessage
+                    id="countables.scenes"
+                    values={{
+                      count: tag.scene_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.scene_count ?? 0} />
                 </Link>
               </Button>
               <Button variant="secondary" className="tag-list-button">
@@ -256,12 +272,17 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
                   to={NavUtils.makeTagSceneMarkersUrl(tag)}
                   className="tag-list-anchor"
                 >
-                  Markers:{" "}
-                  <FormattedNumber value={tag.scene_marker_count ?? 0} />
+                  <FormattedMessage
+                    id="countables.markers"
+                    values={{
+                      count: tag.scene_marker_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.scene_marker_count ?? 0} />
                 </Link>
               </Button>
               <span className="tag-list-count">
-                Total:{" "}
+                <FormattedMessage id="total" />:{" "}
                 <FormattedNumber
                   value={(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
                 />

@@ -114,7 +114,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
     <Modal
       show
       icon="pencil-alt"
-      header="Import"
+      header={intl.formatMessage({ id: "actions.import" })}
       accept={{
         onClick: () => {
           onImport();

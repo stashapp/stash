@@ -374,12 +374,24 @@ export const SceneDuplicateChecker: React.FC = () => {
           </h6>
           {checkCount > 0 && (
             <ButtonGroup>
-              <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="edit">
+                    {intl.formatMessage({ id: "actions.edit" })}
+                  </Tooltip>
+                }
+              >
                 <Button variant="secondary" onClick={onEdit}>
                   <Icon icon="pencil-alt" />
                 </Button>
               </OverlayTrigger>
-              <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="delete">
+                    {intl.formatMessage({ id: "actions.delete" })}
+                  </Tooltip>
+                }
+              >
                 <Button variant="danger" onClick={handleDeleteChecked}>
                   <Icon icon="trash" />
                 </Button>

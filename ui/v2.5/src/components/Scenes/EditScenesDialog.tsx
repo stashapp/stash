@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import _ from "lodash";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -136,7 +136,12 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updateScenes();
-      Toast.success({ content: "Updated scenes" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
+        ),
+      });
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -342,7 +347,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       <Modal
         show
         icon="pencil-alt"
-        header="Edit Scenes"
+        header={intl.formatMessage(
+          { id: "dialogs.edit_entity_title" },
+          {
+            count: props?.selected?.length ?? 1,
+            singularEntity: intl.formatMessage({ id: "scene" }),
+            pluralEntity: intl.formatMessage({ id: "scenes" }),
+          }
+        )}
         accept={{
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
@@ -357,7 +369,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         <Form>
           <Form.Group controlId="rating" as={Row}>
             {FormUtils.renderLabel({
-              title: "Rating",
+              title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
               <RatingStars
@@ -370,7 +382,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
-              title: "Studio",
+              title: intl.formatMessage({ id: "studio" }),
             })}
             <Col xs={9}>
               <StudioSelect
@@ -384,19 +396,23 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           </Form.Group>
 
           <Form.Group controlId="performers">
-            <Form.Label>Performers</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="performers" />
+            </Form.Label>
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
           <Form.Group controlId="tags">
-            <Form.Label>Tags</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="performers" />
+            </Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
           <Form.Group controlId="organized">
             <Form.Check
               type="checkbox"
-              label="Organized"
+              label={intl.formatMessage({ id: "organized" })}
               checked={organized}
               ref={checkboxRef}
               onChange={() => cycleOrganized()}

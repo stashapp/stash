@@ -15,18 +15,20 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
   props: IDeleteSceneDialogProps
 ) => {
   const intl = useIntl();
+  const singularEntity = intl.formatMessage({ id: "scene" });
+  const pluralEntity = intl.formatMessage({ id: "scenes" });
 
   const header = intl.formatMessage(
-    { id: "dialogs.delete_scene_title" },
-    { sceneCount: props.selected.length }
+    { id: "dialogs.delete_entity_title" },
+    { count: props.selected.length, singularEntity, pluralEntity }
   );
   const toastMessage = intl.formatMessage(
-    { id: "toast.delete_scene" },
-    { sceneCount: props.selected.length }
+    { id: "toast.delete_entity" },
+    { count: props.selected.length, singularEntity, pluralEntity }
   );
   const message = intl.formatMessage(
-    { id: "dialogs.delete_scene_desc" },
-    { sceneCount: props.selected.length }
+    { id: "dialogs.delete_entity_desc" },
+    { count: props.selected.length, singularEntity, pluralEntity }
   );
 
   const [deleteFile, setDeleteFile] = useState<boolean>(false);

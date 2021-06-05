@@ -301,30 +301,36 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
 
-      <h4>Job Queue</h4>
+      <h4>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h4>
 
       <JobTable />
 
       <hr />
 
-      <h5>Library</h5>
+      <h5>{intl.formatMessage({ id: "library" })}</h5>
       <Form.Group>
         <Form.Check
           id="use-file-metadata"
           checked={useFileMetadata}
-          label="Set name, date, details from metadata (if present)"
+          label={intl.formatMessage({
+            id: "config.tasks.set_name_date_details_from_metadata_if_present",
+          })}
           onChange={() => setUseFileMetadata(!useFileMetadata)}
         />
         <Form.Check
           id="strip-file-extension"
           checked={stripFileExtension}
-          label="Don't include file extension as part of the title"
+          label={intl.formatMessage({
+            id: "config.tasks.dont_include_file_extension_as_part_of_the_title",
+          })}
           onChange={() => setStripFileExtension(!stripFileExtension)}
         />
         <Form.Check
           id="scan-generate-previews"
           checked={scanGeneratePreviews}
-          label="Generate previews during scan (video previews which play when hovering over a scene)"
+          label={intl.formatMessage({
+            id: "config.tasks.generate_video_previews_during_scan",
+          })}
           onChange={() => setScanGeneratePreviews(!scanGeneratePreviews)}
         />
         <div className="d-flex flex-row">
@@ -333,7 +339,9 @@ export const SettingsTasksPanel: React.FC = () => {
             id="scan-generate-image-previews"
             checked={scanGenerateImagePreviews}
             disabled={!scanGeneratePreviews}
-            label="Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)"
+            label={intl.formatMessage({
+              id: "config.tasks.generate_previews_during_scan",
+            })}
             onChange={() =>
               setScanGenerateImagePreviews(!scanGenerateImagePreviews)
             }
@@ -343,13 +351,17 @@ export const SettingsTasksPanel: React.FC = () => {
         <Form.Check
           id="scan-generate-sprites"
           checked={scanGenerateSprites}
-          label="Generate sprites during scan (for the scene scrubber)"
+          label={intl.formatMessage({
+            id: "config.tasks.generate_sprites_during_scan",
+          })}
           onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
         />
         <Form.Check
           id="scan-generate-phashes"
           checked={scanGeneratePhashes}
-          label="Generate phashes during scan (for deduplication and scene identification)"
+          label={intl.formatMessage({
+            id: "config.tasks.generate_phashes_during_scan",
+          })}
           onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
         />
       </Form.Group>
@@ -370,31 +382,31 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.selective_scan" />
         </Button>
         <Form.Text className="text-muted">
-          Scan for new content and add it to the database.
+          {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Auto Tagging</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.auto_tagging" })}</h5>
 
       <Form.Group>
         <Form.Check
           id="autotag-performers"
           checked={autoTagPerformers}
-          label="Performers"
+          label={intl.formatMessage({ id: "performers" })}
           onChange={() => setAutoTagPerformers(!autoTagPerformers)}
         />
         <Form.Check
           id="autotag-studios"
           checked={autoTagStudios}
-          label="Studios"
+          label={intl.formatMessage({ id: "studios" })}
           onChange={() => setAutoTagStudios(!autoTagStudios)}
         />
         <Form.Check
           id="autotag-tags"
           checked={autoTagTags}
-          label="Tags"
+          label={intl.formatMessage({ id: "tags" })}
           onChange={() => setAutoTagTags(!autoTagTags)}
         />
       </Form.Group>
@@ -415,22 +427,24 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.selective_auto_tag" />
         </Button>
         <Form.Text className="text-muted">
-          Auto-tag content based on filenames.
+          {intl.formatMessage({
+            id: "config.tasks.auto_tag_based_on_filenames",
+          })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Generated Content</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
       <GenerateButton />
 
       <hr />
-      <h5>Maintenance</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
       <Form.Group>
         <Form.Check
           id="clean-dryrun"
           checked={cleanDryRun}
-          label="Only perform a dry run. Don't remove anything"
+          label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
           onChange={() => setCleanDryRun(!cleanDryRun)}
         />
       </Form.Group>
@@ -443,14 +457,13 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.clean" />
         </Button>
         <Form.Text className="text-muted">
-          Check for missing files and remove them from the database. This is a
-          destructive action.
+          {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Metadata</h5>
+      <h5>{intl.formatMessage({ id: "metadata" })}</h5>
       <Form.Group>
         <Button
           id="export"
@@ -461,8 +474,7 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.full_export" />
         </Button>
         <Form.Text className="text-muted">
-          Exports the database content into JSON format in the metadata
-          directory.
+          {intl.formatMessage({ id: "config.tasks.export_to_json" })}
         </Form.Text>
       </Form.Group>
 
@@ -475,8 +487,7 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.full_import" />
         </Button>
         <Form.Text className="text-muted">
-          Import from exported JSON in the metadata directory. Wipes the
-          existing database.
+          {intl.formatMessage({ id: "config.tasks.import_from_exported_json" })}
         </Form.Text>
       </Form.Group>
 
@@ -489,13 +500,13 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.import_from_file" />
         </Button>
         <Form.Text className="text-muted">
-          Incremental import from a supplied export zip file.
+          {intl.formatMessage({ id: "config.tasks.incremental_import" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Backup</h5>
+      <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
       <Form.Group>
         <Button
           id="backup"
@@ -506,9 +517,16 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.backup" />
         </Button>
         <Form.Text className="text-muted">
-          Performs a backup of the database to the same directory as the
-          database, with the filename format{" "}
-          <code>[origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]</code>
+          {intl.formatMessage(
+            { id: "config.tasks.backup_database" },
+            {
+              filename_format: (
+                <code>
+                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                </code>
+              ),
+            }
+          )}
         </Form.Text>
       </Form.Group>
 
@@ -522,7 +540,7 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.download_backup" />
         </Button>
         <Form.Text className="text-muted">
-          Performs a backup of the database and downloads the resulting file.
+          {intl.formatMessage({ id: "config.tasks.backup_and_download" })}
         </Form.Text>
       </Form.Group>
 
@@ -530,7 +548,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
 
-      <h5>Migrations</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
 
       <Form.Group>
         <Button
@@ -541,8 +559,7 @@ export const SettingsTasksPanel: React.FC = () => {
           <FormattedMessage id="actions.rename_gen_files" />
         </Button>
         <Form.Text className="text-muted">
-          Used after changing the Generated file naming hash to rename existing
-          generated files to the new hash format.
+          {intl.formatMessage({ id: "config.tasks.migrate_hash_files" })}
         </Form.Text>
       </Form.Group>
     </>

@@ -200,7 +200,15 @@ export const Scene: React.FC = () => {
     });
 
     Toast.success({
-      content: intl.formatMessage({ id: "toast.rescanning_scene" }),
+      content: intl.formatMessage(
+        { id: "toast.rescanning_entity" },
+        {
+          count: 1,
+          singularEntity: intl
+            .formatMessage({ id: "scene" })
+            .toLocaleLowerCase(),
+        }
+      ),
     });
   }
 
@@ -379,7 +387,10 @@ export const Scene: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <FormattedMessage id="actions.delete_scene" />
+            <FormattedMessage
+              id="actions.delete_entity"
+              values={{ entityType: intl.formatMessage({ id: "scene" }) }}
+            />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -421,7 +432,7 @@ export const Scene: React.FC = () => {
               <Nav.Item>
                 <Nav.Link eventKey="scene-movie-panel">
                   <FormattedMessage
-                    id="countables.movie"
+                    id="countables.movies"
                     values={{ count: scene.movies.length }}
                   />
                 </Nav.Link>

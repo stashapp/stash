@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { useConfiguration, useConfigureInterface } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -86,7 +86,16 @@ export const SettingsInterfacePanel: React.FC = () => {
         window.location.reload();
       }
 
-      Toast.success({ content: "Updated config" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl
+              .formatMessage({ id: "configuration" })
+              .toLocaleLowerCase(),
+          }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -97,13 +106,9 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   return (
     <>
-      <h4>
-        <FormattedMessage id="config.ui.title" />
-      </h4>
+      <h4>{intl.formatMessage({ id: "config.ui.title" })}</h4>
       <Form.Group controlId="language">
-        <h5>
-          <FormattedMessage id="config.ui.language.heading" />
-        </h5>
+        <h5>{intl.formatMessage({ id: "config.ui.language.heading" })}</h5>
         <Form.Control
           as="select"
           className="col-4 input-control"
@@ -118,9 +123,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Control>
       </Form.Group>
       <Form.Group>
-        <h5>
-          <FormattedMessage id="config.ui.menu_items.heading" />
-        </h5>
+        <h5>{intl.formatMessage({ id: "config.ui.menu_items.heading" })}</h5>
         <CheckboxGroup
           groupId="menu-items"
           items={allMenuItems}
@@ -128,13 +131,11 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={setMenuItemIds}
         />
         <Form.Text className="text-muted">
-          <FormattedMessage id="config.ui.menu_items.description" />
+          {intl.formatMessage({ id: "config.ui.menu_items.description" })}
         </Form.Text>
       </Form.Group>
       <Form.Group>
-        <h5>
-          <FormattedMessage id="config.ui.scene_wall.heading" />
-        </h5>
+        <h5>{intl.formatMessage({ id: "config.ui.scene_wall.heading" })}</h5>
         <Form.Check
           id="wall-show-title"
           checked={wallShowTitle}
@@ -153,7 +154,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
         <Form.Label htmlFor="wall-preview">
           <h6>
-            <FormattedMessage id="config.ui.preview_type.heading" />
+            {intl.formatMessage({ id: "config.ui.preview_type.heading" })}
           </h6>
         </Form.Label>
         <Form.Control
@@ -180,14 +181,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           </option>
         </Form.Control>
         <Form.Text className="text-muted">
-          <FormattedMessage id="config.ui.preview_type.description" />
+          {intl.formatMessage({ id: "config.ui.preview_type.description" })}
         </Form.Text>
       </Form.Group>
 
       <Form.Group>
-        <h5>
-          <FormattedMessage id="config.ui.scene_list.heading" />
-        </h5>
+        <h5>{intl.formatMessage({ id: "config.ui.scene_list.heading" })}</h5>
         <Form.Check
           id="show-text-studios"
           checked={showStudioAsText}
@@ -201,9 +200,7 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h5>
-          <FormattedMessage id="config.ui.scene_player.heading" />
-        </h5>
+        <h5>{intl.formatMessage({ id: "config.ui.scene_player.heading" })}</h5>
         <Form.Group id="auto-start-video">
           <Form.Check
             checked={autostartVideo}
@@ -218,7 +215,7 @@ export const SettingsInterfacePanel: React.FC = () => {
 
         <Form.Group id="max-loop-duration">
           <h6>
-            <FormattedMessage id="config.ui.max_loop_duration.heading" />
+            {intl.formatMessage({ id: "config.ui.max_loop_duration.heading" })}
           </h6>
           <DurationInput
             className="row col col-4"
@@ -226,14 +223,16 @@ export const SettingsInterfacePanel: React.FC = () => {
             onValueChange={(duration) => setMaximumLoopDuration(duration ?? 0)}
           />
           <Form.Text className="text-muted">
-            <FormattedMessage id="config.ui.max_loop_duration.description" />
+            {intl.formatMessage({
+              id: "config.ui.max_loop_duration.description",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
 
       <Form.Group id="slideshow-delay">
         <h5>
-          <FormattedMessage id="config.ui.slideshow_delay.heading" />
+          {intl.formatMessage({ id: "config.ui.slideshow_delay.heading" })}
         </h5>
         <Form.Control
           className="col col-sm-6 text-input"
@@ -246,14 +245,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
         <Form.Text className="text-muted">
-          <FormattedMessage id="config.ui.slideshow_delay.description" />
+          {intl.formatMessage({ id: "config.ui.slideshow_delay.description" })}
         </Form.Text>
       </Form.Group>
 
       <Form.Group>
-        <h5>
-          <FormattedMessage id="config.ui.custom_css.heading" />
-        </h5>
+        <h5>{intl.formatMessage({ id: "config.ui.custom_css.heading" })}</h5>
         <Form.Check
           id="custom-css"
           checked={cssEnabled}
@@ -275,12 +272,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           className="col col-sm-6 text-input code"
         />
         <Form.Text className="text-muted">
-          <FormattedMessage id="config.ui.custom_css.description" />
+          {intl.formatMessage({ id: "config.ui.custom_css.description" })}
         </Form.Text>
       </Form.Group>
 
       <Form.Group>
-        <h5>Handy Connection Key</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.handy_connection_key" })}</h5>
         <Form.Control
           className="col col-sm-6 text-input"
           value={handyKey}
@@ -289,13 +286,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
         <Form.Text className="text-muted">
-          Handy connection key to use for interactive scenes.
+          {intl.formatMessage({ id: "config.ui.handy_connection_key_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
       <Button variant="primary" onClick={() => onSave()}>
-        <FormattedMessage id="actions.save" />
+        {intl.formatMessage({ id: "actions.save" })}
       </Button>
     </>
   );

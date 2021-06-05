@@ -52,7 +52,9 @@ export const SettingsPluginsPanel: React.FC = () => {
 
   return (
     <>
-      <h4>Plugins</h4>
+      <h4>
+        <FormattedMessage id="config.categories.plugins" />
+      </h4>
       <hr />
       {renderPlugins()}
       <Button onClick={() => onReloadPlugins()}>
