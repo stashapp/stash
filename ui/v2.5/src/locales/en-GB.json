@@ -124,7 +124,7 @@
     },
     "general": {
       "cache_path_head": "Cache Path",
-      "db_path_head": "Databae Path",
+      "db_path_head": "Database Path",
       "generated_path_head": "Generated Path",
       "image_ext_head": "Image Extensions",
       "video_ext_head": "Video Extensions"
