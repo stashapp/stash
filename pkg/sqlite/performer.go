@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const performerTable = "performers"
@@ -454,7 +455,7 @@ func performerGalleryCountCriterionHandler(qb *performerQueryBuilder, count *mod
 	return h.handler(count)
 }
 
-func performerStudiosCriterionHandler(studios *models.MultiCriterionInput) criterionHandlerFunc {
+func performerStudiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if studios != nil {
 			var countCondition string
@@ -465,32 +466,72 @@ func performerStudiosCriterionHandler(studios *models.MultiCriterionInput) crite
 				countCondition = " > 0"
 				clauseJoin = " OR "
 			} else if studios.Modifier == models.CriterionModifierExcludes {
-				// exclude performers who appear in scenes/images/galleries with  any of the given studios
+				// exclude performers who appear in scenes/images/galleries with any of the given studios
 				countCondition = " = 0"
 				clauseJoin = " AND "
 			} else {
 				return
 			}
 
-			templStr := "(SELECT COUNT(DISTINCT %[1]s.id) FROM %[1]s LEFT JOIN %[2]s ON %[1]s.id = %[2]s.%[3]s WHERE %[2]s.performer_id = performers.id AND %[1]s.studio_id IN %[4]s)" + countCondition
-
 			inBinding := getInBinding(len(studios.Value))
 
-			clauses := []string{
-				fmt.Sprintf(templStr, sceneTable, performersScenesTable, sceneIDColumn, inBinding),
-				fmt.Sprintf(templStr, imageTable, performersImagesTable, imageIDColumn, inBinding),
-				fmt.Sprintf(templStr, galleryTable, performersGalleriesTable, galleryIDColumn, inBinding),
+			formatMaps := []utils.StrFormatMap{
+				{
+					"primaryTable": sceneTable,
+					"joinTable":    performersScenesTable,
+					"primaryFK":    sceneIDColumn,
+					"inBinding":    inBinding,
+				},
+				{
+					"primaryTable": imageTable,
+					"joinTable":    performersImagesTable,
+					"primaryFK":    imageIDColumn,
+					"inBinding":    inBinding,
+				},
+				{
+					"primaryTable": galleryTable,
+					"joinTable":    performersGalleriesTable,
+					"primaryFK":    galleryIDColumn,
+					"inBinding":    inBinding,
+				},
 			}
 
-			var args []interface{}
-			for _, tagID := range studios.Value {
-				args = append(args, tagID)
+			// keeping existing behaviour for depth = 0 since it seems slightly better performing
+			if studios.Depth == 0 {
+				templStr := `(SELECT COUNT(DISTINCT {primaryTable}.id) FROM {primaryTable} 
+LEFT JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK} 
+WHERE {joinTable}.performer_id = performers.id AND {primaryTable}.studio_id IN {inBinding})` + countCondition
+
+				var clauses []string
+				for _, c := range formatMaps {
+					clauses = append(clauses, utils.StrFormat(templStr, c))
+				}
+
+				var args []interface{}
+				for _, tagID := range studios.Value {
+					args = append(args, tagID)
+				}
+
+				// this is a bit gross. We need the args three times
+				combinedArgs := append(args, append(args, args...)...)
+
+				f.addWhere(fmt.Sprintf("(%s)", strings.Join(clauses, clauseJoin)), combinedArgs...)
+			} else {
+				const derivedTable = "studio"
+				addHierarchicalWithClause(f, studios.Value, derivedTable, studioTable, "parent_id", studios.Depth)
+
+				templStr := `(SELECT COUNT(DISTINCT {primaryTable}.id) FROM {primaryTable} 
+	LEFT JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK} 
+	INNER JOIN studio ON {primaryTable}.studio_id = studio.child_id
+	WHERE {joinTable}.performer_id = performers.id)` + countCondition
+
+				var clauses []string
+				for _, c := range formatMaps {
+					clauses = append(clauses, utils.StrFormat(templStr, c))
+				}
+
+				f.addWhere(fmt.Sprintf("(%s)", strings.Join(clauses, clauseJoin)))
 			}
-
-			// this is a bit gross. We need the args three times
-			combinedArgs := append(args, append(args, args...)...)
-
-			f.addWhere(fmt.Sprintf("(%s)", strings.Join(clauses, clauseJoin)), combinedArgs...)
 		}
 	}
 }
