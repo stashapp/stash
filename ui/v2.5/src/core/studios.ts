@@ -15,16 +15,14 @@ export const studioFilterHook = (studio: Partial<GQL.StudioDataFragment>) => {
       (studioCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
         studioCriterion.modifier === GQL.CriterionModifier.Includes)
     ) {
-      // add the studio if not present
-      if (
-        !studioCriterion.value.items.find((p) => {
-          return p.id === studio.id;
-        })
-      ) {
+      // we should be showing studio only. Remove other values
+      studioCriterion.value.items = studioCriterion.value.items.filter(
+        (v) => v.id === studio.id
+      );
+
+      if (studioCriterion.value.items.length === 0) {
         studioCriterion.value.items.push(studioValue);
       }
-
-      studioCriterion.modifier = GQL.CriterionModifier.IncludesAll;
     } else {
       // overwrite
       studioCriterion = new StudiosCriterion();
