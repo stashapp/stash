@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type sqlClause struct {
@@ -540,41 +541,47 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	parentFK     string
 }
 
+func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, table, parentFK string, depth int) {
+	var args []interface{}
+
+	for _, value := range value {
+		args = append(args, value)
+	}
+	inCount := len(args)
+
+	var depthCondition string
+	if depth != -1 {
+		depthCondition = fmt.Sprintf("WHERE depth < %d", depth)
+	}
+
+	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
+SELECT id as id, id as child_id, 0 as depth FROM {table} 
+WHERE id in {inBinding} 
+UNION SELECT p.id, c.id, depth + 1 FROM {table} as c 
+INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition})
+`, utils.StrFormatMap{
+		"derivedTable":   derivedTable,
+		"table":          table,
+		"inBinding":      getInBinding(inCount),
+		"parentFK":       parentFK,
+		"depthCondition": depthCondition,
+	})
+
+	f.addWith(withClause, args...)
+}
+
 func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
-			var args []interface{}
-			for _, value := range criterion.Value {
-				args = append(args, value)
-			}
-			inCount := len(args)
+			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.parentFK, criterion.Depth)
 
 			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
-
-			var depthCondition string
-			if criterion.Depth != -1 {
-				depthCondition = "WHERE depth < ?"
-				args = append(args, criterion.Depth)
-			}
-
-			withClause := fmt.Sprintf(
-				"RECURSIVE %s AS (SELECT id as id, id as child_id, 0 as depth FROM %s WHERE id in %s UNION SELECT p.id, c.id, depth + 1 FROM %s as c INNER JOIN %s as p ON c.%s = p.child_id %s)",
-				m.derivedTable,
-				m.foreignTable,
-				getInBinding(inCount),
-				m.foreignTable,
-				m.derivedTable,
-				m.parentFK,
-				depthCondition,
-			)
-
-			f.addWith(withClause, args...)
 
 			if criterion.Modifier == models.CriterionModifierIncludes {
 				f.addWhere(fmt.Sprintf("%s.id IS NOT NULL", m.derivedTable))
 			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
 				f.addWhere(fmt.Sprintf("%s.id IS NOT NULL", m.derivedTable))
-				f.addHaving(fmt.Sprintf("count(distinct %s.id) IS %d", m.derivedTable, inCount))
+				f.addHaving(fmt.Sprintf("count(distinct %s.id) IS %d", m.derivedTable, len(criterion.Value)))
 			} else if criterion.Modifier == models.CriterionModifierExcludes {
 				f.addWhere(fmt.Sprintf("%s.id IS NULL", m.derivedTable))
 			}
