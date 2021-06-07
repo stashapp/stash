@@ -32,9 +32,14 @@ export class ListFilterModel {
   public criteria: Array<Criterion<CriterionValue>> = [];
   public randomSeed = -1;
 
-  public constructor(rawParms?: ParsedQuery<string>, defaultSort?: string) {
+  public constructor(
+    rawParms?: ParsedQuery<string>,
+    defaultSort?: string,
+    defaultDisplayMode?: DisplayMode
+  ) {
     const params = rawParms as IQueryParameters;
     this.sortBy = defaultSort;
+    if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
     if (params) this.configureFromQueryParameters(params);
   }
 
