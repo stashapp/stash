@@ -9,10 +9,12 @@ import (
 )
 
 var performerBox *packr.Box
+var accessiblePerformerBoxFemale *packr.Box
 var performerBoxMale *packr.Box
 
 func initialiseImages() {
 	performerBox = packr.New("Performer Box", "../../static/performer")
+	accessiblePerformerBoxFemale = packr.New("Accessible Performer Box", "../../static/performer_female_accessible")
 	performerBoxMale = packr.New("Male Performer Box", "../../static/performer_male")
 }
 
@@ -21,6 +23,8 @@ func getRandomPerformerImage(gender string) ([]byte, error) {
 	switch strings.ToUpper(gender) {
 	case "FEMALE":
 		box = performerBox
+	case "FEMALE_ACCESSIBLE":
+		box = accessiblePerformerBoxFemale
 	case "MALE":
 		box = performerBoxMale
 	default:
@@ -37,6 +41,8 @@ func getRandomPerformerImageUsingName(name, gender string) ([]byte, error) {
 	switch strings.ToUpper(gender) {
 	case "FEMALE":
 		box = performerBox
+	case "FEMALE_ACCESSIBLE":
+		box = accessiblePerformerBoxFemale
 	case "MALE":
 		box = performerBoxMale
 	default:

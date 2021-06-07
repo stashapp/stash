@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -39,7 +40,15 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 || defaultParam == "true" {
-		image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String)
+		// Use the config to check whether the user needs 'accessible' images for performers (i.e. non-striped option.)
+		c := config.GetInstance()
+
+		//TODO: The current male performers are all 'accessible' currently, however if there is appetite to move to a more unified UI approach, the MALE branch may be wanted here.
+		if c.GetAccessiblePerformerImage() == true && performer.Gender.String == "FEMALE" {
+			image, _ = getRandomPerformerImageUsingName(performer.Name.String, "FEMALE_ACCESSIBLE")
+		} else {
+			image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String)
+		}
 	}
 
 	utils.ServeImage(image, w, r)

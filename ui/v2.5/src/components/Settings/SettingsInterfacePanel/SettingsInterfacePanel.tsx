@@ -26,6 +26,10 @@ export const SettingsInterfacePanel: React.FC = () => {
   );
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
+  const [
+    accessiblePerformerImage,
+    setAccessiblePerformerImage,
+  ] = useState<boolean>(false);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
   const [autostartVideo, setAutostartVideo] = useState<boolean>(false);
@@ -40,6 +44,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     menuItems: menuItemIds,
     soundOnPreview,
     wallShowTitle,
+    accessiblePerformerImage,
     wallPlayback,
     maximumLoopDuration,
     autostartVideo,
@@ -56,6 +61,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setMenuItemIds(iCfg?.menuItems ?? allMenuItems.map((item) => item.id));
     setSoundOnPreview(iCfg?.soundOnPreview ?? true);
     setWallShowTitle(iCfg?.wallShowTitle ?? true);
+    setAccessiblePerformerImage(iCfg?.accessiblePerformerImage ?? false);
     setWallPlayback(iCfg?.wallPlayback ?? "video");
     setMaximumLoopDuration(iCfg?.maximumLoopDuration ?? 0);
     setAutostartVideo(iCfg?.autostartVideo ?? false);
@@ -123,6 +129,19 @@ export const SettingsInterfacePanel: React.FC = () => {
           Show or hide different types of content on the navigation bar
         </Form.Text>
       </Form.Group>
+
+      <Form.Group>
+        <h5>Accessibility</h5>
+        <Form.Check
+          id="show-accessible-performer-images"
+          checked={accessiblePerformerImage}
+          label="Use non-striped default performer images"
+          onChange={() =>
+            setAccessiblePerformerImage(!accessiblePerformerImage)
+          }
+        />
+      </Form.Group>
+
       <Form.Group>
         <h5>Scene / Marker Wall</h5>
         <Form.Check

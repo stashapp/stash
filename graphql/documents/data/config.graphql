@@ -45,6 +45,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   menuItems
   soundOnPreview
   wallShowTitle
+  accessiblePerformerImage
   wallPlayback
   maximumLoopDuration
   autostartVideo

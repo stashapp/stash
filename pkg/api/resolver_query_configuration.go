@@ -95,6 +95,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
+	accessiblePerformerImage := config.GetAccessiblePerformerImage()
 	wallPlayback := config.GetWallPlayback()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
@@ -106,18 +107,19 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	handyKey := config.GetHandyKey()
 
 	return &models.ConfigInterfaceResult{
-		MenuItems:           menuItems,
-		SoundOnPreview:      &soundOnPreview,
-		WallShowTitle:       &wallShowTitle,
-		WallPlayback:        &wallPlayback,
-		MaximumLoopDuration: &maximumLoopDuration,
-		AutostartVideo:      &autostartVideo,
-		ShowStudioAsText:    &showStudioAsText,
-		CSS:                 &css,
-		CSSEnabled:          &cssEnabled,
-		Language:            &language,
-		SlideshowDelay:      &slideshowDelay,
-		HandyKey:            &handyKey,
+		MenuItems:           					menuItems,
+		SoundOnPreview:      					&soundOnPreview,
+		WallShowTitle:       					&wallShowTitle,
+		AccessiblePerformerImage:			&accessiblePerformerImage,
+		WallPlayback:       					&wallPlayback,
+		MaximumLoopDuration:					&maximumLoopDuration,
+		AutostartVideo:    					  &autostartVideo,
+		ShowStudioAsText:   					&showStudioAsText,
+		CSS:               					  &css,
+		CSSEnabled:        					  &cssEnabled,
+		Language:         					  &language,
+		SlideshowDelay:  					    &slideshowDelay,
+		HandyKey:       					    &handyKey,
 	}
 }
 
