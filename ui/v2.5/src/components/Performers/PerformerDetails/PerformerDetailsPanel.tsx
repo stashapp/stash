@@ -116,88 +116,35 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     <>
       <TextField
         id="gender"
-        name={intl.formatMessage({ id: "gender" })}
         value={genderToString(performer.gender ?? undefined)}
       />
       <TextField
         id="birthdate"
-        name={intl.formatMessage({ id: "birthdate" })}
         value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
       />
       <TextField
         id="death_date"
-        name={intl.formatMessage({ id: "death_date" })}
         value={TextUtils.formatDate(intl, performer.death_date ?? undefined)}
       />
-      <TextField
-        id="ethnicity"
-        name={intl.formatMessage({ id: "ethnicity" })}
-        value={performer.ethnicity}
-      />
-      <TextField
-        id="hair_color"
-        name={intl.formatMessage({ id: "hair_color" })}
-        value={performer.hair_color}
-      />
-      <TextField
-        id="eye_color"
-        name={intl.formatMessage({ id: "eye_color" })}
-        value={performer.eye_color}
-      />
-      <TextField
-        id="country"
-        name={intl.formatMessage({ id: "country" })}
-        value={performer.country}
-      />
-      <TextField
-        id="height"
-        name={intl.formatMessage({ id: "height" })}
-        value={formatHeight(performer.height)}
-      />
-      <TextField
-        id="weight"
-        name={intl.formatMessage({ id: "weight" })}
-        value={formatWeight(performer.weight)}
-      />
-      <TextField
-        id="measurements"
-        name={intl.formatMessage({ id: "measurements" })}
-        value={performer.measurements}
-      />
-      <TextField
-        id="fake_tits"
-        name={intl.formatMessage({ id: "fake_tits" })}
-        value={performer.fake_tits}
-      />
-      <TextField
-        id="career_length"
-        name={intl.formatMessage({ id: "career_length" })}
-        value={performer.career_length}
-      />
-      <TextField
-        id="tattoos"
-        name={intl.formatMessage({ id: "tattoos" })}
-        value={performer.tattoos}
-      />
-      <TextField
-        id="piercings"
-        name={intl.formatMessage({ id: "piercings" })}
-        value={performer.piercings}
-      />
-      <TextField
-        id="details"
-        name={intl.formatMessage({ id: "details" })}
-        value={performer.details}
-      />
+      <TextField id="ethnicity" value={performer.ethnicity} />
+      <TextField id="hair_color" value={performer.hair_color} />
+      <TextField id="eye_color" value={performer.eye_color} />
+      <TextField id="country" value={performer.country} />
+      <TextField id="height" value={formatHeight(performer.height)} />
+      <TextField id="weight" value={formatWeight(performer.weight)} />
+      <TextField id="measurements" value={performer.measurements} />
+      <TextField id="fake_tits" value={performer.fake_tits} />
+      <TextField id="career_length" value={performer.career_length} />
+      <TextField id="tattoos" value={performer.tattoos} />
+      <TextField id="piercings" value={performer.piercings} />
+      <TextField id="details" value={performer.details} />
       <URLField
         id="url"
-        name={intl.formatMessage({ id: "url" })}
         value={performer.url}
         url={TextUtils.sanitiseURL(performer.url ?? "")}
       />
       <URLField
         id="twitter"
-        name="Twitter"
         value={performer.twitter}
         url={TextUtils.sanitiseURL(
           performer.twitter ?? "",
@@ -206,7 +153,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       />
       <URLField
         id="instagram"
-        name="Instagram"
         value={performer.instagram}
         url={TextUtils.sanitiseURL(
           performer.instagram ?? "",

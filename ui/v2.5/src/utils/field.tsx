@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 interface ITextField {
   id?: string;
-  name: string;
+  name?: string;
   value?: string | null;
 }
 
@@ -14,8 +14,7 @@ export const TextField: React.FC<ITextField> = ({ id, name, value }) => {
   return (
     <dl className="row mb-0">
       <dt className="col-3 col-xl-2">
-        {id ? <FormattedMessage id={id} defaultMessage={name} /> : name}
-        :
+        {id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:
       </dt>
       <dd className="col-9 col-xl-10">{value ?? undefined}</dd>
     </dl>
@@ -24,7 +23,7 @@ export const TextField: React.FC<ITextField> = ({ id, name, value }) => {
 
 interface IURLField {
   id?: string;
-  name: string;
+  name?: string;
   value?: string | null;
   url?: string | null;
 }
@@ -36,8 +35,7 @@ export const URLField: React.FC<IURLField> = ({ id, name, value, url }) => {
   return (
     <dl className="row mb-0">
       <dt className="col-3 col-xl-2">
-        {id ? <FormattedMessage id={id} defaultMessage={name} /> : name}
-        :
+        {id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:
       </dt>
       <dd className="col-9 col-xl-10">
         {url ? (
