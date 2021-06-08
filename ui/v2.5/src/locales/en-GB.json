@@ -37,6 +37,7 @@
     "generate": "Generate",
     "generate_thumb_default": "Generate default thumbnail",
     "generate_thumb_from_current": "Generate thumbnail from current",
+    "hash_migration": "hash migration",
     "hide": "Hide",
     "import": "Import…",
     "import_from_file": "Import from file",
@@ -67,6 +68,11 @@
     "set_image": "Set image…",
     "show": "Show",
     "skip": "Skip",
+    "tasks": {
+      "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
+      "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
+      "import_warning": "Are you sure you want to import? This will delete the database and re-import from your exported metadata."
+    },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
     "view_random": "View Random"
@@ -233,19 +239,24 @@
     },
     "stashbox": {
       "add_instance": "Add stash-box instance",
+      "api_key": "API key",
       "description": "Stash-box facilitates automated tagging of scenes and performers based on fingerprints and filenames.\nEndpoint and API key can be found on your account page on the stash-box instance. Names are required when more than one instance is added.",
       "endpoint": "Endpoint",
+      "graphql_endpoint": "GraphQL endpoint",
       "name": "Name",
       "title": "Stash-box Endpoints"
     },
     "tasks": {
+      "added_job_to_queue": "Added {operation_name} to job queue",
       "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
       "auto_tagging": "Auto Tagging",
+      "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
       "backup_database": "Performs a backup of the database to the same directory as the database, with the filename format {filename_format}",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
+      "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
       "generate_phashes_during_scan": "Generate phashes during scan (for deduplication and scene identification)",
       "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
@@ -258,6 +269,7 @@
       "migrate_hash_files": "Used after changing the Generated file naming hash to rename existing generated files to the new hash format.",
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
+      "plugin_tasks": "Plugin Tasks",
       "scan_for_content_desc": "Scan for new content and add it to the database.",
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from metadata (if present)"
     },

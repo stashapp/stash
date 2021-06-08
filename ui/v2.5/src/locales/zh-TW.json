@@ -37,6 +37,7 @@
     "generate": "產生",
     "generate_thumb_default": "產生預設預覽圖",
     "generate_thumb_from_current": "從現在的畫面產生預覽圖",
+    "hash_migration": "雜湊值遷移",
     "hide": "隱藏",
     "import": "匯入…",
     "import_from_file": "自檔案匯入",
@@ -67,6 +68,11 @@
     "set_image": "設定圖像…",
     "show": "顯示",
     "skip": "跳過",
+    "tasks": {
+      "clean_confirm_message": "您確定要進行清理嗎？這將從資料庫及產生的文件中清除已不在的短片及圖庫。",
+      "dry_mode_selected": "已選擇了模擬作業模式。不會進行任何實際刪除作業，只會進行模擬記錄。",
+      "import_warning": "您確定要匯入本檔案嗎？這將刪除現有資料庫，並將已新匯入的內容重建資料。"
+    },
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
     "view_random": "隨機開啟"
@@ -232,19 +238,24 @@
     },
     "stashbox": {
       "add_instance": "新增 Stash-box 端點",
+      "api_key": "API 金鑰",
       "description": "Stash-box 有助於根據影片的特徵碼和檔案名稱自動標記短片及演員。\n您可在您的 Stash-box 端點中的帳戶資訊內找到端點資訊以及您的 API 金鑰。\n如果您有多個端點數量的話，名稱資訊不可留空。",
       "endpoint": "端點",
+      "graphql_endpoint": "GraphQL 端點",
       "name": "名稱",
       "title": "Stash-box 端點"
     },
     "tasks": {
+      "added_job_to_queue": "已新增『{operation_name}』至作業排成",
       "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
       "auto_tagging": "自動套用標籤",
+      "backing_up_database": "備份資料庫中",
       "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
       "backup_database": "將整個資料庫備份至與資料庫相同的目錄下，該匯出的名稱格式為 {filename_format}",
       "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。請注意，本動作具破壞性且無法復原！",
       "dont_include_file_extension_as_part_of_the_title": "不要在標題中附上檔案副檔名",
       "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
+      "generate_desc": "產生輔助圖片、預覽、影片檔、VTT 字幕等檔案。",
       "generate_phashes_during_scan": "掃描時，順便產生 PHash（用於偵測重複的影片檔案及辨認短片）",
       "generate_previews_during_scan": "掃描時，順便產生圖像預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
       "generate_sprites_during_scan": "掃描時，順便產生時間軸預覽（用於短片中時間軸的預覽圖）",
@@ -257,6 +268,7 @@
       "migrate_hash_files": "在更改生成的檔案命名雜湊以將現有生成的文件重命名為新的雜湊格式後使用。",
       "migrations": "遷移",
       "only_dry_run": "僅模擬作業，不要刪除任何東西",
+      "plugin_tasks": "插件排程",
       "scan_for_content_desc": "掃描新內容，並將其新增到資料庫中。",
       "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）"
     },

@@ -29,7 +29,7 @@ const Instance: React.FC<IInstanceProps> = ({
     <Form.Group className="row no-gutters">
       <InputGroup className="col">
         <Form.Control
-          placeholder="Name"
+          placeholder={intl.formatMessage({ id: "config.stashbox.name" })}
           className="text-input col-3 stash-box-name"
           value={instance?.name}
           isValid={!isMulti || (instance?.name?.length ?? 0) > 0}
@@ -38,7 +38,9 @@ const Instance: React.FC<IInstanceProps> = ({
           }
         />
         <Form.Control
-          placeholder="GraphQL endpoint"
+          placeholder={intl.formatMessage({
+            id: "config.stashbox.graphql_endpoint",
+          })}
           className="text-input col-3 stash-box-endpoint"
           value={instance?.endpoint}
           isValid={(instance?.endpoint?.length ?? 0) > 0}
@@ -47,7 +49,7 @@ const Instance: React.FC<IInstanceProps> = ({
           }
         />
         <Form.Control
-          placeholder="API key"
+          placeholder={intl.formatMessage({ id: "config.stashbox.api_key" })}
           className="text-input col-3 stash-box-apikey"
           value={instance?.api_key}
           isValid={(instance?.api_key?.length ?? 0) > 0}

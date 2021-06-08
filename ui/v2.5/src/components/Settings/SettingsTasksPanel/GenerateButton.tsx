@@ -91,7 +91,7 @@ export const GenerateButton: React.FC = () => {
           <FormattedMessage id="actions.generate" />
         </Button>
         <Form.Text className="text-muted">
-          Generate supporting image, sprite, video, vtt and other files.
+          {intl.formatMessage({ id: "config.tasks.generate_desc" })}
         </Form.Text>
       </Form.Group>
     </>

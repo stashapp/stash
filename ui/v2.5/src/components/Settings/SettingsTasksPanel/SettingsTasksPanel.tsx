@@ -62,7 +62,12 @@ export const SettingsTasksPanel: React.FC = () => {
     setIsImportAlertOpen(false);
     try {
       await mutateMetadataImport();
-      Toast.success({ content: "Added import task to queue" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.import" }) }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -80,10 +85,7 @@ export const SettingsTasksPanel: React.FC = () => {
         }}
         cancel={{ onClick: () => setIsImportAlertOpen(false) }}
       >
-        <p>
-          Are you sure you want to import? This will delete the database and
-          re-import from your exported metadata.
-        </p>
+        <p>{intl.formatMessage({ id: "actions.tasks.import_warning" })}</p>
       </Modal>
     );
   }
@@ -99,16 +101,12 @@ export const SettingsTasksPanel: React.FC = () => {
     let msg;
     if (cleanDryRun) {
       msg = (
-        <p>
-          Dry Mode selected. No actual deleting will take place, only logging.
-        </p>
+        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
       );
     } else {
       msg = (
         <p>
-          Are you sure you want to Clean? This will delete database information
-          and generated content for all scenes and galleries that are no longer
-          found in the filesystem.
+          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
         </p>
       );
     }
@@ -117,7 +115,11 @@ export const SettingsTasksPanel: React.FC = () => {
       <Modal
         show={isCleanAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Clean", variant: "danger", onClick: onClean }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.clean" }),
+          variant: "danger",
+          onClick: onClean,
+        }}
         cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
       >
         {msg}
@@ -160,7 +162,12 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGenerateSprites,
         scanGeneratePhashes,
       });
-      Toast.success({ content: "Added scan to job queue" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.scan" }) }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -195,7 +202,12 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onAutoTag(paths?: string[]) {
     try {
       await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({ content: "Added Auto tagging job to queue" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -203,7 +215,12 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
     await mutateRunPluginTask(plugin.id, operation.name);
-    Toast.success({ content: `Added ${operation.name} job to queue` });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "config.tasks.added_job_to_queue" },
+        { operation_name: operation.name }
+      ),
+    });
   }
 
   function renderPluginTasks(plugin: Plugin, pluginTasks: PluginTask[]) {
@@ -257,7 +274,7 @@ export const SettingsTasksPanel: React.FC = () => {
     return (
       <>
         <hr />
-        <h5>Plugin Tasks</h5>
+        <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
         {plugins.data.plugins.map((o) => {
           return (
             <div key={`${o.id}`} className="mb-3">
@@ -274,7 +291,16 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onMigrateHashNaming() {
     try {
       await mutateMigrateHashNaming();
-      Toast.success({ content: "Added hash migration task to queue" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.hash_migration",
+            }),
+          }
+        ),
+      });
     } catch (err) {
       Toast.error(err);
     }
@@ -283,14 +309,23 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onExport() {
     try {
       await mutateMetadataExport();
-      Toast.success({ content: "Added export task to queue" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.backup" }) }
+        ),
+      });
     } catch (err) {
       Toast.error(err);
     }
   }
 
   if (isBackupRunning) {
-    return <LoadingIndicator message="Backup up database" />;
+    return (
+      <LoadingIndicator
+        message={intl.formatMessage({ id: "config.tasks.backing_up_database" })}
+      />
+    );
   }
 
   return (
