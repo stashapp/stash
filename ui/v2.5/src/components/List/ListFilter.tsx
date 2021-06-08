@@ -146,7 +146,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     return (
       <>
-        <div className="d-flex">
+        <div className="d-flex mb-1">
           <InputGroup className="mr-2 flex-grow-1">
             <InputGroup.Prepend>
               <Dropdown>
@@ -187,54 +187,52 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               </OverlayTrigger>
             </InputGroup.Append>
           </InputGroup>
+        </div>
 
-          <Dropdown as={ButtonGroup} className="mr-2">
-            <Dropdown.Toggle variant="secondary">
-              {currentSortBy
-                ? intl.formatMessage({ id: currentSortBy.messageID })
-                : ""}
-            </Dropdown.Toggle>
-            <Dropdown.Menu className="bg-secondary text-white">
-              {renderSortByOptions()}
-            </Dropdown.Menu>
+        <Dropdown as={ButtonGroup} className="mr-2 mb-1">
+          <Dropdown.Toggle variant="secondary">
+            {currentSortBy
+              ? intl.formatMessage({ id: currentSortBy.messageID })
+              : ""}
+          </Dropdown.Toggle>
+          <Dropdown.Menu className="bg-secondary text-white">
+            {renderSortByOptions()}
+          </Dropdown.Menu>
+          <OverlayTrigger
+            overlay={
+              <Tooltip id="sort-direction-tooltip">
+                {filter.sortDirection === SortDirectionEnum.Asc
+                  ? "Ascending"
+                  : "Descending"}
+              </Tooltip>
+            }
+          >
+            <Button variant="secondary" onClick={onChangeSortDirection}>
+              <Icon
+                icon={
+                  filter.sortDirection === SortDirectionEnum.Asc
+                    ? "caret-up"
+                    : "caret-down"
+                }
+              />
+            </Button>
+          </OverlayTrigger>
+          {filter.sortBy === "random" && (
             <OverlayTrigger
-              overlay={
-                <Tooltip id="sort-direction-tooltip">
-                  {filter.sortDirection === SortDirectionEnum.Asc
-                    ? "Ascending"
-                    : "Descending"}
-                </Tooltip>
-              }
+              overlay={<Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>}
             >
-              <Button variant="secondary" onClick={onChangeSortDirection}>
-                <Icon
-                  icon={
-                    filter.sortDirection === SortDirectionEnum.Asc
-                      ? "caret-up"
-                      : "caret-down"
-                  }
-                />
+              <Button variant="secondary" onClick={onReshuffleRandomSort}>
+                <Icon icon="random" />
               </Button>
             </OverlayTrigger>
-            {filter.sortBy === "random" && (
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
-                }
-              >
-                <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                  <Icon icon="random" />
-                </Button>
-              </OverlayTrigger>
-            )}
-          </Dropdown>
-        </div>
+          )}
+        </Dropdown>
 
         <Form.Control
           as="select"
           onChange={onChangePageSize}
           value={filter.itemsPerPage.toString()}
-          className="btn-secondary mx-1"
+          className="btn-secondary mx-1 mb-1"
         >
           {PAGE_SIZE_OPTIONS.map((s) => (
             <option value={s} key={s}>

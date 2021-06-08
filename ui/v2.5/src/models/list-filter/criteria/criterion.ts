@@ -356,7 +356,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
     let defaultModifier = CriterionModifier.Includes;
     if (includeAll) {
       modifierOptions.unshift(CriterionModifier.IncludesAll);
-      defaultModifier = CriterionModifier.IncludesAll
+      defaultModifier = CriterionModifier.IncludesAll;
     }
 
     super({

@@ -60,7 +60,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   function maybeRenderSelectedButtons() {
     if (itemsSelected && (onEdit || onDelete)) {
       return (
-        <ButtonGroup className="ml-2">
+        <ButtonGroup className="ml-2 mb-1">
           {onEdit && (
             <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
               <Button variant="secondary" onClick={onEdit}>
@@ -136,7 +136,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (options.length > 0) {
       return (
-        <Dropdown>
+        <Dropdown className="mb-1">
           <Dropdown.Toggle variant="secondary" id="more-menu">
             <Icon icon="ellipsis-h" />
           </Dropdown.Toggle>
