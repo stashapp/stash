@@ -75,7 +75,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     return (
       <ImageInput
         isEditing={props.isEditing}
-        text="Back image..."
+        text={intl.formatMessage({ id: "actions.set_back_image" })}
         onImageChange={props.onBackImageChange}
         onImageURL={props.onBackImageChangeURL}
       />
@@ -130,7 +130,11 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
       {renderEditButton()}
       <ImageInput
         isEditing={props.isEditing}
-        text={props.onBackImageChange ? "Front image..." : undefined}
+        text={
+          props.onBackImageChange
+            ? intl.formatMessage({ id: "actions.set_front_image" })
+            : undefined
+        }
         onImageChange={props.onImageChange}
         onImageURL={props.onImageChangeURL}
         acceptSVG={props.acceptSVG ?? false}
@@ -141,7 +145,9 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
           variant="danger"
           onClick={() => props.onClearImage!()}
         >
-          {props.onClearBackImage ? "Clear front image" : "Clear image"}
+          {props.onClearBackImage
+            ? intl.formatMessage({ id: "actions.clear_front_image" })
+            : intl.formatMessage({ id: "actions.clear_image" })}
         </Button>
       ) : (
         ""
@@ -153,7 +159,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
           variant="danger"
           onClick={() => props.onClearBackImage!()}
         >
-          Clear back image
+          {intl.formatMessage({ id: "actions.clear_back_image" })}
         </Button>
       ) : (
         ""
