@@ -353,8 +353,10 @@ export class ILabeledIdCriterionOption extends CriterionOption {
       CriterionModifier.Excludes,
     ];
 
+    let defaultModifier = CriterionModifier.Includes;
     if (includeAll) {
       modifierOptions.unshift(CriterionModifier.IncludesAll);
+      defaultModifier = CriterionModifier.IncludesAll
     }
 
     super({
@@ -362,7 +364,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
       type: value,
       parameterName,
       modifierOptions,
-      defaultModifier: CriterionModifier.IncludesAll,
+      defaultModifier,
     });
   }
 }
