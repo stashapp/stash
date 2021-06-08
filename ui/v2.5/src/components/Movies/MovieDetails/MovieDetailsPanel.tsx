@@ -17,7 +17,9 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
     if (movie.aliases) {
       return (
         <div>
-          <span className="alias-head">{intl.formatMessage({id:'also_known_as'})} </span>
+          <span className="alias-head">
+            {intl.formatMessage({ id: "also_known_as" })}{" "}
+          </span>
           <span className="alias">{movie.aliases}</span>
         </div>
       );
@@ -31,7 +33,9 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
 
     return (
       <dl className="row">
-        <dt className="col-3 col-xl-2">{intl.formatMessage({id:'rating'})}</dt>
+        <dt className="col-3 col-xl-2">
+          {intl.formatMessage({ id: "rating" })}
+        </dt>
         <dd className="col-9 col-xl-10">
           <RatingStars value={movie.rating} disabled />
         </dd>
