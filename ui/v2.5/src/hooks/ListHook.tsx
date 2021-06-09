@@ -451,8 +451,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const persistanceKey = options.persistanceKey ?? options.filterMode;
 
   const defaultSort = options.defaultSort ?? filterOptions.defaultSortBy;
+  const defaultDisplayMode = filterOptions.displayModeOptions[0];
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(queryString.parse(location.search), defaultSort)
+    new ListFilterModel(
+      queryString.parse(location.search),
+      defaultSort,
+      defaultDisplayMode
+    )
   );
 
   const updateInterfaceConfig = useCallback(
@@ -513,7 +518,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         }
       : activeFilter;
 
-    const newFilter = new ListFilterModel(query, defaultSort);
+    const newFilter = new ListFilterModel(
+      query,
+      defaultSort,
+      defaultDisplayMode
+    );
 
     // Compare constructed filter with current filter.
     // If different it's the result of navigation, and we update the filter.
@@ -530,6 +539,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
   }, [
     defaultSort,
+    defaultDisplayMode,
     filter,
     interfaceState.data,
     interfaceState.loading,

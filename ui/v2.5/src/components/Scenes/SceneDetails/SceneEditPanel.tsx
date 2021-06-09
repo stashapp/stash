@@ -126,6 +126,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("rating", v);
   }
 
+  interface IGallerySelectValue {
+    id: string;
+    title: string;
+  }
+
+  function onSetGalleries(items: IGallerySelectValue[]) {
+    setGalleries(items);
+    formik.setFieldValue(
+      "gallery_ids",
+      items.map((i) => i.id)
+    );
+  }
+
   useEffect(() => {
     if (isVisible) {
       Mousetrap.bind("s s", () => {
@@ -604,7 +617,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col xs={9}>
                 <GallerySelect
                   galleries={galleries}
-                  onSelect={(items) => setGalleries(items)}
+                  onSelect={(items) => onSetGalleries(items)}
                 />
               </Col>
             </Form.Group>
