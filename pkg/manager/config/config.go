@@ -568,7 +568,6 @@ func (i *Instance) GetMenuItems() []string {
 }
 
 func (i *Instance) GetSoundOnPreview() bool {
-	viper.SetDefault(SoundOnPreview, false)
 	return viper.GetBool(SoundOnPreview)
 }
 
@@ -748,6 +747,7 @@ func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+	viper.SetDefault(SoundOnPreview, false)
 
 	viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
 
