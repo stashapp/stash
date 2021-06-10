@@ -19,8 +19,6 @@ input GenerateMetadataInput {
 }
 
 input GeneratePreviewOptionsInput {
-  """Include audio stream in previews"""
-  previewAudio: Boolean!
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
