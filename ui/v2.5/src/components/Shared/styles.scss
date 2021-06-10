@@ -151,7 +151,12 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   }
 }
 
-.card {
+.grid-card {
+  a .card-section-title {
+    color: $text-color;
+    text-decoration: none;
+  }
+
   .card-check {
     left: 0.5rem;
     margin-top: -12px;

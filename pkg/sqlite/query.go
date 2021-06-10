@@ -3,6 +3,7 @@ package sqlite
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -16,6 +17,7 @@ type queryBuilder struct {
 	whereClauses  []string
 	havingClauses []string
 	args          []interface{}
+	withClauses   []string
 
 	sortAndPagination string
 
@@ -30,7 +32,7 @@ func (qb queryBuilder) executeFind() ([]int, int, error) {
 	body := qb.body
 	body += qb.joins.toSQL()
 
-	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
+	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses)
 }
 
 func (qb queryBuilder) executeCount() (int, error) {
@@ -41,8 +43,13 @@ func (qb queryBuilder) executeCount() (int, error) {
 	body := qb.body
 	body += qb.joins.toSQL()
 
+	withClause := ""
+	if len(qb.withClauses) > 0 {
+		withClause = "WITH " + strings.Join(qb.withClauses, ", ") + " "
+	}
+
 	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
-	countQuery := qb.repository.buildCountQuery(body)
+	countQuery := withClause + qb.repository.buildCountQuery(body)
 	return qb.repository.runCountQuery(countQuery, qb.args)
 }
 
@@ -58,6 +65,14 @@ func (qb *queryBuilder) addHaving(clauses ...string) {
 	for _, clause := range clauses {
 		if len(clause) > 0 {
 			qb.havingClauses = append(qb.havingClauses, clause)
+		}
+	}
+}
+
+func (qb *queryBuilder) addWith(clauses ...string) {
+	for _, clause := range clauses {
+		if len(clause) > 0 {
+			qb.withClauses = append(qb.withClauses, clause)
 		}
 	}
 }
@@ -87,7 +102,17 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) {
 		return
 	}
 
-	clause, args := f.generateWhereClauses()
+	clause, args := f.generateWithClauses()
+	if len(clause) > 0 {
+		qb.addWith(clause)
+	}
+
+	if len(args) > 0 {
+		// WITH clause always comes first and thus precedes alk args
+		qb.args = append(args, qb.args...)
+	}
+
+	clause, args = f.generateWhereClauses()
 	if len(clause) > 0 {
 		qb.addWhere(clause)
 	}

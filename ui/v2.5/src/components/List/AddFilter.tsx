@@ -5,20 +5,28 @@ import Mousetrap from "mousetrap";
 import { Icon, FilterSelect, DurationInput } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  Criterion,
-  CriterionType,
   DurationCriterion,
   CriterionValue,
+  Criterion,
+  IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
-import { makeCriteria } from "src/models/list-filter/criteria/utils";
-import { ListFilterModel } from "src/models/list-filter/filter";
+import { makeCriteria } from "src/models/list-filter/criteria/factory";
+import { ListFilterOptions } from "src/models/list-filter/filter-options";
+import { defineMessages, useIntl } from "react-intl";
+import {
+  criterionIsHierarchicalLabelValue,
+  CriterionType,
+} from "src/models/list-filter/types";
 
 interface IAddFilterProps {
-  onAddCriterion: (criterion: Criterion, oldId?: string) => void;
+  onAddCriterion: (
+    criterion: Criterion<CriterionValue>,
+    oldId?: string
+  ) => void;
   onCancel: () => void;
-  filter: ListFilterModel;
-  editingCriterion?: Criterion;
+  filterOptions: ListFilterOptions;
+  editingCriterion?: Criterion<CriterionValue>;
 }
 
 export const AddFilter: React.FC<IAddFilterProps> = (
@@ -27,9 +35,20 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   const defaultValue = useRef<string | number | undefined>();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [criterion, setCriterion] = useState<Criterion>(new NoneCriterion());
+  const [criterion, setCriterion] = useState<Criterion<CriterionValue>>(
+    new NoneCriterion()
+  );
 
   const valueStage = useRef<CriterionValue>(criterion.value);
+
+  const intl = useIntl();
+
+  const messages = defineMessages({
+    studio_depth: {
+      id: "studio_depth",
+      defaultMessage: "Levels (empty for all)",
+    },
+  });
 
   // configure keyboard shortcuts
   useEffect(() => {
@@ -114,7 +133,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   }
 
   const maybeRenderFilterPopoverContents = () => {
-    if (criterion.type === "none") {
+    if (criterion.criterionOption.value === "none") {
       return;
     }
 
@@ -149,19 +168,19 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
       if (Array.isArray(criterion.value)) {
         if (
-          criterion.type !== "performers" &&
-          criterion.type !== "studios" &&
-          criterion.type !== "parent_studios" &&
-          criterion.type !== "tags" &&
-          criterion.type !== "sceneTags" &&
-          criterion.type !== "performerTags" &&
-          criterion.type !== "movies"
+          criterion.criterionOption.value !== "performers" &&
+          criterion.criterionOption.value !== "studios" &&
+          criterion.criterionOption.value !== "parent_studios" &&
+          criterion.criterionOption.value !== "tags" &&
+          criterion.criterionOption.value !== "sceneTags" &&
+          criterion.criterionOption.value !== "performerTags" &&
+          criterion.criterionOption.value !== "movies"
         )
           return;
 
         return (
           <FilterSelect
-            type={criterion.type}
+            type={criterion.criterionOption.value}
             isMulti
             onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);
@@ -175,7 +194,29 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           />
         );
       }
-      if (criterion.options) {
+      if (criterion instanceof IHierarchicalLabeledIdCriterion) {
+        if (criterion.criterionOption.value !== "studios") return;
+
+        return (
+          <FilterSelect
+            type={criterion.criterionOption.value}
+            isMulti
+            onSelect={(items) => {
+              const newCriterion = _.cloneDeep(criterion);
+              newCriterion.value.items = items.map((i) => ({
+                id: i.id,
+                label: i.name!,
+              }));
+              setCriterion(newCriterion);
+            }}
+            ids={criterion.value.items.map((labeled) => labeled.id)}
+          />
+        );
+      }
+      if (
+        criterion.options &&
+        !criterionIsHierarchicalLabelValue(criterion.value)
+      ) {
         defaultValue.current = criterion.value;
         return (
           <Form.Control
@@ -211,30 +252,103 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         />
       );
     }
+    function renderAdditional() {
+      if (criterion instanceof IHierarchicalLabeledIdCriterion) {
+        return (
+          <>
+            <Form.Group>
+              <Form.Check
+                checked={criterion.value.depth !== 0}
+                label="Include child studios"
+                onChange={() => {
+                  const newCriterion = _.cloneDeep(criterion);
+                  newCriterion.value.depth =
+                    newCriterion.value.depth !== 0 ? 0 : -1;
+                  setCriterion(newCriterion);
+                }}
+              />
+            </Form.Group>
+            {criterion.value.depth !== 0 && (
+              <Form.Group>
+                <Form.Control
+                  className="btn-secondary"
+                  type="number"
+                  placeholder={intl.formatMessage(messages.studio_depth)}
+                  onChange={(e) => {
+                    const newCriterion = _.cloneDeep(criterion);
+                    newCriterion.value.depth = e.target.value
+                      ? parseInt(e.target.value, 10)
+                      : -1;
+                    setCriterion(newCriterion);
+                  }}
+                  defaultValue={
+                    criterion.value && criterion.value.depth !== -1
+                      ? criterion.value.depth
+                      : ""
+                  }
+                  min="1"
+                />
+              </Form.Group>
+            )}
+          </>
+        );
+      }
+    }
     return (
       <>
         <Form.Group>{renderModifier()}</Form.Group>
         <Form.Group>{renderSelect()}</Form.Group>
+        {renderAdditional()}
       </>
     );
   };
+
+  function maybeRenderFilterCriterion() {
+    if (!props.editingCriterion) {
+      return;
+    }
+
+    return (
+      <Form.Group>
+        <strong>
+          {intl.formatMessage({
+            id: props.editingCriterion.criterionOption.messageID,
+          })}
+        </strong>
+      </Form.Group>
+    );
+  }
 
   function maybeRenderFilterSelect() {
     if (props.editingCriterion) {
       return;
     }
+
+    const options = props.filterOptions.criterionOptions
+      .map((c) => {
+        return {
+          value: c.value,
+          text: intl.formatMessage({ id: c.messageID }),
+        };
+      })
+      .sort((a, b) => {
+        if (a.value === "none") return -1;
+        if (b.value === "none") return 1;
+        return a.text.localeCompare(b.text);
+      });
+
     return (
       <Form.Group controlId="filter">
         <Form.Label>Filter</Form.Label>
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
-          value={criterion.type}
+          value={criterion.criterionOption.value}
           className="btn-secondary"
         >
-          {props.filter.criterionOptions.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
+          {options.map((c) => (
+            <option key={c.value} value={c.value} disabled={c.value === "none"}>
+              {c.text}
             </option>
           ))}
         </Form.Control>
@@ -259,11 +373,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         <Modal.Body>
           <div className="dialog-content">
             {maybeRenderFilterSelect()}
+            {maybeRenderFilterCriterion()}
             {maybeRenderFilterPopoverContents()}
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={onAddFilter} disabled={criterion.type === "none"}>
+          <Button
+            onClick={onAddFilter}
+            disabled={criterion.criterionOption.value === "none"}
+          >
             {title}
           </Button>
         </Modal.Footer>

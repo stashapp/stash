@@ -3,21 +3,23 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
-  BasicCard,
+  GridCard,
   CountryFlag,
   HoverPopover,
   Icon,
   TagLink,
-  TruncatedText,
 } from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 
 export interface IPerformerCardExtraCriteria {
-  scenes: Criterion[];
-  images: Criterion[];
-  galleries: Criterion[];
+  scenes: Criterion<CriterionValue>[];
+  images: Criterion<CriterionValue>[];
+  galleries: Criterion<CriterionValue>[];
 }
 
 interface IPerformerCardProps {
@@ -147,9 +149,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   return (
-    <BasicCard
+    <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
+      title={performer.name ?? ""}
       image={
         <>
           <img
@@ -163,9 +166,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       details={
         <>
-          <h5>
-            <TruncatedText text={performer.name} />
-          </h5>
           {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
           <Link to={NavUtils.makePerformersCountryUrl(performer)}>
             <CountryFlag country={performer.country} />

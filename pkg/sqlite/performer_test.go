@@ -746,7 +746,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 		sqb := r.Performer()
 
 		for _, tc := range testCases {
-			studioCriterion := models.MultiCriterionInput{
+			studioCriterion := models.HierarchicalMultiCriterionInput{
 				Value: []string{
 					strconv.Itoa(studioIDs[tc.studioIndex]),
 				},
@@ -764,7 +764,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 			// ensure id is correct
 			assert.Equal(t, performerIDs[tc.performerIndex], performers[0].ID)
 
-			studioCriterion = models.MultiCriterionInput{
+			studioCriterion = models.HierarchicalMultiCriterionInput{
 				Value: []string{
 					strconv.Itoa(studioIDs[tc.studioIndex]),
 				},

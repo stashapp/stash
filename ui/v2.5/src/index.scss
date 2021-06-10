@@ -631,3 +631,13 @@ div.dropdown-menu {
   border-color: inherit;
   box-shadow: inherit;
 }
+
+.button-group-above {
+  .btn:first-child {
+    border-bottom-left-radius: 0;
+  }
+
+  .btn:last-child {
+    border-bottom-right-radius: 0;
+  }
+}

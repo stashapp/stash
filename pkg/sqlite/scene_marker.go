@@ -249,7 +249,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 	}
 
 	sortAndPagination := qb.getSceneMarkerSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses, []string{})
 	if err != nil {
 		return nil, 0, err
 	}
