@@ -480,7 +480,7 @@ export const SettingsDLNAPanel: React.FC = () => {
 
         <hr />
 
-        <Button variant="primary" type="submit">
+        <Button variant="primary" type="submit" disabled={!dirty}>
           Save
         </Button>
       </Form>

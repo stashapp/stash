@@ -8,6 +8,7 @@ interface IProps {
   isEditing: boolean;
   onToggleEdit: () => void;
   onSave: () => void;
+  saveDisabled?: boolean;
   onDelete: () => void;
   onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
@@ -39,7 +40,12 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     if (!props.isEditing) return;
 
     return (
-      <Button variant="success" className="save" onClick={() => props.onSave()}>
+      <Button
+        variant="success"
+        className="save"
+        disabled={props.saveDisabled}
+        onClick={() => props.onSave()}
+      >
         Save
       </Button>
     );

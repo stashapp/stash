@@ -144,7 +144,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     tag_ids: (performer.tags ?? []).map((t) => t.id),
     stash_ids: performer.stash_ids ?? undefined,
     image: undefined,
-    rating: performer.rating ?? undefined,
+    rating: performer.rating ?? null,
     details: performer.details ?? "",
     death_date: performer.death_date ?? "",
     hair_color: performer.hair_color ?? "",
@@ -691,6 +691,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <Button
             className="mr-2"
             variant="primary"
+            disabled={!formik.dirty}
             onClick={() => formik.submitForm()}
           >
             Save
@@ -994,7 +995,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <Col xs={fieldXS} xl={fieldXL}>
             <RatingStars
               value={formik.values.rating ?? undefined}
-              onSetRating={(value) => formik.setFieldValue("rating", value)}
+              onSetRating={(value) =>
+                formik.setFieldValue("rating", value ?? null)
+              }
             />
           </Col>
         </Form.Group>

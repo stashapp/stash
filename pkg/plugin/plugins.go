@@ -14,44 +14,40 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
 // Cache stores plugin details.
 type Cache struct {
-	path       string
+	config     *config.Instance
 	plugins    []Config
 	gqlHandler http.HandlerFunc
 }
 
-// NewCache returns a new Cache loading plugin configurations
-// from the provided plugin path. It returns an new instance and an error
-// if the plugin directory could not be loaded.
+// NewCache returns a new Cache.
 //
-// Plugins configurations are loaded from yml files in the provided plugin
-// directory and any subdirectories.
-func NewCache(pluginPath string) (*Cache, error) {
-	plugins, err := loadPlugins(pluginPath)
-	if err != nil {
-		return nil, err
-	}
-
+// Plugins configurations are loaded from yml files in the plugin
+// directory in the config and any subdirectories.
+//
+// Does not load plugins. Plugins will need to be
+// loaded explicitly using ReloadPlugins.
+func NewCache(config *config.Instance) *Cache {
 	return &Cache{
-		path:    pluginPath,
-		plugins: plugins,
-	}, nil
+		config: config,
+	}
 }
 
 func (c *Cache) RegisterGQLHandler(handler http.HandlerFunc) {
 	c.gqlHandler = handler
 }
 
-// ReloadPlugins clears the plugin cache and reloads from the plugin path.
+// LoadPlugins clears the plugin cache and loads from the plugin path.
 // In the event of an error during loading, the cache will be left empty.
-func (c *Cache) ReloadPlugins() error {
+func (c *Cache) LoadPlugins() error {
 	c.plugins = nil
-	plugins, err := loadPlugins(c.path)
+	plugins, err := loadPlugins(c.config.GetPluginsPath())
 	if err != nil {
 		return err
 	}

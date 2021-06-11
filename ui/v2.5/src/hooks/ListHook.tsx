@@ -450,10 +450,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const originalPathName = useRef(location.pathname);
   const persistanceKey = options.persistanceKey ?? options.filterMode;
 
+  const defaultSort = options.defaultSort ?? filterOptions.defaultSortBy;
+  const defaultDisplayMode = filterOptions.displayModeOptions[0];
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
       queryString.parse(location.search),
-      options.defaultSort ?? filterOptions.defaultSortBy
+      defaultSort,
+      defaultDisplayMode
     )
   );
 
@@ -515,7 +518,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         }
       : activeFilter;
 
-    const newFilter = new ListFilterModel(query);
+    const newFilter = new ListFilterModel(
+      query,
+      defaultSort,
+      defaultDisplayMode
+    );
 
     // Compare constructed filter with current filter.
     // If different it's the result of navigation, and we update the filter.
@@ -531,6 +538,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       history.replace(newLocation);
     }
   }, [
+    defaultSort,
+    defaultDisplayMode,
     filter,
     interfaceState.data,
     interfaceState.loading,

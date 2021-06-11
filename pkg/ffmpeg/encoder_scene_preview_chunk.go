@@ -12,6 +12,7 @@ type ScenePreviewChunkOptions struct {
 	Duration   float64
 	Width      int
 	OutputPath string
+	Audio      bool
 }
 
 func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePreviewChunkOptions, preset string, fallback bool) error {
@@ -21,6 +22,17 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 
 	args := []string{
 		"-v", "error",
+	}
+
+	argsAudio := []string{
+		"-c:a", "aac",
+		"-b:a", "128k",
+	}
+
+	if !options.Audio {
+		argsAudio = []string{
+			"-an",
+		}
 	}
 
 	// Non-fallback: enable xerror.
@@ -70,13 +82,12 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-crf", "21",
 		"-threads", "4",
 		"-vf", fmt.Sprintf("scale=%v:-2", options.Width),
-		"-c:a", "aac",
-		"-b:a", "128k",
 		"-strict", "-2",
-		options.OutputPath,
 	}
 
-	finalArgs := append(args, args2...)
+	args3 := append(args, args2...)
+	args3 = append(args3, argsAudio...)
+	finalArgs := append(args3, options.OutputPath)
 
 	_, err := e.run(probeResult, finalArgs)
 	return err

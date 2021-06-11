@@ -505,9 +505,10 @@ func (me *contentDirectoryService) getStudios() []interface{} {
 
 func (me *contentDirectoryService) getStudioScenes(paths []string, host string) []interface{} {
 	sceneFilter := &models.SceneFilterType{
-		Studios: &models.MultiCriterionInput{
+		Studios: &models.HierarchicalMultiCriterionInput{
 			Modifier: models.CriterionModifierIncludes,
 			Value:    []string{paths[0]},
+			Depth:    0,
 		},
 	}
 

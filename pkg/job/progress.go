@@ -99,7 +99,7 @@ func (p *Progress) Increment() {
 	defer p.mutex.Unlock()
 
 	if p.processed < p.total {
-		p.processed += 1
+		p.processed++
 		p.calculatePercent()
 	}
 }

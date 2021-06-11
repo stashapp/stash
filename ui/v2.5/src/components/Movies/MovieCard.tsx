@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
 import { FormattedPlural } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { BasicCard, TruncatedText } from "src/components/Shared";
+import { GridCard } from "src/components/Shared";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -45,9 +45,10 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   return (
-    <BasicCard
+    <GridCard
       className="movie-card"
       url={`/movies/${props.movie.id}`}
+      title={props.movie.name}
       linkClassName="movie-card-header"
       image={
         <>
@@ -59,14 +60,7 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
           {maybeRenderRatingBanner()}
         </>
       }
-      details={
-        <>
-          <h5>
-            <TruncatedText text={props.movie.name} lineCount={2} />
-          </h5>
-          {maybeRenderSceneNumber()}
-        </>
-      }
+      details={maybeRenderSceneNumber()}
       selected={props.selected}
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}

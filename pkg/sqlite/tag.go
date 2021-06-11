@@ -214,7 +214,7 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	var args []interface{}
 
 	for _, w := range words {
-		ww := "%" + w + "%"
+		ww := w + "%"
 		whereClauses = append(whereClauses, "tags.name like ?")
 		args = append(args, ww)
 

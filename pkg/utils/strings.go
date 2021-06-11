@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 	"unicode"
 )
@@ -34,4 +35,30 @@ func FlipCaseSingle(s string) (string, error) {
 
 	}
 	return s, fmt.Errorf("could not case flip string %s", s)
+}
+
+type StrFormatMap map[string]interface{}
+
+// StrFormat formats the provided format string, replacing placeholders
+// in the form of "{fieldName}" with the values in the provided
+// StrFormatMap.
+//
+// For example,
+// StrFormat("{foo} bar {baz}", StrFormatMap{
+//     "foo": "bar",
+//     "baz": "abc",
+// })
+//
+// would return: "bar bar abc"
+func StrFormat(format string, m StrFormatMap) string {
+	args := make([]string, len(m)*2)
+	i := 0
+
+	for k, v := range m {
+		args[i] = fmt.Sprintf("{%s}", k)
+		args[i+1] = fmt.Sprint(v)
+		i += 2
+	}
+
+	return strings.NewReplacer(args...).Replace(format)
 }

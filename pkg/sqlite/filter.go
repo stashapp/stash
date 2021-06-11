@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type sqlClause struct {
@@ -87,6 +88,7 @@ type filterBuilder struct {
 	joins         joins
 	whereClauses  []sqlClause
 	havingClauses []sqlClause
+	withClauses   []sqlClause
 
 	err error
 }
@@ -169,6 +171,15 @@ func (f *filterBuilder) addHaving(sql string, args ...interface{}) {
 	f.havingClauses = append(f.havingClauses, makeClause(sql, args...))
 }
 
+// addWith adds a with clause and arguments to the filter
+func (f *filterBuilder) addWith(sql string, args ...interface{}) {
+	if sql == "" {
+		return
+	}
+
+	f.withClauses = append(f.withClauses, makeClause(sql, args...))
+}
+
 func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) string {
 	ret := clause
 
@@ -224,6 +235,21 @@ func (f *filterBuilder) generateHavingClauses() (string, []interface{}) {
 	}
 
 	return clause, args
+}
+
+func (f *filterBuilder) generateWithClauses() (string, []interface{}) {
+	var clauses []string
+	var args []interface{}
+	for _, w := range f.withClauses {
+		clauses = append(clauses, w.sql)
+		args = append(args, w.args...)
+	}
+
+	if len(clauses) > 0 {
+		return strings.Join(clauses, ", "), args
+	}
+
+	return "", nil
 }
 
 // getAllJoins returns all of the joins in this filter and any sub-filter(s).
@@ -501,6 +527,64 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 			m.addJoinTable(f)
 
 			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(f)
+
+		}
+	}
+}
+
+type hierarchicalMultiCriterionHandlerBuilder struct {
+	primaryTable string
+	foreignTable string
+	foreignFK    string
+
+	derivedTable string
+	parentFK     string
+}
+
+func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, table, parentFK string, depth int) {
+	var args []interface{}
+
+	for _, value := range value {
+		args = append(args, value)
+	}
+	inCount := len(args)
+
+	var depthCondition string
+	if depth != -1 {
+		depthCondition = fmt.Sprintf("WHERE depth < %d", depth)
+	}
+
+	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
+SELECT id as id, id as child_id, 0 as depth FROM {table} 
+WHERE id in {inBinding} 
+UNION SELECT p.id, c.id, depth + 1 FROM {table} as c 
+INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition})
+`, utils.StrFormatMap{
+		"derivedTable":   derivedTable,
+		"table":          table,
+		"inBinding":      getInBinding(inCount),
+		"parentFK":       parentFK,
+		"depthCondition": depthCondition,
+	})
+
+	f.addWith(withClause, args...)
+}
+
+func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil && len(criterion.Value) > 0 {
+			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.parentFK, criterion.Depth)
+
+			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
+
+			if criterion.Modifier == models.CriterionModifierIncludes {
+				f.addWhere(fmt.Sprintf("%s.id IS NOT NULL", m.derivedTable))
+			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+				f.addWhere(fmt.Sprintf("%s.id IS NOT NULL", m.derivedTable))
+				f.addHaving(fmt.Sprintf("count(distinct %s.id) IS %d", m.derivedTable, len(criterion.Value)))
+			} else if criterion.Modifier == models.CriterionModifierExcludes {
+				f.addWhere(fmt.Sprintf("%s.id IS NULL", m.derivedTable))
+			}
 		}
 	}
 }

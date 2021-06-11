@@ -783,11 +783,12 @@ func TestImageQueryTags(t *testing.T) {
 func TestImageQueryStudio(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
-		studioCriterion := models.MultiCriterionInput{
+		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -804,11 +805,12 @@ func TestImageQueryStudio(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, imageIDs[imageIdxWithStudio], images[0].ID)
 
-		studioCriterion = models.MultiCriterionInput{
+		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getImageStringValue(imageIdxWithStudio, titleField)
@@ -820,6 +822,64 @@ func TestImageQueryStudio(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error querying image: %s", err.Error())
 		}
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
+func TestImageQueryStudioDepth(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		studioCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    2,
+		}
+
+		imageFilter := models.ImageFilterType{
+			Studios: &studioCriterion,
+		}
+
+		images := queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 1)
+
+		studioCriterion.Depth = 1
+
+		images = queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 0)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		images = queryImages(t, sqb, &imageFilter, nil)
+		assert.Len(t, images, 1)
+
+		// ensure id is correct
+		assert.Equal(t, imageIDs[imageIdxWithGrandChildStudio], images[0].ID)
+
+		studioCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+			Depth:    2,
+		}
+
+		q := getImageStringValue(imageIdxWithGrandChildStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		studioCriterion.Depth = 1
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+
+		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
 
 		return nil
