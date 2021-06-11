@@ -7,10 +7,16 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 )
 
+type hookExecutor interface {
+	ExecutePostHooks(ctx context.Context, id int, hookType plugin.HookTriggerEnum, input interface{}, inputFields []string)
+}
+
 type Resolver struct {
-	txnManager models.TransactionManager
+	txnManager   models.TransactionManager
+	hookExecutor hookExecutor
 }
 
 func (r *Resolver) Gallery() models.GalleryResolver {

@@ -10,10 +10,12 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type CleanTask struct {
+	ctx                 context.Context
 	TxnManager          models.TransactionManager
 	Scene               *models.Scene
 	Gallery             *models.Gallery
@@ -158,6 +160,8 @@ func (t *CleanTask) deleteScene(sceneID int) {
 	postCommitFunc()
 
 	DeleteGeneratedSceneFiles(scene, t.fileNamingAlgorithm)
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, sceneID, plugin.SceneDestroyPost, nil, nil)
 }
 
 func (t *CleanTask) deleteGallery(galleryID int) {
@@ -168,6 +172,8 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryDestroyPost, nil, nil)
 }
 
 func (t *CleanTask) deleteImage(imageID int) {
@@ -185,20 +191,8 @@ func (t *CleanTask) deleteImage(imageID int) {
 	if pathErr != nil {
 		logger.Errorf("Error deleting thumbnail image from cache: %s", pathErr)
 	}
-}
 
-func (t *CleanTask) fileExists(filename string) (bool, error) {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-
-	// handle if error is something else
-	if err != nil {
-		return false, err
-	}
-
-	return !info.IsDir(), nil
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, imageID, plugin.ImageDestroyPost, nil, nil)
 }
 
 func getStashFromPath(pathToCheck string) *models.StashConfig {

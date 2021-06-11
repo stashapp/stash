@@ -7,13 +7,12 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*models.PluginArgInput, serverConnection common.StashServerConnection) int {
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
+func (s *singleton) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*models.PluginArgInput) int {
+	j := job.MakeJobExec(func(jobCtx context.Context, progress *job.Progress) {
 		pluginProgress := make(chan float64)
-		task, err := s.PluginCache.CreateTask(pluginID, taskName, serverConnection, args, pluginProgress)
+		task, err := s.PluginCache.CreateTask(ctx, pluginID, taskName, args, pluginProgress)
 		if err != nil {
 			logger.Errorf("Error creating plugin task: %s", err.Error())
 			return
@@ -48,7 +47,7 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 				return
 			case p := <-pluginProgress:
 				progress.SetPercent(p)
-			case <-ctx.Done():
+			case <-jobCtx.Done():
 				if err := task.Stop(); err != nil {
 					logger.Errorf("Error stopping plugin operation: %s", err.Error())
 				}
@@ -57,5 +56,5 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 		}
 	})
 
-	return s.JobManager.Add(fmt.Sprintf("Running plugin task: %s", taskName), j)
+	return s.JobManager.Add(ctx, fmt.Sprintf("Running plugin task: %s", taskName), j)
 }

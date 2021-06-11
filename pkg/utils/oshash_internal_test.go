@@ -23,7 +23,7 @@ func TestOshashEmpty(t *testing.T) {
 func TestOshashCollisions(t *testing.T) {
 	buf1 := []byte("this is dumb")
 	buf2 := []byte("dumb is this")
-	var size = int64(len(buf1))
+	size := int64(len(buf1))
 	head := make([]byte, chunkSize)
 
 	tail1 := make([]byte, chunkSize)

@@ -17,7 +17,7 @@ import (
 )
 
 func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
-	jobID, err := manager.GetInstance().Scan(input)
+	jobID, err := manager.GetInstance().Scan(ctx, input)
 
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMe
 }
 
 func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
-	jobID, err := manager.GetInstance().Import()
+	jobID, err := manager.GetInstance().Import(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -41,13 +41,13 @@ func (r *mutationResolver) ImportObjects(ctx context.Context, input models.Impor
 		return "", err
 	}
 
-	jobID := manager.GetInstance().RunSingleTask(t)
+	jobID := manager.GetInstance().RunSingleTask(ctx, t)
 
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
-	jobID, err := manager.GetInstance().Export()
+	jobID, err := manager.GetInstance().Export(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +75,7 @@ func (r *mutationResolver) ExportObjects(ctx context.Context, input models.Expor
 }
 
 func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
-	jobID, err := manager.GetInstance().Generate(input)
+	jobID, err := manager.GetInstance().Generate(ctx, input)
 
 	if err != nil {
 		return "", err
@@ -85,17 +85,17 @@ func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.Ge
 }
 
 func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
-	jobID := manager.GetInstance().AutoTag(input)
+	jobID := manager.GetInstance().AutoTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MetadataClean(ctx context.Context, input models.CleanMetadataInput) (string, error) {
-	jobID := manager.GetInstance().Clean(input)
+	jobID := manager.GetInstance().Clean(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error) {
-	jobID := manager.GetInstance().MigrateHash()
+	jobID := manager.GetInstance().MigrateHash(ctx)
 	return strconv.Itoa(jobID), nil
 }
 

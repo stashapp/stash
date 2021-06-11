@@ -13,6 +13,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -148,6 +149,15 @@ type MissingConfigError struct {
 
 func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
+}
+
+func HasTLSConfig() bool {
+	ret, _ := utils.FileExists(paths.GetSSLCert())
+	if ret {
+		ret, _ = utils.FileExists(paths.GetSSLKey())
+	}
+
+	return ret
 }
 
 type Instance struct {

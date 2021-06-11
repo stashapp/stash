@@ -1,9 +1,10 @@
 import React from "react";
 import { Button } from "react-bootstrap";
+import * as GQL from "src/core/generated-graphql";
 import { mutateReloadPlugins, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
@@ -33,13 +34,14 @@ export const SettingsPluginsPanel: React.FC = () => {
   function renderPlugins() {
     const elements = (data?.plugins ?? []).map((plugin) => (
       <div key={plugin.id}>
-        <h5>
+        <h4>
           {plugin.name} {plugin.version ? `(${plugin.version})` : undefined}{" "}
           {renderLink(plugin.url ?? undefined)}
-        </h5>
+        </h4>
         {plugin.description ? (
           <small className="text-muted">{plugin.description}</small>
         ) : undefined}
+        {renderPluginHooks(plugin.hooks ?? undefined)}
         <hr />
       </div>
     ));
@@ -47,11 +49,40 @@ export const SettingsPluginsPanel: React.FC = () => {
     return <div>{elements}</div>;
   }
 
+  function renderPluginHooks(
+    hooks?: Pick<GQL.PluginHook, "name" | "description" | "hooks">[]
+  ) {
+    if (!hooks || hooks.length === 0) {
+      return;
+    }
+
+    return (
+      <div className="mt-2">
+        <h5>Hooks</h5>
+        {hooks.map((h) => (
+          <div key={`${h.name}`} className="mb-3">
+            <h6>{h.name}</h6>
+            <CollapseButton text="Triggers on">
+              <ul>
+                {h.hooks?.map((hh) => (
+                  <li>
+                    <code>{hh}</code>
+                  </li>
+                ))}
+              </ul>
+            </CollapseButton>
+            <small className="text-muted">{h.description}</small>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (loading) return <LoadingIndicator />;
 
   return (
     <>
-      <h4>Plugins</h4>
+      <h3>Plugins</h3>
       <hr />
       {renderPlugins()}
       <Button onClick={() => onReloadPlugins()}>
