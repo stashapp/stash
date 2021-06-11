@@ -72,6 +72,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	var galleries []string
 
 	for _, sp := range paths {
+		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
+		if er != nil {
+			logger.Warnf("Cannot determine fs case sensitivity: %s", er.Error())
+		}
+
 		err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 			if job.IsCancelled(ctx) {
 				return stoppingErr
@@ -96,6 +101,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
 				progress:             progress,
+				CaseSensitiveFs:      csFs,
 			}
 
 			go func() {
@@ -207,6 +213,7 @@ type ScanTask struct {
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
 	progress             *job.Progress
+	CaseSensitiveFs      bool
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
@@ -397,6 +404,14 @@ func (t *ScanTask) scanGallery() {
 			g, _ = qb.FindByChecksum(checksum)
 			if g != nil {
 				exists, _ := utils.FileExists(g.Path.String)
+				if !t.CaseSensitiveFs {
+					// #1426 - if file exists but is a case-insensitive match for the
+					// original filename, then treat it as a move
+					if exists && strings.EqualFold(t.FilePath, g.Path.String) {
+						exists = false
+					}
+				}
+
 				if exists {
 					logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, g.Path.String)
 				} else {
@@ -749,6 +764,14 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	if s != nil {
 		exists, _ := utils.FileExists(s.Path)
+		if !t.CaseSensitiveFs {
+			// #1426 - if file exists but is a case-insensitive match for the
+			// original filename, then treat it as a move
+			if exists && strings.EqualFold(t.FilePath, s.Path) {
+				exists = false
+			}
+		}
+
 		if exists {
 			logger.Infof("%s already exists. Duplicate of %s", t.FilePath, s.Path)
 		} else {
@@ -1034,6 +1057,14 @@ func (t *ScanTask) scanImage() {
 
 		if i != nil {
 			exists := image.FileExists(i.Path)
+			if !t.CaseSensitiveFs {
+				// #1426 - if file exists but is a case-insensitive match for the
+				// original filename, then treat it as a move
+				if exists && strings.EqualFold(t.FilePath, i.Path) {
+					exists = false
+				}
+			}
+
 			if exists {
 				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
 			} else {
