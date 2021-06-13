@@ -17,7 +17,10 @@ class StashInterface:
 
 		self.url = scheme + "://localhost:" + str(self.port) + "/graphql"
 
-		# TODO - cookies
+		# Session cookie for authentication
+		self.cookies = {
+			'session': conn.get('SessionCookie').get('Value')
+		}
 
 	def __callGraphQL(self, query, variables = None):
 		json = {}
@@ -26,7 +29,7 @@ class StashInterface:
 			json['variables'] = variables
 		
 		# handle cookies
-		response = requests.post(self.url, json=json, headers=self.headers)
+		response = requests.post(self.url, json=json, headers=self.headers, cookies=self.cookies)
 		
 		if response.status_code == 200:
 			result = response.json()

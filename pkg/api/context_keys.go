@@ -5,13 +5,12 @@ package api
 type key int
 
 const (
-	galleryKey   key = 0
-	performerKey key = 1
-	sceneKey     key = 2
-	studioKey    key = 3
-	movieKey     key = 4
-	ContextUser  key = 5
-	tagKey       key = 6
-	downloadKey  key = 7
-	imageKey     key = 8
+	galleryKey key = iota
+	performerKey
+	sceneKey
+	studioKey
+	movieKey
+	tagKey
+	downloadKey
+	imageKey
 )

@@ -55,6 +55,7 @@ type Job struct {
 	EndTime   *time.Time
 	AddTime   time.Time
 
+	outerCtx   context.Context
 	exec       JobExec
 	cancelFunc context.CancelFunc
 }

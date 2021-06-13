@@ -28,11 +28,6 @@ type jsPluginTask struct {
 	vm        *otto.Otto
 }
 
-func throw(vm *otto.Otto, str string) {
-	value, _ := vm.Call("new Error", nil, str)
-	panic(value)
-}
-
 func (t *jsPluginTask) onError(err error) {
 	errString := err.Error()
 	t.result = &common.PluginOutput{
@@ -76,12 +71,10 @@ func (t *jsPluginTask) Start() error {
 		return err
 	}
 
-	input := t.buildPluginInput()
-
-	t.vm.Set("input", input)
+	t.vm.Set("input", t.input)
 	js.AddLogAPI(t.vm, t.progress)
 	js.AddUtilAPI(t.vm)
-	js.AddGQLAPI(t.vm, t.gqlHandler)
+	js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler)
 
 	t.vm.Interrupt = make(chan func(), 1)
 

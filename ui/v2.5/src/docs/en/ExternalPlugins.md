@@ -89,20 +89,14 @@ The `errLog` field tells stash what the default log level should be when the plu
 
 # Task configuration
 
-Tasks are configured using the following structure:
+In addition to the standard task configuration, external tags may be configured with an optional `execArgs` field to add extra parameters to the execution arguments for the task.
+
+For example:
 
 ```
 tasks:
   - name: <operation name>
     description: <optional description>
-    defaultArgs:
-      argKey: argValue
     execArgs:
       - <arg to add to the exec line>
 ```
-
-A plugin configuration may contain multiple tasks. 
-
-The `defaultArgs` field is used to add inputs to the plugin input sent to the plugin.
-
-The `execArgs` field allows adding extra parameters to the execution arguments for this task.

@@ -45,7 +45,7 @@ func TestAdd(t *testing.T) {
 
 	const jobName = "test job"
 	exec1 := newTestExec(make(chan struct{}))
-	jobID := m.Add(jobName, exec1)
+	jobID := m.Add(context.Background(), jobName, exec1)
 
 	// expect jobID to be the first ID
 	assert := assert.New(t)
@@ -80,7 +80,7 @@ func TestAdd(t *testing.T) {
 	// add another job to the queue
 	const otherJobName = "other job name"
 	exec2 := newTestExec(make(chan struct{}))
-	job2ID := m.Add(otherJobName, exec2)
+	job2ID := m.Add(context.Background(), otherJobName, exec2)
 
 	// expect status to be ready
 	j2 := m.GetJob(job2ID)
@@ -130,11 +130,11 @@ func TestCancel(t *testing.T) {
 	// add two jobs
 	const jobName = "test job"
 	exec1 := newTestExec(make(chan struct{}))
-	jobID := m.Add(jobName, exec1)
+	jobID := m.Add(context.Background(), jobName, exec1)
 
 	const otherJobName = "other job"
 	exec2 := newTestExec(make(chan struct{}))
-	job2ID := m.Add(otherJobName, exec2)
+	job2ID := m.Add(context.Background(), otherJobName, exec2)
 
 	// wait a tiny bit
 	time.Sleep(sleepTime)
@@ -198,11 +198,11 @@ func TestCancelAll(t *testing.T) {
 	// add two jobs
 	const jobName = "test job"
 	exec1 := newTestExec(make(chan struct{}))
-	jobID := m.Add(jobName, exec1)
+	jobID := m.Add(context.Background(), jobName, exec1)
 
 	const otherJobName = "other job"
 	exec2 := newTestExec(make(chan struct{}))
-	job2ID := m.Add(otherJobName, exec2)
+	job2ID := m.Add(context.Background(), otherJobName, exec2)
 
 	// wait a tiny bit
 	time.Sleep(sleepTime)
@@ -246,7 +246,7 @@ func TestSubscribe(t *testing.T) {
 	// add a job
 	const jobName = "test job"
 	exec1 := newTestExec(make(chan struct{}))
-	jobID := m.Add(jobName, exec1)
+	jobID := m.Add(context.Background(), jobName, exec1)
 
 	assert := assert.New(t)
 
@@ -326,7 +326,7 @@ func TestSubscribe(t *testing.T) {
 
 	// add another job and cancel it
 	exec2 := newTestExec(make(chan struct{}))
-	jobID = m.Add(jobName, exec2)
+	jobID = m.Add(context.Background(), jobName, exec2)
 
 	m.CancelJob(jobID)
 

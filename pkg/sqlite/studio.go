@@ -132,7 +132,7 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, "name like ?")
-		args = append(args, "%"+w+"%")
+		args = append(args, w+"%")
 	}
 
 	where := strings.Join(whereClauses, " OR ")
