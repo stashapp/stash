@@ -24,6 +24,6 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) (string, error) {
-	jobID := manager.GetInstance().StashBoxBatchPerformerTag(input)
+	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }

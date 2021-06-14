@@ -8,6 +8,8 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+const pluginPrefix = "[Plugin] "
+
 func argToString(call otto.FunctionCall) string {
 	arg := call.Argument(0)
 	if arg.IsObject() {
@@ -20,27 +22,27 @@ func argToString(call otto.FunctionCall) string {
 }
 
 func logTrace(call otto.FunctionCall) otto.Value {
-	logger.Trace(argToString(call))
+	logger.Trace(pluginPrefix + argToString(call))
 	return otto.UndefinedValue()
 }
 
 func logDebug(call otto.FunctionCall) otto.Value {
-	logger.Debug(argToString(call))
+	logger.Debug(pluginPrefix + argToString(call))
 	return otto.UndefinedValue()
 }
 
 func logInfo(call otto.FunctionCall) otto.Value {
-	logger.Info(argToString(call))
+	logger.Info(pluginPrefix + argToString(call))
 	return otto.UndefinedValue()
 }
 
 func logWarn(call otto.FunctionCall) otto.Value {
-	logger.Warn(argToString(call))
+	logger.Warn(pluginPrefix + argToString(call))
 	return otto.UndefinedValue()
 }
 
 func logError(call otto.FunctionCall) otto.Value {
-	logger.Error(argToString(call))
+	logger.Error(pluginPrefix + argToString(call))
 	return otto.UndefinedValue()
 }
 

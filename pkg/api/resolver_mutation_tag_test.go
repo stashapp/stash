@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/plugin"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,7 +16,8 @@ import (
 // TODO - move this into a common area
 func newResolver() *Resolver {
 	return &Resolver{
-		txnManager: mocks.NewTransactionManager(),
+		txnManager:   mocks.NewTransactionManager(),
+		hookExecutor: &mockHookExecutor{},
 	}
 }
 
@@ -25,6 +27,11 @@ const errTagName = "errTagName"
 const existingTagID = 1
 const existingTagName = "existingTagName"
 const newTagID = 2
+
+type mockHookExecutor struct{}
+
+func (*mockHookExecutor) ExecutePostHooks(ctx context.Context, id int, hookType plugin.HookTriggerEnum, input interface{}, inputFields []string) {
+}
 
 func TestTagCreate(t *testing.T) {
 	r := newResolver()
@@ -84,10 +91,12 @@ func TestTagCreate(t *testing.T) {
 
 	tagRW.On("Query", tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
 	tagRW.On("Query", tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(&models.Tag{
+	newTag := &models.Tag{
 		ID:   newTagID,
 		Name: tagName,
-	}, nil)
+	}
+	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(newTag, nil)
+	tagRW.On("Find", newTagID).Return(newTag, nil)
 
 	tag, err := r.Mutation().TagCreate(context.TODO(), models.TagCreateInput{
 		Name: tagName,

@@ -230,6 +230,10 @@
     "logs": {
       "log_level": "Log Level"
     },
+    "plugins": {
+      "hooks": "Hooks",
+      "triggers_on": "Triggers on"
+    },
     "scrapers": {
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} scrapers",

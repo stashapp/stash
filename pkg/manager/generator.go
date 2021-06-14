@@ -27,6 +27,8 @@ type GeneratorInfo struct {
 	ExcludeEnd    string
 
 	VideoFile ffmpeg.VideoFile
+
+	Audio bool // used for preview generation
 }
 
 func newGeneratorInfo(videoFile ffmpeg.VideoFile) (*GeneratorInfo, error) {

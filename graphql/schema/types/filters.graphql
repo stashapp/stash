@@ -86,7 +86,7 @@ input PerformerFilterType {
   """Filter by death year"""
   death_year: IntCriterionInput
   """Filter by studios where performer appears in scene/image/gallery"""
-  studios: MultiCriterionInput
+  studios: HierarchicalMultiCriterionInput
 }
 
 input SceneMarkerFilterType {

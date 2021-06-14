@@ -87,7 +87,13 @@ func getPathWords(path string) []string {
 	var ret []string
 	for _, w := range words {
 		if len(w) > 1 {
-			ret = append(ret, w)
+			// #1450 - we need to open up the criteria for matching so that we
+			// can match where path has no space between subject names -
+			// ie name = "foo bar" - path = "foobar"
+			// we post-match afterwards, so we can afford to be a little loose
+			// with the query
+			// just use the first two characters
+			ret = append(ret, w[0:2])
 		}
 	}
 

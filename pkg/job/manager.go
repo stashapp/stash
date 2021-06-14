@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 	"time"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const maxGraveyardSize = 10
@@ -46,7 +48,7 @@ func (m *Manager) Stop() {
 }
 
 // Add queues a job.
-func (m *Manager) Add(description string, e JobExec) int {
+func (m *Manager) Add(ctx context.Context, description string, e JobExec) int {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -58,6 +60,7 @@ func (m *Manager) Add(description string, e JobExec) int {
 		Description: description,
 		AddTime:     t,
 		exec:        e,
+		outerCtx:    ctx,
 	}
 
 	m.queue = append(m.queue, &j)
@@ -74,7 +77,7 @@ func (m *Manager) Add(description string, e JobExec) int {
 
 // Start adds a job and starts it immediately, concurrently with any other
 // jobs.
-func (m *Manager) Start(description string, e JobExec) int {
+func (m *Manager) Start(ctx context.Context, description string, e JobExec) int {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -86,6 +89,7 @@ func (m *Manager) Start(description string, e JobExec) int {
 		Description: description,
 		AddTime:     t,
 		exec:        e,
+		outerCtx:    ctx,
 	}
 
 	m.queue = append(m.queue, &j)
@@ -173,7 +177,7 @@ func (m *Manager) dispatch(j *Job) (done chan struct{}) {
 	j.StartTime = &t
 	j.Status = StatusRunning
 
-	ctx, cancelFunc := context.WithCancel(context.Background())
+	ctx, cancelFunc := context.WithCancel(utils.ValueOnlyContext(j.outerCtx))
 	j.cancelFunc = cancelFunc
 
 	done = make(chan struct{})
