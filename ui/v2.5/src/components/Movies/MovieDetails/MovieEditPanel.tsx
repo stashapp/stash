@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
@@ -49,6 +50,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   setBackImage,
   onImageEncoding,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
 
   const isNew = movie === undefined;
@@ -332,7 +334,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
               variant="secondary"
               onClick={() => setIsImageAlertOpen(false)}
             >
-              Cancel
+              <FormattedMessage id="actions.cancel" />
             </Button>
 
             <Button
@@ -378,22 +380,29 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   // TODO: CSS class
   return (
     <div>
-      {isNew && <h2>Add Movie</h2>}
+      {isNew && (
+        <h2>
+          {intl.formatMessage(
+            { id: "actions.add_entity" },
+            { entityType: intl.formatMessage({ id: "movie" }) }
+          )}
+        </h2>
+      )}
 
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">
         <Form.Group controlId="name" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Name
+            {intl.formatMessage({ id: "name" })}
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
-              placeholder="Name"
+              placeholder={intl.formatMessage({ id: "name" })}
               {...formik.getFieldProps("name")}
               isInvalid={!!formik.errors.name}
             />
@@ -403,11 +412,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("aliases", "Aliases")}
+        {renderTextField("aliases", intl.formatMessage({ id: "aliases" }))}
 
         <Form.Group controlId="duration" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Duration
+            {intl.formatMessage({ id: "duration" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <DurationInput
@@ -419,11 +428,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("date", "Date (YYYY-MM-DD)")}
+        {renderTextField("date", intl.formatMessage({ id: "date" }))}
 
         <Form.Group controlId="studio" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Studio
+            {intl.formatMessage({ id: "studio" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <StudioSelect
@@ -438,11 +447,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("director", "Director")}
+        {renderTextField("director", intl.formatMessage({ id: "director" }))}
 
         <Form.Group controlId="rating" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Rating
+            {intl.formatMessage({ id: "rating" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <RatingStars
@@ -456,13 +465,13 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
         <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            URL
+            {intl.formatMessage({ id: "url" })}
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <InputGroup>
               <Form.Control
                 className="text-input"
-                placeholder="URL"
+                placeholder={intl.formatMessage({ id: "url" })}
                 {...formik.getFieldProps("url")}
               />
               <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
@@ -472,13 +481,13 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
         <Form.Group controlId="synopsis" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Synopsis
+            {intl.formatMessage({ id: "synopsis" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
               as="textarea"
               className="text-input"
-              placeholder="Synopsis"
+              placeholder={intl.formatMessage({ id: "synopsis" })}
               {...formik.getFieldProps("synopsis")}
             />
           </Col>

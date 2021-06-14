@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Collapse } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 
 interface IShowFieldsProps {
@@ -8,6 +9,7 @@ interface IShowFieldsProps {
 }
 
 export const ShowFields = (props: IShowFieldsProps) => {
+  const intl = useIntl();
   const [open, setOpen] = useState(false);
 
   function handleClick(label: string) {
@@ -33,7 +35,11 @@ export const ShowFields = (props: IShowFieldsProps) => {
     <div>
       <Button onClick={() => setOpen(!open)} className="minimal">
         <Icon icon={open ? "chevron-down" : "chevron-right"} />
-        <span>Display fields</span>
+        <span>
+          {intl.formatMessage({
+            id: "config.tools.scene_filename_parser.display_fields",
+          })}
+        </span>
       </Button>
       <Collapse in={open}>
         <div>{fieldRows}</div>

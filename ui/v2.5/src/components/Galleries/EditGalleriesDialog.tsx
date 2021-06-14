@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import _ from "lodash";
 import { useBulkGalleryUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -17,6 +18,7 @@ interface IListOperationProps {
 export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
+  const intl = useIntl();
   const Toast = useToast();
   const [rating, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
@@ -138,7 +140,14 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
           input: getGalleryInput(),
         },
       });
-      Toast.success({ content: "Updated galleries" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl.formatMessage({ id: "galleries" }).toLocaleLowerCase(),
+          }
+        ),
+      });
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -347,11 +356,21 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       <Modal
         show
         icon="pencil-alt"
-        header="Edit Galleries"
-        accept={{ onClick: onSave, text: "Apply" }}
+        header={intl.formatMessage(
+          { id: "dialogs.edit_entity_title" },
+          {
+            count: props?.selected?.length ?? 1,
+            singularEntity: intl.formatMessage({ id: "gallery" }),
+            pluralEntity: intl.formatMessage({ id: "galleries" }),
+          }
+        )}
+        accept={{
+          onClick: onSave,
+          text: intl.formatMessage({ id: "actions.apply" }),
+        }}
         cancel={{
           onClick: () => props.onClose(false),
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "secondary",
         }}
         isRunning={isUpdating}
@@ -359,7 +378,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         <Form>
           <Form.Group controlId="rating" as={Row}>
             {FormUtils.renderLabel({
-              title: "Rating",
+              title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
               <RatingStars
@@ -372,7 +391,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
-              title: "Studio",
+              title: intl.formatMessage({ id: "studio" }),
             })}
             <Col xs={9}>
               <StudioSelect
@@ -386,19 +405,23 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
           </Form.Group>
 
           <Form.Group controlId="performers">
-            <Form.Label>Performers</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="performers" />
+            </Form.Label>
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
           <Form.Group controlId="tags">
-            <Form.Label>Tags</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="tags" />
+            </Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
           <Form.Group controlId="organized">
             <Form.Check
               type="checkbox"
-              label="Organized"
+              label={intl.formatMessage({ id: "organized" })}
               checked={organized}
               ref={checkboxRef}
               onChange={() => cycleOrganized()}

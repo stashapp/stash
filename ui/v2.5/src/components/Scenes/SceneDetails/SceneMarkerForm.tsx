@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import { Field, FieldProps, Form as FormikForm, Formik } from "formik";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -169,7 +170,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
               onClick={onClose}
               className="ml-2"
             >
-              Cancel
+              <FormattedMessage id="actions.cancel" />
             </Button>
             {editingMarker && (
               <Button
@@ -177,7 +178,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
                 className="ml-auto"
                 onClick={() => onDelete()}
               >
-                Delete
+                <FormattedMessage id="actions.delete" />
               </Button>
             )}
           </div>

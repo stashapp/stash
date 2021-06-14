@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
   Dropdown,
@@ -49,6 +50,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   isVisible,
   onDelete,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     scene.galleries.map((g) => ({
@@ -229,7 +231,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
         },
       });
       if (result.data?.sceneUpdate) {
-        Toast.success({ content: "Updated scene" });
+        Toast.success({
+          content: intl.formatMessage(
+            { id: "toast.updated_entity" },
+            { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+          ),
+        });
         // clear the cover image so that it doesn't appear dirty
         formik.resetForm({ values: formik.values });
       }
@@ -360,7 +367,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <DropdownButton
         className="d-inline-block"
         id="scene-scrape"
-        title="Scrape with..."
+        title={intl.formatMessage({ id: "actions.scrape_with" })}
       >
         {stashBoxes.map((s, index) => (
           <Dropdown.Item
@@ -379,7 +386,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
           <span className="fa-icon">
             <Icon icon="sync-alt" />
           </span>
-          <span>Reload scrapers</span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
         </Dropdown.Item>
       </DropdownButton>
     );
@@ -549,7 +558,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     <div id="scene-edit-details">
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
       {maybeRenderScrapeDialog()}
@@ -562,14 +571,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
               disabled={!formik.dirty}
               onClick={() => formik.submitForm()}
             >
-              Save
+              <FormattedMessage id="actions.save" />
             </Button>
             <Button
               className="edit-button"
               variant="danger"
               onClick={() => onDelete()}
             >
-              Delete
+              <FormattedMessage id="actions.delete" />
             </Button>
           </div>
           <Col xs={6} className="text-right">
@@ -579,10 +588,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </div>
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
-            {renderTextField("title", "Title")}
+            {renderTextField("title", intl.formatMessage({ id: "title" }))}
             <Form.Group controlId="url" as={Row}>
               <Col xs={3} className="pr-0 url-label">
-                <Form.Label className="col-form-label">URL</Form.Label>
+                <Form.Label className="col-form-label">
+                  <FormattedMessage id="url" />
+                </Form.Label>
                 <div className="float-right scrape-button-container">
                   {maybeRenderScrapeButton()}
                 </div>
@@ -590,16 +601,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Col xs={9}>
                 <Form.Control
                   className="text-input"
-                  placeholder="URL"
+                  placeholder={intl.formatMessage({ id: "url" })}
                   {...formik.getFieldProps("url")}
                   isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>
             </Form.Group>
-            {renderTextField("date", "Date", "YYYY-MM-DD")}
+            {renderTextField(
+              "date",
+              intl.formatMessage({ id: "date" }),
+              "YYYY-MM-DD"
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
-                title: "Rating",
+                title: intl.formatMessage({ id: "rating" }),
               })}
               <Col xs={9}>
                 <RatingStars
@@ -612,7 +627,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </Form.Group>
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({
-                title: "Galleries",
+                title: intl.formatMessage({ id: "galleries" }),
               })}
               <Col xs={9}>
                 <GallerySelect
@@ -624,7 +639,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
-                title: "Studio",
+                title: intl.formatMessage({ id: "studios" }),
               })}
               <Col xs={9}>
                 <StudioSelect
@@ -641,7 +656,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="performers" as={Row}>
               {FormUtils.renderLabel({
-                title: "Performers",
+                title: intl.formatMessage({ id: "performers" }),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -664,7 +679,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="moviesScenes" as={Row}>
               {FormUtils.renderLabel({
-                title: "Movies/Scenes",
+                title: `${intl.formatMessage({
+                  id: "movies",
+                })}/${intl.formatMessage({ id: "scenes" })}`,
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -685,7 +702,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="tags" as={Row}>
               {FormUtils.renderLabel({
-                title: "Tags",
+                title: intl.formatMessage({ id: "tags" }),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -726,7 +743,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
                       <Button
                         variant="danger"
                         className="mr-2 py-0"
-                        title="Delete StashID"
+                        title={intl.formatMessage(
+                          { id: "actions.delete_entity" },
+                          { entityType: intl.formatMessage({ id: "stash_id" }) }
+                        )}
                         onClick={() => removeStashID(stashID)}
                       >
                         <Icon icon="trash-alt" />
@@ -740,7 +760,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
           </div>
           <div className="col-12 col-lg-6 col-xl-12">
             <Form.Group controlId="details">
-              <Form.Label>Details</Form.Label>
+              <Form.Label>
+                <FormattedMessage id="details" />
+              </Form.Label>
               <Form.Control
                 as="textarea"
                 className="scene-description text-input"
@@ -752,14 +774,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </Form.Group>
             <div>
               <Form.Group controlId="cover">
-                <Form.Label>Cover Image</Form.Label>
+                <Form.Label>
+                  <FormattedMessage id="cover_image" />
+                </Form.Label>
                 {imageEncoding ? (
                   <LoadingIndicator message="Encoding image..." />
                 ) : (
                   <img
                     className="scene-cover"
                     src={coverImagePreview}
-                    alt="Scene cover"
+                    alt={intl.formatMessage({ id: "cover_image" })}
                   />
                 )}
                 <ImageInput

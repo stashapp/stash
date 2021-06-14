@@ -13,7 +13,7 @@ import {
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
-import { defineMessages, useIntl } from "react-intl";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   CriterionType,
@@ -339,7 +339,9 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
     return (
       <Form.Group controlId="filter">
-        <Form.Label>Filter</Form.Label>
+        <Form.Label>
+          <FormattedMessage id="search_filter.name" />
+        </Form.Label>
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
@@ -356,12 +358,18 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     );
   }
 
-  const title = !props.editingCriterion ? "Add Filter" : "Update Filter";
+  const title = !props.editingCriterion
+    ? intl.formatMessage({ id: "search_filter.add_filter" })
+    : intl.formatMessage({ id: "search_filter.update_filter" });
   return (
     <>
       <OverlayTrigger
         placement="top"
-        overlay={<Tooltip id="filter-tooltip">Filter</Tooltip>}
+        overlay={
+          <Tooltip id="filter-tooltip">
+            <FormattedMessage id="search_filter.name" />
+          </Tooltip>
+        }
       >
         <Button variant="secondary" onClick={() => onToggle()} active={isOpen}>
           <Icon icon="filter" />

@@ -20,7 +20,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   Criterion,
   CriterionValue,
@@ -280,16 +280,22 @@ export const ListFilter: React.FC<IListFilterProps> = (
       }
     }
     function getLabel(option: DisplayMode) {
+      let displayModeId = "unknown";
       switch (option) {
         case DisplayMode.Grid:
-          return "Grid";
+          displayModeId = "grid";
+          break;
         case DisplayMode.List:
-          return "List";
+          displayModeId = "list";
+          break;
         case DisplayMode.Wall:
-          return "Wall";
+          displayModeId = "wall";
+          break;
         case DisplayMode.Tagger:
-          return "Tagger";
+          displayModeId = "tagger";
+          break;
       }
+      return intl.formatMessage({ id: `display_mode.${displayModeId}` });
     }
 
     return props.filterOptions.displayModeOptions.map((option) => (
@@ -361,7 +367,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           className="bg-secondary text-white"
           onClick={() => onSelectAll()}
         >
-          Select All
+          <FormattedMessage id="actions.select_all" />
         </Dropdown.Item>
       );
     }
@@ -375,7 +381,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           className="bg-secondary text-white"
           onClick={() => onSelectNone()}
         >
-          Select None
+          <FormattedMessage id="actions.select_none" />
         </Dropdown.Item>
       );
     }
@@ -450,7 +456,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
       return (
         <ButtonGroup className="ml-2">
           {props.onEdit && (
-            <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="edit">
+                  {intl.formatMessage({ id: "actions.edit" })}
+                </Tooltip>
+              }
+            >
               <Button variant="secondary" onClick={onEdit}>
                 <Icon icon="pencil-alt" />
               </Button>
@@ -458,7 +470,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
           )}
 
           {props.onDelete && (
-            <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="delete">
+                  {intl.formatMessage({ id: "actions.delete" })}
+                </Tooltip>
+              }
+            >
               <Button variant="danger" onClick={onDelete}>
                 <Icon icon="trash" />
               </Button>
@@ -481,7 +499,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             <InputGroup className="mr-2 flex-grow-1">
               <FormControl
                 ref={queryRef}
-                placeholder="Search..."
+                placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
                 defaultValue={props.filter.searchTerm}
                 onInput={onChangeQuery}
                 className="bg-secondary text-white border-secondary w-50"
@@ -510,8 +528,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
                 overlay={
                   <Tooltip id="sort-direction-tooltip">
                     {props.filter.sortDirection === SortDirectionEnum.Asc
-                      ? "Ascending"
-                      : "Descending"}
+                      ? intl.formatMessage({ id: "ascending" })
+                      : intl.formatMessage({ id: "descending" })}
                   </Tooltip>
                 }
               >
@@ -528,7 +546,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
               {props.filter.sortBy === "random" && (
                 <OverlayTrigger
                   overlay={
-                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
+                    <Tooltip id="sort-reshuffle-tooltip">
+                      {intl.formatMessage({ id: "actions.reshuffle" })}
+                    </Tooltip>
                   }
                 >
                   <Button variant="secondary" onClick={onReshuffleRandomSort}>

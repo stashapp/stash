@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Col, Row } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { useImageUpdate } from "src/core/StashService";
@@ -24,6 +25,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
   isVisible,
   onDelete,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
   const [title, setTitle] = useState<string>(image?.title ?? "");
   const [rating, setRating] = useState<number>(image.rating ?? NaN);
@@ -102,7 +104,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
         },
       });
       if (result.data?.imageUpdate) {
-        Toast.success({ content: "Updated image" });
+        Toast.success({
+          content: intl.formatMessage(
+            { id: "toast.updated_entity" },
+            { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
+          ),
+        });
       }
     } catch (e) {
       Toast.error(e);
@@ -117,28 +124,28 @@ export const ImageEditPanel: React.FC<IProps> = ({
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
-            Save
+            <FormattedMessage id="actions.save" />
           </Button>
           <Button
             className="edit-button"
             variant="danger"
             onClick={() => onDelete()}
           >
-            Delete
+            <FormattedMessage id="actions.delete" />
           </Button>
         </div>
       </div>
       <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
           {FormUtils.renderInputGroup({
-            title: "Title",
+            title: intl.formatMessage({ id: "title" }),
             value: title,
             onChange: setTitle,
             isEditing: true,
           })}
           <Form.Group controlId="rating" as={Row}>
             {FormUtils.renderLabel({
-              title: "Rating",
+              title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
               <RatingStars
@@ -150,7 +157,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
-              title: "Studio",
+              title: intl.formatMessage({ id: "studio" }),
             })}
             <Col xs={9}>
               <StudioSelect
@@ -164,7 +171,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
           <Form.Group controlId="performers" as={Row}>
             {FormUtils.renderLabel({
-              title: "Performers",
+              title: intl.formatMessage({ id: "performers" }),
               labelProps: {
                 column: true,
                 sm: 3,
@@ -184,7 +191,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
           <Form.Group controlId="tags" as={Row}>
             {FormUtils.renderLabel({
-              title: "Tags",
+              title: intl.formatMessage({ id: "tags" }),
               labelProps: {
                 column: true,
                 sm: 3,

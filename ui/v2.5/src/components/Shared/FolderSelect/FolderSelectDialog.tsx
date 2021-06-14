@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { Button, Modal } from "react-bootstrap";
 import { FolderSelect } from "./FolderSelect";
 
@@ -25,7 +26,7 @@ export const FolderSelectDialog: React.FC<IProps> = (props: IProps) => {
           variant="success"
           onClick={() => props.onClose(currentDirectory)}
         >
-          Add
+          <FormattedMessage id="actions.add" />
         </Button>
       </Modal.Footer>
     </Modal>

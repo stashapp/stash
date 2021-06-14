@@ -4,7 +4,7 @@ import { useGalleryDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 
 interface IDeleteGalleryDialogProps {
   selected: Pick<GQL.Gallery, "id">[];
@@ -14,20 +14,22 @@ interface IDeleteGalleryDialogProps {
 export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
   props: IDeleteGalleryDialogProps
 ) => {
-  const plural = props.selected.length > 1;
+  const intl = useIntl();
+  const singularEntity = intl.formatMessage({ id: "gallery" });
+  const pluralEntity = intl.formatMessage({ id: "galleries" });
 
-  const singleMessageId = "deleteGalleryText";
-  const pluralMessageId = "deleteGallerysText";
-
-  const singleMessage =
-    "Are you sure you want to delete this gallery? Galleries for zip files will be re-added during the next scan unless the zip file is also deleted.";
-  const pluralMessage =
-    "Are you sure you want to delete these galleries? Galleries for zip files will be re-added during the next scan unless the zip files are also deleted.";
-
-  const header = plural ? "Delete Galleries" : "Delete Gallery";
-  const toastMessage = plural ? "Deleted galleries" : "Deleted gallery";
-  const messageId = plural ? pluralMessageId : singleMessageId;
-  const message = plural ? pluralMessage : singleMessage;
+  const header = intl.formatMessage(
+    { id: "dialogs.delete_entity_title" },
+    { count: props.selected.length, singularEntity, pluralEntity }
+  );
+  const toastMessage = intl.formatMessage(
+    { id: "toast.delete_entity" },
+    { count: props.selected.length, singularEntity, pluralEntity }
+  );
+  const message = intl.formatMessage(
+    { id: "dialogs.delete_entity_desc" },
+    { count: props.selected.length, singularEntity, pluralEntity }
+  );
 
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
@@ -63,17 +65,19 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       show
       icon="trash-alt"
       header={header}
-      accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
+      accept={{
+        variant: "danger",
+        onClick: onDelete,
+        text: intl.formatMessage({ id: "actions.delete" }),
+      }}
       cancel={{
         onClick: () => props.onClose(false),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
       isRunning={isDeleting}
     >
-      <p>
-        <FormattedMessage id={messageId} defaultMessage={message} />
-      </p>
+      <p>{message}</p>
       <Form>
         <Form.Check
           id="delete-file"
@@ -84,7 +88,9 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
         <Form.Check
           id="delete-generated"
           checked={deleteGenerated}
-          label="Delete generated supporting files"
+          label={intl.formatMessage({
+            id: "actions.delete_generated_supporting_files",
+          })}
           onChange={() => setDeleteGenerated(!deleteGenerated)}
         />
       </Form>
