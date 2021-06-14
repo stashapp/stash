@@ -10,7 +10,7 @@ import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
   const intl = useIntl();
-  
+
   const { data, loading } = usePlugins();
 
   async function onReloadPlugins() {
@@ -61,11 +61,15 @@ export const SettingsPluginsPanel: React.FC = () => {
 
     return (
       <div className="mt-2">
-        <h5><FormattedMessage id="config.plugins.hooks" /></h5>
+        <h5>
+          <FormattedMessage id="config.plugins.hooks" />
+        </h5>
         {hooks.map((h) => (
           <div key={`${h.name}`} className="mb-3">
             <h6>{h.name}</h6>
-            <CollapseButton text={intl.formatMessage({ id: "config.plugins.triggers_on" })}>
+            <CollapseButton
+              text={intl.formatMessage({ id: "config.plugins.triggers_on" })}
+            >
               <ul>
                 {h.hooks?.map((hh) => (
                   <li>
@@ -85,7 +89,9 @@ export const SettingsPluginsPanel: React.FC = () => {
 
   return (
     <>
-      <h3><FormattedMessage id="config.categories.plugins" /></h3>
+      <h3>
+        <FormattedMessage id="config.categories.plugins" />
+      </h3>
       <hr />
       {renderPlugins()}
       <Button onClick={() => onReloadPlugins()}>
