@@ -417,7 +417,6 @@ func (i *Instance) GetParallelTasksWithAutoDetection() int {
 }
 
 func (i *Instance) GetPreviewAudio() bool {
-	viper.SetDefault(PreviewAudio, previewAudioDefault)
 	return viper.GetBool(PreviewAudio)
 }
 
@@ -757,6 +756,7 @@ func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+	viper.SetDefault(PreviewAudio, previewAudioDefault)
 	viper.SetDefault(SoundOnPreview, false)
 
 	viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
