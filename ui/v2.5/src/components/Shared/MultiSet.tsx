@@ -13,10 +13,11 @@ type ValidTypes =
 
 interface IMultiSetProps {
   type: "performers" | "studios" | "tags";
+  existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;
   disabled?: boolean;
-  onUpdate: (items: ValidTypes[]) => void;
+  onUpdate: (ids: string[]) => void;
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
@@ -31,7 +32,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
   ];
 
   function onUpdate(items: ValidTypes[]) {
-    props.onUpdate(items);
+    props.onUpdate(items.map((i) => i.id));
   }
 
   function getModeText(mode: GQL.BulkUpdateIdMode) {
@@ -51,13 +52,32 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
     }
   }
 
+  function onSetMode(mode: GQL.BulkUpdateIdMode) {
+    if (mode === props.mode) {
+      return;
+    }
+
+    // if going to Set, set the existing ids
+    if (mode === GQL.BulkUpdateIdMode.Set && props.existingIds) {
+      props.onUpdate(props.existingIds);
+      // if going from Set, wipe the ids
+    } else if (
+      mode !== GQL.BulkUpdateIdMode.Set &&
+      props.mode === GQL.BulkUpdateIdMode.Set
+    ) {
+      props.onUpdate([]);
+    }
+
+    props.onSetMode(mode);
+  }
+
   function renderModeButton(mode: GQL.BulkUpdateIdMode) {
     return (
       <Button
         variant="primary"
         active={props.mode === mode}
         size="sm"
-        onClick={() => props.onSetMode(mode)}
+        onClick={() => onSetMode(mode)}
         disabled={props.disabled}
       >
         {getModeText(mode)}
