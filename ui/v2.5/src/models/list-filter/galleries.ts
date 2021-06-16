@@ -38,7 +38,14 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
+  createStringCriterionOption("title"),
+  createStringCriterionOption("details"),
   createStringCriterionOption("path"),
+  createStringCriterionOption(
+    "galleryChecksum",
+    "media_info.checksum",
+    "checksum"
+  ),
   RatingCriterionOption,
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,

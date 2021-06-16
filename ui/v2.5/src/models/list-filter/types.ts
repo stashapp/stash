@@ -92,4 +92,14 @@ export type CriterionType =
   | "death_year"
   | "url"
   | "stash_id"
-  | "interactive";
+  | "interactive"
+  | "name"
+  | "details"
+  | "title"
+  | "oshash"
+  | "checksum"
+  | "sceneChecksum"
+  | "galleryChecksum"
+  | "phash"
+  | "director"
+  | "synopsis";

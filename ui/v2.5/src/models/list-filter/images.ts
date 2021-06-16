@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
@@ -31,7 +32,9 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
-  createStringCriterionOption("path"),
+  createStringCriterionOption("title"),
+  createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
+  createMandatoryStringCriterionOption("path"),
   RatingCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),

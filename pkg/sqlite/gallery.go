@@ -203,6 +203,9 @@ func (qb *galleryQueryBuilder) makeFilter(galleryFilter *models.GalleryFilterTyp
 		query.not(qb.makeFilter(galleryFilter.Not))
 	}
 
+	query.handleCriterionFunc(stringCriterionHandler(galleryFilter.Title, "galleries.title"))
+	query.handleCriterionFunc(stringCriterionHandler(galleryFilter.Details, "galleries.details"))
+	query.handleCriterionFunc(stringCriterionHandler(galleryFilter.Checksum, "galleries.checksum"))
 	query.handleCriterionFunc(boolCriterionHandler(galleryFilter.IsZip, "galleries.zip"))
 	query.handleCriterionFunc(stringCriterionHandler(galleryFilter.Path, "galleries.path"))
 	query.handleCriterionFunc(intCriterionHandler(galleryFilter.Rating, "galleries.rating"))

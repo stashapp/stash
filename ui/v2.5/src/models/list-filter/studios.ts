@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
@@ -28,6 +29,8 @@ const sortByOptions = ["name", "random", "rating"]
 
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
+  createMandatoryStringCriterionOption("name"),
+  createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
   RatingCriterionOption,

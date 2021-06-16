@@ -354,6 +354,11 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	}
 
 	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Path, "scenes.path"))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Title, "scenes.title"))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Details, "scenes.details"))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Oshash, "scenes.oshash"))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Checksum, "scenes.checksum"))
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Phash, "scenes.phash"))
 	query.handleCriterionFunc(intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
 	query.handleCriterionFunc(intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
 	query.handleCriterionFunc(boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))

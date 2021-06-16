@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
@@ -46,7 +47,16 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
-  createStringCriterionOption("path"),
+  createStringCriterionOption("title"),
+  createMandatoryStringCriterionOption("path"),
+  createStringCriterionOption("details"),
+  createMandatoryStringCriterionOption("oshash", "media_info.hash"),
+  createStringCriterionOption(
+    "sceneChecksum",
+    "media_info.checksum",
+    "checksum"
+  ),
+  createStringCriterionOption("phash", "media_info.phash"),
   RatingCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),

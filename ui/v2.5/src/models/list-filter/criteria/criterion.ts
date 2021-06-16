@@ -184,8 +184,16 @@ export class StringCriterionOption extends CriterionOption {
   }
 }
 
-export function createStringCriterionOption(value: CriterionType) {
-  return new StringCriterionOption(value, value, value);
+export function createStringCriterionOption(
+  value: CriterionType,
+  messageID?: string,
+  parameterName?: string
+) {
+  return new StringCriterionOption(
+    messageID ?? value,
+    value,
+    parameterName ?? messageID ?? value
+  );
 }
 
 export class StringCriterion extends Criterion<string> {
@@ -234,6 +242,18 @@ export class MandatoryStringCriterionOption extends CriterionOption {
       inputType: "text",
     });
   }
+}
+
+export function createMandatoryStringCriterionOption(
+  value: CriterionType,
+  messageID?: string,
+  parameterName?: string
+) {
+  return new MandatoryStringCriterionOption(
+    messageID ?? value,
+    value,
+    parameterName ?? messageID ?? value
+  );
 }
 
 export class BooleanCriterionOption extends CriterionOption {

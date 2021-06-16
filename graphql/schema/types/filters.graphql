@@ -33,6 +33,9 @@ input PerformerFilterType {
   OR: PerformerFilterType
   NOT: PerformerFilterType
 
+  name: StringCriterionInput
+  details: StringCriterionInput
+
   """Filter by favorite"""
   filter_favorites: Boolean
   """Filter by birth year"""
@@ -105,6 +108,15 @@ input SceneFilterType {
   OR: SceneFilterType
   NOT: SceneFilterType
 
+  title: StringCriterionInput
+  details: StringCriterionInput
+
+  """Filter by file oshash"""
+  oshash: StringCriterionInput
+  """Filter by file checksum"""
+  checksum: StringCriterionInput
+  """Filter by file phash"""
+  phash: StringCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter by rating"""
@@ -144,6 +156,15 @@ input SceneFilterType {
 }
 
 input MovieFilterType {
+
+  name: StringCriterionInput
+  director: StringCriterionInput
+  synopsis: StringCriterionInput
+
+  """Filter by duration (in seconds)"""
+  duration: IntCriterionInput
+  """Filter by rating"""
+  rating: IntCriterionInput
   """Filter to only include movies with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include movies missing this property"""
@@ -153,6 +174,8 @@ input MovieFilterType {
 }
 
 input StudioFilterType {
+  name: StringCriterionInput
+  details: StringCriterionInput
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
   """Filter by StashID"""
@@ -176,6 +199,11 @@ input GalleryFilterType {
   OR: GalleryFilterType
   NOT: GalleryFilterType
 
+  title: StringCriterionInput
+  details: StringCriterionInput
+
+  """Filter by file checksum"""
+  checksum: StringCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter to only include galleries missing this property"""
@@ -241,6 +269,10 @@ input ImageFilterType {
   OR: ImageFilterType
   NOT: ImageFilterType
 
+  title: StringCriterionInput
+
+  """Filter by file checksum"""
+  checksum: StringCriterionInput
   """Filter by path"""
   path: StringCriterionInput
   """Filter by rating"""
