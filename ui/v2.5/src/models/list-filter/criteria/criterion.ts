@@ -125,9 +125,14 @@ export abstract class Criterion<V extends CriterionValue> {
       valueString = this.getLabelValue();
     }
 
-    return `${intl.formatMessage({
-      id: this.criterionOption.messageID,
-    })} ${modifierString} ${valueString}`;
+    return intl.formatMessage(
+      { id: "criterion_modifier.format_string" },
+      {
+        criterion: intl.formatMessage({ id: this.criterionOption.messageID }),
+        modifierString,
+        valueString,
+      }
+    );
   }
 
   public getId(): string {
@@ -336,14 +341,14 @@ export abstract class IHierarchicalLabeledIdCriterion extends Criterion<IHierarc
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
     return {
-      value: this.value.items.map((v) => v.id),
+      value: (this.value.items ?? []).map((v) => v.id),
       modifier: this.modifier,
       depth: this.value.depth,
     };
   }
 
   public getLabelValue(): string {
-    const labels = this.value.items.map((v) => v.label).join(", ");
+    const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
 
     if (this.value.depth === 0) {
       return labels;

@@ -19,6 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -30,6 +31,8 @@ type singleton struct {
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	SessionStore *session.Store
 
 	JobManager *job.Manager
 
@@ -100,6 +103,11 @@ func Initialize() *singleton {
 			if cfgFile != "" {
 				cfgFile = cfgFile + " "
 			}
+
+			// create temporary session store - this will be re-initialised
+			// after config is complete
+			instance.SessionStore = session.NewStore(cfg)
+
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
@@ -179,6 +187,8 @@ func (s *singleton) PostInit() error {
 
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	s.RefreshConfig()
+	s.SessionStore = session.NewStore(s.Config)
+	s.PluginCache.RegisterSessionStore(s.SessionStore)
 
 	if err := s.PluginCache.LoadPlugins(); err != nil {
 		logger.Errorf("Error reading plugin configs: %s", err.Error())

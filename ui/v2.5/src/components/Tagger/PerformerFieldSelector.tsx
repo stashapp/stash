@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
+import { useIntl } from "react-intl";
 
 import { Modal, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
@@ -17,6 +18,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
   excludedFields,
   onSelect,
 }) => {
+  const intl = useIntl();
   const [excluded, setExcluded] = useState<Record<string, boolean>>(
     excludedFields.reduce((dict, field) => ({ ...dict, [field]: true }), {})
   );
@@ -46,7 +48,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
       icon="list"
       dialogClassName="FieldSelect"
       accept={{
-        text: "Save",
+        text: intl.formatMessage({ id: "actions.save" }),
         onClick: () =>
           onSelect(Object.keys(excluded).filter((f) => excluded[f])),
       }}

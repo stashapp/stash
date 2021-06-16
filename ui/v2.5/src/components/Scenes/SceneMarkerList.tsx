@@ -1,6 +1,7 @@
 import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
+import { useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
 import { queryFindSceneMarkers } from "src/core/StashService";
@@ -16,10 +17,11 @@ interface ISceneMarkerList {
 }
 
 export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
+  const intl = useIntl();
   const history = useHistory();
   const otherOperations = [
     {
-      text: "Play Random",
+      text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
     },
   ];

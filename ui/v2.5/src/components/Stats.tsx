@@ -58,7 +58,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.image_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="images" defaultMessage="Images" />
+            <FormattedMessage id="images" />
           </p>
         </div>
       </div>
@@ -68,7 +68,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.movie_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="movies" defaultMessage="Movies" />
+            <FormattedMessage id="movies" />
           </p>
         </div>
         <div className="stats-element">
@@ -76,7 +76,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.gallery_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="galleries" defaultMessage="Galleries" />
+            <FormattedMessage id="galleries" />
           </p>
         </div>
         <div className="stats-element">
@@ -84,7 +84,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.performer_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="performers" defaultMessage="Performers" />
+            <FormattedMessage id="performers" />
           </p>
         </div>
         <div className="stats-element">
@@ -92,7 +92,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.studio_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="studios" defaultMessage="Studios" />
+            <FormattedMessage id="studios" />
           </p>
         </div>
         <div className="stats-element">
@@ -100,7 +100,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.tag_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="tags" defaultMessage="Tags" />
+            <FormattedMessage id="tags" />
           </p>
         </div>
       </div>

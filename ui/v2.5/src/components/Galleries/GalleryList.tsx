@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 import _ from "lodash";
 import { Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
@@ -28,22 +29,23 @@ export const GalleryList: React.FC<IGalleryList> = ({
   filterHook,
   persistState,
 }) => {
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
   const otherOperations = [
     {
-      text: "View Random",
+      text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ];
@@ -183,8 +185,10 @@ export const GalleryList: React.FC<IGalleryList> = ({
         <Table className="col col-sm-6 mx-auto">
           <thead>
             <tr>
-              <th>Preview</th>
-              <th className="d-none d-sm-none">Title</th>
+              <th>{intl.formatMessage({ id: "actions.preview" })}</th>
+              <th className="d-none d-sm-none">
+                {intl.formatMessage({ id: "title" })}
+              </th>
             </tr>
           </thead>
           <tbody>

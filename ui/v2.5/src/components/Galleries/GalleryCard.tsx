@@ -7,6 +7,7 @@ import { useConfiguration } from "src/core/StashService";
 import { GridCard, HoverPopover, Icon, TagLink } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -114,21 +115,6 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     }
   }
 
-  function maybeRenderRatingBanner() {
-    if (!props.gallery.rating) {
-      return;
-    }
-    return (
-      <div
-        className={`rating-banner ${
-          props.gallery.rating ? `rating-${props.gallery.rating}` : ""
-        }`}
-      >
-        RATING: {props.gallery.rating}
-      </div>
-    );
-  }
-
   return (
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
@@ -148,7 +134,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
               src={`${props.gallery.cover.paths.thumbnail}`}
             />
           ) : undefined}
-          {maybeRenderRatingBanner()}
+          <RatingBanner rating={props.gallery.rating} />
         </>
       }
       overlays={maybeRenderSceneStudioOverlay()}

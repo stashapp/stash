@@ -4,6 +4,7 @@ import { mutateImportObjects } from "src/core/StashService";
 import { Modal } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { useToast } from "src/hooks";
+import { useIntl } from "react-intl";
 
 interface IImportDialogProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
   // Network state
   const [isRunning, setIsRunning] = useState(false);
 
+  const intl = useIntl();
   const Toast = useToast();
 
   function duplicateHandlingToString(
@@ -112,16 +114,16 @@ export const ImportDialog: React.FC<IImportDialogProps> = (
     <Modal
       show
       icon="pencil-alt"
-      header="Import"
+      header={intl.formatMessage({ id: "actions.import" })}
       accept={{
         onClick: () => {
           onImport();
         },
-        text: "Import",
+        text: intl.formatMessage({ id: "actions.import" }),
       }}
       cancel={{
         onClick: () => props.onClose(),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
       disabled={!file}

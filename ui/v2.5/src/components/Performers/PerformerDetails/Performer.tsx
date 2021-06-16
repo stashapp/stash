@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -32,6 +33,7 @@ interface IPerformerParams {
 export const Performer: React.FC = () => {
   const Toast = useToast();
   const history = useHistory();
+  const intl = useIntl();
   const { tab = "details", id = "new" } = useParams<IPerformerParams>();
   const isNew = id === "new";
 
@@ -126,19 +128,19 @@ export const Performer: React.FC = () => {
       id="performer-details"
       unmountOnExit
     >
-      <Tab eventKey="details" title="Details">
+      <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
         <PerformerDetailsPanel performer={performer} />
       </Tab>
-      <Tab eventKey="scenes" title="Scenes">
+      <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
         <PerformerScenesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="galleries" title="Galleries">
+      <Tab eventKey="galleries" title={intl.formatMessage({ id: "galleries" })}>
         <PerformerGalleriesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="images" title="Images">
+      <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
         <PerformerImagesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="edit" title="Edit">
+      <Tab eventKey="edit" title={intl.formatMessage({ id: "actions.edit" })}>
         <PerformerEditPanel
           performer={performer}
           isVisible={activeTabKey === "edit"}
@@ -148,7 +150,10 @@ export const Performer: React.FC = () => {
           onImageEncoding={onImageEncoding}
         />
       </Tab>
-      <Tab eventKey="operations" title="Operations">
+      <Tab
+        eventKey="operations"
+        title={intl.formatMessage({ id: "operations" })}
+      >
         <PerformerOperationsPanel performer={performer} />
       </Tab>
     </Tabs>
@@ -163,7 +168,10 @@ export const Performer: React.FC = () => {
           <span className="age">
             {TextUtils.age(performer.birthdate, performer.death_date)}
           </span>
-          <span className="age-tail"> years old</span>
+          <span className="age-tail">
+            {" "}
+            <FormattedMessage id="years_old" />
+          </span>
         </div>
       );
     }
@@ -173,7 +181,9 @@ export const Performer: React.FC = () => {
     if (performer?.aliases) {
       return (
         <div>
-          <span className="alias-head">Also known as </span>
+          <span className="alias-head">
+            <FormattedMessage id="also_known_as" />{" "}
+          </span>
           <span className="alias">{performer.aliases}</span>
         </div>
       );

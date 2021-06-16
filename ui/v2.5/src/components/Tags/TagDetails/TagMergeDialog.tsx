@@ -32,7 +32,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
   const history = useHistory();
 
   const title = intl.formatMessage({
-    id: mergeType === "from" ? "merge_from" : "merge_into",
+    id: mergeType === "from" ? "actions.merge_from" : "actions.merge_into",
   });
 
   async function onMerge() {

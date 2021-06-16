@@ -1,5 +1,6 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useLogs, useLoggingSubscribe } from "src/core/StashService";
 
@@ -74,6 +75,7 @@ const logReducer = (existingEntries: LogEntry[], newEntries: LogEntry[]) => [
 ];
 
 export const SettingsLogsPanel: React.FC = () => {
+  const intl = useIntl();
   const { data, error } = useLoggingSubscribe();
   const { data: existingData } = useLogs();
   const [currentData, dispatchLogUpdate] = useReducer(logReducer, []);
@@ -106,9 +108,11 @@ export const SettingsLogsPanel: React.FC = () => {
 
   return (
     <>
-      <h4>Logs</h4>
+      <h4>{intl.formatMessage({ id: "config.categories.logs" })}</h4>
       <Form.Row id="log-level">
-        <Form.Label className="col-6 col-sm-2">Log Level</Form.Label>
+        <Form.Label className="col-6 col-sm-2">
+          {intl.formatMessage({ id: "config.logs.log_level" })}
+        </Form.Label>
         <Form.Control
           className="col-6 col-sm-2 input-control"
           as="select"

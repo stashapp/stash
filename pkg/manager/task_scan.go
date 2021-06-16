@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -72,6 +73,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	var galleries []string
 
 	for _, sp := range paths {
+		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
+		if er != nil {
+			logger.Warnf("Cannot determine fs case sensitivity: %s", er.Error())
+		}
+
 		err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 			if job.IsCancelled(ctx) {
 				return stoppingErr
@@ -96,6 +102,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
 				progress:             progress,
+				CaseSensitiveFs:      csFs,
+				ctx:                  ctx,
 			}
 
 			go func() {
@@ -195,6 +203,7 @@ func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (
 }
 
 type ScanTask struct {
+	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	FilePath             string
 	UseFileMetadata      bool
@@ -207,6 +216,7 @@ type ScanTask struct {
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
 	progress             *job.Progress
+	CaseSensitiveFs      bool
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
@@ -397,6 +407,14 @@ func (t *ScanTask) scanGallery() {
 			g, _ = qb.FindByChecksum(checksum)
 			if g != nil {
 				exists, _ := utils.FileExists(g.Path.String)
+				if !t.CaseSensitiveFs {
+					// #1426 - if file exists but is a case-insensitive match for the
+					// original filename, then treat it as a move
+					if exists && strings.EqualFold(t.FilePath, g.Path.String) {
+						exists = false
+					}
+				}
+
 				if exists {
 					logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, g.Path.String)
 				} else {
@@ -409,6 +427,8 @@ func (t *ScanTask) scanGallery() {
 					if err != nil {
 						return err
 					}
+
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
 				}
 			} else {
 				currentTime := time.Now()
@@ -446,6 +466,8 @@ func (t *ScanTask) scanGallery() {
 						return err
 					}
 					scanImages = true
+
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 				}
 			}
 
@@ -749,6 +771,14 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	if s != nil {
 		exists, _ := utils.FileExists(s.Path)
+		if !t.CaseSensitiveFs {
+			// #1426 - if file exists but is a case-insensitive match for the
+			// original filename, then treat it as a move
+			if exists && strings.EqualFold(t.FilePath, s.Path) {
+				exists = false
+			}
+		}
+
 		if exists {
 			logger.Infof("%s already exists. Duplicate of %s", t.FilePath, s.Path)
 		} else {
@@ -764,6 +794,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}); err != nil {
 				return logError(err)
 			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", t.FilePath)
@@ -803,6 +835,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 		}); err != nil {
 			return logError(err)
 		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
 	}
 
 	return retScene
@@ -871,6 +905,8 @@ func (t *ScanTask) rescanScene(s *models.Scene, fileModTime time.Time) (*models.
 		logger.Error(err.Error())
 		return nil, err
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.SceneUpdatePost, nil, nil)
 
 	// leave the generated files as is - the scene file may have been moved
 	// elsewhere
@@ -1034,6 +1070,14 @@ func (t *ScanTask) scanImage() {
 
 		if i != nil {
 			exists := image.FileExists(i.Path)
+			if !t.CaseSensitiveFs {
+				// #1426 - if file exists but is a case-insensitive match for the
+				// original filename, then treat it as a move
+				if exists && strings.EqualFold(t.FilePath, i.Path) {
+					exists = false
+				}
+			}
+
 			if exists {
 				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
 			} else {
@@ -1050,6 +1094,8 @@ func (t *ScanTask) scanImage() {
 					logger.Error(err.Error())
 					return
 				}
+
+				GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
 			}
 		} else {
 			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
@@ -1080,6 +1126,8 @@ func (t *ScanTask) scanImage() {
 				logger.Error(err.Error())
 				return
 			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageCreatePost, nil, nil)
 		}
 
 		if t.zipGallery != nil {
@@ -1154,6 +1202,8 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 			logger.Errorf("Error deleting thumbnail image: %s", err)
 		}
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.ImageUpdatePost, nil, nil)
 
 	return ret, nil
 }

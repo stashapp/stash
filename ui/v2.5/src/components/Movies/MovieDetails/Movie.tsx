@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -24,6 +25,7 @@ interface IMovieParams {
 }
 
 export const Movie: React.FC = () => {
+  const intl = useIntl();
   const history = useHistory();
   const Toast = useToast();
   const { id = "new" } = useParams<IMovieParams>();
@@ -141,10 +143,23 @@ export const Movie: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {movie?.name ?? "movie"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                movie?.name ??
+                intl.formatMessage({ id: "movie" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }

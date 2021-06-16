@@ -7,11 +7,19 @@ type Plugin {
     version: String
 
     tasks: [PluginTask!]
+    hooks: [PluginHook!]
 }
 
 type PluginTask {
     name: String!
     description: String
+    plugin: Plugin!
+}
+
+type PluginHook {
+    name: String!
+    description: String
+    hooks: [String!]
     plugin: Plugin!
 }
 

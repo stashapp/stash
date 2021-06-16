@@ -1,6 +1,7 @@
 import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -20,7 +21,6 @@ import {
   Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormattedMessage } from "react-intl";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
@@ -38,6 +38,7 @@ interface ITabParams {
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const { tab = "scenes", id = "new" } = useParams<ITabParams>();
   const isNew = id === "new";
 
@@ -174,10 +175,23 @@ export const Tag: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {tag?.name ?? "tag"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                tag?.name ??
+                intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }
@@ -212,7 +226,7 @@ export const Tag: React.FC = () => {
             onClick={() => setMergeType("from")}
           >
             <Icon icon="sign-in-alt" />
-            <FormattedMessage id="merge_from" />
+            <FormattedMessage id="actions.merge_from" />
             ...
           </Dropdown.Item>
           <Dropdown.Item
@@ -220,7 +234,7 @@ export const Tag: React.FC = () => {
             onClick={() => setMergeType("into")}
           >
             <Icon icon="sign-out-alt" />
-            <FormattedMessage id="merge_into" />
+            <FormattedMessage id="actions.merge_into" />
             ...
           </Dropdown.Item>
         </Dropdown.Menu>
@@ -291,19 +305,28 @@ export const Tag: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title="Scenes">
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="images" title="Images">
+            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
               <TagImagesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="galleries" title="Galleries">
+            <Tab
+              eventKey="galleries"
+              title={intl.formatMessage({ id: "galleries" })}
+            >
               <TagGalleriesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="markers" title="Markers">
+            <Tab
+              eventKey="markers"
+              title={intl.formatMessage({ id: "markers" })}
+            >
               <TagMarkersPanel tag={tag} />
             </Tab>
-            <Tab eventKey="performers" title="Performers">
+            <Tab
+              eventKey="performers"
+              title={intl.formatMessage({ id: "performers" })}
+            >
               <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>

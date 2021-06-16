@@ -15,6 +15,7 @@ import { TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -88,21 +89,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   const showStudioAsText =
     missingStudioImage ||
     (config?.data?.configuration.interface.showStudioAsText ?? false);
-
-  function maybeRenderRatingBanner() {
-    if (!props.scene.rating) {
-      return;
-    }
-    return (
-      <div
-        className={`rating-banner ${
-          props.scene.rating ? `rating-${props.scene.rating}` : ""
-        }`}
-      >
-        RATING: {props.scene.rating}
-      </div>
-    );
-  }
 
   function maybeRenderSceneSpecsOverlay() {
     return (
@@ -333,7 +319,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
               config.data?.configuration?.interface?.soundOnPreview ?? false
             }
           />
-          {maybeRenderRatingBanner()}
+          <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}
         </>
       }

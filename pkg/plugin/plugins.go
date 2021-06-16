@@ -8,6 +8,7 @@
 package plugin
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,13 +18,16 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // Cache stores plugin details.
 type Cache struct {
-	config     *config.Instance
-	plugins    []Config
-	gqlHandler http.HandlerFunc
+	config       *config.Instance
+	plugins      []Config
+	sessionStore *session.Store
+	gqlHandler   http.Handler
 }
 
 // NewCache returns a new Cache.
@@ -39,8 +43,12 @@ func NewCache(config *config.Instance) *Cache {
 	}
 }
 
-func (c *Cache) RegisterGQLHandler(handler http.HandlerFunc) {
+func (c *Cache) RegisterGQLHandler(handler http.Handler) {
 	c.gqlHandler = handler
+}
+
+func (c *Cache) RegisterSessionStore(sessionStore *session.Store) {
+	c.sessionStore = sessionStore
 }
 
 // LoadPlugins clears the plugin cache and loads from the plugin path.
@@ -105,10 +113,38 @@ func (c Cache) ListPluginTasks() []*models.PluginTask {
 	return ret
 }
 
+func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args []*models.PluginArgInput) common.PluginInput {
+	args = applyDefaultArgs(args, operation.DefaultArgs)
+	serverConnection.PluginDir = plugin.getConfigPath()
+	return common.PluginInput{
+		ServerConnection: serverConnection,
+		Args:             toPluginArgs(args),
+	}
+}
+
+func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConnection {
+	cookie := c.sessionStore.MakePluginCookie(ctx)
+
+	serverConnection := common.StashServerConnection{
+		Scheme:        "http",
+		Port:          c.config.GetPort(),
+		SessionCookie: cookie,
+		Dir:           c.config.GetConfigPath(),
+	}
+
+	if config.HasTLSConfig() {
+		serverConnection.Scheme = "https"
+	}
+
+	return serverConnection
+}
+
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput, progress chan float64) (Task, error) {
+func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*models.PluginArgInput, progress chan float64) (Task, error) {
+	serverConnection := c.makeServerConnection(ctx)
+
 	// find the plugin and operation
 	plugin := c.getPlugin(pluginID)
 
@@ -122,14 +158,86 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 	}
 
 	task := pluginTask{
-		plugin:           plugin,
-		operation:        operation,
-		serverConnection: serverConnection,
-		args:             args,
-		progress:         progress,
-		gqlHandler:       c.gqlHandler,
+		plugin:     plugin,
+		operation:  operation,
+		input:      buildPluginInput(plugin, operation, serverConnection, args),
+		progress:   progress,
+		gqlHandler: c.gqlHandler,
 	}
 	return task.createTask(), nil
+}
+
+func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
+	if err := c.executePostHooks(ctx, hookType, common.HookContext{
+		ID:          id,
+		Type:        hookType.String(),
+		Input:       input,
+		InputFields: inputFields,
+	}); err != nil {
+		logger.Errorf("error executing post hooks: %s", err.Error())
+	}
+}
+
+func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, hookContext common.HookContext) error {
+	visitedPlugins := session.GetVisitedPlugins(ctx)
+
+	for _, p := range c.plugins {
+		hooks := p.getHooks(hookType)
+		// don't revisit a plugin we've already visited
+		// only log if there's hooks that we're skipping
+		if len(hooks) > 0 && utils.StrInclude(visitedPlugins, p.id) {
+			logger.Debugf("plugin ID '%s' already triggered, not re-triggering", p.id)
+			continue
+		}
+
+		for _, h := range hooks {
+			newCtx := session.AddVisitedPlugin(ctx, p.id)
+			serverConnection := c.makeServerConnection(newCtx)
+
+			pluginInput := buildPluginInput(&p, &h.OperationConfig, serverConnection, nil)
+			addHookContext(pluginInput.Args, hookContext)
+
+			pt := pluginTask{
+				plugin:     &p,
+				operation:  &h.OperationConfig,
+				input:      pluginInput,
+				gqlHandler: c.gqlHandler,
+			}
+
+			task := pt.createTask()
+			if err := task.Start(); err != nil {
+				return err
+			}
+
+			// handle cancel from context
+			c := make(chan struct{})
+			go func() {
+				task.Wait()
+				close(c)
+			}()
+
+			select {
+			case <-ctx.Done():
+				task.Stop()
+				return fmt.Errorf("operation cancelled")
+			case <-c:
+				// task finished normally
+			}
+
+			output := task.GetResult()
+			if output == nil {
+				logger.Debugf("%s [%s]: returned no result", hookType.String(), p.Name)
+			} else {
+				if output.Error != nil {
+					logger.Errorf("%s [%s]: returned error: %s", hookType.String(), p.Name, *output.Error)
+				} else if output.Output != nil {
+					logger.Debugf("%s [%s]: returned: %v", hookType.String(), p.Name, output.Output)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c Cache) getPlugin(pluginID string) *Config {
