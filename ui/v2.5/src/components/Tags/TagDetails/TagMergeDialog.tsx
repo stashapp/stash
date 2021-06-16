@@ -50,7 +50,9 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
         },
       });
       if (result.data?.tagsMerge) {
-        Toast.success({ content: "Merged tags" });
+        Toast.success({
+          content: intl.formatMessage({ id: "toast.merged_tags" }),
+        });
         onClose();
         history.push(`/tags/${destination}`);
       }
@@ -86,7 +88,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
           {mergeType === "from" && (
             <Form.Group controlId="source" as={Row}>
               {FormUtils.renderLabel({
-                title: "Source",
+                title: intl.formatMessage({ id: "dialogs.merge_tags.source" }),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -107,7 +109,9 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
           {mergeType === "into" && (
             <Form.Group controlId="destination" as={Row}>
               {FormUtils.renderLabel({
-                title: "Destination",
+                title: intl.formatMessage({
+                  id: "dialogs.merge_tags.destination",
+                }),
                 labelProps: {
                   column: true,
                   sm: 3,
