@@ -536,3 +536,64 @@ func (qb *tagQueryBuilder) GetAliases(tagID int) ([]string, error) {
 func (qb *tagQueryBuilder) UpdateAliases(tagID int, aliases []string) error {
 	return qb.aliasRepository().replace(tagID, aliases)
 }
+
+func (qb *tagQueryBuilder) Merge(source []int, destination int) error {
+	if len(source) == 0 {
+		return nil
+	}
+
+	inBinding := getInBinding(len(source))
+
+	args := []interface{}{destination}
+	for _, id := range source {
+		if id == destination {
+			return errors.New("cannot merge where source == destination")
+		}
+		args = append(args, id)
+	}
+
+	tagTables := map[string]string{
+		scenesTagsTable:      sceneIDColumn,
+		"scene_markers_tags": "scene_marker_id",
+		galleriesTagsTable:   galleryIDColumn,
+		imagesTagsTable:      imageIDColumn,
+		"performers_tags":    "performer_id",
+	}
+
+	tagArgs := append(args, destination)
+	for table, idColumn := range tagTables {
+		_, err := qb.tx.Exec(`UPDATE `+table+`
+SET tag_id = ?
+WHERE tag_id IN `+inBinding+`
+AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
+			tagArgs...,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := qb.tx.Exec("UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = qb.tx.Exec("INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = qb.tx.Exec("UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range source {
+		err = qb.Destroy(id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

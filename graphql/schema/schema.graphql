@@ -197,6 +197,7 @@ type Mutation {
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
+  tagsMerge(input: TagsMergeInput!): Tag
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!

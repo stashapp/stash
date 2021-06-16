@@ -17,3 +17,9 @@ mutation TagUpdate($input: TagUpdateInput!) {
     ...TagData
   }
 }
+
+mutation TagsMerge($source: [ID!]!, $destination: ID!) {
+  tagsMerge(input: { source: $source, destination: $destination }) {
+    ...TagData
+  }
+}
