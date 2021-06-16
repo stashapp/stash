@@ -76,11 +76,9 @@
   }
 }
 
-.multi-set > div.input-group-prepend + div {
-  flex: 1 1;
-  margin-bottom: 0;
-  min-width: 0;
-  position: relative;
+// z-index gets set on button groups for some reason
+.multi-set .btn-group > button.btn {
+  z-index: auto;
 }
 
 .folder-list {

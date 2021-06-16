@@ -7,6 +7,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared";
 
 interface IListFilterOperation {
@@ -32,6 +33,8 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   itemsSelected,
   otherOperations,
 }) => {
+  const intl = useIntl();
+
   useEffect(() => {
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
@@ -62,7 +65,13 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
       return (
         <ButtonGroup className="ml-2 mb-1">
           {onEdit && (
-            <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="edit">
+                  {intl.formatMessage({ id: "actions.edit" })}
+                </Tooltip>
+              }
+            >
               <Button variant="secondary" onClick={onEdit}>
                 <Icon icon="pencil-alt" />
               </Button>
@@ -70,7 +79,13 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
           )}
 
           {onDelete && (
-            <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="delete">
+                  {intl.formatMessage({ id: "actions.delete" })}
+                </Tooltip>
+              }
+            >
               <Button variant="danger" onClick={onDelete}>
                 <Icon icon="trash" />
               </Button>
@@ -89,7 +104,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
           className="bg-secondary text-white"
           onClick={() => onSelectAll?.()}
         >
-          Select All
+          <FormattedMessage id="actions.select_all" />
         </Dropdown.Item>
       );
     }
@@ -103,7 +118,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
           className="bg-secondary text-white"
           onClick={() => onSelectNone?.()}
         >
-          Select None
+          <FormattedMessage id="actions.select_none" />
         </Dropdown.Item>
       );
     }

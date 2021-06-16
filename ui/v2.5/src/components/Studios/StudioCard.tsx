@@ -5,6 +5,7 @@ import { NavUtils } from "src/utils";
 import { GridCard } from "src/components/Shared";
 import { ButtonGroup } from "react-bootstrap";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -43,21 +44,6 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
       </div>
     );
   }
-}
-
-function maybeRenderRatingBanner(studio: GQL.StudioDataFragment) {
-  if (!studio.rating) {
-    return;
-  }
-  return (
-    <div
-      className={`rating-banner ${
-        studio.rating ? `rating-${studio.rating}` : ""
-      }`}
-    >
-      RATING: {studio.rating}
-    </div>
-  );
 }
 
 export const StudioCard: React.FC<IProps> = ({
@@ -135,7 +121,7 @@ export const StudioCard: React.FC<IProps> = ({
         <>
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
-          {maybeRenderRatingBanner(studio)}
+          <RatingBanner rating={studio.rating} />
           {maybeRenderPopoverButtonGroup()}
         </>
       }

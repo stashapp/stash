@@ -15,7 +15,7 @@ import {
 } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
-import { defineMessages, useIntl } from "react-intl";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   CriterionType,
@@ -322,7 +322,9 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
 
     return (
       <Form.Group controlId="filter">
-        <Form.Label>Filter</Form.Label>
+        <Form.Label>
+          <FormattedMessage id="search_filter.name" />
+        </Form.Label>
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
@@ -339,7 +341,9 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     );
   }
 
-  const title = !editingCriterion ? "Add Filter" : "Update Filter";
+  const title = !editingCriterion
+    ? intl.formatMessage({ id: "search_filter.add_filter" })
+    : intl.formatMessage({ id: "search_filter.update_filter" });
   return (
     <>
       <Modal show onHide={() => onCancel()}>

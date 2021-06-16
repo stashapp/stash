@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { useConfiguration } from "src/core/StashService";
 import { Icon, Modal } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
@@ -11,6 +12,7 @@ interface IDirectorySelectionDialogProps {
 export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = (
   props: IDirectorySelectionDialogProps
 ) => {
+  const intl = useIntl();
   const { data } = useConfiguration();
 
   const libraryPaths = data?.configuration.general.stashes.map((s) => s.path);
@@ -42,7 +44,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
       }}
       cancel={{
         onClick: () => props.onClose(),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
     >
@@ -57,7 +59,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
                 className="ml-auto"
                 size="sm"
                 variant="danger"
-                title="Delete"
+                title={intl.formatMessage({ id: "actions.delete" })}
                 onClick={() => removePath(p)}
               >
                 <Icon icon="minus" />

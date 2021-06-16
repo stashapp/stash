@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Button, Card, Form, Table } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import _ from "lodash";
 import {
   queryParseSceneFilenames,
@@ -35,6 +36,7 @@ const initialShowFieldsState = new Map<string, boolean>([
 ]);
 
 export const SceneFilenameParser: React.FC = () => {
+  const intl = useIntl();
   const Toast = useToast();
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
   const [parserInput, setParserInput] = useState<IParserInput>(
@@ -184,7 +186,12 @@ export const SceneFilenameParser: React.FC = () => {
 
     try {
       await updateScenes();
-      Toast.success({ content: "Updated scenes" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -333,17 +340,41 @@ export const SceneFilenameParser: React.FC = () => {
           <Table>
             <thead>
               <tr className="scene-parser-row">
-                <th className="parser-field-filename">Filename</th>
-                {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
-                {renderHeader("Date", allDateSet, onSelectAllDateSet)}
-                {renderHeader("Rating", allRatingSet, onSelectAllRatingSet)}
+                <th className="parser-field-filename">
+                  {intl.formatMessage({
+                    id: "config.tools.scene_filename_parser.filename",
+                  })}
+                </th>
                 {renderHeader(
-                  "Performers",
+                  intl.formatMessage({ id: "title" }),
+                  allTitleSet,
+                  onSelectAllTitleSet
+                )}
+                {renderHeader(
+                  intl.formatMessage({ id: "date" }),
+                  allDateSet,
+                  onSelectAllDateSet
+                )}
+                {renderHeader(
+                  intl.formatMessage({ id: "rating" }),
+                  allRatingSet,
+                  onSelectAllRatingSet
+                )}
+                {renderHeader(
+                  intl.formatMessage({ id: "performers" }),
                   allPerformerSet,
                   onSelectAllPerformerSet
                 )}
-                {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
-                {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
+                {renderHeader(
+                  intl.formatMessage({ id: "tags" }),
+                  allTagSet,
+                  onSelectAllTagSet
+                )}
+                {renderHeader(
+                  intl.formatMessage({ id: "studio" }),
+                  allStudioSet,
+                  onSelectAllStudioSet
+                )}
               </tr>
             </thead>
             <tbody>
@@ -365,7 +396,7 @@ export const SceneFilenameParser: React.FC = () => {
           onChangePage={(page) => onPageChanged(page)}
         />
         <Button variant="primary" onClick={onApply}>
-          Apply
+          <FormattedMessage id="actions.apply" />
         </Button>
       </>
     );
@@ -373,7 +404,9 @@ export const SceneFilenameParser: React.FC = () => {
 
   return (
     <Card id="parser-container" className="col col-sm-9 mx-auto">
-      <h4>Scene Filename Parser</h4>
+      <h4>
+        {intl.formatMessage({ id: "config.tools.scene_filename_parser.title" })}
+      </h4>
       <ParserInput
         input={parserInput}
         onFind={(input) => onFindClicked(input)}

@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Table } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
 import { useLatestVersion } from "src/core/StashService";
 
@@ -7,6 +8,8 @@ export const SettingsAboutPanel: React.FC = () => {
   const gitHash = process.env.REACT_APP_GITHASH;
   const stashVersion = process.env.REACT_APP_STASH_VERSION;
   const buildTime = process.env.REACT_APP_DATE;
+
+  const intl = useIntl();
 
   const {
     data: dataLatest,
@@ -22,7 +25,7 @@ export const SettingsAboutPanel: React.FC = () => {
     }
     return (
       <tr>
-        <td>Version:</td>
+        <td>{intl.formatMessage({ id: "config.about.version" })}:</td>
         <td>{stashVersion}</td>
       </tr>
     );
@@ -39,8 +42,13 @@ export const SettingsAboutPanel: React.FC = () => {
     if (gitHash !== dataLatest.latestversion.shorthash) {
       return (
         <>
-          <strong>{dataLatest.latestversion.shorthash} [NEW] </strong>
-          <a href={dataLatest.latestversion.url}>Download</a>
+          <strong>
+            {dataLatest.latestversion.shorthash}{" "}
+            {intl.formatMessage({ id: "config.about.new_version_notice" })}{" "}
+          </strong>
+          <a href={dataLatest.latestversion.url}>
+            {intl.formatMessage({ id: "actions.download" })}
+          </a>
         </>
       );
     }
@@ -53,12 +61,20 @@ export const SettingsAboutPanel: React.FC = () => {
       <Table>
         <tbody>
           <tr>
-            <td>Latest Version Build Hash: </td>
+            <td>
+              {intl.formatMessage({
+                id: "config.about.latest_version_build_hash",
+              })}{" "}
+            </td>
             <td>{maybeRenderLatestVersion()} </td>
           </tr>
           <tr>
             <td>
-              <Button onClick={() => refetch()}>Check for new version</Button>
+              <Button onClick={() => refetch()}>
+                {intl.formatMessage({
+                  id: "config.about.check_for_new_version",
+                })}
+              </Button>
             </td>
           </tr>
         </tbody>
@@ -73,11 +89,11 @@ export const SettingsAboutPanel: React.FC = () => {
           <tbody>
             {maybeRenderTag()}
             <tr>
-              <td>Build hash:</td>
+              <td>{intl.formatMessage({ id: "config.about.build_hash" })}</td>
               <td>{gitHash}</td>
             </tr>
             <tr>
-              <td>Build time:</td>
+              <td>{intl.formatMessage({ id: "config.about.build_time" })}</td>
               <td>{buildTime}</td>
             </tr>
           </tbody>
@@ -87,57 +103,79 @@ export const SettingsAboutPanel: React.FC = () => {
   }
   return (
     <>
-      <h4>About</h4>
+      <h4>{intl.formatMessage({ id: "config.categories.about" })}</h4>
       <Table>
         <tbody>
           <tr>
             <td>
-              Stash home at{" "}
-              <a
-                href="https://github.com/stashapp/stash"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Github
-              </a>
+              {intl.formatMessage(
+                { id: "config.about.stash_home" },
+                {
+                  url: (
+                    <a
+                      href="https://github.com/stashapp/stash"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      GitHub
+                    </a>
+                  ),
+                }
+              )}
             </td>
           </tr>
           <tr>
             <td>
-              Stash{" "}
-              <a
-                href="https://github.com/stashapp/stash/wiki"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Wiki
-              </a>{" "}
-              page
+              {intl.formatMessage(
+                { id: "config.about.stash_wiki" },
+                {
+                  url: (
+                    <a
+                      href="https://github.com/stashapp/stash/wiki"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Wiki
+                    </a>
+                  ),
+                }
+              )}
             </td>
           </tr>
           <tr>
             <td>
-              Join our{" "}
-              <a
-                href="https://discord.gg/2TsNFKt"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Discord
-              </a>{" "}
-              channel
+              {intl.formatMessage(
+                { id: "config.about.stash_discord" },
+                {
+                  url: (
+                    <a
+                      href="https://discord.gg/2TsNFKt"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Discord
+                    </a>
+                  ),
+                }
+              )}
             </td>
           </tr>
           <tr>
             <td>
-              Support us through{" "}
-              <a
-                href="https://opencollective.com/stashapp"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                Open Collective
-              </a>
+              {intl.formatMessage(
+                { id: "config.about.stash_open_collective" },
+                {
+                  url: (
+                    <a
+                      href="https://opencollective.com/stashapp"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Open Collective
+                    </a>
+                  ),
+                }
+              )}
             </td>
           </tr>
         </tbody>

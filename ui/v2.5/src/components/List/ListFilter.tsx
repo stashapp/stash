@@ -17,7 +17,7 @@ import { Icon } from "src/components/Shared";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useFocus } from "src/utils";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { SavedFilterList } from "./SavedFilterList";
 
@@ -166,7 +166,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             </InputGroup.Prepend>
             <FormControl
               ref={queryRef}
-              placeholder="Search..."
+              placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
               defaultValue={filter.searchTerm}
               onInput={onChangeQuery}
               className="query-text-field bg-secondary text-white border-secondary"
@@ -175,7 +175,11 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             <InputGroup.Append>
               <OverlayTrigger
                 placement="top"
-                overlay={<Tooltip id="filter-tooltip">Filter</Tooltip>}
+                overlay={
+                  <Tooltip id="filter-tooltip">
+                    <FormattedMessage id="search_filter.name" />
+                  </Tooltip>
+                }
               >
                 <Button
                   variant="secondary"
@@ -202,8 +206,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             overlay={
               <Tooltip id="sort-direction-tooltip">
                 {filter.sortDirection === SortDirectionEnum.Asc
-                  ? "Ascending"
-                  : "Descending"}
+                  ? intl.formatMessage({ id: "ascending" })
+                  : intl.formatMessage({ id: "descending" })}
               </Tooltip>
             }
           >
@@ -219,7 +223,11 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </OverlayTrigger>
           {filter.sortBy === "random" && (
             <OverlayTrigger
-              overlay={<Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>}
+              overlay={
+                <Tooltip id="sort-reshuffle-tooltip">
+                  {intl.formatMessage({ id: "actions.reshuffle" })}
+                </Tooltip>
+              }
             >
               <Button variant="secondary" onClick={onReshuffleRandomSort}>
                 <Icon icon="random" />

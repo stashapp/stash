@@ -1,5 +1,5 @@
 import React from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
@@ -24,7 +24,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <dl className="row">
-        <dt className="col-3 col-xl-2">Tags</dt>
+        <dt className="col-3 col-xl-2">
+          <FormattedMessage id="tags" />
+        </dt>
         <dd className="col-9 col-xl-10">
           <ul className="pl-0">
             {(performer.tags ?? []).map((tag) => (
@@ -43,7 +45,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <dl className="row mb-0">
-        <dt className="col-3 col-xl-2">Rating:</dt>
+        <dt className="col-3 col-xl-2">
+          <FormattedMessage id="rating" />:
+        </dt>
         <dd className="col-9 col-xl-10">
           <RatingStars value={performer.rating} />
         </dd>
@@ -111,36 +115,36 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   return (
     <>
       <TextField
-        name="Gender"
+        id="gender"
         value={genderToString(performer.gender ?? undefined)}
       />
       <TextField
-        name="Birthdate"
+        id="birthdate"
         value={TextUtils.formatDate(intl, performer.birthdate ?? undefined)}
       />
       <TextField
-        name="Death Date"
+        id="death_date"
         value={TextUtils.formatDate(intl, performer.death_date ?? undefined)}
       />
-      <TextField name="Ethnicity" value={performer.ethnicity} />
-      <TextField name="Hair Color" value={performer.hair_color} />
-      <TextField name="Eye Color" value={performer.eye_color} />
-      <TextField name="Country" value={performer.country} />
-      <TextField name="Height" value={formatHeight(performer.height)} />
-      <TextField name="Weight" value={formatWeight(performer.weight)} />
-      <TextField name="Measurements" value={performer.measurements} />
-      <TextField name="Fake Tits" value={performer.fake_tits} />
-      <TextField name="Career Length" value={performer.career_length} />
-      <TextField name="Tattoos" value={performer.tattoos} />
-      <TextField name="Piercings" value={performer.piercings} />
-      <TextField name="Details" value={performer.details} />
+      <TextField id="ethnicity" value={performer.ethnicity} />
+      <TextField id="hair_color" value={performer.hair_color} />
+      <TextField id="eye_color" value={performer.eye_color} />
+      <TextField id="country" value={performer.country} />
+      <TextField id="height" value={formatHeight(performer.height)} />
+      <TextField id="weight" value={formatWeight(performer.weight)} />
+      <TextField id="measurements" value={performer.measurements} />
+      <TextField id="fake_tits" value={performer.fake_tits} />
+      <TextField id="career_length" value={performer.career_length} />
+      <TextField id="tattoos" value={performer.tattoos} />
+      <TextField id="piercings" value={performer.piercings} />
+      <TextField id="details" value={performer.details} />
       <URLField
-        name="URL"
+        id="url"
         value={performer.url}
         url={TextUtils.sanitiseURL(performer.url ?? "")}
       />
       <URLField
-        name="Twitter"
+        id="twitter"
         value={performer.twitter}
         url={TextUtils.sanitiseURL(
           performer.twitter ?? "",
@@ -148,7 +152,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         )}
       />
       <URLField
-        name="Instagram"
+        id="instagram"
         value={performer.instagram}
         url={TextUtils.sanitiseURL(
           performer.instagram ?? "",

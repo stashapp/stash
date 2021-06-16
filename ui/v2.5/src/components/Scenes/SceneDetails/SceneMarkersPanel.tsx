@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { WallPanel } from "src/components/Wall/WallPanel";
@@ -57,7 +58,9 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
 
   return (
     <div className="scene-markers-panel">
-      <Button onClick={() => onOpenEditor()}>Create Marker</Button>
+      <Button onClick={() => onOpenEditor()}>
+        <FormattedMessage id="actions.create_marker" />
+      </Button>
       <div className="container">
         <PrimaryTags
           sceneMarkers={props.scene.scene_markers ?? []}

@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import { DisplayMode } from "src/models/list-filter/types";
+import { useIntl } from "react-intl";
 import { Icon } from "../Shared";
 
 interface IListViewOptionsProps {
@@ -27,6 +28,8 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
 }) => {
   const minZoom = 0;
   const maxZoom = 3;
+
+  const intl = useIntl();
 
   useEffect(() => {
     Mousetrap.bind("v g", () => {
@@ -78,16 +81,22 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
       }
     }
     function getLabel(option: DisplayMode) {
+      let displayModeId = "unknown";
       switch (option) {
         case DisplayMode.Grid:
-          return "Grid";
+          displayModeId = "grid";
+          break;
         case DisplayMode.List:
-          return "List";
+          displayModeId = "list";
+          break;
         case DisplayMode.Wall:
-          return "Wall";
+          displayModeId = "wall";
+          break;
         case DisplayMode.Tagger:
-          return "Tagger";
+          displayModeId = "tagger";
+          break;
       }
+      return intl.formatMessage({ id: `display_mode.${displayModeId}` });
     }
 
     if (displayModeOptions.length < 2) {

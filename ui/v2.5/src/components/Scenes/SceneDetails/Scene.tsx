@@ -1,6 +1,7 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -45,6 +46,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
@@ -197,7 +199,17 @@ export const Scene: React.FC = () => {
       paths: [scene.path],
     });
 
-    Toast.success({ content: "Rescanning scene" });
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "toast.rescanning_entity" },
+        {
+          count: 1,
+          singularEntity: intl
+            .formatMessage({ id: "scene" })
+            .toLocaleLowerCase(),
+        }
+      ),
+    });
   }
 
   async function onGenerateScreenshot(at?: number) {
@@ -211,7 +223,9 @@ export const Scene: React.FC = () => {
         at,
       },
     });
-    Toast.success({ content: "Generating screenshot" });
+    Toast.success({
+      content: intl.formatMessage({ id: "toast.generating_screenshot" }),
+    });
   }
 
   async function onQueueLessScenes() {
@@ -343,14 +357,14 @@ export const Scene: React.FC = () => {
             className="bg-secondary text-white"
             onClick={() => onRescan()}
           >
-            Rescan
+            <FormattedMessage id="actions.rescan" />
           </Dropdown.Item>
           <Dropdown.Item
             key="generate"
             className="bg-secondary text-white"
             onClick={() => setIsGenerateDialogOpen(true)}
           >
-            Generate...
+            <FormattedMessage id="actions.generate" />
           </Dropdown.Item>
           <Dropdown.Item
             key="generate-screenshot"
@@ -359,21 +373,24 @@ export const Scene: React.FC = () => {
               onGenerateScreenshot(JWUtils.getPlayer().getPosition())
             }
           >
-            Generate thumbnail from current
+            <FormattedMessage id="actions.generate_thumb_from_current" />
           </Dropdown.Item>
           <Dropdown.Item
             key="generate-default"
             className="bg-secondary text-white"
             onClick={() => onGenerateScreenshot()}
           >
-            Generate default thumbnail
+            <FormattedMessage id="actions.generate_thumb_default" />
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-scene"
             className="bg-secondary text-white"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            Delete Scene
+            <FormattedMessage
+              id="actions.delete_entity"
+              values={{ entityType: intl.formatMessage({ id: "scene" }) }}
+            />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
@@ -393,43 +410,60 @@ export const Scene: React.FC = () => {
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
-              <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
+              <Nav.Link eventKey="scene-details-panel">
+                <FormattedMessage id="scenes" />
+              </Nav.Link>
             </Nav.Item>
             {(queueScenes ?? []).length > 0 ? (
               <Nav.Item>
-                <Nav.Link eventKey="scene-queue-panel">Queue</Nav.Link>
+                <Nav.Link eventKey="scene-queue-panel">
+                  <FormattedMessage id="queue" />
+                </Nav.Link>
               </Nav.Item>
             ) : (
               ""
             )}
             <Nav.Item>
-              <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
+              <Nav.Link eventKey="scene-markers-panel">
+                <FormattedMessage id="markers" />
+              </Nav.Link>
             </Nav.Item>
             {scene.movies.length > 0 ? (
               <Nav.Item>
-                <Nav.Link eventKey="scene-movie-panel">Movies</Nav.Link>
+                <Nav.Link eventKey="scene-movie-panel">
+                  <FormattedMessage
+                    id="countables.movies"
+                    values={{ count: scene.movies.length }}
+                  />
+                </Nav.Link>
               </Nav.Item>
             ) : (
               ""
             )}
-            {scene.galleries.length === 1 ? (
+            {scene.galleries.length >= 1 ? (
               <Nav.Item>
-                <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
+                <Nav.Link eventKey="scene-galleries-panel">
+                  <FormattedMessage
+                    id="countables.gallery"
+                    values={{ count: scene.galleries.length }}
+                  />
+                </Nav.Link>
               </Nav.Item>
             ) : undefined}
-            {scene.galleries.length > 1 ? (
-              <Nav.Item>
-                <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
-              </Nav.Item>
-            ) : undefined}
             <Nav.Item>
-              <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
+              <Nav.Link eventKey="scene-video-filter-panel">
+                <FormattedMessage id="effect_filters.name" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
+              <Nav.Link eventKey="scene-file-info-panel">
+                <FormattedMessage id="file_info" />
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
+              <Nav.Link eventKey="scene-edit-panel">
+                <FormattedMessage id="actions.edit" />
+              </Nav.Link>
             </Nav.Item>
             <ButtonGroup className="ml-auto">
               <Nav.Item className="ml-auto">

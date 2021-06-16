@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
@@ -49,12 +50,13 @@ function renderScrapedGender(
 }
 
 function renderScrapedGenderRow(
+  title: string,
   result: ScrapeResult<string>,
   onChange: (value: ScrapeResult<string>) => void
 ) {
   return (
     <ScrapeDialogRow
-      title="Gender"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedGender(result)}
       renderNewField={() =>
@@ -91,6 +93,7 @@ function renderScrapedTags(
 }
 
 function renderScrapedTagsRow(
+  title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
   newTags: GQL.ScrapedSceneTag[],
@@ -98,7 +101,7 @@ function renderScrapedTagsRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Tags"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedTags(result)}
       renderNewField={() =>
@@ -123,6 +126,8 @@ interface IPerformerScrapeDialogProps {
 export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   props: IPerformerScrapeDialogProps
 ) => {
+  const intl = useIntl();
+
   function translateScrapedGender(scrapedGender?: string | null) {
     if (!scrapedGender) {
       return;
@@ -385,109 +390,114 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     return (
       <>
         <ScrapedInputGroupRow
-          title="Name"
+          title={intl.formatMessage({ id: "name" })}
           result={name}
           onChange={(value) => setName(value)}
         />
         <ScrapedTextAreaRow
-          title="Aliases"
+          title={intl.formatMessage({ id: "aliases" })}
           result={aliases}
           onChange={(value) => setAliases(value)}
         />
-        {renderScrapedGenderRow(gender, (value) => setGender(value))}
+        {renderScrapedGenderRow(
+          intl.formatMessage({ id: "gender" }),
+          gender,
+          (value) => setGender(value)
+        )}
         <ScrapedInputGroupRow
-          title="Birthdate"
+          title={intl.formatMessage({ id: "birthdate" })}
           result={birthdate}
           onChange={(value) => setBirthdate(value)}
         />
         <ScrapedInputGroupRow
-          title="Death Date"
+          title={intl.formatMessage({ id: "death_date" })}
           result={deathDate}
           onChange={(value) => setDeathDate(value)}
         />
         <ScrapedInputGroupRow
-          title="Ethnicity"
+          title={intl.formatMessage({ id: "ethnicity" })}
           result={ethnicity}
           onChange={(value) => setEthnicity(value)}
         />
         <ScrapedInputGroupRow
-          title="Country"
+          title={intl.formatMessage({ id: "country" })}
           result={country}
           onChange={(value) => setCountry(value)}
         />
         <ScrapedInputGroupRow
-          title="Hair Color"
+          title={intl.formatMessage({ id: "hair_color" })}
           result={hairColor}
           onChange={(value) => setHairColor(value)}
         />
         <ScrapedInputGroupRow
-          title="Eye Color"
+          title={intl.formatMessage({ id: "eye_color" })}
           result={eyeColor}
           onChange={(value) => setEyeColor(value)}
         />
         <ScrapedInputGroupRow
-          title="Weight"
+          title={intl.formatMessage({ id: "weight" })}
           result={weight}
           onChange={(value) => setWeight(value)}
         />
         <ScrapedInputGroupRow
-          title="Height"
+          title={intl.formatMessage({ id: "height" })}
           result={height}
           onChange={(value) => setHeight(value)}
         />
         <ScrapedInputGroupRow
-          title="Measurements"
+          title={intl.formatMessage({ id: "measurements" })}
           result={measurements}
           onChange={(value) => setMeasurements(value)}
         />
         <ScrapedInputGroupRow
-          title="Fake Tits"
+          title={intl.formatMessage({ id: "fake_tits" })}
           result={fakeTits}
           onChange={(value) => setFakeTits(value)}
         />
         <ScrapedInputGroupRow
-          title="Career Length"
+          title={intl.formatMessage({ id: "career_length" })}
           result={careerLength}
           onChange={(value) => setCareerLength(value)}
         />
         <ScrapedTextAreaRow
-          title="Tattoos"
+          title={intl.formatMessage({ id: "tattoos" })}
           result={tattoos}
           onChange={(value) => setTattoos(value)}
         />
         <ScrapedTextAreaRow
-          title="Piercings"
+          title={intl.formatMessage({ id: "piercings" })}
           result={piercings}
           onChange={(value) => setPiercings(value)}
         />
         <ScrapedInputGroupRow
-          title="URL"
+          title={intl.formatMessage({ id: "url" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
-          title="Twitter"
+          title={intl.formatMessage({ id: "twitter" })}
           result={twitter}
           onChange={(value) => setTwitter(value)}
         />
         <ScrapedInputGroupRow
-          title="Instagram"
+          title={intl.formatMessage({ id: "instagram" })}
           result={instagram}
           onChange={(value) => setInstagram(value)}
         />
         <ScrapedTextAreaRow
-          title="Details"
+          title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         {renderScrapedTagsRow(
+          intl.formatMessage({ id: "tags" }),
           tags,
           (value) => setTags(value),
           newTags,
           createNewTag
         )}
         <ScrapedImageRow
-          title="Performer Image"
+          title={intl.formatMessage({ id: "performer_image" })}
           className="performer-image"
           result={image}
           onChange={(value) => setImage(value)}
@@ -498,7 +508,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title="Performer Scrape Results"
+      title={intl.formatMessage({ id: "dialogs.scrape_entity_title" })}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);

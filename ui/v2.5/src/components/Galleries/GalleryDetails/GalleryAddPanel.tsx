@@ -7,6 +7,7 @@ import { showWhenSelected } from "src/hooks/ListHook";
 import { mutateAddGalleryImages } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
+import { useIntl } from "react-intl";
 
 interface IGalleryAddProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -14,6 +15,7 @@ interface IGalleryAddProps {
 
 export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
   const Toast = useToast();
+  const intl = useIntl();
 
   function filterHook(filter: ListFilterModel) {
     const galleryValue = {
@@ -60,8 +62,16 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
         gallery_id: gallery.id!,
         image_ids: Array.from(selectedIds.values()),
       });
+      const imageCount = selectedIds.size;
       Toast.success({
-        content: "Added images",
+        content: intl.formatMessage(
+          { id: "toast.added_entity" },
+          {
+            count: imageCount,
+            singularEntity: intl.formatMessage({ id: "image" }),
+            pluralEntity: intl.formatMessage({ id: "images" }),
+          }
+        ),
       });
     } catch (e) {
       Toast.error(e);
@@ -70,7 +80,10 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
 
   const otherOperations = [
     {
-      text: "Add to Gallery",
+      text: intl.formatMessage(
+        { id: "actions.add_to_entity" },
+        { entityType: intl.formatMessage({ id: "gallery" }) }
+      ),
       onClick: addImages,
       isDisplayed: showWhenSelected,
       postRefetch: true,

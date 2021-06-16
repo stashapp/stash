@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -69,6 +70,7 @@ const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
 };
 
 export const SettingsConfigurationPanel: React.FC = () => {
+  const intl = useIntl();
   const Toast = useToast();
   // Editing config state
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
@@ -278,7 +280,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
       const result = await updateGeneralConfig();
       // eslint-disable-next-line no-console
       console.log(result);
-      Toast.success({ content: "Updated config" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl
+              .formatMessage({ id: "configuration" })
+              .toLocaleLowerCase(),
+          }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -363,7 +374,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   return (
     <>
-      <h4>Library</h4>
+      <h4>
+        <FormattedMessage id="library" />
+      </h4>
       <Form.Group>
         <Form.Group id="stashes">
           <h6>Stashes</h6>
@@ -372,12 +385,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
             setStashes={(s) => setStashes(s)}
           />
           <Form.Text className="text-muted">
-            Directory locations to your content
+            {intl.formatMessage({
+              id: "config.general.directory_locations_to_your_content",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="database-path">
-          <h6>Database Path</h6>
+          <h6>
+            <FormattedMessage id="config.general.db_path_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={databasePath}
@@ -386,12 +403,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            File location for the SQLite database (requires restart)
+            {intl.formatMessage({ id: "config.general.sqlite_location" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="generated-path">
-          <h6>Generated Path</h6>
+          <h6>
+            <FormattedMessage id="config.general.generated_path_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={generatedPath}
@@ -400,13 +419,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Directory location for the generated files (scene markers, scene
-            previews, sprites, etc)
+            {intl.formatMessage({
+              id: "config.general.generated_files_location",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="cache-path">
-          <h6>Cache Path</h6>
+          <h6>
+            <FormattedMessage id="config.general.cache_path_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={cachePath}
@@ -415,12 +437,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Directory location of the cache
+            {intl.formatMessage({ id: "config.general.cache_location" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="video-extensions">
-          <h6>Video Extensions</h6>
+          <h6>
+            <FormattedMessage id="config.general.video_ext_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={videoExtensions}
@@ -429,13 +453,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Comma-delimited list of file extensions that will be identified as
-            videos.
+            {intl.formatMessage({ id: "config.general.video_ext_desc" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="image-extensions">
-          <h6>Image Extensions</h6>
+          <h6>
+            <FormattedMessage id="config.general.image_ext_head" />
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={imageExtensions}
@@ -444,13 +469,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Comma-delimited list of file extensions that will be identified as
-            images.
+            {intl.formatMessage({ id: "config.general.image_ext_desc" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="gallery-extensions">
-          <h6>Gallery zip Extensions</h6>
+          <h6>
+            {intl.formatMessage({ id: "config.general.gallery_ext_head" })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={galleryExtensions}
@@ -459,16 +485,21 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Comma-delimited list of file extensions that will be identified as
-            gallery zip files.
+            {intl.formatMessage({ id: "config.general.gallery_ext_desc" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group>
-          <h6>Excluded Video Patterns</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "config.general.excluded_video_patterns_head",
+            })}
+          </h6>
           <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
           <Form.Text className="text-muted">
-            Regexps of video files/paths to exclude from Scan and add to Clean
+            {intl.formatMessage({
+              id: "config.general.excluded_video_patterns_desc",
+            })}
             <a
               href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
               rel="noopener noreferrer"
@@ -480,14 +511,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group>
-          <h6>Excluded Image/Gallery Patterns</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "config.general.excluded_image_gallery_patterns_head",
+            })}
+          </h6>
           <ExclusionPatterns
             excludes={imageExcludes}
             setExcludes={setImageExcludes}
           />
           <Form.Text className="text-muted">
-            Regexps of image and gallery files/paths to exclude from Scan and
-            add to Clean
+            {intl.formatMessage({
+              id: "config.general.excluded_image_gallery_patterns_desc",
+            })}
             <a
               href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
               rel="noopener noreferrer"
@@ -502,13 +538,17 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Check
             id="log-terminal"
             checked={createGalleriesFromFolders}
-            label="Create galleries from folders containing images"
+            label={intl.formatMessage({
+              id: "config.general.create_galleries_from_folders_label",
+            })}
             onChange={() =>
               setCreateGalleriesFromFolders(!createGalleriesFromFolders)
             }
           />
           <Form.Text className="text-muted">
-            If true, creates galleries from folders containing images.
+            {intl.formatMessage({
+              id: "config.general.create_galleries_from_folders_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
@@ -516,22 +556,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>Hashing</h4>
+        <h4>{intl.formatMessage({ id: "config.general.hashing" })}</h4>
         <Form.Group>
           <Form.Check
             checked={calculateMD5}
-            label="Calculate MD5 for videos"
+            label={intl.formatMessage({
+              id: "config.general.calculate_md5_and_ohash_label",
+            })}
             onChange={() => setCalculateMD5(!calculateMD5)}
           />
           <Form.Text className="text-muted">
-            Calculate MD5 checksum in addition to oshash. Enabling will cause
-            initial scans to be slower. File naming hash must be set to oshash
-            to disable MD5 calculation.
+            {intl.formatMessage({
+              id: "config.general.calculate_md5_and_ohash_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="transcode-size">
-          <h6>Generated file naming hash</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "config.general.generated_file_naming_hash_head",
+            })}
+          </h6>
 
           <Form.Control
             className="w-auto input-control"
@@ -551,10 +597,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Control>
 
           <Form.Text className="text-muted">
-            Use MD5 or oshash for generated file naming. Changing this requires
-            that all scenes have the applicable MD5/oshash value populated.
-            After changing this value, existing generated files will need to be
-            migrated or regenerated. See Tasks page for migration.
+            {intl.formatMessage({
+              id: "config.general.generated_file_naming_hash_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
@@ -562,9 +607,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>Video</h4>
+        <h4>{intl.formatMessage({ id: "config.general.video_head" })}</h4>
         <Form.Group id="transcode-size">
-          <h6>Maximum transcode size</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "config.general.maximum_transcode_size_head",
+            })}
+          </h6>
           <Form.Control
             className="w-auto input-control"
             as="select"
@@ -580,11 +629,17 @@ export const SettingsConfigurationPanel: React.FC = () => {
             ))}
           </Form.Control>
           <Form.Text className="text-muted">
-            Maximum size for generated transcodes
+            {intl.formatMessage({
+              id: "config.general.maximum_transcode_size_desc",
+            })}
           </Form.Text>
         </Form.Group>
         <Form.Group id="streaming-transcode-size">
-          <h6>Maximum streaming transcode size</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "config.general.maximum_streaming_transcode_size_head",
+            })}
+          </h6>
           <Form.Control
             className="w-auto input-control"
             as="select"
@@ -602,7 +657,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             ))}
           </Form.Control>
           <Form.Text className="text-muted">
-            Maximum size for transcoded streams
+            {intl.formatMessage({
+              id: "config.general.maximum_streaming_transcode_size_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
@@ -610,10 +667,17 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>Parallel Scan/Generation</h4>
+        <h4>
+          {intl.formatMessage({ id: "config.general.parallel_scan_head" })}
+        </h4>
 
         <Form.Group id="parallel-tasks">
-          <h6>Number of parallel task for scan/generation</h6>
+          <h6>
+            {intl.formatMessage({
+              id:
+                "config.general.number_of_parallel_task_for_scan_generation_head",
+            })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             type="number"
@@ -625,9 +689,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Set to 0 for auto-detection. Warning running more tasks than is
-            required to achieve 100% cpu utilisation will decrease performance
-            and potentially cause other issues.
+            {intl.formatMessage({
+              id:
+                "config.general.number_of_parallel_task_for_scan_generation_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
@@ -635,10 +700,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>Preview Generation</h4>
+        <h4>
+          {intl.formatMessage({ id: "config.general.preview_generation" })}
+        </h4>
 
         <Form.Group id="transcode-size">
-          <h6>Preview encoding preset</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_preset_head",
+            })}
+          </h6>
           <Form.Control
             className="w-auto input-control"
             as="select"
@@ -654,9 +725,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             ))}
           </Form.Control>
           <Form.Text className="text-muted">
-            The preset regulates size, quality and encoding time of preview
-            generation. Presets beyond “slow” have diminishing returns and are
-            not recommended.
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_preset_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
@@ -673,7 +744,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="preview-segments">
-          <h6>Number of segments in preview</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_seg_count_head",
+            })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             type="number"
@@ -685,12 +760,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Number of segments in preview files.
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_seg_count_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="preview-segment-duration">
-          <h6>Preview segment duration</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_seg_duration_head",
+            })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             type="number"
@@ -702,12 +783,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Duration of each preview segment, in seconds.
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_seg_duration_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="preview-exclude-start">
-          <h6>Exclude start time</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_exclude_start_time_head",
+            })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={previewExcludeStart}
@@ -716,13 +803,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Exclude the first x seconds from scene previews. This can be a value
-            in seconds, or a percentage (eg 2%) of the total scene duration.
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_exclude_start_time_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="preview-exclude-start">
-          <h6>Exclude end time</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_exclude_end_time_head",
+            })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={previewExcludeEnd}
@@ -731,16 +823,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Exclude the last x seconds from scene previews. This can be a value
-            in seconds, or a percentage (eg 2%) of the total scene duration.
+            {intl.formatMessage({
+              id: "dialogs.scene_gen.preview_exclude_end_time_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
 
       <Form.Group>
-        <h4>Scraping</h4>
+        <h4>{intl.formatMessage({ id: "config.general.scraping" })}</h4>
         <Form.Group id="scraperUserAgent">
-          <h6>Scraper User Agent</h6>
+          <h6>
+            {intl.formatMessage({ id: "config.general.scraper_user_agent" })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={scraperUserAgent}
@@ -749,12 +844,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            User-Agent string used during scrape http requests
+            {intl.formatMessage({
+              id: "config.general.scraper_user_agent_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="scraperCDPPath">
-          <h6>Chrome CDP path</h6>
+          <h6>
+            {intl.formatMessage({ id: "config.general.chrome_cdp_path" })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={scraperCDPPath}
@@ -763,9 +862,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            File path to the Chrome executable, or a remote address (starting
-            with http:// or https://, for example
-            http://localhost:9222/json/version) to a Chrome instance.
+            {intl.formatMessage({ id: "config.general.chrome_cdp_path_desc" })}
           </Form.Text>
         </Form.Group>
 
@@ -773,13 +870,15 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Check
             id="scaper-cert-check"
             checked={scraperCertCheck}
-            label="Check for insecure certificates"
+            label={intl.formatMessage({
+              id: "config.general.check_for_insecure_certificates",
+            })}
             onChange={() => setScraperCertCheck(!scraperCertCheck)}
           />
           <Form.Text className="text-muted">
-            Some sites use insecure ssl certificates. When unticked the scraper
-            skips the insecure certificates check and allows scraping of those
-            sites. If you get a certificate error when scraping untick this.
+            {intl.formatMessage({
+              id: "config.general.check_for_insecure_certificates_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
@@ -787,16 +886,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group id="stashbox">
-        <h4>Stash-box integration</h4>
+        <h4>
+          {intl.formatMessage({
+            id: "config.general.auth.stash-box_integration",
+          })}
+        </h4>
         <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
       </Form.Group>
 
       <hr />
 
       <Form.Group>
-        <h4>Authentication</h4>
+        <h4>
+          {intl.formatMessage({ id: "config.general.auth.authentication" })}
+        </h4>
         <Form.Group id="username">
-          <h6>Username</h6>
+          <h6>{intl.formatMessage({ id: "config.general.auth.username" })}</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={username}
@@ -805,11 +910,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Username to access Stash. Leave blank to disable user authentication
+            {intl.formatMessage({ id: "config.general.auth.username_desc" })}
           </Form.Text>
         </Form.Group>
         <Form.Group id="password">
-          <h6>Password</h6>
+          <h6>{intl.formatMessage({ id: "config.general.auth.password" })}</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             type="password"
@@ -819,12 +924,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Password to access Stash. Leave blank to disable user authentication
+            {intl.formatMessage({ id: "config.general.auth.password_desc" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="apikey">
-          <h6>API Key</h6>
+          <h6>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h6>
           <InputGroup>
             <Form.Control
               className="col col-sm-6 text-input"
@@ -834,7 +939,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             <InputGroup.Append>
               <Button
                 className=""
-                title="Generate API key"
+                title={intl.formatMessage({
+                  id: "config.general.auth.generate_api_key",
+                })}
                 onClick={() => onGenerateAPIKey()}
               >
                 <Icon icon="redo" />
@@ -842,7 +949,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
               <Button
                 className=""
                 variant="danger"
-                title="Clear API key"
+                title={intl.formatMessage({
+                  id: "config.general.auth.clear_api_key",
+                })}
                 onClick={() => onClearAPIKey()}
               >
                 <Icon icon="minus" />
@@ -850,13 +959,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </InputGroup.Append>
           </InputGroup>
           <Form.Text className="text-muted">
-            API key for external systems. Only required when username/password
-            is configured. Username must be saved before generating API key.
+            {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
           </Form.Text>
         </Form.Group>
 
         <Form.Group id="maxSessionAge">
-          <h6>Maximum Session Age</h6>
+          <h6>
+            {intl.formatMessage({
+              id: "config.general.auth.maximum_session_age",
+            })}
+          </h6>
           <Form.Control
             className="col col-sm-6 text-input"
             type="number"
@@ -868,16 +980,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Maximum idle time before a login session is expired, in seconds.
+            {intl.formatMessage({
+              id: "config.general.auth.maximum_session_age_desc",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
 
       <hr />
 
-      <h4>Logging</h4>
+      <h4>{intl.formatMessage({ id: "config.general.logging" })}</h4>
       <Form.Group id="log-file">
-        <h6>Log file</h6>
+        <h6>{intl.formatMessage({ id: "config.general.auth.log_file" })}</h6>
         <Form.Control
           className="col col-sm-6 text-input"
           defaultValue={logFile}
@@ -886,8 +1000,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           }
         />
         <Form.Text className="text-muted">
-          Path to the file to output logging to. Blank to disable file logging.
-          Requires restart.
+          {intl.formatMessage({ id: "config.general.auth.log_file_desc" })}
         </Form.Text>
       </Form.Group>
 
@@ -895,17 +1008,20 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Check
           id="log-terminal"
           checked={logOut}
-          label="Log to terminal"
+          label={intl.formatMessage({
+            id: "config.general.auth.log_to_terminal",
+          })}
           onChange={() => setLogOut(!logOut)}
         />
         <Form.Text className="text-muted">
-          Logs to the terminal in addition to a file. Always true if file
-          logging is disabled. Requires restart.
+          {intl.formatMessage({
+            id: "config.general.auth.log_to_terminal_desc",
+          })}
         </Form.Text>
       </Form.Group>
 
       <Form.Group id="log-level">
-        <h6>Log Level</h6>
+        <h6>{intl.formatMessage({ id: "config.logs.log_level" })}</h6>
         <Form.Control
           className="col col-sm-6 input-control"
           as="select"
@@ -926,18 +1042,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Check
           id="log-http"
           checked={logAccess}
-          label="Log http access"
+          label={intl.formatMessage({ id: "config.general.auth.log_http" })}
           onChange={() => setLogAccess(!logAccess)}
         />
         <Form.Text className="text-muted">
-          Logs http access to the terminal. Requires restart.
+          {intl.formatMessage({ id: "config.general.auth.log_http_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
       <Button variant="primary" onClick={() => onSave()}>
-        Save
+        <FormattedMessage id="actions.save" />
       </Button>
     </>
   );
