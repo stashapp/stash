@@ -27,10 +27,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     setPerformerMode,
   ] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
+  const [existingPerformerIds, setExistingPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
     GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
+  const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateImages] = useBulkImageUpdate();
@@ -275,13 +277,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 
     setRating(updateRating);
     setStudioId(updateStudioID);
-    if (performerMode === GQL.BulkUpdateIdMode.Set) {
-      setPerformerIds(updatePerformerIds);
-    }
-
-    if (tagMode === GQL.BulkUpdateIdMode.Set) {
-      setTagIds(updateTagIds);
-    }
+    setExistingPerformerIds(updatePerformerIds);
+    setExistingTagIds(updateTagIds);
     setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
 
@@ -296,12 +293,15 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
+    let existingIds: string[] | undefined = [];
     switch (type) {
       case "performers":
         mode = performerMode;
+        existingIds = existingPerformerIds;
         break;
       case "tags":
         mode = tagMode;
+        existingIds = existingTagIds;
         break;
     }
 
@@ -309,8 +309,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       <MultiSet
         type={type}
         disabled={isUpdating}
-        onUpdate={(items) => {
-          const itemIDs = items.map((i) => i.id);
+        onUpdate={(itemIDs) => {
           switch (type) {
             case "performers":
               setPerformerIds(itemIDs);
@@ -330,6 +329,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
               break;
           }
         }}
+        existingIds={existingIds ?? []}
         ids={ids ?? []}
         mode={mode}
       />

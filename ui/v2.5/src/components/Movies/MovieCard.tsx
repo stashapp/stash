@@ -2,6 +2,7 @@ import React, { FunctionComponent } from "react";
 import { FormattedPlural } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "src/components/Shared";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -12,21 +13,6 @@ interface IProps {
 }
 
 export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
-  function maybeRenderRatingBanner() {
-    if (!props.movie.rating) {
-      return;
-    }
-    return (
-      <div
-        className={`rating-banner ${
-          props.movie.rating ? `rating-${props.movie.rating}` : ""
-        }`}
-      >
-        RATING: {props.movie.rating}
-      </div>
-    );
-  }
-
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) {
       return (
@@ -57,7 +43,7 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
             alt={props.movie.name ?? ""}
             src={props.movie.front_image_path ?? ""}
           />
-          {maybeRenderRatingBanner()}
+          <RatingBanner rating={props.movie.rating} />
         </>
       }
       details={maybeRenderSceneNumber()}

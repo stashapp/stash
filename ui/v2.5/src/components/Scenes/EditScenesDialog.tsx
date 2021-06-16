@@ -27,10 +27,12 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setPerformerMode,
   ] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
+  const [existingPerformerIds, setExistingPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
     GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
+  const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
@@ -271,13 +273,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
     setRating(updateRating);
     setStudioId(updateStudioID);
-    if (performerMode === GQL.BulkUpdateIdMode.Set) {
-      setPerformerIds(updatePerformerIds);
-    }
-
-    if (tagMode === GQL.BulkUpdateIdMode.Set) {
-      setTagIds(updateTagIds);
-    }
+    setExistingPerformerIds(updatePerformerIds);
+    setExistingTagIds(updateTagIds);
     setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
 
@@ -292,12 +289,15 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
+    let existingIds: string[] | undefined = [];
     switch (type) {
       case "performers":
         mode = performerMode;
+        existingIds = existingPerformerIds;
         break;
       case "tags":
         mode = tagMode;
+        existingIds = existingTagIds;
         break;
     }
 
@@ -305,8 +305,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       <MultiSet
         type={type}
         disabled={isUpdating}
-        onUpdate={(items) => {
-          const itemIDs = items.map((i) => i.id);
+        onUpdate={(itemIDs) => {
           switch (type) {
             case "performers":
               setPerformerIds(itemIDs);
@@ -327,6 +326,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           }
         }}
         ids={ids ?? []}
+        existingIds={existingIds ?? []}
         mode={mode}
       />
     );
@@ -404,7 +404,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
           <Form.Group controlId="tags">
             <Form.Label>
-              <FormattedMessage id="performers" />
+              <FormattedMessage id="tags" />
             </Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
