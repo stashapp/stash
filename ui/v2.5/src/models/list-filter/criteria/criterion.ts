@@ -23,41 +23,27 @@ export type CriterionValue =
   | ILabeledId[]
   | IHierarchicalLabelValue;
 
+const modifierMessageIDs = {
+  [CriterionModifier.Equals]: "criterion_modifier.equals",
+  [CriterionModifier.NotEquals]: "criterion_modifier.not_equals",
+  [CriterionModifier.GreaterThan]: "criterion_modifier.greater_than",
+  [CriterionModifier.LessThan]: "criterion_modifier.less_than",
+  [CriterionModifier.IsNull]: "criterion_modifier.is_null",
+  [CriterionModifier.NotNull]: "criterion_modifier.not_null",
+  [CriterionModifier.Includes]: "criterion_modifier.includes",
+  [CriterionModifier.IncludesAll]: "criterion_modifier.includes_all",
+  [CriterionModifier.Excludes]: "criterion_modifier.excludes",
+  [CriterionModifier.MatchesRegex]: "criterion_modifier.matches_regex",
+  [CriterionModifier.NotMatchesRegex]: "criterion_modifier.not_matches_regex",
+};
+
 // V = criterion value type
 export abstract class Criterion<V extends CriterionValue> {
   public static getModifierOption(
     modifier: CriterionModifier = CriterionModifier.Equals
   ): ILabeledValue {
-    switch (modifier) {
-      case CriterionModifier.Equals:
-        return { value: CriterionModifier.Equals, label: "Equals" };
-      case CriterionModifier.NotEquals:
-        return { value: CriterionModifier.NotEquals, label: "Not Equals" };
-      case CriterionModifier.GreaterThan:
-        return { value: CriterionModifier.GreaterThan, label: "Greater Than" };
-      case CriterionModifier.LessThan:
-        return { value: CriterionModifier.LessThan, label: "Less Than" };
-      case CriterionModifier.IsNull:
-        return { value: CriterionModifier.IsNull, label: "Is NULL" };
-      case CriterionModifier.NotNull:
-        return { value: CriterionModifier.NotNull, label: "Not NULL" };
-      case CriterionModifier.IncludesAll:
-        return { value: CriterionModifier.IncludesAll, label: "Includes All" };
-      case CriterionModifier.Includes:
-        return { value: CriterionModifier.Includes, label: "Includes" };
-      case CriterionModifier.Excludes:
-        return { value: CriterionModifier.Excludes, label: "Excludes" };
-      case CriterionModifier.MatchesRegex:
-        return {
-          value: CriterionModifier.MatchesRegex,
-          label: "Matches Regex",
-        };
-      case CriterionModifier.NotMatchesRegex:
-        return {
-          value: CriterionModifier.NotMatchesRegex,
-          label: "Not Matches Regex",
-        };
-    }
+    const messageID = modifierMessageIDs[modifier];
+    return { value: modifier, label: messageID };
   }
 
   public criterionOption: CriterionOption;
@@ -73,44 +59,7 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public static getModifierLabel(intl: IntlShape, modifier: CriterionModifier) {
-    let modifierMessageID: string;
-    switch (modifier) {
-      case CriterionModifier.Equals:
-        modifierMessageID = "criterion_modifier.equals";
-        break;
-      case CriterionModifier.NotEquals:
-        modifierMessageID = "criterion_modifier.not_equals";
-        break;
-      case CriterionModifier.GreaterThan:
-        modifierMessageID = "criterion_modifier.greater_than";
-        break;
-      case CriterionModifier.LessThan:
-        modifierMessageID = "criterion_modifier.less_than";
-        break;
-      case CriterionModifier.IsNull:
-        modifierMessageID = "criterion_modifier.is_null";
-        break;
-      case CriterionModifier.NotNull:
-        modifierMessageID = "criterion_modifier.not_null";
-        break;
-      case CriterionModifier.Includes:
-        modifierMessageID = "criterion_modifier.includes";
-        break;
-      case CriterionModifier.IncludesAll:
-        modifierMessageID = "criterion_modifier.includes_all";
-        break;
-      case CriterionModifier.Excludes:
-        modifierMessageID = "criterion_modifier.excludes";
-        break;
-      case CriterionModifier.MatchesRegex:
-        modifierMessageID = "criterion_modifier.matches_regex";
-        break;
-      case CriterionModifier.NotMatchesRegex:
-        modifierMessageID = "criterion_modifier.not_matches_regex";
-        break;
-      default:
-        modifierMessageID = "";
-    }
+    const modifierMessageID = modifierMessageIDs[modifier];
 
     return modifierMessageID
       ? intl.formatMessage({ id: modifierMessageID })

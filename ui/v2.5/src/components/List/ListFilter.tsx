@@ -152,7 +152,11 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               <Dropdown>
                 <OverlayTrigger
                   placement="top"
-                  overlay={<Tooltip id="filter-tooltip">Saved filters</Tooltip>}
+                  overlay={
+                    <Tooltip id="filter-tooltip">
+                      <FormattedMessage id="search_filter.saved_filters" />
+                    </Tooltip>
+                  }
                 >
                   <Dropdown.Toggle variant="secondary">
                     <Icon icon="bookmark" />

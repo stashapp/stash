@@ -135,7 +135,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         >
           {modifierOptions.map((c) => (
             <option key={c.value} value={c.value}>
-              {c.label}
+              {c.label ? intl.formatMessage({ id: c.label }) : ""}
             </option>
           ))}
         </Form.Control>
@@ -241,7 +241,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
             <Form.Group>
               <Form.Check
                 checked={criterion.value.depth !== 0}
-                label="Include child studios"
+                label={intl.formatMessage({ id: "include_child_studios" })}
                 onChange={() => {
                   const newCriterion = _.cloneDeep(criterion);
                   newCriterion.value.depth =

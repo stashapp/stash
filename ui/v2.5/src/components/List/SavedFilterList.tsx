@@ -20,6 +20,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { SavedFilterDataFragment } from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
 import { PersistanceLevel } from "src/hooks/ListHook";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared";
 
 interface ISavedFilterListProps {
@@ -34,6 +35,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   persistState,
 }) => {
   const Toast = useToast();
+  const intl = useIntl();
+
   const { data, error, loading, refetch } = useFindSavedFilters(filter.mode);
   const oldError = useRef(error);
 
@@ -77,7 +80,16 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({ content: "Filter saved" });
+      Toast.success({
+        content: intl.formatMessage(
+          {
+            id: "toast.saved_entity",
+          },
+          {
+            entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
+          }
+        ),
+      });
       setFilterName("");
       setOverwritingFilter(undefined);
       refetch();
@@ -100,7 +112,18 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({ content: "Filter deleted" });
+      Toast.success({
+        content: intl.formatMessage(
+          {
+            id: "toast.delete_past_tense",
+          },
+          {
+            count: 1,
+            singularEntity: intl.formatMessage({ id: "filter" }),
+            pluralEntity: intl.formatMessage({ id: "filters" }),
+          }
+        ),
+      });
       refetch();
     } catch (err) {
       Toast.error(err);
@@ -126,7 +149,11 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         },
       });
 
-      Toast.success({ content: "Default filter set" });
+      Toast.success({
+        content: intl.formatMessage({
+          id: "toast.default_filter_set",
+        }),
+      });
     } catch (err) {
       Toast.error(err);
     } finally {
@@ -156,7 +183,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             className="save-button"
             variant="secondary"
             size="sm"
-            title="Overwrite"
+            title={intl.formatMessage({ id: "actions.overwrite" })}
             onClick={(e) => {
               setOverwritingFilter(item);
               e.stopPropagation();
@@ -168,7 +195,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             className="delete-button"
             variant="secondary"
             size="sm"
-            title="Delete"
+            title={intl.formatMessage({ id: "actions.delete" })}
             onClick={(e) => {
               setDeletingFilter(item);
               e.stopPropagation();
@@ -189,21 +216,25 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     return (
       <Modal show>
         <Modal.Body>
-          Are you sure you want to delete saved query &quot;
-          {deletingFilter.name}&quot;?
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName: deletingFilter.name,
+            }}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button
             variant="danger"
             onClick={() => onDeleteFilter(deletingFilter)}
           >
-            Delete
+            {intl.formatMessage({ id: "actions.delete" })}
           </Button>
           <Button
             variant="secondary"
             onClick={() => setDeletingFilter(undefined)}
           >
-            Cancel
+            {intl.formatMessage({ id: "actions.cancel" })}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -218,8 +249,12 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     return (
       <Modal show>
         <Modal.Body>
-          Are you sure you want to overwrite existing saved query &quot;
-          {overwritingFilter.name}&quot;?
+          <FormattedMessage
+            id="dialogs.overwrite_filter_confirm"
+            values={{
+              entityName: overwritingFilter.name,
+            }}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -228,13 +263,13 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
               onSaveFilter(overwritingFilter.name, overwritingFilter.id)
             }
           >
-            Overwrite
+            {intl.formatMessage({ id: "actions.overwrite" })}
           </Button>
           <Button
             variant="secondary"
             onClick={() => setOverwritingFilter(undefined)}
           >
-            Cancel
+            {intl.formatMessage({ id: "actions.cancel" })}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -272,7 +307,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
           size="sm"
           onClick={() => onSetDefaultFilter()}
         >
-          Set as default
+          {intl.formatMessage({ id: "actions.set_as_default" })}
         </Button>
       );
     }
@@ -285,14 +320,18 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       <InputGroup>
         <FormControl
           className="bg-secondary text-white border-secondary"
-          placeholder="Filter name..."
+          placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
           value={filterName}
           onChange={(e) => setFilterName(e.target.value)}
         />
         <InputGroup.Append>
           <OverlayTrigger
             placement="top"
-            overlay={<Tooltip id="filter-tooltip">Save filter</Tooltip>}
+            overlay={
+              <Tooltip id="filter-tooltip">
+                <FormattedMessage id="actions.save_filter" />
+              </Tooltip>
+            }
           >
             <Button
               disabled={
