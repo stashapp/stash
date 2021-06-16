@@ -1,18 +1,16 @@
-import {
-  CriterionModifier,
-  GenderCriterionInput,
-} from "src/core/generated-graphql";
-import { getGenderStrings, stringToGender } from "src/core/StashService";
+import { GenderCriterionInput } from "src/core/generated-graphql";
+import { genderStrings, stringToGender } from "src/utils/gender";
 import { CriterionOption, StringCriterion } from "./criterion";
 
-export const GenderCriterionOption = new CriterionOption("gender", "gender");
+export const GenderCriterionOption = new CriterionOption({
+  messageID: "gender",
+  type: "gender",
+  options: genderStrings,
+});
 
 export class GenderCriterion extends StringCriterion {
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
-
   constructor() {
-    super(GenderCriterionOption, getGenderStrings());
+    super(GenderCriterionOption);
   }
 
   protected toCriterionInput(): GenderCriterionInput {

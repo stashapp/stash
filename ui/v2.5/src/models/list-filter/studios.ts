@@ -1,6 +1,8 @@
-import { createCriterionOption } from "./criteria/criterion";
+import {
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { RatingCriterionOption } from "./criteria/rating";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
@@ -26,15 +28,14 @@ const sortByOptions = ["name", "random", "rating"]
 
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
-  NoneCriterionOption,
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
   RatingCriterionOption,
-  createCriterionOption("scene_count"),
-  createCriterionOption("image_count"),
-  createCriterionOption("gallery_count"),
-  createCriterionOption("url"),
-  createCriterionOption("stash_id"),
+  createMandatoryNumberCriterionOption("scene_count"),
+  createMandatoryNumberCriterionOption("image_count"),
+  createMandatoryNumberCriterionOption("gallery_count"),
+  createStringCriterionOption("url"),
+  createStringCriterionOption("stash_id"),
 ];
 
 export const StudioListFilterOptions = new ListFilterOptions(

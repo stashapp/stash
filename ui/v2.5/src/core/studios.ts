@@ -7,7 +7,7 @@ export const studioFilterHook = (studio: Partial<GQL.StudioDataFragment>) => {
     const studioValue = { id: studio.id!, label: studio.name! };
     // if studio is already present, then we modify it, otherwise add
     let studioCriterion = filter.criteria.find((c) => {
-      return c.criterionOption.value === "studios";
+      return c.criterionOption.type === "studios";
     }) as StudiosCriterion;
 
     if (

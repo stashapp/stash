@@ -1,8 +1,7 @@
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Form, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import Mousetrap from "mousetrap";
-import { Icon, FilterSelect, DurationInput } from "src/components/Shared";
+import { Button, Form, Modal } from "react-bootstrap";
+import { FilterSelect, DurationInput } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   DurationCriterion,
@@ -10,7 +9,10 @@ import {
   Criterion,
   IHierarchicalLabeledIdCriterion,
 } from "src/models/list-filter/criteria/criterion";
-import { NoneCriterion } from "src/models/list-filter/criteria/none";
+import {
+  NoneCriterion,
+  NoneCriterionOption,
+} from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/factory";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
@@ -29,15 +31,18 @@ interface IAddFilterProps {
   editingCriterion?: Criterion<CriterionValue>;
 }
 
-export const AddFilter: React.FC<IAddFilterProps> = (
-  props: IAddFilterProps
-) => {
+export const AddFilterDialog: React.FC<IAddFilterProps> = ({
+  onAddCriterion,
+  onCancel,
+  filterOptions,
+  editingCriterion,
+}) => {
   const defaultValue = useRef<string | number | undefined>();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [criterion, setCriterion] = useState<Criterion<CriterionValue>>(
     new NoneCriterion()
   );
+  const { options, modifierOptions } = criterion.criterionOption;
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 
@@ -50,23 +55,14 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     },
   });
 
-  // configure keyboard shortcuts
-  useEffect(() => {
-    Mousetrap.bind("f", () => setIsOpen(true));
-
-    return () => {
-      Mousetrap.unbind("f");
-    };
-  });
-
   // Configure if we are editing an existing criterion
   useEffect(() => {
-    if (!props.editingCriterion) {
-      return;
+    if (!editingCriterion) {
+      setCriterion(makeCriteria());
+    } else {
+      setCriterion(editingCriterion);
     }
-    setIsOpen(true);
-    setCriterion(props.editingCriterion);
-  }, [props.editingCriterion]);
+  }, [editingCriterion]);
 
   function onChangedCriteriaType(event: React.ChangeEvent<HTMLSelectElement>) {
     const newCriterionType = event.target.value as CriterionType;
@@ -107,38 +103,27 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     if (!Array.isArray(criterion.value) && defaultValue.current !== undefined) {
       const value = defaultValue.current;
       if (
-        criterion.options &&
+        options &&
         (value === undefined || value === "" || typeof value === "number")
       ) {
-        criterion.value = criterion.options[0].toString();
+        criterion.value = options[0].toString();
       } else if (typeof value === "number" && value === undefined) {
         criterion.value = 0;
       } else if (value === undefined) {
         criterion.value = "";
       }
     }
-    const oldId = props.editingCriterion
-      ? props.editingCriterion.getId()
-      : undefined;
-    props.onAddCriterion(criterion, oldId);
-    onToggle();
-  }
-
-  function onToggle() {
-    if (isOpen) {
-      props.onCancel();
-    }
-    setIsOpen(!isOpen);
-    setCriterion(makeCriteria());
+    const oldId = editingCriterion ? editingCriterion.getId() : undefined;
+    onAddCriterion(criterion, oldId);
   }
 
   const maybeRenderFilterPopoverContents = () => {
-    if (criterion.criterionOption.value === "none") {
+    if (criterion.criterionOption.type === "none") {
       return;
     }
 
     function renderModifier() {
-      if (criterion.modifierOptions.length === 0) {
+      if (modifierOptions.length === 0) {
         return;
       }
       return (
@@ -148,9 +133,9 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           value={criterion.modifier}
           className="btn-secondary"
         >
-          {criterion.modifierOptions.map((c) => (
+          {modifierOptions.map((c) => (
             <option key={c.value} value={c.value}>
-              {c.label}
+              {c.label ? intl.formatMessage({ id: c.label }) : ""}
             </option>
           ))}
         </Form.Control>
@@ -168,19 +153,19 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
       if (Array.isArray(criterion.value)) {
         if (
-          criterion.criterionOption.value !== "performers" &&
-          criterion.criterionOption.value !== "studios" &&
-          criterion.criterionOption.value !== "parent_studios" &&
-          criterion.criterionOption.value !== "tags" &&
-          criterion.criterionOption.value !== "sceneTags" &&
-          criterion.criterionOption.value !== "performerTags" &&
-          criterion.criterionOption.value !== "movies"
+          criterion.criterionOption.type !== "performers" &&
+          criterion.criterionOption.type !== "studios" &&
+          criterion.criterionOption.type !== "parent_studios" &&
+          criterion.criterionOption.type !== "tags" &&
+          criterion.criterionOption.type !== "sceneTags" &&
+          criterion.criterionOption.type !== "performerTags" &&
+          criterion.criterionOption.type !== "movies"
         )
           return;
 
         return (
           <FilterSelect
-            type={criterion.criterionOption.value}
+            type={criterion.criterionOption.type}
             isMulti
             onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);
@@ -195,11 +180,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         );
       }
       if (criterion instanceof IHierarchicalLabeledIdCriterion) {
-        if (criterion.criterionOption.value !== "studios") return;
+        if (criterion.criterionOption.type !== "studios") return;
 
         return (
           <FilterSelect
-            type={criterion.criterionOption.value}
+            type={criterion.criterionOption.type}
             isMulti
             onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);
@@ -213,10 +198,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           />
         );
       }
-      if (
-        criterion.options &&
-        !criterionIsHierarchicalLabelValue(criterion.value)
-      ) {
+      if (options && !criterionIsHierarchicalLabelValue(criterion.value)) {
         defaultValue.current = criterion.value;
         return (
           <Form.Control
@@ -225,7 +207,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
             value={criterion.value.toString()}
             className="btn-secondary"
           >
-            {criterion.options.map((c) => (
+            {options.map((c) => (
               <option key={c.toString()} value={c.toString()}>
                 {c}
               </option>
@@ -245,7 +227,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       return (
         <Form.Control
           className="btn-secondary"
-          type={criterion.inputType}
+          type={criterion.criterionOption.inputType}
           onChange={onChangedInput}
           onBlur={onBlurInput}
           defaultValue={criterion.value ? criterion.value.toString() : ""}
@@ -259,7 +241,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
             <Form.Group>
               <Form.Check
                 checked={criterion.value.depth !== 0}
-                label="Include child studios"
+                label={intl.formatMessage({ id: "include_child_studios" })}
                 onChange={() => {
                   const newCriterion = _.cloneDeep(criterion);
                   newCriterion.value.depth =
@@ -304,7 +286,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   };
 
   function maybeRenderFilterCriterion() {
-    if (!props.editingCriterion) {
+    if (!editingCriterion) {
       return;
     }
 
@@ -312,7 +294,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       <Form.Group>
         <strong>
           {intl.formatMessage({
-            id: props.editingCriterion.criterionOption.messageID,
+            id: editingCriterion.criterionOption.messageID,
           })}
         </strong>
       </Form.Group>
@@ -320,14 +302,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   }
 
   function maybeRenderFilterSelect() {
-    if (props.editingCriterion) {
+    if (editingCriterion) {
       return;
     }
 
-    const options = props.filterOptions.criterionOptions
+    const thisOptions = [NoneCriterionOption]
+      .concat(filterOptions.criterionOptions)
       .map((c) => {
         return {
-          value: c.value,
+          value: c.type,
           text: intl.formatMessage({ id: c.messageID }),
         };
       })
@@ -345,10 +328,10 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
-          value={criterion.criterionOption.value}
+          value={criterion.criterionOption.type}
           className="btn-secondary"
         >
-          {options.map((c) => (
+          {thisOptions.map((c) => (
             <option key={c.value} value={c.value} disabled={c.value === "none"}>
               {c.text}
             </option>
@@ -358,25 +341,12 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     );
   }
 
-  const title = !props.editingCriterion
+  const title = !editingCriterion
     ? intl.formatMessage({ id: "search_filter.add_filter" })
     : intl.formatMessage({ id: "search_filter.update_filter" });
   return (
     <>
-      <OverlayTrigger
-        placement="top"
-        overlay={
-          <Tooltip id="filter-tooltip">
-            <FormattedMessage id="search_filter.name" />
-          </Tooltip>
-        }
-      >
-        <Button variant="secondary" onClick={() => onToggle()} active={isOpen}>
-          <Icon icon="filter" />
-        </Button>
-      </OverlayTrigger>
-
-      <Modal show={isOpen} onHide={() => onToggle()}>
+      <Modal show onHide={() => onCancel()}>
         <Modal.Header>{title}</Modal.Header>
         <Modal.Body>
           <div className="dialog-content">
@@ -388,7 +358,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         <Modal.Footer>
           <Button
             onClick={onAddFilter}
-            disabled={criterion.criterionOption.value === "none"}
+            disabled={criterion.criterionOption.type === "none"}
           >
             {title}
           </Button>

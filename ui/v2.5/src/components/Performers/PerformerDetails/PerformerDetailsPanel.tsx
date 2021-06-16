@@ -2,10 +2,10 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { genderToString } from "src/utils/gender";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;

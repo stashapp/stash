@@ -1,12 +1,14 @@
-import { CriterionOption, ILabeledIdCriterion } from "./criterion";
+import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 
-export const PerformersCriterionOption = new CriterionOption(
+export const PerformersCriterionOption = new ILabeledIdCriterionOption(
   "performers",
-  "performers"
+  "performers",
+  "performers",
+  true
 );
 
 export class PerformersCriterion extends ILabeledIdCriterion {
   constructor() {
-    super(PerformersCriterionOption, true);
+    super(PerformersCriterionOption);
   }
 }

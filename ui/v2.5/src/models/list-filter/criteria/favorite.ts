@@ -1,6 +1,6 @@
-import { BooleanCriterion, CriterionOption } from "./criterion";
+import { BooleanCriterion, BooleanCriterionOption } from "./criterion";
 
-export const FavoriteCriterionOption = new CriterionOption(
+export const FavoriteCriterionOption = new BooleanCriterionOption(
   "favourite",
   "favorite",
   "filter_favorites"

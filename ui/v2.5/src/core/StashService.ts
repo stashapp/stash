@@ -5,6 +5,7 @@ import {
   getQueryDefinition,
   getOperationName,
 } from "@apollo/client/utilities";
+import { stringToGender } from "src/utils/gender";
 import { filterData } from "../utils";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -42,6 +43,20 @@ const deleteCache = (queries: DocumentNode[]) => {
       fields,
     });
 };
+
+export const useFindSavedFilters = (mode: GQL.FilterMode) =>
+  GQL.useFindSavedFiltersQuery({
+    variables: {
+      mode,
+    },
+  });
+
+export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
+  GQL.useFindDefaultFilterQuery({
+    variables: {
+      mode,
+    },
+  });
 
 export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
@@ -680,6 +695,29 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
+export const savedFilterMutationImpactedQueries = [
+  GQL.FindSavedFiltersDocument,
+];
+
+export const useSaveFilter = () =>
+  GQL.useSaveFilterMutation({
+    update: deleteCache(savedFilterMutationImpactedQueries),
+  });
+
+export const savedFilterDefaultMutationImpactedQueries = [
+  GQL.FindDefaultFilterDocument,
+];
+
+export const useSetDefaultFilter = () =>
+  GQL.useSetDefaultFilterMutation({
+    update: deleteCache(savedFilterDefaultMutationImpactedQueries),
+  });
+
+export const useSavedFilterDestroy = () =>
+  GQL.useDestroySavedFilterMutation({
+    update: deleteCache(savedFilterMutationImpactedQueries),
+  });
+
 export const useTagsMerge = () =>
   GQL.useTagsMergeMutation({
     update: deleteCache(tagMutationImpactedQueries),
@@ -972,54 +1010,6 @@ export const queryParseSceneFilenames = (
     variables: { filter, config },
     fetchPolicy: "network-only",
   });
-
-export const stringGenderMap = new Map<string, GQL.GenderEnum>([
-  ["Male", GQL.GenderEnum.Male],
-  ["Female", GQL.GenderEnum.Female],
-  ["Transgender Male", GQL.GenderEnum.TransgenderMale],
-  ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
-  ["Intersex", GQL.GenderEnum.Intersex],
-  ["Non-Binary", GQL.GenderEnum.NonBinary],
-]);
-
-export const genderToString = (value?: GQL.GenderEnum | string) => {
-  if (!value) {
-    return undefined;
-  }
-
-  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
-    return e[1] === value;
-  });
-
-  if (foundEntry) {
-    return foundEntry[0];
-  }
-};
-
-export const stringToGender = (
-  value?: string | null,
-  caseInsensitive?: boolean
-) => {
-  if (!value) {
-    return undefined;
-  }
-
-  const ret = stringGenderMap.get(value);
-  if (ret || !caseInsensitive) {
-    return ret;
-  }
-
-  const asUpper = value.toUpperCase();
-  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
-    return e[0].toUpperCase() === asUpper;
-  });
-
-  if (foundEntry) {
-    return foundEntry[1];
-  }
-};
-
-export const getGenderStrings = () => Array.from(stringGenderMap.keys());
 
 export const makePerformerCreateInput = (
   toCreate: GQL.ScrapedScenePerformer

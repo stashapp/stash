@@ -1,6 +1,7 @@
-import { BooleanCriterion, CriterionOption } from "./criterion";
+import { BooleanCriterion, BooleanCriterionOption } from "./criterion";
 
-export const OrganizedCriterionOption = new CriterionOption(
+export const OrganizedCriterionOption = new BooleanCriterionOption(
+  "organized",
   "organized",
   "organized"
 );

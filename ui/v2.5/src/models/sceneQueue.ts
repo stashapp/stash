@@ -1,5 +1,6 @@
 import queryString from "query-string";
 import { RouteComponentProps } from "react-router-dom";
+import { FilterMode } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
 
@@ -27,7 +28,7 @@ export class SceneQueue {
   public static fromListFilterModel(filter: ListFilterModel) {
     const ret = new SceneQueue();
 
-    const filterCopy = Object.assign(new ListFilterModel(), filter);
+    const filterCopy = filter.clone();
     filterCopy.itemsPerPage = 40;
 
     ret.originalQueryPage = filter.currentPage;
@@ -95,6 +96,7 @@ export class SceneQueue {
 
     if (parsed.qfp) {
       const query = new ListFilterModel(
+        FilterMode.Scenes,
         translated as queryString.ParsedQuery,
         SceneListFilterOptions.defaultSortBy
       );

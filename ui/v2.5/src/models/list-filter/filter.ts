@@ -1,5 +1,9 @@
 import queryString, { ParsedQuery } from "query-string";
-import { FindFilterType, SortDirectionEnum } from "src/core/generated-graphql";
+import {
+  FilterMode,
+  FindFilterType,
+  SortDirectionEnum,
+} from "src/core/generated-graphql";
 import { Criterion, CriterionValue } from "./criteria/criterion";
 import { makeCriteria } from "./criteria/factory";
 import { DisplayMode } from "./types";
@@ -23,6 +27,7 @@ const DEFAULT_PARAMS = {
 
 // TODO: handle customCriteria
 export class ListFilterModel {
+  public mode: FilterMode;
   public searchTerm?: string;
   public currentPage = DEFAULT_PARAMS.currentPage;
   public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
@@ -33,14 +38,20 @@ export class ListFilterModel {
   public randomSeed = -1;
 
   public constructor(
+    mode: FilterMode,
     rawParms?: ParsedQuery<string>,
     defaultSort?: string,
     defaultDisplayMode?: DisplayMode
   ) {
+    this.mode = mode;
     const params = rawParms as IQueryParameters;
     this.sortBy = defaultSort;
     if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
     if (params) this.configureFromQueryParameters(params);
+  }
+
+  public clone() {
+    return Object.assign(new ListFilterModel(this.mode), this);
   }
 
   public configureFromQueryParameters(params: IQueryParameters) {
@@ -64,7 +75,7 @@ export class ListFilterModel {
       params.sortdir === "desc"
         ? SortDirectionEnum.Desc
         : SortDirectionEnum.Asc;
-    if (params.disp) {
+    if (params.disp !== undefined) {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
@@ -147,6 +158,24 @@ export class ListFilterModel {
         this.currentPage !== DEFAULT_PARAMS.currentPage
           ? this.currentPage
           : undefined,
+      c: encodedCriteria,
+    };
+
+    return result;
+  }
+
+  public getSavedQueryParameters() {
+    const encodedCriteria: string[] = this.criteria.map((criterion) =>
+      criterion.toJSON()
+    );
+
+    const result = {
+      perPage: this.itemsPerPage,
+      sortby: this.getSortBy() ?? undefined,
+      sortdir:
+        this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+      disp: this.displayMode,
+      q: this.searchTerm,
       c: encodedCriteria,
     };
 

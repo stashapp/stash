@@ -9,23 +9,23 @@ import {
   ScrapeDialogRow,
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog";
-import {
-  getGenderStrings,
-  genderToString,
-  stringToGender,
-  useTagCreate,
-} from "src/core/StashService";
+import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
 import { TagSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import _ from "lodash";
+import {
+  genderStrings,
+  genderToString,
+  stringToGender,
+} from "src/utils/gender";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
   isNew?: boolean,
   onChange?: (value: string) => void
 ) {
-  const selectOptions = [""].concat(getGenderStrings());
+  const selectOptions = [""].concat(genderStrings);
 
   return (
     <Form.Control

@@ -14,10 +14,7 @@ import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
-  getGenderStrings,
   useListPerformerScrapers,
-  genderToString,
-  stringToGender,
   queryScrapePerformer,
   mutateReloadScrapers,
   usePerformerUpdate,
@@ -40,6 +37,11 @@ import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import {
+  genderStrings,
+  genderToString,
+  stringToGender,
+} from "src/utils/gender";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -92,7 +94,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const [createTag] = useTagCreate();
 
-  const genderOptions = [""].concat(getGenderStrings());
+  const genderOptions = [""].concat(genderStrings);
 
   const labelXS = 3;
   const labelXL = 2;

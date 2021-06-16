@@ -58,6 +58,7 @@
     "reshuffle": "Reshuffle",
     "running": "running",
     "save": "Save",
+    "save_filter": "Save filter",
     "scan": "Scan",
     "scrape_with": "Scrape with…",
     "search": "Search",
@@ -65,6 +66,7 @@
     "select_none": "Select None",
     "selective_auto_tag": "Selective Auto Tag",
     "selective_scan": "Selective Scan",
+    "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
     "set_image": "Set image…",
@@ -400,6 +402,7 @@
       "destination": "Destination",
       "source": "Source"
     },
+    "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "markers": "Markers (20 second videos which begin at the given timecode)",
@@ -477,6 +480,9 @@
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "filesize": "File Size",
+  "filter": "Filter",
+  "filter_name": "Filter name",
+  "filters": "Filters",
   "framerate": "Frame Rate",
   "galleries": "Galleries",
   "gallery": "Gallery",
@@ -490,6 +496,7 @@
   "image_count": "Image Count",
   "images": "Images",
   "images-size": "Images size",
+  "include_child_studios": "Include child studios",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "isMissing": "Is Missing",
@@ -552,6 +559,7 @@
   "search_filter": {
     "add_filter": "Add Filter",
     "name": "Filter",
+    "saved_filters": "Saved filters",
     "update_filter": "Update Filter"
   },
   "seconds": "Seconds",
@@ -570,12 +578,15 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
+    "create_entity": "Created {entity}",
+    "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
     "merged_tags": "Merged tags",
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Started auto tagging",
+    "saved_entity": "Saved {entity}",
     "updated_entity": "Updated {entity}"
   },
   "total": "Total",

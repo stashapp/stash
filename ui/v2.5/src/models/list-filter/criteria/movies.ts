@@ -1,9 +1,14 @@
-import { CriterionOption, ILabeledIdCriterion } from "./criterion";
+import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 
-export const MoviesCriterionOption = new CriterionOption("movies", "movies");
+export const MoviesCriterionOption = new ILabeledIdCriterionOption(
+  "movies",
+  "movies",
+  "movies",
+  false
+);
 
 export class MoviesCriterion extends ILabeledIdCriterion {
   constructor() {
-    super(MoviesCriterionOption, false);
+    super(MoviesCriterionOption);
   }
 }

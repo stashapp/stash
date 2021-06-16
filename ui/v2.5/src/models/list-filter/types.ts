@@ -8,17 +8,6 @@ export enum DisplayMode {
   Tagger,
 }
 
-export enum FilterMode {
-  Scenes,
-  Performers,
-  Studios,
-  Galleries,
-  SceneMarkers,
-  Movies,
-  Tags,
-  Images,
-}
-
 export interface ILabeledId {
   id: string;
   label: string;

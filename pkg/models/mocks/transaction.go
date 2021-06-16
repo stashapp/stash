@@ -16,6 +16,7 @@ type TransactionManager struct {
 	scrapedItem models.ScrapedItemReaderWriter
 	studio      models.StudioReaderWriter
 	tag         models.TagReaderWriter
+	savedFilter models.SavedFilterReaderWriter
 }
 
 func NewTransactionManager() *TransactionManager {
@@ -29,6 +30,7 @@ func NewTransactionManager() *TransactionManager {
 		scrapedItem: &ScrapedItemReaderWriter{},
 		studio:      &StudioReaderWriter{},
 		tag:         &TagReaderWriter{},
+		savedFilter: &SavedFilterReaderWriter{},
 	}
 }
 
@@ -70,6 +72,10 @@ func (t *TransactionManager) Studio() models.StudioReaderWriter {
 
 func (t *TransactionManager) Tag() models.TagReaderWriter {
 	return t.tag
+}
+
+func (t *TransactionManager) SavedFilter() models.SavedFilterReaderWriter {
+	return t.savedFilter
 }
 
 type ReadTransaction struct {
@@ -114,4 +120,8 @@ func (r *ReadTransaction) Studio() models.StudioReader {
 
 func (r *ReadTransaction) Tag() models.TagReader {
 	return r.t.tag
+}
+
+func (r *ReadTransaction) SavedFilter() models.SavedFilterReader {
+	return r.t.savedFilter
 }
