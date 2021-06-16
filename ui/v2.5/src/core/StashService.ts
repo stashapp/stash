@@ -718,6 +718,11 @@ export const useSavedFilterDestroy = () =>
     update: deleteCache(savedFilterMutationImpactedQueries),
   });
 
+    export const useTagsMerge = () =>
+  GQL.useTagsMergeMutation({
+    update: deleteCache(tagMutationImpactedQueries),
+  });
+
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
   GQL.useConfigureGeneralMutation({
     variables: { input },

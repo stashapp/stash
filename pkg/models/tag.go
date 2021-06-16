@@ -28,6 +28,7 @@ type TagWriter interface {
 	UpdateImage(tagID int, image []byte) error
 	DestroyImage(tagID int) error
 	UpdateAliases(tagID int, aliases []string) error
+	Merge(source []int, destination int) error
 }
 
 type TagReaderWriter interface {

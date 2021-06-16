@@ -38,3 +38,8 @@ type FindTagsResultType {
   count: Int!
   tags: [Tag!]!
 }
+
+input TagsMergeInput {
+  source: [ID!]!
+  destination: ID!
+}

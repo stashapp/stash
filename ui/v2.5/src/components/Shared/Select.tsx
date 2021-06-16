@@ -474,14 +474,20 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
-export const TagSelect: React.FC<IFilterProps> = (props) => {
+export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
+  props
+) => {
   const [tagAliases, setTagAliases] = useState<Record<string, string[]>>({});
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate();
   const placeholder = props.noSelectionString ?? "Select tags...";
 
-  const tags = useMemo(() => data?.allTags ?? [], [data?.allTags]);
+  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
+  const tags = useMemo(
+    () => (data?.allTags ?? []).filter((tag) => !exclude.includes(tag.id)),
+    [data?.allTags, exclude]
+  );
 
   useEffect(() => {
     // build the tag aliases map
@@ -584,7 +590,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
       placeholder={placeholder}
       isLoading={loading}
       onCreate={onCreate}
-      closeMenuOnSelect={false}
+      closeMenuOnSelect={!props.isMulti}
     />
   );
 };

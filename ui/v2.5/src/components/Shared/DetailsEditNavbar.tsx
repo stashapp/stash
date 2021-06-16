@@ -19,6 +19,7 @@ interface IProps {
   onClearImage?: () => void;
   onClearBackImage?: () => void;
   acceptSVG?: boolean;
+  customButtons?: JSX.Element;
 }
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
@@ -165,6 +166,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         ""
       )}
       {renderAutoTagButton()}
+      {props.customButtons}
       {renderSaveButton()}
       {renderDeleteButton()}
       {renderDeleteAlert()}

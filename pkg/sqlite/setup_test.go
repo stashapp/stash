@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -352,6 +353,16 @@ func TestMain(m *testing.M) {
 func withTxn(f func(r models.Repository) error) error {
 	t := sqlite.NewTransactionManager()
 	return t.WithTxn(context.TODO(), f)
+}
+
+func withRollbackTxn(f func(r models.Repository) error) error {
+	var ret error
+	withTxn(func(repo models.Repository) error {
+		ret = f(repo)
+		return errors.New("fake error for rollback")
+	})
+
+	return ret
 }
 
 func testTeardown(databaseFile string) {

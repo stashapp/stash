@@ -42,6 +42,8 @@
     "import": "Import…",
     "import_from_file": "Import from file",
     "merge": "Merge",
+    "merge_from": "Merge from",
+    "merge_into": "Merge into",
     "not_running": "not running",
     "overwrite": "Overwrite",
     "play_random": "Play Random",
@@ -396,6 +398,10 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "merge_tags": {
+      "destination": "Destination",
+      "source": "Source"
+    },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
@@ -577,6 +583,7 @@
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
+    "merged_tags": "Merged tags",
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Started auto tagging",
     "saved_entity": "Saved {entity}",
