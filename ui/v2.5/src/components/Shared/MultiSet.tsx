@@ -86,7 +86,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
   }
 
   return (
-    <div>
+    <div className="multi-set">
       <ButtonGroup className="button-group-above">
         {modes.map((m) => renderModeButton(m))}
       </ButtonGroup>
