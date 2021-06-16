@@ -718,7 +718,7 @@ export const useSavedFilterDestroy = () =>
     update: deleteCache(savedFilterMutationImpactedQueries),
   });
 
-    export const useTagsMerge = () =>
+export const useTagsMerge = () =>
   GQL.useTagsMergeMutation({
     update: deleteCache(tagMutationImpactedQueries),
   });
