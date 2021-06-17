@@ -238,7 +238,7 @@ func generateScene(i int) models.Scene {
 
 	return models.Scene{
 		Path:     path,
-		Title:    sql.NullString{String: names[c.Naming.Scenes].generateName(rand.Intn(7) + 1)},
+		Title:    sql.NullString{String: names[c.Naming.Scenes].generateName(rand.Intn(7) + 1), Valid: true},
 		Checksum: sql.NullString{String: utils.MD5FromString(path), Valid: true},
 		OSHash:   sql.NullString{String: utils.MD5FromString(path), Valid: true},
 		Duration: sql.NullFloat64{
@@ -288,7 +288,7 @@ func generateImage(i int) models.Image {
 	w, h := getResolution()
 
 	return models.Image{
-		Title:    sql.NullString{String: names[c.Naming.Images].generateName(rand.Intn(7) + 1)},
+		Title:    sql.NullString{String: names[c.Naming.Images].generateName(rand.Intn(7) + 1), Valid: true},
 		Path:     path,
 		Checksum: utils.MD5FromString(path),
 		Height:   models.NullInt64(h),
@@ -329,7 +329,7 @@ func generateGallery(i int) models.Gallery {
 	path := utils.MD5FromString("gallery/" + strconv.Itoa(i))
 
 	return models.Gallery{
-		Title:    sql.NullString{String: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1)},
+		Title:    sql.NullString{String: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1), Valid: true},
 		Path:     sql.NullString{String: path, Valid: true},
 		Checksum: utils.MD5FromString(path),
 		Date: models.SQLiteDate{
