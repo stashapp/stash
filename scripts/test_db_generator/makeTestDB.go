@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
@@ -14,38 +15,57 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
+	"gopkg.in/yaml.v2"
 )
 
 // create an example database by generating a number of scenes, markers,
 // performers, studios and tags, and associating between them all
 
 type config struct {
-	scenes     int
-	markers    int
-	images     int
-	galleries  int
-	performers int
-	studios    int
-	tags       int
+	database   string       `yaml:"database"`
+	scenes     int          `yaml:"scenes"`
+	markers    int          `yaml:"markers"`
+	images     int          `yaml:"images"`
+	galleries  int          `yaml:"galleries"`
+	performers int          `yaml:"performers"`
+	studios    int          `yaml:"studios"`
+	tags       int          `yaml:"tags"`
+	naming     namingConfig `yaml:"naming"`
 }
 
 var txnManager models.TransactionManager
-var c config
+var c *config
 
 func main() {
-	database.Initialize("generated.sqlite")
-
-	c = config{
-		scenes:     30000,
-		images:     150000,
-		galleries:  1500,
-		markers:    300,
-		performers: 10000,
-		studios:    500,
-		tags:       1500,
+	var err error
+	c, err = loadConfig()
+	if err != nil {
+		panic(err)
 	}
 
+	initNaming(*c)
+
+	database.Initialize(c.database)
 	populateDB()
+}
+
+func loadConfig() (*config, error) {
+	ret := &config{}
+
+	file, err := os.Open("config.yml")
+	defer file.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	parser := yaml.NewDecoder(file)
+	parser.SetStrict(true)
+	err = parser.Decode(&ret)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func populateDB() {
@@ -65,68 +85,91 @@ func withTxn(f func(r models.Repository) error) error {
 	return txnManager.WithTxn(context.TODO(), f)
 }
 
-func makeTags(n int) {
-	if err := withTxn(func(r models.Repository) error {
-		for i := 0; i < n; i++ {
-			name := utils.MD5FromString("tag/" + strconv.Itoa(i))
-			tag := models.Tag{
-				Name: name,
-			}
-
-			if _, err := r.Tag().Create(tag); err != nil {
-				return err
-			}
+func retry(attempts int, fn func() error) error {
+	var err error
+	for tries := 0; tries < attempts; tries++ {
+		err = fn()
+		if err == nil {
+			return nil
 		}
+	}
 
-		return nil
-	}); err != nil {
-		panic(err)
+	return err
+}
+
+func makeTags(n int) {
+	for i := 0; i < n; i++ {
+		if err := retry(100, func() error {
+			return withTxn(func(r models.Repository) error {
+				name := names[c.naming.tags].generateName(1)
+				tag := models.Tag{
+					Name: name,
+				}
+
+				_, err := r.Tag().Create(tag)
+				return err
+			})
+		}); err != nil {
+			panic(err)
+		}
 	}
 }
 
 func makeStudios(n int) {
-	if err := withTxn(func(r models.Repository) error {
-		for i := 0; i < n; i++ {
-			name := utils.MD5FromString("studio/" + strconv.Itoa(i))
-			studio := models.Studio{
-				Name:     sql.NullString{String: name, Valid: true},
-				Checksum: utils.MD5FromString(name),
-			}
+	for i := 0; i < n; i++ {
+		if err := retry(100, func() error {
+			return withTxn(func(r models.Repository) error {
+				name := names[c.naming.tags].generateName(rand.Intn(5) + 1)
+				studio := models.Studio{
+					Name:     sql.NullString{String: name, Valid: true},
+					Checksum: utils.MD5FromString(name),
+				}
 
-			if _, err := r.Studio().Create(studio); err != nil {
+				if rand.Intn(100) > 5 {
+					ss, _, err := r.Studio().Query(nil, getRandomFilter(1))
+					if err != nil {
+						return err
+					}
+
+					if len(ss) > 0 {
+						studio.ParentID = sql.NullInt64{
+							Int64: int64(ss[0].ID),
+							Valid: true,
+						}
+					}
+				}
+
+				_, err := r.Studio().Create(studio)
 				return err
-			}
+			})
+		}); err != nil {
+			panic(err)
 		}
-
-		return nil
-	}); err != nil {
-		panic(err)
 	}
 }
 
 func makePerformers(n int) {
-	if err := withTxn(func(r models.Repository) error {
-		for i := 0; i < n; i++ {
-			name := utils.MD5FromString("performer/" + strconv.Itoa(i))
-			performer := models.Performer{
-				Name:     sql.NullString{String: name, Valid: true},
-				Checksum: utils.MD5FromString(name),
-				Favorite: sql.NullBool{
-					Bool:  false,
-					Valid: true,
-				},
-			}
+	for i := 0; i < n; i++ {
+		if err := retry(100, func() error {
+			return withTxn(func(r models.Repository) error {
+				name := generatePerformerName()
+				performer := models.Performer{
+					Name:     sql.NullString{String: name, Valid: true},
+					Checksum: utils.MD5FromString(name),
+					Favorite: sql.NullBool{
+						Bool:  false,
+						Valid: true,
+					},
+				}
 
-			// TODO - set tags
+				// TODO - set tags
 
-			if _, err := r.Performer().Create(performer); err != nil {
+				_, err := r.Performer().Create(performer)
 				return err
-			}
+			})
+		}); err != nil {
+			panic(err)
 		}
-
-		return nil
-	}); err != nil {
-		panic(err)
 	}
 }
 
@@ -185,6 +228,7 @@ func generateScene(i int) models.Scene {
 
 	return models.Scene{
 		Path:     path,
+		Title:    sql.NullString{String: names[c.naming.scenes].generateName(rand.Intn(7) + 1)},
 		Checksum: sql.NullString{String: utils.MD5FromString(path), Valid: true},
 		OSHash:   sql.NullString{String: utils.MD5FromString(path), Valid: true},
 		Duration: sql.NullFloat64{
@@ -230,6 +274,7 @@ func generateImage(i int) models.Image {
 	w, h := getResolution()
 
 	return models.Image{
+		Title:    sql.NullString{String: names[c.naming.images].generateName(rand.Intn(7) + 1)},
 		Path:     path,
 		Checksum: utils.MD5FromString(path),
 		Height:   models.NullInt64(h),
@@ -266,6 +311,7 @@ func generateGallery(i int) models.Gallery {
 	path := utils.MD5FromString("gallery/" + strconv.Itoa(i))
 
 	return models.Gallery{
+		Title:    sql.NullString{String: names[c.naming.galleries].generateName(rand.Intn(7) + 1)},
 		Path:     sql.NullString{String: path, Valid: true},
 		Checksum: utils.MD5FromString(path),
 		Date: models.SQLiteDate{
