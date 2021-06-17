@@ -525,15 +525,9 @@ type stringListCriterionHandlerBuilder struct {
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
-			var args []interface{}
-			for _, tagID := range criterion.Value {
-				args = append(args, tagID)
-			}
-
 			m.addJoinTable(f)
 
 			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(f)
-
 		}
 	}
 }
