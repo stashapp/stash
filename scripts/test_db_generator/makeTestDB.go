@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
@@ -18,19 +19,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const batchSize = 1000
+
 // create an example database by generating a number of scenes, markers,
 // performers, studios and tags, and associating between them all
 
 type config struct {
-	database   string       `yaml:"database"`
-	scenes     int          `yaml:"scenes"`
-	markers    int          `yaml:"markers"`
-	images     int          `yaml:"images"`
-	galleries  int          `yaml:"galleries"`
-	performers int          `yaml:"performers"`
-	studios    int          `yaml:"studios"`
-	tags       int          `yaml:"tags"`
-	naming     namingConfig `yaml:"naming"`
+	Database   string       `yaml:"database"`
+	Scenes     int          `yaml:"scenes"`
+	Markers    int          `yaml:"markers"`
+	Images     int          `yaml:"images"`
+	Galleries  int          `yaml:"galleries"`
+	Performers int          `yaml:"performers"`
+	Studios    int          `yaml:"studios"`
+	Tags       int          `yaml:"tags"`
+	Naming     namingConfig `yaml:"naming"`
 }
 
 var txnManager models.TransactionManager
@@ -45,7 +48,7 @@ func main() {
 
 	initNaming(*c)
 
-	database.Initialize(c.database)
+	database.Initialize(c.Database)
 	populateDB()
 }
 
@@ -53,10 +56,10 @@ func loadConfig() (*config, error) {
 	ret := &config{}
 
 	file, err := os.Open("config.yml")
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	parser := yaml.NewDecoder(file)
 	parser.SetStrict(true)
@@ -69,12 +72,12 @@ func loadConfig() (*config, error) {
 }
 
 func populateDB() {
-	makeTags(c.tags)
-	makeStudios(c.studios)
-	makePerformers(c.performers)
-	makeScenes(c.scenes)
-	makeImages(c.images)
-	makeGalleries(c.galleries)
+	makeTags(c.Tags)
+	makeStudios(c.Studios)
+	makePerformers(c.Performers)
+	makeScenes(c.Scenes)
+	makeImages(c.Images)
+	makeGalleries(c.Galleries)
 }
 
 func withTxn(f func(r models.Repository) error) error {
@@ -101,7 +104,7 @@ func makeTags(n int) {
 	for i := 0; i < n; i++ {
 		if err := retry(100, func() error {
 			return withTxn(func(r models.Repository) error {
-				name := names[c.naming.tags].generateName(1)
+				name := names[c.Naming.Tags].generateName(1)
 				tag := models.Tag{
 					Name: name,
 				}
@@ -119,7 +122,7 @@ func makeStudios(n int) {
 	for i := 0; i < n; i++ {
 		if err := retry(100, func() error {
 			return withTxn(func(r models.Repository) error {
-				name := names[c.naming.tags].generateName(rand.Intn(5) + 1)
+				name := names[c.Naming.Tags].generateName(rand.Intn(5) + 1)
 				studio := models.Studio{
 					Name:     sql.NullString{String: name, Valid: true},
 					Checksum: utils.MD5FromString(name),
@@ -165,6 +168,9 @@ func makePerformers(n int) {
 				// TODO - set tags
 
 				_, err := r.Performer().Create(performer)
+				if err != nil {
+					err = fmt.Errorf("error creating performer with name: %s: %s", performer.Name.String, err.Error())
+				}
 				return err
 			})
 		}); err != nil {
@@ -176,25 +182,29 @@ func makePerformers(n int) {
 func makeScenes(n int) {
 	logger.Infof("creating %d scenes...", n)
 	rand.Seed(533)
-	for i := 0; i < n; i++ {
-		if i > 0 && i%100 == 0 {
-			logger.Infof("... created %d scenes", i)
-		}
+	for i := 0; i < n; {
+		// do in batches of 1000
+		batch := i + batchSize
 
 		if err := withTxn(func(r models.Repository) error {
-			scene := generateScene(i)
-			scene.StudioID = getRandomStudioID(r)
+			for ; i < batch && i < n; i++ {
+				scene := generateScene(i)
+				scene.StudioID = getRandomStudioID(r)
 
-			created, err := r.Scene().Create(scene)
-			if err != nil {
-				return err
+				created, err := r.Scene().Create(scene)
+				if err != nil {
+					return err
+				}
+
+				makeSceneRelationships(r, created.ID)
 			}
 
-			makeSceneRelationships(r, created.ID)
 			return nil
 		}); err != nil {
 			panic(err)
 		}
+
+		logger.Infof("... created %d scenes", i)
 	}
 }
 
@@ -228,7 +238,7 @@ func generateScene(i int) models.Scene {
 
 	return models.Scene{
 		Path:     path,
-		Title:    sql.NullString{String: names[c.naming.scenes].generateName(rand.Intn(7) + 1)},
+		Title:    sql.NullString{String: names[c.Naming.Scenes].generateName(rand.Intn(7) + 1)},
 		Checksum: sql.NullString{String: utils.MD5FromString(path), Valid: true},
 		OSHash:   sql.NullString{String: utils.MD5FromString(path), Valid: true},
 		Duration: sql.NullFloat64{
@@ -247,20 +257,24 @@ func generateScene(i int) models.Scene {
 func makeImages(n int) {
 	logger.Infof("creating %d images...", n)
 	rand.Seed(1293)
-	for i := 0; i < n; i++ {
-		if i > 0 && i%100 == 0 {
-			logger.Infof("... created %d images", i)
-		}
+	for i := 0; i < n; {
+		// do in batches of 1000
+		batch := i + batchSize
 		if err := withTxn(func(r models.Repository) error {
-			image := generateImage(i)
-			image.StudioID = getRandomStudioID(r)
+			for ; i < batch && i < n; i++ {
+				image := generateImage(i)
+				image.StudioID = getRandomStudioID(r)
 
-			created, err := r.Image().Create(image)
-			if err != nil {
-				return err
+				created, err := r.Image().Create(image)
+				if err != nil {
+					return err
+				}
+
+				makeImageRelationships(r, created.ID)
 			}
 
-			makeImageRelationships(r, created.ID)
+			logger.Infof("... created %d images", i)
+
 			return nil
 		}); err != nil {
 			panic(err)
@@ -274,7 +288,7 @@ func generateImage(i int) models.Image {
 	w, h := getResolution()
 
 	return models.Image{
-		Title:    sql.NullString{String: names[c.naming.images].generateName(rand.Intn(7) + 1)},
+		Title:    sql.NullString{String: names[c.Naming.Images].generateName(rand.Intn(7) + 1)},
 		Path:     path,
 		Checksum: utils.MD5FromString(path),
 		Height:   models.NullInt64(h),
@@ -285,25 +299,29 @@ func generateImage(i int) models.Image {
 func makeGalleries(n int) {
 	logger.Infof("creating %d galleries...", n)
 	rand.Seed(92113)
-	for i := 0; i < n; i++ {
-		if i > 0 && i%100 == 0 {
-			logger.Infof("... created %d galleries", i)
-		}
+	for i := 0; i < n; {
+		// do in batches of 1000
+		batch := i + batchSize
 
 		if err := withTxn(func(r models.Repository) error {
-			gallery := generateGallery(i)
-			gallery.StudioID = getRandomStudioID(r)
+			for ; i < batch && i < n; i++ {
+				gallery := generateGallery(i)
+				gallery.StudioID = getRandomStudioID(r)
 
-			created, err := r.Gallery().Create(gallery)
-			if err != nil {
-				return err
+				created, err := r.Gallery().Create(gallery)
+				if err != nil {
+					return err
+				}
+
+				makeGalleryRelationships(r, created.ID)
 			}
 
-			makeGalleryRelationships(r, created.ID)
 			return nil
 		}); err != nil {
 			panic(err)
 		}
+
+		logger.Infof("... created %d galleries", i)
 	}
 }
 
@@ -311,7 +329,7 @@ func generateGallery(i int) models.Gallery {
 	path := utils.MD5FromString("gallery/" + strconv.Itoa(i))
 
 	return models.Gallery{
-		Title:    sql.NullString{String: names[c.naming.galleries].generateName(rand.Intn(7) + 1)},
+		Title:    sql.NullString{String: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1)},
 		Path:     sql.NullString{String: path, Valid: true},
 		Checksum: utils.MD5FromString(path),
 		Date: models.SQLiteDate{
@@ -340,7 +358,7 @@ func getRandomStudioID(r models.Repository) sql.NullInt64 {
 	// }
 
 	return sql.NullInt64{
-		Int64: int64(rand.Int63n(int64(c.studios)) + 1),
+		Int64: int64(rand.Int63n(int64(c.Studios)) + 1),
 		Valid: true,
 	}
 }
@@ -423,7 +441,7 @@ func getRandomPerformers(r models.Repository) []int {
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.performers)+1)
+		ret = utils.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
 	}
 
 	return ret
@@ -445,7 +463,7 @@ func getRandomTags(r models.Repository) []int {
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.tags)+1)
+		ret = utils.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
 	}
 
 	return ret
@@ -467,7 +485,7 @@ func getRandomImages(r models.Repository) []int {
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.images)+1)
+		ret = utils.IntAppendUnique(ret, rand.Intn(c.Images)+1)
 	}
 
 	return ret

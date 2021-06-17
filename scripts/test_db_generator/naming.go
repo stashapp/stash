@@ -10,18 +10,18 @@ import (
 var names map[string]*naming
 
 type performerNamingConfig struct {
-	male    string `yaml:"male"`
-	female  string `yaml:"female"`
-	surname string `yaml:"surname"`
+	Male    string `yaml:"male"`
+	Female  string `yaml:"female"`
+	Surname string `yaml:"surname"`
 }
 
 type namingConfig struct {
-	scenes     string                `yaml:"scenes"`
-	performers performerNamingConfig `yaml:"performers"`
-	galleries  string                `yaml:"galleries"`
-	studios    string                `yaml:"studios"`
-	images     string                `yaml:"images"`
-	tags       string                `yaml:"tags"`
+	Scenes     string                `yaml:"scenes"`
+	Performers performerNamingConfig `yaml:"performers"`
+	Galleries  string                `yaml:"galleries"`
+	Studios    string                `yaml:"studios"`
+	Images     string                `yaml:"images"`
+	Tags       string                `yaml:"tags"`
 }
 
 type naming struct {
@@ -39,11 +39,11 @@ func (n naming) generateName(words int) string {
 }
 
 func createNaming(fn string) (*naming, error) {
-	file, err := os.Open("config.yml")
-	defer file.Close()
+	file, err := os.Open(fn)
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	ret := &naming{}
 	s := bufio.NewScanner(file)
@@ -70,15 +70,15 @@ func initNaming(c config) {
 		}
 	}
 
-	n := c.naming
-	load(n.galleries)
-	load(n.images)
-	load(n.scenes)
-	load(n.studios)
-	load(n.tags)
-	load(n.performers.female)
-	load(n.performers.male)
-	load(n.performers.surname)
+	n := c.Naming
+	load(n.Galleries)
+	load(n.Images)
+	load(n.Scenes)
+	load(n.Studios)
+	load(n.Tags)
+	load(n.Performers.Female)
+	load(n.Performers.Male)
+	load(n.Performers.Surname)
 }
 
 func generatePerformerName() string {
@@ -92,14 +92,14 @@ func generatePerformerName() string {
 		surnames = 0
 	}
 
-	fn := c.naming.performers.female
+	fn := c.Naming.Performers.Female
 	if !female {
-		fn = c.naming.performers.male
+		fn = c.Naming.Performers.Male
 	}
 
 	name := names[fn].generateName(givenNames)
 	if surnames > 0 {
-		name += " " + names[c.naming.performers.surname].generateName(1)
+		name += " " + names[c.Naming.Performers.Surname].generateName(1)
 	}
 
 	return name
