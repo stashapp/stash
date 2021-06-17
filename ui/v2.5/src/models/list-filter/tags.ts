@@ -1,4 +1,7 @@
-import { createMandatoryNumberCriterionOption, createStringCriterionOption } from "./criteria/criterion";
+import {
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
