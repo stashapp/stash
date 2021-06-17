@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   ScrapeDialog,
@@ -62,6 +63,8 @@ interface IMovieScrapeDialogProps {
 export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
   props: IMovieScrapeDialogProps
 ) => {
+  const intl = useIntl();
+
   const [name, setName] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.movie.name, props.scraped.name)
   );
@@ -196,7 +199,10 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title="Movie Scrape Results"
+      title={intl.formatMessage(
+        { id: "dialogs.scrape_entity_title" },
+        { entity_type: intl.formatMessage({ id: "movie" }) }
+      )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);
