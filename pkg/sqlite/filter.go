@@ -295,7 +295,7 @@ func (f *filterBuilder) handleCriterion(handler criterionHandler) {
 	handler.handle(f)
 }
 
-// handleCriterion calls the provided criterion handler function providing
+// handleCriterionFunc calls the provided criterion handler function providing
 // itself.
 func (f *filterBuilder) handleCriterionFunc(handler criterionHandlerFunc) {
 	handler(f)
