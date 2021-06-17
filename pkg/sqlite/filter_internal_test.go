@@ -9,6 +9,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestJoinsAddJoin(t *testing.T) {
+	var joins joins
+
+	// add a single join
+	joins.add(join{table: "test"})
+
+	assert := assert.New(t)
+
+	// ensure join was added
+	assert.Len(joins, 1)
+
+	// add the same join and another
+	joins.add([]join{
+		{
+			table: "test",
+		},
+		{
+			table: "foo",
+		},
+	}...)
+
+	// should have added a single join
+	assert.Len(joins, 2)
+}
+
 func TestFilterBuilderAnd(t *testing.T) {
 	assert := assert.New(t)
 

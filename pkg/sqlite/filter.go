@@ -62,13 +62,17 @@ type joins []join
 func (j *joins) add(newJoins ...join) {
 	// only add if not already joined
 	for _, newJoin := range newJoins {
+		found := false
 		for _, jj := range *j {
 			if jj.equals(newJoin) {
-				return
+				found = true
+				break
 			}
 		}
 
-		*j = append(*j, newJoin)
+		if !found {
+			*j = append(*j, newJoin)
+		}
 	}
 }
 
