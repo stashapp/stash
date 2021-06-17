@@ -462,7 +462,7 @@ func TestStringCriterionHandlerIncludes(t *testing.T) {
 	const quotedValue = `"two words"`
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierIncludes,
 		Value:    value1,
 	}, column))
@@ -474,7 +474,7 @@ func TestStringCriterionHandlerIncludes(t *testing.T) {
 	assert.Equal("%words%", f.whereClauses[0].args[1])
 
 	f = &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierIncludes,
 		Value:    quotedValue,
 	}, column))
@@ -493,7 +493,7 @@ func TestStringCriterionHandlerExcludes(t *testing.T) {
 	const quotedValue = `"two words"`
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierExcludes,
 		Value:    value1,
 	}, column))
@@ -505,7 +505,7 @@ func TestStringCriterionHandlerExcludes(t *testing.T) {
 	assert.Equal("%words%", f.whereClauses[0].args[1])
 
 	f = &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierExcludes,
 		Value:    quotedValue,
 	}, column))
@@ -523,7 +523,7 @@ func TestStringCriterionHandlerEquals(t *testing.T) {
 	const value1 = "two words"
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierEquals,
 		Value:    value1,
 	}, column))
@@ -541,7 +541,7 @@ func TestStringCriterionHandlerNotEquals(t *testing.T) {
 	const value1 = "two words"
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierNotEquals,
 		Value:    value1,
 	}, column))
@@ -560,7 +560,7 @@ func TestStringCriterionHandlerMatchesRegex(t *testing.T) {
 	const invalidValue = "*two words"
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierMatchesRegex,
 		Value:    validValue,
 	}, column))
@@ -572,7 +572,7 @@ func TestStringCriterionHandlerMatchesRegex(t *testing.T) {
 
 	// ensure invalid regex sets error state
 	f = &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierMatchesRegex,
 		Value:    invalidValue,
 	}, column))
@@ -588,7 +588,7 @@ func TestStringCriterionHandlerNotMatchesRegex(t *testing.T) {
 	const invalidValue = "*two words"
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierNotMatchesRegex,
 		Value:    validValue,
 	}, column))
@@ -600,7 +600,7 @@ func TestStringCriterionHandlerNotMatchesRegex(t *testing.T) {
 
 	// ensure invalid regex sets error state
 	f = &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierNotMatchesRegex,
 		Value:    invalidValue,
 	}, column))
@@ -614,7 +614,7 @@ func TestStringCriterionHandlerIsNull(t *testing.T) {
 	const column = "column"
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierIsNull,
 	}, column))
 
@@ -629,7 +629,7 @@ func TestStringCriterionHandlerNotNull(t *testing.T) {
 	const column = "column"
 
 	f := &filterBuilder{}
-	f.handleCriterionFunc(stringCriterionHandler(&models.StringCriterionInput{
+	f.handleCriterion(stringCriterionHandler(&models.StringCriterionInput{
 		Modifier: models.CriterionModifierNotNull,
 	}, column))
 

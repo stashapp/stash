@@ -28,6 +28,10 @@ type criterionHandler interface {
 
 type criterionHandlerFunc func(f *filterBuilder)
 
+func (h criterionHandlerFunc) handle(f *filterBuilder) {
+	h(f)
+}
+
 type join struct {
 	table    string
 	as       string
@@ -288,12 +292,10 @@ func (f *filterBuilder) getError() error {
 // handleCriterion calls the handle function on the provided criterionHandler,
 // providing itself.
 func (f *filterBuilder) handleCriterion(handler criterionHandler) {
-	f.handleCriterionFunc(func(h *filterBuilder) {
-		handler.handle(h)
-	})
+	handler.handle(f)
 }
 
-// handleCriterionFunc calls the provided criterion handler function providing
+// handleCriterion calls the provided criterion handler function providing
 // itself.
 func (f *filterBuilder) handleCriterionFunc(handler criterionHandlerFunc) {
 	handler(f)

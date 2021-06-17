@@ -279,14 +279,14 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	// 	}
 	// }
 
-	query.handleCriterionFunc(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
-	query.handleCriterionFunc(tagAliasCriterionHandler(qb, tagFilter.Aliases))
+	query.handleCriterion(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
+	query.handleCriterion(tagAliasCriterionHandler(qb, tagFilter.Aliases))
 
-	query.handleCriterionFunc(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
-	query.handleCriterionFunc(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))
-	query.handleCriterionFunc(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
-	query.handleCriterionFunc(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
-	query.handleCriterionFunc(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
+	query.handleCriterion(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
+	query.handleCriterion(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))
+	query.handleCriterion(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
+	query.handleCriterion(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
+	query.handleCriterion(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
 
 	return query
 }
