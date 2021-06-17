@@ -19,7 +19,7 @@ import (
 func NewClient(provider common.StashServerConnection) *graphql.Client {
 	portStr := strconv.Itoa(provider.Port)
 
-	u, _ := url.Parse("http://localhost:" + portStr + "/graphql")
+	u, _ := url.Parse("http://" + provider.Host + ":" + portStr + "/graphql")
 	u.Scheme = provider.Scheme
 
 	cookieJar, _ := cookiejar.New(nil)
