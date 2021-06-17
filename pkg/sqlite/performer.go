@@ -246,11 +246,11 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 
 	query.handleCriterion(performerAgeFilterCriterionHandler(filter.Age))
 
-	query.handleCriterionFunc(func(f *filterBuilder) {
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if gender := filter.Gender; gender != nil {
 			f.addWhere(tableName+".gender = ?", gender.Value.String())
 		}
-	})
+	}))
 
 	query.handleCriterion(performerIsMissingCriterionHandler(qb, filter.IsMissing))
 	query.handleCriterion(stringCriterionHandler(filter.Ethnicity, tableName+".ethnicity"))
@@ -266,12 +266,12 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 	query.handleCriterion(stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(stringCriterionHandler(filter.URL, tableName+".url"))
 	query.handleCriterion(intCriterionHandler(filter.Weight, tableName+".weight"))
-	query.handleCriterionFunc(func(f *filterBuilder) {
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if filter.StashID != nil {
 			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
 			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(f)
 		}
-	})
+	}))
 
 	// TODO - need better handling of aliases
 	query.handleCriterion(stringCriterionHandler(filter.Aliases, tableName+".aliases"))

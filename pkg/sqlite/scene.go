@@ -363,12 +363,12 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterion(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
 
-	query.handleCriterionFunc(func(f *filterBuilder) {
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if sceneFilter.StashID != nil {
 			qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
 			stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(f)
 		}
-	})
+	}))
 
 	query.handleCriterion(boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
 

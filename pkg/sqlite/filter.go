@@ -295,12 +295,6 @@ func (f *filterBuilder) handleCriterion(handler criterionHandler) {
 	handler.handle(f)
 }
 
-// handleCriterionFunc calls the provided criterion handler function providing
-// itself.
-func (f *filterBuilder) handleCriterionFunc(handler criterionHandlerFunc) {
-	handler(f)
-}
-
 func (f *filterBuilder) setError(e error) {
 	if f.err == nil {
 		f.err = e
