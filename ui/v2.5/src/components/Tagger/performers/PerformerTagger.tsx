@@ -617,7 +617,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
             <div className="row mb-2 no-gutters">
-              <Button onClick={() => setShowConfig(!showConfig)} variant="link">
+              <Button onClick={() => setShowConfig(!showConfig)} variant="primary" className="ml-2">
                 {showConfig ? "Hide" : "Show"} Configuration
               </Button>
               <Button

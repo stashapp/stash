@@ -13,16 +13,16 @@ import {
   SuccessIcon,
   TruncatedText,
 } from "src/components/Shared";
-import PerformerResult, { PerformerOperation } from "./PerformerResult";
+import PerformerResult, { PerformerOperation } from "../PerformerResult";
 import StudioResult, { StudioOperation } from "./StudioResult";
-import { IStashBoxScene } from "./utils";
+import { IStashBoxScene } from "../utils";
 import {
   useCreateTag,
   useCreatePerformer,
   useCreateStudio,
   useUpdatePerformerStashID,
   useUpdateStudioStashID,
-} from "./queries";
+} from "../queries";
 
 const getDurationStatus = (
   scene: IStashBoxScene,
@@ -124,7 +124,7 @@ interface IStashSearchResultProps {
   setActive: () => void;
   showMales: boolean;
   setScene: (scene: GQL.SlimSceneDataFragment) => void;
-  setCoverImage: boolean;
+  excludedFields?: string[];
   tagOperation: string;
   setTags: boolean;
   endpoint: string;
@@ -148,7 +148,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setActive,
   showMales,
   setScene,
-  setCoverImage,
+  excludedFields = [],
   tagOperation,
   setTags,
   endpoint,
@@ -316,7 +316,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       setSaveState("Updating scene");
       const imgurl = scene.images[0];
       let imgData = null;
-      if (imgurl && setCoverImage) {
+      if (imgurl && !excludedFields.includes('cover')) {
         const img = await fetch(imgurl, {
           mode: "cors",
           cache: "no-store",

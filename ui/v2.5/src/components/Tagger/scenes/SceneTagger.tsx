@@ -10,7 +10,7 @@ import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { useLocalForage } from "src/hooks";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator, Modal, TruncatedText } from "src/components/Shared";
+import { LoadingIndicator, TruncatedText } from "src/components/Shared";
 import {
   stashBoxSceneQuery,
   useConfiguration,
@@ -23,18 +23,19 @@ import { Manual } from "src/components/Help/Manual";
 import { SceneQueue } from "src/models/sceneQueue";
 import StashSearchResult from "./StashSearchResult";
 import Config from "./Config";
+import BatchModal from "./BatchModal";
 import {
   LOCAL_FORAGE_KEY,
   ITaggerConfig,
   ParseMode,
   initialConfig,
-} from "./constants";
+} from "../constants";
 import {
   parsePath,
   selectScenes,
   IStashBoxScene,
   sortScenesByDuration,
-} from "./utils";
+} from "../utils";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -508,7 +509,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             }
             setScene={handleTaggedScene}
             scene={match}
-            setCoverImage={config.setCoverImage}
+            excludedFields={config.excludedSceneFields}
             setTags={config.setTags}
             tagOperation={config.tagOperation}
             endpoint={selectedEndpoint.endpoint}
@@ -541,7 +542,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                         [scene.id]: i,
                       })
                     }
-                    setCoverImage={config.setCoverImage}
+                    excludedFields={config.excludedSceneFields}
                     tagOperation={config.tagOperation}
                     setTags={config.setTags}
                     setScene={handleTaggedScene}
@@ -585,78 +586,23 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       );
     });
 
+  const batchSceneCount = queryAll
+    ? allScenes?.findScenes.count ?? 0
+    : scenes.filter((p) =>
+        refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
+    ).length;
+
   return (
     <Card className="tagger-table">
-      <Modal
+      <BatchModal
         show={showBatchUpdate}
-        icon="tags"
-        header="Update Scenes"
-        accept={{ text: "Update Scenes", onClick: handleBatchUpdate }}
-        cancel={{
-          text: "Cancel",
-          variant: "danger",
-          onClick: () => setShowBatchUpdate(false),
-        }}
-        disabled={!isIdle}
-      >
-        <Form.Group>
-          <Form.Label>
-            <h6>Scene selection</h6>
-          </Form.Label>
-          <Form.Check
-            id="query-page"
-            type="radio"
-            name="scene-query"
-            label="Current page"
-            defaultChecked
-            onChange={() => setQueryAll(false)}
-          />
-          <Form.Check
-            id="query-all"
-            type="radio"
-            name="scene-query"
-            label="All scenes in the database"
-            defaultChecked={false}
-            onChange={() => setQueryAll(true)}
-          />
-        </Form.Group>
-        <Form.Group>
-          <Form.Label>
-            <h6>Tag Status</h6>
-          </Form.Label>
-          <Form.Check
-            id="untagged-scenes"
-            type="radio"
-            name="scene-refresh"
-            label="Untagged scenes"
-            defaultChecked
-            onChange={() => setRefresh(false)}
-          />
-          <Form.Text>
-            Updating untagged scenes will try to match any scenes that
-            lack a stashid and update the metadata.
-          </Form.Text>
-          <Form.Check
-            id="tagged-scenes"
-            type="radio"
-            name="scene-refresh"
-            label="Refresh tagged scenes"
-            defaultChecked={false}
-            onChange={() => setRefresh(true)}
-          />
-          <Form.Text>
-            Refreshing will update the data of any tagged scenes from the
-            stash-box instance.
-          </Form.Text>
-        </Form.Group>
-        <b>{`${
-          queryAll
-            ? allScenes?.findScenes.count
-            : scenes.filter((p) =>
-                refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
-              ).length
-        } scenes will be processed`}</b>
-      </Modal>
+        hide={() => setShowBatchUpdate(false)}
+        handleBatchUpdate={handleBatchUpdate}
+        isIdle={isIdle}
+        sceneCount={batchSceneCount}
+        setQueryAll={setQueryAll}
+        setRefresh={setRefresh}
+      />
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
@@ -707,7 +653,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           {loadingFingerprints && <LoadingIndicator message="" inline small />}
         </Button>
         <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
-          Batch Update Performers
+          Batch Update Scenes
         </Button>
       </div>
       <form ref={inputForm}>{renderScenes()}</form>
@@ -792,13 +738,16 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         scene_ids: ids,
         endpoint: selectedEndpointIndex,
         refresh,
-        set_organized: false,
-        tag_strategy: GQL.TagStrategy.Overwrite,
-        create_tags: true,
-        exclude_fields: config.excludedPerformerFields ?? [],
+        set_organized: config.setOrganized ?? false,
+        tag_strategy: !config.setTags ? GQL.TagStrategy.Ignore :
+          config.tagOperation === 'overwrite' ? GQL.TagStrategy.Overwrite : GQL.TagStrategy.Merge,
+        create_tags: config.createTags ?? false,
+        exclude_fields: config.excludedSceneFields ?? [],
+        tag_male_performers: config.showMales ?? false,
       });
 
       setBatchJobID(ret.data?.stashBoxBatchSceneTag);
+      console.log(ret.data?.stashBoxBatchSceneTag);
     }
   }
 
@@ -843,7 +792,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
             <div className="row mb-2 no-gutters">
-              <Button onClick={() => setShowConfig(!showConfig)} variant="link">
+              <Button onClick={() => setShowConfig(!showConfig)} variant="primary" className="ml-2" >
                 <FormattedMessage
                   id="component_tagger.verb_toggle_config"
                   values={{

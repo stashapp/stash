@@ -11,18 +11,20 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type StashBoxSceneTagTask struct {
-	txnManager      models.TransactionManager
-	box             *models.StashBox
-	scene           *models.Scene
-	refresh         bool
-	excluded_fields []string
-	phashDistance   int
-	setOrganized    bool
-	tagStrategy     models.TagStrategy
-	createTags      bool
+	txnManager        models.TransactionManager
+	box               *models.StashBox
+	scene             *models.Scene
+	refresh           bool
+	excludedFields    []string
+	phashDistance     int
+	setOrganized      bool
+	tagStrategy       models.TagStrategy
+	createTags        bool
+	tagMalePerformers bool
 }
 
 func (t *StashBoxSceneTagTask) Start(wg *sync.WaitGroup) {
@@ -75,7 +77,7 @@ func (t *StashBoxSceneTagTask) stashBoxSceneTag() {
 	}
 
 	excluded := map[string]bool{}
-	for _, field := range t.excluded_fields {
+	for _, field := range t.excludedFields {
 		excluded[field] = true
 	}
 
@@ -135,9 +137,20 @@ func (t *StashBoxSceneTagTask) stashBoxSceneTag() {
 							if err != nil {
 								return err
 							}
-							partial.StudioID = &sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+							partial.StudioID = &sql.NullInt64{Int64: int64(res.ID), Valid: true}
+
+							if scene.Studio.Image != nil {
+								image, err := utils.ReadImageFromURL(*scene.Studio.Image)
+								if err != nil {
+									return err
+								}
+								err = r.Studio().UpdateImage(res.ID, image)
+								if err != nil {
+									return err
+								}
+							}
 						}
-						return err
+						return nil
 					})
 					if err != nil {
 						logger.Errorf("Error resolving studio: %s", err.Error())
@@ -146,23 +159,24 @@ func (t *StashBoxSceneTagTask) stashBoxSceneTag() {
 				}
 			}
 
-			t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(partial)
 
 				if !t.refresh {
-					err = r.Scene().UpdateStashIDs(t.scene.ID, []models.StashID{
-						{
-							Endpoint: t.box.Endpoint,
-							StashID:  *scene.RemoteSiteID,
-						},
-					})
+					err = r.Scene().UpdateStashIDs(t.scene.ID, []models.StashID{{
+						Endpoint: t.box.Endpoint,
+						StashID:  *scene.RemoteSiteID,
+					}})
 					if err != nil {
 						return err
 					}
 				}
 
-				if !excluded["covers"] {
+				if !excluded["covers"] && scene.Image != nil {
 					err = r.Scene().UpdateCover(t.scene.ID, []byte(*scene.Image))
+					if err != nil {
+						return err
+					}
 				}
 
 				if !excluded["performers"] {
@@ -173,12 +187,33 @@ func (t *StashBoxSceneTagTask) stashBoxSceneTag() {
 							if err == nil {
 								performerIDs = append(performerIDs, performerID)
 							}
-						} else {
+						} else if performer.Gender == nil || *performer.Gender != "MALE" || t.tagMalePerformers {
 							performerInput := scrapedToPerformerInput(performer)
 							res, err := r.Performer().Create(performerInput)
 							if err != nil {
 								return err
 							}
+							logger.Infof("Created performer: %s", performer.Name)
+
+							err = r.Performer().UpdateStashIDs(res.ID, []models.StashID{{
+								Endpoint: t.box.Endpoint,
+								StashID:  *performer.RemoteSiteID,
+							}})
+							if err != nil {
+								return err
+							}
+
+							if len(performer.Images) > 0 && !excluded["image"] {
+								image, err := utils.ReadImageFromURL(performer.Images[0])
+								if err != nil {
+									return err
+								}
+								err = r.Performer().UpdateImage(res.ID, image)
+								if err != nil {
+									return err
+								}
+							}
+
 							performerIDs = append(performerIDs, res.ID)
 						}
 					}
@@ -187,6 +222,55 @@ func (t *StashBoxSceneTagTask) stashBoxSceneTag() {
 					if err != nil {
 						return err
 					}
+				}
+
+				if t.tagStrategy != models.TagStrategyIgnore {
+					var tags []int
+					if t.tagStrategy == models.TagStrategyMerge {
+						tags, err = r.Scene().GetTagIDs(t.scene.ID)
+						if err != nil {
+							return err
+						}
+					}
+
+					for _, tag := range scene.Tags {
+						var id *int
+						if tag.ID != nil {
+							parsedID, err := strconv.Atoi(*tag.ID)
+							if err != nil {
+								return err
+							}
+							id = &parsedID
+						}
+
+						if id == nil && t.createTags {
+							now := time.Now()
+							tag, err := r.Tag().Create(models.Tag{
+								Name:      tag.Name,
+								CreatedAt: models.SQLiteTimestamp{Timestamp: now},
+								UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+							})
+							if err != nil {
+								return err
+							}
+							logger.Infof("Created tag: %s", tag.Name)
+							id = &tag.ID
+						}
+
+						if id != nil {
+							exists := false
+							for _, existingTag := range tags {
+								if existingTag == *id {
+									exists = true
+								}
+							}
+							if !exists {
+								tags = append(tags, *id)
+							}
+						}
+					}
+
+					err = r.Scene().UpdateTags(t.scene.ID, tags)
 				}
 
 				if err == nil {
@@ -198,6 +282,9 @@ func (t *StashBoxSceneTagTask) stashBoxSceneTag() {
 				}
 				return err
 			})
+			if err != nil {
+				logger.Errorf("Unable to update scene: %s", err.Error())
+			}
 		}
 	} else if !t.refresh {
 		logger.Infof("No match found for scene %d", t.scene.ID)
@@ -208,6 +295,7 @@ func scrapedToStudioInput(studio *models.ScrapedSceneStudio) models.Studio {
 	currentTime := time.Now()
 	ret := models.Studio{
 		Name:      sql.NullString{String: studio.Name, Valid: true},
+		Checksum:  utils.MD5FromString(studio.Name),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
@@ -223,8 +311,10 @@ func scrapedToPerformerInput(performer *models.ScrapedScenePerformer) models.Per
 	currentTime := time.Now()
 	ret := models.Performer{
 		Name:      sql.NullString{String: performer.Name, Valid: true},
+		Checksum:  utils.MD5FromString(performer.Name),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		Favorite:  sql.NullBool{Bool: false, Valid: true},
 	}
 	if performer.Birthdate != nil {
 		ret.Birthdate = models.SQLiteDate{String: *performer.Birthdate, Valid: true}

@@ -168,4 +168,5 @@ input StashBoxBatchSceneTagInput {
   set_organized: Boolean!
   tag_strategy: TagStrategy!
   create_tags: Boolean!
+  tag_male_performers: Boolean!
 }
