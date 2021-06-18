@@ -180,7 +180,7 @@ func (me *contentDirectoryService) Handle(action string, argsXML []byte, r *http
 	case "Browse":
 		var browse browse
 		if err := xml.Unmarshal([]byte(argsXML), &browse); err != nil {
-			return nil, err
+			return nil, upnp.Errorf(upnp.ArgumentValueInvalidErrorCode, "cannot unmarshal browse argument: %s", err.Error())
 		}
 
 		obj, err := me.objectFromID(browse.ObjectID)
@@ -190,163 +190,9 @@ func (me *contentDirectoryService) Handle(action string, argsXML []byte, r *http
 
 		switch browse.BrowseFlag {
 		case "BrowseDirectChildren":
-			// Read folder and return children
-			// TODO: check if obj == 0 and return root objects
-			// TODO: check if special path and return files
-
-			var objs []interface{}
-
-			if obj.IsRoot() {
-				objs = getRootObjects()
-			}
-
-			paths := strings.Split(obj.Path, "/")
-
-			// All videos
-			if obj.Path == "all" {
-				objs = me.getAllScenes(host)
-			}
-
-			if strings.HasPrefix(obj.Path, "all/") {
-				page := getPageFromID(paths)
-				if page != nil {
-					objs = me.getPageVideos(&models.SceneFilterType{}, "all", *page, host)
-				}
-			}
-
-			// Saved searches
-			// if obj.Path == "saved-searches" {
-			// 	var savedPlaylists []models.Playlist
-			// 	db, _ := models.GetDB()
-			// 	db.Where("is_deo_enabled = ?", true).Order("ordering asc").Find(&savedPlaylists)
-			// 	db.Close()
-
-			// 	for _, playlist := range savedPlaylists {
-			// 		objs = append(objs, upnpav.Container{Object: upnpav.Object{
-			// 			ID:         "saved-searches/" + strconv.Itoa(int(playlist.ID)),
-			// 			Restricted: 1,
-			// 			ParentID:   "saved-searches",
-			// 			Class:      "object.container.storageFolder",
-			// 			Title:      playlist.Name,
-			// 		}})
-			// 	}
-			// }
-
-			// if strings.HasPrefix(obj.Path, "saved-searches/") {
-			// 	id := strings.Split(obj.Path, "/")
-
-			// 	var savedPlaylist models.Playlist
-			// 	db, _ := models.GetDB()
-			// 	db.Where("id = ?", id[1]).First(&savedPlaylist)
-			// 	db.Close()
-
-			// 	var r models.RequestSceneList
-			// 	if err := json.Unmarshal([]byte(savedPlaylist.SearchParams), &r); err == nil {
-			// 		r.IsAccessible = optional.NewBool(true)
-			// 		r.IsAvailable = optional.NewBool(true)
-			// 		data := models.QueryScenesFull(r)
-
-			// 		for i := range data.Scenes {
-			// 			objs = append(objs, me.sceneToContainer(data.Scenes[i], "sites/"+id[1], host))
-			// 		}
-			// 	}
-			// }
-
-			// Studios
-			if obj.Path == "studios" {
-				objs = me.getStudios()
-			}
-
-			if strings.HasPrefix(obj.Path, "studios/") {
-				objs = me.getStudioScenes(childPath(paths), host)
-			}
-
-			// Tags
-			if obj.Path == "tags" {
-				objs = me.getTags()
-			}
-
-			if strings.HasPrefix(obj.Path, "tags/") {
-				objs = me.getTagScenes(childPath(paths), host)
-			}
-
-			// Performers
-			if obj.Path == "performers" {
-				objs = me.getPerformers()
-			}
-
-			if strings.HasPrefix(obj.Path, "performers/") {
-				objs = me.getPerformerScenes(childPath(paths), host)
-			}
-
-			// Movies
-			if obj.Path == "movies" {
-				objs = me.getMovies()
-			}
-
-			if strings.HasPrefix(obj.Path, "movies/") {
-				objs = me.getMovieScenes(childPath(paths), host)
-			}
-
-			// Rating
-			if obj.Path == "rating" {
-				objs = me.getRating()
-			}
-
-			if strings.HasPrefix(obj.Path, "rating/") {
-				objs = me.getRatingScenes(childPath(paths), host)
-			}
-
-			result, err := xml.Marshal(objs)
-			if err != nil {
-				return nil, err
-			}
-
-			return map[string]string{
-				"TotalMatches":   fmt.Sprint(len(objs)),
-				"NumberReturned": fmt.Sprint(len(objs)),
-				"Result":         didl_lite(string(result)),
-				"UpdateID":       me.updateIDString(),
-			}, nil
+			return me.handleBrowseDirectChildren(obj, host)
 		case "BrowseMetadata":
-			var scene *models.Scene
-
-			if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-				sceneID, err := strconv.Atoi(obj.Path)
-				if err != nil {
-					return err
-				}
-
-				scene, err = r.Scene().Find(sceneID)
-				if err != nil {
-					return err
-				}
-
-				return nil
-			}); err != nil {
-				logger.Error(err.Error())
-			}
-
-			if scene != nil {
-				upnpObject := sceneToContainer(scene, "-1", host)
-				result, err := xml.Marshal(upnpObject)
-				if err != nil {
-					return nil, err
-				}
-
-				// http://upnp.org/specs/av/UPnP-av-ContentDirectory-v1-Service.pdf
-				// maximum update ID is 2**32, then rolls back to 0
-				const maxUpdateID int64 = 1 << 32
-				updateID := scene.UpdatedAt.Timestamp.Unix() % maxUpdateID
-				return map[string]string{
-					"Result":         didl_lite(string(result)),
-					"NumberReturned": "1",
-					"TotalMatches":   "1",
-					"UpdateID":       fmt.Sprint(updateID),
-				}, nil
-			} else {
-				return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, "scene not found")
-			}
+			return me.handleBrowseMetadata(obj, host)
 		default:
 			return nil, upnp.Errorf(upnp.ArgumentValueInvalidErrorCode, "unhandled browse flag: %v", browse.BrowseFlag)
 		}
@@ -373,6 +219,173 @@ func (me *contentDirectoryService) Handle(action string, argsXML []byte, r *http
 	}
 }
 
+func (me *contentDirectoryService) handleBrowseDirectChildren(obj object, host string) (map[string]string, error) {
+	// Read folder and return children
+	// TODO: check if obj == 0 and return root objects
+	// TODO: check if special path and return files
+
+	var objs []interface{}
+
+	if obj.IsRoot() {
+		objs = getRootObjects()
+	}
+
+	paths := strings.Split(obj.Path, "/")
+
+	// All videos
+	if obj.Path == "all" {
+		objs = me.getAllScenes(host)
+	}
+
+	if strings.HasPrefix(obj.Path, "all/") {
+		page := getPageFromID(paths)
+		if page != nil {
+			objs = me.getPageVideos(&models.SceneFilterType{}, "all", *page, host)
+		}
+	}
+
+	// Saved searches
+	// if obj.Path == "saved-searches" {
+	// 	var savedPlaylists []models.Playlist
+	// 	db, _ := models.GetDB()
+	// 	db.Where("is_deo_enabled = ?", true).Order("ordering asc").Find(&savedPlaylists)
+	// 	db.Close()
+
+	// 	for _, playlist := range savedPlaylists {
+	// 		objs = append(objs, upnpav.Container{Object: upnpav.Object{
+	// 			ID:         "saved-searches/" + strconv.Itoa(int(playlist.ID)),
+	// 			Restricted: 1,
+	// 			ParentID:   "saved-searches",
+	// 			Class:      "object.container.storageFolder",
+	// 			Title:      playlist.Name,
+	// 		}})
+	// 	}
+	// }
+
+	// if strings.HasPrefix(obj.Path, "saved-searches/") {
+	// 	id := strings.Split(obj.Path, "/")
+
+	// 	var savedPlaylist models.Playlist
+	// 	db, _ := models.GetDB()
+	// 	db.Where("id = ?", id[1]).First(&savedPlaylist)
+	// 	db.Close()
+
+	// 	var r models.RequestSceneList
+	// 	if err := json.Unmarshal([]byte(savedPlaylist.SearchParams), &r); err == nil {
+	// 		r.IsAccessible = optional.NewBool(true)
+	// 		r.IsAvailable = optional.NewBool(true)
+	// 		data := models.QueryScenesFull(r)
+
+	// 		for i := range data.Scenes {
+	// 			objs = append(objs, me.sceneToContainer(data.Scenes[i], "sites/"+id[1], host))
+	// 		}
+	// 	}
+	// }
+
+	// Studios
+	if obj.Path == "studios" {
+		objs = me.getStudios()
+	}
+
+	if strings.HasPrefix(obj.Path, "studios/") {
+		objs = me.getStudioScenes(childPath(paths), host)
+	}
+
+	// Tags
+	if obj.Path == "tags" {
+		objs = me.getTags()
+	}
+
+	if strings.HasPrefix(obj.Path, "tags/") {
+		objs = me.getTagScenes(childPath(paths), host)
+	}
+
+	// Performers
+	if obj.Path == "performers" {
+		objs = me.getPerformers()
+	}
+
+	if strings.HasPrefix(obj.Path, "performers/") {
+		objs = me.getPerformerScenes(childPath(paths), host)
+	}
+
+	// Movies
+	if obj.Path == "movies" {
+		objs = me.getMovies()
+	}
+
+	if strings.HasPrefix(obj.Path, "movies/") {
+		objs = me.getMovieScenes(childPath(paths), host)
+	}
+
+	// Rating
+	if obj.Path == "rating" {
+		objs = me.getRating()
+	}
+
+	if strings.HasPrefix(obj.Path, "rating/") {
+		objs = me.getRatingScenes(childPath(paths), host)
+	}
+
+	return makeBrowseResult(objs, me.updateIDString())
+}
+
+func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string) (map[string]string, error) {
+	var objs []interface{}
+	var updateID string
+
+	// #1465 - handle root object
+	if obj.IsRoot() {
+		objs = getRootObject()
+	} else {
+		var scene *models.Scene
+
+		if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			sceneID, err := strconv.Atoi(obj.Path)
+			if err != nil {
+				return err
+			}
+
+			scene, err = r.Scene().Find(sceneID)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+		}
+
+		if scene != nil {
+			upnpObject := sceneToContainer(scene, "-1", host)
+			objs = []interface{}{upnpObject}
+
+			// http://upnp.org/specs/av/UPnP-av-ContentDirectory-v1-Service.pdf
+			// maximum update ID is 2**32, then rolls back to 0
+			const maxUpdateID int64 = 1 << 32
+			updateID = fmt.Sprint(scene.UpdatedAt.Timestamp.Unix() % maxUpdateID)
+		} else {
+			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, "scene not found")
+		}
+	}
+
+	return makeBrowseResult(objs, updateID)
+}
+
+func makeBrowseResult(objs []interface{}, updateID string) (map[string]string, error) {
+	result, err := xml.Marshal(objs)
+	if err != nil {
+		return nil, upnp.Errorf(upnp.ActionFailedErrorCode, "could not marshal objects: %s", err.Error())
+	}
+
+	return map[string]string{
+		"TotalMatches":   fmt.Sprint(len(objs)),
+		"NumberReturned": fmt.Sprint(len(objs)),
+		"Result":         didl_lite(string(result)),
+		"UpdateID":       updateID,
+	}, nil
+}
+
 func makeStorageFolder(id, title, parentID string) upnpav.Container {
 	defaultChildCount := 1
 	return upnpav.Container{
@@ -385,6 +398,12 @@ func makeStorageFolder(id, title, parentID string) upnpav.Container {
 		},
 		ChildCount: defaultChildCount,
 	}
+}
+
+func getRootObject() []interface{} {
+	const rootID = "0"
+
+	return []interface{}{makeStorageFolder(rootID, "stash", "-1")}
 }
 
 func getRootObjects() []interface{} {
