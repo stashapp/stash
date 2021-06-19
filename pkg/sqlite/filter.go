@@ -522,11 +522,12 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	foreignTable string
 	foreignFK    string
 
-	derivedTable string
-	parentFK     string
+	derivedTable   string
+	parentFK       string
+	relationsTable string
 }
 
-func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, table, parentFK string, depth int) {
+func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, table, relationsTable, parentFK string, depth int) {
 	var args []interface{}
 
 	for _, value := range value {
@@ -540,18 +541,29 @@ func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, t
 	}
 
 	withClauseMap := utils.StrFormatMap{
-		"derivedTable":   derivedTable,
-		"table":          table,
-		"inBinding":      getInBinding(inCount),
-		"parentFK":       parentFK,
-		"depthCondition": depthCondition,
-		"unionClause":    "",
+		"derivedTable":    derivedTable,
+		"table":           table,
+		"relationsTable":  relationsTable,
+		"inBinding":       getInBinding(inCount),
+		"recursiveSelect": "",
+		"parentFK":        parentFK,
+		"depthCondition":  depthCondition,
+		"unionClause":     "",
+	}
+
+	if relationsTable != "" {
+		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.id, c.child_id, depth + 1 FROM {relationsTable} AS c
+INNER JOIN {derivedTable} as p ON c.parent_id = p.child_id
+`, withClauseMap)
+	} else {
+		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.id, c.id, depth + 1 FROM {table} as c
+INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id
+`, withClauseMap)
 	}
 
 	if depth != 0 {
 		withClauseMap["unionClause"] = utils.StrFormat(`
-UNION SELECT p.id, c.id, depth + 1 FROM {table} as c
-INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition}
+UNION {recursiveSelect} {depthCondition}
 `, withClauseMap)
 	}
 
@@ -567,7 +579,7 @@ WHERE id in {inBinding}
 func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
-			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.parentFK, criterion.Depth)
+			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
 
@@ -578,6 +590,51 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 				f.addHaving(fmt.Sprintf("count(distinct %s.id) IS %d", m.derivedTable, len(criterion.Value)))
 			} else if criterion.Modifier == models.CriterionModifierExcludes {
 				f.addWhere(fmt.Sprintf("%s.id IS NULL", m.derivedTable))
+			}
+		}
+	}
+}
+
+type joinedHierarchicalMultiCriterionHandlerBuilder struct {
+	primaryTable string
+	foreignTable string
+	foreignFK    string
+
+	derivedTable   string
+	parentFK       string
+	relationsTable string
+
+	joinAs    string
+	joinTable string
+	primaryFK string
+}
+
+func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil && len(criterion.Value) > 0 {
+			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+
+			joinAlias := m.joinAs
+			f.addWith(utils.StrFormat(`{joinAlias} AS (
+	SELECT j.*, d.id AS parent_id, d.child_id FROM {joinTable} AS j
+	INNER JOIN {derivedTable} AS d ON j.{foreignFK} = d.child_id
+)
+`, utils.StrFormatMap{
+				"joinAlias":    joinAlias,
+				"joinTable":    m.joinTable,
+				"derivedTable": m.derivedTable,
+				"foreignFK":    m.foreignFK,
+			}))
+
+			f.addJoin(joinAlias, "", fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+
+			if criterion.Modifier == models.CriterionModifierIncludes {
+				f.addWhere(fmt.Sprintf("%s.parent_id IS NOT NULL", joinAlias))
+			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+				f.addWhere(fmt.Sprintf("%s.parent_id IS NOT NULL", joinAlias))
+				f.addHaving(fmt.Sprintf("count(distinct %s.parent_id) IS %d", joinAlias, len(criterion.Value)))
+			} else if criterion.Modifier == models.CriterionModifierExcludes {
+				f.addWhere(fmt.Sprintf("%s.parent_id IS NULL", joinAlias))
 			}
 		}
 	}
