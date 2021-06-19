@@ -63,7 +63,7 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
       <Form.Group>
         <Form.Check
           checked={criterion.value.depth !== 0}
-          label={intl.formatMessage({ id: "include_child_studios" })}
+          label={intl.formatMessage({ id: "include_children" })}
           onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
         />
       </Form.Group>
