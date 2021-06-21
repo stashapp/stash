@@ -362,6 +362,7 @@ div.dropdown-menu {
   position: absolute;
   text-align: center;
   text-size-adjust: none;
+  text-transform: uppercase;
   top: 14px;
   transform: rotate(-36deg);
 }
@@ -630,4 +631,14 @@ div.dropdown-menu {
   background-color: inherit;
   border-color: inherit;
   box-shadow: inherit;
+}
+
+.button-group-above {
+  .btn:first-child {
+    border-bottom-left-radius: 0;
+  }
+
+  .btn:last-child {
+    border-bottom-right-radius: 0;
+  }
 }

@@ -5,6 +5,7 @@ import {
   getQueryDefinition,
   getOperationName,
 } from "@apollo/client/utilities";
+import { stringToGender } from "src/utils/gender";
 import { filterData } from "../utils";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -43,11 +44,25 @@ const deleteCache = (queries: DocumentNode[]) => {
     });
 };
 
+export const useFindSavedFilters = (mode: GQL.FilterMode) =>
+  GQL.useFindSavedFiltersQuery({
+    variables: {
+      mode,
+    },
+  });
+
+export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
+  GQL.useFindDefaultFilterQuery({
+    variables: {
+      mode,
+    },
+  });
+
 export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      gallery_filter: filter.makeGalleryFilter(),
+      gallery_filter: filter.makeFilter(),
     },
   });
 
@@ -56,7 +71,7 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     query: GQL.FindGalleriesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      gallery_filter: filter.makeImageFilter(),
+      gallery_filter: filter.makeFilter(),
     },
   });
 
@@ -64,7 +79,7 @@ export const useFindScenes = (filter: ListFilterModel) =>
   GQL.useFindScenesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      scene_filter: filter.makeSceneFilter(),
+      scene_filter: filter.makeFilter(),
     },
   });
 
@@ -73,7 +88,7 @@ export const queryFindScenes = (filter: ListFilterModel) =>
     query: GQL.FindScenesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      scene_filter: filter.makeSceneFilter(),
+      scene_filter: filter.makeFilter(),
     },
   });
 
@@ -89,7 +104,7 @@ export const useFindSceneMarkers = (filter: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      scene_marker_filter: filter.makeSceneMarkerFilter(),
+      scene_marker_filter: filter.makeFilter(),
     },
   });
 
@@ -98,7 +113,7 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
     query: GQL.FindSceneMarkersDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      scene_marker_filter: filter.makeSceneMarkerFilter(),
+      scene_marker_filter: filter.makeFilter(),
     },
   });
 
@@ -106,7 +121,7 @@ export const useFindImages = (filter: ListFilterModel) =>
   GQL.useFindImagesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      image_filter: filter.makeImageFilter(),
+      image_filter: filter.makeFilter(),
     },
   });
 
@@ -115,7 +130,7 @@ export const queryFindImages = (filter: ListFilterModel) =>
     query: GQL.FindImagesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      image_filter: filter.makeImageFilter(),
+      image_filter: filter.makeFilter(),
     },
   });
 
@@ -123,7 +138,7 @@ export const useFindStudios = (filter: ListFilterModel) =>
   GQL.useFindStudiosQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      studio_filter: filter.makeStudioFilter(),
+      studio_filter: filter.makeFilter(),
     },
   });
 
@@ -132,7 +147,7 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     query: GQL.FindStudiosDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      studio_filter: filter.makeStudioFilter(),
+      studio_filter: filter.makeFilter(),
     },
   });
 
@@ -140,7 +155,7 @@ export const useFindMovies = (filter: ListFilterModel) =>
   GQL.useFindMoviesQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      movie_filter: filter.makeMovieFilter(),
+      movie_filter: filter.makeFilter(),
     },
   });
 
@@ -149,7 +164,7 @@ export const queryFindMovies = (filter: ListFilterModel) =>
     query: GQL.FindMoviesDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      movie_filter: filter.makeMovieFilter(),
+      movie_filter: filter.makeFilter(),
     },
   });
 
@@ -157,7 +172,7 @@ export const useFindPerformers = (filter: ListFilterModel) =>
   GQL.useFindPerformersQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      performer_filter: filter.makePerformerFilter(),
+      performer_filter: filter.makeFilter(),
     },
   });
 
@@ -165,7 +180,7 @@ export const useFindTags = (filter: ListFilterModel) =>
   GQL.useFindTagsQuery({
     variables: {
       filter: filter.makeFindFilter(),
-      tag_filter: filter.makeTagFilter(),
+      tag_filter: filter.makeFilter(),
     },
   });
 
@@ -174,7 +189,7 @@ export const queryFindTags = (filter: ListFilterModel) =>
     query: GQL.FindTagsDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      tag_filter: filter.makeTagFilter(),
+      tag_filter: filter.makeFilter(),
     },
   });
 
@@ -183,7 +198,7 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     query: GQL.FindPerformersDocument,
     variables: {
       filter: filter.makeFindFilter(),
-      performer_filter: filter.makePerformerFilter(),
+      performer_filter: filter.makeFilter(),
     },
   });
 
@@ -651,9 +666,8 @@ export const tagMutationImpactedQueries = [
   GQL.FindTagsDocument,
 ];
 
-export const useTagCreate = (input: GQL.TagCreateInput) =>
+export const useTagCreate = () =>
   GQL.useTagCreateMutation({
-    variables: input,
     refetchQueries: getQueryNames([
       GQL.AllTagsDocument,
       GQL.AllTagsForFilterDocument,
@@ -681,6 +695,34 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
+export const savedFilterMutationImpactedQueries = [
+  GQL.FindSavedFiltersDocument,
+];
+
+export const useSaveFilter = () =>
+  GQL.useSaveFilterMutation({
+    update: deleteCache(savedFilterMutationImpactedQueries),
+  });
+
+export const savedFilterDefaultMutationImpactedQueries = [
+  GQL.FindDefaultFilterDocument,
+];
+
+export const useSetDefaultFilter = () =>
+  GQL.useSetDefaultFilterMutation({
+    update: deleteCache(savedFilterDefaultMutationImpactedQueries),
+  });
+
+export const useSavedFilterDestroy = () =>
+  GQL.useDestroySavedFilterMutation({
+    update: deleteCache(savedFilterMutationImpactedQueries),
+  });
+
+export const useTagsMerge = () =>
+  GQL.useTagsMergeMutation({
+    update: deleteCache(tagMutationImpactedQueries),
+  });
+
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
   GQL.useConfigureGeneralMutation({
     variables: { input },
@@ -701,7 +743,21 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
-export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
+export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
+
+export const useConfigureDLNA = () =>
+  GQL.useConfigureDlnaMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const useEnableDLNA = () => GQL.useEnableDlnaMutation();
+
+export const useDisableDLNA = () => GQL.useDisableDlnaMutation();
+
+export const useAddTempDLNAIP = () => GQL.useAddTempDlnaipMutation();
+
+export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
@@ -721,14 +777,22 @@ export const useLogs = () =>
     fetchPolicy: "no-cache",
   });
 
-export const useJobStatus = () =>
-  GQL.useJobStatusQuery({
+export const useJobQueue = () =>
+  GQL.useJobQueueQuery({
     fetchPolicy: "no-cache",
   });
 
-export const mutateStopJob = () =>
+export const mutateStopJob = (jobID: string) =>
   client.mutate<GQL.StopJobMutation>({
     mutation: GQL.StopJobDocument,
+    variables: {
+      job_id: jobID,
+    },
+  });
+
+export const useDLNAStatus = () =>
+  GQL.useDlnaStatusQuery({
+    fetchPolicy: "no-cache",
   });
 
 export const queryScrapeFreeones = (performerName: string) =>
@@ -923,6 +987,14 @@ export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
     variables: { input },
   });
 
+export const mutateStashBoxBatchPerformerTag = (
+  input: GQL.StashBoxBatchPerformerTagInput
+) =>
+  client.mutate<GQL.StashBoxBatchPerformerTagMutation>({
+    mutation: GQL.StashBoxBatchPerformerTagDocument,
+    variables: { input },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
@@ -938,54 +1010,6 @@ export const queryParseSceneFilenames = (
     variables: { filter, config },
     fetchPolicy: "network-only",
   });
-
-export const stringGenderMap = new Map<string, GQL.GenderEnum>([
-  ["Male", GQL.GenderEnum.Male],
-  ["Female", GQL.GenderEnum.Female],
-  ["Transgender Male", GQL.GenderEnum.TransgenderMale],
-  ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
-  ["Intersex", GQL.GenderEnum.Intersex],
-  ["Non-Binary", GQL.GenderEnum.NonBinary],
-]);
-
-export const genderToString = (value?: GQL.GenderEnum | string) => {
-  if (!value) {
-    return undefined;
-  }
-
-  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
-    return e[1] === value;
-  });
-
-  if (foundEntry) {
-    return foundEntry[0];
-  }
-};
-
-export const stringToGender = (
-  value?: string | null,
-  caseInsensitive?: boolean
-) => {
-  if (!value) {
-    return undefined;
-  }
-
-  const ret = stringGenderMap.get(value);
-  if (ret || !caseInsensitive) {
-    return ret;
-  }
-
-  const asUpper = value.toUpperCase();
-  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
-    return e[0].toUpperCase() === asUpper;
-  });
-
-  if (foundEntry) {
-    return foundEntry[1];
-  }
-};
-
-export const getGenderStrings = () => Array.from(stringGenderMap.keys());
 
 export const makePerformerCreateInput = (
   toCreate: GQL.ScrapedScenePerformer

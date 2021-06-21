@@ -10,6 +10,7 @@ type Repository interface {
 	ScrapedItem() ScrapedItemReaderWriter
 	Studio() StudioReaderWriter
 	Tag() TagReaderWriter
+	SavedFilter() SavedFilterReaderWriter
 }
 
 type ReaderRepository interface {
@@ -22,4 +23,5 @@ type ReaderRepository interface {
 	ScrapedItem() ScrapedItemReader
 	Studio() StudioReader
 	Tag() TagReader
+	SavedFilter() SavedFilterReader
 }

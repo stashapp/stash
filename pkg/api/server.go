@@ -14,7 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/99designs/gqlgen/handler"
+	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
+	gqlExtension "github.com/99designs/gqlgen/graphql/handler/extension"
+	gqlLru "github.com/99designs/gqlgen/graphql/handler/lru"
+	gqlTransport "github.com/99designs/gqlgen/graphql/handler/transport"
+	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gobuffalo/packr/v2"
@@ -25,6 +29,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -37,11 +42,6 @@ var uiBox *packr.Box
 //var legacyUiBox *packr.Box
 var loginUIBox *packr.Box
 
-const (
-	ApiKeyHeader    = "ApiKey"
-	ApiKeyParameter = "apikey"
-)
-
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
 }
@@ -49,40 +49,25 @@ func allowUnauthenticated(r *http.Request) bool {
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
-			ctx := r.Context()
-
-			// translate api key into current user, if present
-			userID := ""
-			apiKey := r.Header.Get(ApiKeyHeader)
-			var err error
-
-			// try getting the api key as a query parameter
-			if apiKey == "" {
-				apiKey = r.URL.Query().Get(ApiKeyParameter)
-			}
-
-			if apiKey != "" {
-				// match against configured API and set userID to the
-				// configured username. In future, we'll want to
-				// get the username from the key.
-				if c.GetAPIKey() != apiKey {
-					w.Header().Add("WWW-Authenticate", `FormBased`)
-					w.WriteHeader(http.StatusUnauthorized)
+			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
+			if err != nil {
+				if err != session.ErrUnauthorized {
+					w.WriteHeader(http.StatusInternalServerError)
+					_, err = w.Write([]byte(err.Error()))
+					if err != nil {
+						logger.Error(err)
+					}
 					return
 				}
 
-				userID = c.GetUsername()
-			} else {
-				// handle session
-				userID, err = getSessionUserID(w, r)
-			}
-
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
+				// unauthorized error
+				w.Header().Add("WWW-Authenticate", `FormBased`)
+				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
+
+			c := config.GetInstance()
+			ctx := r.Context()
 
 			// handle redirect if no user and user is required
 			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
@@ -105,9 +90,19 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx = context.WithValue(ctx, ContextUser, userID)
+			ctx = session.SetCurrentUserID(ctx, userID)
 
 			r = r.WithContext(ctx)
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func visitedPluginHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// get the visited plugins and set them in the context
 
 			next.ServeHTTP(w, r)
 		})
@@ -121,13 +116,15 @@ func Start() {
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	loginUIBox = packr.New("Login UI Box", "../../ui/login")
 
-	initSessionStore()
 	initialiseImages()
 
 	r := chi.NewRouter()
 
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(authenticateHandler())
+	visitedPluginHandler := manager.GetInstance().SessionStore.VisitedPluginHandler()
+	r.Use(visitedPluginHandler)
+
 	r.Use(middleware.Recoverer)
 
 	c := config.GetInstance()
@@ -139,30 +136,51 @@ func Start() {
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 
-	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
+	recoverFunc := func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
 		debug.PrintStack()
 
 		message := fmt.Sprintf("Internal system error. Error <%v>", err)
 		return errors.New(message)
-	})
-	websocketUpgrader := handler.WebsocketUpgrader(websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	})
-	maxUploadSize := handler.UploadMaxSize(c.GetMaxUploadSize())
-	websocketKeepAliveDuration := handler.WebsocketKeepAliveDuration(10 * time.Second)
-
-	txnManager := manager.GetInstance().TxnManager
-	resolver := &Resolver{
-		txnManager: txnManager,
 	}
 
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, websocketKeepAliveDuration, maxUploadSize)
+	txnManager := manager.GetInstance().TxnManager
+	pluginCache := manager.GetInstance().PluginCache
+	resolver := &Resolver{
+		txnManager:   txnManager,
+		hookExecutor: pluginCache,
+	}
 
-	r.Handle("/graphql", gqlHandler)
-	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	gqlSrv.SetRecoverFunc(recoverFunc)
+	gqlSrv.AddTransport(gqlTransport.Websocket{
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+		KeepAlivePingInterval: 10 * time.Second,
+	})
+	gqlSrv.AddTransport(gqlTransport.Options{})
+	gqlSrv.AddTransport(gqlTransport.GET{})
+	gqlSrv.AddTransport(gqlTransport.POST{})
+	gqlSrv.AddTransport(gqlTransport.MultipartForm{
+		MaxUploadSize: c.GetMaxUploadSize(),
+	})
+
+	gqlSrv.SetQueryCache(gqlLru.New(1000))
+	gqlSrv.Use(gqlExtension.Introspection{})
+
+	gqlHandlerFunc := func(w http.ResponseWriter, r *http.Request) {
+		gqlSrv.ServeHTTP(w, r)
+	}
+
+	// register GQL handler with plugin cache
+	// chain the visited plugin handler
+	manager.GetInstance().PluginCache.RegisterGQLHandler(visitedPluginHandler(http.HandlerFunc(gqlHandlerFunc)))
+
+	r.HandleFunc("/graphql", gqlHandlerFunc)
+	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 
 	// session handlers
 	r.Post(loginEndPoint, handleLogin)
@@ -280,7 +298,7 @@ func Start() {
 			printLatestVersion()
 			logger.Infof("stash is listening on " + address)
 			logger.Infof("stash is running at https://" + displayAddress + "/")
-			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
+			logger.Error(httpsServer.ListenAndServeTLS("", ""))
 		}()
 	} else {
 		server := &http.Server{
@@ -293,7 +311,7 @@ func Start() {
 			printLatestVersion()
 			logger.Infof("stash is listening on " + address)
 			logger.Infof("stash is running at http://" + displayAddress + "/")
-			logger.Fatal(server.ListenAndServe())
+			logger.Error(server.ListenAndServe())
 		}()
 	}
 }
@@ -331,15 +349,6 @@ func makeTLSConfig() *tls.Config {
 	}
 
 	return tlsConfig
-}
-
-func HasTLSConfig() bool {
-	ret, _ := utils.FileExists(paths.GetSSLCert())
-	if ret {
-		ret, _ = utils.FileExists(paths.GetSSLKey())
-	}
-
-	return ret
 }
 
 type contextKey struct {

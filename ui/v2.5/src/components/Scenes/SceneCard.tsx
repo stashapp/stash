@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -14,6 +14,8 @@ import {
 import { TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import { GridCard } from "../Shared/GridCard";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -35,7 +37,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
       entries.forEach((entry) => {
         if (entry.intersectionRatio > 0)
           // Catch is necessary due to DOMException if user hovers before clicking on page
-          videoEl.current?.play().catch(() => {});
+          videoEl.current?.play()?.catch(() => {});
         else videoEl.current?.pause();
       });
     });
@@ -87,21 +89,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   const showStudioAsText =
     missingStudioImage ||
     (config?.data?.configuration.interface.showStudioAsText ?? false);
-
-  function maybeRenderRatingBanner() {
-    if (!props.scene.rating) {
-      return;
-    }
-    return (
-      <div
-        className={`rating-banner ${
-          props.scene.rating ? `rating-${props.scene.rating}` : ""
-        }`}
-      >
-        RATING: {props.scene.rating}
-      </div>
-    );
-  }
 
   function maybeRenderSceneSpecsOverlay() {
     return (
@@ -294,36 +281,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
-  function handleSceneClick(
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) {
-    const { shiftKey } = event;
-
-    if (props.selecting && props.onSelectedChanged) {
-      props.onSelectedChanged(!props.selected, shiftKey);
-      event.preventDefault();
-    }
-  }
-
-  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
-    if (props.selecting) {
-      event.dataTransfer.setData("text/plain", "");
-      event.dataTransfer.setDragImage(new Image(), 0, 0);
-    }
-  }
-
-  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
-    const ev = event;
-    const shiftKey = false;
-
-    if (props.selecting && props.onSelectedChanged && !props.selected) {
-      props.onSelectedChanged(true, shiftKey);
-    }
-
-    ev.dataTransfer.dropEffect = "move";
-    ev.preventDefault();
-  }
-
   function isPortrait() {
     const { file } = props.scene;
     const width = file.width ? file.width : 0;
@@ -337,35 +294,23 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
-  let shiftKey = false;
-
   const sceneLink = props.queue
     ? props.queue.makeLink(props.scene.id, { sceneIndex: props.index })
     : `/scenes/${props.scene.id}`;
 
   return (
-    <Card className={`scene-card ${zoomIndex()}`}>
-      <Form.Control
-        type="checkbox"
-        className="scene-card-check"
-        checked={props.selected}
-        onChange={() => props.onSelectedChanged?.(!props.selected, shiftKey)}
-        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-          // eslint-disable-next-line prefer-destructuring
-          shiftKey = event.shiftKey;
-          event.stopPropagation();
-        }}
-      />
-
-      <div className="video-section">
-        <Link
-          to={sceneLink}
-          className="scene-card-link"
-          onClick={handleSceneClick}
-          onDragStart={handleDrag}
-          onDragOver={handleDragOver}
-          draggable={props.selecting}
-        >
+    <GridCard
+      className={`scene-card ${zoomIndex()}`}
+      url={sceneLink}
+      title={
+        props.scene.title
+          ? props.scene.title
+          : TextUtils.fileNameFromPath(props.scene.path)
+      }
+      linkClassName="scene-card-link"
+      thumbnailSectionClassName="video-section"
+      image={
+        <>
           <ScenePreview
             image={props.scene.paths.screenshot ?? undefined}
             video={props.scene.paths.preview ?? undefined}
@@ -374,31 +319,23 @@ export const SceneCard: React.FC<ISceneCardProps> = (
               config.data?.configuration?.interface?.soundOnPreview ?? false
             }
           />
-          {maybeRenderRatingBanner()}
+          <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}
-        </Link>
-        {maybeRenderSceneStudioOverlay()}
-      </div>
-      <div className="card-section">
-        <h5 className="card-section-title">
-          <Link to={`/scenes/${props.scene.id}`}>
-            <TruncatedText
-              text={
-                props.scene.title
-                  ? props.scene.title
-                  : TextUtils.fileNameFromPath(props.scene.path)
-              }
-              lineCount={2}
-            />
-          </Link>
-        </h5>
-        <span>{props.scene.date}</span>
-        <p>
-          <TruncatedText text={props.scene.details} lineCount={3} />
-        </p>
-      </div>
-
-      {maybeRenderPopoverButtonGroup()}
-    </Card>
+        </>
+      }
+      overlays={maybeRenderSceneStudioOverlay()}
+      details={
+        <>
+          <span>{props.scene.date}</span>
+          <p>
+            <TruncatedText text={props.scene.details} lineCount={3} />
+          </p>
+        </>
+      }
+      popovers={maybeRenderPopoverButtonGroup()}
+      selected={props.selected}
+      selecting={props.selecting}
+      onSelectedChanged={props.onSelectedChanged}
+    />
   );
 };

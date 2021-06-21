@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TruncatedText } from "src/components/Shared";
@@ -15,7 +15,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     if (props.scene.oshash) {
       return (
         <div className="row">
-          <span className="col-4">Hash</span>
+          <span className="col-4">
+            <FormattedMessage id="media_info.hash" />
+          </span>
           <TruncatedText className="col-8" text={props.scene.oshash} />
         </div>
       );
@@ -26,7 +28,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     if (props.scene.checksum) {
       return (
         <div className="row">
-          <span className="col-4">Checksum</span>
+          <span className="col-4">
+            <FormattedMessage id="media_info.checksum" />
+          </span>
           <TruncatedText className="col-8" text={props.scene.checksum} />
         </div>
       );
@@ -39,7 +43,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     } = props;
     return (
       <div className="row">
-        <span className="col-4">Path</span>
+        <span className="col-4">
+          <FormattedMessage id="path" />
+        </span>
         <a href={`file://${path}`} className="col-8">
           <TruncatedText text={`file://${props.scene.path}`} />
         </a>{" "}
@@ -50,7 +56,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   function renderStream() {
     return (
       <div className="row">
-        <span className="col-4">Stream</span>
+        <span className="col-4">
+          <FormattedMessage id="media_info.stream" />
+        </span>
         <a href={props.scene.paths.stream ?? ""} className="col-8">
           <TruncatedText text={props.scene.paths.stream} />
         </a>{" "}
@@ -69,7 +77,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     return (
       <div className="row">
-        <span className="col-4">File Size</span>
+        <span className="col-4">
+          <FormattedMessage id="filesize" />
+        </span>
         <span className="col-8 text-truncate">
           <FormattedNumber
             value={size}
@@ -90,7 +100,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Duration</span>
+        <span className="col-4">
+          <FormattedMessage id="duration" />
+        </span>
         <TruncatedText
           className="col-8"
           text={TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}
@@ -105,7 +117,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Dimensions</span>
+        <span className="col-4">
+          <FormattedMessage id="dimensions" />
+        </span>
         <TruncatedText
           className="col-8"
           text={`${props.scene.file.width} x ${props.scene.file.height}`}
@@ -120,7 +134,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Frame Rate</span>
+        <span className="col-4">
+          <FormattedMessage id="framerate" />
+        </span>
         <span className="col-8 text-truncate">
           <FormattedNumber value={props.scene.file.framerate ?? 0} /> frames per
           second
@@ -136,7 +152,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Bit Rate</span>
+        <span className="col-4">
+          <FormattedMessage id="bitrate" />
+        </span>
         <span className="col-8 text-truncate">
           <FormattedNumber
             value={(props.scene.file.bitrate ?? 0) / 1000000}
@@ -154,7 +172,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Video Codec</span>
+        <span className="col-4">
+          <FormattedMessage id="media_info.video_codec" />
+        </span>
         <TruncatedText className="col-8" text={props.scene.file.video_codec} />
       </div>
     );
@@ -166,7 +186,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Audio Codec</span>
+        <span className="col-4">
+          <FormattedMessage id="media_info.audio_codec" />
+        </span>
         <TruncatedText className="col-8" text={props.scene.file.audio_codec} />
       </div>
     );
@@ -178,7 +200,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
     return (
       <div className="row">
-        <span className="col-4">Downloaded From</span>
+        <span className="col-4">
+          <FormattedMessage id="media_info.downloaded_from" />
+        </span>
         <a href={TextUtils.sanitiseURL(props.scene.url)} className="col-8">
           <TruncatedText text={props.scene.url} />
         </a>
@@ -224,9 +248,22 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return (
         <div className="row">
           <abbr className="col-4" title="Perceptual hash">
-            PHash
+            <FormattedMessage id="media_info.phash" />
           </abbr>
           <TruncatedText className="col-8" text={props.scene.phash} />
+        </div>
+      );
+    }
+  }
+
+  function renderFunscript() {
+    if (props.scene.interactive) {
+      return (
+        <div className="row">
+          <span className="col-4">Funscript</span>
+          <a href={props.scene.paths.funscript ?? ""} className="col-8">
+            <TruncatedText text={props.scene.paths.funscript} />
+          </a>{" "}
         </div>
       );
     }
@@ -239,6 +276,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       {renderPhash()}
       {renderPath()}
       {renderStream()}
+      {renderFunscript()}
       {renderFileSize()}
       {renderDuration()}
       {renderDimensions()}

@@ -10,8 +10,20 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *mutationResolver) getScene(ctx context.Context, id int) (ret *models.Scene, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (ret *models.Scene, err error) {
 	translator := changesetTranslator{
@@ -26,7 +38,8 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	return ret, nil
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneUpdatePost, input, translator.getFields())
+	return r.getScene(ctx, ret.ID)
 }
 
 func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) (ret []*models.Scene, err error) {
@@ -52,7 +65,24 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 		return nil, err
 	}
 
-	return ret, nil
+	// execute post hooks outside of txn
+	var newRet []*models.Scene
+	for i, scene := range ret {
+		translator := changesetTranslator{
+			inputMap: inputMaps[i],
+		}
+
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
+
+		scene, err = r.getScene(ctx, scene.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, scene)
+	}
+
+	return newRet, nil
 }
 
 func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Scene, error) {
@@ -281,7 +311,20 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 		return nil, err
 	}
 
-	return ret, nil
+	// execute post hooks outside of txn
+	var newRet []*models.Scene
+	for _, scene := range ret {
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneUpdatePost, input, translator.getFields())
+
+		scene, err = r.getScene(ctx, scene.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, scene)
+	}
+
+	return newRet, nil
 }
 
 func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
@@ -393,6 +436,9 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		manager.DeleteSceneFile(scene)
 	}
 
+	// call post hook after performing the other actions
+	r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
+
 	return true, nil
 }
 
@@ -406,6 +452,9 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			sceneID, _ := strconv.Atoi(id)
 
 			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
+			}
 			if scene != nil {
 				scenes = append(scenes, scene)
 			}
@@ -439,9 +488,23 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		if input.DeleteFile != nil && *input.DeleteFile {
 			manager.DeleteSceneFile(scene)
 		}
+
+		// call post hook after performing the other actions
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
 	}
 
 	return true, nil
+}
+
+func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *models.SceneMarker, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.SceneMarker().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
@@ -470,7 +533,13 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		return nil, err
 	}
 
-	return r.changeMarker(ctx, create, newSceneMarker, tagIDs)
+	ret, err := r.changeMarker(ctx, create, newSceneMarker, tagIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerCreatePost, input, nil)
+	return r.getSceneMarker(ctx, ret.ID)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.SceneMarkerUpdateInput) (*models.SceneMarker, error) {
@@ -504,7 +573,16 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		return nil, err
 	}
 
-	return r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	ret, err := r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneMarkerUpdatePost, input, translator.getFields())
+	return r.getSceneMarker(ctx, ret.ID)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
@@ -540,6 +618,8 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	}
 
 	postCommitFunc()
+
+	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
 
 	return true, nil
 }
@@ -648,9 +728,9 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
 	if at != nil {
-		manager.GetInstance().GenerateScreenshot(id, *at)
+		manager.GetInstance().GenerateScreenshot(ctx, id, *at)
 	} else {
-		manager.GetInstance().GenerateDefaultScreenshot(id)
+		manager.GetInstance().GenerateDefaultScreenshot(ctx, id)
 	}
 
 	return "todo", nil

@@ -1,0 +1,15 @@
+mutation EnableDLNA($input: EnableDLNAInput!) {
+  enableDLNA(input: $input)
+}
+
+mutation DisableDLNA($input: DisableDLNAInput!) {
+  disableDLNA(input: $input)
+}
+
+mutation AddTempDLNAIP($input: AddTempDLNAIPInput!) {
+  addTempDLNAIP(input: $input)
+}
+
+mutation RemoveTempDLNAIP($input: RemoveTempDLNAIPInput!) {
+  removeTempDLNAIP(input: $input)
+}

@@ -243,6 +243,29 @@ func (_m *PerformerReaderWriter) FindBySceneID(sceneID int) ([]*models.Performer
 	return r0, r1
 }
 
+// FindByStashIDStatus provides a mock function with given fields: hasStashID, stashboxEndpoint
+func (_m *PerformerReaderWriter) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
+	ret := _m.Called(hasStashID, stashboxEndpoint)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func(bool, string) []*models.Performer); ok {
+		r0 = rf(hasStashID, stashboxEndpoint)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(bool, string) error); ok {
+		r1 = rf(hasStashID, stashboxEndpoint)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ids
 func (_m *PerformerReaderWriter) FindMany(ids []int) ([]*models.Performer, error) {
 	ret := _m.Called(ids)
@@ -335,13 +358,13 @@ func (_m *PerformerReaderWriter) GetStashIDs(performerID int) ([]*models.StashID
 	return r0, r1
 }
 
-// GetTagIDs provides a mock function with given fields: sceneID
-func (_m *PerformerReaderWriter) GetTagIDs(sceneID int) ([]int, error) {
-	ret := _m.Called(sceneID)
+// GetTagIDs provides a mock function with given fields: performerID
+func (_m *PerformerReaderWriter) GetTagIDs(performerID int) ([]int, error) {
+	ret := _m.Called(performerID)
 
 	var r0 []int
 	if rf, ok := ret.Get(0).(func(int) []int); ok {
-		r0 = rf(sceneID)
+		r0 = rf(performerID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
@@ -350,7 +373,7 @@ func (_m *PerformerReaderWriter) GetTagIDs(sceneID int) ([]int, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(sceneID)
+		r1 = rf(performerID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -485,39 +508,16 @@ func (_m *PerformerReaderWriter) UpdateStashIDs(performerID int, stashIDs []mode
 	return r0
 }
 
-// UpdateTags provides a mock function with given fields: sceneID, tagIDs
-func (_m *PerformerReaderWriter) UpdateTags(sceneID int, tagIDs []int) error {
-	ret := _m.Called(sceneID, tagIDs)
+// UpdateTags provides a mock function with given fields: performerID, tagIDs
+func (_m *PerformerReaderWriter) UpdateTags(performerID int, tagIDs []int) error {
+	ret := _m.Called(performerID, tagIDs)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
-		r0 = rf(sceneID, tagIDs)
+		r0 = rf(performerID, tagIDs)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
-}
-
-// FindByStashIDStatus provides a mock function with given fields: hasStashID, stashboxEndpoint
-func (_m *PerformerReaderWriter) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
-	ret := _m.Called(hasStashID, stashboxEndpoint)
-
-	var r0 []*models.Performer
-	if rf, ok := ret.Get(0).(func(bool, string) []*models.Performer); ok {
-		r0 = rf(hasStashID, stashboxEndpoint)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Performer)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(bool, string) error); ok {
-		r1 = rf(hasStashID, stashboxEndpoint)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
 }

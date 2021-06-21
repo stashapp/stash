@@ -7,6 +7,7 @@ import {
 import { Modal, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
+import { useIntl } from "react-intl";
 
 interface ISceneGenerateDialogProps {
   selectedIds: string[];
@@ -42,6 +43,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
 
   const [previewOptionsOpen, setPreviewOptionsOpen] = useState(false);
 
+  const intl = useIntl();
   const Toast = useToast();
 
   useEffect(() => {
@@ -97,11 +99,14 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
     <Modal
       show
       icon="cogs"
-      header="Generate"
-      accept={{ onClick: onGenerate, text: "Generate" }}
+      header={intl.formatMessage({ id: "actions.generate" })}
+      accept={{
+        onClick: onGenerate,
+        text: intl.formatMessage({ id: "actions.generate" }),
+      }}
       cancel={{
         onClick: () => props.onClose(),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
     >
@@ -110,7 +115,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
           <Form.Check
             id="preview-task"
             checked={previews}
-            label="Previews (video previews which play when hovering over a scene)"
+            label={intl.formatMessage({
+              id: "dialogs.scene_gen.video_previews",
+            })}
             onChange={() => setPreviews(!previews)}
           />
           <div className="d-flex flex-row">
@@ -119,7 +126,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
               id="image-preview-task"
               checked={imagePreviews}
               disabled={!previews}
-              label="Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)"
+              label={intl.formatMessage({
+                id: "dialogs.scene_gen.image_previews",
+              })}
               onChange={() => setImagePreviews(!imagePreviews)}
               className="ml-2 flex-grow"
             />
@@ -132,12 +141,20 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
               <Icon
                 icon={previewOptionsOpen ? "chevron-down" : "chevron-right"}
               />
-              <span>Preview Options</span>
+              <span>
+                {intl.formatMessage({
+                  id: "dialogs.scene_gen.preview_options",
+                })}
+              </span>
             </Button>
             <Collapse in={previewOptionsOpen}>
               <div>
                 <Form.Group id="transcode-size">
-                  <h6>Preview encoding preset</h6>
+                  <h6>
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_preset_head",
+                    })}
+                  </h6>
                   <Form.Control
                     className="w-auto input-control"
                     as="select"
@@ -153,14 +170,18 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     ))}
                   </Form.Control>
                   <Form.Text className="text-muted">
-                    The preset regulates size, quality and encoding time of
-                    preview generation. Presets beyond “slow” have diminishing
-                    returns and are not recommended.
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_preset_desc",
+                    })}
                   </Form.Text>
                 </Form.Group>
 
                 <Form.Group id="preview-segments">
-                  <h6>Number of segments in preview</h6>
+                  <h6>
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_seg_count_head",
+                    })}
+                  </h6>
                   <Form.Control
                     className="col col-sm-6 text-input"
                     type="number"
@@ -172,12 +193,18 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     }
                   />
                   <Form.Text className="text-muted">
-                    Number of segments in preview files.
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_seg_count_desc",
+                    })}
                   </Form.Text>
                 </Form.Group>
 
                 <Form.Group id="preview-segment-duration">
-                  <h6>Preview segment duration</h6>
+                  <h6>
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_seg_duration_head",
+                    })}
+                  </h6>
                   <Form.Control
                     className="col col-sm-6 text-input"
                     type="number"
@@ -189,12 +216,18 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     }
                   />
                   <Form.Text className="text-muted">
-                    Duration of each preview segment, in seconds.
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_seg_duration_desc",
+                    })}
                   </Form.Text>
                 </Form.Group>
 
                 <Form.Group id="preview-exclude-start">
-                  <h6>Exclude start time</h6>
+                  <h6>
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_exclude_start_time_head",
+                    })}
+                  </h6>
                   <Form.Control
                     className="col col-sm-6 text-input"
                     defaultValue={previewExcludeStart}
@@ -203,14 +236,18 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     }
                   />
                   <Form.Text className="text-muted">
-                    Exclude the first x seconds from scene previews. This can be
-                    a value in seconds, or a percentage (eg 2%) of the total
-                    scene duration.
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_exclude_start_time_desc",
+                    })}
                   </Form.Text>
                 </Form.Group>
 
                 <Form.Group id="preview-exclude-start">
-                  <h6>Exclude end time</h6>
+                  <h6>
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_exclude_end_time_head",
+                    })}
+                  </h6>
                   <Form.Control
                     className="col col-sm-6 text-input"
                     defaultValue={previewExcludeEnd}
@@ -219,9 +256,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     }
                   />
                   <Form.Text className="text-muted">
-                    Exclude the last x seconds from scene previews. This can be
-                    a value in seconds, or a percentage (eg 2%) of the total
-                    scene duration.
+                    {intl.formatMessage({
+                      id: "dialogs.scene_gen.preview_exclude_end_time_desc",
+                    })}
                   </Form.Text>
                 </Form.Group>
               </div>
@@ -230,25 +267,25 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
           <Form.Check
             id="sprite-task"
             checked={sprites}
-            label="Sprites (for the scene scrubber)"
+            label={intl.formatMessage({ id: "dialogs.scene_gen.sprites" })}
             onChange={() => setSprites(!sprites)}
           />
           <Form.Check
             id="marker-task"
             checked={markers}
-            label="Markers (20 second videos which begin at the given timecode)"
+            label={intl.formatMessage({ id: "dialogs.scene_gen.markers" })}
             onChange={() => setMarkers(!markers)}
           />
           <Form.Check
             id="transcode-task"
             checked={transcodes}
-            label="Transcodes (MP4 conversions of unsupported video formats)"
+            label={intl.formatMessage({ id: "dialogs.scene_gen.transcodes" })}
             onChange={() => setTranscodes(!transcodes)}
           />
           <Form.Check
             id="phash-task"
             checked={phashes}
-            label="Perceptual hashes (for deduplication)"
+            label={intl.formatMessage({ id: "dialogs.scene_gen.phash" })}
             onChange={() => setPhashes(!phashes)}
           />
 
@@ -256,7 +293,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
           <Form.Check
             id="overwrite"
             checked={overwrite}
-            label="Overwrite existing generated files"
+            label={intl.formatMessage({ id: "dialogs.scene_gen.overwrite" })}
             onChange={() => setOverwrite(!overwrite)}
           />
         </Form.Group>

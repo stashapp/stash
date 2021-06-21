@@ -47,6 +47,8 @@ input ConfigGeneralInput {
   videoFileNamingAlgorithm: HashAlgorithm!
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int
+  """Include audio stream in previews"""
+  previewAudio: Boolean!
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
@@ -116,6 +118,8 @@ type ConfigGeneralResult {
   videoFileNamingAlgorithm: HashAlgorithm!
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int!
+  """Include audio stream in previews"""
+  previewAudio: Boolean!
   """Number of segments in a preview file"""
   previewSegments: Int!
   """Preview segment duration, in seconds"""
@@ -190,6 +194,8 @@ input ConfigInterfaceInput {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Handy Connection Key"""
+  handyKey: String
 }
 
 type ConfigInterfaceResult {
@@ -214,12 +220,35 @@ type ConfigInterfaceResult {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Handy Connection Key"""
+  handyKey: String
+}
+
+input ConfigDLNAInput {
+  serverName: String
+  """True if DLNA service should be enabled by default"""
+  enabled: Boolean
+  """List of IPs whitelisted for DLNA service"""
+  whitelistedIPs: [String!]
+  """List of interfaces to run DLNA on. Empty for all"""
+  interfaces: [String!]
+}
+
+type ConfigDLNAResult {
+  serverName: String!
+  """True if DLNA service should be enabled by default"""
+  enabled: Boolean!
+  """List of IPs whitelisted for DLNA service"""
+  whitelistedIPs: [String!]!
+  """List of interfaces to run DLNA on. Empty for all"""
+  interfaces: [String!]!
 }
 
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
+  dlna: ConfigDLNAResult!
 }
 
 """Directory structure of a path"""

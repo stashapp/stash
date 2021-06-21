@@ -1,0 +1,11 @@
+query JobQueue {
+  jobQueue {
+    ...JobData
+  }
+}
+
+query FindJob($input: FindJobInput!) {
+    findJob(input: $input) {
+        ...JobData
+    }
+}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import cx from "classnames";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 
@@ -10,8 +11,8 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { genderToString } from "src/core/StashService";
 import { TextUtils } from "src/utils";
+import { genderToString } from "src/utils/gender";
 import { IStashBoxPerformer } from "./utils";
 
 interface IPerformerModalProps {
@@ -37,6 +38,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
   create = false,
   endpoint,
 }) => {
+  const intl = useIntl();
   const [imageIndex, setImageIndex] = useState(0);
   const [imageState, setImageState] = useState<
     "loading" | "error" | "loaded" | "empty"
@@ -109,7 +111,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     <Modal
       show={modalVisible}
       accept={{
-        text: "Save",
+        text: intl.formatMessage({ id: "actions.save" }),
         onClick: () =>
           handlePerformerCreate(
             imageIndex,

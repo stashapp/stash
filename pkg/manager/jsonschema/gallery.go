@@ -29,10 +29,10 @@ type Gallery struct {
 func LoadGalleryFile(filePath string) (*Gallery, error) {
 	var gallery Gallery
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&gallery)

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
@@ -21,6 +22,7 @@ const Stash: React.FC<IStashProps> = ({ index, stash, onSave, onDelete }) => {
     onSave(newObj);
   };
 
+  const intl = useIntl();
   const classAdd = index % 2 === 1 ? "bg-dark" : "";
 
   return (
@@ -47,7 +49,7 @@ const Stash: React.FC<IStashProps> = ({ index, stash, onSave, onDelete }) => {
         <Button
           size="sm"
           variant="danger"
-          title="Delete"
+          title={intl.formatMessage({ id: "actions.delete" })}
           onClick={() => onDelete()}
         >
           <Icon icon="minus" />
@@ -103,9 +105,15 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
       <Form.Group>
         {stashes.length > 0 && (
           <Row>
-            <h6 className="col-4">Path</h6>
-            <h6 className="col-3">Exclude Video</h6>
-            <h6 className="col-3">Exclude Image</h6>
+            <h6 className="col-4">
+              <FormattedMessage id="path" />
+            </h6>
+            <h6 className="col-3">
+              <FormattedMessage id="config.general.exclude_video" />
+            </h6>
+            <h6 className="col-3">
+              <FormattedMessage id="config.general.exclude_image" />
+            </h6>
           </Row>
         )}
         {stashes.map((stash, index) => (
@@ -122,7 +130,7 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
           variant="secondary"
           onClick={() => setIsDisplayingDialog(true)}
         >
-          Add Directory
+          <FormattedMessage id="actions.add_directory" />
         </Button>
       </Form.Group>
     </>

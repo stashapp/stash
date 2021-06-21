@@ -76,11 +76,9 @@
   }
 }
 
-.multi-set > div.input-group-prepend + div {
-  flex: 1 1;
-  margin-bottom: 0;
-  min-width: 0;
-  position: relative;
+// z-index gets set on button groups for some reason
+.multi-set .btn-group > button.btn {
+  z-index: auto;
 }
 
 .folder-list {
@@ -151,7 +149,12 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   }
 }
 
-.card {
+.grid-card {
+  a .card-section-title {
+    color: $text-color;
+    text-decoration: none;
+  }
+
   .card-check {
     left: 0.5rem;
     margin-top: -12px;

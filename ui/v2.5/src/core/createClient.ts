@@ -74,7 +74,7 @@ export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin);
 
   if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-    platformUrl.port = "9999"; // TODO: Hack. Development expects port 9999
+    platformUrl.port = process.env.REACT_APP_PLATFORM_PORT ?? "9999";
 
     if (process.env.REACT_APP_HTTPS === "true") {
       platformUrl.protocol = "https:";
@@ -142,23 +142,13 @@ export const createClient = () => {
   });
 
   // Watch for scan/clean tasks and reset cache when they complete
-  let prevStatus = "Idle";
   client
-    .subscribe<GQL.MetadataUpdateSubscription>({
-      query: GQL.MetadataUpdateDocument,
+    .subscribe<GQL.ScanCompleteSubscribeSubscription>({
+      query: GQL.ScanCompleteSubscribeDocument,
     })
     .subscribe({
-      next: (res) => {
-        const currentStatus = res.data?.metadataUpdate.status;
-        if (currentStatus) {
-          if (
-            currentStatus === "Idle" &&
-            (prevStatus === "Scan" || prevStatus === "Clean")
-          ) {
-            client.resetStore();
-          }
-          prevStatus = currentStatus;
-        }
+      next: () => {
+        client.resetStore();
       },
     });
 

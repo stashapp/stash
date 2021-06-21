@@ -1,5 +1,5 @@
-mutation TagCreate($name: String!, $image: String) {
-  tagCreate(input: { name: $name, image: $image }) {
+mutation TagCreate($input: TagCreateInput!) {
+  tagCreate(input: $input) {
     ...TagData
   }
 }
@@ -14,6 +14,12 @@ mutation TagsDestroy($ids: [ID!]!) {
 
 mutation TagUpdate($input: TagUpdateInput!) {
   tagUpdate(input: $input) {
+    ...TagData
+  }
+}
+
+mutation TagsMerge($source: [ID!]!, $destination: ID!) {
+  tagsMerge(input: { source: $source, destination: $destination }) {
     ...TagData
   }
 }

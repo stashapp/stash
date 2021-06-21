@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -15,8 +16,6 @@ import {
   Modal,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Modal as BSModal, Button } from "react-bootstrap";
-import { ImageUtils } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieDetailsPanel } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
@@ -26,6 +25,7 @@ interface IMovieParams {
 }
 
 export const Movie: React.FC = () => {
+  const intl = useIntl();
   const history = useHistory();
   const Toast = useToast();
   const { id = "new" } = useParams<IMovieParams>();
@@ -34,7 +34,6 @@ export const Movie: React.FC = () => {
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
   const [frontImage, setFrontImage] = useState<string | undefined | null>(
@@ -43,11 +42,7 @@ export const Movie: React.FC = () => {
   const [backImage, setBackImage] = useState<string | undefined | null>(
     undefined
   );
-
-  // Movie state
-  const [imageClipboard, setImageClipboard] = useState<string | undefined>(
-    undefined
-  );
+  const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
   // Network state
   const { data, error, loading } = useFindMovie(id);
@@ -69,23 +64,7 @@ export const Movie: React.FC = () => {
     };
   });
 
-  function showImageAlert(imageData: string) {
-    setImageClipboard(imageData);
-    setIsImageAlertOpen(true);
-  }
-
-  function setImageFromClipboard(isFrontImage: boolean) {
-    if (isFrontImage) {
-      setFrontImage(imageClipboard);
-    } else {
-      setBackImage(imageClipboard);
-    }
-
-    setImageClipboard(undefined);
-    setIsImageAlertOpen(false);
-  }
-
-  const encodingImage = ImageUtils.usePasteImage(showImageAlert, isEditing);
+  const onImageEncoding = (isEncoding = false) => setEncodingImage(isEncoding);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -99,8 +78,6 @@ export const Movie: React.FC = () => {
   ) {
     const ret: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       ...input,
-      front_image: frontImage,
-      back_image: backImage,
     };
 
     if (!isNew) {
@@ -166,48 +143,24 @@ export const Movie: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {movie?.name ?? "movie"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                movie?.name ??
+                intl.formatMessage({ id: "movie" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
-    );
-  }
-
-  function renderImageAlert() {
-    return (
-      <BSModal
-        show={isImageAlertOpen}
-        onHide={() => setIsImageAlertOpen(false)}
-      >
-        <BSModal.Body>
-          <p>Select image to set</p>
-        </BSModal.Body>
-        <BSModal.Footer>
-          <div>
-            <Button
-              className="mr-2"
-              variant="secondary"
-              onClick={() => setIsImageAlertOpen(false)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              className="mr-2"
-              onClick={() => setImageFromClipboard(false)}
-            >
-              Back Image
-            </Button>
-            <Button
-              className="mr-2"
-              onClick={() => setImageFromClipboard(true)}
-            >
-              Front Image
-            </Button>
-          </div>
-        </BSModal.Footer>
-      </BSModal>
     );
   }
 
@@ -292,6 +245,7 @@ export const Movie: React.FC = () => {
             onDelete={onDelete}
             setFrontImage={setFrontImage}
             setBackImage={setBackImage}
+            onImageEncoding={onImageEncoding}
           />
         )}
       </div>
@@ -302,7 +256,6 @@ export const Movie: React.FC = () => {
         </div>
       )}
       {renderDeleteAlert()}
-      {renderImageAlert()}
     </div>
   );
 };

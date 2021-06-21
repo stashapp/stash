@@ -1,5 +1,6 @@
 import _ from "lodash";
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import {
@@ -16,19 +17,22 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "src/components/Tagger";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
-import { PerformerCard } from "./PerformerCard";
+import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: PersistanceLevel;
+  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerList: React.FC<IPerformerList> = ({
   filterHook,
   persistState,
+  extraCriteria,
 }) => {
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -39,12 +43,12 @@ export const PerformerList: React.FC<IPerformerList> = ({
       onClick: getRandom,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ];
@@ -110,8 +114,8 @@ export const PerformerList: React.FC<IPerformerList> = ({
     <DeleteEntityDialog
       selected={selectedPerformers}
       onClose={onClose}
-      singularEntity="performer"
-      pluralEntity="performers"
+      singularEntity={intl.formatMessage({ id: "performer" })}
+      pluralEntity={intl.formatMessage({ id: "performers" })}
       destroyMutation={usePerformersDestroy}
     />
   );
@@ -172,6 +176,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
                 onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
                   listData.onSelectChange(p.id, selected, shiftKey)
                 }
+                extraCriteria={extraCriteria}
               />
             ))}
           </div>

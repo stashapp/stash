@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { debounce } from "lodash";
 import { Button, Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { Modal, LoadingIndicator } from "src/components/Shared";
@@ -24,6 +25,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
   onHide,
   onSelectPerformer,
 }) => {
+  const intl = useIntl();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string>(name ?? "");
   const { data, loading } = GQL.useQueryStashBoxPerformerQuery({
@@ -49,7 +51,11 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
       show
       onHide={onHide}
       header={`Scrape performer from ${instance.name ?? "Stash-Box"}`}
-      accept={{ text: "Cancel", onClick: onHide, variant: "secondary" }}
+      accept={{
+        text: intl.formatMessage({ id: "actions.cancel" }),
+        onClick: onHide,
+        variant: "secondary",
+      }}
     >
       <div className={CLASSNAME}>
         <Form.Control

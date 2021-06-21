@@ -269,7 +269,9 @@ export const useCreateTag = () => {
   const handleCreate = (tag: string) =>
     createTag({
       variables: {
-        name: tag,
+        input: {
+          name: tag,
+        },
       },
       update: (store, result) => {
         if (!result.data?.tagCreate) return;

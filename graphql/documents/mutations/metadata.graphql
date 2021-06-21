@@ -34,10 +34,6 @@ mutation MigrateHashNaming {
   migrateHashNaming
 }
 
-mutation StopJob {
-  stopJob
-}
-
 mutation BackupDatabase($input: BackupDatabaseInput!) {
   backupDatabase(input: $input)
 }

@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -23,18 +27,25 @@ import (
 type singleton struct {
 	Config *config.Instance
 
-	Status TaskStatus
-	Paths  *paths.Paths
+	Paths *paths.Paths
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	SessionStore *session.Store
+
+	JobManager *job.Manager
 
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
 
 	DownloadStore *DownloadStore
 
+	DLNAService *dlna.Service
+
 	TxnManager models.TransactionManager
+
+	scanSubs *subscriptionManager
 }
 
 var instance *singleton
@@ -49,18 +60,31 @@ func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetStashHomeDirectory())
 		cfg, err := config.Initialize()
+
+		if err != nil {
+			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
+		}
+
 		initLog()
+		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
 			Config:        cfg,
-			Status:        TaskStatus{Status: Idle, Progress: -1},
+			JobManager:    job.NewManager(),
 			DownloadStore: NewDownloadStore(),
+			PluginCache:   plugin.NewCache(cfg),
 
 			TxnManager: sqlite.NewTransactionManager(),
+
+			scanSubs: &subscriptionManager{},
 		}
 
-		cfgFile := cfg.GetConfigFile()
-		if cfgFile != "" {
+		sceneServer := SceneServer{
+			TXNManager: instance.TxnManager,
+		}
+		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+
+		if !cfg.IsNewSystem() {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
 
 			if err == nil {
@@ -75,53 +99,84 @@ func Initialize() *singleton {
 				}
 			}
 		} else {
-			logger.Warn("config file not found. Assuming new system...")
+			cfgFile := cfg.GetConfigFile()
+			if cfgFile != "" {
+				cfgFile = cfgFile + " "
+			}
+
+			// create temporary session store - this will be re-initialised
+			// after config is complete
+			instance.SessionStore = session.NewStore(cfg)
+
+			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
 		initFFMPEG()
+
+		// if DLNA is enabled, start it now
+		if instance.Config.GetDLNADefaultEnabled() {
+			instance.DLNAService.Start(nil)
+		}
 	})
 
 	return instance
 }
 
-func initFFMPEG() {
-	configDirectory := paths.GetStashHomeDirectory()
-	ffmpegPath, ffprobePath := ffmpeg.GetPaths(configDirectory)
-	if ffmpegPath == "" || ffprobePath == "" {
-		logger.Infof("couldn't find FFMPEG, attempting to download it")
-		if err := ffmpeg.Download(configDirectory); err != nil {
-			msg := `Unable to locate / automatically download FFMPEG
-
-Check the readme for download links.
-The FFMPEG and FFProbe binaries should be placed in %s
-
-The error was: %s
-`
-			logger.Fatalf(msg, configDirectory, err)
-		} else {
-			// After download get new paths for ffmpeg and ffprobe
-			ffmpegPath, ffprobePath = ffmpeg.GetPaths(configDirectory)
-		}
+func initProfiling(cpuProfilePath string) {
+	if cpuProfilePath == "" {
+		return
 	}
 
-	instance.FFMPEGPath = ffmpegPath
-	instance.FFProbePath = ffprobePath
+	f, err := os.Create(cpuProfilePath)
+	if err != nil {
+		logger.Fatalf("unable to create cpu profile file: %s", err.Error())
+	}
+
+	logger.Infof("profiling to %s", cpuProfilePath)
+
+	// StopCPUProfile is defer called in main
+	pprof.StartCPUProfile(f)
+}
+
+func initFFMPEG() error {
+	// only do this if we have a config file set
+	if instance.Config.GetConfigFile() != "" {
+		// use same directory as config path
+		configDirectory := instance.Config.GetConfigPath()
+		paths := []string{
+			configDirectory,
+			paths.GetStashHomeDirectory(),
+		}
+		ffmpegPath, ffprobePath := ffmpeg.GetPaths(paths)
+
+		if ffmpegPath == "" || ffprobePath == "" {
+			logger.Infof("couldn't find FFMPEG, attempting to download it")
+			if err := ffmpeg.Download(configDirectory); err != nil {
+				msg := `Unable to locate / automatically download FFMPEG
+
+	Check the readme for download links.
+	The FFMPEG and FFProbe binaries should be placed in %s
+
+	The error was: %s
+	`
+				logger.Errorf(msg, configDirectory, err)
+				return err
+			} else {
+				// After download get new paths for ffmpeg and ffprobe
+				ffmpegPath, ffprobePath = ffmpeg.GetPaths(paths)
+			}
+		}
+
+		instance.FFMPEGPath = ffmpegPath
+		instance.FFProbePath = ffprobePath
+	}
+
+	return nil
 }
 
 func initLog() {
 	config := config.GetInstance()
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
-}
-
-func initPluginCache() *plugin.Cache {
-	config := config.GetInstance()
-	ret, err := plugin.NewCache(config.GetPluginsPath())
-
-	if err != nil {
-		logger.Errorf("Error reading plugin configs: %s", err.Error())
-	}
-
-	return ret
 }
 
 // PostInit initialises the paths, caches and txnManager after the initial
@@ -131,10 +186,15 @@ func (s *singleton) PostInit() error {
 	s.Config.SetInitialConfig()
 
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
-	s.PluginCache = initPluginCache()
-	s.ScraperCache = instance.initScraperCache()
-
 	s.RefreshConfig()
+	s.SessionStore = session.NewStore(s.Config)
+	s.PluginCache.RegisterSessionStore(s.SessionStore)
+
+	if err := s.PluginCache.LoadPlugins(); err != nil {
+		logger.Errorf("Error reading plugin configs: %s", err.Error())
+	}
+
+	s.ScraperCache = instance.initScraperCache()
 
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
@@ -235,6 +295,18 @@ func (s *singleton) Setup(input models.SetupInput) error {
 		return fmt.Errorf("error initializing the database: %s", err.Error())
 	}
 
+	s.Config.FinalizeSetup()
+
+	initFFMPEG()
+
+	return nil
+}
+
+func (s *singleton) validateFFMPEG() error {
+	if s.FFMPEGPath == "" || s.FFProbePath == "" {
+		return errors.New("missing ffmpeg and/or ffprobe")
+	}
+
 	return nil
 }
 
@@ -283,8 +355,9 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
 	appSchema := int(database.AppSchemaVersion())
+	configFile := s.Config.GetConfigFile()
 
-	if s.Config.GetConfigFile() == "" {
+	if s.Config.IsNewSystem() {
 		status = models.SystemStatusEnumSetup
 	} else if dbSchema < appSchema {
 		status = models.SystemStatusEnumNeedsMigration
@@ -295,5 +368,6 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 		DatabasePath:   &dbPath,
 		AppSchema:      appSchema,
 		Status:         status,
+		ConfigPath:     &configFile,
 	}
 }

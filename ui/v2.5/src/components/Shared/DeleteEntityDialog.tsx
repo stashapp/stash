@@ -24,24 +24,16 @@ interface IDeleteEntityDialogProps {
 
 const messages = defineMessages({
   deleteHeader: {
-    id: "delete-header",
-    defaultMessage:
-      "Delete {count, plural, =1 {{singularEntity}} other {{pluralEntity}}}",
+    id: "dialogs.delete_object_title",
   },
   deleteToast: {
-    id: "delete-toast",
-    defaultMessage:
-      "Deleted {count, plural, =1 {{singularEntity}} other {{pluralEntity}}}",
+    id: "toast.delete_past_tense",
   },
   deleteMessage: {
-    id: "delete-message",
-    defaultMessage:
-      "Are you sure you want to delete {count, plural, =1 {this {singularEntity}} other {these {pluralEntity}}}?",
+    id: "dialogs.delete_object_desc",
   },
   overflowMessage: {
-    id: "overflow-message",
-    defaultMessage:
-      "...and {count} other {count, plural, =1 {{ singularEntity}} other {{ pluralEntity }}}.",
+    id: "dialogs.delete_object_overflow",
   },
 });
 
@@ -87,10 +79,14 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
         singularEntity,
         pluralEntity,
       })}
-      accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
+      accept={{
+        variant: "danger",
+        onClick: onDelete,
+        text: intl.formatMessage({ id: "actions.delete" }),
+      }}
       cancel={{
         onClick: () => onClose(false),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
       isRunning={isDeleting}

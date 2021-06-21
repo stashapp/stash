@@ -1,17 +1,27 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
-  BasicCard,
+  GridCard,
   CountryFlag,
   HoverPopover,
   Icon,
   TagLink,
-  TruncatedText,
 } from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+
+export interface IPerformerCardExtraCriteria {
+  scenes: Criterion<CriterionValue>[];
+  images: Criterion<CriterionValue>[];
+  galleries: Criterion<CriterionValue>[];
+}
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -19,6 +29,7 @@ interface IPerformerCardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 export const PerformerCard: React.FC<IPerformerCardProps> = ({
@@ -27,12 +38,24 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   selecting,
   selected,
   onSelectedChanged,
+  extraCriteria,
 }) => {
+  const intl = useIntl();
   const age = TextUtils.age(
     performer.birthdate,
     ageFromDate ?? performer.death_date
   );
-  const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
+  const ageL10nId = ageFromDate
+    ? "media_info.performer_card.age_context"
+    : "media_info.performer_card.age";
+  const ageL10String = intl.formatMessage({
+    id: "years_old",
+    defaultMessage: "years old",
+  });
+  const ageString = intl.formatMessage(
+    { id: ageL10nId },
+    { age, years_old: ageL10String }
+  );
 
   function maybeRenderFavoriteIcon() {
     if (performer.favorite === false) {
@@ -52,7 +75,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <PopoverCountButton
         type="scene"
         count={performer.scene_count}
-        url={NavUtils.makePerformerScenesUrl(performer)}
+        url={NavUtils.makePerformerScenesUrl(performer, extraCriteria?.scenes)}
       />
     );
   }
@@ -64,7 +87,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <PopoverCountButton
         type="image"
         count={performer.image_count}
-        url={NavUtils.makePerformerImagesUrl(performer)}
+        url={NavUtils.makePerformerImagesUrl(performer, extraCriteria?.images)}
       />
     );
   }
@@ -76,7 +99,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <PopoverCountButton
         type="gallery"
         count={performer.gallery_count}
-        url={NavUtils.makePerformerGalleriesUrl(performer)}
+        url={NavUtils.makePerformerGalleriesUrl(
+          performer,
+          extraCriteria?.galleries
+        )}
       />
     );
   }
@@ -129,15 +155,16 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           performer.rating ? `rating-${performer.rating}` : ""
         }`}
       >
-        RATING: {performer.rating}
+        <FormattedMessage id="rating" />: {performer.rating}
       </div>
     );
   }
 
   return (
-    <BasicCard
+    <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
+      title={performer.name ?? ""}
       image={
         <>
           <img
@@ -151,9 +178,6 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       details={
         <>
-          <h5>
-            <TruncatedText text={performer.name} />
-          </h5>
           {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
           <Link to={NavUtils.makePerformersCountryUrl(performer)}>
             <CountryFlag country={performer.country} />

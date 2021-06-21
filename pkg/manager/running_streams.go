@@ -6,6 +6,9 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 var (
@@ -63,5 +66,35 @@ func KillRunningStreams(path string) {
 		} else {
 			conn.Close()
 		}
+	}
+}
+
+type SceneServer struct {
+	TXNManager models.TransactionManager
+}
+
+func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
+
+	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
+	RegisterStream(filepath, &w)
+	http.ServeFile(w, r, filepath)
+	WaitAndDeregisterStream(filepath, &w, r)
+}
+
+func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
+	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+
+	// fall back to the scene image blob if the file isn't present
+	screenshotExists, _ := utils.FileExists(filepath)
+	if screenshotExists {
+		http.ServeFile(w, r, filepath)
+	} else {
+		var cover []byte
+		s.TXNManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			cover, _ = repo.Scene().GetCover(scene.ID)
+			return nil
+		})
+		utils.ServeImage(cover, w, r)
 	}
 }

@@ -1,0 +1,58 @@
+# example plugin config
+name: Hawwwwt Tagger (Javascript edition)
+description: Javascript Hawwwwt tagging utility (using raw interface).
+version: 1.0
+url: http://www.github.com/stashapp/stash
+exec:
+  - js.js
+interface: js
+tasks:
+  - name: Add hawwwwt tag to random scene
+    description: Creates a "Hawwwwt" tag if not present and adds to a random scene.
+    defaultArgs:
+      mode: add
+  - name: Remove hawwwwt tag from system
+    description: Removes the "Hawwwwt" tag from all scenes and deletes the tag.
+    defaultArgs:
+      mode: remove
+  - name: Indefinite task
+    description: Sleeps indefinitely - interruptable
+    # we'll try command-line argument for this one
+    defaultArgs:
+      mode: indef
+  - name: Long task
+    description: Sleeps for 100 seconds - interruptable
+    defaultArgs:
+      mode: long
+hooks:
+  - name: Log scene marker create/update
+    description: Logs some stuff when creating/updating scene marker.
+    triggeredBy: 
+      - SceneMarker.Create.Post
+      - SceneMarker.Update.Post
+      - SceneMarker.Delete.Post
+      - Scene.Create.Post
+      - Scene.Update.Post
+      - Scene.Destroy.Post
+      - Image.Create.Post
+      - Image.Update.Post
+      - Image.Destroy.Post
+      - Gallery.Create.Post
+      - Gallery.Update.Post
+      - Gallery.Destroy.Post
+      - Movie.Create.Post
+      - Movie.Update.Post
+      - Movie.Destroy.Post
+      - Performer.Create.Post
+      - Performer.Update.Post
+      - Performer.Destroy.Post
+      - Studio.Create.Post
+      - Studio.Update.Post
+      - Studio.Destroy.Post
+      - Tag.Create.Post
+      - Tag.Update.Post
+      - Tag.Destroy.Post
+    defaultArgs:
+      mode: hook
+    
+    

@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -40,6 +41,8 @@ const (
 	sceneIdxWithPerformerTag
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
+	sceneIdxWithStudioPerformer
+	sceneIdxWithGrandChildStudio
 	// new indexes above
 	lastSceneIdx
 
@@ -60,9 +63,11 @@ const (
 	imageIdxWithStudio
 	imageIdx1WithStudio
 	imageIdx2WithStudio
+	imageIdxWithStudioPerformer
 	imageIdxInZip // TODO - not implemented
 	imageIdxWithPerformerTag
 	imageIdxWithPerformerTwoTags
+	imageIdxWithGrandChildStudio
 	// new indexes above
 	totalImages
 )
@@ -82,6 +87,9 @@ const (
 	performerIdxWithTwoGalleries
 	performerIdx1WithGallery
 	performerIdx2WithGallery
+	performerIdxWithSceneStudio
+	performerIdxWithImageStudio
+	performerIdxWithGalleryStudio
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -119,6 +127,8 @@ const (
 	galleryIdx2WithStudio
 	galleryIdxWithPerformerTag
 	galleryIdxWithPerformerTwoTags
+	galleryIdxWithStudioPerformer
+	galleryIdxWithGrandChildStudio
 	// new indexes above
 	lastGalleryIdx
 
@@ -160,6 +170,12 @@ const (
 	studioIdxWithTwoImages
 	studioIdxWithGallery
 	studioIdxWithTwoGalleries
+	studioIdxWithScenePerformer
+	studioIdxWithImagePerformer
+	studioIdxWithGalleryPerformer
+	studioIdxWithGrandChild
+	studioIdxWithParentAndChild
+	studioIdxWithGrandParent
 	// new indexes above
 	// studios with dup names start from the end
 	studioIdxWithDupName
@@ -173,22 +189,34 @@ const (
 )
 
 const (
-	pathField     = "Path"
-	checksumField = "Checksum"
-	titleField    = "Title"
-	urlField      = "URL"
-	zipPath       = "zipPath.zip"
+	savedFilterIdxDefaultScene = iota
+	savedFilterIdxDefaultImage
+	savedFilterIdxScene
+	savedFilterIdxImage
+
+	// new indexes above
+	totalSavedFilters
+)
+
+const (
+	pathField            = "Path"
+	checksumField        = "Checksum"
+	titleField           = "Title"
+	urlField             = "URL"
+	zipPath              = "zipPath.zip"
+	firstSavedFilterName = "firstSavedFilterName"
 )
 
 var (
-	sceneIDs     []int
-	imageIDs     []int
-	performerIDs []int
-	movieIDs     []int
-	galleryIDs   []int
-	tagIDs       []int
-	studioIDs    []int
-	markerIDs    []int
+	sceneIDs       []int
+	imageIDs       []int
+	performerIDs   []int
+	movieIDs       []int
+	galleryIDs     []int
+	tagIDs         []int
+	studioIDs      []int
+	markerIDs      []int
+	savedFilterIDs []int
 
 	tagNames       []string
 	studioNames    []string
@@ -216,6 +244,7 @@ var (
 		{sceneIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{sceneIdx1WithPerformer, performerIdxWithTwoScenes},
 		{sceneIdx2WithPerformer, performerIdxWithTwoScenes},
+		{sceneIdxWithStudioPerformer, performerIdxWithSceneStudio},
 	}
 
 	sceneGalleryLinks = [][2]int{
@@ -230,6 +259,8 @@ var (
 		{sceneIdxWithStudio, studioIdxWithScene},
 		{sceneIdx1WithStudio, studioIdxWithTwoScenes},
 		{sceneIdx2WithStudio, studioIdxWithTwoScenes},
+		{sceneIdxWithStudioPerformer, studioIdxWithScenePerformer},
+		{sceneIdxWithGrandChildStudio, studioIdxWithGrandParent},
 	}
 )
 
@@ -245,6 +276,8 @@ var (
 		{imageIdxWithStudio, studioIdxWithImage},
 		{imageIdx1WithStudio, studioIdxWithTwoImages},
 		{imageIdx2WithStudio, studioIdxWithTwoImages},
+		{imageIdxWithStudioPerformer, studioIdxWithImagePerformer},
+		{imageIdxWithGrandChildStudio, studioIdxWithGrandParent},
 	}
 	imageTagLinks = [][2]int{
 		{imageIdxWithTag, tagIdxWithImage},
@@ -259,6 +292,7 @@ var (
 		{imageIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{imageIdx1WithPerformer, performerIdxWithTwoImages},
 		{imageIdx2WithPerformer, performerIdxWithTwoImages},
+		{imageIdxWithStudioPerformer, performerIdxWithImageStudio},
 	}
 )
 
@@ -271,12 +305,15 @@ var (
 		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
 		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
+		{galleryIdxWithStudioPerformer, performerIdxWithGalleryStudio},
 	}
 
 	galleryStudioLinks = [][2]int{
 		{galleryIdxWithStudio, studioIdxWithGallery},
 		{galleryIdx1WithStudio, studioIdxWithTwoGalleries},
 		{galleryIdx2WithStudio, studioIdxWithTwoGalleries},
+		{galleryIdxWithStudioPerformer, studioIdxWithGalleryPerformer},
+		{galleryIdxWithGrandChildStudio, studioIdxWithGrandParent},
 	}
 
 	galleryTagLinks = [][2]int{
@@ -295,6 +332,8 @@ var (
 var (
 	studioParentLinks = [][2]int{
 		{studioIdxWithChildStudio, studioIdxWithParentStudio},
+		{studioIdxWithGrandChild, studioIdxWithParentAndChild},
+		{studioIdxWithParentAndChild, studioIdxWithGrandParent},
 	}
 )
 
@@ -314,6 +353,16 @@ func TestMain(m *testing.M) {
 func withTxn(f func(r models.Repository) error) error {
 	t := sqlite.NewTransactionManager()
 	return t.WithTxn(context.TODO(), f)
+}
+
+func withRollbackTxn(f func(r models.Repository) error) error {
+	var ret error
+	withTxn(func(repo models.Repository) error {
+		ret = f(repo)
+		return errors.New("fake error for rollback")
+	})
+
+	return ret
 }
 
 func testTeardown(databaseFile string) {
@@ -384,6 +433,10 @@ func populateDB() error {
 
 		if err := createStudios(r.Studio(), studiosNameCase, studiosNameNoCase); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
+		}
+
+		if err := createSavedFilters(r.SavedFilter(), totalSavedFilters); err != nil {
+			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
 		if err := linkPerformerTags(r.Performer()); err != nil {
@@ -745,6 +798,8 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 			},
 			DeathDate: getPerformerDeathDate(i),
 			Details:   sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
+			Ethnicity: sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
+			Rating:    getRating(i),
 		}
 
 		careerLength := getPerformerCareerLength(i)
@@ -833,6 +888,12 @@ func createTags(tqb models.TagReaderWriter, n int, o int) error {
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
+		}
+
+		// add alias
+		alias := getTagStringValue(i, "Alias")
+		if err := tqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+			return fmt.Errorf("error setting tag alias: %s", err.Error())
 		}
 
 		tagIDs = append(tagIDs, created.ID)
@@ -929,6 +990,51 @@ func createMarker(mqb models.SceneMarkerReaderWriter, sceneIdx, primaryTagIdx in
 
 	if err := mqb.UpdateTags(created.ID, newTagIDs); err != nil {
 		return fmt.Errorf("Error creating marker/tag join: %s", err.Error())
+	}
+
+	return nil
+}
+
+func getSavedFilterMode(index int) models.FilterMode {
+	switch index {
+	case savedFilterIdxScene, savedFilterIdxDefaultScene:
+		return models.FilterModeScenes
+	case savedFilterIdxImage, savedFilterIdxDefaultImage:
+		return models.FilterModeImages
+	default:
+		return models.FilterModeScenes
+	}
+}
+
+func getSavedFilterName(index int) string {
+	if index <= savedFilterIdxDefaultImage {
+		// empty string for default filters
+		return ""
+	}
+
+	if index <= savedFilterIdxImage {
+		// use the same name for the first two - should be possible
+		return firstSavedFilterName
+	}
+
+	return getPrefixedStringValue("savedFilter", index, "Name")
+}
+
+func createSavedFilters(qb models.SavedFilterReaderWriter, n int) error {
+	for i := 0; i < n; i++ {
+		savedFilter := models.SavedFilter{
+			Mode:   getSavedFilterMode(i),
+			Name:   getSavedFilterName(i),
+			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
+		}
+
+		created, err := qb.Create(savedFilter)
+
+		if err != nil {
+			return fmt.Errorf("Error creating saved filter %v+: %s", savedFilter, err.Error())
+		}
+
+		savedFilterIDs = append(savedFilterIDs, created.ID)
 	}
 
 	return nil

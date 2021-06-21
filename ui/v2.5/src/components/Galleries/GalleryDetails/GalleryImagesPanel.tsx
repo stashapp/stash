@@ -7,6 +7,7 @@ import { mutateRemoveGalleryImages } from "src/core/StashService";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
+import { useIntl } from "react-intl";
 
 interface IGalleryDetailsProps {
   gallery: GQL.GalleryDataFragment;
@@ -15,6 +16,7 @@ interface IGalleryDetailsProps {
 export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
   gallery,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
 
   function filterHook(filter: ListFilterModel) {
@@ -24,7 +26,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
     };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {
-      return c.type === "galleries";
+      return c.criterionOption.type === "galleries";
     }) as GalleriesCriterion;
 
     if (
@@ -63,7 +65,10 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
         image_ids: Array.from(selectedIds.values()),
       });
       Toast.success({
-        content: "Added images",
+        content: intl.formatMessage(
+          { id: "toast.added_entity" },
+          { entity: intl.formatMessage({ id: "images" }) }
+        ),
       });
     } catch (e) {
       Toast.error(e);

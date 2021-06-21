@@ -131,6 +131,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 * `make fmt-check` - Ensure changed files are formatted correctly
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
+* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash port can be changed from the default of `9999` with environment variable `REACT_APP_PLATFORM_PORT`.
 
 ## Building a release
 
@@ -145,3 +146,15 @@ where the app can be cross-compiled.  This process is kicked off by CI via the `
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
+
+## Profiling
+
+Stash can be profiled using the `--cpuprofile <output profile filename>` command line flag.
+
+The resulting file can then be used with pprof as follows: 
+
+`go tool pprof <path to binary> <path to profile filename>`
+
+With `graphviz` installed and in the path, a call graph can be generated with:
+
+`go tool pprof -svg <path to binary> <path to profile filename> > <output svg file>`

@@ -100,6 +100,143 @@ func TestPerformerFindByNames(t *testing.T) {
 	})
 }
 
+func TestPerformerQueryEthnicityOr(t *testing.T) {
+	const performer1Idx = 1
+	const performer2Idx = 2
+
+	performer1Eth := getPerformerStringValue(performer1Idx, "Ethnicity")
+	performer2Eth := getPerformerStringValue(performer2Idx, "Ethnicity")
+
+	performerFilter := models.PerformerFilterType{
+		Ethnicity: &models.StringCriterionInput{
+			Value:    performer1Eth,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.PerformerFilterType{
+			Ethnicity: &models.StringCriterionInput{
+				Value:    performer2Eth,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 2)
+		assert.Equal(t, performer1Eth, performers[0].Ethnicity.String)
+		assert.Equal(t, performer2Eth, performers[1].Ethnicity.String)
+
+		return nil
+	})
+}
+
+func TestPerformerQueryEthnicityAndRating(t *testing.T) {
+	const performerIdx = 1
+	performerEth := getPerformerStringValue(performerIdx, "Ethnicity")
+	performerRating := getRating(performerIdx)
+
+	performerFilter := models.PerformerFilterType{
+		Ethnicity: &models.StringCriterionInput{
+			Value:    performerEth,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.PerformerFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(performerRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, 1)
+		assert.Equal(t, performerEth, performers[0].Ethnicity.String)
+		assert.Equal(t, performerRating.Int64, performers[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestPerformerQueryPathNotRating(t *testing.T) {
+	const performerIdx = 1
+
+	performerRating := getRating(performerIdx)
+
+	ethCriterion := models.StringCriterionInput{
+		Value:    "performer_.*1_Ethnicity",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(performerRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	performerFilter := models.PerformerFilterType{
+		Ethnicity: &ethCriterion,
+		Not: &models.PerformerFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		for _, performer := range performers {
+			verifyString(t, performer.Ethnicity.String, ethCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, performer.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const performerIdx = 1
+	subFilter := models.PerformerFilterType{
+		Ethnicity: &models.StringCriterionInput{
+			Value:    getPerformerStringValue(performerIdx, "Ethnicity"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	performerFilter := &models.PerformerFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Performer()
+
+		_, _, err := sqb.Query(performerFilter, nil)
+		assert.NotNil(err)
+
+		performerFilter.Or = nil
+		performerFilter.Not = &subFilter
+		_, _, err = sqb.Query(performerFilter, nil)
+		assert.NotNil(err)
+
+		performerFilter.And = nil
+		performerFilter.Or = &subFilter
+		_, _, err = sqb.Query(performerFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func TestPerformerQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Performer()
@@ -595,6 +732,58 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 	})
 }
 
+func TestPerformerQueryStudio(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		testCases := []struct {
+			studioIndex    int
+			performerIndex int
+		}{
+			{studioIndex: studioIdxWithScenePerformer, performerIndex: performerIdxWithSceneStudio},
+			{studioIndex: studioIdxWithImagePerformer, performerIndex: performerIdxWithImageStudio},
+			{studioIndex: studioIdxWithGalleryPerformer, performerIndex: performerIdxWithGalleryStudio},
+		}
+
+		sqb := r.Performer()
+
+		for _, tc := range testCases {
+			studioCriterion := models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[tc.studioIndex]),
+				},
+				Modifier: models.CriterionModifierIncludes,
+			}
+
+			performerFilter := models.PerformerFilterType{
+				Studios: &studioCriterion,
+			}
+
+			performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+			assert.Len(t, performers, 1)
+
+			// ensure id is correct
+			assert.Equal(t, performerIDs[tc.performerIndex], performers[0].ID)
+
+			studioCriterion = models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[tc.studioIndex]),
+				},
+				Modifier: models.CriterionModifierExcludes,
+			}
+
+			q := getPerformerStringValue(tc.performerIndex, "Name")
+			findFilter := models.FindFilterType{
+				Q: &q,
+			}
+
+			performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+			assert.Len(t, performers, 0)
+		}
+
+		return nil
+	})
+}
+
 func TestPerformerStashIDs(t *testing.T) {
 	if err := withTxn(func(r models.Repository) error {
 		qb := r.Performer()
@@ -674,6 +863,72 @@ func TestPerformerQueryIsMissingRating(t *testing.T) {
 		for _, performer := range performers {
 			assert.True(t, !performer.Rating.Valid)
 		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryIsMissingImage(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		isMissing := "image"
+		performerFilter := &models.PerformerFilterType{
+			IsMissing: &isMissing,
+		}
+
+		// ensure query does not error
+		performers, _, err := r.Performer().Query(performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+
+		for _, performer := range performers {
+			img, err := r.Performer().GetImage(performer.ID)
+			if err != nil {
+				t.Errorf("error getting performer image: %s", err.Error())
+			}
+			assert.Nil(t, img)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQuerySortScenesCount(t *testing.T) {
+	sort := "scenes_count"
+	direction := models.SortDirectionEnumDesc
+	findFilter := &models.FindFilterType{
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	withTxn(func(r models.Repository) error {
+		// just ensure it queries without error
+		performers, _, err := r.Performer().Query(nil, findFilter)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+
+		// first performer should be performerIdxWithTwoScenes
+		firstPerformer := performers[0]
+
+		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], firstPerformer.ID)
+
+		// sort in ascending order
+		direction = models.SortDirectionEnumAsc
+
+		performers, _, err = r.Performer().Query(nil, findFilter)
+		if err != nil {
+			t.Errorf("Error querying performers: %s", err.Error())
+		}
+
+		assert.True(t, len(performers) > 0)
+		lastPerformer := performers[len(performers)-1]
+
+		assert.Equal(t, performerIDs[performerIdxWithTwoScenes], lastPerformer.ID)
 
 		return nil
 	})

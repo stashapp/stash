@@ -1,0 +1,49 @@
+import * as GQL from "../core/generated-graphql";
+
+export const stringGenderMap = new Map<string, GQL.GenderEnum>([
+  ["Male", GQL.GenderEnum.Male],
+  ["Female", GQL.GenderEnum.Female],
+  ["Transgender Male", GQL.GenderEnum.TransgenderMale],
+  ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
+  ["Intersex", GQL.GenderEnum.Intersex],
+  ["Non-Binary", GQL.GenderEnum.NonBinary],
+]);
+
+export const genderToString = (value?: GQL.GenderEnum | string) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
+    return e[1] === value;
+  });
+
+  if (foundEntry) {
+    return foundEntry[0];
+  }
+};
+
+export const stringToGender = (
+  value?: string | null,
+  caseInsensitive?: boolean
+) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const ret = stringGenderMap.get(value);
+  if (ret || !caseInsensitive) {
+    return ret;
+  }
+
+  const asUpper = value.toUpperCase();
+  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
+    return e[0].toUpperCase() === asUpper;
+  });
+
+  if (foundEntry) {
+    return foundEntry[1];
+  }
+};
+
+export const genderStrings = Array.from(stringGenderMap.keys());

@@ -8,8 +8,20 @@ import (
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
 	// generate checksum from studio name rather than image
@@ -82,7 +94,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	return studio, nil
+	r.hookExecutor.ExecutePostHooks(ctx, studio.ID, plugin.StudioCreatePost, input, nil)
+	return r.getStudio(ctx, studio.ID)
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
@@ -162,7 +175,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	return studio, nil
+	r.hookExecutor.ExecutePostHooks(ctx, studio.ID, plugin.StudioUpdatePost, input, translator.getFields())
+	return r.getStudio(ctx, studio.ID)
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
@@ -176,6 +190,9 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 	}); err != nil {
 		return false, err
 	}
+
+	r.hookExecutor.ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, input, nil)
+
 	return true, nil
 }
 
@@ -197,5 +214,10 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 	}); err != nil {
 		return false, err
 	}
+
+	for _, id := range ids {
+		r.hookExecutor.ExecutePostHooks(ctx, id, plugin.StudioDestroyPost, studioIDs, nil)
+	}
+
 	return true, nil
 }

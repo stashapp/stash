@@ -11,6 +11,8 @@ import (
 
 const tagTable = "tags"
 const tagIDColumn = "tag_id"
+const tagAliasesTable = "tag_aliases"
+const tagAliasColumn = "alias"
 
 type tagQueryBuilder struct {
 	repository
@@ -35,7 +37,16 @@ func (qb *tagQueryBuilder) Create(newObject models.Tag) (*models.Tag, error) {
 	return &ret, nil
 }
 
-func (qb *tagQueryBuilder) Update(updatedObject models.Tag) (*models.Tag, error) {
+func (qb *tagQueryBuilder) Update(updatedObject models.TagPartial) (*models.Tag, error) {
+	const partial = true
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedObject.ID)
+}
+
+func (qb *tagQueryBuilder) UpdateFull(updatedObject models.Tag) (*models.Tag, error) {
 	const partial = false
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -197,13 +208,19 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	query := selectAll(tagTable)
+	query += " LEFT JOIN tag_aliases ON tag_aliases.tag_id = tags.id"
 
 	var whereClauses []string
 	var args []interface{}
 
 	for _, w := range words {
-		whereClauses = append(whereClauses, "name like ?")
-		args = append(args, "%"+w+"%")
+		ww := w + "%"
+		whereClauses = append(whereClauses, "tags.name like ?")
+		args = append(args, ww)
+
+		// include aliases
+		whereClauses = append(whereClauses, "tag_aliases.alias like ?")
+		args = append(args, ww)
 	}
 
 	where := strings.Join(whereClauses, " OR ")
@@ -262,6 +279,9 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	// 	}
 	// }
 
+	query.handleCriterionFunc(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
+	query.handleCriterionFunc(tagAliasCriterionHandler(qb, tagFilter.Aliases))
+
 	query.handleCriterionFunc(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
 	query.handleCriterionFunc(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))
 	query.handleCriterionFunc(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
@@ -297,7 +317,8 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	// Disabling querying/sorting on marker count for now.
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"tags.name"}
+		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
+		searchColumns := []string{"tags.name", "tag_aliases.alias"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
@@ -326,6 +347,18 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	return tags, countResult, nil
+}
+
+func tagAliasCriterionHandler(qb *tagQueryBuilder, alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    tagAliasesTable,
+		stringColumn: tagAliasColumn,
+		addJoinTable: func(f *filterBuilder) {
+			qb.aliasRepository().join(f, "", "tags.id")
+		},
+	}
+
+	return h.handler(alias)
 }
 
 func tagIsMissingCriterionHandler(qb *tagQueryBuilder, isMissing *string) criterionHandlerFunc {
@@ -483,4 +516,84 @@ func (qb *tagQueryBuilder) UpdateImage(tagID int, image []byte) error {
 
 func (qb *tagQueryBuilder) DestroyImage(tagID int) error {
 	return qb.imageRepository().destroy([]int{tagID})
+}
+
+func (qb *tagQueryBuilder) aliasRepository() *stringRepository {
+	return &stringRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: tagAliasesTable,
+			idColumn:  tagIDColumn,
+		},
+		stringColumn: tagAliasColumn,
+	}
+}
+
+func (qb *tagQueryBuilder) GetAliases(tagID int) ([]string, error) {
+	return qb.aliasRepository().get(tagID)
+}
+
+func (qb *tagQueryBuilder) UpdateAliases(tagID int, aliases []string) error {
+	return qb.aliasRepository().replace(tagID, aliases)
+}
+
+func (qb *tagQueryBuilder) Merge(source []int, destination int) error {
+	if len(source) == 0 {
+		return nil
+	}
+
+	inBinding := getInBinding(len(source))
+
+	args := []interface{}{destination}
+	for _, id := range source {
+		if id == destination {
+			return errors.New("cannot merge where source == destination")
+		}
+		args = append(args, id)
+	}
+
+	tagTables := map[string]string{
+		scenesTagsTable:      sceneIDColumn,
+		"scene_markers_tags": "scene_marker_id",
+		galleriesTagsTable:   galleryIDColumn,
+		imagesTagsTable:      imageIDColumn,
+		"performers_tags":    "performer_id",
+	}
+
+	tagArgs := append(args, destination)
+	for table, idColumn := range tagTables {
+		_, err := qb.tx.Exec(`UPDATE `+table+`
+SET tag_id = ?
+WHERE tag_id IN `+inBinding+`
+AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
+			tagArgs...,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := qb.tx.Exec("UPDATE "+sceneMarkerTable+" SET primary_tag_id = ? WHERE primary_tag_id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = qb.tx.Exec("INSERT INTO "+tagAliasesTable+" (tag_id, alias) SELECT ?, name FROM "+tagTable+" WHERE id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	_, err = qb.tx.Exec("UPDATE "+tagAliasesTable+" SET tag_id = ? WHERE tag_id IN "+inBinding, args...)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range source {
+		err = qb.Destroy(id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

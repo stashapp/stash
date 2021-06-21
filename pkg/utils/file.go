@@ -39,10 +39,12 @@ func FileExists(path string) (bool, error) {
 
 // DirExists returns true if the given path exists and is a directory
 func DirExists(path string) (bool, error) {
-	exists, _ := FileExists(path)
-	fileInfo, _ := os.Stat(path)
-	if !exists || !fileInfo.IsDir() {
-		return false, fmt.Errorf("path either doesn't exist, or is not a directory <%s>", path)
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, fmt.Errorf("path doesn't exist <%s>", path)
+	}
+	if !fileInfo.IsDir() {
+		return false, fmt.Errorf("path is not a directory <%s>", path)
 	}
 	return true, nil
 }
@@ -104,21 +106,23 @@ func EmptyDir(path string) error {
 }
 
 // ListDir will return the contents of a given directory path as a string slice
-func ListDir(path string) []string {
+func ListDir(path string) ([]string, error) {
+	var dirPaths []string
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		path = filepath.Dir(path)
 		files, err = ioutil.ReadDir(path)
+		if err != nil {
+			return dirPaths, err
+		}
 	}
-
-	var dirPaths []string
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
 		}
 		dirPaths = append(dirPaths, filepath.Join(path, file.Name()))
 	}
-	return dirPaths
+	return dirPaths, nil
 }
 
 // GetHomeDirectory returns the path of the user's home directory.  ~ on Unix and C:\Users\UserName on Windows
@@ -293,4 +297,52 @@ func GetNameFromPath(path string, stripExtension bool) string {
 		fn = strings.TrimSuffix(fn, ext)
 	}
 	return fn
+}
+
+// GetFunscriptPath returns the path of a file
+// with the extension changed to .funscript
+func GetFunscriptPath(path string) string {
+	ext := filepath.Ext(path)
+	fn := strings.TrimSuffix(path, ext)
+	return fn + ".funscript"
+}
+
+// IsFsPathCaseSensitive checks the fs of the given path to see if it is case sensitive
+// if the case sensitivity can not be determined false and an error != nil are returned
+func IsFsPathCaseSensitive(path string) (bool, error) {
+	// The case sensitivity of the fs of "path" is determined by case flipping
+	// the first letter rune from the base string of the path
+	// If the resulting flipped path exists then the fs should not be case sensitive
+	// ( we check the file mod time to avoid matching an existing path )
+
+	fi, err := os.Stat(path)
+	if err != nil { // path cannot be stat'd
+		return false, err
+	}
+
+	base := filepath.Base(path)
+	fBase, err := FlipCaseSingle(base)
+	if err != nil { // cannot be case flipped
+		return false, err
+	}
+	i := strings.LastIndex(path, base)
+	if i < 0 { // shouldn't happen
+		return false, fmt.Errorf("could not case flip path %s", path)
+	}
+
+	flipped := []byte(path)
+	for _, c := range []byte(fBase) { // replace base of path with the flipped one ( we need to flip the base or last dir part )
+		flipped[i] = c
+		i++
+	}
+
+	fiCase, err := os.Stat(string(flipped))
+	if err != nil { // cannot stat the case flipped path
+		return true, nil // fs of path should be case sensitive
+	}
+
+	if fiCase.ModTime() == fi.ModTime() { // file path exists and is the same
+		return false, nil // fs of path is not case sensitive
+	}
+	return false, fmt.Errorf("can not determine case sensitivity of path %s", path)
 }

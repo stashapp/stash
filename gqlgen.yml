@@ -52,5 +52,7 @@ models:
     model: github.com/stashapp/stash/pkg/models.ScrapedMovie
   ScrapedMovieStudio:
     model: github.com/stashapp/stash/pkg/models.ScrapedMovieStudio
+  SavedFilter:
+    model: github.com/stashapp/stash/pkg/models.SavedFilter
   StashID:
     model: github.com/stashapp/stash/pkg/models.StashID

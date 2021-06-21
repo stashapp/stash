@@ -29,6 +29,10 @@ enum ResolutionEnum {
 }
 
 input PerformerFilterType {
+  AND: PerformerFilterType
+  OR: PerformerFilterType
+  NOT: PerformerFilterType
+
   """Filter by favorite"""
   filter_favorites: Boolean
   """Filter by birth year"""
@@ -81,6 +85,8 @@ input PerformerFilterType {
   weight: IntCriterionInput
   """Filter by death year"""
   death_year: IntCriterionInput
+  """Filter by studios where performer appears in scene/image/gallery"""
+  studios: HierarchicalMultiCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -116,7 +122,7 @@ input SceneFilterType {
   """Filter to only include scenes missing this property"""
   is_missing: String
   """Filter to only include scenes with this studio"""
-  studios: MultiCriterionInput
+  studios: HierarchicalMultiCriterionInput
   """Filter to only include scenes with this movie"""
   movies: MultiCriterionInput
   """Filter to only include scenes with these tags"""
@@ -133,11 +139,13 @@ input SceneFilterType {
   stash_id: StringCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by interactive"""
+  interactive: Boolean
 }
 
 input MovieFilterType {
   """Filter to only include movies with this studio"""
-  studios: MultiCriterionInput
+  studios: HierarchicalMultiCriterionInput
   """Filter to only include movies missing this property"""
   is_missing: String
   """Filter by url"""
@@ -181,7 +189,7 @@ input GalleryFilterType {
   """Filter by average image resolution"""
   average_resolution: ResolutionEnum
   """Filter to only include galleries with this studio"""
-  studios: MultiCriterionInput
+  studios: HierarchicalMultiCriterionInput
   """Filter to only include galleries with these tags"""
   tags: MultiCriterionInput
   """Filter by tag count"""
@@ -202,6 +210,12 @@ input TagFilterType {
   AND: TagFilterType
   OR: TagFilterType
   NOT: TagFilterType
+
+  """Filter by tag name"""
+  name: StringCriterionInput
+
+  """Filter by tag aliases"""
+  aliases: StringCriterionInput
 
   """Filter to only include tags missing this property"""
   is_missing: String
@@ -240,7 +254,7 @@ input ImageFilterType {
   """Filter to only include images missing this property"""
   is_missing: String
   """Filter to only include images with this studio"""
-  studios: MultiCriterionInput
+  studios: HierarchicalMultiCriterionInput
   """Filter to only include images with these tags"""
   tags: MultiCriterionInput
   """Filter by tag count"""
@@ -296,4 +310,48 @@ input MultiCriterionInput {
 input GenderCriterionInput {
   value: GenderEnum
   modifier: CriterionModifier!
+}
+
+input HierarchicalMultiCriterionInput {
+  value: [ID!]
+  modifier: CriterionModifier!
+  depth: Int!
+}
+
+enum FilterMode {
+  SCENES,
+  PERFORMERS,
+  STUDIOS,
+  GALLERIES,
+  SCENE_MARKERS,
+  MOVIES,
+  TAGS,
+  IMAGES,
+}
+
+type SavedFilter {
+  id: ID!
+  mode: FilterMode!
+  name: String!
+  """JSON-encoded filter string"""
+  filter: String!
+}
+
+input SaveFilterInput {
+  """provide ID to overwrite existing filter"""
+  id: ID
+  mode: FilterMode!
+  name: String!
+  """JSON-encoded filter string"""
+  filter: String!
+}
+
+input DestroyFilterInput {
+  id: ID!
+}
+
+input SetDefaultFilterInput {
+  mode: FilterMode!
+  """JSON-encoded filter string - null to clear"""
+  filter: String
 }

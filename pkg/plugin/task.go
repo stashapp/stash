@@ -1,7 +1,8 @@
 package plugin
 
 import (
-	"github.com/stashapp/stash/pkg/models"
+	"net/http"
+
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -29,10 +30,10 @@ type taskBuilder interface {
 }
 
 type pluginTask struct {
-	plugin           *Config
-	operation        *OperationConfig
-	serverConnection common.StashServerConnection
-	args             []*models.PluginArgInput
+	plugin     *Config
+	operation  *OperationConfig
+	input      common.PluginInput
+	gqlHandler http.Handler
 
 	progress chan float64
 	result   *common.PluginOutput
@@ -44,13 +45,4 @@ func (t *pluginTask) GetResult() *common.PluginOutput {
 
 func (t *pluginTask) createTask() Task {
 	return t.plugin.Interface.getTaskBuilder().build(*t)
-}
-
-func (t *pluginTask) buildPluginInput() common.PluginInput {
-	args := applyDefaultArgs(t.args, t.operation.DefaultArgs)
-	t.serverConnection.PluginDir = t.plugin.getConfigPath()
-	return common.PluginInput{
-		ServerConnection: t.serverConnection,
-		Args:             toPluginArgs(args),
-	}
 }

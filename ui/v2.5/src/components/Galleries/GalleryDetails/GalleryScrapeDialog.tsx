@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { StudioSelect, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TagSelect } from "src/components/Shared/Select";
@@ -41,6 +42,7 @@ function renderScrapedStudio(
 }
 
 function renderScrapedStudioRow(
+  title: string,
   result: ScrapeResult<string>,
   onChange: (value: ScrapeResult<string>) => void,
   newStudio?: GQL.ScrapedSceneStudio,
@@ -48,7 +50,7 @@ function renderScrapedStudioRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Studio"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedStudio(result)}
       renderNewField={() =>
@@ -87,6 +89,7 @@ function renderScrapedPerformers(
 }
 
 function renderScrapedPerformersRow(
+  title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
   newPerformers: GQL.ScrapedScenePerformer[],
@@ -94,7 +97,7 @@ function renderScrapedPerformersRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Performers"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedPerformers(result)}
       renderNewField={() =>
@@ -133,6 +136,7 @@ function renderScrapedTags(
 }
 
 function renderScrapedTagsRow(
+  title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
   newTags: GQL.ScrapedSceneTag[],
@@ -140,7 +144,7 @@ function renderScrapedTagsRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Tags"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedTags(result)}
       renderNewField={() =>
@@ -169,6 +173,7 @@ interface IHasStoredID {
 export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   props: IGalleryScrapeDialogProps
 ) => {
+  const intl = useIntl();
   const [title, setTitle] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.gallery.title, props.scraped.title)
   );
@@ -256,7 +261,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
 
   const [createStudio] = useStudioCreate({ name: "" });
   const [createPerformer] = usePerformerCreate();
-  const [createTag] = useTagCreate({ name: "" });
+  const [createTag] = useTagCreate();
 
   const Toast = useToast();
 
@@ -288,7 +293,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       Toast.success({
         content: (
           <span>
-            Created studio: <b>{toCreate.name}</b>
+            <FormattedMessage
+              id="actions.created_entity"
+              values={{
+                entity_type: intl.formatMessage({ id: "studio" }),
+                entity_name: <b>{toCreate.name}</b>,
+              }}
+            />
           </span>
         ),
       });
@@ -323,7 +334,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       Toast.success({
         content: (
           <span>
-            Created performer: <b>{toCreate.name}</b>
+            <FormattedMessage
+              id="actions.created_entity"
+              values={{
+                entity_type: intl.formatMessage({ id: "performer" }),
+                entity_name: <b>{toCreate.name}</b>,
+              }}
+            />
           </span>
         ),
       });
@@ -333,11 +350,12 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   }
 
   async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
-    let tagInput: GQL.TagCreateInput = { name: "" };
+    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
-      tagInput = Object.assign(tagInput, toCreate);
       const result = await createTag({
-        variables: tagInput,
+        variables: {
+          input: tagInput,
+        },
       });
 
       // add the new tag to the new tags value
@@ -358,7 +376,13 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       Toast.success({
         content: (
           <span>
-            Created tag: <b>{toCreate.name}</b>
+            <FormattedMessage
+              id="actions.created_entity"
+              values={{
+                entity_type: intl.formatMessage({ id: "tag" }),
+                entity_name: <b>{toCreate.name}</b>,
+              }}
+            />
           </span>
         ),
       });
@@ -400,41 +424,44 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     return (
       <>
         <ScrapedInputGroupRow
-          title="Title"
+          title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
-          title="URL"
+          title={intl.formatMessage({ id: "url" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
-          title="Date"
+          title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         {renderScrapedStudioRow(
+          intl.formatMessage({ id: "studios" }),
           studio,
           (value) => setStudio(value),
           newStudio,
           createNewStudio
         )}
         {renderScrapedPerformersRow(
+          intl.formatMessage({ id: "performers" }),
           performers,
           (value) => setPerformers(value),
           newPerformers,
           createNewPerformer
         )}
         {renderScrapedTagsRow(
+          intl.formatMessage({ id: "tags" }),
           tags,
           (value) => setTags(value),
           newTags,
           createNewTag
         )}
         <ScrapedTextAreaRow
-          title="Details"
+          title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
@@ -444,7 +471,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title="Gallery Scrape Results"
+      title={intl.formatMessage(
+        { id: "dialogs.scrape_entity_title" },
+        { entity_type: intl.formatMessage({ id: "gallery" }) }
+      )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);

@@ -54,6 +54,9 @@ type Config struct {
 
 	// The task configurations for tasks provided by this plugin.
 	Tasks []*OperationConfig `yaml:"tasks"`
+
+	// The hooks configurations for hooks registered by this plugin.
+	Hooks []*HookConfig `yaml:"hooks"`
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
@@ -69,6 +72,34 @@ func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
 			task.Plugin = c.toPlugin()
 		}
 		ret = append(ret, task)
+	}
+
+	return ret
+}
+
+func (c Config) getPluginHooks(includePlugin bool) []*models.PluginHook {
+	var ret []*models.PluginHook
+
+	for _, o := range c.Hooks {
+		hook := &models.PluginHook{
+			Name:        o.Name,
+			Description: &o.Description,
+			Hooks:       convertHooks(o.TriggeredBy),
+		}
+
+		if includePlugin {
+			hook.Plugin = c.toPlugin()
+		}
+		ret = append(ret, hook)
+	}
+
+	return ret
+}
+
+func convertHooks(hooks []HookTriggerEnum) []string {
+	var ret []string
+	for _, h := range hooks {
+		ret = append(ret, h.String())
 	}
 
 	return ret
@@ -90,6 +121,7 @@ func (c Config) toPlugin() *models.Plugin {
 		URL:         c.URL,
 		Version:     c.Version,
 		Tasks:       c.getPluginTasks(false),
+		Hooks:       c.getPluginHooks(false),
 	}
 }
 
@@ -101,6 +133,19 @@ func (c Config) getTask(name string) *OperationConfig {
 	}
 
 	return nil
+}
+
+func (c Config) getHooks(hookType HookTriggerEnum) []*HookConfig {
+	var ret []*HookConfig
+	for _, h := range c.Hooks {
+		for _, t := range h.TriggeredBy {
+			if hookType == t {
+				ret = append(ret, h)
+			}
+		}
+	}
+
+	return ret
 }
 
 func (c Config) getConfigPath() string {
@@ -147,10 +192,12 @@ const (
 	// common.PluginOutput. If this decoding fails, then the raw output will be
 	// treated as the output.
 	InterfaceEnumRaw interfaceEnum = "raw"
+
+	InterfaceEnumJS interfaceEnum = "js"
 )
 
 func (i interfaceEnum) Valid() bool {
-	return i == InterfaceEnumRPC || i == InterfaceEnumRaw
+	return i == InterfaceEnumRPC || i == InterfaceEnumRaw || i == InterfaceEnumJS
 }
 
 func (i *interfaceEnum) getTaskBuilder() taskBuilder {
@@ -160,6 +207,10 @@ func (i *interfaceEnum) getTaskBuilder() taskBuilder {
 
 	if *i == InterfaceEnumRPC {
 		return &rpcTaskBuilder{}
+	}
+
+	if *i == InterfaceEnumJS {
+		return &jsTaskBuilder{}
 	}
 
 	// shouldn't happen
@@ -188,6 +239,13 @@ type OperationConfig struct {
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
 }
 
+type HookConfig struct {
+	OperationConfig `yaml:",inline"`
+
+	// A list of stash operations that will be used to trigger this hook operation.
+	TriggeredBy []HookTriggerEnum `yaml:"triggeredBy"`
+}
+
 func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 	ret := &Config{}
 
@@ -211,10 +269,10 @@ func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 
 func loadPluginFromYAMLFile(path string) (*Config, error) {
 	file, err := os.Open(path)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	ret, err := loadPluginFromYAML(file)
 	if err != nil {

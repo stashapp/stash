@@ -63,12 +63,6 @@ input AutoTagMetadataInput {
   tags: [String!]
 }
 
-type MetadataUpdateStatus {
-  progress: Float!
-  status: String!
-  message: String!
-}
-
 input ExportObjectTypeInput {
   ids: [String!]
   all: Boolean
@@ -116,6 +110,7 @@ enum SystemStatusEnum {
 type SystemStatus {
   databaseSchema: Int
   databasePath: String
+  configPath: String
   appSchema: Int!
   status: SystemStatusEnum!
 }
