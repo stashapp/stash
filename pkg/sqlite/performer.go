@@ -239,51 +239,51 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 	}
 
 	const tableName = performerTable
-	query.handleCriterionFunc(boolCriterionHandler(filter.FilterFavorites, tableName+".favorite"))
+	query.handleCriterion(boolCriterionHandler(filter.FilterFavorites, tableName+".favorite"))
 
-	query.handleCriterionFunc(yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"))
-	query.handleCriterionFunc(yearFilterCriterionHandler(filter.DeathYear, tableName+".death_date"))
+	query.handleCriterion(yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"))
+	query.handleCriterion(yearFilterCriterionHandler(filter.DeathYear, tableName+".death_date"))
 
-	query.handleCriterionFunc(performerAgeFilterCriterionHandler(filter.Age))
+	query.handleCriterion(performerAgeFilterCriterionHandler(filter.Age))
 
-	query.handleCriterionFunc(func(f *filterBuilder) {
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if gender := filter.Gender; gender != nil {
 			f.addWhere(tableName+".gender = ?", gender.Value.String())
 		}
-	})
+	}))
 
-	query.handleCriterionFunc(performerIsMissingCriterionHandler(qb, filter.IsMissing))
-	query.handleCriterionFunc(stringCriterionHandler(filter.Ethnicity, tableName+".ethnicity"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.Country, tableName+".country"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.EyeColor, tableName+".eye_color"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.Height, tableName+".height"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.Measurements, tableName+".measurements"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.Piercings, tableName+".piercings"))
-	query.handleCriterionFunc(intCriterionHandler(filter.Rating, tableName+".rating"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
-	query.handleCriterionFunc(stringCriterionHandler(filter.URL, tableName+".url"))
-	query.handleCriterionFunc(intCriterionHandler(filter.Weight, tableName+".weight"))
-	query.handleCriterionFunc(func(f *filterBuilder) {
+	query.handleCriterion(performerIsMissingCriterionHandler(qb, filter.IsMissing))
+	query.handleCriterion(stringCriterionHandler(filter.Ethnicity, tableName+".ethnicity"))
+	query.handleCriterion(stringCriterionHandler(filter.Country, tableName+".country"))
+	query.handleCriterion(stringCriterionHandler(filter.EyeColor, tableName+".eye_color"))
+	query.handleCriterion(stringCriterionHandler(filter.Height, tableName+".height"))
+	query.handleCriterion(stringCriterionHandler(filter.Measurements, tableName+".measurements"))
+	query.handleCriterion(stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
+	query.handleCriterion(stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
+	query.handleCriterion(stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
+	query.handleCriterion(stringCriterionHandler(filter.Piercings, tableName+".piercings"))
+	query.handleCriterion(intCriterionHandler(filter.Rating, tableName+".rating"))
+	query.handleCriterion(stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
+	query.handleCriterion(stringCriterionHandler(filter.URL, tableName+".url"))
+	query.handleCriterion(intCriterionHandler(filter.Weight, tableName+".weight"))
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if filter.StashID != nil {
 			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
 			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(f)
 		}
-	})
+	}))
 
 	// TODO - need better handling of aliases
-	query.handleCriterionFunc(stringCriterionHandler(filter.Aliases, tableName+".aliases"))
+	query.handleCriterion(stringCriterionHandler(filter.Aliases, tableName+".aliases"))
 
-	query.handleCriterionFunc(performerTagsCriterionHandler(qb, filter.Tags))
+	query.handleCriterion(performerTagsCriterionHandler(qb, filter.Tags))
 
-	query.handleCriterionFunc(performerStudiosCriterionHandler(filter.Studios))
+	query.handleCriterion(performerStudiosCriterionHandler(filter.Studios))
 
-	query.handleCriterionFunc(performerTagCountCriterionHandler(qb, filter.TagCount))
-	query.handleCriterionFunc(performerSceneCountCriterionHandler(qb, filter.SceneCount))
-	query.handleCriterionFunc(performerImageCountCriterionHandler(qb, filter.ImageCount))
-	query.handleCriterionFunc(performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(performerTagCountCriterionHandler(qb, filter.TagCount))
+	query.handleCriterion(performerSceneCountCriterionHandler(qb, filter.SceneCount))
+	query.handleCriterion(performerImageCountCriterionHandler(qb, filter.ImageCount))
+	query.handleCriterion(performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
 
 	return query
 }
