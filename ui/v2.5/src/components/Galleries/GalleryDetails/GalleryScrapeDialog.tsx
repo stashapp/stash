@@ -471,7 +471,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title="Gallery Scrape Results"
+      title={intl.formatMessage(
+        { id: "dialogs.scrape_entity_title" },
+        { entity_type: intl.formatMessage({ id: "gallery" }) }
+      )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);

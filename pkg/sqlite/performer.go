@@ -458,80 +458,53 @@ func performerGalleryCountCriterionHandler(qb *performerQueryBuilder, count *mod
 func performerStudiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if studios != nil {
-			var countCondition string
-			var clauseJoin string
+			var clauseCondition string
 
 			if studios.Modifier == models.CriterionModifierIncludes {
 				// return performers who appear in scenes/images/galleries with any of the given studios
-				countCondition = " > 0"
-				clauseJoin = " OR "
+				clauseCondition = "NOT"
 			} else if studios.Modifier == models.CriterionModifierExcludes {
 				// exclude performers who appear in scenes/images/galleries with any of the given studios
-				countCondition = " = 0"
-				clauseJoin = " AND "
+				clauseCondition = ""
 			} else {
 				return
 			}
-
-			inBinding := getInBinding(len(studios.Value))
 
 			formatMaps := []utils.StrFormatMap{
 				{
 					"primaryTable": sceneTable,
 					"joinTable":    performersScenesTable,
 					"primaryFK":    sceneIDColumn,
-					"inBinding":    inBinding,
 				},
 				{
 					"primaryTable": imageTable,
 					"joinTable":    performersImagesTable,
 					"primaryFK":    imageIDColumn,
-					"inBinding":    inBinding,
 				},
 				{
 					"primaryTable": galleryTable,
 					"joinTable":    performersGalleriesTable,
 					"primaryFK":    galleryIDColumn,
-					"inBinding":    inBinding,
 				},
 			}
 
-			// keeping existing behaviour for depth = 0 since it seems slightly better performing
-			if studios.Depth == 0 {
-				templStr := `(SELECT COUNT(DISTINCT {primaryTable}.id) FROM {primaryTable} 
-LEFT JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK} 
-WHERE {joinTable}.performer_id = performers.id AND {primaryTable}.studio_id IN {inBinding})` + countCondition
+			const derivedStudioTable = "studio"
+			const derivedPerformerStudioTable = "performer_studio"
+			addHierarchicalWithClause(f, studios.Value, derivedStudioTable, studioTable, "parent_id", studios.Depth)
 
-				var clauses []string
-				for _, c := range formatMaps {
-					clauses = append(clauses, utils.StrFormat(templStr, c))
-				}
+			templStr := `SELECT performer_id FROM {primaryTable}
+	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
+	INNER JOIN studio ON {primaryTable}.studio_id = studio.child_id`
 
-				var args []interface{}
-				for _, tagID := range studios.Value {
-					args = append(args, tagID)
-				}
-
-				// this is a bit gross. We need the args three times
-				combinedArgs := append(args, append(args, args...)...)
-
-				f.addWhere(fmt.Sprintf("(%s)", strings.Join(clauses, clauseJoin)), combinedArgs...)
-			} else {
-				const derivedTable = "studio"
-				addHierarchicalWithClause(f, studios.Value, derivedTable, studioTable, "parent_id", studios.Depth)
-
-				templStr := `(SELECT COUNT(DISTINCT {primaryTable}.id) FROM {primaryTable} 
-	LEFT JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK} 
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.child_id
-	WHERE {joinTable}.performer_id = performers.id)` + countCondition
-
-				var clauses []string
-				for _, c := range formatMaps {
-					clauses = append(clauses, utils.StrFormat(templStr, c))
-				}
-
-				f.addWhere(fmt.Sprintf("(%s)", strings.Join(clauses, clauseJoin)))
+			var unions []string
+			for _, c := range formatMaps {
+				unions = append(unions, utils.StrFormat(templStr, c))
 			}
+
+			f.addWith(fmt.Sprintf("%s AS (%s)", "performer_studio", strings.Join(unions, " UNION ")))
+
+			f.addJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
+			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
 		}
 	}
 }
