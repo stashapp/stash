@@ -358,7 +358,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(stringCriterionHandler(sceneFilter.Details, "scenes.details"))
 	query.handleCriterion(stringCriterionHandler(sceneFilter.Oshash, "scenes.oshash"))
 	query.handleCriterion(stringCriterionHandler(sceneFilter.Checksum, "scenes.checksum"))
-	query.handleCriterion(stringCriterionHandler(sceneFilter.Phash, "scenes.phash"))
+	query.handleCriterion(phashCriterionHandler(sceneFilter.Phash))
 	query.handleCriterion(intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
 	query.handleCriterion(intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
 	query.handleCriterion(boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
@@ -433,6 +433,29 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	return scenes, countResult, nil
+}
+
+func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if phashFilter != nil {
+			// convert value to int from hex
+			// ignore errors
+			value, _ := utils.StringToPhash(phashFilter.Value)
+
+			if modifier := phashFilter.Modifier; phashFilter.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierEquals:
+					f.addWhere("scenes.phash = ?", value)
+				case models.CriterionModifierNotEquals:
+					f.addWhere("scenes.phash != ?", value)
+				case models.CriterionModifierIsNull:
+					f.addWhere("scenes.phash IS NULL")
+				case models.CriterionModifierNotNull:
+					f.addWhere("scenes.phash IS NOT NULL")
+				}
+			}
+		}
+	}
 }
 
 func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string) criterionHandlerFunc {
