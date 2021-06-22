@@ -72,8 +72,8 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
         <Card>
           <div className="row">
             <h4 className="col-12">
-							<FormattedMessage id="configuration" />
-						</h4>
+              <FormattedMessage id="configuration" />
+            </h4>
             <hr className="w-100" />
             <Form className="col-md-6">
               <Form.Group controlId="excluded-scene-fields">
@@ -101,15 +101,15 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
               <Form.Group controlId="tag-males" className="align-items-center">
                 <Form.Check
                   label={
-										<FormattedMessage id="component_tagger.config.show_male_label" />
-									}
+                    <FormattedMessage id="component_tagger.config.show_male_label" />
+                  }
                   checked={config.showMales}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setConfig({ ...config, showMales: e.currentTarget.checked })
                   }
                 />
-								<Form.Text>
-									<FormattedMessage id="component_tagger.config.show_male_desc" />
+                <Form.Text>
+                  <FormattedMessage id="component_tagger.config.show_male_desc" />
                 </Form.Text>
               </Form.Group>
 
@@ -137,17 +137,17 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                     }
                     disabled={!config.setTags}
                   >
-										<option value="merge">
-											{intl.formatMessage({ id: "actions.merge" })}
-										</option>
-										<option value="overwrite">
-											{intl.formatMessage({ id: "actions.overwrite" })}
-										</option>
+                    <option value="merge">
+                      {intl.formatMessage({ id: "actions.merge" })}
+                    </option>
+                    <option value="overwrite">
+                      {intl.formatMessage({ id: "actions.overwrite" })}
+                    </option>
                   </Form.Control>
                 </div>
-								<Form.Text>
-									<FormattedMessage id="component_tagger.config.set_tag_desc" />
-								</Form.Text>
+                <Form.Text>
+                  <FormattedMessage id="component_tagger.config.set_tag_desc" />
+                </Form.Text>
               </Form.Group>
 
               <Form.Group className="align-items-center">
@@ -190,8 +190,8 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
             </Form>
             <div className="col-md-6">
               <h5>
-								<FormattedMessage id="component_tagger.config.blacklist_label" />
-							</h5>
+                <FormattedMessage id="component_tagger.config.blacklist_label" />
+              </h5>
               <InputGroup>
                 <Form.Control className="text-input" ref={blacklistRef} />
                 <InputGroup.Append>
@@ -225,8 +225,9 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
               <Form.Group controlId="mode-select">
                 <div className="row no-gutters">
                   <Form.Label className="mr-4 mt-1">
-										<FormattedMessage id="component_tagger.config.query_mode_label" />:
-									</Form.Label>
+                    <FormattedMessage id="component_tagger.config.query_mode_label" />
+                    :
+                  </Form.Label>
                   <Form.Control
                     as="select"
                     className="col-md-2 col-3 input-control"
@@ -238,31 +239,31 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                       })
                     }
                   >
-										<option value="auto">
-											{intl.formatMessage({
-												id: "component_tagger.config.query_mode_auto",
-											})}
-										</option>
-										<option value="filename">
-											{intl.formatMessage({
-												id: "component_tagger.config.query_mode_filename",
-											})}
-										</option>
-										<option value="dir">
-											{intl.formatMessage({
-												id: "component_tagger.config.query_mode_dir",
-											})}
-										</option>
-										<option value="path">
-											{intl.formatMessage({
-												id: "component_tagger.config.query_mode_path",
-											})}
-										</option>
-										<option value="metadata">
-											{intl.formatMessage({
-												id: "component_tagger.config.query_mode_metadata",
-											})}
-										</option>
+                    <option value="auto">
+                      {intl.formatMessage({
+                        id: "component_tagger.config.query_mode_auto",
+                      })}
+                    </option>
+                    <option value="filename">
+                      {intl.formatMessage({
+                        id: "component_tagger.config.query_mode_filename",
+                      })}
+                    </option>
+                    <option value="dir">
+                      {intl.formatMessage({
+                        id: "component_tagger.config.query_mode_dir",
+                      })}
+                    </option>
+                    <option value="path">
+                      {intl.formatMessage({
+                        id: "component_tagger.config.query_mode_path",
+                      })}
+                    </option>
+                    <option value="metadata">
+                      {intl.formatMessage({
+                        id: "component_tagger.config.query_mode_metadata",
+                      })}
+                    </option>
                   </Form.Control>
                 </div>
                 <Form.Text>
@@ -278,7 +279,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 className="align-items-center row no-gutters mt-4"
               >
                 <Form.Label className="mr-4">
-									<FormattedMessage id="component_tagger.config.active_instance" />
+                  <FormattedMessage id="component_tagger.config.active_instance" />
                 </Form.Label>
                 <Form.Control
                   as="select"

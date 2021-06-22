@@ -89,33 +89,33 @@ const getFingerprintStatus = (
     return (
       <div className="font-weight-bold">
         <SuccessIcon className="mr-2" />
-        { phashMatches.length > 0 ? (
-          <HoverPopover placement="bottom" content={phashList} className="PHashPopover">
-            { phashMatches.length > 1 ? (
+        {phashMatches.length > 0 ? (
+          <HoverPopover
+            placement="bottom"
+            content={phashList}
+            className="PHashPopover"
+          >
+            {phashMatches.length > 1 ? (
               <FormattedMessage
                 id="component_tagger.results.phash_matches"
                 values={{
-                  count: phashMatches.length
+                  count: phashMatches.length,
                 }}
               />
             ) : (
               <FormattedMessage
                 id="component_tagger.results.hash_matches"
                 values={{
-                  hash_type: (
-                    <FormattedMessage id="media_info.phash" />
-                  )
+                  hash_type: <FormattedMessage id="media_info.phash" />,
                 }}
               />
             )}
           </HoverPopover>
-        ): (
+        ) : (
           <FormattedMessage
             id="component_tagger.results.hash_matches"
             values={{
-              hash_type: (
-                <FormattedMessage id="media_info.checksum" />
-              )
+              hash_type: <FormattedMessage id="media_info.checksum" />,
             }}
           />
         )}

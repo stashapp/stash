@@ -810,7 +810,11 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
             <div className="row mb-2 no-gutters">
-              <Button onClick={() => setShowConfig(!showConfig)} variant="primary" className="ml-2" >
+              <Button
+                onClick={() => setShowConfig(!showConfig)}
+                variant="primary"
+                className="ml-2"
+              >
                 <FormattedMessage
                   id="component_tagger.verb_toggle_config"
                   values={{
