@@ -127,6 +127,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 
 	serverConnection := common.StashServerConnection{
 		Scheme:        "http",
+		Host:          c.config.GetHost(),
 		Port:          c.config.GetPort(),
 		SessionCookie: cookie,
 		Dir:           c.config.GetConfigPath(),

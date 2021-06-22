@@ -11,8 +11,8 @@ const (
 type StashServerConnection struct {
 	// http or https
 	Scheme string
-
-	Port int
+	Host   string
+	Port   int
 
 	// Cookie for authentication purposes
 	SessionCookie *http.Cookie

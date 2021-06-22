@@ -31,6 +31,7 @@ const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
 const CLASSNAME_NAVBUTTON = `${CLASSNAME}-navbutton`;
 const CLASSNAME_NAV = `${CLASSNAME}-nav`;
+const CLASSNAME_NAVZONE = `${CLASSNAME}-navzone`;
 const CLASSNAME_NAVIMAGE = `${CLASSNAME_NAV}-image`;
 const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 
@@ -183,8 +184,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   }, [isFullscreen, hide]);
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { nodeName } = e.target as Node;
-    if (nodeName === "DIV" || nodeName === "PICTURE") close();
+    const { className } = e.target as Element;
+    if (className === CLASSNAME_IMAGE) close();
   };
 
   const handleLeft = useCallback(
@@ -481,6 +482,18 @@ export const LightboxComponent: React.FC<IProps> = ({
                       media="(min-width: 800px)"
                     />
                     <img src={image.paths.thumbnail ?? ""} alt="" />
+                    <div>
+                      <div
+                        aria-hidden
+                        className={CLASSNAME_NAVZONE}
+                        onClick={handleLeft}
+                      />
+                      <div
+                        aria-hidden
+                        className={CLASSNAME_NAVZONE}
+                        onClick={handleRight}
+                      />
+                    </div>
                   </picture>
                 </div>
               ))}
