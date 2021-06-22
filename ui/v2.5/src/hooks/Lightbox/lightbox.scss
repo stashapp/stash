@@ -106,6 +106,14 @@
         display: flex;
         height: 100%;
         margin: auto;
+        position: relative;
+
+        > div {
+          display: flex;
+          height: 100%;
+          position: absolute;
+          width: 100%;
+        }
       }
 
       img {
@@ -115,6 +123,11 @@
         object-fit: contain;
       }
     }
+  }
+
+  &-navzone {
+    cursor: pointer;
+    width: 50%;
   }
 
   &-navbutton {
