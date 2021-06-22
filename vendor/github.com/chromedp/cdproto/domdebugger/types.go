@@ -59,6 +59,50 @@ func (t *DOMBreakpointType) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// CSPViolationType cSP Violation type.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#type-CSPViolationType
+type CSPViolationType string
+
+// String returns the CSPViolationType as string value.
+func (t CSPViolationType) String() string {
+	return string(t)
+}
+
+// CSPViolationType values.
+const (
+	CSPViolationTypeTrustedtypeSinkViolation   CSPViolationType = "trustedtype-sink-violation"
+	CSPViolationTypeTrustedtypePolicyViolation CSPViolationType = "trustedtype-policy-violation"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CSPViolationType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CSPViolationType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CSPViolationType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CSPViolationType(in.String()) {
+	case CSPViolationTypeTrustedtypeSinkViolation:
+		*t = CSPViolationTypeTrustedtypeSinkViolation
+	case CSPViolationTypeTrustedtypePolicyViolation:
+		*t = CSPViolationTypeTrustedtypePolicyViolation
+
+	default:
+		in.AddError(errors.New("unknown CSPViolationType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CSPViolationType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // EventListener object event listener.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#type-EventListener

@@ -12,6 +12,45 @@ import (
 	"github.com/chromedp/cdproto/cdp"
 )
 
+// DispatchDragEventParams dispatches a drag event into the page.
+type DispatchDragEventParams struct {
+	Type      DispatchDragEventType `json:"type"` // Type of the drag event.
+	X         float64               `json:"x"`    // X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	Y         float64               `json:"y"`    // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	Data      *DragData             `json:"data"`
+	Modifiers Modifier              `json:"modifiers"` // Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+}
+
+// DispatchDragEvent dispatches a drag event into the page.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchDragEvent
+//
+// parameters:
+//   type - Type of the drag event.
+//   x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
+//   y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+//   data
+func DispatchDragEvent(typeVal DispatchDragEventType, x float64, y float64, data *DragData) *DispatchDragEventParams {
+	return &DispatchDragEventParams{
+		Type: typeVal,
+		X:    x,
+		Y:    y,
+		Data: data,
+	}
+}
+
+// WithModifiers bit field representing pressed modifier keys. Alt=1, Ctrl=2,
+// Meta/Command=4, Shift=8 (default: 0).
+func (p DispatchDragEventParams) WithModifiers(modifiers Modifier) *DispatchDragEventParams {
+	p.Modifiers = modifiers
+	return &p
+}
+
+// Do executes Input.dispatchDragEvent against the provided context.
+func (p *DispatchDragEventParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandDispatchDragEvent, p, nil)
+}
+
 // DispatchKeyEventParams dispatches a key event to the page.
 type DispatchKeyEventParams struct {
 	Type                  KeyType         `json:"type"`                            // Type of the key event.
@@ -28,6 +67,7 @@ type DispatchKeyEventParams struct {
 	IsKeypad              bool            `json:"isKeypad"`                        // Whether the event was generated from the keypad (default: false).
 	IsSystemKey           bool            `json:"isSystemKey"`                     // Whether the event was a system key event (default: false).
 	Location              int64           `json:"location,omitempty"`              // Whether the event was from the left or right side of the keyboard. 1=Left, 2=Right (default: 0).
+	Commands              []string        `json:"commands,omitempty"`              // Editing commands to send with the key event (e.g., 'selectAll') (default: []). These are related to but not equal the command names used in document.execCommand and NSStandardKeyBindingResponding. See https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h for valid command names.
 }
 
 // DispatchKeyEvent dispatches a key event to the page.
@@ -131,6 +171,16 @@ func (p DispatchKeyEventParams) WithLocation(location int64) *DispatchKeyEventPa
 	return &p
 }
 
+// WithCommands editing commands to send with the key event (e.g.,
+// 'selectAll') (default: []). These are related to but not equal the command
+// names used in document.execCommand and NSStandardKeyBindingResponding. See
+// https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/editing/commands/editor_command_names.h
+// for valid command names.
+func (p DispatchKeyEventParams) WithCommands(commands []string) *DispatchKeyEventParams {
+	p.Commands = commands
+	return &p
+}
+
 // Do executes Input.dispatchKeyEvent against the provided context.
 func (p *DispatchKeyEventParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandDispatchKeyEvent, p, nil)
@@ -162,17 +212,22 @@ func (p *InsertTextParams) Do(ctx context.Context) (err error) {
 
 // DispatchMouseEventParams dispatches a mouse event to the page.
 type DispatchMouseEventParams struct {
-	Type        MouseType                     `json:"type"`                  // Type of the mouse event.
-	X           float64                       `json:"x"`                     // X coordinate of the event relative to the main frame's viewport in CSS pixels.
-	Y           float64                       `json:"y"`                     // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-	Modifiers   Modifier                      `json:"modifiers"`             // Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
-	Timestamp   *TimeSinceEpoch               `json:"timestamp,omitempty"`   // Time at which the event occurred.
-	Button      MouseButton                   `json:"button,omitempty"`      // Mouse button (default: "none").
-	Buttons     int64                         `json:"buttons,omitempty"`     // A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
-	ClickCount  int64                         `json:"clickCount,omitempty"`  // Number of times the mouse button was clicked (default: 0).
-	DeltaX      float64                       `json:"deltaX,omitempty"`      // X delta in CSS pixels for mouse wheel event (default: 0).
-	DeltaY      float64                       `json:"deltaY,omitempty"`      // Y delta in CSS pixels for mouse wheel event (default: 0).
-	PointerType DispatchMouseEventPointerType `json:"pointerType,omitempty"` // Pointer type (default: "mouse").
+	Type               MouseType                     `json:"type"`                         // Type of the mouse event.
+	X                  float64                       `json:"x"`                            // X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	Y                  float64                       `json:"y"`                            // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	Modifiers          Modifier                      `json:"modifiers"`                    // Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).
+	Timestamp          *TimeSinceEpoch               `json:"timestamp,omitempty"`          // Time at which the event occurred.
+	Button             MouseButton                   `json:"button,omitempty"`             // Mouse button (default: "none").
+	Buttons            int64                         `json:"buttons,omitempty"`            // A number indicating which buttons are pressed on the mouse when a mouse event is triggered. Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
+	ClickCount         int64                         `json:"clickCount,omitempty"`         // Number of times the mouse button was clicked (default: 0).
+	Force              float64                       `json:"force,omitempty"`              // The normalized pressure, which has a range of [0,1] (default: 0).
+	TangentialPressure float64                       `json:"tangentialPressure,omitempty"` // The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+	TiltX              int64                         `json:"tiltX,omitempty"`              // The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0).
+	TiltY              int64                         `json:"tiltY,omitempty"`              // The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+	Twist              int64                         `json:"twist,omitempty"`              // The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+	DeltaX             float64                       `json:"deltaX"`                       // X delta in CSS pixels for mouse wheel event (default: 0).
+	DeltaY             float64                       `json:"deltaY"`                       // Y delta in CSS pixels for mouse wheel event (default: 0).
+	PointerType        DispatchMouseEventPointerType `json:"pointerType,omitempty"`        // Pointer type (default: "mouse").
 }
 
 // DispatchMouseEvent dispatches a mouse event to the page.
@@ -221,6 +276,43 @@ func (p DispatchMouseEventParams) WithButtons(buttons int64) *DispatchMouseEvent
 // WithClickCount number of times the mouse button was clicked (default: 0).
 func (p DispatchMouseEventParams) WithClickCount(clickCount int64) *DispatchMouseEventParams {
 	p.ClickCount = clickCount
+	return &p
+}
+
+// WithForce the normalized pressure, which has a range of [0,1] (default:
+// 0).
+func (p DispatchMouseEventParams) WithForce(force float64) *DispatchMouseEventParams {
+	p.Force = force
+	return &p
+}
+
+// WithTangentialPressure the normalized tangential pressure, which has a
+// range of [-1,1] (default: 0).
+func (p DispatchMouseEventParams) WithTangentialPressure(tangentialPressure float64) *DispatchMouseEventParams {
+	p.TangentialPressure = tangentialPressure
+	return &p
+}
+
+// WithTiltX the plane angle between the Y-Z plane and the plane containing
+// both the stylus axis and the Y axis, in degrees of the range [-90,90], a
+// positive tiltX is to the right (default: 0).
+func (p DispatchMouseEventParams) WithTiltX(tiltX int64) *DispatchMouseEventParams {
+	p.TiltX = tiltX
+	return &p
+}
+
+// WithTiltY the plane angle between the X-Z plane and the plane containing
+// both the stylus axis and the X axis, in degrees of the range [-90,90], a
+// positive tiltY is towards the user (default: 0).
+func (p DispatchMouseEventParams) WithTiltY(tiltY int64) *DispatchMouseEventParams {
+	p.TiltY = tiltY
+	return &p
+}
+
+// WithTwist the clockwise rotation of a pen stylus around its own major
+// axis, in degrees in the range [0,359] (default: 0).
+func (p DispatchMouseEventParams) WithTwist(twist int64) *DispatchMouseEventParams {
+	p.Twist = twist
 	return &p
 }
 
@@ -377,6 +469,32 @@ func SetIgnoreInputEvents(ignore bool) *SetIgnoreInputEventsParams {
 // Do executes Input.setIgnoreInputEvents against the provided context.
 func (p *SetIgnoreInputEventsParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetIgnoreInputEvents, p, nil)
+}
+
+// SetInterceptDragsParams prevents default drag and drop behavior and
+// instead emits Input.dragIntercepted events. Drag and drop behavior can be
+// directly controlled via Input.dispatchDragEvent.
+type SetInterceptDragsParams struct {
+	Enabled bool `json:"enabled"`
+}
+
+// SetInterceptDrags prevents default drag and drop behavior and instead
+// emits Input.dragIntercepted events. Drag and drop behavior can be directly
+// controlled via Input.dispatchDragEvent.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-setInterceptDrags
+//
+// parameters:
+//   enabled
+func SetInterceptDrags(enabled bool) *SetInterceptDragsParams {
+	return &SetInterceptDragsParams{
+		Enabled: enabled,
+	}
+}
+
+// Do executes Input.setInterceptDrags against the provided context.
+func (p *SetInterceptDragsParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetInterceptDrags, p, nil)
 }
 
 // SynthesizePinchGestureParams synthesizes a pinch gesture over a time
@@ -582,12 +700,14 @@ func (p *SynthesizeTapGestureParams) Do(ctx context.Context) (err error) {
 
 // Command names.
 const (
+	CommandDispatchDragEvent          = "Input.dispatchDragEvent"
 	CommandDispatchKeyEvent           = "Input.dispatchKeyEvent"
 	CommandInsertText                 = "Input.insertText"
 	CommandDispatchMouseEvent         = "Input.dispatchMouseEvent"
 	CommandDispatchTouchEvent         = "Input.dispatchTouchEvent"
 	CommandEmulateTouchFromMouseEvent = "Input.emulateTouchFromMouseEvent"
 	CommandSetIgnoreInputEvents       = "Input.setIgnoreInputEvents"
+	CommandSetInterceptDrags          = "Input.setInterceptDrags"
 	CommandSynthesizePinchGesture     = "Input.synthesizePinchGesture"
 	CommandSynthesizeScrollGesture    = "Input.synthesizeScrollGesture"
 	CommandSynthesizeTapGesture       = "Input.synthesizeTapGesture"

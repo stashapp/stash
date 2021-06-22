@@ -32,12 +32,13 @@ type EventEventSourceMessageReceived struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-loadingFailed
 type EventLoadingFailed struct {
-	RequestID     RequestID          `json:"requestId"`               // Request identifier.
-	Timestamp     *cdp.MonotonicTime `json:"timestamp"`               // Timestamp.
-	Type          ResourceType       `json:"type"`                    // Resource type.
-	ErrorText     string             `json:"errorText"`               // User friendly error message.
-	Canceled      bool               `json:"canceled,omitempty"`      // True if loading was canceled.
-	BlockedReason BlockedReason      `json:"blockedReason,omitempty"` // The reason why loading was blocked, if any.
+	RequestID       RequestID          `json:"requestId"`                 // Request identifier.
+	Timestamp       *cdp.MonotonicTime `json:"timestamp"`                 // Timestamp.
+	Type            ResourceType       `json:"type"`                      // Resource type.
+	ErrorText       string             `json:"errorText"`                 // User friendly error message.
+	Canceled        bool               `json:"canceled,omitempty"`        // True if loading was canceled.
+	BlockedReason   BlockedReason      `json:"blockedReason,omitempty"`   // The reason why loading was blocked, if any.
+	CorsErrorStatus *CorsErrorStatus   `json:"corsErrorStatus,omitempty"` // The reason why loading was blocked by CORS, if any.
 }
 
 // EventLoadingFinished fired when HTTP request has finished loading.
@@ -170,6 +171,33 @@ type EventWebSocketWillSendHandshakeRequest struct {
 	Request   *WebSocketRequest   `json:"request"`   // WebSocket request data.
 }
 
+// EventWebTransportCreated fired upon WebTransport creation.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-webTransportCreated
+type EventWebTransportCreated struct {
+	TransportID RequestID          `json:"transportId"`         // WebTransport identifier.
+	URL         string             `json:"url"`                 // WebTransport request URL.
+	Timestamp   *cdp.MonotonicTime `json:"timestamp"`           // Timestamp.
+	Initiator   *Initiator         `json:"initiator,omitempty"` // Request initiator.
+}
+
+// EventWebTransportConnectionEstablished fired when WebTransport handshake
+// is finished.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-webTransportConnectionEstablished
+type EventWebTransportConnectionEstablished struct {
+	TransportID RequestID          `json:"transportId"` // WebTransport identifier.
+	Timestamp   *cdp.MonotonicTime `json:"timestamp"`   // Timestamp.
+}
+
+// EventWebTransportClosed fired when WebTransport is disposed.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-webTransportClosed
+type EventWebTransportClosed struct {
+	TransportID RequestID          `json:"transportId"` // WebTransport identifier.
+	Timestamp   *cdp.MonotonicTime `json:"timestamp"`   // Timestamp.
+}
+
 // EventRequestWillBeSentExtraInfo fired when additional information about a
 // requestWillBeSent event is available from the network stack. Not every
 // requestWillBeSent event will have an additional requestWillBeSentExtraInfo
@@ -178,9 +206,10 @@ type EventWebSocketWillSendHandshakeRequest struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-requestWillBeSentExtraInfo
 type EventRequestWillBeSentExtraInfo struct {
-	RequestID         RequestID                  `json:"requestId"`         // Request identifier. Used to match this information to an existing requestWillBeSent event.
-	AssociatedCookies []*BlockedCookieWithReason `json:"associatedCookies"` // A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
-	Headers           Headers                    `json:"headers"`           // Raw request headers as they will be sent over the wire.
+	RequestID           RequestID                  `json:"requestId"`                     // Request identifier. Used to match this information to an existing requestWillBeSent event.
+	AssociatedCookies   []*BlockedCookieWithReason `json:"associatedCookies"`             // A list of cookies potentially associated to the requested URL. This includes both cookies sent with the request and the ones not sent; the latter are distinguished by having blockedReason field set.
+	Headers             Headers                    `json:"headers"`                       // Raw request headers as they will be sent over the wire.
+	ClientSecurityState *ClientSecurityState       `json:"clientSecurityState,omitempty"` // The client security state set for the request.
 }
 
 // EventResponseReceivedExtraInfo fired when additional information about a
@@ -191,8 +220,65 @@ type EventRequestWillBeSentExtraInfo struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-responseReceivedExtraInfo
 type EventResponseReceivedExtraInfo struct {
-	RequestID      RequestID                     `json:"requestId"`             // Request identifier. Used to match this information to another responseReceived event.
-	BlockedCookies []*BlockedSetCookieWithReason `json:"blockedCookies"`        // A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
-	Headers        Headers                       `json:"headers"`               // Raw response headers as they were received over the wire.
-	HeadersText    string                        `json:"headersText,omitempty"` // Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
+	RequestID              RequestID                     `json:"requestId"`              // Request identifier. Used to match this information to another responseReceived event.
+	BlockedCookies         []*BlockedSetCookieWithReason `json:"blockedCookies"`         // A list of cookies which were not stored from the response along with the corresponding reasons for blocking. The cookies here may not be valid due to syntax errors, which are represented by the invalid cookie line string instead of a proper cookie.
+	Headers                Headers                       `json:"headers"`                // Raw response headers as they were received over the wire.
+	ResourceIPAddressSpace IPAddressSpace                `json:"resourceIPAddressSpace"` // The IP address space of the resource. The address space can only be determined once the transport established the connection, so we can't send it in requestWillBeSentExtraInfo.
+	HeadersText            string                        `json:"headersText,omitempty"`  // Raw response header text as it was received over the wire. The raw text may not always be available, such as in the case of HTTP/2 or QUIC.
+}
+
+// EventTrustTokenOperationDone fired exactly once for each Trust Token
+// operation. Depending on the type of the operation and whether the operation
+// succeeded or failed, the event is fired before the corresponding request was
+// sent or after the response was received.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-trustTokenOperationDone
+type EventTrustTokenOperationDone struct {
+	Status           TrustTokenOperationDoneStatus `json:"status"` // Detailed success or error status of the operation. 'AlreadyExists' also signifies a successful operation, as the result of the operation already exists und thus, the operation was abort preemptively (e.g. a cache hit).
+	Type             TrustTokenOperationType       `json:"type"`
+	RequestID        RequestID                     `json:"requestId"`
+	TopLevelOrigin   string                        `json:"topLevelOrigin,omitempty"`   // Top level origin. The context in which the operation was attempted.
+	IssuerOrigin     string                        `json:"issuerOrigin,omitempty"`     // Origin of the issuer in case of a "Issuance" or "Redemption" operation.
+	IssuedTokenCount int64                         `json:"issuedTokenCount,omitempty"` // The number of obtained Trust Tokens on a successful "Issuance" operation.
+}
+
+// EventSubresourceWebBundleMetadataReceived fired once when parsing the .wbn
+// file has succeeded. The event contains the information about the web bundle
+// contents.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-subresourceWebBundleMetadataReceived
+type EventSubresourceWebBundleMetadataReceived struct {
+	RequestID RequestID `json:"requestId"` // Request identifier. Used to match this information to another event.
+	Urls      []string  `json:"urls"`      // A list of URLs of resources in the subresource Web Bundle.
+}
+
+// EventSubresourceWebBundleMetadataError fired once when parsing the .wbn
+// file has failed.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-subresourceWebBundleMetadataError
+type EventSubresourceWebBundleMetadataError struct {
+	RequestID    RequestID `json:"requestId"`    // Request identifier. Used to match this information to another event.
+	ErrorMessage string    `json:"errorMessage"` // Error message
+}
+
+// EventSubresourceWebBundleInnerResponseParsed fired when handling requests
+// for resources within a .wbn file. Note: this will only be fired for resources
+// that are requested by the webpage.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-subresourceWebBundleInnerResponseParsed
+type EventSubresourceWebBundleInnerResponseParsed struct {
+	InnerRequestID  RequestID `json:"innerRequestId"`            // Request identifier of the subresource request
+	InnerRequestURL string    `json:"innerRequestURL"`           // URL of the subresource resource.
+	BundleRequestID RequestID `json:"bundleRequestId,omitempty"` // Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
+}
+
+// EventSubresourceWebBundleInnerResponseError fired when request for
+// resources within a .wbn file failed.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Network#event-subresourceWebBundleInnerResponseError
+type EventSubresourceWebBundleInnerResponseError struct {
+	InnerRequestID  RequestID `json:"innerRequestId"`            // Request identifier of the subresource request
+	InnerRequestURL string    `json:"innerRequestURL"`           // URL of the subresource resource.
+	ErrorMessage    string    `json:"errorMessage"`              // Error message
+	BundleRequestID RequestID `json:"bundleRequestId,omitempty"` // Bundle request identifier. Used to match this information to another event. This made be absent in case when the instrumentation was enabled only after webbundle was parsed.
 }
