@@ -18,6 +18,7 @@ import {
 } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { PhashCriterionOption } from "./criteria/phash";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -56,7 +57,7 @@ const criterionOptions = [
     "media_info.checksum",
     "checksum"
   ),
-  createStringCriterionOption("phash", "media_info.phash"),
+  PhashCriterionOption,
   RatingCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
