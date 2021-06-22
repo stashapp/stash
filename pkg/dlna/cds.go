@@ -334,18 +334,24 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 	var objs []interface{}
 	var updateID string
 
-	// #1465 - handle root object
-	if obj.IsRoot() {
-		objs = getRootObject()
+	// if numeric, then must be scene, otherwise handle as if path
+	sceneID, err := strconv.Atoi(obj.Path)
+	if err != nil {
+		// #1465 - handle root object
+		if obj.IsRoot() {
+			objs = getRootObject()
+		} else {
+			// HACK: just create a fake storage folder to return. The name won't
+			// be correct, but hopefully the names returned from handleBrowseDirectChildren
+			// will be used instead.
+			objs = []interface{}{makeStorageFolder(obj.ID(), obj.ID(), obj.ParentID())}
+		}
+
+		updateID = me.updateIDString()
 	} else {
 		var scene *models.Scene
 
 		if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			sceneID, err := strconv.Atoi(obj.Path)
-			if err != nil {
-				return err
-			}
-
 			scene, err = r.Scene().Find(sceneID)
 			if err != nil {
 				return err
