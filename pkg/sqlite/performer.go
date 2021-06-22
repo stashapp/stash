@@ -239,6 +239,9 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 	}
 
 	const tableName = performerTable
+	query.handleCriterion(stringCriterionHandler(filter.Name, tableName+".name"))
+	query.handleCriterion(stringCriterionHandler(filter.Details, tableName+".details"))
+
 	query.handleCriterion(boolCriterionHandler(filter.FilterFavorites, tableName+".favorite"))
 
 	query.handleCriterion(yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"))

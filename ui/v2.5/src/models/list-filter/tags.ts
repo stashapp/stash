@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
@@ -36,6 +37,7 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
+  createMandatoryStringCriterionOption("name"),
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),
   createMandatoryNumberCriterionOption("scene_count"),

@@ -184,6 +184,8 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	query.handleCountCriterion(studioFilter.SceneCount, studioTable, sceneTable, studioIDColumn)
 	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
 	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
+	query.handleStringCriterionInput(studioFilter.Name, "studios.name")
+	query.handleStringCriterionInput(studioFilter.Details, "studios.details")
 	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
 	query.handleStringCriterionInput(studioFilter.StashID, "studio_stash_ids.stash_id")
 

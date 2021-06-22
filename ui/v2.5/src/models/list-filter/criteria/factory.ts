@@ -38,12 +38,16 @@ import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
 import { RatingCriterionOption } from "./rating";
+import { PhashCriterionOption } from "./phash";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
     case "none":
       return new NoneCriterion();
+    case "name":
     case "path":
+    case "checksum":
+    case "oshash":
       return new StringCriterion(
         new MandatoryStringCriterionOption(type, type)
       );
@@ -111,6 +115,13 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "gender":
       return new GenderCriterion();
+    case "sceneChecksum":
+    case "galleryChecksum":
+      return new StringCriterion(
+        new StringCriterionOption("checksum", type, "checksum")
+      );
+    case "phash":
+      return new StringCriterion(PhashCriterionOption);
     case "ethnicity":
     case "country":
     case "hair_color":
@@ -124,6 +135,10 @@ export function makeCriteria(type: CriterionType = "none") {
     case "aliases":
     case "url":
     case "stash_id":
+    case "details":
+    case "title":
+    case "director":
+    case "synopsis":
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
