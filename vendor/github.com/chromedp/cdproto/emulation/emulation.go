@@ -187,6 +187,7 @@ type SetDeviceMetricsOverrideParams struct {
 	DontSetVisibleSize bool               `json:"dontSetVisibleSize,omitempty"` // Do not set visible view size, rely upon explicit setVisibleSize call.
 	ScreenOrientation  *ScreenOrientation `json:"screenOrientation,omitempty"`  // Screen orientation override.
 	Viewport           *page.Viewport     `json:"viewport,omitempty"`           // If set, the visible area of the page will be overridden to this viewport. This viewport change is not observed by the page, e.g. viewport-relative elements do not change positions.
+	DisplayFeature     *DisplayFeature    `json:"displayFeature,omitempty"`     // If set, the display feature of a multi-segment screen. If not set, multi-segment support is turned-off.
 }
 
 // SetDeviceMetricsOverride overrides the values of device screen dimensions
@@ -262,6 +263,13 @@ func (p SetDeviceMetricsOverrideParams) WithScreenOrientation(screenOrientation 
 // viewport-relative elements do not change positions.
 func (p SetDeviceMetricsOverrideParams) WithViewport(viewport *page.Viewport) *SetDeviceMetricsOverrideParams {
 	p.Viewport = viewport
+	return &p
+}
+
+// WithDisplayFeature if set, the display feature of a multi-segment screen.
+// If not set, multi-segment support is turned-off.
+func (p SetDeviceMetricsOverrideParams) WithDisplayFeature(displayFeature *DisplayFeature) *SetDeviceMetricsOverrideParams {
+	p.DisplayFeature = displayFeature
 	return &p
 }
 
@@ -439,6 +447,46 @@ func (p SetGeolocationOverrideParams) WithAccuracy(accuracy float64) *SetGeoloca
 // Do executes Emulation.setGeolocationOverride against the provided context.
 func (p *SetGeolocationOverrideParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetGeolocationOverride, p, nil)
+}
+
+// SetIdleOverrideParams overrides the Idle state.
+type SetIdleOverrideParams struct {
+	IsUserActive     bool `json:"isUserActive"`     // Mock isUserActive
+	IsScreenUnlocked bool `json:"isScreenUnlocked"` // Mock isScreenUnlocked
+}
+
+// SetIdleOverride overrides the Idle state.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setIdleOverride
+//
+// parameters:
+//   isUserActive - Mock isUserActive
+//   isScreenUnlocked - Mock isScreenUnlocked
+func SetIdleOverride(isUserActive bool, isScreenUnlocked bool) *SetIdleOverrideParams {
+	return &SetIdleOverrideParams{
+		IsUserActive:     isUserActive,
+		IsScreenUnlocked: isScreenUnlocked,
+	}
+}
+
+// Do executes Emulation.setIdleOverride against the provided context.
+func (p *SetIdleOverrideParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetIdleOverride, p, nil)
+}
+
+// ClearIdleOverrideParams clears Idle state overrides.
+type ClearIdleOverrideParams struct{}
+
+// ClearIdleOverride clears Idle state overrides.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-clearIdleOverride
+func ClearIdleOverride() *ClearIdleOverrideParams {
+	return &ClearIdleOverrideParams{}
+}
+
+// Do executes Emulation.clearIdleOverride against the provided context.
+func (p *ClearIdleOverrideParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandClearIdleOverride, nil, nil)
 }
 
 // SetPageScaleFactorParams sets a specified page scale factor.
@@ -643,6 +691,28 @@ func (p *SetTimezoneOverrideParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetTimezoneOverride, p, nil)
 }
 
+// SetDisabledImageTypesParams [no description].
+type SetDisabledImageTypesParams struct {
+	ImageTypes []DisabledImageType `json:"imageTypes"` // Image types to disable.
+}
+
+// SetDisabledImageTypes [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setDisabledImageTypes
+//
+// parameters:
+//   imageTypes - Image types to disable.
+func SetDisabledImageTypes(imageTypes []DisabledImageType) *SetDisabledImageTypesParams {
+	return &SetDisabledImageTypesParams{
+		ImageTypes: imageTypes,
+	}
+}
+
+// Do executes Emulation.setDisabledImageTypes against the provided context.
+func (p *SetDisabledImageTypesParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetDisabledImageTypes, p, nil)
+}
+
 // SetUserAgentOverrideParams allows overriding user agent with the given
 // string.
 type SetUserAgentOverrideParams struct {
@@ -704,11 +774,14 @@ const (
 	CommandSetEmulatedMedia                  = "Emulation.setEmulatedMedia"
 	CommandSetEmulatedVisionDeficiency       = "Emulation.setEmulatedVisionDeficiency"
 	CommandSetGeolocationOverride            = "Emulation.setGeolocationOverride"
+	CommandSetIdleOverride                   = "Emulation.setIdleOverride"
+	CommandClearIdleOverride                 = "Emulation.clearIdleOverride"
 	CommandSetPageScaleFactor                = "Emulation.setPageScaleFactor"
 	CommandSetScriptExecutionDisabled        = "Emulation.setScriptExecutionDisabled"
 	CommandSetTouchEmulationEnabled          = "Emulation.setTouchEmulationEnabled"
 	CommandSetVirtualTimePolicy              = "Emulation.setVirtualTimePolicy"
 	CommandSetLocaleOverride                 = "Emulation.setLocaleOverride"
 	CommandSetTimezoneOverride               = "Emulation.setTimezoneOverride"
+	CommandSetDisabledImageTypes             = "Emulation.setDisabledImageTypes"
 	CommandSetUserAgentOverride              = "Emulation.setUserAgentOverride"
 )

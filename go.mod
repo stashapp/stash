@@ -5,8 +5,8 @@ require (
 	github.com/Yamashou/gqlgenc v0.0.0-20200902035953-4dbef3551953
 	github.com/anacrolix/dms v1.2.2
 	github.com/antchfx/htmlquery v1.2.3
-	github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
-	github.com/chromedp/chromedp v0.5.3
+	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
+	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.0.3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.0
@@ -21,6 +21,7 @@ require (
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/json-iterator/go v1.1.9
+	github.com/knq/sysutil v0.0.0-20191005231841-15668db23d08 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 	github.com/remeh/sizedwaitgroup v1.0.0
@@ -37,7 +38,7 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
-	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
 	golang.org/x/tools v0.0.0-20200915031644-64986481280e // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.3.0

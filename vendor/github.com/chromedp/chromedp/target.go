@@ -2,6 +2,7 @@ package chromedp
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"sync"
 	"sync/atomic"
@@ -12,6 +13,7 @@ import (
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/cdproto/target"
 )
 
@@ -26,15 +28,64 @@ type Target struct {
 
 	messageQueue chan *cdproto.Message
 
+	// frameMu protects both frames and cur.
+	frameMu sync.RWMutex
 	// frames is the set of encountered frames.
-	frames map[cdp.FrameID]*cdp.Frame
-
+	frames       map[cdp.FrameID]*cdp.Frame
+	execContexts map[cdp.FrameID]runtime.ExecutionContextID
 	// cur is the current top level frame.
-	cur   *cdp.Frame
-	curMu sync.RWMutex
+	cur cdp.FrameID
 
 	// logging funcs
 	logf, errf func(string, ...interface{})
+
+	// Indicates if the target is a worker target.
+	isWorker bool
+}
+
+func (t *Target) enclosingFrame(node *cdp.Node) cdp.FrameID {
+	t.frameMu.RLock()
+	top := t.frames[t.cur]
+	t.frameMu.RUnlock()
+	top.RLock()
+	defer top.RUnlock()
+	for {
+		if node == nil {
+			// Avoid crashing. This can happen if we're using an old
+			// node that has been replaced, for example.
+			return ""
+		}
+		if node.FrameID != "" {
+			break
+		}
+		node = top.Nodes[node.ParentID]
+	}
+	return node.FrameID
+}
+
+// ensureFrame ensures the top frame of this target is loaded and returns the top frame,
+// the root node and the ExecutionContextID of this top frame; otherwise, it will return
+// false as its last return value.
+func (t *Target) ensureFrame() (*cdp.Frame, *cdp.Node, runtime.ExecutionContextID, bool) {
+	t.frameMu.RLock()
+	frame := t.frames[t.cur]
+	execCtx := t.execContexts[t.cur]
+	t.frameMu.RUnlock()
+
+	// the frame hasn't loaded yet.
+	if frame == nil || execCtx == 0 {
+		return nil, nil, 0, false
+	}
+
+	frame.RLock()
+	root := frame.Root
+	frame.RUnlock()
+
+	if root == nil {
+		// not root node yet?
+		return nil, nil, 0, false
+	}
+	return frame, root, execCtx, true
 }
 
 func (t *Target) run(ctx context.Context) {
@@ -43,7 +94,10 @@ func (t *Target) run(ctx context.Context) {
 		value  interface{}
 	}
 	// syncEventQueue is used to handle events synchronously within Target.
-	syncEventQueue := make(chan eventValue, 1024)
+	// TODO: If this queue gets full, the goroutine below could get stuck on
+	// a send, and response callbacks would never run, resulting in a
+	// deadlock. Can we fix this without potentially using lots of memory?
+	syncEventQueue := make(chan eventValue, 4096)
 
 	// This goroutine receives events from the browser, calls listeners, and
 	// then passes the events onto the main goroutine for the target handler
@@ -77,7 +131,7 @@ func (t *Target) run(ctx context.Context) {
 				t.listenersMu.Unlock()
 
 				switch msg.Method.Domain() {
-				case "Page", "DOM":
+				case "Runtime", "Page", "DOM":
 					select {
 					case <-ctx.Done():
 						return
@@ -94,6 +148,8 @@ func (t *Target) run(ctx context.Context) {
 			return
 		case ev := <-syncEventQueue:
 			switch ev.method.Domain() {
+			case "Runtime":
+				t.runtimeEvent(ev.value)
 			case "Page":
 				t.pageEvent(ev.value)
 			case "DOM":
@@ -162,12 +218,48 @@ func (t *Target) Execute(ctx context.Context, method string, params easyjson.Mar
 	return nil
 }
 
+// runtimeEvent handles incoming runtime events.
+func (t *Target) runtimeEvent(ev interface{}) {
+	switch ev := ev.(type) {
+	case *runtime.EventExecutionContextCreated:
+		var aux struct {
+			FrameID cdp.FrameID
+		}
+		if len(ev.Context.AuxData) == 0 {
+			break
+		}
+		if err := json.Unmarshal(ev.Context.AuxData, &aux); err != nil {
+			t.errf("could not decode executionContextCreated auxData %q: %v", ev.Context.AuxData, err)
+			break
+		}
+		if aux.FrameID != "" {
+			t.frameMu.Lock()
+			t.execContexts[aux.FrameID] = ev.Context.ID
+			t.frameMu.Unlock()
+		}
+	case *runtime.EventExecutionContextDestroyed:
+		t.frameMu.Lock()
+		for frameID, ctxID := range t.execContexts {
+			if ctxID == ev.ExecutionContextID {
+				delete(t.execContexts, frameID)
+			}
+		}
+		t.frameMu.Unlock()
+	case *runtime.EventExecutionContextsCleared:
+		t.frameMu.Lock()
+		for frameID := range t.execContexts {
+			delete(t.execContexts, frameID)
+		}
+		t.frameMu.Unlock()
+	}
+}
+
 // documentUpdated handles the document updated event, retrieving the document
 // root for the root frame.
 func (t *Target) documentUpdated(ctx context.Context) {
-	t.curMu.RLock()
-	f := t.cur
-	t.curMu.RUnlock()
+	t.frameMu.RLock()
+	f := t.frames[t.cur]
+	t.frameMu.RUnlock()
 	if f == nil {
 		// TODO: This seems to happen on CI, when running the tests
 		// under the headless-shell Docker image. Figure out why.
@@ -203,14 +295,14 @@ func (t *Target) pageEvent(ev interface{}) {
 
 	switch e := ev.(type) {
 	case *page.EventFrameNavigated:
+		t.frameMu.Lock()
 		t.frames[e.Frame.ID] = e.Frame
 		if e.Frame.ParentID == "" {
 			// This frame is only the new top-level frame if it has
 			// no parent.
-			t.curMu.Lock()
-			t.cur = e.Frame
-			t.curMu.Unlock()
+			t.cur = e.Frame.ID
 		}
+		t.frameMu.Unlock()
 		return
 
 	case *page.EventFrameAttached:
@@ -226,25 +318,22 @@ func (t *Target) pageEvent(ev interface{}) {
 		id, op = e.FrameID, frameStoppedLoading
 
 		// ignored events
-	case *page.EventFrameRequestedNavigation:
-		return
-	case *page.EventDomContentEventFired:
-		return
-	case *page.EventLoadEventFired:
-		return
-	case *page.EventFrameResized:
-		return
-	case *page.EventLifecycleEvent:
-		return
-	case *page.EventNavigatedWithinDocument:
-		return
-	case *page.EventJavascriptDialogOpening:
-		return
-	case *page.EventJavascriptDialogClosed:
-		return
-	case *page.EventWindowOpen:
-		return
-	case *page.EventDownloadWillBegin:
+	case *page.EventCompilationCacheProduced,
+		*page.EventDocumentOpened,
+		*page.EventDomContentEventFired,
+		*page.EventFileChooserOpened,
+		*page.EventFrameRequestedNavigation,
+		*page.EventFrameResized,
+		*page.EventInterstitialHidden,
+		*page.EventInterstitialShown,
+		*page.EventJavascriptDialogClosed,
+		*page.EventJavascriptDialogOpening,
+		*page.EventLifecycleEvent,
+		*page.EventLoadEventFired,
+		*page.EventNavigatedWithinDocument,
+		*page.EventScreencastFrame,
+		*page.EventScreencastVisibilityChanged,
+		*page.EventWindowOpen:
 		return
 
 	default:
@@ -252,6 +341,7 @@ func (t *Target) pageEvent(ev interface{}) {
 		return
 	}
 
+	t.frameMu.Lock()
 	f := t.frames[id]
 	if f == nil {
 		// This can happen if a frame is attached or starts loading
@@ -260,6 +350,7 @@ func (t *Target) pageEvent(ev interface{}) {
 		f = &cdp.Frame{ID: id}
 		t.frames[id] = f
 	}
+	t.frameMu.Unlock()
 
 	f.Lock()
 	op(f)
@@ -268,7 +359,7 @@ func (t *Target) pageEvent(ev interface{}) {
 
 // domEvent handles incoming DOM events.
 func (t *Target) domEvent(ctx context.Context, ev interface{}) {
-	f := t.cur
+	f := t.frames[t.cur]
 	var id cdp.NodeID
 	var op nodeOp
 

@@ -531,56 +531,54 @@ func (p *GetDocumentParams) Do(ctx context.Context) (root *cdp.Node, err error) 
 	return res.Root, nil
 }
 
-// GetFlattenedDocumentParams returns the root DOM node (and optionally the
-// subtree) to the caller.
-type GetFlattenedDocumentParams struct {
-	Depth  int64 `json:"depth,omitempty"`  // The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.
-	Pierce bool  `json:"pierce,omitempty"` // Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).
+// GetNodesForSubtreeByStyleParams finds nodes with a given computed style in
+// a subtree.
+type GetNodesForSubtreeByStyleParams struct {
+	NodeID         cdp.NodeID                  `json:"nodeId"`           // Node ID pointing to the root of a subtree.
+	ComputedStyles []*CSSComputedStyleProperty `json:"computedStyles"`   // The style to filter nodes by (includes nodes if any of properties matches).
+	Pierce         bool                        `json:"pierce,omitempty"` // Whether or not iframes and shadow roots in the same target should be traversed when returning the results (default is false).
 }
 
-// GetFlattenedDocument returns the root DOM node (and optionally the
-// subtree) to the caller.
+// GetNodesForSubtreeByStyle finds nodes with a given computed style in a
+// subtree.
 //
-// See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getFlattenedDocument
+// See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getNodesForSubtreeByStyle
 //
 // parameters:
-func GetFlattenedDocument() *GetFlattenedDocumentParams {
-	return &GetFlattenedDocumentParams{}
+//   nodeID - Node ID pointing to the root of a subtree.
+//   computedStyles - The style to filter nodes by (includes nodes if any of properties matches).
+func GetNodesForSubtreeByStyle(nodeID cdp.NodeID, computedStyles []*CSSComputedStyleProperty) *GetNodesForSubtreeByStyleParams {
+	return &GetNodesForSubtreeByStyleParams{
+		NodeID:         nodeID,
+		ComputedStyles: computedStyles,
+	}
 }
 
-// WithDepth the maximum depth at which children should be retrieved,
-// defaults to 1. Use -1 for the entire subtree or provide an integer larger
-// than 0.
-func (p GetFlattenedDocumentParams) WithDepth(depth int64) *GetFlattenedDocumentParams {
-	p.Depth = depth
-	return &p
-}
-
-// WithPierce whether or not iframes and shadow roots should be traversed
-// when returning the subtree (default is false).
-func (p GetFlattenedDocumentParams) WithPierce(pierce bool) *GetFlattenedDocumentParams {
+// WithPierce whether or not iframes and shadow roots in the same target
+// should be traversed when returning the results (default is false).
+func (p GetNodesForSubtreeByStyleParams) WithPierce(pierce bool) *GetNodesForSubtreeByStyleParams {
 	p.Pierce = pierce
 	return &p
 }
 
-// GetFlattenedDocumentReturns return values.
-type GetFlattenedDocumentReturns struct {
-	Nodes []*cdp.Node `json:"nodes,omitempty"` // Resulting node.
+// GetNodesForSubtreeByStyleReturns return values.
+type GetNodesForSubtreeByStyleReturns struct {
+	NodeIds []cdp.NodeID `json:"nodeIds,omitempty"` // Resulting nodes.
 }
 
-// Do executes DOM.getFlattenedDocument against the provided context.
+// Do executes DOM.getNodesForSubtreeByStyle against the provided context.
 //
 // returns:
-//   nodes - Resulting node.
-func (p *GetFlattenedDocumentParams) Do(ctx context.Context) (nodes []*cdp.Node, err error) {
+//   nodeIds - Resulting nodes.
+func (p *GetNodesForSubtreeByStyleParams) Do(ctx context.Context) (nodeIds []cdp.NodeID, err error) {
 	// execute
-	var res GetFlattenedDocumentReturns
-	err = cdp.Execute(ctx, CommandGetFlattenedDocument, p, &res)
+	var res GetNodesForSubtreeByStyleReturns
+	err = cdp.Execute(ctx, CommandGetNodesForSubtreeByStyle, p, &res)
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Nodes, nil
+	return res.NodeIds, nil
 }
 
 // GetNodeForLocationParams returns node id at given location. Depending on
@@ -1663,7 +1661,7 @@ const (
 	CommandGetBoxModel                     = "DOM.getBoxModel"
 	CommandGetContentQuads                 = "DOM.getContentQuads"
 	CommandGetDocument                     = "DOM.getDocument"
-	CommandGetFlattenedDocument            = "DOM.getFlattenedDocument"
+	CommandGetNodesForSubtreeByStyle       = "DOM.getNodesForSubtreeByStyle"
 	CommandGetNodeForLocation              = "DOM.getNodeForLocation"
 	CommandGetOuterHTML                    = "DOM.getOuterHTML"
 	CommandGetRelayoutBoundary             = "DOM.getRelayoutBoundary"

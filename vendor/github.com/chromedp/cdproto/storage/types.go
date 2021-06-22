@@ -88,3 +88,12 @@ type UsageForType struct {
 	StorageType Type    `json:"storageType"` // Name of storage type.
 	Usage       float64 `json:"usage"`       // Storage usage (bytes).
 }
+
+// TrustTokens pair of issuer origin and number of available (signed, but not
+// used) Trust Tokens from that issuer.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#type-TrustTokens
+type TrustTokens struct {
+	IssuerOrigin string  `json:"issuerOrigin"`
+	Count        float64 `json:"count"`
+}

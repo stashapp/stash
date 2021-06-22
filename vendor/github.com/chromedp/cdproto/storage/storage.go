@@ -156,6 +156,7 @@ func GetUsageAndQuota(origin string) *GetUsageAndQuotaParams {
 type GetUsageAndQuotaReturns struct {
 	Usage          float64         `json:"usage,omitempty"`          // Storage usage (bytes).
 	Quota          float64         `json:"quota,omitempty"`          // Storage quota (bytes).
+	OverrideActive bool            `json:"overrideActive,omitempty"` // Whether or not the origin has an active storage quota override
 	UsageBreakdown []*UsageForType `json:"usageBreakdown,omitempty"` // Storage usage per type (bytes).
 }
 
@@ -164,16 +165,52 @@ type GetUsageAndQuotaReturns struct {
 // returns:
 //   usage - Storage usage (bytes).
 //   quota - Storage quota (bytes).
+//   overrideActive - Whether or not the origin has an active storage quota override
 //   usageBreakdown - Storage usage per type (bytes).
-func (p *GetUsageAndQuotaParams) Do(ctx context.Context) (usage float64, quota float64, usageBreakdown []*UsageForType, err error) {
+func (p *GetUsageAndQuotaParams) Do(ctx context.Context) (usage float64, quota float64, overrideActive bool, usageBreakdown []*UsageForType, err error) {
 	// execute
 	var res GetUsageAndQuotaReturns
 	err = cdp.Execute(ctx, CommandGetUsageAndQuota, p, &res)
 	if err != nil {
-		return 0, 0, nil, err
+		return 0, 0, false, nil, err
 	}
 
-	return res.Usage, res.Quota, res.UsageBreakdown, nil
+	return res.Usage, res.Quota, res.OverrideActive, res.UsageBreakdown, nil
+}
+
+// OverrideQuotaForOriginParams override quota for the specified origin.
+type OverrideQuotaForOriginParams struct {
+	Origin    string  `json:"origin"`              // Security origin.
+	QuotaSize float64 `json:"quotaSize,omitempty"` // The quota size (in bytes) to override the original quota with. If this is called multiple times, the overridden quota will be equal to the quotaSize provided in the final call. If this is called without specifying a quotaSize, the quota will be reset to the default value for the specified origin. If this is called multiple times with different origins, the override will be maintained for each origin until it is disabled (called without a quotaSize).
+}
+
+// OverrideQuotaForOrigin override quota for the specified origin.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-overrideQuotaForOrigin
+//
+// parameters:
+//   origin - Security origin.
+func OverrideQuotaForOrigin(origin string) *OverrideQuotaForOriginParams {
+	return &OverrideQuotaForOriginParams{
+		Origin: origin,
+	}
+}
+
+// WithQuotaSize the quota size (in bytes) to override the original quota
+// with. If this is called multiple times, the overridden quota will be equal to
+// the quotaSize provided in the final call. If this is called without
+// specifying a quotaSize, the quota will be reset to the default value for the
+// specified origin. If this is called multiple times with different origins,
+// the override will be maintained for each origin until it is disabled (called
+// without a quotaSize).
+func (p OverrideQuotaForOriginParams) WithQuotaSize(quotaSize float64) *OverrideQuotaForOriginParams {
+	p.QuotaSize = quotaSize
+	return &p
+}
+
+// Do executes Storage.overrideQuotaForOrigin against the provided context.
+func (p *OverrideQuotaForOriginParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandOverrideQuotaForOrigin, p, nil)
 }
 
 // TrackCacheStorageForOriginParams registers origin to be notified when an
@@ -272,6 +309,79 @@ func (p *UntrackIndexedDBForOriginParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandUntrackIndexedDBForOrigin, p, nil)
 }
 
+// GetTrustTokensParams returns the number of stored Trust Tokens per issuer
+// for the current browsing context.
+type GetTrustTokensParams struct{}
+
+// GetTrustTokens returns the number of stored Trust Tokens per issuer for
+// the current browsing context.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getTrustTokens
+func GetTrustTokens() *GetTrustTokensParams {
+	return &GetTrustTokensParams{}
+}
+
+// GetTrustTokensReturns return values.
+type GetTrustTokensReturns struct {
+	Tokens []*TrustTokens `json:"tokens,omitempty"`
+}
+
+// Do executes Storage.getTrustTokens against the provided context.
+//
+// returns:
+//   tokens
+func (p *GetTrustTokensParams) Do(ctx context.Context) (tokens []*TrustTokens, err error) {
+	// execute
+	var res GetTrustTokensReturns
+	err = cdp.Execute(ctx, CommandGetTrustTokens, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Tokens, nil
+}
+
+// ClearTrustTokensParams removes all Trust Tokens issued by the provided
+// issuerOrigin. Leaves other stored data, including the issuer's Redemption
+// Records, intact.
+type ClearTrustTokensParams struct {
+	IssuerOrigin string `json:"issuerOrigin"`
+}
+
+// ClearTrustTokens removes all Trust Tokens issued by the provided
+// issuerOrigin. Leaves other stored data, including the issuer's Redemption
+// Records, intact.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-clearTrustTokens
+//
+// parameters:
+//   issuerOrigin
+func ClearTrustTokens(issuerOrigin string) *ClearTrustTokensParams {
+	return &ClearTrustTokensParams{
+		IssuerOrigin: issuerOrigin,
+	}
+}
+
+// ClearTrustTokensReturns return values.
+type ClearTrustTokensReturns struct {
+	DidDeleteTokens bool `json:"didDeleteTokens,omitempty"` // True if any tokens were deleted, false otherwise.
+}
+
+// Do executes Storage.clearTrustTokens against the provided context.
+//
+// returns:
+//   didDeleteTokens - True if any tokens were deleted, false otherwise.
+func (p *ClearTrustTokensParams) Do(ctx context.Context) (didDeleteTokens bool, err error) {
+	// execute
+	var res ClearTrustTokensReturns
+	err = cdp.Execute(ctx, CommandClearTrustTokens, p, &res)
+	if err != nil {
+		return false, err
+	}
+
+	return res.DidDeleteTokens, nil
+}
+
 // Command names.
 const (
 	CommandClearDataForOrigin           = "Storage.clearDataForOrigin"
@@ -279,8 +389,11 @@ const (
 	CommandSetCookies                   = "Storage.setCookies"
 	CommandClearCookies                 = "Storage.clearCookies"
 	CommandGetUsageAndQuota             = "Storage.getUsageAndQuota"
+	CommandOverrideQuotaForOrigin       = "Storage.overrideQuotaForOrigin"
 	CommandTrackCacheStorageForOrigin   = "Storage.trackCacheStorageForOrigin"
 	CommandTrackIndexedDBForOrigin      = "Storage.trackIndexedDBForOrigin"
 	CommandUntrackCacheStorageForOrigin = "Storage.untrackCacheStorageForOrigin"
 	CommandUntrackIndexedDBForOrigin    = "Storage.untrackIndexedDBForOrigin"
+	CommandGetTrustTokens               = "Storage.getTrustTokens"
+	CommandClearTrustTokens             = "Storage.clearTrustTokens"
 )
