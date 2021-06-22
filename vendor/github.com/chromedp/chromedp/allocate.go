@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -64,7 +66,7 @@ var DefaultExecAllocatorOptions = [...]ExecAllocatorOption{
 	Flag("disable-default-apps", true),
 	Flag("disable-dev-shm-usage", true),
 	Flag("disable-extensions", true),
-	Flag("disable-features", "site-per-process,TranslateUI,BlinkGenPropertyTrees"),
+	Flag("disable-features", "site-per-process,Translate,BlinkGenPropertyTrees"),
 	Flag("disable-hang-monitor", true),
 	Flag("disable-ipc-flooding-protection", true),
 	Flag("disable-popup-blocking", true),
@@ -106,6 +108,8 @@ type ExecAllocator struct {
 	wg sync.WaitGroup
 
 	combinedOutputWriter io.Writer
+
+	modifyCmdFunc func(cmd *exec.Cmd)
 }
 
 // allocTempDir is used to group all ExecAllocator temporary user data dirs in
@@ -168,7 +172,12 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 			os.RemoveAll(dataDir)
 		}
 	}()
-	allocateCmdOptions(cmd)
+
+	if a.modifyCmdFunc != nil {
+		a.modifyCmdFunc(cmd)
+	} else {
+		allocateCmdOptions(cmd)
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -176,8 +185,11 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 	}
 	cmd.Stderr = cmd.Stdout
 
-	if len(a.initEnv) > 0 {
-		cmd.Env = append(os.Environ(), a.initEnv...)
+	// Preserve environment variables set in the (lowest priority) existing
+	// environment, OverrideCmdFunc(), and Env (highest priority)
+	if len(a.initEnv) > 0 || len(cmd.Env) > 0 {
+		cmd.Env = append(os.Environ(), cmd.Env...)
+		cmd.Env = append(cmd.Env, a.initEnv...)
 	}
 
 	// We must start the cmd before calling cmd.Wait, as otherwise the two
@@ -196,12 +208,12 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 		a.wg.Add(1) // for the io.Copy in a separate goroutine
 	}
 	go func() {
-		<-ctx.Done()
 		// First wait for the process to be finished.
 		// TODO: do we care about this error in any scenario? if the
 		// user cancelled the context and killed chrome, this will most
 		// likely just be "signal: killed", which isn't interesting.
 		cmd.Wait()
+
 		// Then delete the temporary user data directory, if needed.
 		if removeDir {
 			if err := os.RemoveAll(dataDir); c.cancelErr == nil {
@@ -214,7 +226,7 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 
 	// Chrome will sometimes fail to print the websocket, or run for a long
 	// time, without properly exiting. To avoid blocking forever in those
-	// cases, give up after ten seconds.
+	// cases, give up after twenty seconds.
 	const wsURLReadTimeout = 20 * time.Second
 
 	var wsURL string
@@ -245,8 +257,15 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 		// If the browser loses connection, kill the entire process and
 		// handler at once. Don't use Cancel, as that will attempt to
 		// gracefully close the browser, which will hang.
+		// Don't cancel if we're in the middle of a graceful Close,
+		// since we want to let Chrome shut itself when it is fully
+		// finished.
 		<-browser.LostConnection
-		c.cancel()
+		select {
+		case <-browser.closingGracefully:
+		default:
+			c.cancel()
+		}
 	}()
 	browser.process = cmd.Process
 	browser.userDataDir = dataDir
@@ -317,31 +336,43 @@ func ExecPath(path string) ExecAllocatorOption {
 }
 
 // findExecPath tries to find the Chrome browser somewhere in the current
-// system. It performs a rather agressive search, which is the same in all
-// systems. That may make it a bit slow, but it will only be run when creating a
-// new ExecAllocator.
+// system. It finds in different locations on different OS systems.
+// It could perform a rather aggressive search. That may make it a bit slow,
+// but it will only be run when creating a new ExecAllocator.
 func findExecPath() string {
-	for _, path := range [...]string{
-		// Unix-like
-		"headless_shell",
-		"headless-shell",
-		"chromium",
-		"chromium-browser",
-		"google-chrome",
-		"google-chrome-stable",
-		"google-chrome-beta",
-		"google-chrome-unstable",
-		"/usr/bin/google-chrome",
+	var locations []string
+	switch runtime.GOOS {
+	case "darwin":
+		locations = []string{
+			// Mac
+			"/Applications/Chromium.app/Contents/MacOS/Chromium",
+			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+		}
+	case "windows":
+		locations = []string{
+			// Windows
+			"chrome",
+			"chrome.exe", // in case PATHEXT is misconfigured
+			`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
+			`C:\Program Files\Google\Chrome\Application\chrome.exe`,
+			filepath.Join(os.Getenv("USERPROFILE"), `AppData\Local\Google\Chrome\Application\chrome.exe`),
+		}
+	default:
+		locations = []string{
+			// Unix-like
+			"headless_shell",
+			"headless-shell",
+			"chromium",
+			"chromium-browser",
+			"google-chrome",
+			"google-chrome-stable",
+			"google-chrome-beta",
+			"google-chrome-unstable",
+			"/usr/bin/google-chrome",
+		}
+	}
 
-		// Windows
-		"chrome",
-		"chrome.exe", // in case PATHEXT is misconfigured
-		`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
-		`C:\Program Files\Google\Chrome\Application\chrome.exe`,
-
-		// Mac
-		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-	} {
+	for _, path := range locations {
 		found, err := exec.LookPath(path)
 		if err == nil {
 			return found
@@ -367,6 +398,16 @@ func Flag(name string, value interface{}) ExecAllocatorOption {
 func Env(vars ...string) ExecAllocatorOption {
 	return func(a *ExecAllocator) {
 		a.initEnv = append(a.initEnv, vars...)
+	}
+}
+
+// ModifyCmdFunc allows for running an arbitrary function on the
+// browser exec.Cmd object. This overrides the default version
+// of the command which sends SIGKILL to any open browsers when
+// the Go program exits.
+func ModifyCmdFunc(f func(cmd *exec.Cmd)) ExecAllocatorOption {
+	return func(a *ExecAllocator) {
+		a.modifyCmdFunc = f
 	}
 }
 
@@ -437,10 +478,20 @@ func CombinedOutput(w io.Writer) ExecAllocatorOption {
 // NewRemoteAllocator creates a new context set up with a RemoteAllocator,
 // suitable for use with NewContext. The url should point to the browser's
 // websocket address, such as "ws://127.0.0.1:$PORT/devtools/browser/...".
+// If the url does not contain "/devtools/browser/", it will try to detect
+// the correct one by sending a request to "http://$HOST:$PORT/json/version".
+//
+// The url with the following formats are accepted:
+// * ws://127.0.0.1:9222/
+// * http://127.0.0.1:9222/
+//
+// But "ws://127.0.0.1:9222/devtools/browser/" are not accepted.
+// Because it contains "/devtools/browser/" and will be considered
+// as a valid websocket debugger URL.
 func NewRemoteAllocator(parent context.Context, url string) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(parent)
 	c := &Context{Allocator: &RemoteAllocator{
-		wsURL: url,
+		wsURL: detectURL(url),
 	}}
 	ctx = context.WithValue(ctx, contextKey{}, c)
 	return ctx, cancel
@@ -481,7 +532,11 @@ func (a *RemoteAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (
 		// If the browser loses connection, kill the entire process and
 		// handler at once.
 		<-browser.LostConnection
-		Cancel(ctx)
+		select {
+		case <-browser.closingGracefully:
+		default:
+			Cancel(ctx)
+		}
 	}()
 	return browser, nil
 }

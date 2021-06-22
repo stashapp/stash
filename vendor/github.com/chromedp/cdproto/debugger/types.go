@@ -48,6 +48,15 @@ type ScriptPosition struct {
 	ColumnNumber int64 `json:"columnNumber"`
 }
 
+// LocationRange location range within one script.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-LocationRange
+type LocationRange struct {
+	ScriptID runtime.ScriptID `json:"scriptId"`
+	Start    *ScriptPosition  `json:"start"`
+	End      *ScriptPosition  `json:"end"`
+}
+
 // CallFrame JavaScript call frame. Array of call frames form the call stack.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-CallFrame
@@ -322,6 +331,7 @@ func (t PausedReason) String() string {
 const (
 	PausedReasonAmbiguous        PausedReason = "ambiguous"
 	PausedReasonAssert           PausedReason = "assert"
+	PausedReasonCSPViolation     PausedReason = "CSPViolation"
 	PausedReasonDebugCommand     PausedReason = "debugCommand"
 	PausedReasonDOM              PausedReason = "DOM"
 	PausedReasonEventListener    PausedReason = "EventListener"
@@ -350,6 +360,8 @@ func (t *PausedReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = PausedReasonAmbiguous
 	case PausedReasonAssert:
 		*t = PausedReasonAssert
+	case PausedReasonCSPViolation:
+		*t = PausedReasonCSPViolation
 	case PausedReasonDebugCommand:
 		*t = PausedReasonDebugCommand
 	case PausedReasonDOM:

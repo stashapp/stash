@@ -64,6 +64,50 @@ func (t *AuthenticatorProtocol) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// Ctap2version [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#type-Ctap2Version
+type Ctap2version string
+
+// String returns the Ctap2version as string value.
+func (t Ctap2version) String() string {
+	return string(t)
+}
+
+// Ctap2version values.
+const (
+	Ctap2versionCtap20 Ctap2version = "ctap2_0"
+	Ctap2versionCtap21 Ctap2version = "ctap2_1"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t Ctap2version) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t Ctap2version) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *Ctap2version) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch Ctap2version(in.String()) {
+	case Ctap2versionCtap20:
+		*t = Ctap2versionCtap20
+	case Ctap2versionCtap21:
+		*t = Ctap2versionCtap21
+
+	default:
+		in.AddError(errors.New("unknown Ctap2version value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *Ctap2version) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
 // AuthenticatorTransport [no description].
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#type-AuthenticatorTransport
@@ -122,9 +166,12 @@ func (t *AuthenticatorTransport) UnmarshalJSON(buf []byte) error {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#type-VirtualAuthenticatorOptions
 type VirtualAuthenticatorOptions struct {
 	Protocol                    AuthenticatorProtocol  `json:"protocol"`
+	Ctap2version                Ctap2version           `json:"ctap2Version,omitempty"` // Defaults to ctap2_0. Ignored if |protocol| == u2f.
 	Transport                   AuthenticatorTransport `json:"transport"`
 	HasResidentKey              bool                   `json:"hasResidentKey,omitempty"`              // Defaults to false.
 	HasUserVerification         bool                   `json:"hasUserVerification,omitempty"`         // Defaults to false.
+	HasLargeBlob                bool                   `json:"hasLargeBlob,omitempty"`                // If set to true, the authenticator will support the largeBlob extension. https://w3c.github.io/webauthn#largeBlob Defaults to false.
+	HasCredBlob                 bool                   `json:"hasCredBlob,omitempty"`                 // If set to true, the authenticator will support the credBlob extension. https://fidoalliance.org/specs/fido-v2.1-rd-20201208/fido-client-to-authenticator-protocol-v2.1-rd-20201208.html#sctn-credBlob-extension Defaults to false.
 	AutomaticPresenceSimulation bool                   `json:"automaticPresenceSimulation,omitempty"` // If set to true, tests of user presence will succeed immediately. Otherwise, they will not be resolved. Defaults to true.
 	IsUserVerified              bool                   `json:"isUserVerified,omitempty"`              // Sets whether User Verification succeeds or fails for an authenticator. Defaults to false.
 }
@@ -139,4 +186,5 @@ type Credential struct {
 	PrivateKey           string `json:"privateKey"`           // The ECDSA P-256 private key in PKCS#8 format.
 	UserHandle           string `json:"userHandle,omitempty"` // An opaque byte sequence with a maximum size of 64 bytes mapping the credential to a specific user.
 	SignCount            int64  `json:"signCount"`            // Signature counter. This is incremented by one for each successful assertion. See https://w3c.github.io/webauthn/#signature-counter
+	LargeBlob            string `json:"largeBlob,omitempty"`  // The large blob associated with the credential. See https://w3c.github.io/webauthn/#sctn-large-blob-extension
 }

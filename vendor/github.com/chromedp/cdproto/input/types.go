@@ -17,13 +17,17 @@ import (
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#type-TouchPoint
 type TouchPoint struct {
-	X             float64 `json:"x"`                       // X coordinate of the event relative to the main frame's viewport in CSS pixels.
-	Y             float64 `json:"y"`                       // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-	RadiusX       float64 `json:"radiusX,omitempty"`       // X radius of the touch area (default: 1.0).
-	RadiusY       float64 `json:"radiusY,omitempty"`       // Y radius of the touch area (default: 1.0).
-	RotationAngle float64 `json:"rotationAngle,omitempty"` // Rotation angle (default: 0.0).
-	Force         float64 `json:"force,omitempty"`         // Force (default: 1.0).
-	ID            float64 `json:"id,omitempty"`            // Identifier used to track touch sources between events, must be unique within an event.
+	X                  float64 `json:"x"`                            // X coordinate of the event relative to the main frame's viewport in CSS pixels.
+	Y                  float64 `json:"y"`                            // Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+	RadiusX            float64 `json:"radiusX,omitempty"`            // X radius of the touch area (default: 1.0).
+	RadiusY            float64 `json:"radiusY,omitempty"`            // Y radius of the touch area (default: 1.0).
+	RotationAngle      float64 `json:"rotationAngle,omitempty"`      // Rotation angle (default: 0.0).
+	Force              float64 `json:"force,omitempty"`              // Force (default: 1.0).
+	TangentialPressure float64 `json:"tangentialPressure,omitempty"` // The normalized tangential pressure, which has a range of [-1,1] (default: 0).
+	TiltX              int64   `json:"tiltX,omitempty"`              // The plane angle between the Y-Z plane and the plane containing both the stylus axis and the Y axis, in degrees of the range [-90,90], a positive tiltX is to the right (default: 0)
+	TiltY              int64   `json:"tiltY,omitempty"`              // The plane angle between the X-Z plane and the plane containing both the stylus axis and the X axis, in degrees of the range [-90,90], a positive tiltY is towards the user (default: 0).
+	Twist              int64   `json:"twist,omitempty"`              // The clockwise rotation of a pen stylus around its own major axis, in degrees in the range [0,359] (default: 0).
+	ID                 float64 `json:"id,omitempty"`                 // Identifier used to track touch sources between events, must be unique within an event.
 }
 
 // GestureSourceType [no description].
@@ -162,6 +166,24 @@ func (t *TimeSinceEpoch) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 
+// DragDataItem [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Input#type-DragDataItem
+type DragDataItem struct {
+	MimeType string `json:"mimeType"`          // Mime type of the dragged data.
+	Data     string `json:"data"`              // Depending of the value of mimeType, it contains the dragged link, text, HTML markup or any other data.
+	Title    string `json:"title,omitempty"`   // Title associated with a link. Only valid when mimeType == "text/uri-list".
+	BaseURL  string `json:"baseURL,omitempty"` // Stores the base URL for the contained markup. Only valid when mimeType == "text/html".
+}
+
+// DragData [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Input#type-DragData
+type DragData struct {
+	Items              []*DragDataItem `json:"items"`
+	DragOperationsMask int64           `json:"dragOperationsMask"` // Bit field representing allowed drag operations. Copy = 1, Link = 2, Move = 16
+}
+
 // Modifier input key modifier type.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchKeyEvent
@@ -235,6 +257,56 @@ func (t *Modifier) UnmarshalJSON(buf []byte) error {
 
 // ModifierCommand is an alias for ModifierMeta.
 const ModifierCommand Modifier = ModifierMeta
+
+// DispatchDragEventType type of the drag event.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchDragEvent
+type DispatchDragEventType string
+
+// String returns the DispatchDragEventType as string value.
+func (t DispatchDragEventType) String() string {
+	return string(t)
+}
+
+// DispatchDragEventType values.
+const (
+	DragEnter  DispatchDragEventType = "dragEnter"
+	DragOver   DispatchDragEventType = "dragOver"
+	Drop       DispatchDragEventType = "drop"
+	DragCancel DispatchDragEventType = "dragCancel"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t DispatchDragEventType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t DispatchDragEventType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *DispatchDragEventType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch DispatchDragEventType(in.String()) {
+	case DragEnter:
+		*t = DragEnter
+	case DragOver:
+		*t = DragOver
+	case Drop:
+		*t = Drop
+	case DragCancel:
+		*t = DragCancel
+
+	default:
+		in.AddError(errors.New("unknown DispatchDragEventType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *DispatchDragEventType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
 
 // KeyType type of the key event.
 //

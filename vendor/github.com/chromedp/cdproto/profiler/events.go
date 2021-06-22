@@ -35,6 +35,6 @@ type EventConsoleProfileStarted struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Profiler#event-preciseCoverageDeltaUpdate
 type EventPreciseCoverageDeltaUpdate struct {
 	Timestamp float64           `json:"timestamp"` // Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
-	Occassion string            `json:"occassion"` // Identifier for distinguishing coverage events.
+	Occasion  string            `json:"occasion"`  // Identifier for distinguishing coverage events.
 	Result    []*ScriptCoverage `json:"result"`    // Coverage data for the current isolate.
 }
