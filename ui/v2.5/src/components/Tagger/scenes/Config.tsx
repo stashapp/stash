@@ -13,7 +13,7 @@ import { useConfiguration } from "src/core/StashService";
 import { TextUtils } from "src/utils";
 import FieldSelector from "../FieldSelector";
 
-import { ITaggerConfig, ParseMode, ModeDesc, SCENE_FIELDS } from "../constants";
+import { ITaggerConfig, ParseMode, SCENE_FIELDS } from "../constants";
 
 interface IConfigProps {
   show: boolean;

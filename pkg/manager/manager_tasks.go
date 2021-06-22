@@ -806,7 +806,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 	return s.JobManager.Add(ctx, "Batch stash-box performer tag...", j)
 }
 
-func (s *singleton) StashBoxBatchSceneTag(input models.StashBoxBatchSceneTagInput) int {
+func (s *singleton) StashBoxBatchSceneTag(ctx context.Context, input models.StashBoxBatchSceneTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Initiating stash-box batch scene tag")
 
@@ -909,5 +909,5 @@ func (s *singleton) StashBoxBatchSceneTag(input models.StashBoxBatchSceneTagInpu
 		logger.Infof("Finished Stash-Box batch operation for %d scenes", len(tasks))
 	})
 
-	return s.JobManager.Add("Batch stash-box scene tag...", j)
+	return s.JobManager.Add(ctx, "Batch stash-box scene tag...", j)
 }
