@@ -27,8 +27,12 @@ package dlna
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import (
+	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEscapeObjectID(t *testing.T) {
@@ -51,4 +55,28 @@ func TestRootParentObjectID(t *testing.T) {
 	if (object{Path: "/"}).ParentID() != "-1" {
 		t.FailNow()
 	}
+}
+
+func testHandleBrowse(argsXML string) (map[string]string, error) {
+	cds := contentDirectoryService{
+		Server:     &Server{},
+		txnManager: mocks.NewTransactionManager(),
+	}
+
+	r := &http.Request{}
+	return cds.Handle("Browse", []byte(argsXML), r)
+}
+
+func TestBrowseMetadataRoot(t *testing.T) {
+	argsXML := `<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>0</ObjectID><BrowseFlag>BrowseMetadata</BrowseFlag><Filter>*</Filter><StartingIndex>0</StartingIndex><RequestedCount>0</RequestedCount><SortCriteria></SortCriteria></u:Browse>`
+	_, err := testHandleBrowse(argsXML)
+
+	assert.Nil(t, err)
+}
+
+func TestBrowseMetadataTags(t *testing.T) {
+	argsXML := `<u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>tags</ObjectID><BrowseFlag>BrowseMetadata</BrowseFlag><Filter>*</Filter><StartingIndex>0</StartingIndex><RequestedCount>0</RequestedCount><SortCriteria></SortCriteria></u:Browse>`
+	_, err := testHandleBrowse(argsXML)
+
+	assert.Nil(t, err)
 }
