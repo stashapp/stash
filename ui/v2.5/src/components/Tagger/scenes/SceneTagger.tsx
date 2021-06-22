@@ -314,22 +314,46 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     setSearchErrors({});
 
     const sceneResults = selectScenes(results.data.queryStashBoxScene);
-    const hashes = sceneResults.reduce((dict: Record<string, IStashBoxScene>, scene: IStashBoxScene) => ({
-      ...dict,
-      ...Object.fromEntries(scene.fingerprints.filter(f => f.algorithm !== 'PHASH').map(f => [f.hash, scene])),
-    }), {});
-    const phashes = sceneResults.reduce((dict: Record<string, IStashBoxScene>, scene: IStashBoxScene) => ({
-      ...dict,
-      ...Object.fromEntries(scene.fingerprints.filter(f => f.algorithm === 'PHASH').map(f => [f.hash, scene])),
-    }), {});
+    const hashes = sceneResults.reduce(
+      (dict: Record<string, IStashBoxScene>, scene: IStashBoxScene) => ({
+        ...dict,
+        ...Object.fromEntries(
+          scene.fingerprints
+            .filter((f) => f.algorithm !== "PHASH")
+            .map((f) => [f.hash, scene])
+        ),
+      }),
+      {}
+    );
+    const phashes = sceneResults.reduce(
+      (dict: Record<string, IStashBoxScene>, scene: IStashBoxScene) => ({
+        ...dict,
+        ...Object.fromEntries(
+          scene.fingerprints
+            .filter((f) => f.algorithm === "PHASH")
+            .map((f) => [f.hash, scene])
+        ),
+      }),
+      {}
+    );
 
-    const sceneHashes = Object.fromEntries(scenes.map(s => ([
-      s.id, uniqBy([
-        ...(s.oshash && hashes[s.oshash] ? [hashes[s.oshash]] : []),
-        ...(s.checksum && hashes[s.checksum] ? [hashes[s.checksum]] : []),
-        ...(s.phash ? Object.keys(phashes).filter(fp => distance(fp, s.phash) <= 8).map(fp => phashes[fp]) : []),
-      ], fpScene => fpScene.stash_id)
-    ])));
+    const sceneHashes = Object.fromEntries(
+      scenes.map((s) => [
+        s.id,
+        uniqBy(
+          [
+            ...(s.oshash && hashes[s.oshash] ? [hashes[s.oshash]] : []),
+            ...(s.checksum && hashes[s.checksum] ? [hashes[s.checksum]] : []),
+            ...(s.phash
+              ? Object.keys(phashes)
+                  .filter((fp) => distance(fp, s.phash) <= 8)
+                  .map((fp) => phashes[fp])
+              : []),
+          ],
+          (fpScene) => fpScene.stash_id
+        ),
+      ])
+    );
 
     const newFingerprints = {
       ...fingerprints,
@@ -346,12 +370,13 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       (s) => s.stash_ids.length === 0 && fingerprints[s.id] === undefined
     );
 
-  const getFingerprintCount = () => (
+  const getFingerprintCount = () =>
     scenes.filter(
       (s) =>
-      s.stash_ids.length === 0 && fingerprints[s.id] && fingerprints[s.id].length > 0
-    ).length
-  );
+        s.stash_ids.length === 0 &&
+        fingerprints[s.id] &&
+        fingerprints[s.id].length > 0
+    ).length;
 
   const getFingerprintCountMessage = () => {
     const count = getFingerprintCount();
@@ -590,7 +615,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     ? allScenes?.findScenes.count ?? 0
     : scenes.filter((p) =>
         refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
-    ).length;
+      ).length;
 
   return (
     <Card className="tagger-table">
@@ -676,7 +701,6 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
-  const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
   const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
 
   // monitor batch operation
@@ -686,7 +710,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     }
 
     const event = jobsSubscribe.data.jobsSubscribe;
-    if (event.job.id !== batchJobID) {
+    if (event.job.description !== "Batch stash-box scene tag...") {
       return;
     }
 
@@ -694,9 +718,8 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       setBatchJob(event.job);
     } else {
       setBatchJob(undefined);
-      setBatchJobID(undefined);
     }
-  }, [jobsSubscribe, batchJobID]);
+  }, [jobsSubscribe]);
 
   if (!config) return <LoadingIndicator />;
 
@@ -734,20 +757,20 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
 
   async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
     if (config && selectedEndpoint) {
-      const ret = await mutateStashBoxBatchSceneTag({
+      await mutateStashBoxBatchSceneTag({
         scene_ids: ids,
         endpoint: selectedEndpointIndex,
         refresh,
         set_organized: config.setOrganized ?? false,
-        tag_strategy: !config.setTags ? GQL.TagStrategy.Ignore :
-          config.tagOperation === 'overwrite' ? GQL.TagStrategy.Overwrite : GQL.TagStrategy.Merge,
+        tag_strategy: !config.setTags
+          ? GQL.TagStrategy.Ignore
+          : config.tagOperation === "overwrite"
+          ? GQL.TagStrategy.Overwrite
+          : GQL.TagStrategy.Merge,
         create_tags: config.createTags ?? false,
         exclude_fields: config.excludedSceneFields ?? [],
         tag_male_performers: config.showMales ?? false,
       });
-
-      setBatchJobID(ret.data?.stashBoxBatchSceneTag);
-      console.log(ret.data?.stashBoxBatchSceneTag);
     }
   }
 
@@ -758,8 +781,8 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
           ? batchJob.progress * 100
           : undefined;
       return (
-        <Form.Group className="px-4">
-          <h5>Status: Tagging scenes</h5>
+        <Form.Group className="py-4 px-2">
+          <h5>Status: {batchJob.description}</h5>
           {progress !== undefined && (
             <ProgressBar
               animated
@@ -767,14 +790,9 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
               label={`${progress.toFixed(0)}%`}
             />
           )}
-        </Form.Group>
-      );
-    }
-
-    if (batchJobID !== undefined) {
-      return (
-        <Form.Group className="px-4">
-          <h5>Status: Tagging job queued</h5>
+          {(batchJob.subTasks ?? []).length > 0 && (
+            <div>{batchJob.subTasks?.join(", ")}</div>
+          )}
         </Form.Group>
       );
     }
@@ -787,8 +805,8 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         onClose={() => setShowManual(false)}
         defaultActiveTab="Tagger.md"
       />
-      {renderStatus()}
       <div className="tagger-container mx-md-auto">
+        {renderStatus()}
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
             <div className="row mb-2 no-gutters">
@@ -824,7 +842,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
                 endpoint: selectedEndpoint.endpoint,
                 index: selectedEndpointIndex,
               }}
-              isIdle={batchJobID === undefined}
+              isIdle={!batchJob}
               queueFingerprintSubmission={queueFingerprintSubmission}
               clearSubmissionQueue={clearSubmissionQueue}
               onBatchUpdate={batchUpdate}

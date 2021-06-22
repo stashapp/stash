@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Form } from "react-bootstrap";
 
 import { Modal } from "src/components/Shared";
@@ -13,7 +13,15 @@ interface IProps {
   setRefresh: (refresh: boolean) => void;
 }
 
-const BatchModal: React.FC<IProps> = ({ show, hide, isIdle, handleBatchUpdate, sceneCount, setQueryAll, setRefresh }) => {
+const BatchModal: React.FC<IProps> = ({
+  show,
+  hide,
+  isIdle,
+  handleBatchUpdate,
+  sceneCount,
+  setQueryAll,
+  setRefresh,
+}) => {
   return (
     <Modal
       show={show}
@@ -61,8 +69,8 @@ const BatchModal: React.FC<IProps> = ({ show, hide, isIdle, handleBatchUpdate, s
           onChange={() => setRefresh(false)}
         />
         <Form.Text>
-          Updating untagged scenes will try to match any scenes that
-          lack a stashid and update the metadata.
+          Updating untagged scenes will try to match any scenes that lack a
+          stashid and update the metadata.
         </Form.Text>
         <Form.Check
           id="tagged-scenes"

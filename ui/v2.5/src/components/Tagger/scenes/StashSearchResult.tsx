@@ -69,13 +69,19 @@ const getFingerprintStatus = (
     (f) => f.hash === stashScene.checksum || f.hash === stashScene.oshash
   );
   const phashMatches = scene.fingerprints.filter(
-    (f) => f.algorithm === 'PHASH' && distance(f.hash, stashScene.phash) <= 8
+    (f) => f.algorithm === "PHASH" && distance(f.hash, stashScene.phash) <= 8
   );
 
   const phashList = (
-    <div className="m-2">{ phashMatches.map(fp => (
-      <div><b>{fp.hash}</b>{ fp.hash === stashScene.phash ? ', Exact match' : `, distance ${distance(fp.hash, stashScene.phash)}` }</div>
-    ))}
+    <div className="m-2">
+      {phashMatches.map((fp) => (
+        <div>
+          <b>{fp.hash}</b>
+          {fp.hash === stashScene.phash
+            ? ", Exact match"
+            : `, distance ${distance(fp.hash, stashScene.phash)}`}
+        </div>
+      ))}
     </div>
   );
 
@@ -316,7 +322,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       setSaveState("Updating scene");
       const imgurl = scene.images[0];
       let imgData = null;
-      if (imgurl && !excludedFields.includes('cover')) {
+      if (imgurl && !excludedFields.includes("cover")) {
         const img = await fetch(imgurl, {
           mode: "cors",
           cache: "no-store",
