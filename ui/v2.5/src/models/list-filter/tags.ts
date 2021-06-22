@@ -1,4 +1,5 @@
 import {
+  createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
