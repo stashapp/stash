@@ -626,11 +626,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     // Compare constructed filter with current filter.
     // If different it's the result of navigation, and we update the filter.
     if (
-      location.search &&
-      location.search !== `?${filter.makeQueryParameters()}`
+      history.location.search &&
+      history.location.search !== `?${filter.makeQueryParameters()}`
     ) {
       newFilter.configureFromQueryParameters(
-        queryString.parse(location.search)
+        queryString.parse(history.location.search)
       );
       update = true;
     }
