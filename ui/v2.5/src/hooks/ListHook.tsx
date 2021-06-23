@@ -627,7 +627,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     // if default query is set and no search params are set, then
     // load the default query
-    if (!location.search && defaultFilter?.findDefaultFilter) {
+    // #1512 - use default query only if persistState is ALL
+    if (
+      options.persistState === PersistanceLevel.ALL &&
+      !location.search &&
+      defaultFilter?.findDefaultFilter
+    ) {
       newFilter.currentPage = 1;
       newFilter.configureFromQueryParameters(
         JSON.parse(defaultFilter.findDefaultFilter.filter)
