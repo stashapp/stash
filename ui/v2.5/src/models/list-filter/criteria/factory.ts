@@ -49,7 +49,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "checksum":
     case "oshash":
       return new StringCriterion(
-        new MandatoryStringCriterionOption(type, type)
+        new MandatoryStringCriterionOption("media_info.hash", type, type)
       );
     case "rating":
       return new NumberCriterion(RatingCriterionOption);
