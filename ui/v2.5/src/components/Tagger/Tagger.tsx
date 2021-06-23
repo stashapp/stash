@@ -264,7 +264,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   const handleFingerprintSearch = async () => {
     setLoadingFingerprints(true);
-    
+
     // clear search results and errors
     setSearchErrors({});
     setSearchResults({});
@@ -322,10 +322,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     setFingerprintError("");
   };
 
-  const fingerprintsSearched = () =>
-    getFingerprintCount() > 0;  
-  
-
   const getFingerprintCount = () => {
     return scenes.filter(
       (s) =>
@@ -335,6 +331,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           (s.phash && fingerprints[s.phash]))
     ).length;
   };
+
+  const fingerprintsSearched = () => getFingerprintCount() > 0;
 
   const getFingerprintCountMessage = () => {
     const count = getFingerprintCount();
@@ -472,10 +470,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       }
 
       let searchResult;
-      if (
-        searchResults[scene.id]?.length > 0 &&
-        !isTagged
-      ) {
+      if (searchResults[scene.id]?.length > 0 && !isTagged) {
         searchResult = (
           <ul className="pl-0 mt-3 mb-0">
             {sortScenesByDuration(
