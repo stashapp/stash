@@ -620,10 +620,20 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     if (!forageInitialised) setForageInitialised(true);
 
-    if (!options.persistState) return;
-
     const newFilter = filter.clone();
     let update = false;
+
+    // Compare constructed filter with current filter.
+    // If different it's the result of navigation, and we update the filter.
+    if (
+      location.search &&
+      location.search !== `?${filter.makeQueryParameters()}`
+    ) {
+      newFilter.configureFromQueryParameters(
+        queryString.parse(location.search)
+      );
+      update = true;
+    }
 
     // if default query is set and no search params are set, then
     // load the default query
