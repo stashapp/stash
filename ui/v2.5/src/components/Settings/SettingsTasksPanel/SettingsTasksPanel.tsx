@@ -271,11 +271,15 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
+    const taskPlugins = plugins.data.plugins.filter(
+      (p) => p.tasks && p.tasks.length > 0
+    );
+
     return (
       <>
         <hr />
         <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
-        {plugins.data.plugins.map((o) => {
+        {taskPlugins.map((o) => {
           return (
             <div key={`${o.id}`} className="mb-3">
               <h6>{o.name}</h6>
