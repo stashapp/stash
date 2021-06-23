@@ -445,7 +445,7 @@ export const Scene: React.FC = () => {
               <Nav.Item>
                 <Nav.Link eventKey="scene-galleries-panel">
                   <FormattedMessage
-                    id="countables.gallery"
+                    id="countables.galleries"
                     values={{ count: scene.galleries.length }}
                   />
                 </Nav.Link>
@@ -520,7 +520,7 @@ export const Scene: React.FC = () => {
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
           {scene.galleries.length === 1 && (
-            <Tab.Pane eventKey="scene-gallery-panel">
+            <Tab.Pane eventKey="scene-galleries-panel">
               <GalleryViewer galleryId={scene.galleries[0].id} />
             </Tab.Pane>
           )}
