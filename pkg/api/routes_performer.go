@@ -40,18 +40,19 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 || defaultParam == "true" {
-		// Use the config to check whether the user needs 'accessible' images for performers (i.e. non-striped option.)
+		// Use the config to check if there is a custom performer image path defined.
 		c := config.GetInstance()
+		var customImageDir string = c.GetCustomPerformerImageLocation();
 
-		//TODO: The current male performers are all 'accessible' currently, however if there is appetite to move to a more unified UI approach, the MALE branch may be wanted here.
-		if c.GetAccessiblePerformerImage() == true && performer.Gender.String == "FEMALE" {
-			image, _ = getRandomPerformerImageUsingName(performer.Name.String, "FEMALE_ACCESSIBLE")
+		if (customImageDir != "") {
+			image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, customImageDir)
 		} else {
-			image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String)
+				image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, "")
 		}
-	}
 
-	utils.ServeImage(image, w, r)
+		utils.ServeImage(image, w, r)
+
+	}
 }
 
 func PerformerCtx(next http.Handler) http.Handler {

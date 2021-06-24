@@ -120,7 +120,7 @@ var defaultMenuItems = []string{"scenes", "images", "movies", "markers", "galler
 
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
-const AccessiblePerformerImage = "show-accessible-performer-images"
+const CustomPerformerImageLocation = "set-custom-performer-image-destination"
 const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
@@ -586,9 +586,10 @@ func (i *Instance) GetWallShowTitle() bool {
 	return viper.GetBool(WallShowTitle)
 }
 
-func (i *Instance) GetAccessiblePerformerImage() bool {
-	viper.SetDefault(AccessiblePerformerImage, false)
-	return viper.GetBool(AccessiblePerformerImage)
+
+func (i *Instance) GetCustomPerformerImageLocation() string {
+	viper.SetDefault(CustomPerformerImageLocation, "")
+	return viper.GetString(CustomPerformerImageLocation)
 }
 
 func (i *Instance) GetWallPlayback() string {

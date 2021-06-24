@@ -96,7 +96,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
-	accessiblePerformerImage := config.GetAccessiblePerformerImage()
+	customPerformerImageLocation := config.GetCustomPerformerImageLocation()
 	wallPlayback := config.GetWallPlayback()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
@@ -111,7 +111,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		MenuItems:           					menuItems,
 		SoundOnPreview:      					&soundOnPreview,
 		WallShowTitle:       					&wallShowTitle,
-		AccessiblePerformerImage:			&accessiblePerformerImage,
+		CustomPerformerImageLocation:                            &customPerformerImageLocation,
 		WallPlayback:       					&wallPlayback,
 		MaximumLoopDuration:					&maximumLoopDuration,
 		AutostartVideo:    					  &autostartVideo,
