@@ -47,6 +47,9 @@ export function makeCriteria(type: CriterionType = "none") {
     case "name":
     case "path":
     case "checksum":
+      return new StringCriterion(
+        new MandatoryStringCriterionOption(type, type)
+      );
     case "oshash":
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.hash", type, type)
