@@ -118,9 +118,14 @@ func (qb *movieQueryBuilder) All() ([]*models.Movie, error) {
 func (qb *movieQueryBuilder) makeFilter(movieFilter *models.MovieFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
-	query.handleCriterionFunc(movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
-	query.handleCriterionFunc(stringCriterionHandler(movieFilter.URL, "movies.url"))
-	query.handleCriterionFunc(movieStudioCriterionHandler(qb, movieFilter.Studios))
+	query.handleCriterion(stringCriterionHandler(movieFilter.Name, "movies.name"))
+	query.handleCriterion(stringCriterionHandler(movieFilter.Director, "movies.director"))
+	query.handleCriterion(stringCriterionHandler(movieFilter.Synopsis, "movies.synopsis"))
+	query.handleCriterion(intCriterionHandler(movieFilter.Rating, "movies.rating"))
+	query.handleCriterion(durationCriterionHandler(movieFilter.Duration, "movies.duration"))
+	query.handleCriterion(movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
+	query.handleCriterion(stringCriterionHandler(movieFilter.URL, "movies.url"))
+	query.handleCriterion(movieStudioCriterionHandler(qb, movieFilter.Studios))
 
 	return query
 }

@@ -27,12 +27,15 @@ import {
   TagDataFragment,
   FindImagesQueryResult,
   SlimImageDataFragment,
+  FilterMode,
 } from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
+import { FilterTags } from "src/components/List/FilterTags";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import {
+  useFindDefaultFilter,
   useFindScenes,
   useFindSceneMarkers,
   useFindImages,
@@ -43,9 +46,17 @@ import {
   useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { getFilterOptions } from "src/models/list-filter/factory";
+import { ButtonToolbar } from "react-bootstrap";
+import { ListViewOptions } from "src/components/List/ListViewOptions";
+import { ListOperationButtons } from "src/components/List/ListOperationButtons";
+import {
+  Criterion,
+  CriterionValue,
+} from "src/models/list-filter/criteria/criterion";
+import { AddFilterDialog } from "src/components/List/AddFilterDialog";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -88,8 +99,11 @@ export interface IListHookOperation<T> {
 }
 
 export enum PersistanceLevel {
+  // do not load default query or persist display mode
   NONE,
+  // load default query, don't load or persist display mode
   ALL,
+  // load and persist display mode only
   VIEW,
 }
 
@@ -98,6 +112,10 @@ interface IListHookOptions<T, E> {
   persistanceKey?: string;
   defaultSort?: string;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  filterDialog?: (
+    criteria: Criterion<CriterionValue>[],
+    setCriteria: (v: Criterion<CriterionValue>[]) => void
+  ) => React.ReactNode;
   zoomable?: boolean;
   selectable?: boolean;
   defaultZoomIndex?: number;
@@ -167,6 +185,8 @@ const RenderList = <
   renderEditDialog,
   renderDeleteDialog,
   updateQueryParams,
+  filterDialog,
+  persistState,
 }: IListHookOptions<QueryResult, QueryData> &
   IQuery<QueryResult, QueryData> &
   IRenderListProps) => {
@@ -175,6 +195,11 @@ const RenderList = <
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
   const [zoomIndex, setZoomIndex] = useState<number>(defaultZoomIndex ?? 1);
+
+  const [editingCriterion, setEditingCriterion] = useState<
+    Criterion<CriterionValue> | undefined
+  >(undefined);
+  const [newCriterion, setNewCriterion] = useState(false);
 
   const result = useData(filter);
   const totalCount = getCount(result);
@@ -189,6 +214,7 @@ const RenderList = <
   }, [pages, filter.currentPage, onChangePage]);
 
   useEffect(() => {
+    Mousetrap.bind("f", () => setNewCriterion(true));
     Mousetrap.bind("right", () => {
       const maxPage = totalCount / filter.itemsPerPage;
       if (filter.currentPage < maxPage) {
@@ -397,21 +423,104 @@ const RenderList = <
     );
   }
 
+  function onChangeDisplayMode(displayMode: DisplayMode) {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.displayMode = displayMode;
+    updateQueryParams(newFilter);
+  }
+
+  function onAddCriterion(
+    criterion: Criterion<CriterionValue>,
+    oldId?: string
+  ) {
+    const newFilter = _.cloneDeep(filter);
+
+    // Find if we are editing an existing criteria, then modify that.  Or create a new one.
+    const existingIndex = newFilter.criteria.findIndex((c) => {
+      // If we modified an existing criterion, then look for the old id.
+      const id = oldId || criterion.getId();
+      return c.getId() === id;
+    });
+    if (existingIndex === -1) {
+      newFilter.criteria.push(criterion);
+    } else {
+      newFilter.criteria[existingIndex] = criterion;
+    }
+
+    // Remove duplicate modifiers
+    newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
+      return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
+    });
+
+    newFilter.currentPage = 1;
+    updateQueryParams(newFilter);
+    setEditingCriterion(undefined);
+    setNewCriterion(false);
+  }
+
+  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.criteria = newFilter.criteria.filter(
+      (criterion) => criterion.getId() !== removedCriterion.getId()
+    );
+    newFilter.currentPage = 1;
+    updateQueryParams(newFilter);
+  }
+
+  function updateCriteria(c: Criterion<CriterionValue>[]) {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.criteria = c.slice();
+    setNewCriterion(false);
+  }
+
+  function onCancelAddCriterion() {
+    setEditingCriterion(undefined);
+    setNewCriterion(false);
+  }
+
   const content = (
     <div>
-      <ListFilter
-        onFilterUpdate={updateQueryParams}
-        onSelectAll={selectable ? onSelectAll : undefined}
-        onSelectNone={selectable ? onSelectNone : undefined}
-        zoomIndex={zoomable ? zoomIndex : undefined}
-        onChangeZoom={zoomable ? onChangeZoom : undefined}
-        otherOperations={operations}
-        itemsSelected={selectedIds.size > 0}
-        onEdit={renderEditDialog ? onEdit : undefined}
-        onDelete={renderDeleteDialog ? onDelete : undefined}
-        filter={filter}
-        filterOptions={filterOptions}
+      <ButtonToolbar className="align-items-center justify-content-center mb-2">
+        <ListFilter
+          onFilterUpdate={updateQueryParams}
+          filter={filter}
+          filterOptions={filterOptions}
+          openFilterDialog={() => setNewCriterion(true)}
+          filterDialogOpen={newCriterion ?? editingCriterion}
+          persistState={persistState}
+        />
+        <ListOperationButtons
+          onSelectAll={selectable ? onSelectAll : undefined}
+          onSelectNone={selectable ? onSelectNone : undefined}
+          otherOperations={operations}
+          itemsSelected={selectedIds.size > 0}
+          onEdit={renderEditDialog ? onEdit : undefined}
+          onDelete={renderDeleteDialog ? onDelete : undefined}
+        />
+        <ListViewOptions
+          displayMode={filter.displayMode}
+          displayModeOptions={filterOptions.displayModeOptions}
+          onSetDisplayMode={onChangeDisplayMode}
+          zoomIndex={zoomable ? zoomIndex : undefined}
+          onSetZoom={zoomable ? onChangeZoom : undefined}
+        />
+      </ButtonToolbar>
+      <FilterTags
+        criteria={filter.criteria}
+        onEditCriterion={(c) => setEditingCriterion(c)}
+        onRemoveCriterion={onRemoveCriterion}
       />
+      {(newCriterion || editingCriterion) && !filterDialog && (
+        <AddFilterDialog
+          filterOptions={filterOptions}
+          onAddCriterion={onAddCriterion}
+          onCancel={onCancelAddCriterion}
+          editingCriterion={editingCriterion}
+        />
+      )}
+      {newCriterion &&
+        filterDialog &&
+        filterDialog(filter.criteria, (c) => updateCriteria(c))}
       {isEditDialogOpen &&
         renderEditDialog &&
         renderEditDialog(
@@ -454,6 +563,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const defaultDisplayMode = filterOptions.displayModeOptions[0];
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
+      options.filterMode,
       queryString.parse(location.search),
       defaultSort,
       defaultDisplayMode
@@ -462,8 +572,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   const updateInterfaceConfig = useCallback(
     (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
-      setInterfaceState((prevState) => {
-        if (level === PersistanceLevel.VIEW) {
+      if (level === PersistanceLevel.VIEW) {
+        setInterfaceState((prevState) => {
           return {
             [persistanceKey]: {
               ...prevState[persistanceKey],
@@ -473,84 +583,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
               }),
             },
           };
-        }
-        return {
-          [persistanceKey]: {
-            filter: updatedFilter.makeQueryParameters(),
-            itemsPerPage: updatedFilter.itemsPerPage,
-            currentPage: updatedFilter.currentPage,
-          },
-        };
-      });
+        });
+      }
     },
     [persistanceKey, setInterfaceState]
   );
 
-  useEffect(() => {
-    if (
-      interfaceState.loading ||
-      // Only update query params on page the hook was mounted on
-      history.location.pathname !== originalPathName.current
-    )
-      return;
-
-    if (!forageInitialised) setForageInitialised(true);
-
-    if (!options.persistState) return;
-
-    const storedQuery = interfaceState.data?.[persistanceKey];
-    if (!storedQuery) return;
-
-    const queryFilter = queryString.parse(history.location.search);
-    const storedFilter = queryString.parse(storedQuery.filter);
-
-    const activeFilter =
-      options.persistState === PersistanceLevel.ALL
-        ? storedFilter
-        : { disp: storedFilter.disp };
-    const query = history.location.search
-      ? {
-          sortby: activeFilter.sortby,
-          sortdir: activeFilter.sortdir,
-          disp: activeFilter.disp,
-          perPage: activeFilter.perPage,
-          ...queryFilter,
-        }
-      : activeFilter;
-
-    const newFilter = new ListFilterModel(
-      query,
-      defaultSort,
-      defaultDisplayMode
-    );
-
-    // Compare constructed filter with current filter.
-    // If different it's the result of navigation, and we update the filter.
-    const newLocation = { ...history.location };
-    newLocation.search = newFilter.makeQueryParameters();
-    if (newLocation.search !== filter.makeQueryParameters()) {
-      setFilter(newFilter);
-      updateInterfaceConfig(newFilter, options.persistState);
-    }
-    // If constructed search is different from current, update it as well
-    if (newLocation.search !== location.search) {
-      newLocation.search = newFilter.makeQueryParameters();
-      history.replace(newLocation);
-    }
-  }, [
-    defaultSort,
-    defaultDisplayMode,
-    filter,
-    interfaceState.data,
-    interfaceState.loading,
-    history,
-    location.search,
-    options.filterMode,
-    persistanceKey,
-    forageInitialised,
-    updateInterfaceConfig,
-    options.persistState,
-  ]);
+  const {
+    data: defaultFilter,
+    loading: defaultFilterLoading,
+  } = useFindDefaultFilter(options.filterMode);
 
   const updateQueryParams = useCallback(
     (listFilter: ListFilterModel) => {
@@ -564,6 +606,84 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     },
     [setFilter, history, location, options.persistState, updateInterfaceConfig]
   );
+
+  useEffect(() => {
+    if (
+      // defer processing this until forage is initialised and
+      // default filter is loaded
+      interfaceState.loading ||
+      defaultFilterLoading ||
+      // Only update query params on page the hook was mounted on
+      history.location.pathname !== originalPathName.current
+    )
+      return;
+
+    if (!forageInitialised) setForageInitialised(true);
+
+    const newFilter = filter.clone();
+    let update = false;
+
+    // Compare constructed filter with current filter.
+    // If different it's the result of navigation, and we update the filter.
+    if (
+      history.location.search &&
+      history.location.search !== `?${filter.makeQueryParameters()}`
+    ) {
+      newFilter.configureFromQueryParameters(
+        queryString.parse(history.location.search)
+      );
+      update = true;
+    }
+
+    // if default query is set and no search params are set, then
+    // load the default query
+    // #1512 - use default query only if persistState is ALL
+    if (
+      options.persistState === PersistanceLevel.ALL &&
+      !location.search &&
+      defaultFilter?.findDefaultFilter
+    ) {
+      newFilter.currentPage = 1;
+      newFilter.configureFromQueryParameters(
+        JSON.parse(defaultFilter.findDefaultFilter.filter)
+      );
+      // #1507 - reset random seed when loaded
+      newFilter.randomSeed = -1;
+      update = true;
+    }
+
+    // set the display type if persisted
+    const storedQuery = interfaceState.data?.[persistanceKey];
+
+    if (options.persistState === PersistanceLevel.VIEW && storedQuery) {
+      const storedFilter = queryString.parse(storedQuery.filter);
+
+      if (storedFilter.disp !== undefined) {
+        const displayMode = Number.parseInt(storedFilter.disp as string, 10);
+        if (displayMode !== newFilter.displayMode) {
+          newFilter.displayMode = displayMode;
+          update = true;
+        }
+      }
+    }
+
+    if (update) {
+      updateQueryParams(newFilter);
+    }
+  }, [
+    defaultSort,
+    defaultDisplayMode,
+    filter,
+    interfaceState,
+    history,
+    location.search,
+    updateQueryParams,
+    defaultFilter,
+    defaultFilterLoading,
+    persistanceKey,
+    forageInitialised,
+    options.persistState,
+  ]);
 
   const onChangePage = useCallback(
     (page: number) => {

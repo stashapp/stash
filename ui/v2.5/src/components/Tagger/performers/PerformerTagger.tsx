@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useLocalForage } from "src/hooks";
@@ -51,6 +52,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   onBatchAdd,
   onBatchUpdate,
 }) => {
+  const intl = useIntl();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
     Record<string, IStashBoxPerformer[]>
@@ -245,7 +247,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
                   )
                 }
               >
-                Search
+                <FormattedMessage id="actions.search" />
               </Button>
             </InputGroup.Append>
           </InputGroup>
@@ -384,7 +386,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         header="Update Performers"
         accept={{ text: "Update Performers", onClick: handleBatchUpdate }}
         cancel={{
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "danger",
           onClick: () => setShowBatchUpdate(false),
         }}
@@ -454,7 +456,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         header="Add New Performers"
         accept={{ text: "Add Performers", onClick: handleBatchAdd }}
         cancel={{
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "danger",
           onClick: () => setShowBatchAdd(false),
         }}

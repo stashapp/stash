@@ -20,6 +20,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { DurationUtils } from "src/utils";
+import { useIntl } from "react-intl";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -44,6 +45,7 @@ function renderScrapedStudio(
 }
 
 function renderScrapedStudioRow(
+  title: string,
   result: ScrapeResult<string>,
   onChange: (value: ScrapeResult<string>) => void,
   newStudio?: GQL.ScrapedSceneStudio,
@@ -51,7 +53,7 @@ function renderScrapedStudioRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Studio"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedStudio(result)}
       renderNewField={() =>
@@ -90,6 +92,7 @@ function renderScrapedPerformers(
 }
 
 function renderScrapedPerformersRow(
+  title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
   newPerformers: GQL.ScrapedScenePerformer[],
@@ -97,7 +100,7 @@ function renderScrapedPerformersRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Performers"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedPerformers(result)}
       renderNewField={() =>
@@ -136,6 +139,7 @@ function renderScrapedMovies(
 }
 
 function renderScrapedMoviesRow(
+  title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
   newMovies: GQL.ScrapedSceneMovie[],
@@ -143,7 +147,7 @@ function renderScrapedMoviesRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Movies"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedMovies(result)}
       renderNewField={() =>
@@ -182,6 +186,7 @@ function renderScrapedTags(
 }
 
 function renderScrapedTagsRow(
+  title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
   newTags: GQL.ScrapedSceneTag[],
@@ -189,7 +194,7 @@ function renderScrapedTagsRow(
 ) {
   return (
     <ScrapeDialogRow
-      title="Tags"
+      title={title}
       result={result}
       renderOriginalField={() => renderScrapedTags(result)}
       renderNewField={() =>
@@ -321,6 +326,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
   const [createMovie] = useMovieCreate();
   const [createTag] = useTagCreate();
 
+  const intl = useIntl();
   const Toast = useToast();
 
   // don't show the dialog if nothing was scraped
@@ -520,52 +526,56 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     return (
       <>
         <ScrapedInputGroupRow
-          title="Title"
+          title={intl.formatMessage({ id: "title" })}
           result={title}
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
-          title="URL"
+          title={intl.formatMessage({ id: "url" })}
           result={url}
           onChange={(value) => setURL(value)}
         />
         <ScrapedInputGroupRow
-          title="Date"
+          title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         {renderScrapedStudioRow(
+          intl.formatMessage({ id: "studios" }),
           studio,
           (value) => setStudio(value),
           newStudio,
           createNewStudio
         )}
         {renderScrapedPerformersRow(
+          intl.formatMessage({ id: "performers" }),
           performers,
           (value) => setPerformers(value),
           newPerformers,
           createNewPerformer
         )}
         {renderScrapedMoviesRow(
+          intl.formatMessage({ id: "movies" }),
           movies,
           (value) => setMovies(value),
           newMovies,
           createNewMovie
         )}
         {renderScrapedTagsRow(
+          intl.formatMessage({ id: "tags" }),
           tags,
           (value) => setTags(value),
           newTags,
           createNewTag
         )}
         <ScrapedTextAreaRow
-          title="Details"
+          title={intl.formatMessage({ id: "details" })}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         <ScrapedImageRow
-          title="Cover Image"
+          title={intl.formatMessage({ id: "cover_image" })}
           className="scene-cover"
           result={image}
           onChange={(value) => setImage(value)}
@@ -576,7 +586,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
 
   return (
     <ScrapeDialog
-      title="Scene Scrape Results"
+      title={intl.formatMessage(
+        { id: "dialogs.scrape_entity_title" },
+        { entity_type: intl.formatMessage({ id: "scene" }) }
+      )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         props.onClose(apply ? makeNewScrapedItem() : undefined);

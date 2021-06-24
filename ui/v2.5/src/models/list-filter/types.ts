@@ -8,17 +8,6 @@ export enum DisplayMode {
   Tagger,
 }
 
-export enum FilterMode {
-  Scenes,
-  Performers,
-  Studios,
-  Galleries,
-  SceneMarkers,
-  Movies,
-  Tags,
-  Images,
-}
-
 export interface ILabeledId {
   id: string;
   label: string;
@@ -103,4 +92,14 @@ export type CriterionType =
   | "death_year"
   | "url"
   | "stash_id"
-  | "interactive";
+  | "interactive"
+  | "name"
+  | "details"
+  | "title"
+  | "oshash"
+  | "checksum"
+  | "sceneChecksum"
+  | "galleryChecksum"
+  | "phash"
+  | "director"
+  | "synopsis";

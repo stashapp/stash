@@ -231,20 +231,22 @@ func (qb *imageQueryBuilder) makeFilter(imageFilter *models.ImageFilterType) *fi
 		query.not(qb.makeFilter(imageFilter.Not))
 	}
 
-	query.handleCriterionFunc(stringCriterionHandler(imageFilter.Path, "images.path"))
-	query.handleCriterionFunc(intCriterionHandler(imageFilter.Rating, "images.rating"))
-	query.handleCriterionFunc(intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
-	query.handleCriterionFunc(boolCriterionHandler(imageFilter.Organized, "images.organized"))
-	query.handleCriterionFunc(resolutionCriterionHandler(imageFilter.Resolution, "images.height", "images.width"))
-	query.handleCriterionFunc(imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
+	query.handleCriterion(stringCriterionHandler(imageFilter.Checksum, "images.checksum"))
+	query.handleCriterion(stringCriterionHandler(imageFilter.Title, "images.title"))
+	query.handleCriterion(stringCriterionHandler(imageFilter.Path, "images.path"))
+	query.handleCriterion(intCriterionHandler(imageFilter.Rating, "images.rating"))
+	query.handleCriterion(intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
+	query.handleCriterion(boolCriterionHandler(imageFilter.Organized, "images.organized"))
+	query.handleCriterion(resolutionCriterionHandler(imageFilter.Resolution, "images.height", "images.width"))
+	query.handleCriterion(imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
-	query.handleCriterionFunc(imageTagsCriterionHandler(qb, imageFilter.Tags))
-	query.handleCriterionFunc(imageTagCountCriterionHandler(qb, imageFilter.TagCount))
-	query.handleCriterionFunc(imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
-	query.handleCriterionFunc(imagePerformersCriterionHandler(qb, imageFilter.Performers))
-	query.handleCriterionFunc(imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
-	query.handleCriterionFunc(imageStudioCriterionHandler(qb, imageFilter.Studios))
-	query.handleCriterionFunc(imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
+	query.handleCriterion(imageTagsCriterionHandler(qb, imageFilter.Tags))
+	query.handleCriterion(imageTagCountCriterionHandler(qb, imageFilter.TagCount))
+	query.handleCriterion(imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
+	query.handleCriterion(imagePerformersCriterionHandler(qb, imageFilter.Performers))
+	query.handleCriterion(imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
+	query.handleCriterion(imageStudioCriterionHandler(qb, imageFilter.Studios))
+	query.handleCriterion(imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
 
 	return query
 }

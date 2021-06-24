@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -188,22 +189,34 @@ const (
 )
 
 const (
-	pathField     = "Path"
-	checksumField = "Checksum"
-	titleField    = "Title"
-	urlField      = "URL"
-	zipPath       = "zipPath.zip"
+	savedFilterIdxDefaultScene = iota
+	savedFilterIdxDefaultImage
+	savedFilterIdxScene
+	savedFilterIdxImage
+
+	// new indexes above
+	totalSavedFilters
+)
+
+const (
+	pathField            = "Path"
+	checksumField        = "Checksum"
+	titleField           = "Title"
+	urlField             = "URL"
+	zipPath              = "zipPath.zip"
+	firstSavedFilterName = "firstSavedFilterName"
 )
 
 var (
-	sceneIDs     []int
-	imageIDs     []int
-	performerIDs []int
-	movieIDs     []int
-	galleryIDs   []int
-	tagIDs       []int
-	studioIDs    []int
-	markerIDs    []int
+	sceneIDs       []int
+	imageIDs       []int
+	performerIDs   []int
+	movieIDs       []int
+	galleryIDs     []int
+	tagIDs         []int
+	studioIDs      []int
+	markerIDs      []int
+	savedFilterIDs []int
 
 	tagNames       []string
 	studioNames    []string
@@ -342,6 +355,16 @@ func withTxn(f func(r models.Repository) error) error {
 	return t.WithTxn(context.TODO(), f)
 }
 
+func withRollbackTxn(f func(r models.Repository) error) error {
+	var ret error
+	withTxn(func(repo models.Repository) error {
+		ret = f(repo)
+		return errors.New("fake error for rollback")
+	})
+
+	return ret
+}
+
 func testTeardown(databaseFile string) {
 	err := database.DB.Close()
 
@@ -410,6 +433,10 @@ func populateDB() error {
 
 		if err := createStudios(r.Studio(), studiosNameCase, studiosNameNoCase); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
+		}
+
+		if err := createSavedFilters(r.SavedFilter(), totalSavedFilters); err != nil {
+			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
 		if err := linkPerformerTags(r.Performer()); err != nil {
@@ -963,6 +990,51 @@ func createMarker(mqb models.SceneMarkerReaderWriter, sceneIdx, primaryTagIdx in
 
 	if err := mqb.UpdateTags(created.ID, newTagIDs); err != nil {
 		return fmt.Errorf("Error creating marker/tag join: %s", err.Error())
+	}
+
+	return nil
+}
+
+func getSavedFilterMode(index int) models.FilterMode {
+	switch index {
+	case savedFilterIdxScene, savedFilterIdxDefaultScene:
+		return models.FilterModeScenes
+	case savedFilterIdxImage, savedFilterIdxDefaultImage:
+		return models.FilterModeImages
+	default:
+		return models.FilterModeScenes
+	}
+}
+
+func getSavedFilterName(index int) string {
+	if index <= savedFilterIdxDefaultImage {
+		// empty string for default filters
+		return ""
+	}
+
+	if index <= savedFilterIdxImage {
+		// use the same name for the first two - should be possible
+		return firstSavedFilterName
+	}
+
+	return getPrefixedStringValue("savedFilter", index, "Name")
+}
+
+func createSavedFilters(qb models.SavedFilterReaderWriter, n int) error {
+	for i := 0; i < n; i++ {
+		savedFilter := models.SavedFilter{
+			Mode:   getSavedFilterMode(i),
+			Name:   getSavedFilterName(i),
+			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
+		}
+
+		created, err := qb.Create(savedFilter)
+
+		if err != nil {
+			return fmt.Errorf("Error creating saved filter %v+: %s", savedFilter, err.Error())
+		}
+
+		savedFilterIDs = append(savedFilterIDs, created.ID)
 	}
 
 	return nil

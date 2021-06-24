@@ -1,3 +1,4 @@
+import { FilterMode } from "src/core/generated-graphql";
 import { ListFilterOptions } from "./filter-options";
 import { GalleryListFilterOptions } from "./galleries";
 import { ImageListFilterOptions } from "./images";
@@ -7,7 +8,6 @@ import { SceneMarkerListFilterOptions } from "./scene-markers";
 import { SceneListFilterOptions } from "./scenes";
 import { StudioListFilterOptions } from "./studios";
 import { TagListFilterOptions } from "./tags";
-import { FilterMode } from "./types";
 
 export function getFilterOptions(mode: FilterMode): ListFilterOptions {
   switch (mode) {

@@ -1,3 +1,5 @@
+// +build integration
+
 package sqlite_test
 
 import (

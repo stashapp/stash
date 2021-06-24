@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useAllMoviesForFilter } from "src/core/StashService";
 import { Form, Row, Col } from "react-bootstrap";
@@ -13,6 +14,7 @@ export interface IProps {
 export const SceneMovieTable: React.FunctionComponent<IProps> = (
   props: IProps
 ) => {
+  const intl = useIntl();
   const { data } = useAllMoviesForFilter();
 
   const items = !!data && !!data.allMovies ? data.allMovies : [];
@@ -72,10 +74,10 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
       <div className="movie-table">
         <Row>
           <Form.Label column xs={9}>
-            Movie
+            {intl.formatMessage({ id: "movie" })}
           </Form.Label>
           <Form.Label column xs={3}>
-            Scene #
+            {intl.formatMessage({ id: "movie_scene_number" })}
           </Form.Label>
         </Row>
         {renderTableData()}

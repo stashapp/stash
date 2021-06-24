@@ -10,6 +10,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   calculateMD5
   videoFileNamingAlgorithm
   parallelTasks
+  previewAudio
   previewSegments
   previewSegmentDuration
   previewExcludeStart

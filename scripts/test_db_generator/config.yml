@@ -1,0 +1,18 @@
+database: generated.sqlite
+scenes: 30000
+images: 150000
+galleries: 1500
+markers: 300
+performers: 10000
+studios: 500
+tags: 1500
+naming:
+  scenes: scene.txt
+  performers:
+    male: male.txt
+    female: female.txt
+    surname: surname.txt
+  galleries: scene.txt
+  studios: studio.txt
+  tags: scene.txt
+  images: scene.txt

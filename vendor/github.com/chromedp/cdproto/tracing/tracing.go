@@ -81,7 +81,8 @@ func (p *RecordClockSyncMarkerParams) Do(ctx context.Context) (err error) {
 
 // RequestMemoryDumpParams request a global memory dump.
 type RequestMemoryDumpParams struct {
-	Deterministic bool `json:"deterministic,omitempty"` // Enables more deterministic results by forcing garbage collection
+	Deterministic bool                    `json:"deterministic,omitempty"` // Enables more deterministic results by forcing garbage collection
+	LevelOfDetail MemoryDumpLevelOfDetail `json:"levelOfDetail,omitempty"` // Specifies level of details in memory dump. Defaults to "detailed".
 }
 
 // RequestMemoryDump request a global memory dump.
@@ -97,6 +98,13 @@ func RequestMemoryDump() *RequestMemoryDumpParams {
 // collection.
 func (p RequestMemoryDumpParams) WithDeterministic(deterministic bool) *RequestMemoryDumpParams {
 	p.Deterministic = deterministic
+	return &p
+}
+
+// WithLevelOfDetail specifies level of details in memory dump. Defaults to
+// "detailed".
+func (p RequestMemoryDumpParams) WithLevelOfDetail(levelOfDetail MemoryDumpLevelOfDetail) *RequestMemoryDumpParams {
+	p.LevelOfDetail = levelOfDetail
 	return &p
 }
 
@@ -129,6 +137,8 @@ type StartParams struct {
 	StreamFormat                 StreamFormat      `json:"streamFormat,omitempty"`                 // Trace data format to use. This only applies when using ReturnAsStream transfer mode (defaults to json).
 	StreamCompression            StreamCompression `json:"streamCompression,omitempty"`            // Compression format to use. This only applies when using ReturnAsStream transfer mode (defaults to none)
 	TraceConfig                  *TraceConfig      `json:"traceConfig,omitempty"`
+	PerfettoConfig               string            `json:"perfettoConfig,omitempty"` // Base64-encoded serialized perfetto.protos.TraceConfig protobuf message When specified, the parameters categories, options, traceConfig are ignored.
+	TracingBackend               Backend           `json:"tracingBackend,omitempty"` // Backend type (defaults to auto)
 }
 
 // Start start trace events collection.
@@ -171,6 +181,20 @@ func (p StartParams) WithStreamCompression(streamCompression StreamCompression) 
 // WithTraceConfig [no description].
 func (p StartParams) WithTraceConfig(traceConfig *TraceConfig) *StartParams {
 	p.TraceConfig = traceConfig
+	return &p
+}
+
+// WithPerfettoConfig base64-encoded serialized perfetto.protos.TraceConfig
+// protobuf message When specified, the parameters categories, options,
+// traceConfig are ignored.
+func (p StartParams) WithPerfettoConfig(perfettoConfig string) *StartParams {
+	p.PerfettoConfig = perfettoConfig
+	return &p
+}
+
+// WithTracingBackend backend type (defaults to auto).
+func (p StartParams) WithTracingBackend(tracingBackend Backend) *StartParams {
+	p.TracingBackend = tracingBackend
 	return &p
 }
 

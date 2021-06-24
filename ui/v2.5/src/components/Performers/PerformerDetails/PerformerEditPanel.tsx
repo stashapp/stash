@@ -9,14 +9,12 @@ import {
   Row,
   Badge,
 } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
-  getGenderStrings,
   useListPerformerScrapers,
-  genderToString,
-  stringToGender,
   queryScrapePerformer,
   mutateReloadScrapers,
   usePerformerUpdate,
@@ -39,6 +37,11 @@ import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import {
+  genderStrings,
+  genderToString,
+  stringToGender,
+} from "src/utils/gender";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -64,6 +67,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   onImageChange,
   onImageEncoding,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
   const history = useHistory();
 
@@ -90,7 +94,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const [createTag] = useTagCreate();
 
-  const genderOptions = [""].concat(getGenderStrings());
+  const genderOptions = [""].concat(genderStrings);
 
   const labelXS = 3;
   const labelXL = 2;
@@ -610,7 +614,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 <span className="fa-icon">
                   <Icon icon="sync-alt" />
                 </span>
-                <span>Reload scrapers</span>
+                <span>
+                  <FormattedMessage id="actions.reload_scrapers" />
+                </span>
               </Button>
             </div>
           </>
@@ -626,7 +632,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         rootClose
       >
         <Button variant="secondary" className="mr-2">
-          Scrape with...
+          <FormattedMessage id="actions.scrape_with" />
         </Button>
       </OverlayTrigger>
     );
@@ -694,7 +700,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             disabled={!formik.dirty}
             onClick={() => formik.submitForm()}
           >
-            Save
+            <FormattedMessage id="actions.save" />
           </Button>
           {!isNew ? (
             <Button
@@ -702,7 +708,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               variant="danger"
               onClick={() => setIsDeleteAlertOpen(true)}
             >
-              Delete
+              <FormattedMessage id="actions.delete" />
             </Button>
           ) : (
             ""
@@ -718,7 +724,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             variant="danger"
             onClick={() => formik.setFieldValue("image", null)}
           >
-            Clear image
+            <FormattedMessage id="actions.clear_image" />
           </Button>
         </Col>
       </Row>
@@ -747,10 +753,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {performer.name}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{ entityName: performer.name }}
+          />
+        </p>
       </Modal>
     );
   }
@@ -759,7 +774,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Form.Group controlId="tags" as={Row}>
         <Form.Label column sm={labelXS} xl={labelXL}>
-          Tags
+          <FormattedMessage id="tags" defaultMessage="Tags" />
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <TagSelect
@@ -838,7 +853,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
-          {title}
+          <FormattedMessage id={field} defaultMessage={title} />
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <Form.Control
@@ -866,7 +881,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
         <Form.Group controlId="name" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Name
+            <FormattedMessage id="name" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -883,7 +898,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="aliases" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Alias
+            <FormattedMessage id="aliases" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -897,7 +912,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Gender
+            <FormattedMessage id="gender" />
           </Form.Label>
           <Col xs="auto">
             <Form.Control
@@ -927,7 +942,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="tattoos" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Tattoos
+            <FormattedMessage id="tattoos" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -941,7 +956,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="piercings" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Piercings
+            <FormattedMessage id="piercings" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -955,9 +970,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderTextField("career_length", "Career Length")}
 
-        <Form.Group controlId="name" as={Row}>
+        <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            URL
+            <FormattedMessage id="url" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <InputGroup>
@@ -975,7 +990,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTextField("instagram", "Instagram")}
         <Form.Group controlId="details" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Details
+            <FormattedMessage id="details" />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
@@ -990,7 +1005,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group controlId="rating" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Rating
+            <FormattedMessage id="rating" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <RatingStars

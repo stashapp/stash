@@ -65,6 +65,15 @@ func (t changesetTranslator) hasField(field string) bool {
 	return found
 }
 
+func (t changesetTranslator) getFields() []string {
+	var ret []string
+	for k := range t.inputMap {
+		ret = append(ret, k)
+	}
+
+	return ret
+}
+
 func (t changesetTranslator) nullString(value *string, field string) *sql.NullString {
 	if !t.hasField(field) {
 		return nil

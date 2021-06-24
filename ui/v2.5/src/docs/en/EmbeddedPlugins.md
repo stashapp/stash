@@ -78,22 +78,6 @@ For embedded plugins, the `exec` field is a list with the first element being th
 For embedded plugins, the `interface` field must be set to one of the following values:
 * `js`
 
-# Task configuration
-
-Tasks are configured using the following structure:
-
-```
-tasks:
-  - name: <operation name>
-    description: <optional description>
-    defaultArgs:
-      argKey: argValue
-```
-
-A plugin configuration may contain multiple tasks. 
-
-The `defaultArgs` field is used to add inputs to the plugin input sent to the plugin.
-
 # Javascript API
 
 ## Logging

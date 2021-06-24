@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import _ from "lodash";
 import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -17,12 +18,14 @@ interface IListOperationProps {
 export const EditPerformersDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
+  const intl = useIntl();
   const Toast = useToast();
   const [rating, setRating] = useState<number>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
     GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
+  const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [favorite, setFavorite] = useState<boolean | undefined>();
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
@@ -92,7 +95,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updatePerformers();
-      Toast.success({ content: "Updated performers" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl
+              .formatMessage({ id: "performers" })
+              .toLocaleLowerCase(),
+          }
+        ),
+      });
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -167,9 +179,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       }
     });
 
-    if (tagMode === GQL.BulkUpdateIdMode.Set) {
-      setTagIds(updateTagIds);
-    }
+    setExistingTagIds(updateTagIds);
     setFavorite(updateFavorite);
     setRating(updateRating);
   }, [props.selected, tagMode]);
@@ -179,42 +189,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       checkboxRef.current.indeterminate = favorite === undefined;
     }
   }, [favorite, checkboxRef]);
-
-  function renderMultiSelect(
-    type: "performers" | "tags",
-    ids: string[] | undefined
-  ) {
-    let mode = GQL.BulkUpdateIdMode.Add;
-    switch (type) {
-      case "tags":
-        mode = tagMode;
-        break;
-    }
-
-    return (
-      <MultiSet
-        type={type}
-        disabled={isUpdating}
-        onUpdate={(items) => {
-          const itemIDs = items.map((i) => i.id);
-          switch (type) {
-            case "tags":
-              setTagIds(itemIDs);
-              break;
-          }
-        }}
-        onSetMode={(newMode) => {
-          switch (type) {
-            case "tags":
-              setTagMode(newMode);
-              break;
-          }
-        }}
-        ids={ids ?? []}
-        mode={mode}
-      />
-    );
-  }
 
   function cycleFavorite() {
     if (favorite) {
@@ -232,17 +206,20 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         show
         icon="pencil-alt"
         header="Edit Performers"
-        accept={{ onClick: onSave, text: "Apply" }}
+        accept={{
+          onClick: onSave,
+          text: intl.formatMessage({ id: "actions.apply" }),
+        }}
         cancel={{
           onClick: () => props.onClose(false),
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "secondary",
         }}
         isRunning={isUpdating}
       >
         <Form.Group controlId="rating" as={Row}>
           {FormUtils.renderLabel({
-            title: "Rating",
+            title: intl.formatMessage({ id: "rating" }),
           })}
           <Col xs={9}>
             <RatingStars
@@ -254,8 +231,18 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         </Form.Group>
         <Form>
           <Form.Group controlId="tags">
-            <Form.Label>Tags</Form.Label>
-            {renderMultiSelect("tags", tagIds)}
+            <Form.Label>
+              <FormattedMessage id="tags" />
+            </Form.Label>
+            <MultiSet
+              type="tags"
+              disabled={isUpdating}
+              onUpdate={(itemIDs) => setTagIds(itemIDs)}
+              onSetMode={(newMode) => setTagMode(newMode)}
+              existingIds={existingTagIds ?? []}
+              ids={tagIds ?? []}
+              mode={tagMode}
+            />
           </Form.Group>
 
           <Form.Group controlId="favorite">

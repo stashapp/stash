@@ -6,6 +6,7 @@ import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -18,21 +19,6 @@ interface IImageCardProps {
 export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
-  function maybeRenderRatingBanner() {
-    if (!props.image.rating) {
-      return;
-    }
-    return (
-      <div
-        className={`rating-banner ${
-          props.image.rating ? `rating-${props.image.rating}` : ""
-        }`}
-      >
-        RATING: {props.image.rating}
-      </div>
-    );
-  }
-
   function maybeRenderTagPopoverButton() {
     if (props.image.tags.length <= 0) return;
 
@@ -130,7 +116,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
               src={props.image.paths.thumbnail ?? ""}
             />
           </div>
-          {maybeRenderRatingBanner()}
+          <RatingBanner rating={props.image.rating} />
         </>
       }
       popovers={maybeRenderPopoverButtonGroup()}

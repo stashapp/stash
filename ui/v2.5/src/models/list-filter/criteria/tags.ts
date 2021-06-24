@@ -1,19 +1,22 @@
-import { CriterionOption, ILabeledIdCriterion } from "./criterion";
+import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 
-export class TagsCriterion extends ILabeledIdCriterion {
-  constructor(type: CriterionOption) {
-    super(type, true);
-  }
-}
+export class TagsCriterion extends ILabeledIdCriterion {}
 
-export const TagsCriterionOption = new CriterionOption("tags", "tags");
-export const SceneTagsCriterionOption = new CriterionOption(
-  "sceneTags",
-  "sceneTags",
-  "scene_tags"
+export const TagsCriterionOption = new ILabeledIdCriterionOption(
+  "tags",
+  "tags",
+  "tags",
+  true
 );
-export const PerformerTagsCriterionOption = new CriterionOption(
+export const SceneTagsCriterionOption = new ILabeledIdCriterionOption(
+  "sceneTags",
+  "sceneTags",
+  "scene_tags",
+  true
+);
+export const PerformerTagsCriterionOption = new ILabeledIdCriterionOption(
   "performerTags",
   "performerTags",
-  "performer_tags"
+  "performer_tags",
+  true
 );

@@ -1,5 +1,6 @@
 import { Button } from "react-bootstrap";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { mutateMetadataAutoTag } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -25,5 +26,9 @@ export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
     }
   }
 
-  return <Button onClick={onAutoTag}>Auto Tag</Button>;
+  return (
+    <Button onClick={onAutoTag}>
+      <FormattedMessage id="actions.auto_tag" />
+    </Button>
+  );
 };

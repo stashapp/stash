@@ -24,3 +24,54 @@ input[type="range"].zoom-slider {
   padding-left: 0;
   padding-right: 0;
 }
+
+.query-text-field {
+  border: 0;
+  width: 50%;
+}
+
+.saved-filter-list-menu {
+  width: 300px;
+
+  .set-as-default-button {
+    float: right;
+  }
+
+  .LoadingIndicator {
+    height: auto;
+    text-align: center;
+
+    .spinner-border {
+      height: 1.5rem;
+      width: 1.5rem;
+    }
+  }
+}
+
+.saved-filter-list {
+  list-style: none;
+  margin-bottom: 0;
+  max-height: 230px;
+  overflow-y: auto;
+  padding-left: 0;
+
+  .dropdown-item-container {
+    display: flex;
+
+    .dropdown-item {
+      align-items: center;
+      display: inline;
+      overflow-x: hidden;
+      padding-right: 0.25rem;
+      text-overflow: ellipsis;
+    }
+
+    .btn-group {
+      margin-left: auto;
+    }
+
+    .delete-button {
+      color: $danger;
+    }
+  }
+}

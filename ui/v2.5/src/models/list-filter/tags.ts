@@ -1,6 +1,9 @@
-import { createCriterionOption } from "./criteria/criterion";
+import {
+  createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
@@ -34,12 +37,13 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 const criterionOptions = [
-  NoneCriterionOption,
+  createMandatoryStringCriterionOption("name"),
   TagIsMissingCriterionOption,
-  createCriterionOption("scene_count"),
-  createCriterionOption("image_count"),
-  createCriterionOption("gallery_count"),
-  createCriterionOption("performer_count"),
+  createStringCriterionOption("aliases"),
+  createMandatoryNumberCriterionOption("scene_count"),
+  createMandatoryNumberCriterionOption("image_count"),
+  createMandatoryNumberCriterionOption("gallery_count"),
+  createMandatoryNumberCriterionOption("performer_count"),
   // marker count has been disabled for now due to performance issues
   // ListFilterModel.createCriterionOption("marker_count"),
 ];

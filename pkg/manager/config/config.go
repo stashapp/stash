@@ -13,6 +13,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -56,13 +57,16 @@ const CalculateMD5 = "calculate_md5"
 // should be used when generating and using generated files for scenes.
 const VideoFileNamingAlgorithm = "video_file_naming_algorithm"
 
-const PreviewPreset = "preview_preset"
-
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
 const ParallelTasks = "parallel_tasks"
 const parallelTasksDefault = 1
+
+const PreviewPreset = "preview_preset"
+
+const PreviewAudio = "preview_audio"
+const previewAudioDefault = true
 
 const PreviewSegmentDuration = "preview_segment_duration"
 const previewSegmentDurationDefault = 0.75
@@ -146,6 +150,15 @@ type MissingConfigError struct {
 
 func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
+}
+
+func HasTLSConfig() bool {
+	ret, _ := utils.FileExists(paths.GetSSLCert())
+	if ret {
+		ret, _ = utils.FileExists(paths.GetSSLKey())
+	}
+
+	return ret
 }
 
 type Instance struct {
@@ -404,6 +417,10 @@ func (i *Instance) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
+func (i *Instance) GetPreviewAudio() bool {
+	return viper.GetBool(PreviewAudio)
+}
+
 // GetPreviewSegments returns the amount of segments in a scene preview file.
 func (i *Instance) GetPreviewSegments() int {
 	return viper.GetInt(PreviewSegments)
@@ -561,7 +578,6 @@ func (i *Instance) GetMenuItems() []string {
 }
 
 func (i *Instance) GetSoundOnPreview() bool {
-	viper.SetDefault(SoundOnPreview, false)
 	return viper.GetBool(SoundOnPreview)
 }
 
@@ -746,6 +762,8 @@ func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+	viper.SetDefault(PreviewAudio, previewAudioDefault)
+	viper.SetDefault(SoundOnPreview, false)
 
 	viper.SetDefault(Database, i.GetDefaultDatabaseFilePath())
 

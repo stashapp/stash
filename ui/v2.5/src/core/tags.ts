@@ -10,7 +10,7 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
-      return c.criterionOption.value === "tags";
+      return c.criterionOption.type === "tags";
     }) as TagsCriterion;
 
     if (

@@ -18,6 +18,15 @@ type ScreenOrientation struct {
 	Angle int64           `json:"angle"` // Orientation angle.
 }
 
+// DisplayFeature [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#type-DisplayFeature
+type DisplayFeature struct {
+	Orientation DisplayFeatureOrientation `json:"orientation"` // Orientation of a display feature in relation to screen
+	Offset      int64                     `json:"offset"`      // The offset from the screen origin in either the x (for vertical orientation) or y (for horizontal orientation) direction.
+	MaskLength  int64                     `json:"maskLength"`  // A display feature may mask content such that it is not physically displayed - this length along with the offset describes this area. A display feature that only splits content will have a 0 mask_length.
+}
+
 // MediaFeature [no description].
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#type-MediaFeature
@@ -87,17 +96,65 @@ type UserAgentBrandVersion struct {
 }
 
 // UserAgentMetadata used to specify User Agent Cient Hints to emulate. See
-// https://wicg.github.io/ua-client-hints.
+// https://wicg.github.io/ua-client-hints Missing optional values will be filled
+// in by the target with what it would normally use.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#type-UserAgentMetadata
 type UserAgentMetadata struct {
-	Brands          []*UserAgentBrandVersion `json:"brands"`
-	FullVersion     string                   `json:"fullVersion"`
+	Brands          []*UserAgentBrandVersion `json:"brands,omitempty"`
+	FullVersion     string                   `json:"fullVersion,omitempty"`
 	Platform        string                   `json:"platform"`
 	PlatformVersion string                   `json:"platformVersion"`
 	Architecture    string                   `json:"architecture"`
 	Model           string                   `json:"model"`
 	Mobile          bool                     `json:"mobile"`
+}
+
+// DisabledImageType enum of image types that can be disabled.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#type-DisabledImageType
+type DisabledImageType string
+
+// String returns the DisabledImageType as string value.
+func (t DisabledImageType) String() string {
+	return string(t)
+}
+
+// DisabledImageType values.
+const (
+	DisabledImageTypeAvif DisabledImageType = "avif"
+	DisabledImageTypeJxl  DisabledImageType = "jxl"
+	DisabledImageTypeWebp DisabledImageType = "webp"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t DisabledImageType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t DisabledImageType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *DisabledImageType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch DisabledImageType(in.String()) {
+	case DisabledImageTypeAvif:
+		*t = DisabledImageTypeAvif
+	case DisabledImageTypeJxl:
+		*t = DisabledImageTypeJxl
+	case DisabledImageTypeWebp:
+		*t = DisabledImageTypeWebp
+
+	default:
+		in.AddError(errors.New("unknown DisabledImageType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *DisabledImageType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
 }
 
 // OrientationType orientation type.
@@ -147,6 +204,51 @@ func (t *OrientationType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 
 // UnmarshalJSON satisfies json.Unmarshaler.
 func (t *OrientationType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// DisplayFeatureOrientation orientation of a display feature in relation to
+// screen.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#type-DisplayFeature
+type DisplayFeatureOrientation string
+
+// String returns the DisplayFeatureOrientation as string value.
+func (t DisplayFeatureOrientation) String() string {
+	return string(t)
+}
+
+// DisplayFeatureOrientation values.
+const (
+	DisplayFeatureOrientationVertical   DisplayFeatureOrientation = "vertical"
+	DisplayFeatureOrientationHorizontal DisplayFeatureOrientation = "horizontal"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t DisplayFeatureOrientation) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t DisplayFeatureOrientation) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *DisplayFeatureOrientation) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch DisplayFeatureOrientation(in.String()) {
+	case DisplayFeatureOrientationVertical:
+		*t = DisplayFeatureOrientationVertical
+	case DisplayFeatureOrientationHorizontal:
+		*t = DisplayFeatureOrientationHorizontal
+
+	default:
+		in.AddError(errors.New("unknown DisplayFeatureOrientation value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *DisplayFeatureOrientation) UnmarshalJSON(buf []byte) error {
 	return easyjson.Unmarshal(buf, t)
 }
 

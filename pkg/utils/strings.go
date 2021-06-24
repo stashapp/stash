@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"unicode"
 )
 
 var characters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
@@ -18,8 +19,37 @@ func RandomSequence(n int) string {
 	return string(b)
 }
 
+// FlipCaseSingle flips the case ( lower<->upper ) of a single char from the string s
+// If the string cannot be flipped, the original string value and an error are returned
+func FlipCaseSingle(s string) (string, error) {
+	rr := []rune(s)
+	for i, r := range rr {
+		if unicode.IsLetter(r) { // look for a letter  to flip
+			if unicode.IsUpper(r) {
+				rr[i] = unicode.ToLower(r)
+				return string(rr), nil
+			}
+			rr[i] = unicode.ToUpper(r)
+			return string(rr), nil
+		}
+
+	}
+	return s, fmt.Errorf("could not case flip string %s", s)
+}
+
 type StrFormatMap map[string]interface{}
 
+// StrFormat formats the provided format string, replacing placeholders
+// in the form of "{fieldName}" with the values in the provided
+// StrFormatMap.
+//
+// For example,
+// StrFormat("{foo} bar {baz}", StrFormatMap{
+//     "foo": "bar",
+//     "baz": "abc",
+// })
+//
+// would return: "bar bar abc"
 func StrFormat(format string, m StrFormatMap) string {
 	args := make([]string, len(m)*2)
 	i := 0

@@ -1,23 +1,30 @@
 import {
-  CriterionOption,
   IHierarchicalLabeledIdCriterion,
   ILabeledIdCriterion,
+  ILabeledIdCriterionOption,
 } from "./criterion";
 
-export const StudiosCriterionOption = new CriterionOption("studios", "studios");
+export const StudiosCriterionOption = new ILabeledIdCriterionOption(
+  "studios",
+  "studios",
+  "studios",
+  false
+);
+
 export class StudiosCriterion extends IHierarchicalLabeledIdCriterion {
   constructor() {
-    super(StudiosCriterionOption, false);
+    super(StudiosCriterionOption);
   }
 }
 
-export const ParentStudiosCriterionOption = new CriterionOption(
+export const ParentStudiosCriterionOption = new ILabeledIdCriterionOption(
   "parent_studios",
   "parent_studios",
-  "parents"
+  "parents",
+  false
 );
 export class ParentStudiosCriterion extends ILabeledIdCriterion {
   constructor() {
-    super(ParentStudiosCriterionOption, false);
+    super(ParentStudiosCriterionOption);
   }
 }

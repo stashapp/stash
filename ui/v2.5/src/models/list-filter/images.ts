@@ -1,6 +1,9 @@
-import { createCriterionOption } from "./criteria/criterion";
+import {
+  createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -29,18 +32,19 @@ const sortByOptions = [
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
-  NoneCriterionOption,
-  createCriterionOption("path"),
+  createStringCriterionOption("title"),
+  createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
+  createMandatoryStringCriterionOption("path"),
   RatingCriterionOption,
   OrganizedCriterionOption,
-  createCriterionOption("o_counter"),
+  createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
-  createCriterionOption("tag_count"),
+  createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
-  createCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_count"),
   StudiosCriterionOption,
 ];
 export const ImageListFilterOptions = new ListFilterOptions(

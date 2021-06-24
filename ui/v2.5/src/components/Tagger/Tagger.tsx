@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import { HashLink } from "react-router-hash-link";
 import { uniqBy } from "lodash";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
@@ -161,6 +162,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   queueFingerprintSubmission,
   clearSubmissionQueue,
 }) => {
+  const intl = useIntl();
   const [fingerprintError, setFingerprintError] = useState("");
   const [loading, setLoading] = useState(false);
   const queryString = useRef<Record<string, string>>({});
@@ -193,7 +195,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     inputForm?.current?.reset();
   }, [config.mode, config.blacklist]);
 
+  function clearSceneSearchResult(sceneID: string) {
+    // remove sceneID results from the results object
+    const { [sceneID]: _removedResult, ...newSearchResults } = searchResults;
+    const { [sceneID]: _removedError, ...newSearchErrors } = searchErrors;
+    setSearchResults(newSearchResults);
+    setSearchErrors(newSearchErrors);
+  }
+
   const doBoxSearch = (sceneID: string, searchVal: string) => {
+    clearSceneSearchResult(sceneID);
+
     stashBoxSceneQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
         const s = selectScenes(queryData.data?.queryStashBoxScene);
@@ -310,7 +322,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   const getFingerprintCountMessage = () => {
     const count = getFingerprintCount();
-    return `${count > 0 ? count : "No"} new fingerprint matches found`;
+    return intl.formatMessage(
+      { id: "component_tagger.results.fp_found" },
+      { fpCount: count }
+    );
   };
 
   const toggleHideUnmatchedScenes = () => {
@@ -359,14 +374,18 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       if (!isTagged && hasStashIDs) {
         mainContent = (
           <div className="text-right">
-            <h5 className="text-bold">Scene already tagged</h5>
+            <h5 className="text-bold">
+              <FormattedMessage id="component_tagger.results.match_failed_already_tagged" />
+            </h5>
           </div>
         );
       } else if (!isTagged && !hasStashIDs) {
         mainContent = (
           <InputGroup>
             <InputGroup.Prepend>
-              <InputGroup.Text>Query</InputGroup.Text>
+              <InputGroup.Text>
+                <FormattedMessage id="component_tagger.noun_query" />
+              </InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
               className="text-input"
@@ -392,7 +411,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                   )
                 }
               >
-                Search
+                <FormattedMessage id="actions.search" />
               </Button>
             </InputGroup.Append>
           </InputGroup>
@@ -400,7 +419,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       } else if (isTagged) {
         mainContent = (
           <div className="d-flex flex-column text-right">
-            <h5>Scene successfully tagged:</h5>
+            <h5>
+              <FormattedMessage id="component_tagger.results.match_success" />
+            </h5>
             <h6>
               <Link className="bold" to={sceneLink}>
                 {taggedScenes[scene.id].title}
@@ -438,7 +459,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         );
       } else if (searchResults[scene.id]?.length === 0) {
         subContent = (
-          <div className="text-danger font-weight-bold">No results found.</div>
+          <div className="text-danger font-weight-bold">
+            <FormattedMessage id="component_tagger.results.match_failed_no_result" />
+          </div>
         );
       }
 
@@ -544,7 +567,16 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         <div className="mr-2">
           {(getFingerprintCount() > 0 || hideUnmatched) && (
             <Button onClick={toggleHideUnmatchedScenes}>
-              {hideUnmatched ? "Show" : "Hide"} unmatched scenes
+              <FormattedMessage
+                id="component_tagger.verb_toggle_unmatched"
+                values={{
+                  toggle: (
+                    <FormattedMessage
+                      id={`actions.${hideUnmatched ? "hide" : "show"}`}
+                    />
+                  ),
+                }}
+              />
             </Button>
           )}
         </div>
@@ -558,7 +590,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 <LoadingIndicator message="" inline small />
               ) : (
                 <span>
-                  Submit <b>{fingerprintQueue.length}</b> Fingerprints
+                  <FormattedMessage
+                    id="component_tagger.verb_submit_fp"
+                    values={{ fpCount: fingerprintQueue.length }}
+                  />
                 </span>
               )}
             </Button>
@@ -568,7 +603,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           onClick={handleFingerprintSearch}
           disabled={!canFingerprintSearch() && !loadingFingerprints}
         >
-          {canFingerprintSearch() && <span>Match Fingerprints</span>}
+          {canFingerprintSearch() && (
+            <span>
+              {intl.formatMessage({ id: "component_tagger.verb_match_fp" })}
+            </span>
+          )}
           {!canFingerprintSearch() && getFingerprintCountMessage()}
           {loadingFingerprints && <LoadingIndicator message="" inline small />}
         </Button>
@@ -638,7 +677,17 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
           <>
             <div className="row mb-2 no-gutters">
               <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-                {showConfig ? "Hide" : "Show"} Configuration
+                <FormattedMessage
+                  id="component_tagger.verb_toggle_config"
+                  values={{
+                    toggle: (
+                      <FormattedMessage
+                        id={`actions.${showConfig ? "hide" : "show"}`}
+                      />
+                    ),
+                    configuration: <FormattedMessage id="configuration" />,
+                  }}
+                />
               </Button>
               <Button
                 className="ml-auto"
@@ -646,7 +695,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
                 title="Help"
                 variant="link"
               >
-                Help
+                <FormattedMessage id="help" />
               </Button>
             </div>
 

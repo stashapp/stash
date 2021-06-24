@@ -600,6 +600,116 @@ func TestTagUpdateAlias(t *testing.T) {
 	}
 }
 
+func TestTagMerge(t *testing.T) {
+	assert := assert.New(t)
+
+	// merge tests - perform these in a transaction that we'll rollback
+	if err := withRollbackTxn(func(r models.Repository) error {
+		qb := r.Tag()
+
+		// try merging into same tag
+		err := qb.Merge([]int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])
+		assert.NotNil(err)
+
+		// merge everything into tagIdxWithScene
+		srcIdxs := []int{
+			tagIdx1WithScene,
+			tagIdx2WithScene,
+			tagIdxWithPrimaryMarker,
+			tagIdxWithMarker,
+			tagIdxWithCoverImage,
+			tagIdxWithImage,
+			tagIdx1WithImage,
+			tagIdx2WithImage,
+			tagIdxWithPerformer,
+			tagIdx1WithPerformer,
+			tagIdx2WithPerformer,
+			tagIdxWithGallery,
+			tagIdx1WithGallery,
+			tagIdx2WithGallery,
+		}
+		var srcIDs []int
+		for _, idx := range srcIdxs {
+			srcIDs = append(srcIDs, tagIDs[idx])
+		}
+
+		destID := tagIDs[tagIdxWithScene]
+		if err = qb.Merge(srcIDs, destID); err != nil {
+			return err
+		}
+
+		// ensure other tags are deleted
+		for _, tagId := range srcIDs {
+			t, err := qb.Find(tagId)
+			if err != nil {
+				return err
+			}
+
+			assert.Nil(t)
+		}
+
+		// ensure aliases are set on the destination
+		destAliases, err := qb.GetAliases(destID)
+		if err != nil {
+			return err
+		}
+		for _, tagIdx := range srcIdxs {
+			assert.Contains(destAliases, getTagStringValue(tagIdx, "Name"))
+		}
+
+		// ensure scene points to new tag
+		sceneTagIDs, err := r.Scene().GetTagIDs(sceneIDs[sceneIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(sceneTagIDs, destID)
+
+		// ensure marker points to new tag
+		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithScene])
+		if err != nil {
+			return err
+		}
+
+		assert.Equal(destID, marker.PrimaryTagID)
+
+		markerTagIDs, err := r.SceneMarker().GetTagIDs(marker.ID)
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(markerTagIDs, destID)
+
+		// ensure image points to new tag
+		imageTagIDs, err := r.Image().GetTagIDs(imageIDs[imageIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(imageTagIDs, destID)
+
+		// ensure gallery points to new tag
+		galleryTagIDs, err := r.Gallery().GetTagIDs(galleryIDs[galleryIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(galleryTagIDs, destID)
+
+		// ensure performer points to new tag
+		performerTagIDs, err := r.Gallery().GetTagIDs(performerIDs[performerIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(performerTagIDs, destID)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
 // TODO Create
 // TODO Update
 // TODO Destroy

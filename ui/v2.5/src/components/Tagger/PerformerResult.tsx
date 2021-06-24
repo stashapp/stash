@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
 import { SuccessIcon, PerformerSelect } from "src/components/Shared";
@@ -112,12 +113,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     return (
       <div className="row no-gutters my-2">
         <div className="entity-name">
-          Performer:
+          <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
           <b className="ml-2">{performer.name}</b>
         </div>
         <span className="ml-auto">
           <SuccessIcon />
-          Matched:
+          <FormattedMessage id="component_tagger.verb_matched" />:
         </span>
         <b className="col-3 text-right">
           {stashData.findPerformers.performers[0].name}
@@ -138,7 +139,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         endpoint={endpoint}
       />
       <div className="entity-name">
-        Performer:
+        <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
         <b className="ml-2">{performer.name}</b>
       </div>
       <ButtonGroup>
@@ -146,13 +147,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           variant={selectedSource === "create" ? "primary" : "secondary"}
           onClick={() => showModal(true)}
         >
-          Create
+          <FormattedMessage id="actions.create" />
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
           onClick={() => handlePerformerSkip()}
         >
-          Skip
+          <FormattedMessage id="actions.skip" />
         </Button>
         <PerformerSelect
           ids={selectedPerformer ? [selectedPerformer] : []}

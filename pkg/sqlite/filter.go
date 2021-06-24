@@ -28,6 +28,10 @@ type criterionHandler interface {
 
 type criterionHandlerFunc func(f *filterBuilder)
 
+func (h criterionHandlerFunc) handle(f *filterBuilder) {
+	h(f)
+}
+
 type join struct {
 	table    string
 	as       string
@@ -62,13 +66,17 @@ type joins []join
 func (j *joins) add(newJoins ...join) {
 	// only add if not already joined
 	for _, newJoin := range newJoins {
+		found := false
 		for _, jj := range *j {
 			if jj.equals(newJoin) {
-				return
+				found = true
+				break
 			}
 		}
 
-		*j = append(*j, newJoin)
+		if !found {
+			*j = append(*j, newJoin)
+		}
 	}
 }
 
@@ -284,15 +292,7 @@ func (f *filterBuilder) getError() error {
 // handleCriterion calls the handle function on the provided criterionHandler,
 // providing itself.
 func (f *filterBuilder) handleCriterion(handler criterionHandler) {
-	f.handleCriterionFunc(func(h *filterBuilder) {
-		handler.handle(h)
-	})
-}
-
-// handleCriterionFunc calls the provided criterion handler function providing
-// itself.
-func (f *filterBuilder) handleCriterionFunc(handler criterionHandlerFunc) {
-	handler(f)
+	handler.handle(f)
 }
 
 func (f *filterBuilder) setError(e error) {
@@ -519,15 +519,9 @@ type stringListCriterionHandlerBuilder struct {
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
-			var args []interface{}
-			for _, tagID := range criterion.Value {
-				args = append(args, tagID)
-			}
-
 			m.addJoinTable(f)
 
 			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(f)
-
 		}
 	}
 }

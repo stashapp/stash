@@ -1,6 +1,5 @@
-import { createCriterionOption } from "./criteria/criterion";
+import { createStringCriterionOption } from "./criteria/criterion";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -39,20 +38,26 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
-  NoneCriterionOption,
-  createCriterionOption("path"),
+  createStringCriterionOption("title"),
+  createStringCriterionOption("details"),
+  createStringCriterionOption("path"),
+  createStringCriterionOption(
+    "galleryChecksum",
+    "media_info.checksum",
+    "checksum"
+  ),
   RatingCriterionOption,
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
   TagsCriterionOption,
-  createCriterionOption("tag_count"),
+  createStringCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
-  createCriterionOption("performer_count"),
-  createCriterionOption("image_count"),
+  createStringCriterionOption("performer_count"),
+  createStringCriterionOption("image_count"),
   StudiosCriterionOption,
-  createCriterionOption("url"),
+  createStringCriterionOption("url"),
 ];
 
 export const GalleryListFilterOptions = new ListFilterOptions(

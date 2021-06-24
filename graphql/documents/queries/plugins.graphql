@@ -10,6 +10,12 @@ query Plugins {
       name
       description
     }
+
+    hooks {
+      name
+      description
+      hooks
+    }
   }
 }
 

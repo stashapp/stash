@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import querystring from "query-string";
 
 import * as GQL from "src/core/generated-graphql";
@@ -32,6 +32,7 @@ import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 const CLASSNAME = "duplicate-checker";
 
 export const SceneDuplicateChecker: React.FC = () => {
+  const intl = useIntl();
   const history = useHistory();
   const { page, size, distance } = querystring.parse(history.location.search);
   const currentPage = Number.parseInt(
@@ -321,10 +322,14 @@ export const SceneDuplicateChecker: React.FC = () => {
           />
         )}
         {maybeRenderEdit()}
-        <h4>Duplicate Scenes</h4>
+        <h4>
+          <FormattedMessage id="dupe_check.title" />
+        </h4>
         <Form.Group>
           <Row noGutters>
-            <Form.Label>Search Accuracy</Form.Label>
+            <Form.Label>
+              <FormattedMessage id="dupe_check.search_accuracy_label" />
+            </Form.Label>
             <Col xs={2}>
               <Form.Control
                 as="select"
@@ -340,31 +345,53 @@ export const SceneDuplicateChecker: React.FC = () => {
                 defaultValue={distance ?? 0}
                 className="input-control ml-4"
               >
-                <option value={0}>Exact</option>
-                <option value={4}>High</option>
-                <option value={8}>Medium</option>
-                <option value={10}>Low</option>
+                <option value={0}>
+                  {intl.formatMessage({ id: "dupe_check.options.exact" })}
+                </option>
+                <option value={4}>
+                  {intl.formatMessage({ id: "dupe_check.options.high" })}
+                </option>
+                <option value={8}>
+                  {intl.formatMessage({ id: "dupe_check.options.medium" })}
+                </option>
+                <option value={10}>
+                  {intl.formatMessage({ id: "dupe_check.options.low" })}
+                </option>
               </Form.Control>
             </Col>
           </Row>
           <Form.Text>
-            Levels below &ldquo;Exact&rdquo; can take longer to calculate. False
-            positives might also be returned on lower accuracy levels.
+            <FormattedMessage id="dupe_check.description" />
           </Form.Text>
         </Form.Group>
         {maybeRenderMissingPhashWarning()}
         <div className="d-flex mb-2">
           <h6 className="mr-auto align-self-center">
-            {scenes.length} sets of duplicates found.
+            <FormattedMessage
+              id="dupe_check.found_sets"
+              values={{ setCount: scenes.length }}
+            />
           </h6>
           {checkCount > 0 && (
             <ButtonGroup>
-              <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="edit">
+                    {intl.formatMessage({ id: "actions.edit" })}
+                  </Tooltip>
+                }
+              >
                 <Button variant="secondary" onClick={onEdit}>
                   <Icon icon="pencil-alt" />
                 </Button>
               </OverlayTrigger>
-              <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="delete">
+                    {intl.formatMessage({ id: "actions.delete" })}
+                  </Tooltip>
+                }
+              >
                 <Button variant="danger" onClick={handleDeleteChecked}>
                   <Icon icon="trash" />
                 </Button>
@@ -416,14 +443,14 @@ export const SceneDuplicateChecker: React.FC = () => {
             <tr>
               <th> </th>
               <th> </th>
-              <th>Details</th>
+              <th>{intl.formatMessage({ id: "details" })}</th>
               <th> </th>
-              <th>Duration</th>
-              <th>Filesize</th>
-              <th>Resolution</th>
-              <th>Bitrate</th>
-              <th>Codec</th>
-              <th>Delete</th>
+              <th>{intl.formatMessage({ id: "duration" })}</th>
+              <th>{intl.formatMessage({ id: "filesize" })}</th>
+              <th>{intl.formatMessage({ id: "resolution" })}</th>
+              <th>{intl.formatMessage({ id: "bitrate" })}</th>
+              <th>{intl.formatMessage({ id: "media_info.video_codec" })}</th>
+              <th>{intl.formatMessage({ id: "actions.delete" })}</th>
             </tr>
           </thead>
           <tbody>
@@ -494,7 +521,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                         variant="danger"
                         onClick={() => handleDeleteScene(scene)}
                       >
-                        Delete
+                        <FormattedMessage id="actions.delete" />
                       </Button>
                     </td>
                   </tr>

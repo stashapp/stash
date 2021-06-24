@@ -1,6 +1,9 @@
-import { createCriterionOption } from "./criteria/criterion";
+import {
+  createMandatoryNumberCriterionOption,
+  createStringCriterionOption,
+} from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
-import { NoneCriterionOption } from "./criteria/none";
+import { RatingCriterionOption } from "./criteria/rating";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
@@ -17,10 +20,14 @@ const sortByOptions = ["name", "random"]
   ]);
 const displayModeOptions = [DisplayMode.Grid];
 const criterionOptions = [
-  NoneCriterionOption,
   StudiosCriterionOption,
   MovieIsMissingCriterionOption,
-  createCriterionOption("url"),
+  createStringCriterionOption("url"),
+  createStringCriterionOption("name"),
+  createStringCriterionOption("director"),
+  createStringCriterionOption("synopsis"),
+  createMandatoryNumberCriterionOption("duration"),
+  RatingCriterionOption,
 ];
 
 export const MovieListFilterOptions = new ListFilterOptions(

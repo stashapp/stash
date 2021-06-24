@@ -5,6 +5,7 @@ import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
 import { ExportObjectsInput } from "src/core/generated-graphql";
+import { useIntl } from "react-intl";
 
 interface IExportDialogProps {
   exportInput: ExportObjectsInput;
@@ -19,6 +20,7 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
   // Network state
   const [isRunning, setIsRunning] = useState(false);
 
+  const intl = useIntl();
   const Toast = useToast();
 
   async function onExport() {
@@ -46,11 +48,14 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
     <Modal
       show
       icon="cogs"
-      header="Export"
-      accept={{ onClick: onExport, text: "Export" }}
+      header={intl.formatMessage({ id: "dialogs.export_title" })}
+      accept={{
+        onClick: onExport,
+        text: intl.formatMessage({ id: "actions.export" }),
+      }}
       cancel={{
         onClick: () => props.onClose(),
-        text: "Cancel",
+        text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
       isRunning={isRunning}
@@ -60,7 +65,9 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
           <Form.Check
             id="include-dependencies"
             checked={includeDependencies}
-            label="Include related objects in export"
+            label={intl.formatMessage({
+              id: "dialogs.export_include_related_objects",
+            })}
             onChange={() => setIncludeDependencies(!includeDependencies)}
           />
         </Form.Group>

@@ -47,6 +47,8 @@ input ConfigGeneralInput {
   videoFileNamingAlgorithm: HashAlgorithm!
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int
+  """Include audio stream in previews"""
+  previewAudio: Boolean!
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
@@ -116,6 +118,8 @@ type ConfigGeneralResult {
   videoFileNamingAlgorithm: HashAlgorithm!
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int!
+  """Include audio stream in previews"""
+  previewAudio: Boolean!
   """Number of segments in a preview file"""
   previewSegments: Int!
   """Preview segment duration, in seconds"""
