@@ -59,7 +59,12 @@ const getDurationStatus = (
     Math.abs(scene.duration - stashDuration),
     ...durations
   );
-  return <FormattedMessage id="component_tagger.results.duration_off" values={{ number: Math.floor(minDiff) }} />;
+  return (
+    <FormattedMessage
+      id="component_tagger.results.duration_off"
+      values={{ number: Math.floor(minDiff) }}
+    />
+  );
 };
 
 const getFingerprintStatus = (
