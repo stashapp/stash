@@ -215,56 +215,9 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
       );
     });
 
-  // function renderSources() {
-  //   let ret: JSX.Element[] = [];
-  //   if (stashConfig.data) {
-  //     ret = stashConfig.data?.configuration.general.stashBoxes.map((i) => (
-  //       <option value={`${stashBoxPrefix}{i.endpoint}`} key={i.endpoint}>
-  //         {i.endpoint}
-  //       </option>
-  //     ));
-  //   }
-
-  //   if (sceneScrapers) {
-  //     if (ret.length > 0) {
-  //       ret.push(<option disabled>------------</option>);
-  //     }
-  //     ret = ret.concat(sceneScrapers.listSceneScrapers.map((s) => (
-  //       <option value={`${scraperPrefix}${s.id}`} key={s.id}>
-  //         {s.name}
-  //       </option>
-  //     )));
-  //   }
-
-  //   if (ret.length === 0) {
-  //     // TODO - message id
-  //     ret.push(<option disabled>No sources found</option>);
-  //   }
-
-  //   return ret;
-  // }
-
-  // <Form.Group
-  //   controlId="tagger-source"
-  //   className="align-items-center row no-gutters"
-  // >
-  //   <Form.Label className="mr-2 mb-0">
-  //     {/* TODO - message ID */}
-  //     Source:
-  //   </Form.Label>
-  //   <Form.Control
-  //     as="select"
-  //     value={config.selectedEndpoint}
-  //     className="col input-control"
-  //   >
-  //     {renderSources()}
-  //   </Form.Control>
-  // </Form.Group>
-
   return (
     <Card className="tagger-table">
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
-        {/* TODO - sources select goes here */}
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
           {(getFingerprintCount() > 0 || hideUnmatched) && (
