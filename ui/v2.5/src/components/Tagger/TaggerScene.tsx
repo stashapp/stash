@@ -32,6 +32,7 @@ export interface ITaggerScene {
   tagScene: (scene: Partial<GQL.SlimSceneDataFragment>) => void;
   endpoint: string;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
+  createNewTag: (toCreate: GQL.ScrapedSceneTag) => void;
 }
 
 export const TaggerScene: React.FC<ITaggerScene> = ({
@@ -46,6 +47,7 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
   tagScene,
   endpoint,
   queueFingerprintSubmission,
+  createNewTag,
 }) => {
   const [selectedResult, setSelectedResult] = useState<number>(0);
 
@@ -193,6 +195,7 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
                   setScene={tagScene}
                   endpoint={endpoint}
                   queueFingerprintSubmission={queueFingerprintSubmission}
+                  createNewTag={createNewTag}
                 />
               )
           )}

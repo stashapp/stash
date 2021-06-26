@@ -1,10 +1,11 @@
 import React, { useState, useReducer } from "react";
 import cx from "classnames";
-import { Button } from "react-bootstrap";
+import { Badge, Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import {
+  Icon,
   LoadingIndicator,
   SuccessIcon,
   TruncatedText,
@@ -91,6 +92,7 @@ interface IStashSearchResultProps {
   setTags: boolean;
   endpoint: string;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
+  createNewTag: (toCreate: GQL.ScrapedSceneTag) => void;
 }
 
 interface IPerformerReducerAction {
@@ -115,6 +117,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setTags,
   endpoint,
   queueFingerprintSubmission,
+  createNewTag,
 }) => {
   const [studio, setStudio] = useState<StudioOperation>();
   const [performers, dispatch] = useReducer(performerReducer, {});
@@ -214,6 +217,28 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>
+        {isActive && (
+          <div className="d-flex flex-column">
+            <div>
+            {scene.tags.map((t) => (
+              <Badge
+                className="tag-item"
+                variant="secondary"
+                key={t.name}
+                onClick={() => { createNewTag(t)}}
+              >
+                {t.name}
+                {!t.id && <Button className="minimal ml-2">
+                  <Icon className="fa-fw" icon="plus" />
+                </Button>}
+              </Badge>
+            ))}
+            </div>
+            <div className="scene-details">
+              <TruncatedText text={scene.details ?? ""} lineCount={3}/>
+            </div>
+          </div>
+        )}
       </div>
       {isActive && (
         <div className="col-lg-6">

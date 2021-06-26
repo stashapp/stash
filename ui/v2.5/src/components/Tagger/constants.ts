@@ -52,3 +52,6 @@ export const PERFORMER_FIELDS = [
   "tattoos",
   "piercings",
 ];
+
+export const stashBoxPrefix = "stashbox:";
+export const scraperPrefix = "scraper:";
