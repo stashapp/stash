@@ -24,13 +24,14 @@ export const initialConfig: ITaggerConfig = {
 };
 
 export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
+export type TagOperation = "merge" | "overwrite";
 export interface ITaggerConfig {
   blacklist: string[];
   showMales: boolean;
   mode: ParseMode;
   setCoverImage: boolean;
   setTags: boolean;
-  tagOperation: string;
+  tagOperation: TagOperation;
   selectedEndpoint?: string;
   fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];

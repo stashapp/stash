@@ -3,12 +3,13 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
-import { SuccessIcon, PerformerSelect } from "src/components/Shared";
+import { PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
 import { IStashBoxPerformer, filterPerformer } from "./utils";
 
 import PerformerModal from "./PerformerModal";
+import { OptionalField } from "./IncludeButton";
 
 export type PerformerOperation =
   | { type: "create"; data: IStashBoxPerformer }
@@ -121,12 +122,22 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           <b className="ml-2">{performer.name}</b>
         </div>
         <span className="ml-auto">
-          <SuccessIcon />
-          <FormattedMessage id="component_tagger.verb_matched" />:
+          <OptionalField
+            exclude={selectedSource === "skip"}
+            setExclude={(v) =>
+              v ? handlePerformerSkip() : setSelectedSource("existing")
+            }
+          >
+            <div>
+              <span className="mr-2">
+                <FormattedMessage id="component_tagger.verb_matched" />:
+              </span>
+              <b className="col-3 text-right">
+                {stashData.findPerformers.performers[0].name}
+              </b>
+            </div>
+          </OptionalField>
         </span>
-        <b className="col-3 text-right">
-          {stashData.findPerformers.performers[0].name}
-        </b>
       </div>
     );
   }

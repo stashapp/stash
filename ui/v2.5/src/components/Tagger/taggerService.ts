@@ -1,10 +1,8 @@
 import * as GQL from "src/core/generated-graphql";
 import { blobToBase64 } from "base64-blob";
-import { uniq } from "lodash";
 import {
   useCreatePerformer,
   useCreateStudio,
-  useCreateTag,
   useUpdatePerformerStashID,
   useUpdateStudioStashID,
 } from "./queries";
@@ -25,7 +23,6 @@ export function useTagScene(
 ) {
   const createStudio = useCreateStudio();
   const createPerformer = useCreatePerformer();
-  const createTag = useCreateTag();
   const updatePerformerStashID = useUpdatePerformerStashID();
   const updateStudioStashID = useUpdateStudioStashID();
   const [updateScene] = GQL.useSceneUpdateMutation({
@@ -41,67 +38,76 @@ export function useTagScene(
     },
   });
 
-  const { data: allTags } = GQL.useAllTagsForFilterQuery();
-
   const handleSave = async (
     stashScene: GQL.SlimSceneDataFragment,
     scene: IStashBoxScene,
     studio: StudioOperation | undefined,
     performers: IPerformerOperations,
+    tagIDs: string[],
+    excludedFields: string[],
     endpoint: string
   ) => {
+    function resolveField<T>(field: string, stashField: T, remoteField: T) {
+      if (excludedFields.includes(field)) {
+        return stashField;
+      }
+
+      return remoteField;
+    }
+
     setError({});
     let performerIDs = [];
     let studioID = null;
 
-    if (!studio) return;
+    if (studio) {
+      if (studio.type === "create") {
+        setSaveState("Creating studio");
+        const newStudio = {
+          name: studio.data.name,
+          stash_ids: [
+            {
+              endpoint,
+              stash_id: scene.studio.stash_id,
+            },
+          ],
+          url: studio.data.url,
+        };
+        const studioCreateResult = await createStudio(
+          newStudio,
+          scene.studio.stash_id
+        );
 
-    if (studio.type === "create") {
-      setSaveState("Creating studio");
-      const newStudio = {
-        name: studio.data.name,
-        stash_ids: [
-          {
-            endpoint,
-            stash_id: scene.studio.stash_id,
-          },
-        ],
-        url: studio.data.url,
-      };
-      const studioCreateResult = await createStudio(
-        newStudio,
-        scene.studio.stash_id
-      );
-
-      if (!studioCreateResult?.data?.studioCreate) {
-        setError({
-          message: `Failed to save studio "${newStudio.name}"`,
-          details: studioCreateResult?.errors?.[0].message,
-        });
-        return setSaveState("");
+        if (!studioCreateResult?.data?.studioCreate) {
+          setError({
+            message: `Failed to save studio "${newStudio.name}"`,
+            details: studioCreateResult?.errors?.[0].message,
+          });
+          return setSaveState("");
+        }
+        studioID = studioCreateResult.data.studioCreate.id;
+      } else if (studio.type === "update") {
+        setSaveState("Saving studio stashID");
+        const res = await updateStudioStashID(studio.data, [
+          ...studio.data.stash_ids,
+          { stash_id: scene.studio.stash_id, endpoint },
+        ]);
+        if (!res?.data?.studioUpdate) {
+          setError({
+            message: `Failed to save stashID to studio "${studio.data.name}"`,
+            details: res?.errors?.[0].message,
+          });
+          return setSaveState("");
+        }
+        studioID = res.data.studioUpdate.id;
+      } else if (studio.type === "existing") {
+        studioID = studio.data.id;
+      } else if (studio.type === "skip") {
+        studioID = stashScene.studio?.id;
       }
-      studioID = studioCreateResult.data.studioCreate.id;
-    } else if (studio.type === "update") {
-      setSaveState("Saving studio stashID");
-      const res = await updateStudioStashID(studio.data, [
-        ...studio.data.stash_ids,
-        { stash_id: scene.studio.stash_id, endpoint },
-      ]);
-      if (!res?.data?.studioUpdate) {
-        setError({
-          message: `Failed to save stashID to studio "${studio.data.name}"`,
-          details: res?.errors?.[0].message,
-        });
-        return setSaveState("");
-      }
-      studioID = res.data.studioUpdate.id;
-    } else if (studio.type === "existing") {
-      studioID = studio.data.id;
-    } else if (studio.type === "skip") {
-      studioID = stashScene.studio?.id;
     }
 
     setSaveState("Saving performers");
+    let failed = false;
     performerIDs = await Promise.all(
       Object.keys(performers).map(async (stashID) => {
         const performer = performers[stashID];
@@ -157,6 +163,7 @@ export function useTagScene(
               message: `Failed to save performer "${performerInput.name}"`,
               details: res?.errors?.[0].message,
             });
+            failed = true;
             return null;
           }
           performerID = res.data?.performerCreate.id;
@@ -174,86 +181,57 @@ export function useTagScene(
       })
     );
 
-    if (!performerIDs.some((id) => !id)) {
-      setSaveState("Updating scene");
-      const imgurl = scene.images[0];
-      let imgData = null;
-      if (imgurl && options.setCoverImage) {
-        const img = await fetch(imgurl, {
-          mode: "cors",
-          cache: "no-store",
-        });
-        if (img.status === 200) {
-          const blob = await img.blob();
-          // Sanity check on image size since bad images will fail
-          if (blob.size > 10000) imgData = await blobToBase64(blob);
-        }
-      }
-
-      let updatedTags = stashScene?.tags?.map((t) => t.id) ?? [];
-      if (options.setTags) {
-        const newTagIDs = options.tagOperation === "merge" ? updatedTags : [];
-        const tags = scene.tags ?? [];
-        if (tags.length > 0) {
-          const tagDict: Record<string, string> = (allTags?.allTags ?? [])
-            .filter((t) => t.name)
-            .reduce(
-              (dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }),
-              {}
-            );
-          const newTags: string[] = [];
-          tags.forEach((tag) => {
-            if (tagDict[tag.name.toLowerCase()])
-              newTagIDs.push(tagDict[tag.name.toLowerCase()]);
-            else newTags.push(tag.name);
-          });
-
-          const createdTags = await Promise.all(
-            newTags.map((tag) => createTag(tag))
-          );
-          createdTags.forEach((createdTag) => {
-            if (createdTag?.data?.tagCreate?.id)
-              newTagIDs.push(createdTag.data.tagCreate.id);
-          });
-        }
-        updatedTags = uniq(newTagIDs);
-      }
-
-      const performer_ids = performerIDs.filter(
-        (id) => id !== "Skip"
-      ) as string[];
-
-      const sceneUpdateResult = await updateScene({
-        variables: {
-          input: {
-            id: stashScene.id ?? "",
-            title: scene.title,
-            details: scene.details,
-            date: scene.date,
-            performer_ids:
-              performer_ids.length === 0
-                ? stashScene.performers.map((p) => p.id)
-                : performer_ids,
-            studio_id: studioID,
-            cover_image: imgData,
-            url: scene.url,
-            tag_ids: updatedTags,
-            stash_ids: [
-              ...(stashScene?.stash_ids ?? []),
-              {
-                endpoint,
-                stash_id: scene.stash_id,
-              },
-            ],
-          },
-        },
-      });
-
-      setSaveState("");
-      return sceneUpdateResult?.data?.sceneUpdate;
+    if (failed) {
+      return setSaveState("");
     }
 
+    setSaveState("Updating scene");
+    const imgurl = scene.images[0];
+    let imgData = null;
+    if (imgurl && options.setCoverImage) {
+      const img = await fetch(imgurl, {
+        mode: "cors",
+        cache: "no-store",
+      });
+      if (img.status === 200) {
+        const blob = await img.blob();
+        // Sanity check on image size since bad images will fail
+        if (blob.size > 10000) imgData = await blobToBase64(blob);
+      }
+    }
+
+    const performer_ids = performerIDs.filter(
+      (id) => id !== "Skip"
+    ) as string[];
+
+    const sceneUpdateResult = await updateScene({
+      variables: {
+        input: {
+          id: stashScene.id ?? "",
+          title: resolveField("title", stashScene.title, scene.title),
+          details: resolveField("details", stashScene.details, scene.details),
+          date: resolveField("date", stashScene.date, scene.date),
+          performer_ids:
+            performer_ids.length === 0
+              ? stashScene.performers.map((p) => p.id)
+              : performer_ids,
+          studio_id: studioID,
+          cover_image: resolveField("cover_image", undefined, imgData),
+          url: resolveField("url", stashScene.url, scene.url),
+          tag_ids: tagIDs,
+          stash_ids: [
+            ...(stashScene?.stash_ids ?? []),
+            {
+              endpoint,
+              stash_id: scene.stash_id,
+            },
+          ],
+        },
+      },
+    });
+
     setSaveState("");
+    return sceneUpdateResult?.data?.sceneUpdate;
   };
 
   return handleSave;

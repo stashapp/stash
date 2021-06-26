@@ -50,6 +50,7 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
   createNewTag,
 }) => {
   const [selectedResult, setSelectedResult] = useState<number>(0);
+  const [excluded, setExcluded] = useState<Record<string, boolean>>({});
 
   const queryString = useRef<string>("");
 
@@ -196,6 +197,8 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
                   endpoint={endpoint}
                   queueFingerprintSubmission={queueFingerprintSubmission}
                   createNewTag={createNewTag}
+                  excludedFields={excluded}
+                  setExcludedFields={(v) => setExcluded(v)}
                 />
               )
           )}

@@ -7,10 +7,11 @@ import { LoadingIndicator } from "src/components/Shared";
 import { stashBoxSceneBatchQuery, useTagCreate } from "src/core/StashService";
 
 import { SceneQueue } from "src/models/sceneQueue";
+import { useToast } from "src/hooks";
+import { uniqBy } from "lodash";
 import { ITaggerConfig } from "./constants";
 import { selectScenes, IStashBoxScene } from "./utils";
 import { TaggerScene } from "./TaggerScene";
-import { useToast } from "src/hooks";
 
 interface IFingerprintQueue {
   getQueue: (endpoint: string) => string[];
@@ -120,6 +121,10 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
   const handleFingerprintSearch = async () => {
     setLoadingFingerprints(true);
+
+    setSearchErrors({});
+    setSearchResults({});
+
     const newFingerprints = { ...fingerprints };
 
     const sceneIDs = scenes
@@ -152,6 +157,24 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
       newFingerprints[id] = newFingerprints[id] ?? null;
     });
 
+    const newSearchResults: Record<string, IStashBoxScene[]> = {};
+
+    // perform matching here
+    scenes.forEach((scene) => {
+      const fingerprintMatches = uniqBy(
+        [
+          ...(newFingerprints[scene.checksum ?? ""] ?? []),
+          ...(newFingerprints[scene.oshash ?? ""] ?? []),
+          ...(newFingerprints[scene.phash ?? ""] ?? []),
+        ].flat(),
+        (f) => f.stash_id
+      );
+
+      newSearchResults[scene.id] = fingerprintMatches;
+    });
+
+    setSearchResults(newSearchResults);
+
     setFingerprints(newFingerprints);
     fingerprintCache = newFingerprints;
     setLoadingFingerprints(false);
@@ -172,7 +195,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
       const newSearchResults = { ...searchResults };
 
       // add the id to the existing search results
-      Object.keys(newSearchResults).forEach(k => {
+      Object.keys(newSearchResults).forEach((k) => {
         const searchResult = searchResults[k];
         newSearchResults[k] = searchResult.map((r) => {
           return {
@@ -182,11 +205,11 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
                 return {
                   ...t,
                   id: tagID,
-                }
-              } else {
-                return t;
+                };
               }
-            })
+
+              return t;
+            }),
           };
         });
       });
