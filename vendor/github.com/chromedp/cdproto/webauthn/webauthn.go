@@ -287,16 +287,46 @@ func (p *SetUserVerifiedParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetUserVerified, p, nil)
 }
 
+// SetAutomaticPresenceSimulationParams sets whether tests of user presence
+// will succeed immediately (if true) or fail to resolve (if false) for an
+// authenticator. The default is true.
+type SetAutomaticPresenceSimulationParams struct {
+	AuthenticatorID AuthenticatorID `json:"authenticatorId"`
+	Enabled         bool            `json:"enabled"`
+}
+
+// SetAutomaticPresenceSimulation sets whether tests of user presence will
+// succeed immediately (if true) or fail to resolve (if false) for an
+// authenticator. The default is true.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-setAutomaticPresenceSimulation
+//
+// parameters:
+//   authenticatorID
+//   enabled
+func SetAutomaticPresenceSimulation(authenticatorID AuthenticatorID, enabled bool) *SetAutomaticPresenceSimulationParams {
+	return &SetAutomaticPresenceSimulationParams{
+		AuthenticatorID: authenticatorID,
+		Enabled:         enabled,
+	}
+}
+
+// Do executes WebAuthn.setAutomaticPresenceSimulation against the provided context.
+func (p *SetAutomaticPresenceSimulationParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetAutomaticPresenceSimulation, p, nil)
+}
+
 // Command names.
 const (
-	CommandEnable                     = "WebAuthn.enable"
-	CommandDisable                    = "WebAuthn.disable"
-	CommandAddVirtualAuthenticator    = "WebAuthn.addVirtualAuthenticator"
-	CommandRemoveVirtualAuthenticator = "WebAuthn.removeVirtualAuthenticator"
-	CommandAddCredential              = "WebAuthn.addCredential"
-	CommandGetCredential              = "WebAuthn.getCredential"
-	CommandGetCredentials             = "WebAuthn.getCredentials"
-	CommandRemoveCredential           = "WebAuthn.removeCredential"
-	CommandClearCredentials           = "WebAuthn.clearCredentials"
-	CommandSetUserVerified            = "WebAuthn.setUserVerified"
+	CommandEnable                         = "WebAuthn.enable"
+	CommandDisable                        = "WebAuthn.disable"
+	CommandAddVirtualAuthenticator        = "WebAuthn.addVirtualAuthenticator"
+	CommandRemoveVirtualAuthenticator     = "WebAuthn.removeVirtualAuthenticator"
+	CommandAddCredential                  = "WebAuthn.addCredential"
+	CommandGetCredential                  = "WebAuthn.getCredential"
+	CommandGetCredentials                 = "WebAuthn.getCredentials"
+	CommandRemoveCredential               = "WebAuthn.removeCredential"
+	CommandClearCredentials               = "WebAuthn.clearCredentials"
+	CommandSetUserVerified                = "WebAuthn.setUserVerified"
+	CommandSetAutomaticPresenceSimulation = "WebAuthn.setAutomaticPresenceSimulation"
 )

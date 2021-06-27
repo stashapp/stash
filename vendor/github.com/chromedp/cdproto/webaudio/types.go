@@ -292,7 +292,7 @@ type BaseAudioContext struct {
 	SampleRate            float64              `json:"sampleRate"`            // Context sample rate.
 }
 
-// AudioListener protocol object for AudioListner.
+// AudioListener protocol object for AudioListener.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAudio#type-AudioListener
 type AudioListener struct {

@@ -145,7 +145,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
             <div className="col-6 col-xl-12">
               <Field name="primaryTagId">{renderPrimaryTagField}</Field>
             </div>
-            <Form.Label htmlFor="seconds" className="col-1 col-xl-12">
+            <Form.Label htmlFor="seconds" className="col-1 col-xl-12 mt-2">
               Time
             </Form.Label>
             <Field name="seconds">{renderSecondsField}</Field>
@@ -160,7 +160,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           </Form.Group>
         </div>
         <div className="buttons-container row">
-          <div className="col">
+          <div className="col d-flex">
             <Button variant="primary" type="submit">
               Submit
             </Button>

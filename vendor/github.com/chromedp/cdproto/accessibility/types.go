@@ -179,14 +179,15 @@ func (t ValueNativeSourceType) String() string {
 
 // ValueNativeSourceType values.
 const (
-	ValueNativeSourceTypeFigcaption   ValueNativeSourceType = "figcaption"
-	ValueNativeSourceTypeLabel        ValueNativeSourceType = "label"
-	ValueNativeSourceTypeLabelfor     ValueNativeSourceType = "labelfor"
-	ValueNativeSourceTypeLabelwrapped ValueNativeSourceType = "labelwrapped"
-	ValueNativeSourceTypeLegend       ValueNativeSourceType = "legend"
-	ValueNativeSourceTypeTablecaption ValueNativeSourceType = "tablecaption"
-	ValueNativeSourceTypeTitle        ValueNativeSourceType = "title"
-	ValueNativeSourceTypeOther        ValueNativeSourceType = "other"
+	ValueNativeSourceTypeFigcaption     ValueNativeSourceType = "figcaption"
+	ValueNativeSourceTypeLabel          ValueNativeSourceType = "label"
+	ValueNativeSourceTypeLabelfor       ValueNativeSourceType = "labelfor"
+	ValueNativeSourceTypeLabelwrapped   ValueNativeSourceType = "labelwrapped"
+	ValueNativeSourceTypeLegend         ValueNativeSourceType = "legend"
+	ValueNativeSourceTypeRubyannotation ValueNativeSourceType = "rubyannotation"
+	ValueNativeSourceTypeTablecaption   ValueNativeSourceType = "tablecaption"
+	ValueNativeSourceTypeTitle          ValueNativeSourceType = "title"
+	ValueNativeSourceTypeOther          ValueNativeSourceType = "other"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -212,6 +213,8 @@ func (t *ValueNativeSourceType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = ValueNativeSourceTypeLabelwrapped
 	case ValueNativeSourceTypeLegend:
 		*t = ValueNativeSourceTypeLegend
+	case ValueNativeSourceTypeRubyannotation:
+		*t = ValueNativeSourceTypeRubyannotation
 	case ValueNativeSourceTypeTablecaption:
 		*t = ValueNativeSourceTypeTablecaption
 	case ValueNativeSourceTypeTitle:

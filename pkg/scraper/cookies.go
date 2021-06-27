@@ -95,7 +95,7 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 
 			for _, ckURL := range driverOptions.Cookies {
 				for _, cookie := range ckURL.Cookies {
-					success, err := network.SetCookie(cookie.Name, getCookieValue(cookie)).
+					err := network.SetCookie(cookie.Name, getCookieValue(cookie)).
 						WithExpires(&expr).
 						WithDomain(cookie.Domain).
 						WithPath(cookie.Path).
@@ -103,12 +103,8 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 						WithSecure(false).
 						Do(ctx)
 					if err != nil {
-						return err
+						return fmt.Errorf("could not set chrome cookie %s: %s", cookie.Name, err)
 					}
-					if !success {
-						return fmt.Errorf("could not set chrome cookie %s", cookie.Name)
-					}
-
 				}
 			}
 			return nil

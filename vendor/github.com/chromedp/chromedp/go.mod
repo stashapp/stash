@@ -1,12 +1,10 @@
 module github.com/chromedp/chromedp
 
-go 1.13
+go 1.16
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20200116234248-4da64dd111ac
-	github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee // indirect
-	github.com/gobwas/pool v0.2.0 // indirect
-	github.com/gobwas/ws v1.0.2
-	github.com/mailru/easyjson v0.7.0
-	golang.org/x/sys v0.0.0-20200116001909-b77594299b42 // indirect
+	github.com/chromedp/cdproto v0.0.0-20210526005521-9e51b9051fd0
+	github.com/gobwas/ws v1.1.0-rc.5
+	github.com/mailru/easyjson v0.7.7
+	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
 )

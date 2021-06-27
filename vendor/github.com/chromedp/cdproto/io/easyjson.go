@@ -29,7 +29,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIo(in *jlexer.Lexer, out *Res
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -96,7 +96,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIo1(in *jlexer.Lexer, out *Re
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -162,7 +162,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIo2(in *jlexer.Lexer, out *Re
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -253,7 +253,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIo3(in *jlexer.Lexer, out *Re
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -333,7 +333,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIo4(in *jlexer.Lexer, out *Cl
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()

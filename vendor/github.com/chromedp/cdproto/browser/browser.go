@@ -125,6 +125,7 @@ type SetDownloadBehaviorParams struct {
 	Behavior         SetDownloadBehaviorBehavior `json:"behavior"`                   // Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
 	BrowserContextID cdp.BrowserContextID        `json:"browserContextId,omitempty"` // BrowserContext to set download behavior. When omitted, default browser context is used.
 	DownloadPath     string                      `json:"downloadPath,omitempty"`     // The default path to save downloaded files to. This is required if behavior is set to 'allow' or 'allowAndName'.
+	EventsEnabled    bool                        `json:"eventsEnabled,omitempty"`    // Whether to emit download events (defaults to false).
 }
 
 // SetDownloadBehavior set the behavior when downloading a file.
@@ -153,9 +154,45 @@ func (p SetDownloadBehaviorParams) WithDownloadPath(downloadPath string) *SetDow
 	return &p
 }
 
+// WithEventsEnabled whether to emit download events (defaults to false).
+func (p SetDownloadBehaviorParams) WithEventsEnabled(eventsEnabled bool) *SetDownloadBehaviorParams {
+	p.EventsEnabled = eventsEnabled
+	return &p
+}
+
 // Do executes Browser.setDownloadBehavior against the provided context.
 func (p *SetDownloadBehaviorParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetDownloadBehavior, p, nil)
+}
+
+// CancelDownloadParams cancel a download if in progress.
+type CancelDownloadParams struct {
+	GUID             string               `json:"guid"`                       // Global unique identifier of the download.
+	BrowserContextID cdp.BrowserContextID `json:"browserContextId,omitempty"` // BrowserContext to perform the action in. When omitted, default browser context is used.
+}
+
+// CancelDownload cancel a download if in progress.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-cancelDownload
+//
+// parameters:
+//   guid - Global unique identifier of the download.
+func CancelDownload(guid string) *CancelDownloadParams {
+	return &CancelDownloadParams{
+		GUID: guid,
+	}
+}
+
+// WithBrowserContextID browserContext to perform the action in. When
+// omitted, default browser context is used.
+func (p CancelDownloadParams) WithBrowserContextID(browserContextID cdp.BrowserContextID) *CancelDownloadParams {
+	p.BrowserContextID = browserContextID
+	return &p
+}
+
+// Do executes Browser.cancelDownload against the provided context.
+func (p *CancelDownloadParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandCancelDownload, p, nil)
 }
 
 // CloseParams close browser gracefully.
@@ -505,12 +542,36 @@ func (p *SetDockTileParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetDockTile, p, nil)
 }
 
+// ExecuteBrowserCommandParams invoke custom browser commands used by
+// telemetry.
+type ExecuteBrowserCommandParams struct {
+	CommandID CommandID `json:"commandId"`
+}
+
+// ExecuteBrowserCommand invoke custom browser commands used by telemetry.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-executeBrowserCommand
+//
+// parameters:
+//   commandID
+func ExecuteBrowserCommand(commandID CommandID) *ExecuteBrowserCommandParams {
+	return &ExecuteBrowserCommandParams{
+		CommandID: commandID,
+	}
+}
+
+// Do executes Browser.executeBrowserCommand against the provided context.
+func (p *ExecuteBrowserCommandParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandExecuteBrowserCommand, p, nil)
+}
+
 // Command names.
 const (
 	CommandSetPermission         = "Browser.setPermission"
 	CommandGrantPermissions      = "Browser.grantPermissions"
 	CommandResetPermissions      = "Browser.resetPermissions"
 	CommandSetDownloadBehavior   = "Browser.setDownloadBehavior"
+	CommandCancelDownload        = "Browser.cancelDownload"
 	CommandClose                 = "Browser.close"
 	CommandCrash                 = "Browser.crash"
 	CommandCrashGpuProcess       = "Browser.crashGpuProcess"
@@ -522,4 +583,5 @@ const (
 	CommandGetWindowForTarget    = "Browser.getWindowForTarget"
 	CommandSetWindowBounds       = "Browser.setWindowBounds"
 	CommandSetDockTile           = "Browser.setDockTile"
+	CommandExecuteBrowserCommand = "Browser.executeBrowserCommand"
 )

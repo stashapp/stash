@@ -31,7 +31,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot(in *jlexer.Lexer,
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -278,7 +278,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot1(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -415,7 +415,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot2(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -552,7 +552,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot3(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -650,7 +650,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot4(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1169,7 +1169,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot5(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1242,7 +1242,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot6(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1549,6 +1549,52 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot6(in *jlexer.Lexer
 				}
 				in.Delim(']')
 			}
+		case "blendedBackgroundColors":
+			if in.IsNull() {
+				in.Skip()
+				out.BlendedBackgroundColors = nil
+			} else {
+				in.Delim('[')
+				if out.BlendedBackgroundColors == nil {
+					if !in.IsDelim(']') {
+						out.BlendedBackgroundColors = make([]StringIndex, 0, 8)
+					} else {
+						out.BlendedBackgroundColors = []StringIndex{}
+					}
+				} else {
+					out.BlendedBackgroundColors = (out.BlendedBackgroundColors)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v65 StringIndex
+					v65 = StringIndex(in.Int64())
+					out.BlendedBackgroundColors = append(out.BlendedBackgroundColors, v65)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "textColorOpacities":
+			if in.IsNull() {
+				in.Skip()
+				out.TextColorOpacities = nil
+			} else {
+				in.Delim('[')
+				if out.TextColorOpacities == nil {
+					if !in.IsDelim(']') {
+						out.TextColorOpacities = make([]float64, 0, 8)
+					} else {
+						out.TextColorOpacities = []float64{}
+					}
+				} else {
+					out.TextColorOpacities = (out.TextColorOpacities)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v66 float64
+					v66 = float64(in.Float64())
+					out.TextColorOpacities = append(out.TextColorOpacities, v66)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1570,11 +1616,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v65, v66 := range in.NodeIndex {
-				if v65 > 0 {
+			for v67, v68 := range in.NodeIndex {
+				if v67 > 0 {
 					out.RawByte(',')
 				}
-				out.Int64(int64(v66))
+				out.Int64(int64(v68))
 			}
 			out.RawByte(']')
 		}
@@ -1586,19 +1632,19 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v67, v68 := range in.Styles {
-				if v67 > 0 {
+			for v69, v70 := range in.Styles {
+				if v69 > 0 {
 					out.RawByte(',')
 				}
-				if v68 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v70 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v69, v70 := range v68 {
-						if v69 > 0 {
+					for v71, v72 := range v70 {
+						if v71 > 0 {
 							out.RawByte(',')
 						}
-						out.Int64(int64(v70))
+						out.Int64(int64(v72))
 					}
 					out.RawByte(']')
 				}
@@ -1613,19 +1659,19 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v71, v72 := range in.Bounds {
-				if v71 > 0 {
+			for v73, v74 := range in.Bounds {
+				if v73 > 0 {
 					out.RawByte(',')
 				}
-				if v72 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v74 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v73, v74 := range v72 {
-						if v73 > 0 {
+					for v75, v76 := range v74 {
+						if v75 > 0 {
 							out.RawByte(',')
 						}
-						out.Float64(float64(v74))
+						out.Float64(float64(v76))
 					}
 					out.RawByte(']')
 				}
@@ -1640,11 +1686,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v75, v76 := range in.Text {
-				if v75 > 0 {
+			for v77, v78 := range in.Text {
+				if v77 > 0 {
 					out.RawByte(',')
 				}
-				out.Int64(int64(v76))
+				out.Int64(int64(v78))
 			}
 			out.RawByte(']')
 		}
@@ -1663,11 +1709,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v77, v78 := range in.PaintOrders {
-				if v77 > 0 {
+			for v79, v80 := range in.PaintOrders {
+				if v79 > 0 {
 					out.RawByte(',')
 				}
-				out.Int64(int64(v78))
+				out.Int64(int64(v80))
 			}
 			out.RawByte(']')
 		}
@@ -1677,19 +1723,19 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v79, v80 := range in.OffsetRects {
-				if v79 > 0 {
+			for v81, v82 := range in.OffsetRects {
+				if v81 > 0 {
 					out.RawByte(',')
 				}
-				if v80 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v82 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v81, v82 := range v80 {
-						if v81 > 0 {
+					for v83, v84 := range v82 {
+						if v83 > 0 {
 							out.RawByte(',')
 						}
-						out.Float64(float64(v82))
+						out.Float64(float64(v84))
 					}
 					out.RawByte(']')
 				}
@@ -1702,19 +1748,19 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v83, v84 := range in.ScrollRects {
-				if v83 > 0 {
+			for v85, v86 := range in.ScrollRects {
+				if v85 > 0 {
 					out.RawByte(',')
 				}
-				if v84 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v86 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v85, v86 := range v84 {
-						if v85 > 0 {
+					for v87, v88 := range v86 {
+						if v87 > 0 {
 							out.RawByte(',')
 						}
-						out.Float64(float64(v86))
+						out.Float64(float64(v88))
 					}
 					out.RawByte(']')
 				}
@@ -1727,22 +1773,50 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot6(out *jwriter.Wri
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v87, v88 := range in.ClientRects {
-				if v87 > 0 {
+			for v89, v90 := range in.ClientRects {
+				if v89 > 0 {
 					out.RawByte(',')
 				}
-				if v88 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+				if v90 == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 					out.RawString("null")
 				} else {
 					out.RawByte('[')
-					for v89, v90 := range v88 {
-						if v89 > 0 {
+					for v91, v92 := range v90 {
+						if v91 > 0 {
 							out.RawByte(',')
 						}
-						out.Float64(float64(v90))
+						out.Float64(float64(v92))
 					}
 					out.RawByte(']')
 				}
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.BlendedBackgroundColors) != 0 {
+		const prefix string = ",\"blendedBackgroundColors\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v93, v94 := range in.BlendedBackgroundColors {
+				if v93 > 0 {
+					out.RawByte(',')
+				}
+				out.Int64(int64(v94))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.TextColorOpacities) != 0 {
+		const prefix string = ",\"textColorOpacities\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v95, v96 := range in.TextColorOpacities {
+				if v95 > 0 {
+					out.RawByte(',')
+				}
+				out.Float64(float64(v96))
 			}
 			out.RawByte(']')
 		}
@@ -1784,7 +1858,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot7(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1822,17 +1896,17 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot7(in *jlexer.Lexer
 					out.InlineTextNodes = (out.InlineTextNodes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v91 *InlineTextBox
+					var v97 *InlineTextBox
 					if in.IsNull() {
 						in.Skip()
-						v91 = nil
+						v97 = nil
 					} else {
-						if v91 == nil {
-							v91 = new(InlineTextBox)
+						if v97 == nil {
+							v97 = new(InlineTextBox)
 						}
-						(*v91).UnmarshalEasyJSON(in)
+						(*v97).UnmarshalEasyJSON(in)
 					}
-					out.InlineTextNodes = append(out.InlineTextNodes, v91)
+					out.InlineTextNodes = append(out.InlineTextNodes, v97)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1881,14 +1955,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot7(out *jwriter.Wri
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v92, v93 := range in.InlineTextNodes {
-				if v92 > 0 {
+			for v98, v99 := range in.InlineTextNodes {
+				if v98 > 0 {
 					out.RawByte(',')
 				}
-				if v93 == nil {
+				if v99 == nil {
 					out.RawString("null")
 				} else {
-					(*v93).MarshalEasyJSON(out)
+					(*v99).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -1946,7 +2020,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot8(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2038,7 +2112,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot9(in *jlexer.Lexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2097,7 +2171,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot10(in *jlexer.Lexe
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2297,7 +2371,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot11(in *jlexer.Lexe
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2356,7 +2430,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot12(in *jlexer.Lexe
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2396,9 +2470,9 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot12(in *jlexer.Lexe
 					out.ChildNodeIndexes = (out.ChildNodeIndexes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v94 int64
-					v94 = int64(in.Int64())
-					out.ChildNodeIndexes = append(out.ChildNodeIndexes, v94)
+					var v100 int64
+					v100 = int64(in.Int64())
+					out.ChildNodeIndexes = append(out.ChildNodeIndexes, v100)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2419,17 +2493,17 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot12(in *jlexer.Lexe
 					out.Attributes = (out.Attributes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v95 *NameValue
+					var v101 *NameValue
 					if in.IsNull() {
 						in.Skip()
-						v95 = nil
+						v101 = nil
 					} else {
-						if v95 == nil {
-							v95 = new(NameValue)
+						if v101 == nil {
+							v101 = new(NameValue)
 						}
-						(*v95).UnmarshalEasyJSON(in)
+						(*v101).UnmarshalEasyJSON(in)
 					}
-					out.Attributes = append(out.Attributes, v95)
+					out.Attributes = append(out.Attributes, v101)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2450,9 +2524,9 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot12(in *jlexer.Lexe
 					out.PseudoElementIndexes = (out.PseudoElementIndexes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v96 int64
-					v96 = int64(in.Int64())
-					out.PseudoElementIndexes = append(out.PseudoElementIndexes, v96)
+					var v102 int64
+					v102 = int64(in.Int64())
+					out.PseudoElementIndexes = append(out.PseudoElementIndexes, v102)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2497,17 +2571,17 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot12(in *jlexer.Lexe
 					out.EventListeners = (out.EventListeners)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v97 *domdebugger.EventListener
+					var v103 *domdebugger.EventListener
 					if in.IsNull() {
 						in.Skip()
-						v97 = nil
+						v103 = nil
 					} else {
-						if v97 == nil {
-							v97 = new(domdebugger.EventListener)
+						if v103 == nil {
+							v103 = new(domdebugger.EventListener)
 						}
-						(*v97).UnmarshalEasyJSON(in)
+						(*v103).UnmarshalEasyJSON(in)
 					}
-					out.EventListeners = append(out.EventListeners, v97)
+					out.EventListeners = append(out.EventListeners, v103)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2579,11 +2653,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot12(out *jwriter.Wr
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v98, v99 := range in.ChildNodeIndexes {
-				if v98 > 0 {
+			for v104, v105 := range in.ChildNodeIndexes {
+				if v104 > 0 {
 					out.RawByte(',')
 				}
-				out.Int64(int64(v99))
+				out.Int64(int64(v105))
 			}
 			out.RawByte(']')
 		}
@@ -2593,14 +2667,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot12(out *jwriter.Wr
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v100, v101 := range in.Attributes {
-				if v100 > 0 {
+			for v106, v107 := range in.Attributes {
+				if v106 > 0 {
 					out.RawByte(',')
 				}
-				if v101 == nil {
+				if v107 == nil {
 					out.RawString("null")
 				} else {
-					(*v101).MarshalEasyJSON(out)
+					(*v107).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -2611,11 +2685,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot12(out *jwriter.Wr
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v102, v103 := range in.PseudoElementIndexes {
-				if v102 > 0 {
+			for v108, v109 := range in.PseudoElementIndexes {
+				if v108 > 0 {
 					out.RawByte(',')
 				}
-				out.Int64(int64(v103))
+				out.Int64(int64(v109))
 			}
 			out.RawByte(']')
 		}
@@ -2685,14 +2759,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot12(out *jwriter.Wr
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v104, v105 := range in.EventListeners {
-				if v104 > 0 {
+			for v110, v111 := range in.EventListeners {
+				if v110 > 0 {
 					out.RawByte(',')
 				}
-				if v105 == nil {
+				if v111 == nil {
 					out.RawString("null")
 				} else {
-					(*v105).MarshalEasyJSON(out)
+					(*v111).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -2755,7 +2829,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot13(in *jlexer.Lexe
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2779,17 +2853,17 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot13(in *jlexer.Lexe
 					out.Properties = (out.Properties)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v106 *NameValue
+					var v112 *NameValue
 					if in.IsNull() {
 						in.Skip()
-						v106 = nil
+						v112 = nil
 					} else {
-						if v106 == nil {
-							v106 = new(NameValue)
+						if v112 == nil {
+							v112 = new(NameValue)
 						}
-						(*v106).UnmarshalEasyJSON(in)
+						(*v112).UnmarshalEasyJSON(in)
 					}
-					out.Properties = append(out.Properties, v106)
+					out.Properties = append(out.Properties, v112)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2815,14 +2889,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot13(out *jwriter.Wr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v107, v108 := range in.Properties {
-				if v107 > 0 {
+			for v113, v114 := range in.Properties {
+				if v113 > 0 {
 					out.RawByte(',')
 				}
-				if v108 == nil {
+				if v114 == nil {
 					out.RawString("null")
 				} else {
-					(*v108).MarshalEasyJSON(out)
+					(*v114).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -2865,7 +2939,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot14(in *jlexer.Lexe
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -2889,17 +2963,17 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot14(in *jlexer.Lexe
 					out.Documents = (out.Documents)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v109 *DocumentSnapshot
+					var v115 *DocumentSnapshot
 					if in.IsNull() {
 						in.Skip()
-						v109 = nil
+						v115 = nil
 					} else {
-						if v109 == nil {
-							v109 = new(DocumentSnapshot)
+						if v115 == nil {
+							v115 = new(DocumentSnapshot)
 						}
-						(*v109).UnmarshalEasyJSON(in)
+						(*v115).UnmarshalEasyJSON(in)
 					}
-					out.Documents = append(out.Documents, v109)
+					out.Documents = append(out.Documents, v115)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2920,9 +2994,9 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot14(in *jlexer.Lexe
 					out.Strings = (out.Strings)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v110 string
-					v110 = string(in.String())
-					out.Strings = append(out.Strings, v110)
+					var v116 string
+					v116 = string(in.String())
+					out.Strings = append(out.Strings, v116)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2947,14 +3021,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot14(out *jwriter.Wr
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v111, v112 := range in.Documents {
-				if v111 > 0 {
+			for v117, v118 := range in.Documents {
+				if v117 > 0 {
 					out.RawByte(',')
 				}
-				if v112 == nil {
+				if v118 == nil {
 					out.RawString("null")
 				} else {
-					(*v112).MarshalEasyJSON(out)
+					(*v118).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -2970,11 +3044,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot14(out *jwriter.Wr
 		}
 		{
 			out.RawByte('[')
-			for v113, v114 := range in.Strings {
-				if v113 > 0 {
+			for v119, v120 := range in.Strings {
+				if v119 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v114))
+				out.String(string(v120))
 			}
 			out.RawByte(']')
 		}
@@ -3016,7 +3090,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot15(in *jlexer.Lexe
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -3040,9 +3114,9 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot15(in *jlexer.Lexe
 					out.ComputedStyles = (out.ComputedStyles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v115 string
-					v115 = string(in.String())
-					out.ComputedStyles = append(out.ComputedStyles, v115)
+					var v121 string
+					v121 = string(in.String())
+					out.ComputedStyles = append(out.ComputedStyles, v121)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3051,6 +3125,10 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomsnapshot15(in *jlexer.Lexe
 			out.IncludePaintOrder = bool(in.Bool())
 		case "includeDOMRects":
 			out.IncludeDOMRects = bool(in.Bool())
+		case "includeBlendedBackgroundColors":
+			out.IncludeBlendedBackgroundColors = bool(in.Bool())
+		case "includeTextColorOpacities":
+			out.IncludeTextColorOpacities = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -3072,11 +3150,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot15(out *jwriter.Wr
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v116, v117 := range in.ComputedStyles {
-				if v116 > 0 {
+			for v122, v123 := range in.ComputedStyles {
+				if v122 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v117))
+				out.String(string(v123))
 			}
 			out.RawByte(']')
 		}
@@ -3090,6 +3168,16 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomsnapshot15(out *jwriter.Wr
 		const prefix string = ",\"includeDOMRects\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IncludeDOMRects))
+	}
+	if in.IncludeBlendedBackgroundColors {
+		const prefix string = ",\"includeBlendedBackgroundColors\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IncludeBlendedBackgroundColors))
+	}
+	if in.IncludeTextColorOpacities {
+		const prefix string = ",\"includeTextColorOpacities\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IncludeTextColorOpacities))
 	}
 	out.RawByte('}')
 }

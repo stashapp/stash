@@ -28,7 +28,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTethering(in *jlexer.Lexer, o
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -94,7 +94,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTethering1(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -167,7 +167,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTethering2(in *jlexer.Lexer, 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()

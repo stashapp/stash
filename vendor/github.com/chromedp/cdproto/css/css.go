@@ -483,6 +483,73 @@ func (p *GetStyleSheetTextParams) Do(ctx context.Context) (text string, err erro
 	return res.Text, nil
 }
 
+// TrackComputedStyleUpdatesParams starts tracking the given computed styles
+// for updates. The specified array of properties replaces the one previously
+// specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates
+// to retrieve the list of nodes that had properties modified. The changes to
+// computed style properties are only tracked for nodes pushed to the front-end
+// by the DOM agent. If no changes to the tracked properties occur after the
+// node has been pushed to the front-end, no updates will be issued for the
+// node.
+type TrackComputedStyleUpdatesParams struct {
+	PropertiesToTrack []*ComputedStyleProperty `json:"propertiesToTrack"`
+}
+
+// TrackComputedStyleUpdates starts tracking the given computed styles for
+// updates. The specified array of properties replaces the one previously
+// specified. Pass empty array to disable tracking. Use takeComputedStyleUpdates
+// to retrieve the list of nodes that had properties modified. The changes to
+// computed style properties are only tracked for nodes pushed to the front-end
+// by the DOM agent. If no changes to the tracked properties occur after the
+// node has been pushed to the front-end, no updates will be issued for the
+// node.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-trackComputedStyleUpdates
+//
+// parameters:
+//   propertiesToTrack
+func TrackComputedStyleUpdates(propertiesToTrack []*ComputedStyleProperty) *TrackComputedStyleUpdatesParams {
+	return &TrackComputedStyleUpdatesParams{
+		PropertiesToTrack: propertiesToTrack,
+	}
+}
+
+// Do executes CSS.trackComputedStyleUpdates against the provided context.
+func (p *TrackComputedStyleUpdatesParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandTrackComputedStyleUpdates, p, nil)
+}
+
+// TakeComputedStyleUpdatesParams polls the next batch of computed style
+// updates.
+type TakeComputedStyleUpdatesParams struct{}
+
+// TakeComputedStyleUpdates polls the next batch of computed style updates.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-takeComputedStyleUpdates
+func TakeComputedStyleUpdates() *TakeComputedStyleUpdatesParams {
+	return &TakeComputedStyleUpdatesParams{}
+}
+
+// TakeComputedStyleUpdatesReturns return values.
+type TakeComputedStyleUpdatesReturns struct {
+	NodeIds []cdp.NodeID `json:"nodeIds,omitempty"` // The list of node Ids that have their tracked computed styles updated
+}
+
+// Do executes CSS.takeComputedStyleUpdates against the provided context.
+//
+// returns:
+//   nodeIds - The list of node Ids that have their tracked computed styles updated
+func (p *TakeComputedStyleUpdatesParams) Do(ctx context.Context) (nodeIds []cdp.NodeID, err error) {
+	// execute
+	var res TakeComputedStyleUpdatesReturns
+	err = cdp.Execute(ctx, CommandTakeComputedStyleUpdates, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.NodeIds, nil
+}
+
 // SetEffectivePropertyValueForNodeParams find a rule with the given active
 // property for the given node and set the new value for this property.
 type SetEffectivePropertyValueForNodeParams struct {
@@ -597,6 +664,49 @@ func (p *SetMediaTextParams) Do(ctx context.Context) (media *Media, err error) {
 	}
 
 	return res.Media, nil
+}
+
+// SetContainerQueryTextParams modifies the expression of a container query.
+type SetContainerQueryTextParams struct {
+	StyleSheetID StyleSheetID `json:"styleSheetId"`
+	Range        *SourceRange `json:"range"`
+	Text         string       `json:"text"`
+}
+
+// SetContainerQueryText modifies the expression of a container query.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setContainerQueryText
+//
+// parameters:
+//   styleSheetID
+//   range
+//   text
+func SetContainerQueryText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetContainerQueryTextParams {
+	return &SetContainerQueryTextParams{
+		StyleSheetID: styleSheetID,
+		Range:        rangeVal,
+		Text:         text,
+	}
+}
+
+// SetContainerQueryTextReturns return values.
+type SetContainerQueryTextReturns struct {
+	ContainerQuery *ContainerQuery `json:"containerQuery,omitempty"` // The resulting CSS container query rule after modification.
+}
+
+// Do executes CSS.setContainerQueryText against the provided context.
+//
+// returns:
+//   containerQuery - The resulting CSS container query rule after modification.
+func (p *SetContainerQueryTextParams) Do(ctx context.Context) (containerQuery *ContainerQuery, err error) {
+	// execute
+	var res SetContainerQueryTextReturns
+	err = cdp.Execute(ctx, CommandSetContainerQueryText, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.ContainerQuery, nil
 }
 
 // SetRuleSelectorParams modifies the rule selector.
@@ -804,6 +914,30 @@ func (p *TakeCoverageDeltaParams) Do(ctx context.Context) (coverage []*RuleUsage
 	return res.Coverage, res.Timestamp, nil
 }
 
+// SetLocalFontsEnabledParams enables/disables rendering of local CSS fonts
+// (enabled by default).
+type SetLocalFontsEnabledParams struct {
+	Enabled bool `json:"enabled"` // Whether rendering of local fonts is enabled.
+}
+
+// SetLocalFontsEnabled enables/disables rendering of local CSS fonts
+// (enabled by default).
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setLocalFontsEnabled
+//
+// parameters:
+//   enabled - Whether rendering of local fonts is enabled.
+func SetLocalFontsEnabled(enabled bool) *SetLocalFontsEnabledParams {
+	return &SetLocalFontsEnabledParams{
+		Enabled: enabled,
+	}
+}
+
+// Do executes CSS.setLocalFontsEnabled against the provided context.
+func (p *SetLocalFontsEnabledParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetLocalFontsEnabled, p, nil)
+}
+
 // Command names.
 const (
 	CommandAddRule                          = "CSS.addRule"
@@ -819,13 +953,17 @@ const (
 	CommandGetMediaQueries                  = "CSS.getMediaQueries"
 	CommandGetPlatformFontsForNode          = "CSS.getPlatformFontsForNode"
 	CommandGetStyleSheetText                = "CSS.getStyleSheetText"
+	CommandTrackComputedStyleUpdates        = "CSS.trackComputedStyleUpdates"
+	CommandTakeComputedStyleUpdates         = "CSS.takeComputedStyleUpdates"
 	CommandSetEffectivePropertyValueForNode = "CSS.setEffectivePropertyValueForNode"
 	CommandSetKeyframeKey                   = "CSS.setKeyframeKey"
 	CommandSetMediaText                     = "CSS.setMediaText"
+	CommandSetContainerQueryText            = "CSS.setContainerQueryText"
 	CommandSetRuleSelector                  = "CSS.setRuleSelector"
 	CommandSetStyleSheetText                = "CSS.setStyleSheetText"
 	CommandSetStyleTexts                    = "CSS.setStyleTexts"
 	CommandStartRuleUsageTracking           = "CSS.startRuleUsageTracking"
 	CommandStopRuleUsageTracking            = "CSS.stopRuleUsageTracking"
 	CommandTakeCoverageDelta                = "CSS.takeCoverageDelta"
+	CommandSetLocalFontsEnabled             = "CSS.setLocalFontsEnabled"
 )

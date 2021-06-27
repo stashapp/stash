@@ -231,6 +231,8 @@ func (qb *imageQueryBuilder) makeFilter(imageFilter *models.ImageFilterType) *fi
 		query.not(qb.makeFilter(imageFilter.Not))
 	}
 
+	query.handleCriterion(stringCriterionHandler(imageFilter.Checksum, "images.checksum"))
+	query.handleCriterion(stringCriterionHandler(imageFilter.Title, "images.title"))
 	query.handleCriterion(stringCriterionHandler(imageFilter.Path, "images.path"))
 	query.handleCriterion(intCriterionHandler(imageFilter.Rating, "images.rating"))
 	query.handleCriterion(intCriterionHandler(imageFilter.OCounter, "images.o_counter"))

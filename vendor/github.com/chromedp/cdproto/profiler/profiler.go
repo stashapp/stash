@@ -317,6 +317,66 @@ func (p *TakeTypeProfileParams) Do(ctx context.Context) (result []*ScriptTypePro
 	return res.Result, nil
 }
 
+// EnableCountersParams enable counters collection.
+type EnableCountersParams struct{}
+
+// EnableCounters enable counters collection.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Profiler#method-enableCounters
+func EnableCounters() *EnableCountersParams {
+	return &EnableCountersParams{}
+}
+
+// Do executes Profiler.enableCounters against the provided context.
+func (p *EnableCountersParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandEnableCounters, nil, nil)
+}
+
+// DisableCountersParams disable counters collection.
+type DisableCountersParams struct{}
+
+// DisableCounters disable counters collection.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Profiler#method-disableCounters
+func DisableCounters() *DisableCountersParams {
+	return &DisableCountersParams{}
+}
+
+// Do executes Profiler.disableCounters against the provided context.
+func (p *DisableCountersParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandDisableCounters, nil, nil)
+}
+
+// GetCountersParams retrieve counters.
+type GetCountersParams struct{}
+
+// GetCounters retrieve counters.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Profiler#method-getCounters
+func GetCounters() *GetCountersParams {
+	return &GetCountersParams{}
+}
+
+// GetCountersReturns return values.
+type GetCountersReturns struct {
+	Result []*CounterInfo `json:"result,omitempty"` // Collected counters information.
+}
+
+// Do executes Profiler.getCounters against the provided context.
+//
+// returns:
+//   result - Collected counters information.
+func (p *GetCountersParams) Do(ctx context.Context) (result []*CounterInfo, err error) {
+	// execute
+	var res GetCountersReturns
+	err = cdp.Execute(ctx, CommandGetCounters, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Result, nil
+}
+
 // EnableRuntimeCallStatsParams enable run time call stats collection.
 type EnableRuntimeCallStatsParams struct{}
 
@@ -359,14 +419,14 @@ func GetRuntimeCallStats() *GetRuntimeCallStatsParams {
 
 // GetRuntimeCallStatsReturns return values.
 type GetRuntimeCallStatsReturns struct {
-	Result []*CounterInfo `json:"result,omitempty"` // Collected counter information.
+	Result []*RuntimeCallCounterInfo `json:"result,omitempty"` // Collected runtime call counter information.
 }
 
 // Do executes Profiler.getRuntimeCallStats against the provided context.
 //
 // returns:
-//   result - Collected counter information.
-func (p *GetRuntimeCallStatsParams) Do(ctx context.Context) (result []*CounterInfo, err error) {
+//   result - Collected runtime call counter information.
+func (p *GetRuntimeCallStatsParams) Do(ctx context.Context) (result []*RuntimeCallCounterInfo, err error) {
 	// execute
 	var res GetRuntimeCallStatsReturns
 	err = cdp.Execute(ctx, CommandGetRuntimeCallStats, nil, &res)
@@ -391,6 +451,9 @@ const (
 	CommandStopTypeProfile         = "Profiler.stopTypeProfile"
 	CommandTakePreciseCoverage     = "Profiler.takePreciseCoverage"
 	CommandTakeTypeProfile         = "Profiler.takeTypeProfile"
+	CommandEnableCounters          = "Profiler.enableCounters"
+	CommandDisableCounters         = "Profiler.disableCounters"
+	CommandGetCounters             = "Profiler.getCounters"
 	CommandEnableRuntimeCallStats  = "Profiler.enableRuntimeCallStats"
 	CommandDisableRuntimeCallStats = "Profiler.disableRuntimeCallStats"
 	CommandGetRuntimeCallStats     = "Profiler.getRuntimeCallStats"

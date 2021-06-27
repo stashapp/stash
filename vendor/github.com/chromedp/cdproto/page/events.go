@@ -37,7 +37,8 @@ type EventFrameAttached struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-frameDetached
 type EventFrameDetached struct {
-	FrameID cdp.FrameID `json:"frameId"` // Id of the frame that has been detached.
+	FrameID cdp.FrameID         `json:"frameId"` // Id of the frame that has been detached.
+	Reason  FrameDetachedReason `json:"reason"`
 }
 
 // EventFrameNavigated fired once navigation of the frame has completed.
@@ -45,6 +46,14 @@ type EventFrameDetached struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-frameNavigated
 type EventFrameNavigated struct {
+	Frame *cdp.Frame     `json:"frame"` // Frame object.
+	Type  NavigationType `json:"type"`
+}
+
+// EventDocumentOpened fired when opening document to write to.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-documentOpened
+type EventDocumentOpened struct {
 	Frame *cdp.Frame `json:"frame"` // Frame object.
 }
 
@@ -76,27 +85,6 @@ type EventFrameStartedLoading struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-frameStoppedLoading
 type EventFrameStoppedLoading struct {
 	FrameID cdp.FrameID `json:"frameId"` // Id of the frame that has stopped loading.
-}
-
-// EventDownloadWillBegin fired when page is about to start a download.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-downloadWillBegin
-type EventDownloadWillBegin struct {
-	FrameID           cdp.FrameID `json:"frameId"`           // Id of the frame that caused download to begin.
-	GUID              string      `json:"guid"`              // Global unique identifier of the download.
-	URL               string      `json:"url"`               // URL of the resource being downloaded.
-	SuggestedFilename string      `json:"suggestedFilename"` // Suggested file name of the resource (the actual name of the file saved on disk may differ).
-}
-
-// EventDownloadProgress fired when download makes progress. Last call has
-// |done| == true.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-downloadProgress
-type EventDownloadProgress struct {
-	GUID          string                `json:"guid"`          // Global unique identifier of the download.
-	TotalBytes    float64               `json:"totalBytes"`    // Total expected bytes to download.
-	ReceivedBytes float64               `json:"receivedBytes"` // Total bytes received.
-	State         DownloadProgressState `json:"state"`         // Download status.
 }
 
 // EventInterstitialHidden fired when interstitial page was hidden.
@@ -139,6 +127,19 @@ type EventLifecycleEvent struct {
 	LoaderID  cdp.LoaderID       `json:"loaderId"` // Loader identifier. Empty string if the request is fetched from worker.
 	Name      string             `json:"name"`
 	Timestamp *cdp.MonotonicTime `json:"timestamp"`
+}
+
+// EventBackForwardCacheNotUsed fired for failed bfcache history navigations
+// if BackForwardCache feature is enabled. Do not assume any ordering with the
+// Page.frameNavigated event. This event is fired only for main-frame history
+// navigation where the document changes (non-same-document navigations), when
+// bfcache navigation fails.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-backForwardCacheNotUsed
+type EventBackForwardCacheNotUsed struct {
+	LoaderID                cdp.LoaderID                              `json:"loaderId"`                // The loader id for the associated navgation.
+	FrameID                 cdp.FrameID                               `json:"frameId"`                 // The frame id of the associated frame.
+	NotRestoredExplanations []*BackForwardCacheNotRestoredExplanation `json:"notRestoredExplanations"` // Array of reasons why the page could not be cached. This must not be empty.
 }
 
 // EventLoadEventFired [no description].

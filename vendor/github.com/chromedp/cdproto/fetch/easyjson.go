@@ -30,7 +30,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch(in *jlexer.Lexer, out *
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -97,7 +97,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch1(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -163,7 +163,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch2(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -254,7 +254,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch3(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -327,7 +327,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch4(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -406,7 +406,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch5(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -472,7 +472,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch6(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -615,7 +615,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch7(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -688,7 +688,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch8(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -857,7 +857,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch9(in *jlexer.Lexer, out 
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -975,7 +975,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch10(in *jlexer.Lexer, out
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1096,7 +1096,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch11(in *jlexer.Lexer, out
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1155,7 +1155,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch12(in *jlexer.Lexer, out
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1240,7 +1240,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch13(in *jlexer.Lexer, out
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1376,7 +1376,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch14(in *jlexer.Lexer, out
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -1456,7 +1456,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoFetch15(in *jlexer.Lexer, out
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()

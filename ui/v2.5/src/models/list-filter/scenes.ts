@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
@@ -17,6 +18,7 @@ import {
 } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import { PhashCriterionOption } from "./criteria/phash";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -46,7 +48,16 @@ const displayModeOptions = [
 ];
 
 const criterionOptions = [
-  createStringCriterionOption("path"),
+  createStringCriterionOption("title"),
+  createMandatoryStringCriterionOption("path"),
+  createStringCriterionOption("details"),
+  createMandatoryStringCriterionOption("oshash", "media_info.hash"),
+  createStringCriterionOption(
+    "sceneChecksum",
+    "media_info.checksum",
+    "checksum"
+  ),
+  PhashCriterionOption,
   RatingCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),

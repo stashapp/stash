@@ -165,6 +165,8 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     const newFilter = filter.clone();
     newFilter.currentPage = 1;
     newFilter.configureFromQueryParameters(JSON.parse(f.filter));
+    // #1507 - reset random seed when loaded
+    newFilter.randomSeed = -1;
 
     onSetFilter(newFilter);
   }

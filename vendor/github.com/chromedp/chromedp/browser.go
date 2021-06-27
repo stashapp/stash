@@ -15,6 +15,7 @@ import (
 	"github.com/chromedp/cdproto"
 	"github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/cdproto/target"
 )
 
@@ -31,6 +32,13 @@ type Browser struct {
 	// dropped. This can be useful to make sure that Browser's context is
 	// cancelled (and the handler stopped) once the connection has failed.
 	LostConnection chan struct{}
+
+	// closingGracefully is closed by Close before gracefully shutting down
+	// the browser. This way, when the connection to the browser is lost and
+	// LostConnection is closed, we will know not to immediately kill the
+	// Chrome process. This is important to let the browser shut itself off,
+	// saving its state to disk.
+	closingGracefully chan struct{}
 
 	dialTimeout time.Duration
 
@@ -72,7 +80,8 @@ type Browser struct {
 // directly, as the Allocator interface takes care of it.
 func NewBrowser(ctx context.Context, urlstr string, opts ...BrowserOption) (*Browser, error) {
 	b := &Browser{
-		LostConnection: make(chan struct{}),
+		LostConnection:    make(chan struct{}),
+		closingGracefully: make(chan struct{}),
 
 		dialTimeout: 10 * time.Second,
 
@@ -103,11 +112,25 @@ func NewBrowser(ctx context.Context, urlstr string, opts ...BrowserOption) (*Bro
 	urlstr = forceIP(urlstr)
 	b.conn, err = DialContext(dialCtx, urlstr, WithConnDebugf(b.dbgf))
 	if err != nil {
-		return nil, fmt.Errorf("could not dial %q: %v", urlstr, err)
+		return nil, fmt.Errorf("could not dial %q: %w", urlstr, err)
 	}
 
 	go b.run(ctx)
 	return b, nil
+}
+
+// Process returns the process object of the browser.
+//
+// It could be nil when the browser is allocated with RemoteAllocator.
+// It could be useful for a monitoring system to collect process metrics of the browser process.
+// (see https://pkg.go.dev/github.com/prometheus/client_golang/prometheus#NewProcessCollector for an example)
+//
+// Example:
+//     if process := chromedp.FromContext(ctx).Browser.Process(); process != nil {
+//         fmt.Printf("Browser PID: %v", process.Pid)
+//     }
+func (b *Browser) Process() *os.Process {
+	return b.process
 }
 
 func (b *Browser) newExecutorForTarget(ctx context.Context, targetID target.ID, sessionID target.SessionID) (*Target, error) {
@@ -124,6 +147,8 @@ func (b *Browser) newExecutorForTarget(ctx context.Context, targetID target.ID, 
 
 		messageQueue: make(chan *cdproto.Message, 1024),
 		frames:       make(map[cdp.FrameID]*cdp.Frame),
+		execContexts: make(map[cdp.FrameID]runtime.ExecutionContextID),
+		cur:          cdp.FrameID(targetID),
 
 		logf: b.logf,
 		errf: b.errf,
@@ -214,13 +239,12 @@ func (b *Browser) run(ctx context.Context) {
 	// connection. The separate goroutine is needed since a websocket read
 	// is blocking, so it cannot be used in a select statement.
 	go func() {
+		// Signal to run and exit the browser cleanup goroutine.
+		defer close(b.LostConnection)
+
 		for {
 			msg := new(cdproto.Message)
 			if err := b.conn.Read(ctx, msg); err != nil {
-				// If the websocket failed, most likely Chrome was closed or
-				// crashed. Signal that so the entire browser handler can be
-				// stopped.
-				close(b.LostConnection)
 				return
 			}
 

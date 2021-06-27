@@ -195,7 +195,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     inputForm?.current?.reset();
   }, [config.mode, config.blacklist]);
 
+  function clearSceneSearchResult(sceneID: string) {
+    // remove sceneID results from the results object
+    const { [sceneID]: _removedResult, ...newSearchResults } = searchResults;
+    const { [sceneID]: _removedError, ...newSearchErrors } = searchErrors;
+    setSearchResults(newSearchResults);
+    setSearchErrors(newSearchErrors);
+  }
+
   const doBoxSearch = (sceneID: string, searchVal: string) => {
+    clearSceneSearchResult(sceneID);
+
     stashBoxSceneQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
         const s = selectScenes(queryData.data?.queryStashBoxScene);

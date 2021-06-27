@@ -99,6 +99,7 @@ const (
 	PermissionTypeBackgroundFetch          PermissionType = "backgroundFetch"
 	PermissionTypeClipboardReadWrite       PermissionType = "clipboardReadWrite"
 	PermissionTypeClipboardSanitizedWrite  PermissionType = "clipboardSanitizedWrite"
+	PermissionTypeDisplayCapture           PermissionType = "displayCapture"
 	PermissionTypeDurableStorage           PermissionType = "durableStorage"
 	PermissionTypeFlash                    PermissionType = "flash"
 	PermissionTypeGeolocation              PermissionType = "geolocation"
@@ -111,6 +112,7 @@ const (
 	PermissionTypeProtectedMediaIdentifier PermissionType = "protectedMediaIdentifier"
 	PermissionTypeSensors                  PermissionType = "sensors"
 	PermissionTypeVideoCapture             PermissionType = "videoCapture"
+	PermissionTypeVideoCapturePanTiltZoom  PermissionType = "videoCapturePanTiltZoom"
 	PermissionTypeIdleDetection            PermissionType = "idleDetection"
 	PermissionTypeWakeLockScreen           PermissionType = "wakeLockScreen"
 	PermissionTypeWakeLockSystem           PermissionType = "wakeLockSystem"
@@ -141,6 +143,8 @@ func (t *PermissionType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = PermissionTypeClipboardReadWrite
 	case PermissionTypeClipboardSanitizedWrite:
 		*t = PermissionTypeClipboardSanitizedWrite
+	case PermissionTypeDisplayCapture:
+		*t = PermissionTypeDisplayCapture
 	case PermissionTypeDurableStorage:
 		*t = PermissionTypeDurableStorage
 	case PermissionTypeFlash:
@@ -165,6 +169,8 @@ func (t *PermissionType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = PermissionTypeSensors
 	case PermissionTypeVideoCapture:
 		*t = PermissionTypeVideoCapture
+	case PermissionTypeVideoCapturePanTiltZoom:
+		*t = PermissionTypeVideoCapturePanTiltZoom
 	case PermissionTypeIdleDetection:
 		*t = PermissionTypeIdleDetection
 	case PermissionTypeWakeLockScreen:
@@ -238,8 +244,52 @@ type PermissionDescriptor struct {
 	Name                     string `json:"name"`                               // Name of permission. See https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/permissions/permission_descriptor.idl for valid permission names.
 	Sysex                    bool   `json:"sysex,omitempty"`                    // For "midi" permission, may also specify sysex control.
 	UserVisibleOnly          bool   `json:"userVisibleOnly,omitempty"`          // For "push" permission, may specify userVisibleOnly. Note that userVisibleOnly = true is the only currently supported type.
-	Type                     string `json:"type,omitempty"`                     // For "wake-lock" permission, must specify type as either "screen" or "system".
 	AllowWithoutSanitization bool   `json:"allowWithoutSanitization,omitempty"` // For "clipboard" permission, may specify allowWithoutSanitization.
+	PanTiltZoom              bool   `json:"panTiltZoom,omitempty"`              // For "camera" permission, may specify panTiltZoom.
+}
+
+// CommandID browser command ids used by executeBrowserCommand.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#type-BrowserCommandId
+type CommandID string
+
+// String returns the CommandID as string value.
+func (t CommandID) String() string {
+	return string(t)
+}
+
+// CommandID values.
+const (
+	CommandIDOpenTabSearch  CommandID = "openTabSearch"
+	CommandIDCloseTabSearch CommandID = "closeTabSearch"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t CommandID) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t CommandID) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *CommandID) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch CommandID(in.String()) {
+	case CommandIDOpenTabSearch:
+		*t = CommandIDOpenTabSearch
+	case CommandIDCloseTabSearch:
+		*t = CommandIDCloseTabSearch
+
+	default:
+		in.AddError(errors.New("unknown CommandID value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *CommandID) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
 }
 
 // Bucket chrome histogram bucket.
@@ -259,6 +309,53 @@ type Histogram struct {
 	Sum     int64     `json:"sum"`     // Sum of sample values.
 	Count   int64     `json:"count"`   // Total number of samples.
 	Buckets []*Bucket `json:"buckets"` // Buckets.
+}
+
+// DownloadProgressState download status.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#event-downloadProgress
+type DownloadProgressState string
+
+// String returns the DownloadProgressState as string value.
+func (t DownloadProgressState) String() string {
+	return string(t)
+}
+
+// DownloadProgressState values.
+const (
+	DownloadProgressStateInProgress DownloadProgressState = "inProgress"
+	DownloadProgressStateCompleted  DownloadProgressState = "completed"
+	DownloadProgressStateCanceled   DownloadProgressState = "canceled"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t DownloadProgressState) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t DownloadProgressState) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *DownloadProgressState) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch DownloadProgressState(in.String()) {
+	case DownloadProgressStateInProgress:
+		*t = DownloadProgressStateInProgress
+	case DownloadProgressStateCompleted:
+		*t = DownloadProgressStateCompleted
+	case DownloadProgressStateCanceled:
+		*t = DownloadProgressStateCanceled
+
+	default:
+		in.AddError(errors.New("unknown DownloadProgressState value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *DownloadProgressState) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
 }
 
 // SetDownloadBehaviorBehavior whether to allow all or deny all download
