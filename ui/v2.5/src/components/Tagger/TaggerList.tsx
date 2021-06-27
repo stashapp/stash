@@ -32,6 +32,30 @@ interface ITaggerListProps {
 // Caches fingerprint lookups between page renders
 let fingerprintCache: Record<string, IStashBoxScene[]> = {};
 
+function fingerprintSearchResults(scenes: GQL.SlimSceneDataFragment[], fingerprints: Record<string, IStashBoxScene[]>) {
+  const ret: Record<string, IStashBoxScene[]> = {};
+
+  if (Object.keys(fingerprints).length === 0) {
+    return ret;
+  }
+
+  // perform matching here
+  scenes.forEach((scene) => {
+    const fingerprintMatches = uniqBy(
+      [
+        ...(fingerprints[scene.checksum ?? ""] ?? []),
+        ...(fingerprints[scene.oshash ?? ""] ?? []),
+        ...(fingerprints[scene.phash ?? ""] ?? []),
+      ].flat(),
+      (f) => f.stash_id
+    );
+
+    ret[scene.id] = fingerprintMatches;
+  });
+
+  return ret;
+};
+
 export const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
   queue,
@@ -48,9 +72,6 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
   const [loading, setLoading] = useState(false);
   const inputForm = useRef<HTMLFormElement>(null);
 
-  const [searchResults, setSearchResults] = useState<
-    Record<string, IStashBoxScene[]>
-  >({});
   const [searchErrors, setSearchErrors] = useState<
     Record<string, string | undefined>
   >({});
@@ -61,6 +82,9 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
   const [fingerprints, setFingerprints] = useState<
     Record<string, IStashBoxScene[]>
   >(fingerprintCache);
+  const [searchResults, setSearchResults] = useState<
+    Record<string, IStashBoxScene[]>
+  >(fingerprintSearchResults(scenes, fingerprints));
   const [hideUnmatched, setHideUnmatched] = useState(false);
   const queuedFingerprints = fingerprintQueue.getQueue(
     selectedEndpoint.endpoint
@@ -157,22 +181,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
       newFingerprints[id] = newFingerprints[id] ?? null;
     });
 
-    const newSearchResults: Record<string, IStashBoxScene[]> = {};
-
-    // perform matching here
-    scenes.forEach((scene) => {
-      const fingerprintMatches = uniqBy(
-        [
-          ...(newFingerprints[scene.checksum ?? ""] ?? []),
-          ...(newFingerprints[scene.oshash ?? ""] ?? []),
-          ...(newFingerprints[scene.phash ?? ""] ?? []),
-        ].flat(),
-        (f) => f.stash_id
-      );
-
-      newSearchResults[scene.id] = fingerprintMatches;
-    });
-
+    const newSearchResults = fingerprintSearchResults(scenes, newFingerprints);
     setSearchResults(newSearchResults);
 
     setFingerprints(newFingerprints);
@@ -349,7 +358,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
                 values={{
                   toggle: (
                     <FormattedMessage
-                      id={`actions.${hideUnmatched ? "hide" : "show"}`}
+                      id={`actions.${!hideUnmatched ? "hide" : "show"}`}
                     />
                   ),
                 }}
@@ -378,7 +387,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
         </div>
         <Button
           onClick={handleFingerprintSearch}
-          disabled={!canFingerprintSearch() && !loadingFingerprints}
+          disabled={loadingFingerprints}
         >
           {canFingerprintSearch() && (
             <span>
