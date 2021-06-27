@@ -32,7 +32,10 @@ interface ITaggerListProps {
 // Caches fingerprint lookups between page renders
 let fingerprintCache: Record<string, IStashBoxScene[]> = {};
 
-function fingerprintSearchResults(scenes: GQL.SlimSceneDataFragment[], fingerprints: Record<string, IStashBoxScene[]>) {
+function fingerprintSearchResults(
+  scenes: GQL.SlimSceneDataFragment[],
+  fingerprints: Record<string, IStashBoxScene[]>
+) {
   const ret: Record<string, IStashBoxScene[]> = {};
 
   if (Object.keys(fingerprints).length === 0) {
@@ -54,7 +57,7 @@ function fingerprintSearchResults(scenes: GQL.SlimSceneDataFragment[], fingerpri
   });
 
   return ret;
-};
+}
 
 export const TaggerList: React.FC<ITaggerListProps> = ({
   scenes,
