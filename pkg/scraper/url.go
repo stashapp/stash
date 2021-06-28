@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
-	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
@@ -175,14 +174,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			node, err := dom.GetDocument().Do(ctx)
-			if err != nil {
-				return err
-			}
-			res, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
-			return err
-		}),
+		chromedp.OuterHTML("html", &res, chromedp.ByQuery),
 		printCDPCookies(driverOptions, "Cookies set"),
 	)
 
