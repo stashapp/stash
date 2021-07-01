@@ -31,8 +31,15 @@
 
 .tag-details {
   .logo {
-    margin-bottom: 4rem;
     max-height: 50vh;
     max-width: 100%;
   }
+
+  .logo-container {
+    margin-bottom: 4rem;
+  }
+}
+
+#tag-merge-menu .dropdown-item {
+  align-items: center;
 }

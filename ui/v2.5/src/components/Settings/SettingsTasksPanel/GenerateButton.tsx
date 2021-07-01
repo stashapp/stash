@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { mutateMetadataGenerate } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 export const GenerateButton: React.FC = () => {
   const Toast = useToast();
+  const intl = useIntl();
   const [sprites, setSprites] = useState(true);
   const [phashes, setPhashes] = useState(true);
   const [previews, setPreviews] = useState(true);
@@ -22,7 +24,11 @@ export const GenerateButton: React.FC = () => {
         markers,
         transcodes,
       });
-      Toast.success({ content: "Started generating" });
+      Toast.success({
+        content: intl.formatMessage({
+          id: "toast.added_generation_job_to_queue",
+        }),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -34,7 +40,7 @@ export const GenerateButton: React.FC = () => {
         <Form.Check
           id="preview-task"
           checked={previews}
-          label="Previews (video previews which play when hovering over a scene)"
+          label={intl.formatMessage({ id: "dialogs.scene_gen.video_previews" })}
           onChange={() => setPreviews(!previews)}
         />
         <div className="d-flex flex-row">
@@ -43,7 +49,9 @@ export const GenerateButton: React.FC = () => {
             id="image-preview-task"
             checked={imagePreviews}
             disabled={!previews}
-            label="Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)"
+            label={intl.formatMessage({
+              id: "dialogs.scene_gen.image_previews",
+            })}
             onChange={() => setImagePreviews(!imagePreviews)}
             className="ml-2 flex-grow"
           />
@@ -51,25 +59,25 @@ export const GenerateButton: React.FC = () => {
         <Form.Check
           id="sprite-task"
           checked={sprites}
-          label="Sprites (for the scene scrubber)"
+          label={intl.formatMessage({ id: "dialogs.scene_gen.sprites" })}
           onChange={() => setSprites(!sprites)}
         />
         <Form.Check
           id="marker-task"
           checked={markers}
-          label="Markers (20 second videos which begin at the given timecode)"
+          label={intl.formatMessage({ id: "dialogs.scene_gen.markers" })}
           onChange={() => setMarkers(!markers)}
         />
         <Form.Check
           id="transcode-task"
           checked={transcodes}
-          label="Transcodes (MP4 conversions of unsupported video formats)"
+          label={intl.formatMessage({ id: "dialogs.scene_gen.transcodes" })}
           onChange={() => setTranscodes(!transcodes)}
         />
         <Form.Check
           id="phash-task"
           checked={phashes}
-          label="Phashes (for deduplication and scene identification)"
+          label={intl.formatMessage({ id: "dialogs.scene_gen.phash" })}
           onChange={() => setPhashes(!phashes)}
         />
       </Form.Group>
@@ -80,10 +88,10 @@ export const GenerateButton: React.FC = () => {
           type="submit"
           onClick={() => onGenerate()}
         >
-          Generate
+          <FormattedMessage id="actions.generate" />
         </Button>
         <Form.Text className="text-muted">
-          Generate supporting image, sprite, video, vtt and other files.
+          {intl.formatMessage({ id: "config.tasks.generate_desc" })}
         </Form.Text>
       </Form.Group>
     </>

@@ -52,6 +52,12 @@ $scrubberHeight: 120px;
   padding-right: 15px;
 }
 
+@media (max-width: 1199px) {
+  .scene-tabs {
+    padding-right: 15px;
+  }
+}
+
 $sceneTabWidth: 450px;
 
 @media (min-width: 1200px) {

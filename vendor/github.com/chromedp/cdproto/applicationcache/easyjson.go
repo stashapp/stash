@@ -28,7 +28,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache(in *jlexer.L
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -108,7 +108,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache1(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -175,7 +175,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache2(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -241,7 +241,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache3(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -350,7 +350,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache4(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -409,7 +409,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache5(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -484,7 +484,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache6(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -550,7 +550,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache7(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -630,7 +630,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache8(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -696,7 +696,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache9(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -776,7 +776,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache10(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -835,7 +835,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoApplicationcache11(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()

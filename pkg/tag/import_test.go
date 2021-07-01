@@ -56,18 +56,29 @@ func TestImporterPostImport(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: readerWriter,
-		imageData:    imageBytes,
+		Input: jsonschema.Tag{
+			Aliases: []string{"alias"},
+		},
+		imageData: imageBytes,
 	}
 
 	updateTagImageErr := errors.New("UpdateImage error")
+	updateTagAliasErr := errors.New("UpdateAlias error")
+
+	readerWriter.On("UpdateAliases", tagID, i.Input.Aliases).Return(nil).Once()
+	readerWriter.On("UpdateAliases", errAliasID, i.Input.Aliases).Return(updateTagAliasErr).Once()
 
 	readerWriter.On("UpdateImage", tagID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", errAliasID, imageBytes).Return(nil).Once()
 	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updateTagImageErr).Once()
 
 	err := i.PostImport(tagID)
 	assert.Nil(t, err)
 
 	err = i.PostImport(errImageID)
+	assert.NotNil(t, err)
+
+	err = i.PostImport(errAliasID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)
@@ -161,7 +172,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	tag.ID = tagID
-	readerWriter.On("Update", tag).Return(nil, nil).Once()
+	readerWriter.On("UpdateFull", tag).Return(nil, nil).Once()
 
 	err := i.Update(tagID)
 	assert.Nil(t, err)
@@ -170,7 +181,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	tagErr.ID = errImageID
-	readerWriter.On("Update", tagErr).Return(nil, errUpdate).Once()
+	readerWriter.On("UpdateFull", tagErr).Return(nil, errUpdate).Once()
 
 	err = i.Update(errImageID)
 	assert.NotNil(t, err)

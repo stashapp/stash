@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useAllMoviesForFilter } from "src/core/StashService";
 import { Form, Row, Col } from "react-bootstrap";
@@ -6,50 +7,54 @@ import { Form, Row, Col } from "react-bootstrap";
 export type MovieSceneIndexMap = Map<string, number | undefined>;
 
 export interface IProps {
-  movieSceneIndexes: MovieSceneIndexMap;
-  onUpdate: (value: MovieSceneIndexMap) => void;
+  movieScenes: GQL.SceneMovieInput[];
+  onUpdate: (value: GQL.SceneMovieInput[]) => void;
 }
 
 export const SceneMovieTable: React.FunctionComponent<IProps> = (
   props: IProps
 ) => {
+  const intl = useIntl();
   const { data } = useAllMoviesForFilter();
 
   const items = !!data && !!data.allMovies ? data.allMovies : [];
-  let itemsFilter: GQL.SlimMovieDataFragment[] = [];
 
-  if (!!props.movieSceneIndexes && !!items) {
-    props.movieSceneIndexes.forEach((_index, movieId) => {
-      itemsFilter = itemsFilter.concat(items.filter((x) => x.id === movieId));
-    });
-  }
-
-  const storeIdx = itemsFilter.map((movie) => {
-    return props.movieSceneIndexes.get(movie.id);
+  const movieEntries = props.movieScenes.map((m) => {
+    return {
+      movie: items.find((mm) => m.movie_id === mm.id),
+      ...m,
+    };
   });
 
   const updateFieldChanged = (movieId: string, value: number) => {
-    const newMap = new Map(props.movieSceneIndexes);
-    newMap.set(movieId, value);
-    props.onUpdate(newMap);
+    const newValues = props.movieScenes.map((ms) => {
+      if (ms.movie_id === movieId) {
+        return {
+          movie_id: movieId,
+          scene_index: value,
+        };
+      }
+      return ms;
+    });
+    props.onUpdate(newValues);
   };
 
   function renderTableData() {
     return (
       <>
-        {itemsFilter!.map((item, index: number) => (
-          <Row key={item.toString()}>
+        {movieEntries.map((m) => (
+          <Row key={m.movie_id}>
             <Form.Label column xs={9}>
-              {item.name}
+              {m.movie?.name ?? ""}
             </Form.Label>
             <Col xs={3}>
               <Form.Control
                 className="text-input"
                 type="number"
-                value={storeIdx[index] ? storeIdx[index]?.toString() : ""}
+                value={m.scene_index ?? ""}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   updateFieldChanged(
-                    item.id,
+                    m.movie_id,
                     Number.parseInt(
                       e.currentTarget.value ? e.currentTarget.value : "0",
                       10
@@ -64,15 +69,15 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
     );
   }
 
-  if (props.movieSceneIndexes.size > 0) {
+  if (props.movieScenes.length > 0) {
     return (
       <div className="movie-table">
         <Row>
           <Form.Label column xs={9}>
-            Movie
+            {intl.formatMessage({ id: "movie" })}
           </Form.Label>
           <Form.Label column xs={3}>
-            Scene #
+            {intl.formatMessage({ id: "movie_scene_number" })}
           </Form.Label>
         </Row>
         {renderTableData()}

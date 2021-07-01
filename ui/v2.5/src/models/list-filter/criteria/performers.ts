@@ -1,27 +1,14 @@
-import { CriterionModifier } from "src/core/generated-graphql";
-import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
-import { Criterion, CriterionType, ICriterionOption } from "./criterion";
+import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
 
-export class PerformersCriterion extends Criterion {
-  public type: CriterionType = "performers";
-  public parameterName: string = "performers";
-  public modifier = CriterionModifier.IncludesAll;
-  public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.IncludesAll),
-    Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes),
-  ];
-  public options: IOptionType[] = [];
-  public value: ILabeledId[] = [];
+export const PerformersCriterionOption = new ILabeledIdCriterionOption(
+  "performers",
+  "performers",
+  "performers",
+  true
+);
 
-  public encodeValue() {
-    return this.value.map((o) => {
-      return encodeILabeledId(o);
-    });
+export class PerformersCriterion extends ILabeledIdCriterion {
+  constructor() {
+    super(PerformersCriterionOption);
   }
-}
-
-export class PerformersCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("performers");
-  public value: CriterionType = "performers";
 }

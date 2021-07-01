@@ -175,6 +175,28 @@ func (p *RemoveXHRBreakpointParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandRemoveXHRBreakpoint, p, nil)
 }
 
+// SetBreakOnCSPViolationParams sets breakpoint on particular CSP violations.
+type SetBreakOnCSPViolationParams struct {
+	ViolationTypes []CSPViolationType `json:"violationTypes"` // CSP Violations to stop upon.
+}
+
+// SetBreakOnCSPViolation sets breakpoint on particular CSP violations.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-setBreakOnCSPViolation
+//
+// parameters:
+//   violationTypes - CSP Violations to stop upon.
+func SetBreakOnCSPViolation(violationTypes []CSPViolationType) *SetBreakOnCSPViolationParams {
+	return &SetBreakOnCSPViolationParams{
+		ViolationTypes: violationTypes,
+	}
+}
+
+// Do executes DOMDebugger.setBreakOnCSPViolation against the provided context.
+func (p *SetBreakOnCSPViolationParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandSetBreakOnCSPViolation, p, nil)
+}
+
 // SetDOMBreakpointParams sets breakpoint on particular operation with DOM.
 type SetDOMBreakpointParams struct {
 	NodeID cdp.NodeID        `json:"nodeId"` // Identifier of the node to set breakpoint on.
@@ -282,6 +304,7 @@ const (
 	CommandRemoveEventListenerBreakpoint   = "DOMDebugger.removeEventListenerBreakpoint"
 	CommandRemoveInstrumentationBreakpoint = "DOMDebugger.removeInstrumentationBreakpoint"
 	CommandRemoveXHRBreakpoint             = "DOMDebugger.removeXHRBreakpoint"
+	CommandSetBreakOnCSPViolation          = "DOMDebugger.setBreakOnCSPViolation"
 	CommandSetDOMBreakpoint                = "DOMDebugger.setDOMBreakpoint"
 	CommandSetEventListenerBreakpoint      = "DOMDebugger.setEventListenerBreakpoint"
 	CommandSetInstrumentationBreakpoint    = "DOMDebugger.setInstrumentationBreakpoint"

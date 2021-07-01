@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Button, Badge, Card } from "react-bootstrap";
 import { TextUtils } from "src/utils";
@@ -16,7 +17,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
 }) => {
   if (!sceneMarkers?.length) return <div />;
 
-  const primaries: Record<string, GQL.Tag> = {};
+  const primaries: Record<string, GQL.SlimTagDataFragment> = {};
   const primaryTags: Record<string, GQL.SceneMarkerDataFragment[]> = {};
   sceneMarkers.forEach((m) => {
     if (primaryTags[m.primary_tag.id]) primaryTags[m.primary_tag.id].push(m);
@@ -46,7 +47,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
               className="ml-auto"
               onClick={() => onEdit(marker)}
             >
-              Edit
+              <FormattedMessage id="actions.edit" />
             </Button>
           </div>
           <div>{TextUtils.secondsToTimestamp(marker.seconds)}</div>

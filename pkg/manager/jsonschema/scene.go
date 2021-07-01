@@ -61,10 +61,10 @@ type Scene struct {
 func LoadSceneFile(filePath string) (*Scene, error) {
 	var scene Scene
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&scene)

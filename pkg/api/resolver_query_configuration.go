@@ -13,23 +13,32 @@ func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult
 }
 
 func (r *queryResolver) Directory(ctx context.Context, path *string) (*models.Directory, error) {
+
+	directory := &models.Directory{}
+	var err error
+
 	var dirPath = ""
 	if path != nil {
 		dirPath = *path
 	}
 	currentDir := utils.GetDir(dirPath)
+	directories, err := utils.ListDir(currentDir)
+	if err != nil {
+		return directory, err
+	}
 
-	return &models.Directory{
-		Path:        currentDir,
-		Parent:      utils.GetParent(currentDir),
-		Directories: utils.ListDir(currentDir),
-	}, nil
+	directory.Path = currentDir
+	directory.Parent = utils.GetParent(currentDir)
+	directory.Directories = directories
+
+	return directory, err
 }
 
 func makeConfigResult() *models.ConfigResult {
 	return &models.ConfigResult{
 		General:   makeConfigGeneralResult(),
 		Interface: makeConfigInterfaceResult(),
+		Dlna:      makeConfigDLNAResult(),
 	}
 }
 
@@ -53,6 +62,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		CalculateMd5:               config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:   config.GetVideoFileNamingAlgorithm(),
 		ParallelTasks:              config.GetParallelTasks(),
+		PreviewAudio:               config.GetPreviewAudio(),
 		PreviewSegments:            config.GetPreviewSegments(),
 		PreviewSegmentDuration:     config.GetPreviewSegmentDuration(),
 		PreviewExcludeStart:        config.GetPreviewExcludeStart(),
@@ -94,6 +104,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
 	slideshowDelay := config.GetSlideshowDelay()
+	handyKey := config.GetHandyKey()
 
 	return &models.ConfigInterfaceResult{
 		MenuItems:           menuItems,
@@ -107,5 +118,17 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSSEnabled:          &cssEnabled,
 		Language:            &language,
 		SlideshowDelay:      &slideshowDelay,
+		HandyKey:            &handyKey,
+	}
+}
+
+func makeConfigDLNAResult() *models.ConfigDLNAResult {
+	config := config.GetInstance()
+
+	return &models.ConfigDLNAResult{
+		ServerName:     config.GetDLNAServerName(),
+		Enabled:        config.GetDLNADefaultEnabled(),
+		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
+		Interfaces:     config.GetDLNAInterfaces(),
 	}
 }

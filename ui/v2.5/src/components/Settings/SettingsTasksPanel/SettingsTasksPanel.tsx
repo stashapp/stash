@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Button, Form, ProgressBar } from "react-bootstrap";
+import React, { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Button, Form } from "react-bootstrap";
 import {
-  useJobStatus,
-  useMetadataUpdate,
   mutateMetadataImport,
   mutateMetadataClean,
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataExport,
   mutateMigrateHashNaming,
-  mutateStopJob,
   usePlugins,
   mutateRunPluginTask,
   mutateBackupDatabase,
@@ -21,11 +19,13 @@ import { downloadFile } from "src/utils";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
+import { JobTable } from "./JobTable";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
 
 export const SettingsTasksPanel: React.FC = () => {
+  const intl = useIntl();
   const Toast = useToast();
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
@@ -52,78 +52,25 @@ export const SettingsTasksPanel: React.FC = () => {
     setScanGenerateImagePreviews,
   ] = useState<boolean>(false);
 
-  const [status, setStatus] = useState<string>("");
-  const [progress, setProgress] = useState<number>(0);
-
   const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
   const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
   const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
 
-  const jobStatus = useJobStatus();
-  const metadataUpdate = useMetadataUpdate();
-
   const plugins = usePlugins();
 
-  function statusToText(s: string) {
-    switch (s) {
-      case "Idle":
-        return "Idle";
-      case "Scan":
-        return "Scanning for new content";
-      case "Generate":
-        return "Generating supporting files";
-      case "Clean":
-        return "Cleaning the database";
-      case "Export":
-        return "Exporting to JSON";
-      case "Import":
-        return "Importing from JSON";
-      case "Auto Tag":
-        return "Auto tagging scenes";
-      case "Plugin Operation":
-        return "Running Plugin Operation";
-      case "Migrate":
-        return "Migrating";
-      case "Stash-Box Performer Batch Operation":
-        return "Tagging performers from Stash-Box instance";
-      default:
-        return "Idle";
-    }
-  }
-
-  useEffect(() => {
-    if (jobStatus?.data?.jobStatus) {
-      setStatus(statusToText(jobStatus.data.jobStatus.status));
-      const newProgress = jobStatus.data.jobStatus.progress;
-      if (newProgress < 0) {
-        setProgress(-1);
-      } else {
-        setProgress(newProgress * 100);
-      }
-    }
-  }, [jobStatus]);
-
-  useEffect(() => {
-    if (metadataUpdate?.data?.metadataUpdate) {
-      setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
-      const newProgress = metadataUpdate.data.metadataUpdate.progress;
-      if (newProgress < 0) {
-        setProgress(-1);
-      } else {
-        setProgress(newProgress * 100);
-      }
-    }
-  }, [metadataUpdate]);
-
-  function onImport() {
+  async function onImport() {
     setIsImportAlertOpen(false);
-    mutateMetadataImport()
-      .then(() => {
-        jobStatus.refetch();
-      })
-      .catch((e) => {
-        Toast.error(e);
+    try {
+      await mutateMetadataImport();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.import" }) }
+        ),
       });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function renderImportAlert() {
@@ -131,13 +78,14 @@ export const SettingsTasksPanel: React.FC = () => {
       <Modal
         show={isImportAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Import", variant: "danger", onClick: onImport }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.import" }),
+          variant: "danger",
+          onClick: onImport,
+        }}
         cancel={{ onClick: () => setIsImportAlertOpen(false) }}
       >
-        <p>
-          Are you sure you want to import? This will delete the database and
-          re-import from your exported metadata.
-        </p>
+        <p>{intl.formatMessage({ id: "actions.tasks.import_warning" })}</p>
       </Modal>
     );
   }
@@ -146,8 +94,6 @@ export const SettingsTasksPanel: React.FC = () => {
     setIsCleanAlertOpen(false);
     mutateMetadataClean({
       dryRun: cleanDryRun,
-    }).then(() => {
-      jobStatus.refetch();
     });
   }
 
@@ -155,16 +101,12 @@ export const SettingsTasksPanel: React.FC = () => {
     let msg;
     if (cleanDryRun) {
       msg = (
-        <p>
-          Dry Mode selected. No actual deleting will take place, only logging.
-        </p>
+        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
       );
     } else {
       msg = (
         <p>
-          Are you sure you want to Clean? This will delete database information
-          and generated content for all scenes and galleries that are no longer
-          found in the filesystem.
+          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
         </p>
       );
     }
@@ -173,7 +115,11 @@ export const SettingsTasksPanel: React.FC = () => {
       <Modal
         show={isCleanAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Clean", variant: "danger", onClick: onClean }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.clean" }),
+          variant: "danger",
+          onClick: onClean,
+        }}
         cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
       >
         {msg}
@@ -216,8 +162,12 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGenerateSprites,
         scanGeneratePhashes,
       });
-      Toast.success({ content: "Started scan" });
-      jobStatus.refetch();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.scan" }) }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -252,53 +202,25 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onAutoTag(paths?: string[]) {
     try {
       await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({ content: "Started auto tagging" });
-      jobStatus.refetch();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
   }
 
-  function maybeRenderStop() {
-    if (!status || status === "Idle") {
-      return undefined;
-    }
-
-    return (
-      <Form.Group>
-        <Button
-          id="stop"
-          variant="danger"
-          onClick={() => mutateStopJob().then(() => jobStatus.refetch())}
-        >
-          Stop
-        </Button>
-      </Form.Group>
-    );
-  }
-
-  function renderJobStatus() {
-    return (
-      <>
-        <Form.Group>
-          <h5>Status: {status}</h5>
-          {!!status && status !== "Idle" ? (
-            <ProgressBar
-              animated
-              now={progress > -1 ? progress : 100}
-              label={progress > -1 ? `${progress.toFixed(0)}%` : ""}
-            />
-          ) : (
-            ""
-          )}
-        </Form.Group>
-        {maybeRenderStop()}
-      </>
-    );
-  }
-
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
     await mutateRunPluginTask(plugin.id, operation.name);
+    Toast.success({
+      content: intl.formatMessage(
+        { id: "config.tasks.added_job_to_queue" },
+        { operation_name: operation.name }
+      ),
+    });
   }
 
   function renderPluginTasks(plugin: Plugin, pluginTasks: PluginTask[]) {
@@ -349,11 +271,15 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
+    const taskPlugins = plugins.data.plugins.filter(
+      (p) => p.tasks && p.tasks.length > 0
+    );
+
     return (
       <>
         <hr />
-        <h5>Plugin Tasks</h5>
-        {plugins.data.plugins.map((o) => {
+        <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
+        {taskPlugins.map((o) => {
           return (
             <div key={`${o.id}`} className="mb-3">
               <h6>{o.name}</h6>
@@ -366,8 +292,44 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
+  async function onMigrateHashNaming() {
+    try {
+      await mutateMigrateHashNaming();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "actions.hash_migration",
+            }),
+          }
+        ),
+      });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
+  async function onExport() {
+    try {
+      await mutateMetadataExport();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.backup" }) }
+        ),
+      });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
   if (isBackupRunning) {
-    return <LoadingIndicator message="Backup up database" />;
+    return (
+      <LoadingIndicator
+        message={intl.formatMessage({ id: "config.tasks.backing_up_database" })}
+      />
+    );
   }
 
   return (
@@ -378,30 +340,36 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
 
-      <h4>Running Jobs</h4>
+      <h4>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h4>
 
-      {renderJobStatus()}
+      <JobTable />
 
       <hr />
 
-      <h5>Library</h5>
+      <h5>{intl.formatMessage({ id: "library" })}</h5>
       <Form.Group>
         <Form.Check
           id="use-file-metadata"
           checked={useFileMetadata}
-          label="Set name, date, details from metadata (if present)"
+          label={intl.formatMessage({
+            id: "config.tasks.set_name_date_details_from_metadata_if_present",
+          })}
           onChange={() => setUseFileMetadata(!useFileMetadata)}
         />
         <Form.Check
           id="strip-file-extension"
           checked={stripFileExtension}
-          label="Don't include file extension as part of the title"
+          label={intl.formatMessage({
+            id: "config.tasks.dont_include_file_extension_as_part_of_the_title",
+          })}
           onChange={() => setStripFileExtension(!stripFileExtension)}
         />
         <Form.Check
           id="scan-generate-previews"
           checked={scanGeneratePreviews}
-          label="Generate previews during scan (video previews which play when hovering over a scene)"
+          label={intl.formatMessage({
+            id: "config.tasks.generate_video_previews_during_scan",
+          })}
           onChange={() => setScanGeneratePreviews(!scanGeneratePreviews)}
         />
         <div className="d-flex flex-row">
@@ -410,7 +378,9 @@ export const SettingsTasksPanel: React.FC = () => {
             id="scan-generate-image-previews"
             checked={scanGenerateImagePreviews}
             disabled={!scanGeneratePreviews}
-            label="Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)"
+            label={intl.formatMessage({
+              id: "config.tasks.generate_previews_during_scan",
+            })}
             onChange={() =>
               setScanGenerateImagePreviews(!scanGenerateImagePreviews)
             }
@@ -420,13 +390,17 @@ export const SettingsTasksPanel: React.FC = () => {
         <Form.Check
           id="scan-generate-sprites"
           checked={scanGenerateSprites}
-          label="Generate sprites during scan (for the scene scrubber)"
+          label={intl.formatMessage({
+            id: "config.tasks.generate_sprites_during_scan",
+          })}
           onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
         />
         <Form.Check
           id="scan-generate-phashes"
           checked={scanGeneratePhashes}
-          label="Generate phashes during scan (for deduplication and scene identification)"
+          label={intl.formatMessage({
+            id: "config.tasks.generate_phashes_during_scan",
+          })}
           onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
         />
       </Form.Group>
@@ -437,41 +411,41 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onScan()}
         >
-          Scan
+          <FormattedMessage id="actions.scan" />
         </Button>
         <Button
           variant="secondary"
           type="submit"
           onClick={() => setIsScanDialogOpen(true)}
         >
-          Selective Scan
+          <FormattedMessage id="actions.selective_scan" />
         </Button>
         <Form.Text className="text-muted">
-          Scan for new content and add it to the database.
+          {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Auto Tagging</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.auto_tagging" })}</h5>
 
       <Form.Group>
         <Form.Check
           id="autotag-performers"
           checked={autoTagPerformers}
-          label="Performers"
+          label={intl.formatMessage({ id: "performers" })}
           onChange={() => setAutoTagPerformers(!autoTagPerformers)}
         />
         <Form.Check
           id="autotag-studios"
           checked={autoTagStudios}
-          label="Studios"
+          label={intl.formatMessage({ id: "studios" })}
           onChange={() => setAutoTagStudios(!autoTagStudios)}
         />
         <Form.Check
           id="autotag-tags"
           checked={autoTagTags}
-          label="Tags"
+          label={intl.formatMessage({ id: "tags" })}
           onChange={() => setAutoTagTags(!autoTagTags)}
         />
       </Form.Group>
@@ -482,32 +456,34 @@ export const SettingsTasksPanel: React.FC = () => {
           className="mr-2"
           onClick={() => onAutoTag()}
         >
-          Auto Tag
+          <FormattedMessage id="actions.auto_tag" />
         </Button>
         <Button
           variant="secondary"
           type="submit"
           onClick={() => setIsAutoTagDialogOpen(true)}
         >
-          Selective Auto Tag
+          <FormattedMessage id="actions.selective_auto_tag" />
         </Button>
         <Form.Text className="text-muted">
-          Auto-tag content based on filenames.
+          {intl.formatMessage({
+            id: "config.tasks.auto_tag_based_on_filenames",
+          })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Generated Content</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
       <GenerateButton />
 
       <hr />
-      <h5>Maintenance</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
       <Form.Group>
         <Form.Check
           id="clean-dryrun"
           checked={cleanDryRun}
-          label="Only perform a dry run. Don't remove anything"
+          label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
           onChange={() => setCleanDryRun(!cleanDryRun)}
         />
       </Form.Group>
@@ -517,35 +493,27 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsCleanAlertOpen(true)}
         >
-          Clean
+          <FormattedMessage id="actions.clean" />
         </Button>
         <Form.Text className="text-muted">
-          Check for missing files and remove them from the database. This is a
-          destructive action.
+          {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Metadata</h5>
+      <h5>{intl.formatMessage({ id: "metadata" })}</h5>
       <Form.Group>
         <Button
           id="export"
           variant="secondary"
           type="submit"
-          onClick={() =>
-            mutateMetadataExport()
-              .then(() => {
-                jobStatus.refetch();
-              })
-              .catch((e) => Toast.error(e))
-          }
+          onClick={() => onExport()}
         >
-          Full Export
+          <FormattedMessage id="actions.full_export" />
         </Button>
         <Form.Text className="text-muted">
-          Exports the database content into JSON format in the metadata
-          directory.
+          {intl.formatMessage({ id: "config.tasks.export_to_json" })}
         </Form.Text>
       </Form.Group>
 
@@ -555,11 +523,10 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsImportAlertOpen(true)}
         >
-          Full Import
+          <FormattedMessage id="actions.full_import" />
         </Button>
         <Form.Text className="text-muted">
-          Import from exported JSON in the metadata directory. Wipes the
-          existing database.
+          {intl.formatMessage({ id: "config.tasks.import_from_exported_json" })}
         </Form.Text>
       </Form.Group>
 
@@ -569,16 +536,16 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsImportDialogOpen(true)}
         >
-          Import from file
+          <FormattedMessage id="actions.import_from_file" />
         </Button>
         <Form.Text className="text-muted">
-          Incremental import from a supplied export zip file.
+          {intl.formatMessage({ id: "config.tasks.incremental_import" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
 
-      <h5>Backup</h5>
+      <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
       <Form.Group>
         <Button
           id="backup"
@@ -586,12 +553,19 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onBackup()}
         >
-          Backup
+          <FormattedMessage id="actions.backup" />
         </Button>
         <Form.Text className="text-muted">
-          Performs a backup of the database to the same directory as the
-          database, with the filename format{" "}
-          <code>[origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]</code>
+          {intl.formatMessage(
+            { id: "config.tasks.backup_database" },
+            {
+              filename_format: (
+                <code>
+                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                </code>
+              ),
+            }
+          )}
         </Form.Text>
       </Form.Group>
 
@@ -602,10 +576,10 @@ export const SettingsTasksPanel: React.FC = () => {
           type="submit"
           onClick={() => onBackup(true)}
         >
-          Download Backup
+          <FormattedMessage id="actions.download_backup" />
         </Button>
         <Form.Text className="text-muted">
-          Performs a backup of the database and downloads the resulting file.
+          {intl.formatMessage({ id: "config.tasks.backup_and_download" })}
         </Form.Text>
       </Form.Group>
 
@@ -613,23 +587,18 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
 
-      <h5>Migrations</h5>
+      <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
 
       <Form.Group>
         <Button
           id="migrateHashNaming"
           variant="danger"
-          onClick={() =>
-            mutateMigrateHashNaming().then(() => {
-              jobStatus.refetch();
-            })
-          }
+          onClick={() => onMigrateHashNaming()}
         >
-          Rename generated files
+          <FormattedMessage id="actions.rename_gen_files" />
         </Button>
         <Form.Text className="text-muted">
-          Used after changing the Generated file naming hash to rename existing
-          generated files to the new hash format.
+          {intl.formatMessage({ id: "config.tasks.migrate_hash_files" })}
         </Form.Text>
       </Form.Group>
     </>

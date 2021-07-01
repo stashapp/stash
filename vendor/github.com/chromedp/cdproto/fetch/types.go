@@ -23,7 +23,7 @@ func (t RequestID) String() string {
 
 // RequestStage stages of the request to handle. Request will intercept
 // before the request is sent. Response will intercept after the response is
-// received (but before response body is received.
+// received (but before response body is received).
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#type-RequestStage
 type RequestStage string

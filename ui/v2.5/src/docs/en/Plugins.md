@@ -1,6 +1,8 @@
 # Plugins
 
-Stash supports the running external tasks via plugins. Plugins are implemented by calling an external binary.
+Stash supports the running tasks via plugins. Plugins can be implemented using embedded Javascript, or by calling an external binary.
+
+Stash also supports triggering of plugin hooks from specific stash operations.
 
 > **⚠️ Note:** Plugin support is still experimental and is likely to change.
 
@@ -16,74 +18,11 @@ Loaded plugins can be viewed in the Plugins page of the Settings. After plugins 
 
 Plugins provide tasks which can be run from the Tasks page. 
 
-> **⚠️ Note:** It is currently only possible to run one task at a time. No queuing is currently implemented.
+# Creating plugins
 
-# Plugin configuration file format
+See [External Plugins](/help/ExternalPlugins.md) for details for making external plugins.
 
-The basic structure of a plugin configuration file is as follows:
-
-```
-name: <plugin name>
-description: <optional description of the plugin>
-version: <optional version tag>
-url: <optional url>
-exec:
-  - <binary name>
-  - <other args...>
-interface: [interface type]
-errLog: [one of none trace, debug, info, warning, error]
-tasks:
-  - ...
-```
-
-## Plugin process execution
-
-The `exec` field is a list with the first element being the binary that will be executed, and the subsequent elements are the arguments passed. The execution process will search the path for the binary, then will attempt to find the program in the same directory as the plugin configuration file. The `exe` extension is not necessary on Windows systems. 
-
-> **⚠️ Note:** The plugin execution process sets the current working directory to that of the stash process.
-
-Arguments can include the plugin's directory with the special string `{pluginDir}`. 
-
-For example, if the plugin executable `my_plugin` is placed in the `plugins` subdirectory and requires arguments `foo` and `bar`, then the `exec` part of the configuration would look like the following:
-
-```
-exec:
-  - my_plugin
-  - foo
-  - bar
-```
-
-Another example might use a python script to execute the plugin. Assuming the python script `foo.py` is placed in the same directory as the plugin config file, the `exec` fragment would look like the following:
-
-```
-exec:
-  - python
-  - {pluginDir}/foo.py
-```
-
-## Plugin interfaces
-
-The `interface` field currently accepts one of two possible values: `rpc` and `raw`. It defaults to `raw` if not provided.
-
-Plugins may log to the stash server by writing to stderr. By default, data written to stderr will be logged by stash at the `error` level. This default behaviour can be changed by setting the `errLog` field.
-
-Plugins can log for specific levels or log progress by prefixing the output string with special control characters. See `pkg/plugin/common/log` for how this is done in go.
-
-### RPC interface
-
-The RPC interface uses JSON-RPC to communicate with the plugin process. A golang plugin utilising the RPC interface is available in the stash source code under `pkg/plugin/examples/gorpc`. RPC plugins are expected to provide an interface that fulfils the `RPCRunner` interface in `pkg/plugin/common`.
-
-RPC plugins are expected to accept requests asynchronously.
-
-When stopping an RPC plugin task, the stash server sends a stop request to the plugin and relies on the plugin to stop itself.
-
-### Raw interface
-
-Raw interface plugins are not required to conform to any particular interface. The stash server will send the plugin input to the plugin process via its stdin stream, encoded as JSON. Raw interface plugins are not required to read the input.
-
-The stash server reads stdout for the plugin's output. If the output can be decoded as a JSON representation of the plugin output data structure then it will do so. If not, it will treat the entire stdout string as the plugin's output.
-
-When stopping a raw plugin task, the stash server kills the spawned process without warning or signals.
+See [Embedded Plugins](/help/EmbeddedPlugins.md) for details for making embedded plugins.
 
 ## Plugin input
 
@@ -116,7 +55,7 @@ Plugins may accept an input from the stash server. This input is encoded accordi
 }
 ```
 
-The `server_connection` field contains all the information needed for a plugin to access the parent stash server.
+The `server_connection` field contains all the information needed for a plugin to access the parent stash server, if necessary.
 
 ## Plugin output
 
@@ -141,12 +80,97 @@ tasks:
     description: <optional description>
     defaultArgs:
       argKey: argValue
-    execArgs:
-      - <arg to add to the exec line>
 ```
 
 A plugin configuration may contain multiple tasks. 
 
 The `defaultArgs` field is used to add inputs to the plugin input sent to the plugin.
 
-The `execArgs` field allows adding extra parameters to the execution arguments for this task.
+## Hook configuration
+
+Stash supports executing plugin operations via triggering of a hook during a stash operation.
+
+Hooks are configured using a similar structure to tasks:
+
+```
+hooks:
+  - name: <operation name>
+    description: <optional description>
+    triggeredBy:
+      - <trigger types>...
+    defaultArgs:
+      argKey: argValue
+```
+
+**Note:** it is possible for hooks to trigger eachother or themselves if they perform mutations. For safety, hooks will not be triggered if they have already been triggered in the context of the operation. Stash uses cookies to track this context, so it's important for plugins to send cookies when performing operations.
+
+### Trigger types
+
+Trigger types use the following format:
+`<object type>.<operation>.<hook type>`
+
+For example, a post-hook on a scene create operation will be `Scene.Create.Post`.
+
+The following object types are supported:
+* `Scene`
+* `SceneMarker`
+* `Image`
+* `Gallery`
+* `Movie`
+* `Performer`
+* `Studio`
+* `Tag`
+
+The following operations are supported:
+* `Create`
+* `Update`
+* `Destroy`
+
+Currently, only `Post` hook types are supported. These are executed after the operation has completed and the transaction is committed.
+
+### Hook input
+
+Plugin tasks triggered by a hook include an argument named `hookContext` in the `args` object structure. The `hookContext` is structured as follows:
+
+```
+{
+    "id": <object id>,
+    "type": <trigger type>,
+    "input": <operation input>,
+    "inputFields": <fields included in input>
+}
+```
+
+The `input` field contains the JSON graphql input passed to the original operation. This will differ between operations. For hooks triggered by operations in a scan or clean, the input will be nil. `inputFields` is populated in update operations to indicate which fields were passed to the operation, to differentiate between missing and empty fields.
+
+For example, here is the `args` values for a Scene update operation:
+
+```
+{
+    "hookContext": {
+        "type":"Scene.Update.Post",
+        "id":45,
+        "input":{
+            "clientMutationId":null,
+            "id":"45",
+            "title":null,
+            "details":null,
+            "url":null,
+            "date":null,
+            "rating":null,
+            "organized":null,
+            "studio_id":null,
+            "gallery_ids":null,
+            "performer_ids":null,
+            "movies":null,
+            "tag_ids":["21"],
+            "cover_image":null,
+            "stash_ids":null
+        },
+        "inputFields":[
+            "tag_ids",
+            "id"
+        ]
+    }
+}
+```

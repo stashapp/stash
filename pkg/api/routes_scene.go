@@ -16,7 +16,8 @@ import (
 )
 
 type sceneRoutes struct {
-	txnManager models.TransactionManager
+	txnManager  models.TransactionManager
+	sceneServer manager.SceneServer
 }
 
 func (rs sceneRoutes) Routes() chi.Router {
@@ -37,6 +38,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
 		r.Get("/vtt/chapter", rs.ChapterVtt)
+		r.Get("/funscript", rs.Funscript)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -69,12 +71,11 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
-	manager.RegisterStream(filepath, &w)
-	http.ServeFile(w, r, filepath)
-	manager.WaitAndDeregisterStream(filepath, &w, r)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
+	}
+	ss.StreamSceneDirect(scene, w, r)
 }
 
 func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
@@ -178,20 +179,11 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
-	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := utils.FileExists(filepath)
-	if screenshotExists {
-		http.ServeFile(w, r, filepath)
-	} else {
-		var cover []byte
-		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			cover, _ = repo.Scene().GetCover(scene.ID)
-			return nil
-		})
-		utils.ServeImage(cover, w, r)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
 	}
+	ss.ServeScreenshot(scene, w, r)
 }
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
@@ -262,6 +254,12 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/vtt")
 	_, _ = w.Write([]byte(vtt))
+}
+
+func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	funscript := utils.GetFunscriptPath(scene.Path)
+	utils.ServeFileNoCache(w, r, funscript)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {

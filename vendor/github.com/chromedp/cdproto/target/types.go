@@ -34,8 +34,10 @@ type Info struct {
 	Type             string               `json:"type"`
 	Title            string               `json:"title"`
 	URL              string               `json:"url"`
-	Attached         bool                 `json:"attached"`           // Whether the target has an attached client.
-	OpenerID         ID                   `json:"openerId,omitempty"` // Opener target Id
+	Attached         bool                 `json:"attached"`                // Whether the target has an attached client.
+	OpenerID         ID                   `json:"openerId,omitempty"`      // Opener target Id
+	CanAccessOpener  bool                 `json:"canAccessOpener"`         // Whether the target has access to the originating window.
+	OpenerFrameID    cdp.FrameID          `json:"openerFrameId,omitempty"` // Frame id of originating window (is only set if target has an opener).
 	BrowserContextID cdp.BrowserContextID `json:"browserContextId,omitempty"`
 }
 

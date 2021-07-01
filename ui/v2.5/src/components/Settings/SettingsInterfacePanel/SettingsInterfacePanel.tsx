@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { useConfiguration, useConfigureInterface } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -19,6 +20,7 @@ const allMenuItems = [
 const SECONDS_TO_MS = 1000;
 
 export const SettingsInterfacePanel: React.FC = () => {
+  const intl = useIntl();
   const Toast = useToast();
   const { data: config, error, loading } = useConfiguration();
   const [menuItemIds, setMenuItemIds] = useState<string[]>(
@@ -34,6 +36,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("en");
+  const [handyKey, setHandyKey] = useState<string>();
 
   const [updateInterfaceConfig] = useConfigureInterface({
     menuItems: menuItemIds,
@@ -47,6 +50,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     cssEnabled,
     language,
     slideshowDelay,
+    handyKey,
   });
 
   useEffect(() => {
@@ -62,6 +66,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setCSSEnabled(iCfg?.cssEnabled ?? false);
     setLanguage(iCfg?.language ?? "en-US");
     setSlideshowDelay(iCfg?.slideshowDelay ?? 5000);
+    setHandyKey(iCfg?.handyKey ?? "");
   }, [config]);
 
   async function onSave() {
@@ -81,7 +86,16 @@ export const SettingsInterfacePanel: React.FC = () => {
         window.location.reload();
       }
 
-      Toast.success({ content: "Updated config" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl
+              .formatMessage({ id: "configuration" })
+              .toLocaleLowerCase(),
+          }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -92,9 +106,9 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   return (
     <>
-      <h4>User Interface</h4>
+      <h4>{intl.formatMessage({ id: "config.ui.title" })}</h4>
       <Form.Group controlId="language">
-        <h5>Language</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.language.heading" })}</h5>
         <Form.Control
           as="select"
           className="col-4 input-control"
@@ -105,10 +119,11 @@ export const SettingsInterfacePanel: React.FC = () => {
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
+          <option value="zh-TW">繁體中文 (台灣)</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>
-        <h5>Menu items</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.menu_items.heading" })}</h5>
         <CheckboxGroup
           groupId="menu-items"
           items={allMenuItems}
@@ -116,25 +131,31 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={setMenuItemIds}
         />
         <Form.Text className="text-muted">
-          Show or hide different types of content on the navigation bar
+          {intl.formatMessage({ id: "config.ui.menu_items.description" })}
         </Form.Text>
       </Form.Group>
       <Form.Group>
-        <h5>Scene / Marker Wall</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.scene_wall.heading" })}</h5>
         <Form.Check
           id="wall-show-title"
           checked={wallShowTitle}
-          label="Display title and tags"
+          label={intl.formatMessage({
+            id: "config.ui.scene_wall.options.display_title",
+          })}
           onChange={() => setWallShowTitle(!wallShowTitle)}
         />
         <Form.Check
           id="wall-sound-enabled"
           checked={soundOnPreview}
-          label="Enable sound"
+          label={intl.formatMessage({
+            id: "config.ui.scene_wall.options.toggle_sound",
+          })}
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
         <Form.Label htmlFor="wall-preview">
-          <h6>Preview Type</h6>
+          <h6>
+            {intl.formatMessage({ id: "config.ui.preview_type.heading" })}
+          </h6>
         </Form.Label>
         <Form.Control
           as="select"
@@ -145,21 +166,33 @@ export const SettingsInterfacePanel: React.FC = () => {
             setWallPlayback(e.currentTarget.value)
           }
         >
-          <option value="video">Video</option>
-          <option value="animation">Animated Image</option>
-          <option value="image">Static Image</option>
+          <option value="video">
+            {intl.formatMessage({ id: "config.ui.preview_type.options.video" })}
+          </option>
+          <option value="animation">
+            {intl.formatMessage({
+              id: "config.ui.preview_type.options.animated",
+            })}
+          </option>
+          <option value="image">
+            {intl.formatMessage({
+              id: "config.ui.preview_type.options.static",
+            })}
+          </option>
         </Form.Control>
         <Form.Text className="text-muted">
-          Configuration for wall items
+          {intl.formatMessage({ id: "config.ui.preview_type.description" })}
         </Form.Text>
       </Form.Group>
 
       <Form.Group>
-        <h5>Scene List</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.scene_list.heading" })}</h5>
         <Form.Check
           id="show-text-studios"
           checked={showStudioAsText}
-          label="Show Studios as text"
+          label={intl.formatMessage({
+            id: "config.ui.scene_list.options.show_studio_as_text",
+          })}
           onChange={() => {
             setShowStudioAsText(!showStudioAsText);
           }}
@@ -167,11 +200,13 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h5>Scene Player</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.scene_player.heading" })}</h5>
         <Form.Group id="auto-start-video">
           <Form.Check
             checked={autostartVideo}
-            label="Auto-start video"
+            label={intl.formatMessage({
+              id: "config.ui.scene_player.options.auto_start_video",
+            })}
             onChange={() => {
               setAutostartVideo(!autostartVideo);
             }}
@@ -179,21 +214,26 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="max-loop-duration">
-          <h6>Maximum loop duration</h6>
+          <h6>
+            {intl.formatMessage({ id: "config.ui.max_loop_duration.heading" })}
+          </h6>
           <DurationInput
             className="row col col-4"
             numericValue={maximumLoopDuration}
             onValueChange={(duration) => setMaximumLoopDuration(duration ?? 0)}
           />
           <Form.Text className="text-muted">
-            Maximum scene duration where scene player will loop the video - 0 to
-            disable
+            {intl.formatMessage({
+              id: "config.ui.max_loop_duration.description",
+            })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
 
       <Form.Group id="slideshow-delay">
-        <h5>Slideshow Delay</h5>
+        <h5>
+          {intl.formatMessage({ id: "config.ui.slideshow_delay.heading" })}
+        </h5>
         <Form.Control
           className="col col-sm-6 text-input"
           type="number"
@@ -205,16 +245,18 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
         <Form.Text className="text-muted">
-          Slideshow is available in galleries when in wall view mode
+          {intl.formatMessage({ id: "config.ui.slideshow_delay.description" })}
         </Form.Text>
       </Form.Group>
 
       <Form.Group>
-        <h5>Custom CSS</h5>
+        <h5>{intl.formatMessage({ id: "config.ui.custom_css.heading" })}</h5>
         <Form.Check
           id="custom-css"
           checked={cssEnabled}
-          label="Custom CSS enabled"
+          label={intl.formatMessage({
+            id: "config.ui.custom_css.option_label",
+          })}
           onChange={() => {
             setCSSEnabled(!cssEnabled);
           }}
@@ -230,13 +272,27 @@ export const SettingsInterfacePanel: React.FC = () => {
           className="col col-sm-6 text-input code"
         />
         <Form.Text className="text-muted">
-          Page must be reloaded for changes to take effect.
+          {intl.formatMessage({ id: "config.ui.custom_css.description" })}
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <h5>{intl.formatMessage({ id: "config.ui.handy_connection_key" })}</h5>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          value={handyKey}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setHandyKey(e.currentTarget.value);
+          }}
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({ id: "config.ui.handy_connection_key_desc" })}
         </Form.Text>
       </Form.Group>
 
       <hr />
       <Button variant="primary" onClick={() => onSave()}>
-        Save
+        {intl.formatMessage({ id: "actions.save" })}
       </Button>
     </>
   );

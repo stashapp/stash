@@ -10,6 +10,7 @@ import (
 
 type Tag struct {
 	Name      string          `json:"name,omitempty"`
+	Aliases   []string        `json:"aliases,omitempty"`
 	Image     string          `json:"image,omitempty"`
 	CreatedAt models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt models.JSONTime `json:"updated_at,omitempty"`
@@ -18,10 +19,10 @@ type Tag struct {
 func LoadTagFile(filePath string) (*Tag, error) {
 	var tag Tag
 	file, err := os.Open(filePath)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&tag)

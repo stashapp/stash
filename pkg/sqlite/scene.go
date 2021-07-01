@@ -353,24 +353,37 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 		query.not(qb.makeFilter(sceneFilter.Not))
 	}
 
-	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Path, "scenes.path"))
-	query.handleCriterionFunc(intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
-	query.handleCriterionFunc(intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
-	query.handleCriterionFunc(boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
-	query.handleCriterionFunc(durationCriterionHandler(sceneFilter.Duration, "scenes.duration"))
-	query.handleCriterionFunc(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
-	query.handleCriterionFunc(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
-	query.handleCriterionFunc(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
-	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
-	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id"))
+	query.handleCriterion(stringCriterionHandler(sceneFilter.Path, "scenes.path"))
+	query.handleCriterion(stringCriterionHandler(sceneFilter.Title, "scenes.title"))
+	query.handleCriterion(stringCriterionHandler(sceneFilter.Details, "scenes.details"))
+	query.handleCriterion(stringCriterionHandler(sceneFilter.Oshash, "scenes.oshash"))
+	query.handleCriterion(stringCriterionHandler(sceneFilter.Checksum, "scenes.checksum"))
+	query.handleCriterion(phashCriterionHandler(sceneFilter.Phash))
+	query.handleCriterion(intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
+	query.handleCriterion(intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
+	query.handleCriterion(boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
+	query.handleCriterion(durationCriterionHandler(sceneFilter.Duration, "scenes.duration"))
+	query.handleCriterion(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
+	query.handleCriterion(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
+	query.handleCriterion(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
+	query.handleCriterion(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
 
-	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
-	query.handleCriterionFunc(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
-	query.handleCriterionFunc(scenePerformersCriterionHandler(qb, sceneFilter.Performers))
-	query.handleCriterionFunc(scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
-	query.handleCriterionFunc(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
-	query.handleCriterionFunc(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
-	query.handleCriterionFunc(scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
+		if sceneFilter.StashID != nil {
+			qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
+			stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(f)
+		}
+	}))
+
+	query.handleCriterion(boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
+
+	query.handleCriterion(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
+	query.handleCriterion(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
+	query.handleCriterion(scenePerformersCriterionHandler(qb, sceneFilter.Performers))
+	query.handleCriterion(scenePerformerCountCriterionHandler(qb, sceneFilter.PerformerCount))
+	query.handleCriterion(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
+	query.handleCriterion(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
+	query.handleCriterion(scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 
 	return query
 }
@@ -400,10 +413,6 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 	filter := qb.makeFilter(sceneFilter)
 
-	if sceneFilter.StashID != nil {
-		qb.stashIDRepository().join(filter, "scene_stash_ids", "scenes.id")
-	}
-
 	query.addFilter(filter)
 
 	qb.setSceneSort(&query, findFilter)
@@ -426,12 +435,27 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	return scenes, countResult, nil
 }
 
-func appendClause(clauses []string, clause string) []string {
-	if clause != "" {
-		return append(clauses, clause)
-	}
+func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if phashFilter != nil {
+			// convert value to int from hex
+			// ignore errors
+			value, _ := utils.StringToPhash(phashFilter.Value)
 
-	return clauses
+			if modifier := phashFilter.Modifier; phashFilter.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierEquals:
+					f.addWhere("scenes.phash = ?", value)
+				case models.CriterionModifierNotEquals:
+					f.addWhere("scenes.phash != ?", value)
+				case models.CriterionModifierIsNull:
+					f.addWhere("scenes.phash IS NULL")
+				case models.CriterionModifierNotNull:
+					f.addWhere("scenes.phash IS NOT NULL")
+				}
+			}
+		}
+	}
 }
 
 func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string) criterionHandlerFunc {
@@ -523,6 +547,9 @@ func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) cr
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
+			case "stash_id":
+				qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
+				f.addWhere("scene_stash_ids.scene_id IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
@@ -587,11 +614,14 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 	return h.handler(performerCount)
 }
 
-func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addJoin("studios", "studio", "studio.id = scenes.studio_id")
+func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := hierarchicalMultiCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		foreignTable: studioTable,
+		foreignFK:    studioIDColumn,
+		derivedTable: "studio",
+		parentFK:     "parent_id",
 	}
-	h := qb.getMultiCriterionHandlerBuilder("studio", "", studioIDColumn, addJoinsFunc)
 
 	return h.handler(studios)
 }
@@ -634,31 +664,6 @@ func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, performerTagsFilt
 	}
 }
 
-func handleScenePerformerTagsCriterion(query *queryBuilder, performerTagsFilter *models.MultiCriterionInput) {
-	if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
-		for _, tagID := range performerTagsFilter.Value {
-			query.addArg(tagID)
-		}
-
-		query.body += " LEFT JOIN performers_tags AS performer_tags_join on performers_join.performer_id = performer_tags_join.performer_id"
-
-		if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
-			// includes any of the provided ids
-			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
-		} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
-			// includes all of the provided ids
-			query.addWhere("performer_tags_join.tag_id IN " + getInBinding(len(performerTagsFilter.Value)))
-			query.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
-		} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-			query.addWhere(fmt.Sprintf(`not exists
-				(select performers_scenes.performer_id from performers_scenes
-					left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
-					performers_scenes.scene_id = scenes.id AND
-					performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))))
-		}
-	}
-}
-
 func (qb *sceneQueryBuilder) getDefaultSceneSort() string {
 	return " ORDER BY scenes.path, scenes.date ASC "
 }
@@ -672,7 +677,7 @@ func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *model
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
-		query.join(moviesScenesTable, "movies_join", "scenes.id")
+		query.join(moviesScenesTable, "movies_join", "scenes.id = movies_join.scene_id")
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY movies_join.scene_index %s", getSortDirection(direction))
 	case "tag_count":
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)

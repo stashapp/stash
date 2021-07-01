@@ -133,24 +133,9 @@ func CloseTarget(targetID ID) *CloseTargetParams {
 	}
 }
 
-// CloseTargetReturns return values.
-type CloseTargetReturns struct {
-	Success bool `json:"success,omitempty"`
-}
-
 // Do executes Target.closeTarget against the provided context.
-//
-// returns:
-//   success
-func (p *CloseTargetParams) Do(ctx context.Context) (success bool, err error) {
-	// execute
-	var res CloseTargetReturns
-	err = cdp.Execute(ctx, CommandCloseTarget, p, &res)
-	if err != nil {
-		return false, err
-	}
-
-	return res.Success, nil
+func (p *CloseTargetParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandCloseTarget, p, nil)
 }
 
 // ExposeDevToolsProtocolParams inject object to the target's main frame that
@@ -284,7 +269,7 @@ func (p *GetBrowserContextsParams) Do(ctx context.Context) (browserContextIds []
 
 // CreateTargetParams creates a new page.
 type CreateTargetParams struct {
-	URL                     string               `json:"url"`                               // The initial URL the page will be navigated to.
+	URL                     string               `json:"url"`                               // The initial URL the page will be navigated to. An empty string indicates about:blank.
 	Width                   int64                `json:"width,omitempty"`                   // Frame width in DIP (headless chrome only).
 	Height                  int64                `json:"height,omitempty"`                  // Frame height in DIP (headless chrome only).
 	BrowserContextID        cdp.BrowserContextID `json:"browserContextId,omitempty"`        // The browser context to create the page in.
@@ -298,7 +283,7 @@ type CreateTargetParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-createTarget
 //
 // parameters:
-//   url - The initial URL the page will be navigated to.
+//   url - The initial URL the page will be navigated to. An empty string indicates about:blank.
 func CreateTarget(url string) *CreateTargetParams {
 	return &CreateTargetParams{
 		URL: url,

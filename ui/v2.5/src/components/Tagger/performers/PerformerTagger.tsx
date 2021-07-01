@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useLocalForage } from "src/hooks";
@@ -9,7 +10,8 @@ import { LoadingIndicator, Modal } from "src/components/Shared";
 import {
   stashBoxPerformerQuery,
   useConfiguration,
-  useMetadataUpdate,
+  useJobsSubscribe,
+  mutateStashBoxBatchPerformerTag,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 
@@ -24,6 +26,11 @@ import {
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 
+type JobFragment = Pick<
+  GQL.Job,
+  "id" | "status" | "subTasks" | "description" | "progress"
+>;
+
 const CLASSNAME = "PerformerTagger";
 
 interface IPerformerTaggerListProps {
@@ -32,6 +39,8 @@ interface IPerformerTaggerListProps {
   isIdle: boolean;
   config: ITaggerConfig;
   stashBoxes?: GQL.StashBox[];
+  onBatchAdd: (performerInput: string) => void;
+  onBatchUpdate: (ids: string[] | undefined, refresh: boolean) => void;
 }
 
 const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
@@ -40,7 +49,10 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   isIdle,
   config,
   stashBoxes,
+  onBatchAdd,
+  onBatchUpdate,
 }) => {
+  const intl = useIntl();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
     Record<string, IStashBoxPerformer[]>
@@ -73,7 +85,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const [showBatchAdd, setShowBatchAdd] = useState(false);
   const [showBatchUpdate, setShowBatchUpdate] = useState(false);
   const performerInput = useRef<HTMLTextAreaElement | null>(null);
-  const [doBatchQuery] = GQL.useStashBoxBatchPerformerTagMutation();
 
   const [error, setError] = useState<
     Record<string, { message?: string; details?: string } | undefined>
@@ -138,40 +149,15 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       .finally(() => setLoadingUpdate(undefined));
   };
 
-  const handleBatchAdd = () => {
+  async function handleBatchAdd() {
     if (performerInput.current) {
-      const names = performerInput.current.value
-        .split(",")
-        .map((n) => n.trim())
-        .filter((n) => n.length > 0);
-
-      if (names.length > 0) {
-        doBatchQuery({
-          variables: {
-            input: {
-              performer_names: names,
-              endpoint: selectedEndpoint.index,
-              refresh: false,
-            },
-          },
-        });
-      }
+      onBatchAdd(performerInput.current.value);
     }
     setShowBatchAdd(false);
-  };
+  }
 
   const handleBatchUpdate = () => {
-    const ids = !queryAll ? performers.map((p) => p.id) : undefined;
-    doBatchQuery({
-      variables: {
-        input: {
-          performer_ids: ids,
-          endpoint: selectedEndpoint.index,
-          refresh,
-          exclude_fields: config.excludedPerformerFields ?? [],
-        },
-      },
-    });
+    onBatchUpdate(!queryAll ? performers.map((p) => p.id) : undefined, refresh);
     setShowBatchUpdate(false);
   };
 
@@ -261,7 +247,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
                   )
                 }
               >
-                Search
+                <FormattedMessage id="actions.search" />
               </Button>
             </InputGroup.Append>
           </InputGroup>
@@ -400,7 +386,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         header="Update Performers"
         accept={{ text: "Update Performers", onClick: handleBatchUpdate }}
         cancel={{
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "danger",
           onClick: () => setShowBatchUpdate(false),
         }}
@@ -470,7 +456,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         header="Add New Performers"
         accept={{ text: "Add Performers", onClick: handleBatchAdd }}
         cancel={{
-          text: "Cancel",
+          text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "danger",
           onClick: () => setShowBatchAdd(false),
         }}
@@ -506,7 +492,7 @@ interface ITaggerProps {
 }
 
 export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
-  const jobStatus = useMetadataUpdate();
+  const jobsSubscribe = useJobsSubscribe();
   const stashConfig = useConfiguration();
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
@@ -514,6 +500,28 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   );
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
+
+  const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
+  const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
+
+  // monitor batch operation
+  useEffect(() => {
+    if (!jobsSubscribe.data) {
+      return;
+    }
+
+    const event = jobsSubscribe.data.jobsSubscribe;
+    if (event.job.id !== batchJobID) {
+      return;
+    }
+
+    if (event.type !== GQL.JobStatusUpdateType.Remove) {
+      setBatchJob(event.job);
+    } else {
+      setBatchJob(undefined);
+      setBatchJobID(undefined);
+    }
+  }, [jobsSubscribe, batchJobID]);
 
   if (!config) return <LoadingIndicator />;
 
@@ -529,12 +537,73 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const selectedEndpoint =
     stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
 
-  const progress =
-    jobStatus.data?.metadataUpdate.status ===
-      "Stash-Box Performer Batch Operation" &&
-    jobStatus.data.metadataUpdate.progress >= 0
-      ? jobStatus.data.metadataUpdate.progress * 100
-      : null;
+  async function batchAdd(performerInput: string) {
+    if (performerInput && selectedEndpoint) {
+      const names = performerInput
+        .split(",")
+        .map((n) => n.trim())
+        .filter((n) => n.length > 0);
+
+      if (names.length > 0) {
+        const ret = await mutateStashBoxBatchPerformerTag({
+          performer_names: names,
+          endpoint: selectedEndpointIndex,
+          refresh: false,
+        });
+
+        setBatchJobID(ret.data?.stashBoxBatchPerformerTag);
+      }
+    }
+  }
+
+  async function batchUpdate(ids: string[] | undefined, refresh: boolean) {
+    if (config && selectedEndpoint) {
+      const ret = await mutateStashBoxBatchPerformerTag({
+        performer_ids: ids,
+        endpoint: selectedEndpointIndex,
+        refresh,
+        exclude_fields: config.excludedPerformerFields ?? [],
+      });
+
+      setBatchJobID(ret.data?.stashBoxBatchPerformerTag);
+    }
+  }
+
+  // const progress =
+  //   jobStatus.data?.metadataUpdate.status ===
+  //     "Stash-Box Performer Batch Operation" &&
+  //   jobStatus.data.metadataUpdate.progress >= 0
+  //     ? jobStatus.data.metadataUpdate.progress * 100
+  //     : null;
+
+  function renderStatus() {
+    if (batchJob) {
+      const progress =
+        batchJob.progress !== undefined && batchJob.progress !== null
+          ? batchJob.progress * 100
+          : undefined;
+      return (
+        <Form.Group className="px-4">
+          <h5>Status: Tagging performers</h5>
+          {progress !== undefined && (
+            <ProgressBar
+              animated
+              now={progress}
+              label={`${progress.toFixed(0)}%`}
+            />
+          )}
+        </Form.Group>
+      );
+    }
+
+    if (batchJobID !== undefined) {
+      return (
+        <Form.Group className="px-4">
+          <h5>Status: Tagging job queued</h5>
+        </Form.Group>
+      );
+    }
+  }
 
   return (
     <>
@@ -543,16 +612,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         onClose={() => setShowManual(false)}
         defaultActiveTab="Tagger.md"
       />
-      {progress !== null && (
-        <Form.Group className="px-4">
-          <h5>Status: Tagging performers</h5>
-          <ProgressBar
-            animated
-            now={progress}
-            label={`${progress.toFixed(0)}%`}
-          />
-        </Form.Group>
-      )}
+      {renderStatus()}
       <div className="tagger-container mx-md-auto">
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
@@ -581,9 +641,11 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
                 endpoint: selectedEndpoint.endpoint,
                 index: selectedEndpointIndex,
               }}
-              isIdle={progress === null}
+              isIdle={batchJobID === undefined}
               config={config}
               stashBoxes={stashConfig.data?.configuration.general.stashBoxes}
+              onBatchAdd={batchAdd}
+              onBatchUpdate={batchUpdate}
             />
           </>
         ) : (

@@ -1,6 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared";
+import { FormattedMessage } from "react-intl";
 
 interface IGalleryFileInfoPanelProps {
   gallery: GQL.GalleryDataFragment;
@@ -12,7 +13,9 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
   function renderChecksum() {
     return (
       <div className="row">
-        <span className="col-4">Checksum</span>
+        <span className="col-4">
+          <FormattedMessage id="media_info.checksum" />
+        </span>
         <TruncatedText className="col-8" text={props.gallery.checksum} />
       </div>
     );
@@ -23,7 +26,9 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
 
     return (
       <div className="row">
-        <span className="col-4">Path</span>
+        <span className="col-4">
+          <FormattedMessage id="path" />
+        </span>
         <a href={filePath} className="col-8">
           <TruncatedText text={filePath} />
         </a>

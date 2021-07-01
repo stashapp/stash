@@ -13,7 +13,7 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
     const movieValue = { id: movie.id!, label: movie.name! };
     // if movie is already present, then we modify it, otherwise add
     let movieCriterion = filter.criteria.find((c) => {
-      return c.type === "movies";
+      return c.criterionOption.type === "movies";
     }) as MoviesCriterion;
 
     if (

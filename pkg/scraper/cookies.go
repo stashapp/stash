@@ -20,7 +20,6 @@ import (
 func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && !driverOptions.UseCDP {
-		var foundURLs []*url.URL
 
 		for _, ckURL := range driverOptions.Cookies { // go through all cookies
 			url, err := url.Parse(ckURL.CookieURL) // CookieURL must be valid, include schema
@@ -44,12 +43,8 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 
 				if jar.Cookies(url) == nil {
 					logger.Warnf("Setting jar cookies for %s failed", url.String())
-				} else {
-
-					foundURLs = append(foundURLs, url)
 				}
 			}
-
 		}
 	}
 }
@@ -100,7 +95,7 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 
 			for _, ckURL := range driverOptions.Cookies {
 				for _, cookie := range ckURL.Cookies {
-					success, err := network.SetCookie(cookie.Name, getCookieValue(cookie)).
+					err := network.SetCookie(cookie.Name, getCookieValue(cookie)).
 						WithExpires(&expr).
 						WithDomain(cookie.Domain).
 						WithPath(cookie.Path).
@@ -108,12 +103,8 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 						WithSecure(false).
 						Do(ctx)
 					if err != nil {
-						return err
+						return fmt.Errorf("could not set chrome cookie %s: %s", cookie.Name, err)
 					}
-					if !success {
-						return fmt.Errorf("could not set chrome cookie %s", cookie.Name)
-					}
-
 				}
 			}
 			return nil

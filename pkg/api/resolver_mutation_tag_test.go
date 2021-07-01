@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/plugin"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,7 +16,8 @@ import (
 // TODO - move this into a common area
 func newResolver() *Resolver {
 	return &Resolver{
-		txnManager: mocks.NewTransactionManager(),
+		txnManager:   mocks.NewTransactionManager(),
+		hookExecutor: &mockHookExecutor{},
 	}
 }
 
@@ -26,15 +28,47 @@ const existingTagID = 1
 const existingTagName = "existingTagName"
 const newTagID = 2
 
+type mockHookExecutor struct{}
+
+func (*mockHookExecutor) ExecutePostHooks(ctx context.Context, id int, hookType plugin.HookTriggerEnum, input interface{}, inputFields []string) {
+}
+
 func TestTagCreate(t *testing.T) {
 	r := newResolver()
 
 	tagRW := r.txnManager.(*mocks.TransactionManager).Tag().(*mocks.TagReaderWriter)
-	tagRW.On("FindByName", existingTagName, true).Return(&models.Tag{
-		ID:   existingTagID,
-		Name: existingTagName,
-	}, nil).Once()
-	tagRW.On("FindByName", errTagName, true).Return(nil, nil).Once()
+
+	pp := 1
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	tagFilterForName := func(n string) *models.TagFilterType {
+		return &models.TagFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    n,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+	}
+
+	tagFilterForAlias := func(n string) *models.TagFilterType {
+		return &models.TagFilterType{
+			Aliases: &models.StringCriterionInput{
+				Value:    n,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+	}
+
+	tagRW.On("Query", tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
+		{
+			ID:   existingTagID,
+			Name: existingTagName,
+		},
+	}, 1, nil).Once()
+	tagRW.On("Query", tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
 
 	expectedErr := errors.New("TagCreate error")
 	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
@@ -55,11 +89,14 @@ func TestTagCreate(t *testing.T) {
 	r = newResolver()
 	tagRW = r.txnManager.(*mocks.TransactionManager).Tag().(*mocks.TagReaderWriter)
 
-	tagRW.On("FindByName", tagName, true).Return(nil, nil).Once()
-	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(&models.Tag{
+	tagRW.On("Query", tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
+	newTag := &models.Tag{
 		ID:   newTagID,
 		Name: tagName,
-	}, nil)
+	}
+	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(newTag, nil)
+	tagRW.On("Find", newTagID).Return(newTag, nil)
 
 	tag, err := r.Mutation().TagCreate(context.TODO(), models.TagCreateInput{
 		Name: tagName,

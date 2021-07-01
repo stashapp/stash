@@ -70,12 +70,10 @@ func (t *rpcPluginTask) Start() error {
 		Client: t.client,
 	}
 
-	input := t.buildPluginInput()
-
 	t.done = make(chan *rpc.Call, 1)
 	result := common.PluginOutput{}
 	t.waitGroup.Add(1)
-	iface.RunAsync(input, &result, t.done)
+	iface.RunAsync(t.input, &result, t.done)
 	go t.waitToFinish(&result)
 
 	t.started = true

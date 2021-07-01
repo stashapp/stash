@@ -83,8 +83,20 @@ func TestTagQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, tags, 2)
-		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
-		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
+		lcName := tagNames[tagIdxWithScene]
+		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[0].Name))
+		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[1].Name))
+
+		// find by alias
+		name = getTagStringValue(tagIdxWithScene, "Alias")
+		tags, err = tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithScene], tags[0].ID)
 
 		return nil
 	})
@@ -135,6 +147,100 @@ func TestTagFindByNames(t *testing.T) {
 
 		return nil
 	})
+}
+
+func TestTagQueryName(t *testing.T) {
+	const tagIdx = 1
+	tagName := getSceneStringValue(tagIdx, "Name")
+
+	nameCriterion := &models.StringCriterionInput{
+		Value:    tagName,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	tagFilter := &models.TagFilterType{
+		Name: nameCriterion,
+	}
+
+	verifyFn := func(tag *models.Tag, r models.Repository) {
+		verifyString(t, tag.Name, *nameCriterion)
+	}
+
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierMatchesRegex
+	nameCriterion.Value = "tag_.*1_Name"
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+}
+
+func TestTagQueryAlias(t *testing.T) {
+	const tagIdx = 1
+	tagName := getSceneStringValue(tagIdx, "Alias")
+
+	aliasCriterion := &models.StringCriterionInput{
+		Value:    tagName,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	tagFilter := &models.TagFilterType{
+		Aliases: aliasCriterion,
+	}
+
+	verifyFn := func(tag *models.Tag, r models.Repository) {
+		aliases, err := r.Tag().GetAliases(tag.ID)
+		if err != nil {
+			t.Errorf("Error querying tags: %s", err.Error())
+		}
+
+		var alias string
+		if len(aliases) > 0 {
+			alias = aliases[0]
+		}
+
+		verifyString(t, alias, *aliasCriterion)
+	}
+
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierMatchesRegex
+	aliasCriterion.Value = "tag_.*1_Alias"
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+}
+
+func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(t *models.Tag, r models.Repository)) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Tag()
+
+		tags := queryTags(t, sqb, tagFilter, findFilter)
+
+		for _, tag := range tags {
+			verifyFn(tag, r)
+		}
+
+		return nil
+	})
+}
+
+func queryTags(t *testing.T, qb models.TagReader, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) []*models.Tag {
+	t.Helper()
+	tags, _, err := qb.Query(tagFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying tags: %s", err.Error())
+	}
+
+	return tags
 }
 
 func TestTagQueryIsMissingImage(t *testing.T) {
@@ -454,6 +560,149 @@ func TestTagDestroyTagImage(t *testing.T) {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Nil(t, storedImage)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestTagUpdateAlias(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+
+		// create tag to test against
+		const name = "TestTagUpdateAlias"
+		tag := models.Tag{
+			Name: name,
+		}
+		created, err := qb.Create(tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		aliases := []string{"alias1", "alias2"}
+		err = qb.UpdateAliases(created.ID, aliases)
+		if err != nil {
+			return fmt.Errorf("Error updating tag aliases: %s", err.Error())
+		}
+
+		// ensure aliases set
+		storedAliases, err := qb.GetAliases(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting aliases: %s", err.Error())
+		}
+		assert.Equal(t, aliases, storedAliases)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestTagMerge(t *testing.T) {
+	assert := assert.New(t)
+
+	// merge tests - perform these in a transaction that we'll rollback
+	if err := withRollbackTxn(func(r models.Repository) error {
+		qb := r.Tag()
+
+		// try merging into same tag
+		err := qb.Merge([]int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])
+		assert.NotNil(err)
+
+		// merge everything into tagIdxWithScene
+		srcIdxs := []int{
+			tagIdx1WithScene,
+			tagIdx2WithScene,
+			tagIdxWithPrimaryMarker,
+			tagIdxWithMarker,
+			tagIdxWithCoverImage,
+			tagIdxWithImage,
+			tagIdx1WithImage,
+			tagIdx2WithImage,
+			tagIdxWithPerformer,
+			tagIdx1WithPerformer,
+			tagIdx2WithPerformer,
+			tagIdxWithGallery,
+			tagIdx1WithGallery,
+			tagIdx2WithGallery,
+		}
+		var srcIDs []int
+		for _, idx := range srcIdxs {
+			srcIDs = append(srcIDs, tagIDs[idx])
+		}
+
+		destID := tagIDs[tagIdxWithScene]
+		if err = qb.Merge(srcIDs, destID); err != nil {
+			return err
+		}
+
+		// ensure other tags are deleted
+		for _, tagId := range srcIDs {
+			t, err := qb.Find(tagId)
+			if err != nil {
+				return err
+			}
+
+			assert.Nil(t)
+		}
+
+		// ensure aliases are set on the destination
+		destAliases, err := qb.GetAliases(destID)
+		if err != nil {
+			return err
+		}
+		for _, tagIdx := range srcIdxs {
+			assert.Contains(destAliases, getTagStringValue(tagIdx, "Name"))
+		}
+
+		// ensure scene points to new tag
+		sceneTagIDs, err := r.Scene().GetTagIDs(sceneIDs[sceneIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(sceneTagIDs, destID)
+
+		// ensure marker points to new tag
+		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithScene])
+		if err != nil {
+			return err
+		}
+
+		assert.Equal(destID, marker.PrimaryTagID)
+
+		markerTagIDs, err := r.SceneMarker().GetTagIDs(marker.ID)
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(markerTagIDs, destID)
+
+		// ensure image points to new tag
+		imageTagIDs, err := r.Image().GetTagIDs(imageIDs[imageIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(imageTagIDs, destID)
+
+		// ensure gallery points to new tag
+		galleryTagIDs, err := r.Gallery().GetTagIDs(galleryIDs[galleryIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(galleryTagIDs, destID)
+
+		// ensure performer points to new tag
+		performerTagIDs, err := r.Gallery().GetTagIDs(performerIDs[performerIdxWithTwoTags])
+		if err != nil {
+			return err
+		}
+
+		assert.Contains(performerTagIDs, destID)
 
 		return nil
 	}); err != nil {

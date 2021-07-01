@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
@@ -55,4 +56,12 @@ func (r *sceneMarkerResolver) Preview(ctx context.Context, obj *models.SceneMark
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	sceneID := int(obj.SceneID.Int64)
 	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamPreviewURL(obj.ID), nil
+}
+
+func (r *sceneMarkerResolver) CreatedAt(ctx context.Context, obj *models.SceneMarker) (*time.Time, error) {
+	return &obj.CreatedAt.Timestamp, nil
+}
+
+func (r *sceneMarkerResolver) UpdatedAt(ctx context.Context, obj *models.SceneMarker) (*time.Time, error) {
+	return &obj.UpdatedAt.Timestamp, nil
 }

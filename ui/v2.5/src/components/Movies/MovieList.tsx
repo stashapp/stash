@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useIntl } from "react-intl";
 import _ from "lodash";
 import Mousetrap from "mousetrap";
 import { useHistory } from "react-router-dom";
@@ -18,22 +19,23 @@ import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { MovieCard } from "./MovieCard";
 
 export const MovieList: React.FC = () => {
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
   const otherOperations = [
     {
-      text: "View Random",
+      text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ];
@@ -58,8 +60,8 @@ export const MovieList: React.FC = () => {
     <DeleteEntityDialog
       selected={selectedMovies}
       onClose={onClose}
-      singularEntity="movie"
-      pluralEntity="movies"
+      singularEntity={intl.formatMessage({ id: "movie" })}
+      pluralEntity={intl.formatMessage({ id: "movies" })}
       destroyMutation={useMoviesDestroy}
     />
   );

@@ -209,10 +209,10 @@ func loadScraperFromYAML(id string, reader io.Reader) (*config, error) {
 
 func loadScraperFromYAMLFile(path string) (*config, error) {
 	file, err := os.Open(path)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	// set id to the filename
 	id := filepath.Base(path)

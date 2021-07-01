@@ -7,10 +7,16 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 )
 
+type hookExecutor interface {
+	ExecutePostHooks(ctx context.Context, id int, hookType plugin.HookTriggerEnum, input interface{}, inputFields []string)
+}
+
 type Resolver struct {
-	txnManager models.TransactionManager
+	txnManager   models.TransactionManager
+	hookExecutor hookExecutor
 }
 
 func (r *Resolver) Gallery() models.GalleryResolver {
@@ -208,13 +214,10 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 				return err
 			}
 			_, hasKey := tags[markerPrimaryTag.ID]
-			var sceneMarkerTag *models.SceneMarkerTag
 			if !hasKey {
-				sceneMarkerTag = &models.SceneMarkerTag{Tag: markerPrimaryTag}
+				sceneMarkerTag := &models.SceneMarkerTag{Tag: markerPrimaryTag}
 				tags[markerPrimaryTag.ID] = sceneMarkerTag
 				keys = append(keys, markerPrimaryTag.ID)
-			} else {
-				sceneMarkerTag = tags[markerPrimaryTag.ID]
 			}
 			tags[markerPrimaryTag.ID].SceneMarkers = append(tags[markerPrimaryTag.ID].SceneMarkers, sceneMarker)
 		}

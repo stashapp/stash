@@ -19,7 +19,7 @@ import {
   useTagsDestroy,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { NavUtils } from "src/utils";
 import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
 import { TagCard } from "./TagCard";
@@ -38,22 +38,23 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
 
   const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
 
+  const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
   const otherOperations = [
     {
-      text: "View Random",
+      text: intl.formatMessage({ id: "actions.view_random" }),
       onClick: viewRandom,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ];
@@ -134,8 +135,8 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     <DeleteEntityDialog
       selected={selectedTags}
       onClose={onClose}
-      singularEntity="tag"
-      pluralEntity="tags"
+      singularEntity={intl.formatMessage({ id: "tag" })}
+      pluralEntity={intl.formatMessage({ id: "tags" })}
       destroyMutation={useTagsDestroy}
     />
   );
@@ -164,7 +165,9 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     if (!tag) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success({ content: "Started auto tagging" });
+      Toast.success({
+        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -173,7 +176,16 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   async function onDelete() {
     try {
       await deleteTag();
-      Toast.success({ content: "Deleted tag" });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.delete_past_tense" },
+          {
+            count: 1,
+            singularEntity: intl.formatMessage({ id: "tag" }),
+            pluralEntity: intl.formatMessage({ id: "tags" }),
+          }
+        ),
+      });
       setDeletingTag(null);
     } catch (e) {
       Toast.error(e);
@@ -212,11 +224,18 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
           onHide={() => {}}
           show={!!deletingTag}
           icon="trash-alt"
-          accept={{ onClick: onDelete, variant: "danger", text: "Delete" }}
+          accept={{
+            onClick: onDelete,
+            variant: "danger",
+            text: intl.formatMessage({ id: "actions.delete" }),
+          }}
           cancel={{ onClick: () => setDeletingTag(null) }}
         >
           <span>
-            Are you sure you want to delete {deletingTag && deletingTag.name}?
+            <FormattedMessage
+              id="dialogs.delete_confirm"
+              values={{ entityName: deletingTag && deletingTag.name }}
+            />
           </span>
         </Modal>
       );
@@ -232,14 +251,20 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
                 className="tag-list-button"
                 onClick={() => onAutoTag(tag)}
               >
-                Auto Tag
+                <FormattedMessage id="actions.auto_tag" />
               </Button>
               <Button variant="secondary" className="tag-list-button">
                 <Link
                   to={NavUtils.makeTagScenesUrl(tag)}
                   className="tag-list-anchor"
                 >
-                  Scenes: <FormattedNumber value={tag.scene_count ?? 0} />
+                  <FormattedMessage
+                    id="countables.scenes"
+                    values={{
+                      count: tag.scene_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.scene_count ?? 0} />
                 </Link>
               </Button>
               <Button variant="secondary" className="tag-list-button">
@@ -247,12 +272,17 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
                   to={NavUtils.makeTagSceneMarkersUrl(tag)}
                   className="tag-list-anchor"
                 >
-                  Markers:{" "}
-                  <FormattedNumber value={tag.scene_marker_count ?? 0} />
+                  <FormattedMessage
+                    id="countables.markers"
+                    values={{
+                      count: tag.scene_marker_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.scene_marker_count ?? 0} />
                 </Link>
               </Button>
               <span className="tag-list-count">
-                Total:{" "}
+                <FormattedMessage id="total" />:{" "}
                 <FormattedNumber
                   value={(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
                 />

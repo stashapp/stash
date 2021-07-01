@@ -7,6 +7,7 @@ import {
   Popover,
   Row,
 } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Modal } from ".";
 import Icon from "./Icon";
 
@@ -27,6 +28,7 @@ export const ImageInput: React.FC<IImageInput> = ({
 }) => {
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [url, setURL] = useState("");
+  const intl = useIntl();
 
   if (!isEditing) return <div />;
 
@@ -58,13 +60,13 @@ export const ImageInput: React.FC<IImageInput> = ({
       <Modal
         show={!!isShowDialog}
         onHide={() => setIsShowDialog(false)}
-        header="Image URL"
+        header={intl.formatMessage({ id: "dialogs.set_image_url_title" })}
         accept={{ onClick: onConfirmURL, text: "Confirm" }}
       >
         <div className="dialog-content">
           <Form.Group controlId="url" as={Row}>
             <Form.Label column xs={3}>
-              URL
+              {intl.formatMessage({ id: "url" })}
             </Form.Label>
             <Col xs={9}>
               <Form.Control
@@ -73,7 +75,7 @@ export const ImageInput: React.FC<IImageInput> = ({
                   setURL(event.currentTarget.value)
                 }
                 value={url}
-                placeholder="URL"
+                placeholder={intl.formatMessage({ id: "url" })}
               />
             </Col>
           </Form.Group>
@@ -90,7 +92,7 @@ export const ImageInput: React.FC<IImageInput> = ({
             <Form.Label className="image-input">
               <Button variant="secondary">
                 <Icon icon="file" className="fa-fw" />
-                <span>From file...</span>
+                <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
               </Button>
               <Form.Control
                 type="file"
@@ -102,7 +104,7 @@ export const ImageInput: React.FC<IImageInput> = ({
           <div>
             <Button className="minimal" onClick={() => setIsShowDialog(true)}>
               <Icon icon="link" className="fa-fw" />
-              <span>From URL...</span>
+              <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
             </Button>
           </div>
         </>
@@ -120,7 +122,7 @@ export const ImageInput: React.FC<IImageInput> = ({
         rootClose
       >
         <Button variant="secondary" className="mr-2">
-          {text ?? "Set image..."}
+          {text ?? intl.formatMessage({ id: "actions.set_image" })}
         </Button>
       </OverlayTrigger>
     </>

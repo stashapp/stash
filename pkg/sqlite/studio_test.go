@@ -359,9 +359,10 @@ func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriteri
 			pp := 0
 
 			_, count, err := r.Image().Query(&models.ImageFilterType{
-				Studios: &models.MultiCriterionInput{
+				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
+					Depth:    0,
 				},
 			}, &models.FindFilterType{
 				PerPage: &pp,
@@ -409,9 +410,10 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 			pp := 0
 
 			_, count, err := r.Gallery().Query(&models.GalleryFilterType{
-				Studios: &models.MultiCriterionInput{
+				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
+					Depth:    0,
 				},
 			}, &models.FindFilterType{
 				PerPage: &pp,

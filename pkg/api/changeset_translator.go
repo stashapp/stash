@@ -12,8 +12,8 @@ import (
 const updateInputField = "input"
 
 func getArgumentMap(ctx context.Context) map[string]interface{} {
-	rctx := graphql.GetResolverContext(ctx)
-	reqCtx := graphql.GetRequestContext(ctx)
+	rctx := graphql.GetFieldContext(ctx)
+	reqCtx := graphql.GetOperationContext(ctx)
 	return rctx.Field.ArgumentMap(reqCtx.Variables)
 }
 
@@ -63,6 +63,15 @@ func (t changesetTranslator) hasField(field string) bool {
 
 	_, found := t.inputMap[field]
 	return found
+}
+
+func (t changesetTranslator) getFields() []string {
+	var ret []string
+	for k := range t.inputMap {
+		ret = append(ret, k)
+	}
+
+	return ret
 }
 
 func (t changesetTranslator) nullString(value *string, field string) *sql.NullString {

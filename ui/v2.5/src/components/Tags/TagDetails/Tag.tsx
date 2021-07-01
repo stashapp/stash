@@ -1,6 +1,7 @@
-import { Table, Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -12,11 +13,12 @@ import {
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils } from "src/utils";
 import {
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
+  Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
@@ -24,6 +26,9 @@ import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
 import { TagPerformersPanel } from "./TagPerformersPanel";
 import { TagGalleriesPanel } from "./TagGalleriesPanel";
+import { TagDetailsPanel } from "./TagDetailsPanel";
+import { TagEditPanel } from "./TagEditPanel";
+import { TagMergeModal } from "./TagMergeDialog";
 
 interface ITabParams {
   id?: string;
@@ -33,25 +38,25 @@ interface ITabParams {
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const { tab = "scenes", id = "new" } = useParams<ITabParams>();
   const isNew = id === "new";
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
-  const [name, setName] = useState<string>();
 
   // Tag state
-  const [tag, setTag] = useState<GQL.TagDataFragment | undefined>();
-  const [imagePreview, setImagePreview] = useState<string>();
-
   const { data, error, loading } = useFindTag(id);
+  const tag = data?.findTag;
+
   const [updateTag] = useTagUpdate();
-  const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
-  const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
+  const [createTag] = useTagCreate();
+  const [deleteTag] = useTagDestroy({ id });
 
   const activeTabKey =
     tab === "markers" ||
@@ -69,10 +74,6 @@ export const Tag: React.FC = () => {
 
   // set up hotkeys
   useEffect(() => {
-    if (isEditing) {
-      Mousetrap.bind("s s", () => onSave());
-    }
-
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
 
@@ -86,28 +87,13 @@ export const Tag: React.FC = () => {
     };
   });
 
-  function updateTagEditState(state: GQL.TagDataFragment) {
-    setName(state.name);
-  }
-
-  function updateTagData(tagData: GQL.TagDataFragment) {
-    setImage(undefined);
-    updateTagEditState(tagData);
-    setImagePreview(tagData.image_path ?? undefined);
-    setTag(tagData);
-  }
-
   useEffect(() => {
     if (data && data.findTag) {
       setImage(undefined);
-      updateTagEditState(data.findTag);
-      setImagePreview(data.findTag.image_path ?? undefined);
-      setTag(data.findTag);
     }
   }, [data]);
 
   function onImageLoad(imageData: string) {
-    setImagePreview(imageData);
     setImage(imageData);
   }
 
@@ -118,37 +104,44 @@ export const Tag: React.FC = () => {
     if (error) return <div>{error.message}</div>;
   }
 
-  function getTagInput() {
-    if (!isNew) {
-      return {
-        id,
-        name,
-        image,
-      };
-    }
-    return {
-      name,
+  function getTagInput(
+    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
+  ) {
+    const ret: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
+      ...input,
       image,
     };
+
+    if (!isNew) {
+      (ret as GQL.TagUpdateInput).id = id;
+    }
+
+    return ret;
   }
 
-  async function onSave() {
+  async function onSave(
+    input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
+  ) {
     try {
       if (!isNew) {
         const result = await updateTag({
           variables: {
-            input: getTagInput() as GQL.TagUpdateInput,
+            input: getTagInput(input) as GQL.TagUpdateInput,
           },
         });
         if (result.data?.tagUpdate) {
-          updateTagData(result.data.tagUpdate);
           setIsEditing(false);
+          return result.data.tagUpdate.id;
         }
       } else {
-        const result = await createTag();
+        const result = await createTag({
+          variables: {
+            input: getTagInput(input) as GQL.TagCreateInput,
+          },
+        });
         if (result.data?.tagCreate?.id) {
-          history.push(`/tags/${result.data.tagCreate.id}`);
           setIsEditing(false);
+          return result.data.tagCreate.id;
         }
       }
     } catch (e) {
@@ -177,34 +170,87 @@ export const Tag: React.FC = () => {
     history.push(`/tags`);
   }
 
-  function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onImageLoad);
-  }
-
   function renderDeleteAlert() {
     return (
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {name ?? "tag"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                tag?.name ??
+                intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }
 
   function onToggleEdit() {
     setIsEditing(!isEditing);
-    if (tag) {
-      updateTagData(tag);
+    setImage(undefined);
+  }
+
+  function renderImage() {
+    let tagImage = tag?.image_path;
+    if (isEditing) {
+      if (image === null) {
+        tagImage = `${tagImage}&default=true`;
+      } else if (image) {
+        tagImage = image;
+      }
+    }
+
+    if (tagImage) {
+      return <img className="logo" alt={tag?.name ?? ""} src={tagImage} />;
     }
   }
 
-  function onClearImage() {
-    setImage(null);
-    setImagePreview(
-      tag?.image_path ? `${tag.image_path}&default=true` : undefined
+  function renderMergeButton() {
+    return (
+      <Dropdown drop="up">
+        <Dropdown.Toggle variant="secondary">Merge...</Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white" id="tag-merge-menu">
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => setMergeType("from")}
+          >
+            <Icon icon="sign-in-alt" />
+            <FormattedMessage id="actions.merge_from" />
+            ...
+          </Dropdown.Item>
+          <Dropdown.Item
+            className="bg-secondary text-white"
+            onClick={() => setMergeType("into")}
+          >
+            <Icon icon="sign-out-alt" />
+            <FormattedMessage id="actions.merge_into" />
+            ...
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  function renderMergeDialog() {
+    if (!tag || !mergeType) return;
+    return (
+      <TagMergeModal
+        tag={tag}
+        onClose={() => setMergeType(undefined)}
+        show={!!mergeType}
+        mergeType={mergeType}
+      />
     );
   }
 
@@ -216,38 +262,40 @@ export const Tag: React.FC = () => {
           "col-8": isNew,
         })}
       >
-        {isNew && <h2>Add Tag</h2>}
-        <div className="text-center">
+        <div className="text-center logo-container">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
-            <img className="logo" alt={name} src={imagePreview} />
+            renderImage()
           )}
+          {!isNew && tag && <h2>{tag.name}</h2>}
         </div>
-        <Table>
-          <tbody>
-            {TableUtils.renderInputGroup({
-              title: "Name",
-              value: name ?? "",
-              isEditing: !!isEditing,
-              onChange: setName,
-            })}
-          </tbody>
-        </Table>
-        <DetailsEditNavbar
-          objectName={name ?? "tag"}
-          isNew={isNew}
-          isEditing={isEditing}
-          onToggleEdit={onToggleEdit}
-          onSave={onSave}
-          onImageChange={onImageChangeHandler}
-          onClearImage={() => {
-            onClearImage();
-          }}
-          onAutoTag={onAutoTag}
-          onDelete={onDelete}
-          acceptSVG
-        />
+        {!isEditing && !isNew && tag ? (
+          <>
+            <TagDetailsPanel tag={tag} />
+            {/* HACK - this is also rendered in the TagEditPanel */}
+            <DetailsEditNavbar
+              objectName={tag.name ?? "tag"}
+              isNew={isNew}
+              isEditing={isEditing}
+              onToggleEdit={onToggleEdit}
+              onSave={() => {}}
+              onImageChange={() => {}}
+              onClearImage={() => {}}
+              onAutoTag={onAutoTag}
+              onDelete={onDelete}
+              customButtons={renderMergeButton()}
+            />
+          </>
+        ) : (
+          <TagEditPanel
+            tag={tag ?? undefined}
+            onSubmit={onSave}
+            onCancel={onToggleEdit}
+            onDelete={onDelete}
+            setImage={setImage}
+          />
+        )}
       </div>
       {!isNew && tag && (
         <div className="col col-md-8">
@@ -257,25 +305,35 @@ export const Tag: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title="Scenes">
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="images" title="Images">
+            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
               <TagImagesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="galleries" title="Galleries">
+            <Tab
+              eventKey="galleries"
+              title={intl.formatMessage({ id: "galleries" })}
+            >
               <TagGalleriesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="markers" title="Markers">
+            <Tab
+              eventKey="markers"
+              title={intl.formatMessage({ id: "markers" })}
+            >
               <TagMarkersPanel tag={tag} />
             </Tab>
-            <Tab eventKey="performers" title="Performers">
+            <Tab
+              eventKey="performers"
+              title={intl.formatMessage({ id: "performers" })}
+            >
               <TagPerformersPanel tag={tag} />
             </Tab>
           </Tabs>
         </div>
       )}
       {renderDeleteAlert()}
+      {renderMergeDialog()}
     </div>
   );
 };

@@ -1,5 +1,9 @@
 """The query root for this schema"""
 type Query {
+  # Filters
+  findSavedFilters(mode: FilterMode!): [SavedFilter!]!
+  findDefaultFilter(mode: FilterMode!): SavedFilter
+
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
   findSceneByHash(input: SceneHashInput!): Scene
@@ -106,9 +110,14 @@ type Query {
   """Returns an array of paths for the given path"""
   directory(path: String): Directory!
 
-  # Metadata
+  # System status
   systemStatus: SystemStatus!
-  jobStatus: MetadataUpdateStatus!
+
+  # Job status
+  jobQueue: [Job!]
+  findJob(input: FindJobInput!): Job
+
+  dlnaStatus: DLNAStatus!
 
   # Get everything
 
@@ -192,10 +201,17 @@ type Mutation {
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
+  tagsMerge(input: TagsMergeInput!): Tag
+
+  # Saved filters
+  saveFilter(input: SaveFilterInput!): SavedFilter!
+  destroySavedFilter(input: DestroyFilterInput!): Boolean!
+  setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
+  configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
 
   """Generate and set (or clear) API key"""
   generateAPIKey(input: GenerateAPIKeyInput!): String!
@@ -204,31 +220,32 @@ type Mutation {
   exportObjects(input: ExportObjectsInput!): String
 
   """Performs an incremental import. Returns the job ID"""
-  importObjects(input: ImportObjectsInput!): String!
+  importObjects(input: ImportObjectsInput!): ID!
 
   """Start an full import. Completely wipes the database and imports from the metadata directory. Returns the job ID"""
-  metadataImport: String!
+  metadataImport: ID!
   """Start a full export. Outputs to the metadata directory. Returns the job ID"""
-  metadataExport: String!
+  metadataExport: ID!
   """Start a scan. Returns the job ID"""
-  metadataScan(input: ScanMetadataInput!): String!
+  metadataScan(input: ScanMetadataInput!): ID!
   """Start generating content. Returns the job ID"""
-  metadataGenerate(input: GenerateMetadataInput!): String!
+  metadataGenerate(input: GenerateMetadataInput!): ID!
   """Start auto-tagging. Returns the job ID"""
-  metadataAutoTag(input: AutoTagMetadataInput!): String!
+  metadataAutoTag(input: AutoTagMetadataInput!): ID!
   """Clean metadata. Returns the job ID"""
-  metadataClean(input: CleanMetadataInput!): String!
+  metadataClean(input: CleanMetadataInput!): ID!
   """Migrate generated files for the current hash naming"""
-  migrateHashNaming: String!
+  migrateHashNaming: ID!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!
 
   """Run plugin task. Returns the job ID"""
-  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): ID!
   reloadPlugins: Boolean!
 
-  stopJob: Boolean!
+  stopJob(job_id: ID!): Boolean!
+  stopAllJobs: Boolean!
 
   """Submit fingerprints to stash-box instance"""
   submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
@@ -238,13 +255,24 @@ type Mutation {
 
   """Run batch performer tag task. Returns the job ID."""
   stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
+  
+  """Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"""
+  enableDLNA(input: EnableDLNAInput!): Boolean!
+  """Disables DLNA for an optional duration. Has no effect if DLNA is disabled by default"""
+  disableDLNA(input: DisableDLNAInput!): Boolean!
+  """Enables an IP address for DLNA for an optional duration"""
+  addTempDLNAIP(input: AddTempDLNAIPInput!): Boolean!
+  """Removes an IP address from the temporary DLNA whitelist"""
+  removeTempDLNAIP(input: RemoveTempDLNAIPInput!): Boolean!
 }
 
 type Subscription {
   """Update from the metadata manager"""
-  metadataUpdate: MetadataUpdateStatus!
+  jobsSubscribe: JobStatusUpdate!
 
   loggingSubscribe: [LogEntry!]!
+
+  scanCompleteSubscribe: Boolean!
 }
 
 schema {

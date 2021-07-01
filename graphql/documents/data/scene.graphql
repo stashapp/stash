@@ -11,6 +11,7 @@ fragment SceneData on Scene {
   organized
   path
   phash
+  interactive
 
   file {
     size
@@ -30,6 +31,8 @@ fragment SceneData on Scene {
     webp
     vtt
     chapters_vtt
+    sprite
+    funscript
   }
 
   scene_markers {

@@ -1,6 +1,9 @@
 type Tag {
   id: ID!
   name: String!
+  aliases: [String!]!
+  created_at: Time!
+  updated_at: Time!
 
   image_path: String # Resolver
   scene_count: Int # Resolver
@@ -12,6 +15,7 @@ type Tag {
 
 input TagCreateInput {
   name: String!
+  aliases: [String!]
 
   """This should be a URL or a base64 encoded data URL"""
   image: String
@@ -19,7 +23,8 @@ input TagCreateInput {
 
 input TagUpdateInput {
   id: ID!
-  name: String!
+  name: String
+  aliases: [String!]
 
   """This should be a URL or a base64 encoded data URL"""
   image: String
@@ -32,4 +37,9 @@ input TagDestroyInput {
 type FindTagsResultType {
   count: Int!
   tags: [Tag!]!
+}
+
+input TagsMergeInput {
+  source: [ID!]!
+  destination: ID!
 }

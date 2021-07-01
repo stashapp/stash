@@ -43,3 +43,11 @@ type Rect struct {
 	Width  float64 `json:"width"`  // Rectangle width
 	Height float64 `json:"height"` // Rectangle height
 }
+
+// CSSComputedStyleProperty [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#type-CSSComputedStyleProperty
+type CSSComputedStyleProperty struct {
+	Name  string `json:"name"`  // Computed style property name.
+	Value string `json:"value"` // Computed style property value.
+}

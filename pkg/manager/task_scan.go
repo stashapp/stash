@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,14 +17,193 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
+	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ScanJob struct {
+	txnManager    models.TransactionManager
+	input         models.ScanMetadataInput
+	subscriptions *subscriptionManager
+}
+
+func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
+	input := j.input
+	paths := getScanPaths(input.Paths)
+
+	var total *int
+	var newFiles *int
+	progress.ExecuteTask("Counting files to scan...", func() {
+		total, newFiles = j.neededScan(ctx, paths)
+	})
+
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
+		return
+	}
+
+	if total == nil || newFiles == nil {
+		logger.Infof("Taking too long to count content. Skipping...")
+		logger.Infof("Starting scan")
+	} else {
+		logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
+	}
+
+	start := time.Now()
+	config := config.GetInstance()
+	parallelTasks := config.GetParallelTasksWithAutoDetection()
+	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
+	wg := sizedwaitgroup.New(parallelTasks)
+
+	if total != nil {
+		progress.SetTotal(*total)
+	}
+
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	calculateMD5 := config.IsCalculateMD5()
+
+	stoppingErr := errors.New("stopping")
+	var err error
+
+	var galleries []string
+
+	for _, sp := range paths {
+		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
+		if er != nil {
+			logger.Warnf("Cannot determine fs case sensitivity: %s", er.Error())
+		}
+
+		err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			if job.IsCancelled(ctx) {
+				return stoppingErr
+			}
+
+			if isGallery(path) {
+				galleries = append(galleries, path)
+			}
+
+			instance.Paths.Generated.EnsureTmpDir()
+
+			wg.Add()
+			task := ScanTask{
+				TxnManager:           j.txnManager,
+				FilePath:             path,
+				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
+				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
+				fileNamingAlgorithm:  fileNamingAlgo,
+				calculateMD5:         calculateMD5,
+				GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
+				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
+				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
+				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+				progress:             progress,
+				CaseSensitiveFs:      csFs,
+				ctx:                  ctx,
+			}
+
+			go func() {
+				task.Start(&wg)
+				progress.Increment()
+			}()
+
+			return nil
+		})
+
+		if err == stoppingErr {
+			logger.Info("Stopping due to user request")
+			break
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered scanning files: %s", err.Error())
+			break
+		}
+	}
+
+	wg.Wait()
+	instance.Paths.Generated.EmptyTmpDir()
+	elapsed := time.Since(start)
+	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
+	if job.IsCancelled(ctx) || err != nil {
+		return
+	}
+
+	progress.ExecuteTask("Associating galleries", func() {
+		for _, path := range galleries {
+			wg.Add()
+			task := ScanTask{
+				TxnManager:      j.txnManager,
+				FilePath:        path,
+				UseFileMetadata: false,
+			}
+
+			go task.associateGallery(&wg)
+			wg.Wait()
+		}
+		logger.Info("Finished gallery association")
+	})
+
+	j.subscriptions.notify()
+}
+
+func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (total *int, newFiles *int) {
+	const timeout = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
+	chTimeout := time.After(timeout)
+
+	logger.Infof("Counting files to scan...")
+
+	t := 0
+	n := 0
+
+	timeoutErr := errors.New("timed out")
+
+	for _, sp := range paths {
+		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			t++
+			task := ScanTask{FilePath: path, TxnManager: j.txnManager}
+			if !task.doesPathExist() {
+				n++
+			}
+
+			//check for timeout
+			select {
+			case <-chTimeout:
+				return timeoutErr
+			default:
+			}
+
+			// check stop
+			if job.IsCancelled(ctx) {
+				return timeoutErr
+			}
+
+			return nil
+		})
+
+		if err == timeoutErr {
+			// timeout should return nil counts
+			return nil, nil
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
+			return nil, nil
+		}
+	}
+
+	return &t, &n
+}
+
 type ScanTask struct {
+	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	FilePath             string
 	UseFileMetadata      bool
@@ -35,40 +215,58 @@ type ScanTask struct {
 	GeneratePreview      bool
 	GenerateImagePreview bool
 	zipGallery           *models.Gallery
+	progress             *job.Progress
+	CaseSensitiveFs      bool
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	if isGallery(t.FilePath) {
-		t.scanGallery()
-	} else if isVideo(t.FilePath) {
-		s := t.scanScene()
+	defer wg.Done()
 
-		if s != nil {
-			iwg := sizedwaitgroup.New(2)
+	var s *models.Scene
 
-			if t.GenerateSprite {
-				iwg.Add()
+	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
+		if isGallery(t.FilePath) {
+			t.scanGallery()
+		} else if isVideo(t.FilePath) {
+			s = t.scanScene()
+		} else if isImage(t.FilePath) {
+			t.scanImage()
+		}
+	})
+
+	if s != nil {
+		iwg := sizedwaitgroup.New(2)
+
+		if t.GenerateSprite {
+			iwg.Add()
+
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", t.FilePath), func() {
 				taskSprite := GenerateSpriteTask{
 					Scene:               *s,
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				go taskSprite.Start(&iwg)
-			}
+				taskSprite.Start(&iwg)
+			})
+		}
 
-			if t.GeneratePhash {
-				iwg.Add()
+		if t.GeneratePhash {
+			iwg.Add()
+
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", t.FilePath), func() {
 				taskPhash := GeneratePhashTask{
 					Scene:               *s,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 					txnManager:          t.TxnManager,
 				}
-				go taskPhash.Start(&iwg)
-			}
+				taskPhash.Start(&iwg)
+			})
+		}
 
-			if t.GeneratePreview {
-				iwg.Add()
+		if t.GeneratePreview {
+			iwg.Add()
 
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", t.FilePath), func() {
 				config := config.GetInstance()
 				var previewSegmentDuration = config.GetPreviewSegmentDuration()
 				var previewSegments = config.GetPreviewSegments()
@@ -92,16 +290,12 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				go taskPreview.Start(&iwg)
-			}
-
-			iwg.Wait()
+				taskPreview.Start(wg)
+			})
 		}
-	} else if isImage(t.FilePath) {
-		t.scanImage()
-	}
 
-	wg.Done()
+		iwg.Wait()
+	}
 }
 
 func (t *ScanTask) scanGallery() {
@@ -213,6 +407,14 @@ func (t *ScanTask) scanGallery() {
 			g, _ = qb.FindByChecksum(checksum)
 			if g != nil {
 				exists, _ := utils.FileExists(g.Path.String)
+				if !t.CaseSensitiveFs {
+					// #1426 - if file exists but is a case-insensitive match for the
+					// original filename, then treat it as a move
+					if exists && strings.EqualFold(t.FilePath, g.Path.String) {
+						exists = false
+					}
+				}
+
 				if exists {
 					logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, g.Path.String)
 				} else {
@@ -225,6 +427,8 @@ func (t *ScanTask) scanGallery() {
 					if err != nil {
 						return err
 					}
+
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
 				}
 			} else {
 				currentTime := time.Now()
@@ -262,6 +466,8 @@ func (t *ScanTask) scanGallery() {
 						return err
 					}
 					scanImages = true
+
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 				}
 			}
 
@@ -293,6 +499,12 @@ func (t *ScanTask) getFileModTime() (time.Time, error) {
 	ret = ret.Truncate(time.Second)
 
 	return ret, nil
+}
+
+func (t *ScanTask) getInteractive() bool {
+	_, err := os.Stat(utils.GetFunscriptPath(t.FilePath))
+	return err == nil
+
 }
 
 func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLiteTimestamp) bool {
@@ -376,6 +588,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 	if err != nil {
 		return logError(err)
 	}
+	interactive := t.getInteractive()
 
 	if s != nil {
 		// if file mod time is not set, set it now
@@ -484,6 +697,20 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}
 		}
 
+		if s.Interactive != interactive {
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				qb := r.Scene()
+				scenePartial := models.ScenePartial{
+					ID:          s.ID,
+					Interactive: &interactive,
+				}
+				_, err := qb.Update(scenePartial)
+				return err
+			}); err != nil {
+				return logError(err)
+			}
+		}
+
 		return nil
 	}
 
@@ -544,13 +771,22 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	if s != nil {
 		exists, _ := utils.FileExists(s.Path)
+		if !t.CaseSensitiveFs {
+			// #1426 - if file exists but is a case-insensitive match for the
+			// original filename, then treat it as a move
+			if exists && strings.EqualFold(t.FilePath, s.Path) {
+				exists = false
+			}
+		}
+
 		if exists {
 			logger.Infof("%s already exists. Duplicate of %s", t.FilePath, s.Path)
 		} else {
 			logger.Infof("%s already exists. Updating path...", t.FilePath)
 			scenePartial := models.ScenePartial{
-				ID:   s.ID,
-				Path: &t.FilePath,
+				ID:          s.ID,
+				Path:        &t.FilePath,
+				Interactive: &interactive,
 			}
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
@@ -558,6 +794,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}); err != nil {
 				return logError(err)
 			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", t.FilePath)
@@ -580,8 +818,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 				Timestamp: fileModTime,
 				Valid:     true,
 			},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			Interactive: interactive,
 		}
 
 		if t.UseFileMetadata {
@@ -596,6 +835,8 @@ func (t *ScanTask) scanScene() *models.Scene {
 		}); err != nil {
 			return logError(err)
 		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
 	}
 
 	return retScene
@@ -664,6 +905,8 @@ func (t *ScanTask) rescanScene(s *models.Scene, fileModTime time.Time) (*models.
 		logger.Error(err.Error())
 		return nil, err
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.SceneUpdatePost, nil, nil)
 
 	// leave the generated files as is - the scene file may have been moved
 	// elsewhere
@@ -827,6 +1070,14 @@ func (t *ScanTask) scanImage() {
 
 		if i != nil {
 			exists := image.FileExists(i.Path)
+			if !t.CaseSensitiveFs {
+				// #1426 - if file exists but is a case-insensitive match for the
+				// original filename, then treat it as a move
+				if exists && strings.EqualFold(t.FilePath, i.Path) {
+					exists = false
+				}
+			}
+
 			if exists {
 				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
 			} else {
@@ -843,6 +1094,8 @@ func (t *ScanTask) scanImage() {
 					logger.Error(err.Error())
 					return
 				}
+
+				GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
 			}
 		} else {
 			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
@@ -873,6 +1126,8 @@ func (t *ScanTask) scanImage() {
 				logger.Error(err.Error())
 				return
 			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageCreatePost, nil, nil)
 		}
 
 		if t.zipGallery != nil {
@@ -947,6 +1202,8 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 			logger.Errorf("Error deleting thumbnail image: %s", err)
 		}
 	}
+
+	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.ImageUpdatePost, nil, nil)
 
 	return ret, nil
 }
@@ -1095,6 +1352,13 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 		if info.IsDir() {
 			// #1102 - ignore files in generated path
 			if utils.IsPathInDir(generatedPath, path) {
+				return filepath.SkipDir
+			}
+
+			// shortcut: skip the directory entirely if it matches both exclusion patterns
+			// add a trailing separator so that it correctly matches against patterns like path/.*
+			pathExcludeTest := path + string(filepath.Separator)
+			if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, excludeVidRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, excludeImgRegex)) {
 				return filepath.SkipDir
 			}
 

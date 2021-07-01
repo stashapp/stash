@@ -1,6 +1,7 @@
-import { Table, Tabs, Tab } from "react-bootstrap";
+import { Button, Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -14,6 +15,7 @@ import {
 } from "src/core/StashService";
 import { ImageUtils, TableUtils } from "src/utils";
 import {
+  Icon,
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
@@ -25,6 +27,7 @@ import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
+import { StudioPerformersPanel } from "./StudioPerformersPanel";
 
 interface IStudioParams {
   id?: string;
@@ -34,6 +37,7 @@ interface IStudioParams {
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+  const intl = useIntl();
   const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
@@ -48,6 +52,7 @@ export const Studio: React.FC = () => {
   const [parentStudioId, setParentStudioId] = useState<string>();
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [details, setDetails] = useState<string>();
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
@@ -68,6 +73,7 @@ export const Studio: React.FC = () => {
     setParentStudioId(state?.parent_studio?.id ?? undefined);
     setRating(state.rating ?? undefined);
     setDetails(state.details ?? undefined);
+    setStashIDs(state.stash_ids ?? []);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -150,6 +156,10 @@ export const Studio: React.FC = () => {
       details,
       parent_id: parentStudioId ?? null,
       rating: rating ?? null,
+      stash_ids: stashIDs.map((s) => ({
+        stash_id: s.stash_id,
+        endpoint: s.endpoint,
+      })),
     };
 
     if (!isNew) {
@@ -186,7 +196,9 @@ export const Studio: React.FC = () => {
     if (!studio.id) return;
     try {
       await mutateMetadataAutoTag({ studios: [studio.id] });
-      Toast.success({ content: "Started auto tagging" });
+      Toast.success({
+        content: intl.formatMessage({ id: "toast.started_auto_tagging" }),
+      });
     } catch (e) {
       Toast.error(e);
     }
@@ -203,6 +215,15 @@ export const Studio: React.FC = () => {
     history.push(`/studios`);
   }
 
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    setStashIDs(
+      stashIDs.filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
+
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
   }
@@ -212,10 +233,23 @@ export const Studio: React.FC = () => {
       <Modal
         show={isDeleteAlertOpen}
         icon="trash-alt"
-        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        accept={{
+          text: intl.formatMessage({ id: "actions.delete" }),
+          variant: "danger",
+          onClick: onDelete,
+        }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {name ?? "studio"}?</p>
+        <p>
+          <FormattedMessage
+            id="dialogs.delete_confirm"
+            values={{
+              entityName:
+                name ??
+                intl.formatMessage({ id: "studio" }).toLocaleLowerCase(),
+            }}
+          />
+        </p>
       </Modal>
     );
   }
@@ -230,7 +264,7 @@ export const Studio: React.FC = () => {
         <td>StashIDs</td>
         <td>
           <ul className="pl-0">
-            {studio.stash_ids.map((stashID) => {
+            {stashIDs.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
               const link = base ? (
                 <a
@@ -245,6 +279,19 @@ export const Studio: React.FC = () => {
               );
               return (
                 <li key={stashID.stash_id} className="row no-gutters">
+                  {isEditing && (
+                    <Button
+                      variant="danger"
+                      className="mr-2 py-0"
+                      title={intl.formatMessage(
+                        { id: "actions.delete_entity" },
+                        { entityType: intl.formatMessage({ id: "stash_id" }) }
+                      )}
+                      onClick={() => removeStashID(stashID)}
+                    >
+                      <Icon icon="trash-alt" />
+                    </Button>
+                  )}
                   {link}
                 </li>
               );
@@ -268,7 +315,10 @@ export const Studio: React.FC = () => {
   }
 
   const activeTabKey =
-    tab === "childstudios" || tab === "images" || tab === "galleries"
+    tab === "childstudios" ||
+    tab === "images" ||
+    tab === "galleries" ||
+    tab === "performers"
       ? tab
       : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
@@ -309,7 +359,14 @@ export const Studio: React.FC = () => {
           "col-8": isNew,
         })}
       >
-        {isNew && <h2>Add Studio</h2>}
+        {isNew && (
+          <h2>
+            {intl.formatMessage(
+              { id: "actions.add_entity" },
+              { entityType: intl.formatMessage({ id: "studio" }) }
+            )}
+          </h2>
+        )}
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
@@ -322,29 +379,29 @@ export const Studio: React.FC = () => {
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({
-              title: "Name",
+              title: intl.formatMessage({ id: "name" }),
               value: name ?? "",
               isEditing: !!isEditing,
               onChange: setName,
             })}
             {TableUtils.renderInputGroup({
-              title: "URL",
+              title: intl.formatMessage({ id: "url" }),
               value: url,
               isEditing: !!isEditing,
               onChange: setUrl,
             })}
             {TableUtils.renderTextArea({
-              title: "Details",
+              title: intl.formatMessage({ id: "details" }),
               value: details,
               isEditing: !!isEditing,
               onChange: setDetails,
             })}
             <tr>
-              <td>Parent Studio</td>
+              <td>{intl.formatMessage({ id: "parent_studios" })}</td>
               <td>{renderStudio()}</td>
             </tr>
             <tr>
-              <td>Rating:</td>
+              <td>{intl.formatMessage({ id: "rating" })}:</td>
               <td>
                 <RatingStars
                   value={rating}
@@ -353,7 +410,7 @@ export const Studio: React.FC = () => {
                 />
               </td>
             </tr>
-            {!isEditing && renderStashIDs()}
+            {renderStashIDs()}
           </tbody>
         </Table>
         <DetailsEditNavbar
@@ -381,16 +438,28 @@ export const Studio: React.FC = () => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title="Scenes">
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
               <StudioScenesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="galleries" title="Galleries">
+            <Tab
+              eventKey="galleries"
+              title={intl.formatMessage({ id: "galleries" })}
+            >
               <StudioGalleriesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="images" title="Images">
+            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
               <StudioImagesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="childstudios" title="Child Studios">
+            <Tab
+              eventKey="performers"
+              title={intl.formatMessage({ id: "performers" })}
+            >
+              <StudioPerformersPanel studio={studio} />
+            </Tab>
+            <Tab
+              eventKey="childstudios"
+              title={intl.formatMessage({ id: "child_studios" })}
+            >
               <StudioChildrenPanel studio={studio} />
             </Tab>
           </Tabs>

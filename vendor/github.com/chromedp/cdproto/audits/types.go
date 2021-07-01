@@ -7,6 +7,7 @@ import (
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/runtime"
 	"github.com/mailru/easyjson"
 	"github.com/mailru/easyjson/jlexer"
 	"github.com/mailru/easyjson/jwriter"
@@ -52,6 +53,9 @@ func (t SameSiteCookieExclusionReason) String() string {
 const (
 	SameSiteCookieExclusionReasonExcludeSameSiteUnspecifiedTreatedAsLax SameSiteCookieExclusionReason = "ExcludeSameSiteUnspecifiedTreatedAsLax"
 	SameSiteCookieExclusionReasonExcludeSameSiteNoneInsecure            SameSiteCookieExclusionReason = "ExcludeSameSiteNoneInsecure"
+	SameSiteCookieExclusionReasonExcludeSameSiteLax                     SameSiteCookieExclusionReason = "ExcludeSameSiteLax"
+	SameSiteCookieExclusionReasonExcludeSameSiteStrict                  SameSiteCookieExclusionReason = "ExcludeSameSiteStrict"
+	SameSiteCookieExclusionReasonExcludeInvalidSameParty                SameSiteCookieExclusionReason = "ExcludeInvalidSameParty"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -71,6 +75,12 @@ func (t *SameSiteCookieExclusionReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = SameSiteCookieExclusionReasonExcludeSameSiteUnspecifiedTreatedAsLax
 	case SameSiteCookieExclusionReasonExcludeSameSiteNoneInsecure:
 		*t = SameSiteCookieExclusionReasonExcludeSameSiteNoneInsecure
+	case SameSiteCookieExclusionReasonExcludeSameSiteLax:
+		*t = SameSiteCookieExclusionReasonExcludeSameSiteLax
+	case SameSiteCookieExclusionReasonExcludeSameSiteStrict:
+		*t = SameSiteCookieExclusionReasonExcludeSameSiteStrict
+	case SameSiteCookieExclusionReasonExcludeInvalidSameParty:
+		*t = SameSiteCookieExclusionReasonExcludeInvalidSameParty
 
 	default:
 		in.AddError(errors.New("unknown SameSiteCookieExclusionReason value"))
@@ -194,7 +204,8 @@ func (t *SameSiteCookieOperation) UnmarshalJSON(buf []byte) error {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-SameSiteCookieIssueDetails
 type SameSiteCookieIssueDetails struct {
-	Cookie                 *AffectedCookie                 `json:"cookie"`
+	Cookie                 *AffectedCookie                 `json:"cookie,omitempty"` // If AffectedCookie is not set then rawCookieLine contains the raw Set-Cookie header string. This hints at a problem where the cookie line is syntactically or semantically malformed in a way that no valid cookie could be created.
+	RawCookieLine          string                          `json:"rawCookieLine,omitempty"`
 	CookieWarningReasons   []SameSiteCookieWarningReason   `json:"cookieWarningReasons"`
 	CookieExclusionReasons []SameSiteCookieExclusionReason `json:"cookieExclusionReasons"`
 	Operation              SameSiteCookieOperation         `json:"operation"` // Optionally identifies the site-for-cookies and the cookie url, which may be used by the front-end as additional context.
@@ -438,9 +449,412 @@ func (t *BlockedByResponseReason) UnmarshalJSON(buf []byte) error {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-BlockedByResponseIssueDetails
 type BlockedByResponseIssueDetails struct {
-	Request *AffectedRequest        `json:"request"`
-	Frame   *AffectedFrame          `json:"frame,omitempty"`
-	Reason  BlockedByResponseReason `json:"reason"`
+	Request      *AffectedRequest        `json:"request"`
+	ParentFrame  *AffectedFrame          `json:"parentFrame,omitempty"`
+	BlockedFrame *AffectedFrame          `json:"blockedFrame,omitempty"`
+	Reason       BlockedByResponseReason `json:"reason"`
+}
+
+// HeavyAdResolutionStatus [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-HeavyAdResolutionStatus
+type HeavyAdResolutionStatus string
+
+// String returns the HeavyAdResolutionStatus as string value.
+func (t HeavyAdResolutionStatus) String() string {
+	return string(t)
+}
+
+// HeavyAdResolutionStatus values.
+const (
+	HeavyAdResolutionStatusHeavyAdBlocked HeavyAdResolutionStatus = "HeavyAdBlocked"
+	HeavyAdResolutionStatusHeavyAdWarning HeavyAdResolutionStatus = "HeavyAdWarning"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t HeavyAdResolutionStatus) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t HeavyAdResolutionStatus) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *HeavyAdResolutionStatus) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch HeavyAdResolutionStatus(in.String()) {
+	case HeavyAdResolutionStatusHeavyAdBlocked:
+		*t = HeavyAdResolutionStatusHeavyAdBlocked
+	case HeavyAdResolutionStatusHeavyAdWarning:
+		*t = HeavyAdResolutionStatusHeavyAdWarning
+
+	default:
+		in.AddError(errors.New("unknown HeavyAdResolutionStatus value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *HeavyAdResolutionStatus) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// HeavyAdReason [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-HeavyAdReason
+type HeavyAdReason string
+
+// String returns the HeavyAdReason as string value.
+func (t HeavyAdReason) String() string {
+	return string(t)
+}
+
+// HeavyAdReason values.
+const (
+	HeavyAdReasonNetworkTotalLimit HeavyAdReason = "NetworkTotalLimit"
+	HeavyAdReasonCPUTotalLimit     HeavyAdReason = "CpuTotalLimit"
+	HeavyAdReasonCPUPeakLimit      HeavyAdReason = "CpuPeakLimit"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t HeavyAdReason) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t HeavyAdReason) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *HeavyAdReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch HeavyAdReason(in.String()) {
+	case HeavyAdReasonNetworkTotalLimit:
+		*t = HeavyAdReasonNetworkTotalLimit
+	case HeavyAdReasonCPUTotalLimit:
+		*t = HeavyAdReasonCPUTotalLimit
+	case HeavyAdReasonCPUPeakLimit:
+		*t = HeavyAdReasonCPUPeakLimit
+
+	default:
+		in.AddError(errors.New("unknown HeavyAdReason value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *HeavyAdReason) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// HeavyAdIssueDetails [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-HeavyAdIssueDetails
+type HeavyAdIssueDetails struct {
+	Resolution HeavyAdResolutionStatus `json:"resolution"` // The resolution status, either blocking the content or warning.
+	Reason     HeavyAdReason           `json:"reason"`     // The reason the ad was blocked, total network or cpu or peak cpu.
+	Frame      *AffectedFrame          `json:"frame"`      // The frame that was blocked.
+}
+
+// ContentSecurityPolicyViolationType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-ContentSecurityPolicyViolationType
+type ContentSecurityPolicyViolationType string
+
+// String returns the ContentSecurityPolicyViolationType as string value.
+func (t ContentSecurityPolicyViolationType) String() string {
+	return string(t)
+}
+
+// ContentSecurityPolicyViolationType values.
+const (
+	ContentSecurityPolicyViolationTypeKInlineViolation             ContentSecurityPolicyViolationType = "kInlineViolation"
+	ContentSecurityPolicyViolationTypeKEvalViolation               ContentSecurityPolicyViolationType = "kEvalViolation"
+	ContentSecurityPolicyViolationTypeKURLViolation                ContentSecurityPolicyViolationType = "kURLViolation"
+	ContentSecurityPolicyViolationTypeKTrustedTypesSinkViolation   ContentSecurityPolicyViolationType = "kTrustedTypesSinkViolation"
+	ContentSecurityPolicyViolationTypeKTrustedTypesPolicyViolation ContentSecurityPolicyViolationType = "kTrustedTypesPolicyViolation"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t ContentSecurityPolicyViolationType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t ContentSecurityPolicyViolationType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *ContentSecurityPolicyViolationType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch ContentSecurityPolicyViolationType(in.String()) {
+	case ContentSecurityPolicyViolationTypeKInlineViolation:
+		*t = ContentSecurityPolicyViolationTypeKInlineViolation
+	case ContentSecurityPolicyViolationTypeKEvalViolation:
+		*t = ContentSecurityPolicyViolationTypeKEvalViolation
+	case ContentSecurityPolicyViolationTypeKURLViolation:
+		*t = ContentSecurityPolicyViolationTypeKURLViolation
+	case ContentSecurityPolicyViolationTypeKTrustedTypesSinkViolation:
+		*t = ContentSecurityPolicyViolationTypeKTrustedTypesSinkViolation
+	case ContentSecurityPolicyViolationTypeKTrustedTypesPolicyViolation:
+		*t = ContentSecurityPolicyViolationTypeKTrustedTypesPolicyViolation
+
+	default:
+		in.AddError(errors.New("unknown ContentSecurityPolicyViolationType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *ContentSecurityPolicyViolationType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// SourceCodeLocation [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-SourceCodeLocation
+type SourceCodeLocation struct {
+	ScriptID     runtime.ScriptID `json:"scriptId,omitempty"`
+	URL          string           `json:"url"`
+	LineNumber   int64            `json:"lineNumber"`
+	ColumnNumber int64            `json:"columnNumber"`
+}
+
+// ContentSecurityPolicyIssueDetails [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-ContentSecurityPolicyIssueDetails
+type ContentSecurityPolicyIssueDetails struct {
+	BlockedURL                         string                             `json:"blockedURL,omitempty"` // The url not included in allowed sources.
+	ViolatedDirective                  string                             `json:"violatedDirective"`    // Specific directive that is violated, causing the CSP issue.
+	IsReportOnly                       bool                               `json:"isReportOnly"`
+	ContentSecurityPolicyViolationType ContentSecurityPolicyViolationType `json:"contentSecurityPolicyViolationType"`
+	FrameAncestor                      *AffectedFrame                     `json:"frameAncestor,omitempty"`
+	SourceCodeLocation                 *SourceCodeLocation                `json:"sourceCodeLocation,omitempty"`
+	ViolatingNodeID                    cdp.BackendNodeID                  `json:"violatingNodeId,omitempty"`
+}
+
+// SharedArrayBufferIssueType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-SharedArrayBufferIssueType
+type SharedArrayBufferIssueType string
+
+// String returns the SharedArrayBufferIssueType as string value.
+func (t SharedArrayBufferIssueType) String() string {
+	return string(t)
+}
+
+// SharedArrayBufferIssueType values.
+const (
+	SharedArrayBufferIssueTypeTransferIssue SharedArrayBufferIssueType = "TransferIssue"
+	SharedArrayBufferIssueTypeCreationIssue SharedArrayBufferIssueType = "CreationIssue"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t SharedArrayBufferIssueType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t SharedArrayBufferIssueType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *SharedArrayBufferIssueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch SharedArrayBufferIssueType(in.String()) {
+	case SharedArrayBufferIssueTypeTransferIssue:
+		*t = SharedArrayBufferIssueTypeTransferIssue
+	case SharedArrayBufferIssueTypeCreationIssue:
+		*t = SharedArrayBufferIssueTypeCreationIssue
+
+	default:
+		in.AddError(errors.New("unknown SharedArrayBufferIssueType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *SharedArrayBufferIssueType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// SharedArrayBufferIssueDetails details for a issue arising from an SAB
+// being instantiated in, or transferred to a context that is not cross-origin
+// isolated.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-SharedArrayBufferIssueDetails
+type SharedArrayBufferIssueDetails struct {
+	SourceCodeLocation *SourceCodeLocation        `json:"sourceCodeLocation"`
+	IsWarning          bool                       `json:"isWarning"`
+	Type               SharedArrayBufferIssueType `json:"type"`
+}
+
+// TwaQualityEnforcementViolationType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-TwaQualityEnforcementViolationType
+type TwaQualityEnforcementViolationType string
+
+// String returns the TwaQualityEnforcementViolationType as string value.
+func (t TwaQualityEnforcementViolationType) String() string {
+	return string(t)
+}
+
+// TwaQualityEnforcementViolationType values.
+const (
+	TwaQualityEnforcementViolationTypeKHTTPError          TwaQualityEnforcementViolationType = "kHttpError"
+	TwaQualityEnforcementViolationTypeKUnavailableOffline TwaQualityEnforcementViolationType = "kUnavailableOffline"
+	TwaQualityEnforcementViolationTypeKDigitalAssetLinks  TwaQualityEnforcementViolationType = "kDigitalAssetLinks"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t TwaQualityEnforcementViolationType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t TwaQualityEnforcementViolationType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *TwaQualityEnforcementViolationType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch TwaQualityEnforcementViolationType(in.String()) {
+	case TwaQualityEnforcementViolationTypeKHTTPError:
+		*t = TwaQualityEnforcementViolationTypeKHTTPError
+	case TwaQualityEnforcementViolationTypeKUnavailableOffline:
+		*t = TwaQualityEnforcementViolationTypeKUnavailableOffline
+	case TwaQualityEnforcementViolationTypeKDigitalAssetLinks:
+		*t = TwaQualityEnforcementViolationTypeKDigitalAssetLinks
+
+	default:
+		in.AddError(errors.New("unknown TwaQualityEnforcementViolationType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *TwaQualityEnforcementViolationType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// TrustedWebActivityIssueDetails [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-TrustedWebActivityIssueDetails
+type TrustedWebActivityIssueDetails struct {
+	URL            string                             `json:"url"` // The url that triggers the violation.
+	ViolationType  TwaQualityEnforcementViolationType `json:"violationType"`
+	HTTPStatusCode int64                              `json:"httpStatusCode,omitempty"`
+	PackageName    string                             `json:"packageName,omitempty"` // The package name of the Trusted Web Activity client app. This field is only used when violation type is kDigitalAssetLinks.
+	Signature      string                             `json:"signature,omitempty"`   // The signature of the Trusted Web Activity client app. This field is only used when violation type is kDigitalAssetLinks.
+}
+
+// LowTextContrastIssueDetails [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-LowTextContrastIssueDetails
+type LowTextContrastIssueDetails struct {
+	ViolatingNodeID       cdp.BackendNodeID `json:"violatingNodeId"`
+	ViolatingNodeSelector string            `json:"violatingNodeSelector"`
+	ContrastRatio         float64           `json:"contrastRatio"`
+	ThresholdAA           float64           `json:"thresholdAA"`
+	ThresholdAAA          float64           `json:"thresholdAAA"`
+	FontSize              string            `json:"fontSize"`
+	FontWeight            string            `json:"fontWeight"`
+}
+
+// CorsIssueDetails details for a CORS related issue, e.g. a warning or error
+// related to CORS RFC1918 enforcement.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-CorsIssueDetails
+type CorsIssueDetails struct {
+	CorsErrorStatus        *network.CorsErrorStatus     `json:"corsErrorStatus"`
+	IsWarning              bool                         `json:"isWarning"`
+	Request                *AffectedRequest             `json:"request"`
+	Location               *SourceCodeLocation          `json:"location,omitempty"`
+	InitiatorOrigin        string                       `json:"initiatorOrigin,omitempty"`
+	ResourceIPAddressSpace network.IPAddressSpace       `json:"resourceIPAddressSpace,omitempty"`
+	ClientSecurityState    *network.ClientSecurityState `json:"clientSecurityState,omitempty"`
+}
+
+// AttributionReportingIssueType [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-AttributionReportingIssueType
+type AttributionReportingIssueType string
+
+// String returns the AttributionReportingIssueType as string value.
+func (t AttributionReportingIssueType) String() string {
+	return string(t)
+}
+
+// AttributionReportingIssueType values.
+const (
+	AttributionReportingIssueTypePermissionPolicyDisabled             AttributionReportingIssueType = "PermissionPolicyDisabled"
+	AttributionReportingIssueTypeInvalidAttributionSourceEventID      AttributionReportingIssueType = "InvalidAttributionSourceEventId"
+	AttributionReportingIssueTypeInvalidAttributionData               AttributionReportingIssueType = "InvalidAttributionData"
+	AttributionReportingIssueTypeAttributionSourceUntrustworthyOrigin AttributionReportingIssueType = "AttributionSourceUntrustworthyOrigin"
+	AttributionReportingIssueTypeAttributionUntrustworthyOrigin       AttributionReportingIssueType = "AttributionUntrustworthyOrigin"
+)
+
+// MarshalEasyJSON satisfies easyjson.Marshaler.
+func (t AttributionReportingIssueType) MarshalEasyJSON(out *jwriter.Writer) {
+	out.String(string(t))
+}
+
+// MarshalJSON satisfies json.Marshaler.
+func (t AttributionReportingIssueType) MarshalJSON() ([]byte, error) {
+	return easyjson.Marshal(t)
+}
+
+// UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
+func (t *AttributionReportingIssueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
+	switch AttributionReportingIssueType(in.String()) {
+	case AttributionReportingIssueTypePermissionPolicyDisabled:
+		*t = AttributionReportingIssueTypePermissionPolicyDisabled
+	case AttributionReportingIssueTypeInvalidAttributionSourceEventID:
+		*t = AttributionReportingIssueTypeInvalidAttributionSourceEventID
+	case AttributionReportingIssueTypeInvalidAttributionData:
+		*t = AttributionReportingIssueTypeInvalidAttributionData
+	case AttributionReportingIssueTypeAttributionSourceUntrustworthyOrigin:
+		*t = AttributionReportingIssueTypeAttributionSourceUntrustworthyOrigin
+	case AttributionReportingIssueTypeAttributionUntrustworthyOrigin:
+		*t = AttributionReportingIssueTypeAttributionUntrustworthyOrigin
+
+	default:
+		in.AddError(errors.New("unknown AttributionReportingIssueType value"))
+	}
+}
+
+// UnmarshalJSON satisfies json.Unmarshaler.
+func (t *AttributionReportingIssueType) UnmarshalJSON(buf []byte) error {
+	return easyjson.Unmarshal(buf, t)
+}
+
+// AttributionReportingIssueDetails details for issues around "Attribution
+// Reporting API" usage. Explainer:
+// https://github.com/WICG/conversion-measurement-api.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-AttributionReportingIssueDetails
+type AttributionReportingIssueDetails struct {
+	ViolationType    AttributionReportingIssueType `json:"violationType"`
+	Frame            *AffectedFrame                `json:"frame,omitempty"`
+	Request          *AffectedRequest              `json:"request,omitempty"`
+	ViolatingNodeID  cdp.BackendNodeID             `json:"violatingNodeId,omitempty"`
+	InvalidParameter string                        `json:"invalidParameter,omitempty"`
+}
+
+// QuirksModeIssueDetails details for issues about documents in Quirks Mode
+// or Limited Quirks Mode that affects page layouting.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-QuirksModeIssueDetails
+type QuirksModeIssueDetails struct {
+	IsLimitedQuirksMode bool              `json:"isLimitedQuirksMode"` // If false, it means the document's mode is "quirks" instead of "limited-quirks".
+	DocumentNodeID      cdp.BackendNodeID `json:"documentNodeId"`
+	URL                 string            `json:"url"`
+	FrameID             cdp.FrameID       `json:"frameId"`
+	LoaderID            cdp.LoaderID      `json:"loaderId"`
+}
+
+// NavigatorUserAgentIssueDetails [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-NavigatorUserAgentIssueDetails
+type NavigatorUserAgentIssueDetails struct {
+	URL      string              `json:"url"`
+	Location *SourceCodeLocation `json:"location,omitempty"`
 }
 
 // InspectorIssueCode a unique identifier for the type of issue. Each type
@@ -457,9 +871,18 @@ func (t InspectorIssueCode) String() string {
 
 // InspectorIssueCode values.
 const (
-	InspectorIssueCodeSameSiteCookieIssue    InspectorIssueCode = "SameSiteCookieIssue"
-	InspectorIssueCodeMixedContentIssue      InspectorIssueCode = "MixedContentIssue"
-	InspectorIssueCodeBlockedByResponseIssue InspectorIssueCode = "BlockedByResponseIssue"
+	InspectorIssueCodeSameSiteCookieIssue        InspectorIssueCode = "SameSiteCookieIssue"
+	InspectorIssueCodeMixedContentIssue          InspectorIssueCode = "MixedContentIssue"
+	InspectorIssueCodeBlockedByResponseIssue     InspectorIssueCode = "BlockedByResponseIssue"
+	InspectorIssueCodeHeavyAdIssue               InspectorIssueCode = "HeavyAdIssue"
+	InspectorIssueCodeContentSecurityPolicyIssue InspectorIssueCode = "ContentSecurityPolicyIssue"
+	InspectorIssueCodeSharedArrayBufferIssue     InspectorIssueCode = "SharedArrayBufferIssue"
+	InspectorIssueCodeTrustedWebActivityIssue    InspectorIssueCode = "TrustedWebActivityIssue"
+	InspectorIssueCodeLowTextContrastIssue       InspectorIssueCode = "LowTextContrastIssue"
+	InspectorIssueCodeCorsIssue                  InspectorIssueCode = "CorsIssue"
+	InspectorIssueCodeAttributionReportingIssue  InspectorIssueCode = "AttributionReportingIssue"
+	InspectorIssueCodeQuirksModeIssue            InspectorIssueCode = "QuirksModeIssue"
+	InspectorIssueCodeNavigatorUserAgentIssue    InspectorIssueCode = "NavigatorUserAgentIssue"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -481,6 +904,24 @@ func (t *InspectorIssueCode) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = InspectorIssueCodeMixedContentIssue
 	case InspectorIssueCodeBlockedByResponseIssue:
 		*t = InspectorIssueCodeBlockedByResponseIssue
+	case InspectorIssueCodeHeavyAdIssue:
+		*t = InspectorIssueCodeHeavyAdIssue
+	case InspectorIssueCodeContentSecurityPolicyIssue:
+		*t = InspectorIssueCodeContentSecurityPolicyIssue
+	case InspectorIssueCodeSharedArrayBufferIssue:
+		*t = InspectorIssueCodeSharedArrayBufferIssue
+	case InspectorIssueCodeTrustedWebActivityIssue:
+		*t = InspectorIssueCodeTrustedWebActivityIssue
+	case InspectorIssueCodeLowTextContrastIssue:
+		*t = InspectorIssueCodeLowTextContrastIssue
+	case InspectorIssueCodeCorsIssue:
+		*t = InspectorIssueCodeCorsIssue
+	case InspectorIssueCodeAttributionReportingIssue:
+		*t = InspectorIssueCodeAttributionReportingIssue
+	case InspectorIssueCodeQuirksModeIssue:
+		*t = InspectorIssueCodeQuirksModeIssue
+	case InspectorIssueCodeNavigatorUserAgentIssue:
+		*t = InspectorIssueCodeNavigatorUserAgentIssue
 
 	default:
 		in.AddError(errors.New("unknown InspectorIssueCode value"))
@@ -498,9 +939,18 @@ func (t *InspectorIssueCode) UnmarshalJSON(buf []byte) error {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-InspectorIssueDetails
 type InspectorIssueDetails struct {
-	SameSiteCookieIssueDetails    *SameSiteCookieIssueDetails    `json:"sameSiteCookieIssueDetails,omitempty"`
-	MixedContentIssueDetails      *MixedContentIssueDetails      `json:"mixedContentIssueDetails,omitempty"`
-	BlockedByResponseIssueDetails *BlockedByResponseIssueDetails `json:"blockedByResponseIssueDetails,omitempty"`
+	SameSiteCookieIssueDetails        *SameSiteCookieIssueDetails        `json:"sameSiteCookieIssueDetails,omitempty"`
+	MixedContentIssueDetails          *MixedContentIssueDetails          `json:"mixedContentIssueDetails,omitempty"`
+	BlockedByResponseIssueDetails     *BlockedByResponseIssueDetails     `json:"blockedByResponseIssueDetails,omitempty"`
+	HeavyAdIssueDetails               *HeavyAdIssueDetails               `json:"heavyAdIssueDetails,omitempty"`
+	ContentSecurityPolicyIssueDetails *ContentSecurityPolicyIssueDetails `json:"contentSecurityPolicyIssueDetails,omitempty"`
+	SharedArrayBufferIssueDetails     *SharedArrayBufferIssueDetails     `json:"sharedArrayBufferIssueDetails,omitempty"`
+	TwaQualityEnforcementDetails      *TrustedWebActivityIssueDetails    `json:"twaQualityEnforcementDetails,omitempty"`
+	LowTextContrastIssueDetails       *LowTextContrastIssueDetails       `json:"lowTextContrastIssueDetails,omitempty"`
+	CorsIssueDetails                  *CorsIssueDetails                  `json:"corsIssueDetails,omitempty"`
+	AttributionReportingIssueDetails  *AttributionReportingIssueDetails  `json:"attributionReportingIssueDetails,omitempty"`
+	QuirksModeIssueDetails            *QuirksModeIssueDetails            `json:"quirksModeIssueDetails,omitempty"`
+	NavigatorUserAgentIssueDetails    *NavigatorUserAgentIssueDetails    `json:"navigatorUserAgentIssueDetails,omitempty"`
 }
 
 // InspectorIssue an inspector issue reported from the back-end.
@@ -509,6 +959,7 @@ type InspectorIssueDetails struct {
 type InspectorIssue struct {
 	Code    InspectorIssueCode     `json:"code"`
 	Details *InspectorIssueDetails `json:"details"`
+	IssueID string                 `json:"issueId,omitempty"` // A unique id for this issue. May be omitted if no other entity (e.g. exception, CDP message, etc.) is referencing this issue.
 }
 
 // GetEncodedResponseEncoding the encoding to use.

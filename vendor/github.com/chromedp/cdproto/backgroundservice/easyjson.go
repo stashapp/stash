@@ -30,7 +30,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice(in *jlexer.
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -96,7 +96,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice1(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -162,7 +162,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice2(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -235,7 +235,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice3(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -308,7 +308,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice4(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -381,7 +381,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice5(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -459,7 +459,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice6(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()
@@ -623,7 +623,7 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoBackgroundservice7(in *jlexer
 	}
 	in.Delim('{')
 	for !in.IsDelim('}') {
-		key := in.UnsafeString()
+		key := in.UnsafeFieldName(false)
 		in.WantColon()
 		if in.IsNull() {
 			in.Skip()

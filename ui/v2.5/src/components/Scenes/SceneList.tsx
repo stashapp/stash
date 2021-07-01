@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import _ from "lodash";
+import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import {
@@ -32,6 +33,7 @@ export const SceneList: React.FC<ISceneList> = ({
   defaultSort,
   persistState,
 }) => {
+  const intl = useIntl();
   const history = useHistory();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -39,26 +41,26 @@ export const SceneList: React.FC<ISceneList> = ({
 
   const otherOperations = [
     {
-      text: "Play selected",
+      text: intl.formatMessage({ id: "actions.play_selected" }),
       onClick: playSelected,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Play Random",
+      text: intl.formatMessage({ id: "actions.play_random" }),
       onClick: playRandom,
     },
     {
-      text: "Generate...",
+      text: intl.formatMessage({ id: "actions.generate" }),
       onClick: generate,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export...",
+      text: intl.formatMessage({ id: "actions.export" }),
       onClick: onExport,
       isDisplayed: showWhenSelected,
     },
     {
-      text: "Export all...",
+      text: intl.formatMessage({ id: "actions.export_all" }),
       onClick: onExportAll,
     },
   ];

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
@@ -14,7 +15,14 @@ import {
   DurationInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Form, Button, Col, Row, InputGroup } from "react-bootstrap";
+import {
+  Modal as BSModal,
+  Form,
+  Button,
+  Col,
+  Row,
+  InputGroup,
+} from "react-bootstrap";
 import { DurationUtils, ImageUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
@@ -30,6 +38,7 @@ interface IMovieEditPanel {
   onDelete: () => void;
   setFrontImage: (image?: string | null) => void;
   setBackImage: (image?: string | null) => void;
+  onImageEncoding: (loading?: boolean) => void;
 }
 
 export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
@@ -39,12 +48,19 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   onDelete,
   setFrontImage,
   setBackImage,
+  onImageEncoding,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
 
   const isNew = movie === undefined;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
+
+  const [imageClipboard, setImageClipboard] = useState<string | undefined>(
+    undefined
+  );
 
   const Scrapers = useListMovieScrapers();
   const [scrapedMovie, setScrapedMovie] = useState<
@@ -70,6 +86,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     director: yup.string().optional().nullable(),
     synopsis: yup.string().optional().nullable(),
     url: yup.string().optional().nullable(),
+    front_image: yup.string().optional().nullable(),
+    back_image: yup.string().optional().nullable(),
   });
 
   const initialValues = {
@@ -77,11 +95,13 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     aliases: movie?.aliases,
     duration: movie?.duration,
     date: movie?.date,
-    rating: movie?.rating,
+    rating: movie?.rating ?? null,
     studio_id: movie?.studio?.id,
     director: movie?.director,
     synopsis: movie?.synopsis,
     url: movie?.url,
+    front_image: undefined,
+    back_image: undefined,
   };
 
   type InputValues = typeof initialValues;
@@ -91,6 +111,21 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     validationSchema: schema,
     onSubmit: (values) => onSubmit(getMovieInput(values)),
   });
+
+  const encodingImage = ImageUtils.usePasteImage(showImageAlert);
+
+  useEffect(() => {
+    setFrontImage(formik.values.front_image);
+  }, [formik.values.front_image, setFrontImage]);
+
+  useEffect(() => {
+    setBackImage(formik.values.back_image);
+  }, [formik.values.back_image, setBackImage]);
+
+  useEffect(() => onImageEncoding(encodingImage), [
+    onImageEncoding,
+    encodingImage,
+  ]);
 
   function setRating(v: number) {
     formik.setFieldValue("rating", v);
@@ -121,6 +156,22 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       Mousetrap.unbind("s s");
     };
   });
+
+  function showImageAlert(imageData: string) {
+    setImageClipboard(imageData);
+    setIsImageAlertOpen(true);
+  }
+
+  function setImageFromClipboard(isFrontImage: boolean) {
+    if (isFrontImage) {
+      formik.setFieldValue("front_image", imageClipboard);
+    } else {
+      formik.setFieldValue("back_image", imageClipboard);
+    }
+
+    setImageClipboard(undefined);
+    setIsImageAlertOpen(false);
+  }
 
   function getMovieInput(values: InputValues) {
     const input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
@@ -172,10 +223,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     }
 
     const imageStr = (state as GQL.ScrapedMovieDataFragment).front_image;
-    setFrontImage(imageStr ?? undefined);
+    formik.setFieldValue("front_image", imageStr ?? undefined);
 
     const backImageStr = (state as GQL.ScrapedMovieDataFragment).back_image;
-    setBackImage(backImageStr ?? undefined);
+    formik.setFieldValue("back_image", backImageStr ?? undefined);
   }
 
   async function onScrapeMovieURL() {
@@ -256,11 +307,52 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   }
 
   function onFrontImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, setFrontImage);
+    ImageUtils.onImageChange(event, (data) =>
+      formik.setFieldValue("front_image", data)
+    );
   }
 
   function onBackImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, setBackImage);
+    ImageUtils.onImageChange(event, (data) =>
+      formik.setFieldValue("back_image", data)
+    );
+  }
+
+  function renderImageAlert() {
+    return (
+      <BSModal
+        show={isImageAlertOpen}
+        onHide={() => setIsImageAlertOpen(false)}
+      >
+        <BSModal.Body>
+          <p>Select image to set</p>
+        </BSModal.Body>
+        <BSModal.Footer>
+          <div>
+            <Button
+              className="mr-2"
+              variant="secondary"
+              onClick={() => setIsImageAlertOpen(false)}
+            >
+              <FormattedMessage id="actions.cancel" />
+            </Button>
+
+            <Button
+              className="mr-2"
+              onClick={() => setImageFromClipboard(false)}
+            >
+              Back Image
+            </Button>
+            <Button
+              className="mr-2"
+              onClick={() => setImageFromClipboard(true)}
+            >
+              Front Image
+            </Button>
+          </div>
+        </BSModal.Footer>
+      </BSModal>
+    );
   }
 
   if (isLoading) return <LoadingIndicator />;
@@ -288,22 +380,29 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   // TODO: CSS class
   return (
     <div>
-      {isNew && <h2>Add Movie</h2>}
+      {isNew && (
+        <h2>
+          {intl.formatMessage(
+            { id: "actions.add_entity" },
+            { entityType: intl.formatMessage({ id: "movie" }) }
+          )}
+        </h2>
+      )}
 
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">
         <Form.Group controlId="name" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            Name
+            {intl.formatMessage({ id: "name" })}
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
-              placeholder="Name"
+              placeholder={intl.formatMessage({ id: "name" })}
               {...formik.getFieldProps("name")}
               isInvalid={!!formik.errors.name}
             />
@@ -313,11 +412,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("aliases", "Aliases")}
+        {renderTextField("aliases", intl.formatMessage({ id: "aliases" }))}
 
         <Form.Group controlId="duration" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Duration
+            {intl.formatMessage({ id: "duration" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <DurationInput
@@ -329,11 +428,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("date", "Date (YYYY-MM-DD)")}
+        {renderTextField("date", intl.formatMessage({ id: "date" }))}
 
         <Form.Group controlId="studio" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Studio
+            {intl.formatMessage({ id: "studio" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <StudioSelect
@@ -348,29 +447,31 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("director", "Director")}
+        {renderTextField("director", intl.formatMessage({ id: "director" }))}
 
         <Form.Group controlId="rating" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Rating
+            {intl.formatMessage({ id: "rating" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <RatingStars
               value={formik.values.rating ?? undefined}
-              onSetRating={(value) => formik.setFieldValue("rating", value)}
+              onSetRating={(value) =>
+                formik.setFieldValue("rating", value ?? null)
+              }
             />
           </Col>
         </Form.Group>
 
         <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            URL
+            {intl.formatMessage({ id: "url" })}
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
             <InputGroup>
               <Form.Control
                 className="text-input"
-                placeholder="URL"
+                placeholder={intl.formatMessage({ id: "url" })}
                 {...formik.getFieldProps("url")}
               />
               <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
@@ -380,13 +481,13 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
         <Form.Group controlId="synopsis" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            Synopsis
+            {intl.formatMessage({ id: "synopsis" })}
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control
               as="textarea"
               className="text-input"
-              placeholder="Synopsis"
+              placeholder={intl.formatMessage({ id: "synopsis" })}
               {...formik.getFieldProps("synopsis")}
             />
           </Col>
@@ -399,20 +500,22 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         isEditing={isEditing}
         onToggleEdit={onCancel}
         onSave={() => formik.handleSubmit()}
+        saveDisabled={!formik.dirty}
         onImageChange={onFrontImageChange}
-        onImageChangeURL={setFrontImage}
+        onImageChangeURL={(i) => formik.setFieldValue("front_image", i)}
         onClearImage={() => {
-          setFrontImage(null);
+          formik.setFieldValue("front_image", null);
         }}
         onBackImageChange={onBackImageChange}
-        onBackImageChangeURL={setBackImage}
+        onBackImageChangeURL={(i) => formik.setFieldValue("back_image", i)}
         onClearBackImage={() => {
-          setBackImage(null);
+          formik.setFieldValue("back_image", null);
         }}
         onDelete={onDelete}
       />
 
       {maybeRenderScrapeDialog()}
+      {renderImageAlert()}
     </div>
   );
 };
