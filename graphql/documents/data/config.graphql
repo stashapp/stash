@@ -68,6 +68,7 @@ fragment ConfigScrapingData on ConfigScrapingResult {
   scraperUserAgent
   scraperCertCheck
   scraperCDPPath
+  excludeTagPatterns
 }
 
 fragment ConfigData on ConfigResult {
