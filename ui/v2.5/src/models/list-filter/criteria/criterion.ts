@@ -4,24 +4,26 @@ import { IntlShape } from "react-intl";
 import {
   CriterionModifier,
   HierarchicalMultiCriterionInput,
+  IntCriterionInput,
   MultiCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import {
   CriterionType,
   encodeILabeledId,
+  IHierarchicalLabelValue,
   ILabeledId,
   ILabeledValue,
+  INumberValue,
   IOptionType,
-  IHierarchicalLabelValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
 export type CriterionValue =
   | string
-  | number
   | ILabeledId[]
-  | IHierarchicalLabelValue;
+  | IHierarchicalLabelValue
+  | INumberValue;
 
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",
@@ -35,6 +37,8 @@ const modifierMessageIDs = {
   [CriterionModifier.Excludes]: "criterion_modifier.excludes",
   [CriterionModifier.MatchesRegex]: "criterion_modifier.matches_regex",
   [CriterionModifier.NotMatchesRegex]: "criterion_modifier.not_matches_regex",
+  [CriterionModifier.Between]: "criterion_modifier.between",
+  [CriterionModifier.NotBetween]: "criterion_modifier.not_between",
 };
 
 // V = criterion value type
@@ -293,6 +297,8 @@ export class NumberCriterionOption extends CriterionOption {
         CriterionModifier.LessThan,
         CriterionModifier.IsNull,
         CriterionModifier.NotNull,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
       ],
       defaultModifier: CriterionModifier.Equals,
       options,
@@ -305,13 +311,35 @@ export function createNumberCriterionOption(value: CriterionType) {
   return new NumberCriterionOption(value, value, value);
 }
 
-export class NumberCriterion extends Criterion<number> {
+export class NumberCriterion extends Criterion<INumberValue> {
+  public encodeValue() {
+    return {
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  protected toCriterionInput(): IntCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
   public getLabelValue() {
-    return this.value.toString();
+    return this.modifier === CriterionModifier.Between ||
+      this.modifier === CriterionModifier.NotBetween
+      ? `${this.value.value}, ${this.value.value2 ?? 0}`
+      : this.modifier === CriterionModifier.GreaterThan
+      ? `${this.value.value}`
+      : this.modifier === CriterionModifier.LessThan
+      ? `${this.value.value}`
+      : `${this.value.value}`;
   }
 
   constructor(type: CriterionOption) {
-    super(type, 0);
+    super(type, { value: 0, value2: undefined });
   }
 }
 
@@ -415,6 +443,8 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
         CriterionModifier.NotEquals,
         CriterionModifier.GreaterThan,
         CriterionModifier.LessThan,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
       ],
       defaultModifier: CriterionModifier.Equals,
       inputType: "number",
@@ -426,12 +456,39 @@ export function createMandatoryNumberCriterionOption(value: CriterionType) {
   return new MandatoryNumberCriterionOption(value, value, value);
 }
 
-export class DurationCriterion extends Criterion<number> {
+export class DurationCriterion extends Criterion<INumberValue> {
   constructor(type: CriterionOption) {
-    super(type, 0);
+    super(type, { value: 0, value2: undefined });
+  }
+
+  public encodeValue() {
+    return {
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  protected toCriterionInput(): IntCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.value.value,
+      value2: this.value.value2,
+    };
   }
 
   public getLabelValue() {
-    return DurationUtils.secondsToString(this.value);
+    return this.modifier === CriterionModifier.Between ||
+      this.modifier === CriterionModifier.NotBetween
+      ? `${DurationUtils.secondsToString(
+          this.value.value
+        )} ${DurationUtils.secondsToString(this.value.value2 ?? 0)}`
+      : this.modifier === CriterionModifier.GreaterThan
+      ? DurationUtils.secondsToString(this.value.value)
+      : this.modifier === CriterionModifier.LessThan
+      ? DurationUtils.secondsToString(this.value.value)
+      : this.modifier === CriterionModifier.Equals ||
+        this.modifier === CriterionModifier.NotEquals
+      ? DurationUtils.secondsToString(this.value.value)
+      : "?";
   }
 }
