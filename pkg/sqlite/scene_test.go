@@ -682,6 +682,13 @@ func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models
 	}
 }
 
+func TestAllResolutionsHaveResolutionRange(t *testing.T) {
+	for _, resolution := range models.AllResolutionEnum {
+		assert.NotZero(t, resolution.GetMinResolution(), "Define resolution range for %s in extension_resolution.go", resolution)
+		assert.NotZero(t, resolution.GetMaxResolution(), "Define resolution range for %s in extension_resolution.go", resolution)
+	}
+}
+
 func TestSceneQueryResolutionModifiers(t *testing.T) {
 	if err := withRollbackTxn(func(r models.Repository) error {
 		qb := r.Scene()
