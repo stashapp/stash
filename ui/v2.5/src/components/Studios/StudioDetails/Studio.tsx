@@ -356,7 +356,7 @@ export const Studio: React.FC = () => {
       <div
         className={cx("studio-details", {
           "col-md-4": !isNew,
-          "col-8": isNew,
+          "col-md-8": isNew,
         })}
       >
         {isNew && (
