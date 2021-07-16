@@ -65,7 +65,7 @@
     "select_all": "Selecionar todos",
     "select_none": "Selecionar nenhum",
     "selective_auto_tag": "Auto Tag seletivo",
-    "selective_scan": "Scaneamento seletivo",
+    "selective_scan": "Escaneamento seletivo",
     "set_as_default": "Aplicar como padrão",
     "set_back_image": "Imagem de fundo…",
     "set_front_image": "Imagem frontal…",
@@ -73,11 +73,11 @@
     "show": "Mostrar",
     "skip": "Pular",
     "tasks": {
-      "clean_confirm_message": "Tem certeza de que quer limpar? Isto deletará as informações do banco de dados e conteúdos gerados de todas as cenas e galerias que não são mais encontradas no sistema.",
+      "clean_confirm_message": "Tem certeza de que quer limpar? Isto irá deletar as informações do banco de dados e conteúdos gerados de todas as cenas e galerias que não são mais encontradas no sistema.",
       "dry_mode_selected": "Modo não destrutivo. Nenhum arquivo será deletado, apenas será logado.",
       "import_warning": "Tem certeza de que quer importar? Isto deletará o banco de dados e re-importar de seus metadados exportados."
     },
-    "temp_disable": "Disabilitar temporariamente…",
+    "temp_disable": "Disabilitar…",
     "temp_enable": "Habilitar temporariamente…",
     "view_random": "Mostrar aleatoriamente"
   },
@@ -91,7 +91,7 @@
   "birthdate": "Data de nascimento",
   "bitrate": "Taxa de bits",
   "career_length": "Duração da carreira",
-  "child_studios": "Estúdios",
+  "child_studios": "Estúdios filhos",
   "component_tagger": {
     "config": {
       "active_instance": "Ativar stash-box:",
