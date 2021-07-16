@@ -77,7 +77,7 @@
       "dry_mode_selected": "Modo não destrutivo. Nenhum arquivo será apagado, apenas será logado.",
       "import_warning": "Tem certeza de que quer importar? Isto irá apagar o banco de dados e re-importar de seus metadados exportados."
     },
-    "temp_disable": "Disabilitar…",
+    "temp_disable": "Desabilitar temporariamente…",
     "temp_enable": "Habilitar temporariamente…",
     "view_random": "Mostrar aleatoriamente"
   },
