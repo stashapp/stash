@@ -45,9 +45,9 @@ function fingerprintSearchResults(
   scenes.forEach((scene) => {
     // ignore where scene entry is not in results
     if (
-      (scene.checksum && fingerprints[scene.checksum]) ||
-      (scene.oshash && fingerprints[scene.oshash]) ||
-      (scene.phash && fingerprints[scene.phash])
+      (scene.checksum && fingerprints[scene.checksum] !== undefined) ||
+      (scene.oshash && fingerprints[scene.oshash] !== undefined) ||
+      (scene.phash && fingerprints[scene.phash] !== undefined)
     ) {
       const fingerprintMatches = uniqBy(
         [
@@ -159,9 +159,8 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
     const newFingerprints = { ...fingerprints };
 
-    const sceneIDs = scenes
-      .filter((s) => s.stash_ids.length === 0)
-      .map((s) => s.id);
+    const filteredScenes = scenes.filter((s) => s.stash_ids.length === 0);
+    const sceneIDs = filteredScenes.map((s) => s.id);
 
     const results = await stashBoxSceneBatchQuery(
       sceneIDs,
@@ -185,8 +184,17 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
     });
 
     // Null any ids that are still undefined since it means they weren't found
-    sceneIDs.forEach((id) => {
-      newFingerprints[id] = newFingerprints[id] ?? null;
+    filteredScenes.forEach((scene) => {
+      if (scene.oshash) {
+        newFingerprints[scene.oshash] = newFingerprints[scene.oshash] ?? null;
+      }
+      if (scene.checksum) {
+        newFingerprints[scene.checksum] =
+          newFingerprints[scene.checksum] ?? null;
+      }
+      if (scene.phash) {
+        newFingerprints[scene.phash] = newFingerprints[scene.phash] ?? null;
+      }
     });
 
     const newSearchResults = fingerprintSearchResults(scenes, newFingerprints);
@@ -200,7 +208,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
   const canFingerprintSearch = () =>
     scenes.some(
-      (s) => s.stash_ids.length === 0 && fingerprints[s.id] === undefined
+      (s) => s.stash_ids.length === 0 && (!s.oshash || fingerprints[s.oshash] === undefined) && (!s.checksum || fingerprints[s.checksum] === undefined) && (!s.phash || fingerprints[s.phash] === undefined)
     );
 
   const getFingerprintCount = () => {
