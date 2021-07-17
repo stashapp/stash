@@ -44,16 +44,25 @@ function fingerprintSearchResults(
 
   // perform matching here
   scenes.forEach((scene) => {
-    const fingerprintMatches = uniqBy(
-      [
-        ...(fingerprints[scene.checksum ?? ""] ?? []),
-        ...(fingerprints[scene.oshash ?? ""] ?? []),
-        ...(fingerprints[scene.phash ?? ""] ?? []),
-      ].flat(),
-      (f) => f.stash_id
-    );
+    // ignore where scene entry is not in results
+    if (
+      (scene.checksum && fingerprints[scene.checksum]) ||
+      (scene.oshash && fingerprints[scene.oshash]) ||
+      (scene.phash && fingerprints[scene.phash])
+    ) {
+      const fingerprintMatches = uniqBy(
+        [
+          ...(fingerprints[scene.checksum ?? ""] ?? []),
+          ...(fingerprints[scene.oshash ?? ""] ?? []),
+          ...(fingerprints[scene.phash ?? ""] ?? []),
+        ].flat(),
+        (f) => f.stash_id
+      );
 
-    ret[scene.id] = fingerprintMatches;
+      ret[scene.id] = fingerprintMatches;
+    } else {
+      delete ret[scene.id];
+    }
   });
 
   return ret;
