@@ -259,7 +259,7 @@ export const Tag: React.FC = () => {
       <div
         className={cx("tag-details", {
           "col-md-4": !isNew,
-          "col-8": isNew,
+          "col-md-8": isNew,
         })}
       >
         <div className="text-center logo-container">
