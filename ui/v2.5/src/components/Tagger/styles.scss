@@ -26,6 +26,13 @@
   background-color: #495b68;
   border-radius: 3px;
   padding: 1rem;
+
+  .scene-details {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 }
 
 .search-result {
@@ -243,4 +250,8 @@ li.active .scene-image-container {
 
 .scene-details {
   margin-top: 0.5rem;
+
+  > .row {
+    width: 100%;
+  }
 }

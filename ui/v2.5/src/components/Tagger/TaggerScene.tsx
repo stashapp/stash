@@ -1,11 +1,12 @@
 import React, { useRef, useState } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { FormattedMessage } from "react-intl";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 
 import * as GQL from "src/core/generated-graphql";
-import { TruncatedText } from "src/components/Shared";
+import { Icon, TagLink, TruncatedText } from "src/components/Shared";
+import { sortPerformers } from "src/core/performers";
 import StashSearchResult from "./StashSearchResult";
 import { ITaggerConfig } from "./constants";
 import {
@@ -14,6 +15,68 @@ import {
   sortScenesByDuration,
   prepareQueryString,
 } from "./utils";
+
+interface ITaggerSceneDetails {
+  scene: GQL.SlimSceneDataFragment;
+}
+
+const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
+  const [open, setOpen] = useState(false);
+  const sorted = sortPerformers(scene.performers);
+
+  return (
+    <div className="scene-details">
+      <Collapse in={open}>
+        <div className="row">
+          <div className="col col-lg-6">
+            <h4>{scene.title}</h4>
+            <h5>
+              {scene.studio?.name}
+              {scene.studio?.name && scene.date && ` • `}
+              {scene.date}
+            </h5>
+            <TruncatedText text={scene.details ?? ""} lineCount={3} />
+          </div>
+          <div className="col col-lg-6">
+            <div>
+              {sorted.map((performer) => (
+                <div className="performer-tag-container row" key={performer.id}>
+                  <Link
+                    to={`/performers/${performer.id}`}
+                    className="performer-tag col m-auto zoom-2"
+                  >
+                    <img
+                      className="image-thumbnail"
+                      alt={performer.name ?? ""}
+                      src={performer.image_path ?? ""}
+                    />
+                  </Link>
+                  <TagLink
+                    key={performer.id}
+                    performer={performer}
+                    className="d-block"
+                  />
+                </div>
+              ))}
+            </div>
+            <div>
+              {scene.tags.map((tag) => (
+                <TagLink key={tag.id} tag={tag} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </Collapse>
+      <Button
+        onClick={() => setOpen(!open)}
+        className="minimal collapse-button"
+        size="lg"
+      >
+        <Icon icon={open ? "chevron-up" : "chevron-down"} />
+      </Button>
+    </div>
+  );
+};
 
 export interface ISearchResult {
   results?: IStashBoxScene[];
@@ -232,6 +295,7 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
           {renderMainContent()}
           <div className="sub-content text-right">{renderSubContent()}</div>
         </div>
+        <TaggerSceneDetails scene={scene} />
       </div>
       {renderSearchResult()}
     </div>
