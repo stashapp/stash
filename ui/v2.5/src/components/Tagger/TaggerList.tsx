@@ -208,7 +208,11 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
   const canFingerprintSearch = () =>
     scenes.some(
-      (s) => s.stash_ids.length === 0 && (!s.oshash || fingerprints[s.oshash] === undefined) && (!s.checksum || fingerprints[s.checksum] === undefined) && (!s.phash || fingerprints[s.phash] === undefined)
+      (s) =>
+        s.stash_ids.length === 0 &&
+        (!s.oshash || fingerprints[s.oshash] === undefined) &&
+        (!s.checksum || fingerprints[s.checksum] === undefined) &&
+        (!s.phash || fingerprints[s.phash] === undefined)
     );
 
   const getFingerprintCount = () => {
