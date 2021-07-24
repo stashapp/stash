@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper/log"
 )
 
 type scriptScraper struct {
@@ -66,12 +67,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		return errors.New("Error running scraper script")
 	}
 
-	scanner := bufio.NewScanner(stderr)
-	go func() { // log errors from stderr pipe
-		for scanner.Scan() {
-			logger.Errorf("scraper: %s", scanner.Text())
-		}
-	}()
+	go log.handleScraperStderr(stderr)
 
 	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
 
