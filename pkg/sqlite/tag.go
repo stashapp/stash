@@ -287,6 +287,7 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	query.handleCriterion(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
 	query.handleCriterion(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
 	query.handleCriterion(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
+	query.handleCriterion(tagMarkerCountCriterionHandler(qb, tagFilter.MarkerCount))
 
 	return query
 }
@@ -432,6 +433,23 @@ func tagPerformerCountCriterionHandler(qb *tagQueryBuilder, performerCount *mode
 			args := []interface{}{}
 			if count == 1 {
 				args = append(args, performerCount.Value)
+			}
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if markerCount != nil {
+			f.addJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
+			f.addJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = tags.id")
+			clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
+
+			args := []interface{}{}
+			if count == 1 {
+				args = append(args, markerCount.Value)
 			}
 
 			f.addHaving(clause, args...)
