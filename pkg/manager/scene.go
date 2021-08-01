@@ -148,6 +148,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, fileNamingAlgo models.HashAlgorithm) {
 	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(fileNamingAlgo), seconds)
 	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(fileNamingAlgo), seconds)
+	screenshotPath := GetInstance().Paths.SceneMarkers.GetStreamScreenshotPath(scene.GetHash(fileNamingAlgo), seconds)
 
 	exists, _ := utils.FileExists(videoPath)
 	if exists {
@@ -161,7 +162,15 @@ func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, fileNamingAlgo mod
 	if exists {
 		err := os.Remove(imagePath)
 		if err != nil {
-			logger.Warnf("Could not delete file %s: %s", videoPath, err.Error())
+			logger.Warnf("Could not delete file %s: %s", imagePath, err.Error())
+		}
+	}
+
+	exists, _ = utils.FileExists(screenshotPath)
+	if exists {
+		err := os.Remove(screenshotPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", screenshotPath, err.Error())
 		}
 	}
 }

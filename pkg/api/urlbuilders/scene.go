@@ -59,6 +59,10 @@ func (b SceneURLBuilder) GetSceneMarkerStreamPreviewURL(sceneMarkerID int) strin
 	return b.BaseURL + "/scene/" + b.SceneID + "/scene_marker/" + strconv.Itoa(sceneMarkerID) + "/preview"
 }
 
+func (b SceneURLBuilder) GetSceneMarkerStreamScreenshotURL(sceneMarkerID int) string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/scene_marker/" + strconv.Itoa(sceneMarkerID) + "/screenshot"
+}
+
 func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }
