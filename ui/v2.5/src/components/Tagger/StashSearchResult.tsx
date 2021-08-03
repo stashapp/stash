@@ -50,11 +50,19 @@ const getDurationStatus = (
       </div>
     );
 
+  if (!scene.duration && durations.length === 0)
+    return <FormattedMessage id="component_tagger.results.duration_unknown" />;
+
   const minDiff = Math.min(
     Math.abs(scene.duration - stashDuration),
     ...durations
   );
-  return <div>Duration off by at least {Math.floor(minDiff)}s</div>;
+  return (
+    <FormattedMessage
+      id="component_tagger.results.duration_off"
+      values={{ number: Math.floor(minDiff) }}
+    />
+  );
 };
 
 const getFingerprintStatus = (

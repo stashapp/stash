@@ -310,7 +310,7 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 	}
 
 	if len(clauses) > 0 {
-		c := strings.Join(clauses, " AND ")
+		c := "(" + strings.Join(clauses, ") AND (") + ")"
 		if len(clauses) > 1 {
 			c = "(" + c + ")"
 		}
