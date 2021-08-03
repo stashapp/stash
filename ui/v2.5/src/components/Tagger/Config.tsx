@@ -11,7 +11,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import { useConfiguration } from "src/core/StashService";
 
-import { ITaggerConfig, ParseMode } from "./constants";
+import { ITaggerConfig, ParseMode, TagOperation } from "./constants";
 
 interface IConfigProps {
   show: boolean;
@@ -118,7 +118,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setConfig({
                       ...config,
-                      tagOperation: e.currentTarget.value,
+                      tagOperation: e.currentTarget.value as TagOperation,
                     })
                   }
                   disabled={!config.setTags}

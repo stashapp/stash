@@ -4,9 +4,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
-import { stashBoxSceneBatchQuery } from "src/core/StashService";
+import { stashBoxSceneBatchQuery, useTagCreate } from "src/core/StashService";
 
 import { SceneQueue } from "src/models/sceneQueue";
+import { useToast } from "src/hooks";
 import { uniqBy } from "lodash";
 import { ITaggerConfig } from "./constants";
 import { selectScenes, IStashBoxScene } from "./utils";
@@ -76,6 +77,9 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
   fingerprintQueue,
 }) => {
   const intl = useIntl();
+  const Toast = useToast();
+  const [createTag] = useTagCreate();
+
   const [fingerprintError, setFingerprintError] = useState("");
   const [loading, setLoading] = useState(false);
   const inputForm = useRef<HTMLFormElement>(null);
@@ -206,6 +210,53 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
     setFingerprintError("");
   };
 
+  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+    const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
+    try {
+      const result = await createTag({
+        variables: {
+          input: tagInput,
+        },
+      });
+
+      const tagID = result.data?.tagCreate?.id;
+
+      const newSearchResults = { ...searchResults };
+
+      // add the id to the existing search results
+      Object.keys(newSearchResults).forEach((k) => {
+        const searchResult = searchResults[k];
+        newSearchResults[k] = searchResult.map((r) => {
+          return {
+            ...r,
+            tags: r.tags.map((t) => {
+              if (t.name === toCreate.name) {
+                return {
+                  ...t,
+                  id: tagID,
+                };
+              }
+
+              return t;
+            }),
+          };
+        });
+      });
+
+      setSearchResults(newSearchResults);
+
+      Toast.success({
+        content: (
+          <span>
+            Created tag: <b>{toCreate.name}</b>
+          </span>
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   const canFingerprintSearch = () =>
     scenes.some(
       (s) =>
@@ -267,6 +318,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
           doSceneQuery={(queryString) => doSceneQuery(scene.id, queryString)}
           tagScene={handleTaggedScene}
           searchResult={searchResult}
+          createNewTag={createNewTag}
         />
       );
     });
@@ -274,6 +326,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
   return (
     <Card className="tagger-table">
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
+        {/* TODO - sources select goes here */}
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
           {(getFingerprintCount() > 0 || hideUnmatched) && (
