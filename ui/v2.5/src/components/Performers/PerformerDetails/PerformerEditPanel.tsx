@@ -466,7 +466,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function getUpdateValues(values: InputValues): GQL.PerformerUpdateInput {
     return {
       ...values,
-      gender: stringToGender(values.gender),
+      gender: stringToGender(values.gender) ?? null,
       rating: values.rating ?? null,
       weight: Number(values.weight),
       id: performer.id ?? "",
