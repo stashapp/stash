@@ -187,7 +187,7 @@ export function useTagScene(
 
     setSaveState("Updating scene");
     const imgurl = scene.images[0];
-    let imgData = null;
+    let imgData;
     if (imgurl && options.setCoverImage) {
       const img = await fetch(imgurl, {
         mode: "cors",
