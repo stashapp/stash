@@ -120,7 +120,7 @@ var defaultMenuItems = []string{"scenes", "images", "movies", "markers", "galler
 
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
-const CustomPerformerImageLocation = "set-custom-performer-image-destination"
+const CustomPerformerImageLocation = "custom_performer_image_location"
 const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
@@ -585,7 +585,6 @@ func (i *Instance) GetWallShowTitle() bool {
 	viper.SetDefault(WallShowTitle, true)
 	return viper.GetBool(WallShowTitle)
 }
-
 
 func (i *Instance) GetCustomPerformerImageLocation() string {
 	viper.SetDefault(CustomPerformerImageLocation, "")
