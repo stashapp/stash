@@ -40,19 +40,10 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 || defaultParam == "true" {
-		// Use the config to check if there is a custom performer image path defined.
-		c := config.GetInstance()
-		var customImageDir string = c.GetCustomPerformerImageLocation();
-
-		if (customImageDir != "") {
-			image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, customImageDir)
-		} else {
-				image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, "")
-		}
-
-		utils.ServeImage(image, w, r)
-
+		image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, config.GetInstance().GetCustomPerformerImageLocation())
 	}
+
+	utils.ServeImage(image, w, r)
 }
 
 func PerformerCtx(next http.Handler) http.Handler {
