@@ -74,6 +74,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
+  const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -351,6 +352,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.weight) {
       formik.setFieldValue("weight", state.weight);
     }
+
+    const remoteSiteID = state.remote_site_id;
+    if (remoteSiteID && (scraper as IStashBox).endpoint) {
+      const newIDs =
+        formik.values.stash_ids?.filter(
+          (s) => s.endpoint !== (scraper as IStashBox).endpoint
+        ) ?? [];
+      newIDs?.push({
+        endpoint: (scraper as IStashBox).endpoint,
+        stash_id: remoteSiteID,
+      });
+      formik.setFieldValue("stash_ids", newIDs);
+    }
   }
 
   function onImageLoad(imageData: string) {
@@ -507,7 +521,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     selectedPerformer: GQL.ScrapedPerformerDataFragment,
     selectedScraper: GQL.Scraper
   ) {
-    setScraper(undefined);
+    setIsScraperModalOpen(false);
     try {
       if (!scraper) return;
       setIsLoading(true);
@@ -525,6 +539,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       // if this is a new performer, just dump the data
       if (isNew) {
         updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+        setScraper(undefined);
       } else {
         setScrapedPerformer(result.data.scrapePerformer);
       }
@@ -559,7 +574,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   async function onScrapeStashBox(performerResult: GQL.ScrapedScenePerformer) {
-    setScraper(undefined);
+    setIsScraperModalOpen(false);
 
     const result: Partial<GQL.ScrapedPerformerDataFragment> = {
       ...performerResult,
@@ -571,9 +586,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // if this is a new performer, just dump the data
     if (isNew) {
       updatePerformerEditStateFromScraper(result);
+      setScraper(undefined);
     } else {
       setScrapedPerformer(result);
     }
+  }
+
+  function onScraperSelected(s: GQL.Scraper | IStashBox | undefined) {
+    setScraper(s);
+    setIsScraperModalOpen(true);
   }
 
   function renderScraperMenu() {
@@ -590,7 +611,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
               <div key={s.endpoint}>
                 <Button
                   className="minimal"
-                  onClick={() => setScraper({ ...s, index })}
+                  onClick={() => onScraperSelected({ ...s, index })}
                 >
                   {s.name ?? "Stash-Box"}
                 </Button>
@@ -602,7 +623,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                     <Button
                       key={s.name}
                       className="minimal"
-                      onClick={() => setScraper(s)}
+                      onClick={() => onScraperSelected(s)}
                     >
                       {s.name}
                     </Button>
@@ -648,7 +669,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   function maybeRenderScrapeDialog() {
-    if (!scrapedPerformer) {
+    if (!scrapedPerformer || !scraper) {
       return;
     }
 
@@ -663,6 +684,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       <PerformerScrapeDialog
         performer={currentPerformer}
         scraped={scrapedPerformer}
+        scraper={scraper}
         onClose={(p) => {
           onScrapeDialogClosed(p);
         }}
@@ -675,6 +697,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       updatePerformerEditStateFromScraper(p);
     }
     setScrapedPerformer(undefined);
+    setScraper(undefined);
   }
 
   function maybeRenderScrapeButton() {
@@ -731,8 +754,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  const renderScrapeModal = () =>
-    scraper !== undefined && isScraper(scraper) ? (
+  const renderScrapeModal = () => {
+    if (!isScraperModalOpen) return;
+
+    return scraper !== undefined && isScraper(scraper) ? (
       <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
@@ -747,6 +772,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         name={formik.values.name || ""}
       />
     ) : undefined;
+  };
 
   function renderDeleteAlert() {
     return (
