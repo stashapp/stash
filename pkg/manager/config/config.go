@@ -587,7 +587,8 @@ func (i *Instance) GetWallShowTitle() bool {
 }
 
 func (i *Instance) GetCustomPerformerImageLocation() string {
-	viper.SetDefault(CustomPerformerImageLocation, "")
+	// don't set the default, as it causes race condition crashes
+	// viper.SetDefault(CustomPerformerImageLocation, "")
 	return viper.GetString(CustomPerformerImageLocation)
 }
 

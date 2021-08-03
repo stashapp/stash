@@ -25,11 +25,12 @@ func getRandomPerformerImageUsingName(name, gender, customPath string) ([]byte, 
 			box = performerBoxCustom
 		} else {
 			// We need to set performerBoxCustom at runtime, as this is a custom path, and store it in a pointer.
-			performerBoxCustom = packr.New("Custom Performer Box", customPath)
+			newBox := packr.New("Custom Performer Box", customPath)
 
 			// only grab from this box if it is not empty
-			if len(performerBoxCustom.List()) > 0 {
-				box = performerBoxCustom
+			if len(newBox.List()) > 0 {
+				performerBoxCustom = newBox
+				box = newBox
 			}
 		}
 	}
