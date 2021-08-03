@@ -3,12 +3,9 @@
     src="logo.png" 
     width="240" height="78" border="0" alt="GJSON">
 <br>
-<a href="https://travis-ci.org/tidwall/gjson"><img src="https://img.shields.io/travis/tidwall/gjson.svg?style=flat-square" alt="Build Status"></a>
 <a href="https://godoc.org/github.com/tidwall/gjson"><img src="https://img.shields.io/badge/api-reference-blue.svg?style=flat-square" alt="GoDoc"></a>
 <a href="http://tidwall.com/gjson-play"><img src="https://img.shields.io/badge/%F0%9F%8F%90-playground-9900cc.svg?style=flat-square" alt="GJSON Playground"></a>
 </p>
-
-
 
 <p align="center">get json values quickly</a></p>
 
@@ -153,10 +150,6 @@ result.Less(token Result, caseSensitive bool) bool
 
 The `result.Value()` function returns an `interface{}` which requires type assertion and is one of the following Go types:
 
-The `result.Array()` function returns back an array of values.
-If the result represents a non-existent value, then an empty array will be returned.
-If the result is not a JSON array, the return value will be an array containing one result.
-
 ```go
 boolean >> bool
 number  >> float64
@@ -165,6 +158,10 @@ null    >> nil
 array   >> []interface{}
 object  >> map[string]interface{}
 ```
+
+The `result.Array()` function returns back an array of values.
+If the result represents a non-existent value, then an empty array will be returned.
+If the result is not a JSON array, the return value will be an array containing one result.
 
 ### 64-bit integers
 
@@ -476,7 +473,7 @@ JSON document used:
 }    
 ```
 
-Each operation was rotated though one of the following search paths:
+Each operation was rotated through one of the following search paths:
 
 ```
 widget.window.name
@@ -484,12 +481,4 @@ widget.image.hOffset
 widget.text.onMouseUp
 ```
 
-*These benchmarks were run on a MacBook Pro 15" 2.8 GHz Intel Core i7 using Go 1.8 and can be be found [here](https://github.com/tidwall/gjson-benchmarks).*
-
-
-## Contact
-Josh Baker [@tidwall](http://twitter.com/tidwall)
-
-## License
-
-GJSON source code is available under the MIT [License](/LICENSE).
+*These benchmarks were run on a MacBook Pro 15" 2.8 GHz Intel Core i7 using Go 1.8 and can be found [here](https://github.com/tidwall/gjson-benchmarks).*
