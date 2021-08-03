@@ -4,15 +4,18 @@ import { Icon } from "../Shared";
 
 interface IIncludeExcludeButton {
   exclude: boolean;
+  disabled?: boolean;
   setExclude: (v: boolean) => void;
 }
 
 export const IncludeExcludeButton: React.FC<IIncludeExcludeButton> = ({
   exclude,
+  disabled,
   setExclude,
 }) => (
   <Button
     onClick={() => setExclude(!exclude)}
+    disabled={disabled}
     variant="minimal"
     className={`${
       exclude ? "text-danger" : "text-success"
@@ -24,6 +27,7 @@ export const IncludeExcludeButton: React.FC<IIncludeExcludeButton> = ({
 
 interface IOptionalField {
   exclude: boolean;
+  disabled?: boolean;
   setExclude: (v: boolean) => void;
 }
 

@@ -256,7 +256,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         <div className="row">
           <div className="scene-image-container">
             <OptionalField
-              exclude={excludedFields[fields.cover_image]}
+              exclude={excludedFields[fields.cover_image] || !setCoverImage}
+              disabled={!setCoverImage}
               setExclude={(v) => setExcludedField(fields.cover_image, v)}
             >
               <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
