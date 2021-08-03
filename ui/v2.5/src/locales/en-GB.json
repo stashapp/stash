@@ -123,7 +123,9 @@
       "hash_matches": "{hash_type} is a match",
       "match_failed_already_tagged": "Scene already tagged",
       "match_failed_no_result": "No results found",
-      "match_success": "Scene successfully tagged"
+      "match_success": "Scene successfully tagged",
+      "duration_off": "Duration off by at least {number}s",
+      "duration_unknown": "Duration unknown"
     },
     "verb_match_fp": "Match Fingerprints",
     "verb_matched": "Matched",
