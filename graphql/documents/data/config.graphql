@@ -32,6 +32,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   galleryExtensions
   excludes
   imageExcludes
+  customPerformerImageLocation
   scraperUserAgent
   scraperCertCheck
   scraperCDPPath
@@ -46,7 +47,6 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   menuItems
   soundOnPreview
   wallShowTitle
-  customPerformerImageLocation
   wallPlayback
   maximumLoopDuration
   autostartVideo

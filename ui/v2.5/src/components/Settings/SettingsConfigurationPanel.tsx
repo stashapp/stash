@@ -126,6 +126,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);
+  const [
+    customPerformerImageLocation,
+    setCustomPerformerImageLocation,
+  ] = useState<string>();
   const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
     undefined
   );
@@ -173,6 +177,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     galleryExtensions: commaDelimitedToList(galleryExtensions),
     excludes,
     imageExcludes,
+    customPerformerImageLocation,
     scraperUserAgent,
     scraperCDPPath,
     scraperCertCheck,
@@ -223,6 +228,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       );
       setExcludes(conf.general.excludes);
       setImageExcludes(conf.general.imageExcludes);
+      setCustomPerformerImageLocation(
+        conf.general.customPerformerImageLocation ?? ""
+      );
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
       setScraperCertCheck(conf.general.scraperCertCheck);
@@ -825,6 +833,29 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Text className="text-muted">
             {intl.formatMessage({
               id: "dialogs.scene_gen.preview_exclude_end_time_desc",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <Form.Group>
+        <h4>{intl.formatMessage({ id: "performers" })}</h4>
+        <Form.Group>
+          <h6>
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.heading",
+            })}
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            value={customPerformerImageLocation}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setCustomPerformerImageLocation(e.currentTarget.value);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.description",
             })}
           </Form.Text>
         </Form.Group>

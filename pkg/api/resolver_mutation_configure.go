@@ -167,6 +167,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	c.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
 
+	if input.CustomPerformerImageLocation != nil {
+		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
+	}
+
 	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
 		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
@@ -211,10 +215,6 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	if input.WallShowTitle != nil {
 		c.Set(config.WallShowTitle, *input.WallShowTitle)
-	}
-
-	if input.CustomPerformerImageLocation != nil {
-		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
 	}
 
 	if input.WallPlayback != nil {

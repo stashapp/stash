@@ -321,12 +321,12 @@
         "heading": "Menu Items"
       },
       "performers": {
-        "heading": "Performers",
-	"options": {
-	   "performer_image_destination": {
-	      "description": "Set a custom path for performer images."
-	   }
-	}
+        "options": {
+          "image_location": {
+            "heading": "Custom Performer Image Path",
+            "description": "Custom path for default performer images. Leave empty to use in-built defaults"
+          }
+        }
       },
       "preview_type": {
         "description": "Configuration for wall items",
