@@ -229,6 +229,7 @@ div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
+  z-index: 3;
 
   .react-select__option,
   .dropdown-item {
