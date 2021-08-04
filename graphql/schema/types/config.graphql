@@ -90,11 +90,11 @@ input ConfigGeneralInput {
   """Array of file regexp to exclude from Image Scans"""
   imageExcludes: [String!]
   """Scraper user agent string"""
-  scraperUserAgent: String
+  scraperUserAgent: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Scraper CDP path. Path to chrome executable or remote address"""
-  scraperCDPPath: String
+  scraperCDPPath: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Whether the scraper should check for invalid certificates"""
-  scraperCertCheck: Boolean!
+  scraperCertCheck: Boolean @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBoxInput!]!
 }
@@ -163,11 +163,11 @@ type ConfigGeneralResult {
   """Array of file regexp to exclude from Image Scans"""
   imageExcludes: [String!]!
   """Scraper user agent string"""
-  scraperUserAgent: String
+  scraperUserAgent: String @deprecated(reason: "use ConfigResult.scraping instead")
   """Scraper CDP path. Path to chrome executable or remote address"""
-  scraperCDPPath: String
+  scraperCDPPath: String @deprecated(reason: "use ConfigResult.scraping instead")
   """Whether the scraper should check for invalid certificates"""
-  scraperCertCheck: Boolean!
+  scraperCertCheck: Boolean! @deprecated(reason: "use ConfigResult.scraping instead")
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBox!]!
 }
@@ -244,11 +244,30 @@ type ConfigDLNAResult {
   interfaces: [String!]!
 }
 
+input ConfigScrapingInput {
+  """Scraper user agent string"""
+  scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
+  """Whether the scraper should check for invalid certificates"""
+  scraperCertCheck: Boolean!
+}
+
+type ConfigScrapingResult {
+  """Scraper user agent string"""
+  scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
+  """Whether the scraper should check for invalid certificates"""
+  scraperCertCheck: Boolean!
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
+  scraping: ConfigScrapingResult!
 }
 
 """Directory structure of a path"""

@@ -300,11 +300,11 @@ github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# github.com/tidwall/gjson v1.6.0
+# github.com/tidwall/gjson v1.8.1
 github.com/tidwall/gjson
-# github.com/tidwall/match v1.0.1
+# github.com/tidwall/match v1.0.3
 github.com/tidwall/match
-# github.com/tidwall/pretty v1.0.0
+# github.com/tidwall/pretty v1.2.0
 github.com/tidwall/pretty
 # github.com/urfave/cli/v2 v2.1.1
 github.com/urfave/cli/v2

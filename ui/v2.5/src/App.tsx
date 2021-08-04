@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider } from "react-intl";
-import { merge } from "lodash";
+import { mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -59,11 +59,16 @@ export const App: React.FC = () => {
   const messageLanguage = languageMessageString(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
-  const mergedMessages = merge(
+  const mergedMessages = mergeWith(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (locales as any)[defaultMessageLanguage],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (locales as any)[messageLanguage]
+    (locales as any)[messageLanguage],
+    (objVal, srcVal) => {
+      if (srcVal === "") {
+        return objVal;
+      }
+    }
   );
   const messages = flattenMessages(mergedMessages);
 

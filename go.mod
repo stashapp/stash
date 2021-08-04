@@ -21,7 +21,6 @@ require (
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/json-iterator/go v1.1.9
-	github.com/knq/sysutil v0.0.0-20191005231841-15668db23d08 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 	github.com/remeh/sizedwaitgroup v1.0.0
@@ -32,7 +31,8 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.5.1
-	github.com/tidwall/gjson v1.6.0
+	github.com/tidwall/gjson v1.8.1
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.0.1
 	github.com/vektra/mockery/v2 v2.2.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

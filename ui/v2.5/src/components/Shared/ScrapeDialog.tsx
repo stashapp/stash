@@ -175,6 +175,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
 interface IScrapedInputGroupProps {
   isNew?: boolean;
   placeholder?: string;
+  locked?: boolean;
   result: ScrapeResult<string>;
   onChange?: (value: string) => void;
 }
@@ -184,7 +185,7 @@ const ScrapedInputGroup: React.FC<IScrapedInputGroupProps> = (props) => {
     <FormControl
       placeholder={props.placeholder}
       value={props.isNew ? props.result.newValue : props.result.originalValue}
-      readOnly={!props.isNew}
+      readOnly={!props.isNew || props.locked}
       onChange={(e) => {
         if (props.isNew && props.onChange) {
           props.onChange(e.target.value);
@@ -199,6 +200,7 @@ interface IScrapedInputGroupRowProps {
   title: string;
   placeholder?: string;
   result: ScrapeResult<string>;
+  locked?: boolean;
   onChange: (value: ScrapeResult<string>) => void;
 }
 
@@ -220,6 +222,7 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
           placeholder={props.placeholder || props.title}
           result={props.result}
           isNew
+          locked={props.locked}
           onChange={(value) =>
             props.onChange(props.result.cloneWithValue(value))
           }

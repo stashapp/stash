@@ -1,26 +1,24 @@
-import React, { useState, useReducer } from "react";
+import React, { useState, useReducer, useEffect, useCallback } from "react";
 import cx from "classnames";
-import { Button } from "react-bootstrap";
+import { Badge, Button, Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { uniq } from "lodash";
-import { blobToBase64 } from "base64-blob";
 
 import * as GQL from "src/core/generated-graphql";
 import {
+  Icon,
   LoadingIndicator,
   SuccessIcon,
+  TagSelect,
   TruncatedText,
 } from "src/components/Shared";
+import { FormUtils } from "src/utils";
+import { uniq } from "lodash";
 import PerformerResult, { PerformerOperation } from "./PerformerResult";
 import StudioResult, { StudioOperation } from "./StudioResult";
 import { IStashBoxScene } from "./utils";
-import {
-  useCreateTag,
-  useCreatePerformer,
-  useCreateStudio,
-  useUpdatePerformerStashID,
-  useUpdateStudioStashID,
-} from "./queries";
+import { useTagScene } from "./taggerService";
+import { TagOperation } from "./constants";
+import { OptionalField } from "./IncludeButton";
 
 const getDurationStatus = (
   scene: IStashBoxScene,
@@ -103,10 +101,13 @@ interface IStashSearchResultProps {
   showMales: boolean;
   setScene: (scene: GQL.SlimSceneDataFragment) => void;
   setCoverImage: boolean;
-  tagOperation: string;
+  tagOperation: TagOperation;
   setTags: boolean;
   endpoint: string;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
+  createNewTag: (toCreate: GQL.ScrapedSceneTag) => void;
+  excludedFields: Record<string, boolean>;
+  setExcludedFields: (v: Record<string, boolean>) => void;
 }
 
 interface IPerformerReducerAction {
@@ -131,248 +132,81 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setTags,
   endpoint,
   queueFingerprintSubmission,
+  createNewTag,
+  excludedFields,
+  setExcludedFields,
 }) => {
+  const getInitialTags = useCallback(() => {
+    const stashSceneTags = stashScene.tags.map((t) => t.id);
+    if (!setTags) {
+      return stashSceneTags;
+    }
+
+    const newTags = scene.tags.filter((t) => t.id).map((t) => t.id!);
+    if (tagOperation === "overwrite") {
+      return newTags;
+    }
+    if (tagOperation === "merge") {
+      return uniq(stashSceneTags.concat(newTags));
+    }
+
+    throw new Error("unexpected tagOperation");
+  }, [stashScene, tagOperation, scene, setTags]);
+
   const [studio, setStudio] = useState<StudioOperation>();
   const [performers, dispatch] = useReducer(performerReducer, {});
+  const [tagIDs, setTagIDs] = useState<string[]>(getInitialTags());
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
   );
 
   const intl = useIntl();
-  const createStudio = useCreateStudio();
-  const createPerformer = useCreatePerformer();
-  const createTag = useCreateTag();
-  const updatePerformerStashID = useUpdatePerformerStashID();
-  const updateStudioStashID = useUpdateStudioStashID();
-  const [updateScene] = GQL.useSceneUpdateMutation({
-    onError: (e) => {
-      const message =
-        e.message === "invalid JPEG format: short Huffman data"
-          ? "Failed to save scene due to corrupted cover image"
-          : "Failed to save scene";
-      setError({
-        message,
-        details: e.message,
-      });
-    },
-  });
 
-  const { data: allTags } = GQL.useAllTagsForFilterQuery();
+  useEffect(() => {
+    setTagIDs(getInitialTags());
+  }, [setTags, tagOperation, getInitialTags]);
+
+  const tagScene = useTagScene(
+    {
+      tagOperation,
+      setCoverImage,
+      setTags,
+    },
+    setSaveState,
+    setError
+  );
+
+  function getExcludedFields() {
+    return Object.keys(excludedFields).filter((f) => excludedFields[f]);
+  }
+
+  async function handleSave() {
+    const updatedScene = await tagScene(
+      stashScene,
+      scene,
+      studio,
+      performers,
+      tagIDs,
+      getExcludedFields(),
+      endpoint
+    );
+
+    if (updatedScene) setScene(updatedScene);
+
+    queueFingerprintSubmission(stashScene.id, endpoint);
+  }
 
   const setPerformer = (
     performerData: PerformerOperation,
     performerID: string
   ) => dispatch({ id: performerID, data: performerData });
 
-  const handleSave = async () => {
-    setError({});
-    let performerIDs = [];
-    let studioID = null;
-
-    if (!studio) return;
-
-    if (studio.type === "create") {
-      setSaveState("Creating studio");
-      const newStudio = {
-        name: studio.data.name,
-        stash_ids: [
-          {
-            endpoint,
-            stash_id: scene.studio.stash_id,
-          },
-        ],
-        url: studio.data.url,
-      };
-      const studioCreateResult = await createStudio(
-        newStudio,
-        scene.studio.stash_id
-      );
-
-      if (!studioCreateResult?.data?.studioCreate) {
-        setError({
-          message: `Failed to save studio "${newStudio.name}"`,
-          details: studioCreateResult?.errors?.[0].message,
-        });
-        return setSaveState("");
-      }
-      studioID = studioCreateResult.data.studioCreate.id;
-    } else if (studio.type === "update") {
-      setSaveState("Saving studio stashID");
-      const res = await updateStudioStashID(studio.data, [
-        ...studio.data.stash_ids,
-        { stash_id: scene.studio.stash_id, endpoint },
-      ]);
-      if (!res?.data?.studioUpdate) {
-        setError({
-          message: `Failed to save stashID to studio "${studio.data.name}"`,
-          details: res?.errors?.[0].message,
-        });
-        return setSaveState("");
-      }
-      studioID = res.data.studioUpdate.id;
-    } else if (studio.type === "existing") {
-      studioID = studio.data.id;
-    } else if (studio.type === "skip") {
-      studioID = stashScene.studio?.id;
-    }
-
-    setSaveState("Saving performers");
-    performerIDs = await Promise.all(
-      Object.keys(performers).map(async (stashID) => {
-        const performer = performers[stashID];
-        if (performer.type === "skip") return "Skip";
-
-        let performerID = performer.data.id;
-
-        if (performer.type === "create") {
-          const imgurl = performer.data.images[0];
-          let imgData = null;
-          if (imgurl) {
-            const img = await fetch(imgurl, {
-              mode: "cors",
-              cache: "no-store",
-            });
-            if (img.status === 200) {
-              const blob = await img.blob();
-              imgData = await blobToBase64(blob);
-            }
-          }
-
-          const performerInput = {
-            name: performer.data.name,
-            gender: performer.data.gender,
-            country: performer.data.country,
-            height: performer.data.height,
-            ethnicity: performer.data.ethnicity,
-            birthdate: performer.data.birthdate,
-            eye_color: performer.data.eye_color,
-            fake_tits: performer.data.fake_tits,
-            measurements: performer.data.measurements,
-            career_length: performer.data.career_length,
-            tattoos: performer.data.tattoos,
-            piercings: performer.data.piercings,
-            twitter: performer.data.twitter,
-            instagram: performer.data.instagram,
-            image: imgData,
-            stash_ids: [
-              {
-                endpoint,
-                stash_id: stashID,
-              },
-            ],
-            details: performer.data.details,
-            death_date: performer.data.death_date,
-            hair_color: performer.data.hair_color,
-            weight: Number(performer.data.weight),
-          };
-
-          const res = await createPerformer(performerInput, stashID);
-          if (!res?.data?.performerCreate) {
-            setError({
-              message: `Failed to save performer "${performerInput.name}"`,
-              details: res?.errors?.[0].message,
-            });
-            return null;
-          }
-          performerID = res.data?.performerCreate.id;
-        }
-
-        if (performer.type === "update") {
-          const stashIDs = performer.data.stash_ids;
-          await updatePerformerStashID(performer.data.id, [
-            ...stashIDs,
-            { stash_id: stashID, endpoint },
-          ]);
-        }
-
-        return performerID;
-      })
-    );
-
-    if (!performerIDs.some((id) => !id)) {
-      setSaveState("Updating scene");
-      const imgurl = scene.images[0];
-      let imgData = null;
-      if (imgurl && setCoverImage) {
-        const img = await fetch(imgurl, {
-          mode: "cors",
-          cache: "no-store",
-        });
-        if (img.status === 200) {
-          const blob = await img.blob();
-          // Sanity check on image size since bad images will fail
-          if (blob.size > 10000) imgData = await blobToBase64(blob);
-        }
-      }
-
-      let updatedTags = stashScene?.tags?.map((t) => t.id) ?? [];
-      if (setTags) {
-        const newTagIDs = tagOperation === "merge" ? updatedTags : [];
-        const tags = scene.tags ?? [];
-        if (tags.length > 0) {
-          const tagDict: Record<string, string> = (allTags?.allTags ?? [])
-            .filter((t) => t.name)
-            .reduce(
-              (dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }),
-              {}
-            );
-          const newTags: string[] = [];
-          tags.forEach((tag) => {
-            if (tagDict[tag.name.toLowerCase()])
-              newTagIDs.push(tagDict[tag.name.toLowerCase()]);
-            else newTags.push(tag.name);
-          });
-
-          const createdTags = await Promise.all(
-            newTags.map((tag) => createTag(tag))
-          );
-          createdTags.forEach((createdTag) => {
-            if (createdTag?.data?.tagCreate?.id)
-              newTagIDs.push(createdTag.data.tagCreate.id);
-          });
-        }
-        updatedTags = uniq(newTagIDs);
-      }
-
-      const performer_ids = performerIDs.filter(
-        (id) => id !== "Skip"
-      ) as string[];
-
-      const sceneUpdateResult = await updateScene({
-        variables: {
-          input: {
-            id: stashScene.id ?? "",
-            title: scene.title,
-            details: scene.details,
-            date: scene.date,
-            performer_ids:
-              performer_ids.length === 0
-                ? stashScene.performers.map((p) => p.id)
-                : performer_ids,
-            studio_id: studioID,
-            cover_image: imgData,
-            url: scene.url,
-            tag_ids: updatedTags,
-            stash_ids: [
-              ...(stashScene?.stash_ids ?? []),
-              {
-                endpoint,
-                stash_id: scene.stash_id,
-              },
-            ],
-          },
-        },
-      });
-
-      if (sceneUpdateResult?.data?.sceneUpdate)
-        setScene(sceneUpdateResult.data.sceneUpdate);
-
-      queueFingerprintSubmission(stashScene.id, endpoint);
-    }
-
-    setSaveState("");
-  };
+  const setExcludedField = (name: string, value: boolean) =>
+    setExcludedFields({
+      ...excludedFields,
+      [name]: value,
+    });
 
   const classname = cx("row mx-0 mt-2 search-result", {
     "selected-result": isActive,
@@ -402,38 +236,104 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     ? `${endpointBase}scenes/${scene.stash_id}`
     : "";
 
+  // constants to get around dot-notation eslint rule
+  const fields = {
+    cover_image: "cover_image",
+    title: "title",
+    date: "date",
+    url: "url",
+    details: "details",
+  };
+
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li
-      className={classname}
+      className={`${classname} ${isActive && "active"}`}
       key={scene.stash_id}
       onClick={() => !isActive && setActive()}
     >
       <div className="col-lg-6">
         <div className="row">
-          <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
-            <img
-              src={scene.images[0]}
-              alt=""
-              className="align-self-center scene-image"
-            />
-          </a>
+          <div className="scene-image-container">
+            <OptionalField
+              exclude={excludedFields[fields.cover_image] || !setCoverImage}
+              disabled={!setCoverImage}
+              setExclude={(v) => setExcludedField(fields.cover_image, v)}
+            >
+              <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={scene.images[0]}
+                  alt=""
+                  className="align-self-center scene-image"
+                />
+              </a>
+            </OptionalField>
+          </div>
           <div className="d-flex flex-column justify-content-center scene-metadata">
-            <h4>{sceneTitle}</h4>
-            <h5>
-              {scene?.studio?.name} • {scene?.date}
-            </h5>
-            <div>
-              {intl.formatMessage(
-                { id: "countables.performers" },
-                { count: scene?.performers?.length }
-              )}
-              : {scene?.performers?.map((p) => p.name).join(", ")}
-            </div>
+            <h4>
+              <OptionalField
+                exclude={excludedFields[fields.title]}
+                setExclude={(v) => setExcludedField(fields.title, v)}
+              >
+                {sceneTitle}
+              </OptionalField>
+            </h4>
+
+            {!isActive && (
+              <>
+                <h5>
+                  {scene?.studio?.name} • {scene?.date}
+                </h5>
+                <div>
+                  {intl.formatMessage(
+                    { id: "countables.performers" },
+                    { count: scene?.performers?.length }
+                  )}
+                  : {scene?.performers?.map((p) => p.name).join(", ")}
+                </div>
+              </>
+            )}
+
+            {isActive && scene.date && (
+              <h5>
+                <OptionalField
+                  exclude={excludedFields[fields.date]}
+                  setExclude={(v) => setExcludedField(fields.date, v)}
+                >
+                  {scene.date}
+                </OptionalField>
+              </h5>
+            )}
             {getDurationStatus(scene, stashScene.file?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>
+        {isActive && (
+          <div className="d-flex flex-column">
+            {scene.url && (
+              <div className="scene-details">
+                <OptionalField
+                  exclude={excludedFields[fields.url]}
+                  setExclude={(v) => setExcludedField(fields.url, v)}
+                >
+                  <a href={scene.url} target="_blank" rel="noopener noreferrer">
+                    {scene.url}
+                  </a>
+                </OptionalField>
+              </div>
+            )}
+            {scene.details && (
+              <div className="scene-details">
+                <OptionalField
+                  exclude={excludedFields[fields.details]}
+                  setExclude={(v) => setExcludedField(fields.details, v)}
+                >
+                  <TruncatedText text={scene.details ?? ""} lineCount={3} />
+                </OptionalField>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {isActive && (
         <div className="col-lg-6">
@@ -450,6 +350,43 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 endpoint={endpoint}
               />
             ))}
+          <div className="mt-2">
+            <div>
+              <Form.Group controlId="tags" as={Row}>
+                {FormUtils.renderLabel({
+                  title: `${intl.formatMessage({ id: "tags" })}:`,
+                })}
+                <Col sm={9} xl={12}>
+                  <TagSelect
+                    isDisabled={!setTags}
+                    isMulti
+                    onSelect={(items) => {
+                      setTagIDs(items.map((i) => i.id));
+                    }}
+                    ids={tagIDs}
+                  />
+                </Col>
+              </Form.Group>
+            </div>
+            {setTags &&
+              scene.tags
+                .filter((t) => !t.id)
+                .map((t) => (
+                  <Badge
+                    className="tag-item"
+                    variant="secondary"
+                    key={t.name}
+                    onClick={() => {
+                      createNewTag(t);
+                    }}
+                  >
+                    {t.name}
+                    <Button className="minimal ml-2">
+                      <Icon className="fa-fw" icon="plus" />
+                    </Button>
+                  </Badge>
+                ))}
+          </div>
           <div className="row no-gutters mt-2 align-items-center justify-content-end">
             {error.message && (
               <strong className="mt-1 mr-2 text-danger text-right">
