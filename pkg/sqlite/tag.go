@@ -271,14 +271,6 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 		query.not(qb.makeFilter(tagFilter.Not))
 	}
 
-	// if markerCount := tagFilter.MarkerCount; markerCount != nil {
-	// 	clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
-	// 	query.addHaving(clause)
-	// 	if count == 1 {
-	// 		query.addArg(markerCount.Value)
-	// 	}
-	// }
-
 	query.handleCriterion(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(tagAliasCriterionHandler(qb, tagFilter.Aliases))
 
@@ -303,19 +295,6 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs(tagTable)
-
-	/*
-		query.body += `
-		left join tags_image on tags_image.tag_id = tags.id
-		left join scenes_tags on scenes_tags.tag_id = tags.id
-		left join scene_markers_tags on scene_markers_tags.tag_id = tags.id
-		left join scene_markers on scene_markers.primary_tag_id = tags.id OR scene_markers.id = scene_markers_tags.scene_marker_id
-		left join scenes on scenes_tags.scene_id = scenes.id`
-	*/
-
-	// the presence of joining on scene_markers.primary_tag_id and scene_markers_tags.tag_id
-	// appears to confuse sqlite and causes serious performance issues.
-	// Disabling querying/sorting on marker count for now.
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
@@ -477,6 +456,9 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 		case "scenes_count":
 			query.join("scenes_tags", "", "scenes_tags.tag_id = tags.id")
 			return " ORDER BY COUNT(distinct scenes_tags.scene_id) " + direction
+		case "scene_markers_count":
+			query.join("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
+			return " ORDER BY COUNT(distinct scene_markers_tags.scene_marker_id) " + direction
 		case "images_count":
 			query.join("images_tags", "", "images_tags.tag_id = tags.id")
 			return " ORDER BY COUNT(distinct images_tags.image_id) " + direction
