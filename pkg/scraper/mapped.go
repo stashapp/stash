@@ -32,9 +32,7 @@ func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 
 	ret := src
 	for commonKey, commonVal := range c {
-		if strings.Contains(ret, commonKey) {
-			ret = strings.Replace(ret, commonKey, commonVal, -1)
-		}
+		ret = strings.Replace(ret, commonKey, commonVal, -1)
 	}
 
 	return ret
@@ -791,6 +789,100 @@ func (s mappedScraper) scrapePerformers(q mappedQuery) ([]*models.ScrapedPerform
 	return ret, nil
 }
 
+func (s mappedScraper) processScene(q mappedQuery, r mappedResult) *models.ScrapedScene {
+	var ret models.ScrapedScene
+
+	sceneScraperConfig := s.Scene
+
+	scenePerformersMap := sceneScraperConfig.Performers
+	sceneTagsMap := sceneScraperConfig.Tags
+	sceneStudioMap := sceneScraperConfig.Studio
+	sceneMoviesMap := sceneScraperConfig.Movies
+
+	scenePerformerTagsMap := scenePerformersMap.Tags
+
+	r.apply(&ret)
+
+	// process performer tags once
+	var performerTagResults mappedResults
+	if scenePerformerTagsMap != nil {
+		performerTagResults = scenePerformerTagsMap.process(q, s.Common)
+	}
+
+	// now apply the performers and tags
+	if scenePerformersMap.mappedConfig != nil {
+		logger.Debug(`Processing scene performers:`)
+		performerResults := scenePerformersMap.process(q, s.Common)
+
+		for _, p := range performerResults {
+			performer := &models.ScrapedPerformer{}
+			p.apply(performer)
+
+			for _, p := range performerTagResults {
+				tag := &models.ScrapedTag{}
+				p.apply(tag)
+				ret.Tags = append(ret.Tags, tag)
+			}
+
+			ret.Performers = append(ret.Performers, performer)
+		}
+	}
+
+	if sceneTagsMap != nil {
+		logger.Debug(`Processing scene tags:`)
+		tagResults := sceneTagsMap.process(q, s.Common)
+
+		for _, p := range tagResults {
+			tag := &models.ScrapedTag{}
+			p.apply(tag)
+			ret.Tags = append(ret.Tags, tag)
+		}
+	}
+
+	if sceneStudioMap != nil {
+		logger.Debug(`Processing scene studio:`)
+		studioResults := sceneStudioMap.process(q, s.Common)
+
+		if len(studioResults) > 0 {
+			studio := &models.ScrapedStudio{}
+			studioResults[0].apply(studio)
+			ret.Studio = studio
+		}
+	}
+
+	if sceneMoviesMap != nil {
+		logger.Debug(`Processing scene movies:`)
+		movieResults := sceneMoviesMap.process(q, s.Common)
+
+		for _, p := range movieResults {
+			movie := &models.ScrapedMovie{}
+			p.apply(movie)
+			ret.Movies = append(ret.Movies, movie)
+		}
+	}
+
+	return &ret
+}
+
+func (s mappedScraper) scrapeScenes(q mappedQuery) ([]*models.ScrapedScene, error) {
+	var ret []*models.ScrapedScene
+
+	sceneScraperConfig := s.Scene
+	sceneMap := sceneScraperConfig.mappedConfig
+	if sceneMap == nil {
+		return nil, nil
+	}
+
+	logger.Debug(`Processing scenes:`)
+	results := sceneMap.process(q, s.Common)
+	for _, r := range results {
+		logger.Debug(`Processing scene:`)
+		ret = append(ret, s.processScene(q, r))
+	}
+
+	return ret, nil
+}
+
 func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) {
 	var ret models.ScrapedScene
 
@@ -800,76 +892,11 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 		return nil, nil
 	}
 
-	scenePerformersMap := sceneScraperConfig.Performers
-	sceneTagsMap := sceneScraperConfig.Tags
-	sceneStudioMap := sceneScraperConfig.Studio
-	sceneMoviesMap := sceneScraperConfig.Movies
-
-	scenePerformerTagsMap := scenePerformersMap.Tags
-
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(q, s.Common)
 	if len(results) > 0 {
-		results[0].apply(&ret)
-
-		// process performer tags once
-		var performerTagResults mappedResults
-		if scenePerformerTagsMap != nil {
-			performerTagResults = scenePerformerTagsMap.process(q, s.Common)
-		}
-
-		// now apply the performers and tags
-		if scenePerformersMap.mappedConfig != nil {
-			logger.Debug(`Processing scene performers:`)
-			performerResults := scenePerformersMap.process(q, s.Common)
-
-			for _, p := range performerResults {
-				performer := &models.ScrapedPerformer{}
-				p.apply(performer)
-
-				for _, p := range performerTagResults {
-					tag := &models.ScrapedTag{}
-					p.apply(tag)
-					ret.Tags = append(ret.Tags, tag)
-				}
-
-				ret.Performers = append(ret.Performers, performer)
-			}
-		}
-
-		if sceneTagsMap != nil {
-			logger.Debug(`Processing scene tags:`)
-			tagResults := sceneTagsMap.process(q, s.Common)
-
-			for _, p := range tagResults {
-				tag := &models.ScrapedTag{}
-				p.apply(tag)
-				ret.Tags = append(ret.Tags, tag)
-			}
-		}
-
-		if sceneStudioMap != nil {
-			logger.Debug(`Processing scene studio:`)
-			studioResults := sceneStudioMap.process(q, s.Common)
-
-			if len(studioResults) > 0 {
-				studio := &models.ScrapedStudio{}
-				studioResults[0].apply(studio)
-				ret.Studio = studio
-			}
-		}
-
-		if sceneMoviesMap != nil {
-			logger.Debug(`Processing scene movies:`)
-			movieResults := sceneMoviesMap.process(q, s.Common)
-
-			for _, p := range movieResults {
-				movie := &models.ScrapedMovie{}
-				p.apply(movie)
-				ret.Movies = append(ret.Movies, movie)
-			}
-
-		}
+		ss := s.processScene(q, results[0])
+		ret = *ss
 	}
 
 	return &ret, nil

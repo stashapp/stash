@@ -35,6 +35,9 @@ type config struct {
 	// Configuration for querying gallery by a Gallery fragment
 	GalleryByFragment *scraperTypeConfig `yaml:"galleryByFragment"`
 
+	// Configuration for querying scenes by name
+	SceneByName *scraperTypeConfig `yaml:"sceneByName"`
+
 	// Configuration for querying a scene by a URL
 	SceneByURL []*scrapeByURLConfig `yaml:"sceneByURL"`
 

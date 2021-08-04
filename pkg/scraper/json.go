@@ -143,6 +143,31 @@ func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedP
 	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
 }
 
+func (s *jsonScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+	scraper := s.getJsonScraper()
+
+	if scraper == nil {
+		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	const placeholder = "{}"
+
+	// replace the placeholder string with the URL-escaped name
+	escapedName := url.QueryEscape(name)
+
+	url := s.scraper.QueryURL
+	url = strings.Replace(url, placeholder, escapedName, -1)
+
+	doc, err := s.loadURL(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc)
+	return scraper.scrapeScenes(q)
+}
+
 func (s *jsonScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
