@@ -178,7 +178,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		refreshScraperCache = true
 	}
 
-	c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+	if input.ScraperCertCheck != nil {
+		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+	}
 
 	if input.StashBoxes != nil {
 		if err := c.ValidateStashBoxes(input.StashBoxes); err != nil {
@@ -289,6 +291,31 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 	}
 
 	return makeConfigDLNAResult(), nil
+}
+
+func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.ConfigScrapingInput) (*models.ConfigScrapingResult, error) {
+	c := config.GetInstance()
+
+	refreshScraperCache := false
+	if input.ScraperUserAgent != nil {
+		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
+		refreshScraperCache = true
+	}
+
+	if input.ScraperCDPPath != nil {
+		c.Set(config.ScraperCDPPath, input.ScraperCDPPath)
+		refreshScraperCache = true
+	}
+
+	c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+	if refreshScraperCache {
+		manager.GetInstance().RefreshScraperCache()
+	}
+	if err := c.Write(); err != nil {
+		return makeConfigScrapingResult(), err
+	}
+
+	return makeConfigScrapingResult(), nil
 }
 
 func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {

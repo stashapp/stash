@@ -144,7 +144,7 @@
       "interface": "介面",
       "logs": "日誌",
       "plugins": "插件",
-      "scrapers": "爬蟲",
+      "scraping": "爬蟲設定",
       "tasks": "排程",
       "tools": "工具"
     },
@@ -229,9 +229,10 @@
     "logs": {
       "log_level": "日誌級別"
     },
-    "scrapers": {
+    "scraping": {
       "entity_metadata": "{entityType}資訊",
       "entity_scrapers": "{entityType}爬蟲",
+      "scrapers": "爬蟲",
       "search_by_name": "透過名稱搜尋",
       "supported_types": "支援類型",
       "supported_urls": "支援網址"

@@ -64,6 +64,12 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   interfaces
 }
 
+fragment ConfigScrapingData on ConfigScrapingResult {
+  scraperUserAgent
+  scraperCertCheck
+  scraperCDPPath
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
@@ -73,5 +79,8 @@ fragment ConfigData on ConfigResult {
   }
   dlna {
     ...ConfigDLNAData
+  }
+  scraping {
+    ...ConfigScrapingData
   }
 }
