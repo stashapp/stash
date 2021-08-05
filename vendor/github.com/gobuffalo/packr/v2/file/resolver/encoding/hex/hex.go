@@ -7,7 +7,6 @@ package hex
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 )
@@ -34,7 +33,7 @@ func Encode(dst, src []byte) int {
 // ErrLength reports an attempt to decode an odd-length input
 // using Decode or DecodeString.
 // The stream-based Decoder returns io.ErrUnexpectedEOF instead of ErrLength.
-var ErrLength = errors.New("encoding/hex: odd length hex string")
+var ErrLength = fmt.Errorf("encoding/hex: odd length hex string")
 
 // InvalidByteError values describe errors resulting from an invalid byte in a hex string.
 type InvalidByteError byte
@@ -223,7 +222,7 @@ func toChar(b byte) byte {
 
 func (h *dumper) Write(data []byte) (n int, err error) {
 	if h.closed {
-		return 0, errors.New("encoding/hex: dumper closed")
+		return 0, fmt.Errorf("encoding/hex: dumper closed")
 	}
 
 	// Output lines look like:

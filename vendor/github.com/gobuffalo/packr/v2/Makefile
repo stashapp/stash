@@ -14,7 +14,6 @@ else
 endif
 
 deps:
-	$(GO_BIN) get github.com/gobuffalo/release
 	$(GO_BIN) get -tags ${TAGS} -t ./...
 	$(GO_BIN) install -v ./packr2
 	make tidy

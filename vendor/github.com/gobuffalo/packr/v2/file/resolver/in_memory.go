@@ -6,7 +6,6 @@ import (
 	"github.com/gobuffalo/packd"
 	"github.com/gobuffalo/packr/v2/file"
 	"github.com/gobuffalo/packr/v2/plog"
-	"github.com/pkg/errors"
 )
 
 var _ Resolver = &InMemory{}
@@ -31,7 +30,7 @@ func (d *InMemory) Pack(name string, f file.File) error {
 	plog.Debug(d, "Pack", "name", name)
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	d.AddBytes(name, b)
 	return nil

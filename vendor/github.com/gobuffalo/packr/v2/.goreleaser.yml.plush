@@ -31,8 +31,9 @@ changelog:
       - '^docs:'
       - '^test:'
 <%= if (brew) { %>
-brew:
-  github:
-    owner: gobuffalo
-    name: homebrew-tap
+brews:
+  -
+      github:
+        owner: gobuffalo
+        name: homebrew-tap
 <% } %>

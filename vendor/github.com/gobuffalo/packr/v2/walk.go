@@ -8,7 +8,6 @@ import (
 	"github.com/gobuffalo/packr/v2/file"
 	"github.com/gobuffalo/packr/v2/file/resolver"
 	"github.com/gobuffalo/packr/v2/plog"
-	"github.com/pkg/errors"
 )
 
 // WalkFunc is used to walk a box
@@ -47,7 +46,7 @@ func (b *Box) Walk(wf WalkFunc) error {
 		return true
 	})
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	var keys = make([]string, 0, len(m))
@@ -60,7 +59,7 @@ func (b *Box) Walk(wf WalkFunc) error {
 		osPath := resolver.OsPath(k)
 		plog.Debug(b, "Walk", "path", k, "osPath", osPath)
 		if err := wf(osPath, m[k]); err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 	}
 	return nil
@@ -73,7 +72,7 @@ func (b *Box) WalkPrefix(prefix string, wf WalkFunc) error {
 		ipath := resolver.OsPath(path)
 		if strings.HasPrefix(ipath, ipref) {
 			if err := wf(path, f); err != nil {
-				return errors.WithStack(err)
+				return err
 			}
 		}
 		return nil

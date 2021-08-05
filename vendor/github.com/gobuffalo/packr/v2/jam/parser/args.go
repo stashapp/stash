@@ -2,8 +2,7 @@ package parser
 
 import (
 	"encoding/json"
-
-	"github.com/pkg/errors"
+	"fmt"
 )
 
 // FromArgs is useful when writing packr store-cmd binaries.
@@ -36,11 +35,11 @@ import (
 */
 func FromArgs(args []string, fn func(Boxes) error) error {
 	if len(args) == 0 {
-		return errors.New("you must supply a payload")
+		return fmt.Errorf("you must supply a payload")
 	}
 	payload := args[0]
 	if len(payload) == 0 {
-		return errors.New("you must supply a payload")
+		return fmt.Errorf("you must supply a payload")
 	}
 
 	var boxes Boxes
