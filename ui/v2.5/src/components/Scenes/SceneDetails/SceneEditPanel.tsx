@@ -34,9 +34,11 @@ import { ImageUtils, FormUtils, TextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
 import { Prompt } from "react-router";
+import { IStashBox } from "src/components/Performers/PerformerDetails/PerformerStashBoxModal";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
+import { SceneQueryModal } from "./SceneQueryModal";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -60,8 +62,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
   );
 
   const Scrapers = useListSceneScrapers();
+  const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
+  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
+  const [
+    isScraperQueryModalOpen,
+    setIsScraperQueryModalOpen,
+  ] = useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<
@@ -184,12 +192,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   useEffect(() => {
-    const newQueryableScrapers = (
-      Scrapers?.data?.listSceneScrapers ?? []
-    ).filter((s) =>
+    const toFilter = Scrapers?.data?.listSceneScrapers ?? [];
+
+    const newFragmentScrapers = toFilter.filter((s) =>
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
     );
+    const newQueryableScrapers = toFilter.filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    );
 
+    setFragmentScrapers(newFragmentScrapers);
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers, stashConfig]);
 
@@ -298,7 +310,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  async function onScrapeClicked(scraper: GQL.Scraper) {
+  async function onScrapeClicked(s: GQL.Scraper) {
     setIsLoading(true);
     try {
       const result = await queryScrapeScene(scraper.id, scene.id);
@@ -315,6 +327,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function onScrapeStashBoxQueryClicked(stashBox: IStashBox) {
+    setScraper(stashBox);
+    setIsScraperQueryModalOpen(true);
+  }
+
+  function onScrapeQueryClicked(s: GQL.Scraper) {
+    setScraper(s);
+    setIsScraperQueryModalOpen(true);
   }
 
   async function onReloadScrapers() {
@@ -357,10 +379,74 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function renderScrapeQueryMenu() {
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+
+    return (
+      <Dropdown
+        title={intl.formatMessage({ id: "actions.scrape_query" })}
+        className="edit-button"
+      >
+        <Dropdown.Toggle variant="secondary">
+          <Icon icon="search" />
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu>
+          {stashBoxes.map((s, index) => (
+            <Dropdown.Item
+              key={s.endpoint}
+              onClick={() => onScrapeStashBoxQueryClicked({ ...s, index })}
+            >
+              {s.name ?? "Stash-Box"}
+            </Dropdown.Item>
+          ))}
+          {queryableScrapers.map((s) => (
+            <Dropdown.Item key={s.name} onClick={() => onScrapeQueryClicked(s)}>
+              {s.name}
+            </Dropdown.Item>
+          ))}
+          <Dropdown.Item onClick={() => onReloadScrapers()}>
+            <span className="fa-icon">
+              <Icon icon="sync-alt" />
+            </span>
+            <span>
+              <FormattedMessage id="actions.reload_scrapers" />
+            </span>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  function onSceneSelected(s: GQL.ScrapedSceneDataFragment) {
+    if ((scraper as IStashBox).index !== undefined) {
+      // must be stash-box - assume full scene
+      setScrapedScene(s);
+    } else {
+      // must be scraper
+    }
+  }
+
+  const renderScrapeQueryModal = () => {
+    if (!isScraperQueryModalOpen || !scraper) return;
+
+    return (
+      <SceneQueryModal
+        scraper={scraper}
+        onHide={() => setScraper(undefined)}
+        onSelectScene={(s) => {
+          setIsScraperQueryModalOpen(false);
+          setScraper(undefined);
+          onSceneSelected(s);
+        }}
+        name={formik.values.title || ""}
+      />
+    );
+  };
+
   function renderScraperMenu() {
     const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
-    // TODO - change name based on stashbox configuration
     return (
       <DropdownButton
         className="d-inline-block"
@@ -375,7 +461,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {s.name ?? "Stash-Box"}
           </Dropdown.Item>
         ))}
-        {queryableScrapers.map((s) => (
+        {fragmentScrapers.map((s) => (
           <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
             {s.name}
           </Dropdown.Item>
@@ -390,44 +476,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </Dropdown.Item>
       </DropdownButton>
     );
-  }
-
-  function maybeRenderStashboxQueryButton() {
-    // const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
-    // if (stashBoxes.length === 0) {
-    //   return;
-    // }
-    // TODO - hide this button for now, with the view to add it when we get
-    // the query dialog going
-    // if (stashBoxes.length === 1) {
-    //   return (
-    //     <Button
-    //       className="mr-1"
-    //       onClick={() => onStashBoxQueryClicked(0)}
-    //       title="Query"
-    //     >
-    //       <Icon className="fa-fw" icon="search" />
-    //     </Button>
-    //   );
-    // }
-    // // TODO - change name based on stashbox configuration
-    // return (
-    //   <Dropdown className="d-inline-block mr-1">
-    //     <Dropdown.Toggle id="stashbox-query-dropdown">
-    //       <Icon className="fa-fw" icon="search" />
-    //     </Dropdown.Toggle>
-    //     <Dropdown.Menu>
-    //       {stashBoxes.map((s, index) => (
-    //         <Dropdown.Item
-    //           key={s.endpoint}
-    //           onClick={() => onStashBoxQueryClicked(index)}
-    //         >
-    //           stash-box
-    //         </Dropdown.Item>
-    //       ))}
-    //     </Dropdown.Menu>
-    //   </Dropdown>
-    // );
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
@@ -559,10 +607,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
+      {renderScrapeQueryModal()}
       {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
         <div className="form-container row px-3 pt-3">
-          <div className="col-6 edit-buttons mb-3 pl-0">
+          <div className="edit-buttons mb-3 pl-0">
             <Button
               className="edit-button"
               variant="primary"
@@ -579,10 +628,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
-          <Col xs={6} className="text-right">
-            {maybeRenderStashboxQueryButton()}
+          <div className="ml-auto text-right d-flex">
+            {renderScrapeQueryMenu()}
             {renderScraperMenu()}
-          </Col>
+          </div>
         </div>
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">

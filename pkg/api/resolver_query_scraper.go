@@ -71,6 +71,14 @@ func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*mo
 	return manager.GetInstance().ScraperCache.ScrapePerformerURL(url)
 }
 
+func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, query string) ([]*models.ScrapedScene, error) {
+	if query == "" {
+		return nil, nil
+	}
+
+	return manager.GetInstance().ScraperCache.ScrapeSceneQuery(scraperID, query)
+}
+
 func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {

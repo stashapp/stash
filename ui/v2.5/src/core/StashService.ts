@@ -837,6 +837,16 @@ export const queryScrapePerformerURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const queryScrapeSceneQuery = (scraperId: string, q: string) =>
+  client.query<GQL.ScrapeSceneQueryQuery>({
+    query: GQL.ScrapeSceneQueryDocument,
+    variables: {
+      scraperId,
+      q,
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const queryScrapeSceneURL = (url: string) =>
   client.query<GQL.ScrapeSceneUrlQuery>({
     query: GQL.ScrapeSceneUrlDocument,
@@ -889,6 +899,18 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
         scene_id: sceneID,
       },
     },
+  });
+
+export const queryStashBoxSceneQuery = (stashBoxIndex: number, q: string) =>
+  client.query<GQL.QueryStashBoxSceneQuery>({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: {
+      input: {
+        stash_box_index: stashBoxIndex,
+        q,
+      },
+    },
+    fetchPolicy: "network-only",
   });
 
 export const queryStashBoxPerformer = (

@@ -583,3 +583,19 @@ input[type="range"].blue-slider {
     background-color: $secondary;
   }
 }
+
+.scrape-query-dialog {
+  max-height: calc(100vh - 10rem);
+}
+
+.SceneScrapeModal-list {
+  list-style: none;
+  max-height: 50vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-inline-start: 0;
+
+  li {
+    cursor: pointer;
+  }
+}

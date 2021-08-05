@@ -259,6 +259,9 @@ func (c config) toScraper() *models.Scraper {
 	if c.SceneByFragment != nil {
 		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeFragment)
 	}
+	if c.SceneByName != nil {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeName)
+	}
 	if len(c.SceneByURL) > 0 {
 		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeURL)
 		for _, v := range c.SceneByURL {
@@ -394,6 +397,15 @@ func (c config) matchesMovieURL(url string) bool {
 	}
 
 	return false
+}
+
+func (c config) ScrapeSceneQuery(name string, txnManager models.TransactionManager, globalConfig GlobalConfig) ([]*models.ScrapedScene, error) {
+	if c.PerformerByName != nil {
+		s := getScraper(*c.SceneByName, txnManager, c, globalConfig)
+		return s.scrapeScenesByName(name)
+	}
+
+	return nil, nil
 }
 
 func (c config) ScrapeSceneByScene(scene *models.Scene, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {

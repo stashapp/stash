@@ -392,6 +392,19 @@ func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene,
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
 }
 
+// ScrapeSceneQuery uses the scraper with the provided ID to query for
+// scenes using the provided query string. It returns a list of
+// scraped scene data.
+func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.ScrapedScene, error) {
+	// find scraper with the provided id
+	s := c.findScraper(scraperID)
+	if s != nil {
+		return s.ScrapeSceneQuery(query, c.txnManager, c.globalConfig)
+	}
+
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
 // ScrapeSceneFragment uses the scraper with the provided ID to scrape a scene.
 func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
