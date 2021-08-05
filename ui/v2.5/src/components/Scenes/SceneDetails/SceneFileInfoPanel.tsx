@@ -46,7 +46,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <span className="col-4">
           <FormattedMessage id="path" />
         </span>
-        <a href={`file://${path}`} className="col-8">
+        <a href={`file://${path}`} className="col-8" target="_blank">
           <TruncatedText text={`file://${props.scene.path}`} />
         </a>{" "}
       </div>
@@ -59,7 +59,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <span className="col-4">
           <FormattedMessage id="media_info.stream" />
         </span>
-        <a href={props.scene.paths.stream ?? ""} className="col-8">
+        <a href={props.scene.paths.stream ?? ""} className="col-8" target="_blank">
           <TruncatedText text={props.scene.paths.stream} />
         </a>{" "}
       </div>
@@ -203,7 +203,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <span className="col-4">
           <FormattedMessage id="media_info.downloaded_from" />
         </span>
-        <a href={TextUtils.sanitiseURL(props.scene.url)} className="col-8">
+        <a href={TextUtils.sanitiseURL(props.scene.url)} className="col-8" target="_blank">
           <TruncatedText text={props.scene.url} />
         </a>
       </div>
