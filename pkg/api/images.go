@@ -36,7 +36,7 @@ func initialiseCustomImages() {
 	if customPath != "" {
 		logger.Debugf("Loading custom performer images from %s", customPath)
 		// We need to set performerBoxCustom at runtime, as this is a custom path, and store it in a pointer.
-		performerBoxCustom = newImageBox(packr.New("Custom Performer Box", customPath))
+		performerBoxCustom = newImageBox(packr.Folder(customPath))
 	} else {
 		performerBoxCustom = nil
 	}

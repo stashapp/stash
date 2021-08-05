@@ -169,6 +169,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	if input.CustomPerformerImageLocation != nil {
 		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
+		initialiseCustomImages()
 	}
 
 	refreshScraperCache := false
