@@ -324,7 +324,7 @@
         "options": {
           "image_location": {
             "heading": "Custom Performer Image Path",
-            "description": "Custom path for default performer images. Leave empty to use in-built defaults"
+            "description": "Custom path for default performer images. Leave empty to use in-built defaults. Requires restart after changing"
           }
         }
       },
