@@ -151,7 +151,7 @@
       "interface": "Oberfläche",
       "logs": "Protokoll",
       "plugins": "Plugins",
-      "scrapers": "Scraper",
+      "scraping": "Scraping",
       "tasks": "Aufgaben",
       "tools": "Werkzeuge"
     },
@@ -240,9 +240,10 @@
       "hooks": "Hooks",
       "triggers_on": "Auslösen bei"
     },
-    "scrapers": {
+    "scraping": {
       "entity_metadata": "{entityType} Metadaten",
       "entity_scrapers": "{entityType} Scraper",
+      "scrapers": "Scraper",
       "search_by_name": "Suche nach Name",
       "supported_types": "Unterstützte Typen",
       "supported_urls": "URLs"
