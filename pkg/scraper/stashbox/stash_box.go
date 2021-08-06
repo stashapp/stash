@@ -240,7 +240,7 @@ func (c Client) QueryStashBoxPerformer(queryStr string) ([]*models.StashBoxPerfo
 	return res, err
 }
 
-func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedScenePerformer, error) {
+func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(context.TODO(), queryStr)
 	if err != nil {
 		return nil, err
@@ -248,7 +248,7 @@ func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedSceneP
 
 	performerFragments := performers.SearchPerformer
 
-	var ret []*models.ScrapedScenePerformer
+	var ret []*models.ScrapedPerformer
 	for _, fragment := range performerFragments {
 		performer := performerFragmentToScrapedScenePerformer(*fragment)
 		ret = append(ret, performer)
@@ -413,13 +413,13 @@ func fetchImage(url string) (*string, error) {
 	return &img, nil
 }
 
-func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
+func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedPerformer {
 	id := p.ID
 	images := []string{}
 	for _, image := range p.Images {
 		images = append(images, image.URL)
 	}
-	sp := &models.ScrapedScenePerformer{
+	sp := &models.ScrapedPerformer{
 		Name:         p.Name,
 		Country:      p.Country,
 		Measurements: formatMeasurements(p.Measurements),
@@ -511,7 +511,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 
 		if s.Studio != nil {
 			studioID := s.Studio.ID
-			ss.Studio = &models.ScrapedSceneStudio{
+			ss.Studio = &models.ScrapedStudio{
 				Name:         s.Studio.Name,
 				URL:          findURL(s.Studio.Urls, "HOME"),
 				RemoteSiteID: &studioID,
@@ -535,7 +535,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 		}
 
 		for _, t := range s.Tags {
-			st := &models.ScrapedSceneTag{
+			st := &models.ScrapedTag{
 				Name: t.Name,
 			}
 
@@ -555,7 +555,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 	return ss, nil
 }
 
-func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedScenePerformer, error) {
+func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedPerformer, error) {
 	performer, err := c.client.FindPerformerByID(context.TODO(), id)
 	if err != nil {
 		return nil, err
@@ -565,13 +565,13 @@ func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedScenePerfor
 	return ret, nil
 }
 
-func (c Client) FindStashBoxPerformerByName(name string) (*models.ScrapedScenePerformer, error) {
+func (c Client) FindStashBoxPerformerByName(name string) (*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(context.TODO(), name)
 	if err != nil {
 		return nil, err
 	}
 
-	var ret *models.ScrapedScenePerformer
+	var ret *models.ScrapedPerformer
 	for _, performer := range performers.SearchPerformer {
 		if strings.EqualFold(performer.Name, name) {
 			ret = performerFragmentToScrapedScenePerformer(*performer)

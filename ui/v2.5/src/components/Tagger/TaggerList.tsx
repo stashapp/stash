@@ -210,7 +210,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
     setFingerprintError("");
   };
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({

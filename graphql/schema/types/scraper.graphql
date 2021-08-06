@@ -26,49 +26,7 @@ type Scraper {
     movie: ScraperSpec
 }
 
-type ScrapedScenePerformer {
-  """Set if performer matched"""
-  stored_id: ID
-  name: String!
-  gender: String
-  url: String
-  twitter: String
-  instagram: String
-  birthdate: String
-  ethnicity: String
-  country: String
-  eye_color: String
-  height: String
-  measurements: String
-  fake_tits: String
-  career_length: String
-  tattoos: String
-  piercings: String
-  aliases: String
-  tags: [ScrapedSceneTag!]
-
-  remote_site_id: String
-  images: [String!]
-  details: String
-  death_date: String
-  hair_color: String
-  weight: String
-}
-
-type ScrapedSceneMovie {
-  """Set if movie matched"""
-  stored_id: ID
-  name: String!
-  aliases: String
-  duration: String
-  date: String
-  rating: String
-  director: String
-  synopsis: String
-  url: String
-}
-
-type ScrapedSceneStudio {
+type ScrapedStudio {
   """Set if studio matched"""
   stored_id: ID
   name: String!
@@ -77,7 +35,7 @@ type ScrapedSceneStudio {
   remote_site_id: String
 }
 
-type ScrapedSceneTag {
+type ScrapedTag {
   """Set if tag matched"""
   stored_id: ID
   name: String!
@@ -94,10 +52,10 @@ type ScrapedScene {
 
   file: SceneFileType # Resolver
 
-  studio: ScrapedSceneStudio
-  tags: [ScrapedSceneTag!]
-  performers: [ScrapedScenePerformer!]
-  movies: [ScrapedSceneMovie!]
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
+  movies: [ScrapedMovie!]
 
   remote_site_id: String
   duration: Int
@@ -110,9 +68,9 @@ type ScrapedGallery {
   url: String
   date: String
 
-  studio: ScrapedSceneStudio
-  tags: [ScrapedSceneTag!]
-  performers: [ScrapedScenePerformer!]
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
 }
 
 input StashBoxSceneQueryInput {
@@ -135,7 +93,7 @@ input StashBoxPerformerQueryInput {
 
 type StashBoxPerformerQueryResult {
   query: String!
-  results: [ScrapedScenePerformer!]!
+  results: [ScrapedPerformer!]!
 }
 
 type StashBoxFingerprint {

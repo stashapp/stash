@@ -73,7 +73,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
-  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
+  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
@@ -225,7 +225,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return ret;
   }
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({
@@ -573,10 +573,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  async function onScrapeStashBox(performerResult: GQL.ScrapedScenePerformer) {
+  async function onScrapeStashBox(performerResult: GQL.ScrapedPerformer) {
     setIsScraperModalOpen(false);
 
-    const result: Partial<GQL.ScrapedPerformerDataFragment> = {
+    const result: GQL.ScrapedPerformerDataFragment = {
       ...performerResult,
       image: performerResult.images?.[0] ?? undefined,
       country: getCountryByISO(performerResult.country),

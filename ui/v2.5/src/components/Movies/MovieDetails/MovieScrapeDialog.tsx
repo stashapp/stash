@@ -87,7 +87,10 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     new ScrapeResult<string>(props.movie.synopsis, props.scraped.synopsis)
   );
   const [studio, setStudio] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.movie.studio_id, props.scraped.studio?.id)
+    new ScrapeResult<string>(
+      props.movie.studio_id,
+      props.scraped.studio?.stored_id
+    )
   );
   const [url, setURL] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.movie.url, props.scraped.url)
@@ -123,7 +126,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     const durationString = duration.getNewValue();
 
     return {
-      name: name.getNewValue(),
+      name: name.getNewValue() ?? "",
       aliases: aliases.getNewValue(),
       duration: durationString,
       date: date.getNewValue(),
@@ -131,7 +134,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
       synopsis: synopsis.getNewValue(),
       studio: newStudio
         ? {
-            id: newStudio,
+            stored_id: newStudio,
             name: "",
           }
         : undefined,

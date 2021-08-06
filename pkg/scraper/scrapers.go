@@ -259,7 +259,7 @@ func (c Cache) postScrapePerformer(ret *models.ScrapedPerformer) error {
 	return nil
 }
 
-func (c Cache) postScrapeScenePerformer(ret *models.ScrapedScenePerformer) error {
+func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
 	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
@@ -459,7 +459,7 @@ func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 	return nil, nil
 }
 
-func matchMovieStudio(qb models.StudioReader, s *models.ScrapedMovieStudio) error {
+func matchMovieStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
 	studio, err := qb.FindByName(s.Name, true)
 
 	if err != nil {
@@ -472,7 +472,7 @@ func matchMovieStudio(qb models.StudioReader, s *models.ScrapedMovieStudio) erro
 	}
 
 	id := strconv.Itoa(studio.ID)
-	s.ID = &id
+	s.StoredID = &id
 	return nil
 }
 

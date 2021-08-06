@@ -40,7 +40,7 @@ func (t *StashBoxPerformerTagTask) Description() string {
 }
 
 func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
-	var performer *models.ScrapedScenePerformer
+	var performer *models.ScrapedPerformer
 	var err error
 
 	client := stashbox.NewClient(*t.box, t.txnManager)

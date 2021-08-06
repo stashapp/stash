@@ -39,7 +39,7 @@ type stashFindPerformerNamePerformer struct {
 
 func (p stashFindPerformerNamePerformer) toPerformer() *models.ScrapedPerformer {
 	return &models.ScrapedPerformer{
-		Name: &p.Name,
+		Name: p.Name,
 		// put id into the URL field
 		URL: &p.ID,
 	}
@@ -81,11 +81,40 @@ func (s *stashScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 	return ret, nil
 }
 
+// need a separate for scraped stash performers - does not include remote_site_id or image
+type scrapedTagStash struct {
+	Name string `graphql:"name" json:"name"`
+}
+
+type scrapedPerformerStash struct {
+	Name         *string            `graphql:"name" json:"name"`
+	Gender       *string            `graphql:"gender" json:"gender"`
+	URL          *string            `graphql:"url" json:"url"`
+	Twitter      *string            `graphql:"twitter" json:"twitter"`
+	Instagram    *string            `graphql:"instagram" json:"instagram"`
+	Birthdate    *string            `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string            `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string            `graphql:"country" json:"country"`
+	EyeColor     *string            `graphql:"eye_color" json:"eye_color"`
+	Height       *string            `graphql:"height" json:"height"`
+	Measurements *string            `graphql:"measurements" json:"measurements"`
+	FakeTits     *string            `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string            `graphql:"career_length" json:"career_length"`
+	Tattoos      *string            `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string            `graphql:"piercings" json:"piercings"`
+	Aliases      *string            `graphql:"aliases" json:"aliases"`
+	Tags         []*scrapedTagStash `graphql:"tags" json:"tags"`
+	Details      *string            `graphql:"details" json:"details"`
+	DeathDate    *string            `graphql:"death_date" json:"death_date"`
+	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
+	Weight       *string            `graphql:"weight" json:"weight"`
+}
+
 func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	client := s.getStashClient()
 
 	var q struct {
-		FindPerformer *models.ScrapedPerformerStash `graphql:"findPerformer(id: $f)"`
+		FindPerformer *scrapedPerformerStash `graphql:"findPerformer(id: $f)"`
 	}
 
 	performerID := *scrapedPerformer.URL
@@ -98,13 +127,6 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 	err := client.Query(context.Background(), &q, vars)
 	if err != nil {
 		return nil, err
-	}
-
-	if q.FindPerformer != nil {
-		// the ids of the tags must be nilled
-		for _, t := range q.FindPerformer.Tags {
-			t.ID = nil
-		}
 	}
 
 	// need to copy back to a scraped performer
@@ -121,6 +143,23 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 	}
 
 	return &ret, nil
+}
+
+type scrapedStudioStash struct {
+	Name string  `graphql:"name" json:"name"`
+	URL  *string `graphql:"url" json:"url"`
+}
+
+type scrapedSceneStash struct {
+	ID         string                   `graphql:"id" json:"id"`
+	Title      *string                  `graphql:"title" json:"title"`
+	Details    *string                  `graphql:"details" json:"details"`
+	URL        *string                  `graphql:"url" json:"url"`
+	Date       *string                  `graphql:"date" json:"date"`
+	File       *models.SceneFileType    `graphql:"file" json:"file"`
+	Studio     *scrapedStudioStash      `graphql:"studio" json:"studio"`
+	Tags       []*scrapedTagStash       `graphql:"tags" json:"tags"`
+	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
 func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
@@ -141,7 +180,7 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	}
 
 	var q struct {
-		FindScene *models.ScrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
+		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
 	}
 
 	type SceneHashInput struct {
@@ -164,21 +203,6 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 		return nil, err
 	}
 
-	if q.FindScene != nil {
-		// the ids of the studio, performers and tags must be nilled
-		if q.FindScene.Studio != nil {
-			q.FindScene.Studio.ID = nil
-		}
-
-		for _, p := range q.FindScene.Performers {
-			p.ID = nil
-		}
-
-		for _, t := range q.FindScene.Tags {
-			t.ID = nil
-		}
-	}
-
 	// need to copy back to a scraped scene
 	ret := models.ScrapedScene{}
 	err = copier.Copy(&ret, q.FindScene)
@@ -193,6 +217,18 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	}
 
 	return &ret, nil
+}
+
+type scrapedGalleryStash struct {
+	ID         string                   `graphql:"id" json:"id"`
+	Title      *string                  `graphql:"title" json:"title"`
+	Details    *string                  `graphql:"details" json:"details"`
+	URL        *string                  `graphql:"url" json:"url"`
+	Date       *string                  `graphql:"date" json:"date"`
+	File       *models.SceneFileType    `graphql:"file" json:"file"`
+	Studio     *scrapedStudioStash      `graphql:"studio" json:"studio"`
+	Tags       []*scrapedTagStash       `graphql:"tags" json:"tags"`
+	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
 func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
@@ -215,7 +251,7 @@ func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) 
 	}
 
 	var q struct {
-		FindGallery *models.ScrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
+		FindGallery *scrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
 	}
 
 	type GalleryHashInput struct {
@@ -234,21 +270,6 @@ func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) 
 	err = client.Query(context.Background(), &q, vars)
 	if err != nil {
 		return nil, err
-	}
-
-	if q.FindGallery != nil {
-		// the ids of the studio, performers and tags must be nilled
-		if q.FindGallery.Studio != nil {
-			q.FindGallery.Studio.ID = nil
-		}
-
-		for _, p := range q.FindGallery.Performers {
-			p.ID = nil
-		}
-
-		for _, t := range q.FindGallery.Tags {
-			t.ID = nil
-		}
 	}
 
 	// need to copy back to a scraped scene

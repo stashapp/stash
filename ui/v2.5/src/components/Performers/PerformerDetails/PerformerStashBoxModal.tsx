@@ -16,7 +16,7 @@ export interface IStashBox extends GQL.StashBox {
 interface IProps {
   instance: IStashBox;
   onHide: () => void;
-  onSelectPerformer: (performer: GQL.ScrapedScenePerformer) => void;
+  onSelectPerformer: (performer: GQL.ScrapedPerformer) => void;
   name?: string;
 }
 const PerformerStashBoxModal: React.FC<IProps> = ({

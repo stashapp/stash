@@ -203,8 +203,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       formik.setFieldValue("date", state.date ?? undefined);
     }
 
-    if (state.studio && state.studio.id) {
-      formik.setFieldValue("studio_id", state.studio.id ?? undefined);
+    if (state.studio && state.studio.stored_id) {
+      formik.setFieldValue("studio_id", state.studio.stored_id ?? undefined);
     }
 
     if (state.director) {

@@ -97,8 +97,8 @@ function renderScrapedTagsRow(
   title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
-  newTags: GQL.ScrapedSceneTag[],
-  onCreateNew?: (value: GQL.ScrapedSceneTag) => void
+  newTags: GQL.ScrapedTag[],
+  onCreateNew?: (value: GQL.ScrapedTag) => void
 ) {
   return (
     <ScrapeDialogRow
@@ -299,7 +299,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
-  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>(
+  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
     props.scraped.tags?.filter((t) => !t.stored_id) ?? []
   );
 
@@ -338,7 +338,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     return <></>;
   }
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({
@@ -376,7 +376,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 
   function makeNewScrapedItem(): GQL.ScrapedPerformer {
     return {
-      name: name.getNewValue(),
+      name: name.getNewValue() ?? "",
       aliases: aliases.getNewValue(),
       birthdate: birthdate.getNewValue(),
       ethnicity: ethnicity.getNewValue(),

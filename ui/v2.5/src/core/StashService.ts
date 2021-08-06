@@ -1018,9 +1018,7 @@ export const queryParseSceneFilenames = (
     fetchPolicy: "network-only",
   });
 
-export const makePerformerCreateInput = (
-  toCreate: GQL.ScrapedScenePerformer
-) => {
+export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
   const input: GQL.PerformerCreateInput = {
     name: toCreate.name,
     url: toCreate.url,

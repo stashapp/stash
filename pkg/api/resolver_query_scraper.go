@@ -30,7 +30,7 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 	var ret []string
 	for _, v := range scrapedPerformers {
 		name := v.Name
-		ret = append(ret, *name)
+		ret = append(ret, name)
 	}
 
 	return ret, nil

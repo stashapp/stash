@@ -336,7 +336,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const hairColor = "Blonde"
 	const weight = "57" // 126 lb
 
-	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, performerName, &performer.Name, "Name")
 	verifyField(t, gender, performer.Gender, "Gender")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
@@ -416,7 +416,7 @@ func TestConcatXPath(t *testing.T) {
 
 	const performerName = firstName + separator + lastName
 
-	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, performerName, &performer.Name, "Name")
 	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
 }
 
@@ -593,7 +593,7 @@ func makeSceneXPathConfig() mappedScraper {
 	return scraper
 }
 
-func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedSceneTag) {
+func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedTag) {
 	t.Helper()
 
 	i := 0
@@ -614,7 +614,7 @@ func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.Sc
 	}
 }
 
-func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedSceneMovie) {
+func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedMovie) {
 	t.Helper()
 
 	i := 0
@@ -635,7 +635,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 	}
 }
 
-func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedScenePerformer) {
+func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedPerformer) {
 	t.Helper()
 
 	i := 0
@@ -881,5 +881,5 @@ xPathScrapers:
 		return
 	}
 
-	verifyField(t, "The name", performer.Name, "Name")
+	verifyField(t, "The name", &performer.Name, "Name")
 }
