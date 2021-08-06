@@ -32,14 +32,12 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
     }
 
     return (
-      <dl className="row">
-        <dt className="col-3 col-xl-2">
-          {intl.formatMessage({ id: "rating" })}
-        </dt>
-        <dd className="col-9 col-xl-10">
+      <>
+        <dt>{intl.formatMessage({ id: "rating" })}</dt>
+        <dd>
           <RatingStars value={movie.rating} disabled />
         </dd>
-      </dl>
+      </>
     );
   }
 
@@ -52,7 +50,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
 
       {maybeRenderAliases()}
 
-      <div>
+      <dl className="details-list">
         <TextField
           id="duration"
           value={
@@ -79,7 +77,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
         />
 
         <TextField id="synopsis" value={movie.synopsis} />
-      </div>
+      </dl>
     </div>
   );
 };

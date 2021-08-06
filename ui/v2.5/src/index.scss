@@ -643,3 +643,9 @@ div.dropdown-menu {
     border-bottom-right-radius: 0;
   }
 }
+
+dl.details-list {
+  display: grid;
+  grid-column-gap: 10px;
+  grid-template-columns: minmax(16.67%, auto) 1fr;
+}

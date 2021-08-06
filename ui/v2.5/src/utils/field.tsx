@@ -12,12 +12,10 @@ export const TextField: React.FC<ITextField> = ({ id, name, value }) => {
     return null;
   }
   return (
-    <dl className="row mb-0">
-      <dt className="col-3 col-xl-2">
-        {id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:
-      </dt>
-      <dd className="col-9 col-xl-10">{value ?? undefined}</dd>
-    </dl>
+    <>
+      <dt>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</dt>
+      <dd>{value ?? undefined}</dd>
+    </>
   );
 };
 
@@ -33,17 +31,15 @@ export const URLField: React.FC<IURLField> = ({ id, name, value, url }) => {
     return null;
   }
   return (
-    <dl className="row mb-0">
-      <dt className="col-3 col-xl-2">
-        {id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:
-      </dt>
-      <dd className="col-9 col-xl-10">
+    <>
+      <dt>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</dt>
+      <dd>
         {url ? (
           <a href={url} target="_blank" rel="noopener noreferrer">
             {value}
           </a>
         ) : undefined}
       </dd>
-    </dl>
+    </>
   );
 };
