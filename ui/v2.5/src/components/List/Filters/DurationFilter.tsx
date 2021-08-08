@@ -1,5 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { DurationInput } from "../../Shared";
 import { INumberValue } from "../../../models/list-filter/types";
@@ -14,10 +15,9 @@ export const DurationFilter: React.FC<IDurationFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
-  function onChanged(
-    valueAsNumber: number,
-    property: "value" | "value2"
-  ) {
+  const intl = useIntl();
+
+  function onChanged(valueAsNumber: number, property: "value" | "value2") {
     const { value } = criterion;
     value[property] = valueAsNumber;
     onValueChanged(value);
@@ -33,6 +33,7 @@ export const DurationFilter: React.FC<IDurationFilterProps> = ({
         <DurationInput
           numericValue={criterion.value?.value}
           onValueChange={(v: number) => onChanged(v, "value")}
+          placeholder={intl.formatMessage({ id: "criterion.value" })}
         />
       </Form.Group>
     );
@@ -49,6 +50,7 @@ export const DurationFilter: React.FC<IDurationFilterProps> = ({
         <DurationInput
           numericValue={criterion.value?.value}
           onValueChange={(v: number) => onChanged(v, "value")}
+          placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
         />
       </Form.Group>
     );
@@ -63,8 +65,20 @@ export const DurationFilter: React.FC<IDurationFilterProps> = ({
     upperControl = (
       <Form.Group>
         <DurationInput
-          numericValue={criterion.modifier === CriterionModifier.LessThan ? criterion.value?.value : criterion.value?.value2}
-          onValueChange={(v: number) => onChanged(v, criterion.modifier === CriterionModifier.LessThan ? "value" : "value2")}
+          numericValue={
+            criterion.modifier === CriterionModifier.LessThan
+              ? criterion.value?.value
+              : criterion.value?.value2
+          }
+          onValueChange={(v: number) =>
+            onChanged(
+              v,
+              criterion.modifier === CriterionModifier.LessThan
+                ? "value"
+                : "value2"
+            )
+          }
+          placeholder={intl.formatMessage({ id: "criterion.less_than" })}
         />
       </Form.Group>
     );

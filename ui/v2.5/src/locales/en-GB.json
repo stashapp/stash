@@ -380,6 +380,11 @@
   "country": "Country",
   "cover_image": "Cover Image",
   "created_at": "Created At",
+  "criterion": {
+    "greater_than": "Greater than",
+    "less_than": "Less than",
+    "value": "Value"
+  },
   "criterion_modifier": {
     "equals": "is",
     "excludes": "excludes",

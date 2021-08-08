@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
@@ -13,13 +14,16 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
+  const intl = useIntl();
+
   const valueStage = useRef<INumberValue>(criterion.value);
 
   function onChanged(
     event: React.ChangeEvent<HTMLInputElement>,
     property: "value" | "value2"
   ) {
-    valueStage.current[property] = parseInt(event.target.value, 10);
+    const value = parseInt(event.target.value, 10);
+    valueStage.current[property] = !Number.isNaN(value) ? value : 0;
   }
 
   function onBlurInput() {
@@ -41,6 +45,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
           }
           onBlur={onBlurInput}
           defaultValue={criterion.value?.value ?? ""}
+          placeholder={intl.formatMessage({ id: "criterion.value" })}
         />
       </Form.Group>
     );
@@ -62,6 +67,7 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
           }
           onBlur={onBlurInput}
           defaultValue={criterion.value?.value ?? ""}
+          placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
         />
       </Form.Group>
     );
@@ -79,10 +85,20 @@ export const NumberFilter: React.FC<IDurationFilterProps> = ({
           className="btn-secondary"
           type="number"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChanged(e, criterion.modifier === CriterionModifier.LessThan? "value" : "value2")
+            onChanged(
+              e,
+              criterion.modifier === CriterionModifier.LessThan
+                ? "value"
+                : "value2"
+            )
           }
           onBlur={onBlurInput}
-          defaultValue={(criterion.modifier === CriterionModifier.LessThan ? criterion.value?.value : criterion.value?.value2) ?? ""}
+          defaultValue={
+            (criterion.modifier === CriterionModifier.LessThan
+              ? criterion.value?.value
+              : criterion.value?.value2) ?? ""
+          }
+          placeholder={intl.formatMessage({ id: "criterion.less_than" })}
         />
       </Form.Group>
     );
