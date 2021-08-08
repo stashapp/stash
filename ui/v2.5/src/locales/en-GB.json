@@ -274,6 +274,7 @@
       "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
       "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
+      "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
       "generated_content": "Generated Content",
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
