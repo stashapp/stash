@@ -336,7 +336,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const hairColor = "Blonde"
 	const weight = "57" // 126 lb
 
-	verifyField(t, performerName, &performer.Name, "Name")
+	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, gender, performer.Gender, "Gender")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
@@ -416,7 +416,7 @@ func TestConcatXPath(t *testing.T) {
 
 	const performerName = firstName + separator + lastName
 
-	verifyField(t, performerName, &performer.Name, "Name")
+	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
 }
 
@@ -625,7 +625,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 			expectedMovie = expectedMovieNames[i]
 		}
 		if i < len(actualMovies) {
-			actualMovie = actualMovies[i].Name
+			actualMovie = *actualMovies[i].Name
 		}
 
 		if expectedMovie != actualMovie {
@@ -651,7 +651,7 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 			expectedURL = expectedURLs[i]
 		}
 		if i < len(actualPerformers) {
-			actualName = actualPerformers[i].Name
+			actualName = *actualPerformers[i].Name
 			if actualPerformers[i].URL != nil {
 				actualURL = *actualPerformers[i].URL
 			}
@@ -881,5 +881,5 @@ xPathScrapers:
 		return
 	}
 
-	verifyField(t, "The name", &performer.Name, "Name")
+	verifyField(t, "The name", performer.Name, "Name")
 }

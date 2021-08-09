@@ -2,7 +2,7 @@
 type ScrapedPerformer {
   """Set if performer matched"""
   stored_id: ID
-  name: String!
+  name: String
   gender: String
   url: String
   twitter: String

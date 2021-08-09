@@ -420,7 +420,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		images = append(images, image.URL)
 	}
 	sp := &models.ScrapedPerformer{
-		Name:         p.Name,
+		Name:         &p.Name,
 		Country:      p.Country,
 		Measurements: formatMeasurements(p.Measurements),
 		CareerLength: formatCareerLength(p.CareerStartYear, p.CareerEndYear),

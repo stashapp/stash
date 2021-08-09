@@ -98,6 +98,11 @@ function renderScrapedPerformersRow(
   newPerformers: GQL.ScrapedPerformer[],
   onCreateNew?: (value: GQL.ScrapedPerformer) => void
 ) {
+  const performersCopy = newPerformers.map((p) => {
+    const name: string = p.name ?? "";
+    return { ...p, name };
+  });
+
   return (
     <ScrapeDialogRow
       title={title}
@@ -109,7 +114,7 @@ function renderScrapedPerformersRow(
         )
       }
       onChange={onChange}
-      newValues={newPerformers}
+      newValues={performersCopy}
       onCreateNew={onCreateNew}
     />
   );
@@ -145,6 +150,11 @@ function renderScrapedMoviesRow(
   newMovies: GQL.ScrapedMovie[],
   onCreateNew?: (value: GQL.ScrapedMovie) => void
 ) {
+  const moviesCopy = newMovies.map((p) => {
+    const name: string = p.name ?? "";
+    return { ...p, name };
+  });
+
   return (
     <ScrapeDialogRow
       title={title}
@@ -156,7 +166,7 @@ function renderScrapedMoviesRow(
         )
       }
       onChange={onChange}
-      newValues={newMovies}
+      newValues={moviesCopy}
       onCreateNew={onCreateNew}
     />
   );

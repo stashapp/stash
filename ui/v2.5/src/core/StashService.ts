@@ -1020,7 +1020,7 @@ export const queryParseSceneFilenames = (
 
 export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
   const input: GQL.PerformerCreateInput = {
-    name: toCreate.name,
+    name: toCreate.name ?? "",
     url: toCreate.url,
     gender: stringToGender(toCreate.gender),
     birthdate: toCreate.birthdate,

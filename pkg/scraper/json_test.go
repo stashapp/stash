@@ -86,7 +86,7 @@ jsonScrapers:
 		t.Fatalf("Error scraping performer: %s", err.Error())
 	}
 
-	verifyField(t, "Mia Malkova", &scrapedPerformer.Name, "Name")
+	verifyField(t, "Mia Malkova", scrapedPerformer.Name, "Name")
 	verifyField(t, "Female", scrapedPerformer.Gender, "Gender")
 	verifyField(t, "1992-07-01", scrapedPerformer.Birthdate, "Birthdate")
 	verifyField(t, "Caucasian", scrapedPerformer.Ethnicity, "Ethnicity")

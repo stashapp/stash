@@ -1,7 +1,7 @@
 """A movie from a scraping operation..."""
 type ScrapedMovie {
   stored_id: ID
-  name: String!
+  name: String
   aliases: String
   duration: String
   date: String

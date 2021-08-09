@@ -10,7 +10,11 @@ import (
 // MatchScrapedScenePerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
 func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
-	performers, err := qb.FindByNames([]string{p.Name}, true)
+	if p.Name == nil {
+		return nil
+	}
+
+	performers, err := qb.FindByNames([]string{*p.Name}, true)
 
 	if err != nil {
 		return err
@@ -48,7 +52,11 @@ func MatchScrapedSceneStudio(qb models.StudioReader, s *models.ScrapedStudio) er
 // MatchScrapedSceneMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
 func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
-	movies, err := qb.FindByNames([]string{m.Name}, true)
+	if m.Name == nil {
+		return nil
+	}
+
+	movies, err := qb.FindByNames([]string{*m.Name}, true)
 
 	if err != nil {
 		return err

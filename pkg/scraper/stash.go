@@ -39,7 +39,7 @@ type stashFindPerformerNamePerformer struct {
 
 func (p stashFindPerformerNamePerformer) toPerformer() *models.ScrapedPerformer {
 	return &models.ScrapedPerformer{
-		Name: p.Name,
+		Name: &p.Name,
 		// put id into the URL field
 		URL: &p.ID,
 	}
