@@ -35,6 +35,112 @@ const fileSize = (bytes: number = 0) => {
   };
 };
 
+class DurationUnit {
+  static readonly SECOND: DurationUnit = new DurationUnit(
+    "second",
+    "seconds",
+    "s",
+    1
+  );
+  static readonly MINUTE: DurationUnit = new DurationUnit(
+    "minute",
+    "minutes",
+    "m",
+    60
+  );
+  static readonly HOUR: DurationUnit = new DurationUnit(
+    "hour",
+    "hours",
+    "h",
+    DurationUnit.MINUTE.secs * 60
+  );
+  static readonly DAY: DurationUnit = new DurationUnit(
+    "day",
+    "days",
+    "D",
+    DurationUnit.HOUR.secs * 24
+  );
+  static readonly WEEK: DurationUnit = new DurationUnit(
+    "week",
+    "weeks",
+    "W",
+    DurationUnit.DAY.secs * 7
+  );
+  static readonly MONTH: DurationUnit = new DurationUnit(
+    "month",
+    "months",
+    "M",
+    DurationUnit.DAY.secs * 30
+  );
+  static readonly YEAR: DurationUnit = new DurationUnit(
+    "year",
+    "years",
+    "Y",
+    DurationUnit.DAY.secs * 365
+  );
+
+  static readonly DURATIONS: DurationUnit[] = [
+    DurationUnit.SECOND,
+    DurationUnit.MINUTE,
+    DurationUnit.HOUR,
+    DurationUnit.DAY,
+    DurationUnit.WEEK,
+    DurationUnit.MONTH,
+    DurationUnit.YEAR,
+  ];
+
+  private constructor(
+    private readonly singular: string,
+    private readonly plural: string,
+    private readonly shortString: string,
+    public secs: number
+  ) {}
+
+  toString() {
+    return this.shortString;
+  }
+}
+
+class DurationCount {
+  public constructor(
+    public readonly count: number,
+    public readonly duration: DurationUnit
+  ) {}
+
+  toString() {
+    return this.count.toString() + this.duration.toString();
+  }
+}
+
+const secondsAsTime = (seconds: number = 0): DurationCount[] => {
+  if (Number.isNaN(parseFloat(String(seconds))) || !Number.isFinite(seconds))
+    return [new DurationCount(0, DurationUnit.DURATIONS[0])];
+
+  const result = [];
+  let remainingSeconds = seconds;
+  // Run down the possible durations and pull them out
+  for (let i = DurationUnit.DURATIONS.length - 1; i >= 0; i--) {
+    const q = Math.floor(remainingSeconds / DurationUnit.DURATIONS[i].secs);
+    if (q !== 0) {
+      remainingSeconds %= DurationUnit.DURATIONS[i].secs;
+      result.push(new DurationCount(q, DurationUnit.DURATIONS[i]));
+    }
+  }
+  return result;
+};
+
+const timeAsString = (time: DurationCount[]): string => {
+  return time.join(" ");
+};
+
+const secondsAsTimeString = (
+  seconds: number = 0,
+  maxUnitCount: number = 2
+): string => {
+  const timeArray = secondsAsTime(seconds).slice(0, maxUnitCount);
+  return timeAsString(timeArray);
+};
+
 const formatFileSizeUnit = (u: Unit) => {
   const i = Units.indexOf(u);
   return shortUnits[i];
@@ -206,6 +312,7 @@ const TextUtils = {
   instagramURL,
   formatDate,
   capitalize,
+  secondsAsTimeString,
 };
 
 export default TextUtils;

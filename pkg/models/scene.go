@@ -15,6 +15,7 @@ type SceneReader interface {
 	CountByMovieID(movieID int) (int, error)
 	Count() (int, error)
 	Size() (float64, error)
+	Duration() (float64, error)
 	// SizeCount() (string, error)
 	CountByStudioID(studioID int) (int, error)
 	CountByTagID(tagID int) (int, error)

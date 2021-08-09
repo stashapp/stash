@@ -1,6 +1,7 @@
 type StatsResultType {
   scene_count: Int!
   scenes_size: Float!
+  scenes_duration: Float!
   image_count: Int!
   images_size: Float!
   gallery_count: Int!
