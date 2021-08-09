@@ -321,7 +321,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     new ScrapeResult<string>(props.scene.cover_image, props.scraped.image)
   );
 
-  const [createStudio] = useStudioCreate({ name: "" });
+  const [createStudio] = useStudioCreate();
   const [createPerformer] = usePerformerCreate();
   const [createMovie] = useMovieCreate();
   const [createTag] = useTagCreate();
