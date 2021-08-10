@@ -14,6 +14,7 @@ import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 import { ScrapeType } from "src/core/generated-graphql";
+import { ExclusionPatterns } from "./SettingsConfigurationPanel";
 
 interface IURLList {
   urls: string[];
@@ -96,6 +97,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     undefined
   );
   const [scraperCertCheck, setScraperCertCheck] = useState<boolean>(true);
+  const [excludeTagPatterns, setExcludeTagPatterns] = useState<string[]>([]);
 
   const { data, error } = useConfiguration();
 
@@ -103,6 +105,7 @@ export const SettingsScrapingPanel: React.FC = () => {
     scraperUserAgent,
     scraperCDPPath,
     scraperCertCheck,
+    excludeTagPatterns,
   });
 
   useEffect(() => {
@@ -113,6 +116,7 @@ export const SettingsScrapingPanel: React.FC = () => {
       setScraperUserAgent(conf.scraping.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.scraping.scraperCDPPath ?? undefined);
       setScraperCertCheck(conf.scraping.scraperCertCheck);
+      setExcludeTagPatterns(conf.scraping.excludeTagPatterns);
     }
   }, [data, error]);
 
@@ -396,6 +400,24 @@ export const SettingsScrapingPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
+      </Form.Group>
+
+      <Form.Group>
+        <h6>
+          {intl.formatMessage({
+            id: "config.scraping.excluded_tag_patterns_head",
+          })}
+        </h6>
+        <ExclusionPatterns
+          excludes={excludeTagPatterns}
+          setExcludes={setExcludeTagPatterns}
+          demo="4K"
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.scraping.excluded_tag_patterns_desc",
+          })}
+        </Form.Text>
       </Form.Group>
 
       <hr />
