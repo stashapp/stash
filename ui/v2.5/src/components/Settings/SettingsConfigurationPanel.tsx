@@ -17,9 +17,10 @@ import StashConfiguration from "./StashConfiguration";
 interface IExclusionPatternsProps {
   excludes: string[];
   setExcludes: (value: string[]) => void;
+  demo: string;
 }
 
-const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
+export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
   function excludeRegexChanged(idx: number, value: string) {
     const newExcludes = props.excludes.map((regex, i) => {
       const ret = idx !== i ? regex : value;
@@ -35,8 +36,7 @@ const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
   }
 
   function excludeAddRegex() {
-    const demo = "sample\\.mp4$";
-    const newExcludes = props.excludes.concat(demo);
+    const newExcludes = props.excludes.concat(props.demo);
 
     props.setExcludes(newExcludes);
   }
@@ -126,6 +126,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);
+  const [
+    customPerformerImageLocation,
+    setCustomPerformerImageLocation,
+  ] = useState<string>();
   const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
@@ -166,6 +170,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     galleryExtensions: commaDelimitedToList(galleryExtensions),
     excludes,
     imageExcludes,
+    customPerformerImageLocation,
     stashBoxes: stashBoxes.map(
       (b) =>
         ({
@@ -213,6 +218,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       );
       setExcludes(conf.general.excludes);
       setImageExcludes(conf.general.imageExcludes);
+      setCustomPerformerImageLocation(
+        conf.general.customPerformerImageLocation ?? ""
+      );
       setStashBoxes(
         conf.general.stashBoxes.map((box, i) => ({
           name: box?.name ?? undefined,
@@ -482,7 +490,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
               id: "config.general.excluded_video_patterns_head",
             })}
           </h6>
-          <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
+          <ExclusionPatterns
+            excludes={excludes}
+            setExcludes={setExcludes}
+            demo="sample\.mp4$"
+          />
           <Form.Text className="text-muted">
             {intl.formatMessage({
               id: "config.general.excluded_video_patterns_desc",
@@ -506,6 +518,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <ExclusionPatterns
             excludes={imageExcludes}
             setExcludes={setImageExcludes}
+            demo="sample\.jpg$"
           />
           <Form.Text className="text-muted">
             {intl.formatMessage({
@@ -817,6 +830,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
+      <Form.Group>
+        <h4>{intl.formatMessage({ id: "performers" })}</h4>
+        <Form.Group>
+          <h6>
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.heading",
+            })}
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            value={customPerformerImageLocation}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setCustomPerformerImageLocation(e.currentTarget.value);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
       <hr />
 
       <Form.Group id="stashbox">

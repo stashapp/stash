@@ -61,6 +61,7 @@ func (f *textFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		f.printColored(b, entry, keys)
 	} else {
 		f.appendKeyValue(b, "level", entry.Level.String())
+		f.appendKeyValue(b, "time", entry.Time.Format(defaultTimestampFormat))
 		if entry.Message != "" {
 			f.appendKeyValue(b, "msg", entry.Message)
 		}

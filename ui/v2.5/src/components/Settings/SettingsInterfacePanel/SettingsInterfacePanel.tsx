@@ -137,6 +137,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           {intl.formatMessage({ id: "config.ui.menu_items.description" })}
         </Form.Text>
       </Form.Group>
+
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.ui.scene_wall.heading" })}</h5>
         <Form.Check
