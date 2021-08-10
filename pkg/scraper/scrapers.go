@@ -5,10 +5,12 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
+	stash_config "github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -239,12 +241,11 @@ func (c Cache) postScrapePerformer(ret *models.ScrapedPerformer) error {
 	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		for _, t := range ret.Tags {
-			err := MatchScrapedSceneTag(tqb, t)
-			if err != nil {
-				return err
-			}
+		tags, err := postProcessTags(tqb, ret.Tags)
+		if err != nil {
+			return err
 		}
+		ret.Tags = tags
 
 		return nil
 	}); err != nil {
@@ -263,12 +264,11 @@ func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
 	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		for _, t := range ret.Tags {
-			err := MatchScrapedSceneTag(tqb, t)
-			if err != nil {
-				return err
-			}
+		tags, err := postProcessTags(tqb, ret.Tags)
+		if err != nil {
+			return err
 		}
+		ret.Tags = tags
 
 		return nil
 	}); err != nil {
@@ -302,12 +302,11 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 			}
 		}
 
-		for _, t := range ret.Tags {
-			err := MatchScrapedSceneTag(tqb, t)
-			if err != nil {
-				return err
-			}
+		tags, err := postProcessTags(tqb, ret.Tags)
+		if err != nil {
+			return err
 		}
+		ret.Tags = tags
 
 		if ret.Studio != nil {
 			err := MatchScrapedSceneStudio(sqb, ret.Studio)
@@ -342,12 +341,11 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 			}
 		}
 
-		for _, t := range ret.Tags {
-			err := MatchScrapedSceneTag(tqb, t)
-			if err != nil {
-				return err
-			}
+		tags, err := postProcessTags(tqb, ret.Tags)
+		if err != nil {
+			return err
 		}
+		ret.Tags = tags
 
 		if ret.Studio != nil {
 			err := MatchScrapedSceneStudio(sqb, ret.Studio)
@@ -567,4 +565,43 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 	}
 
 	return nil, nil
+}
+
+func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedSceneTag) ([]*models.ScrapedSceneTag, error) {
+	var ret []*models.ScrapedSceneTag
+
+	excludePatterns := stash_config.GetInstance().GetScraperExcludeTagPatterns()
+	var excludeRegexps []*regexp.Regexp
+
+	for _, excludePattern := range excludePatterns {
+		reg, err := regexp.Compile(strings.ToLower(excludePattern))
+		if err != nil {
+			logger.Errorf("Invalid tag exclusion pattern :%v", err)
+		} else {
+			excludeRegexps = append(excludeRegexps, reg)
+		}
+	}
+
+	var ignoredTags []string
+ScrapeTag:
+	for _, t := range scrapedTags {
+		for _, reg := range excludeRegexps {
+			if reg.MatchString(strings.ToLower(t.Name)) {
+				ignoredTags = append(ignoredTags, t.Name)
+				continue ScrapeTag
+			}
+		}
+
+		err := MatchScrapedSceneTag(tqb, t)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, t)
+	}
+
+	if len(ignoredTags) > 0 {
+		logger.Infof("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
+	}
+
+	return ret, nil
 }
