@@ -1,7 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { TruncatedText } from "src/components/Shared";
-import { FormattedMessage } from "react-intl";
+import { TextField, URLField } from "src/utils/field";
 
 interface IGalleryFileInfoPanelProps {
   gallery: GQL.GalleryDataFragment;
@@ -10,36 +9,25 @@ interface IGalleryFileInfoPanelProps {
 export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
   props: IGalleryFileInfoPanelProps
 ) => {
-  function renderChecksum() {
-    return (
-      <div className="row">
-        <span className="col-4">
-          <FormattedMessage id="media_info.checksum" />
-        </span>
-        <TruncatedText className="col-8" text={props.gallery.checksum} />
-      </div>
-    );
-  }
-
-  function renderPath() {
-    const filePath = `file://${props.gallery.path}`;
-
-    return (
-      <div className="row">
-        <span className="col-4">
-          <FormattedMessage id="path" />
-        </span>
-        <a href={filePath} className="col-8">
-          <TruncatedText text={filePath} />
-        </a>
-      </div>
-    );
-  }
-
   return (
-    <div className="container gallery-file-info">
-      {renderChecksum()}
-      {renderPath()}
-    </div>
+    <dl className="container gallery-file-info details-list">
+      <TextField
+        id="media_info.checksum"
+        value={props.gallery.checksum}
+        truncate
+      />
+      <URLField
+        id="path"
+        url={`file://${props.gallery.path}`}
+        value={`file://${props.gallery.path}`}
+        truncate
+      />
+      <URLField
+        id="path"
+        url={props.gallery.url}
+        value={props.gallery.url}
+        truncate
+      />
+    </dl>
   );
 };
