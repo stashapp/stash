@@ -364,12 +364,42 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 	return nil
 }
 
-// ScrapeScene uses the scraper with the provided ID to scrape a scene.
-func (c Cache) ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+// ScrapeScene uses the scraper with the provided ID to scrape a scene using existing data.
+func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapeScene(scene, c.txnManager, c.globalConfig)
+		// get scene from id
+		scene, err := getScene(sceneID, c.txnManager)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, err := s.ScrapeSceneByScene(scene, c.txnManager, c.globalConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if ret != nil {
+			err = c.postScrapeScene(ret)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ret, nil
+	}
+
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
+// ScrapeSceneFragment uses the scraper with the provided ID to scrape a scene.
+func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+	// find scraper with the provided id
+	s := c.findScraper(scraperID)
+	if s != nil {
+		ret, err := s.ScrapeSceneByFragment(scene, c.txnManager, c.globalConfig)
 
 		if err != nil {
 			return nil, err
@@ -412,11 +442,40 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 	return nil, nil
 }
 
-// ScrapeGallery uses the scraper with the provided ID to scrape a scene.
-func (c Cache) ScrapeGallery(scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+// ScrapeGallery uses the scraper with the provided ID to scrape a gallery using existing data.
+func (c Cache) ScrapeGallery(scraperID string, galleryID int) (*models.ScrapedGallery, error) {
 	s := c.findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapeGallery(gallery, c.txnManager, c.globalConfig)
+		// get gallery from id
+		gallery, err := getGallery(galleryID, c.txnManager)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, err := s.ScrapeGalleryByGallery(gallery, c.txnManager, c.globalConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if ret != nil {
+			err = c.postScrapeGallery(ret)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ret, nil
+	}
+
+	return nil, errors.New("Scraped with ID " + scraperID + " not found")
+}
+
+// ScrapeGalleryFragment uses the scraper with the provided ID to scrape a gallery.
+func (c Cache) ScrapeGalleryFragment(scraperID string, gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
+	s := c.findScraper(scraperID)
+	if s != nil {
+		ret, err := s.ScrapeGalleryByFragment(gallery, c.txnManager, c.globalConfig)
 
 		if err != nil {
 			return nil, err

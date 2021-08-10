@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"strconv"
 
@@ -162,23 +163,8 @@ type scrapedSceneStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
 	// query by MD5
-	// assumes that the scene exists in the database
-	id, err := strconv.Atoi(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	var storedScene *models.Scene
-	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		var err error
-		storedScene, err = r.Scene().Find(id)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
 	var q struct {
 		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
 	}
@@ -189,8 +175,8 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	}
 
 	input := SceneHashInput{
-		Checksum: &storedScene.Checksum.String,
-		Oshash:   &storedScene.OSHash.String,
+		Checksum: &scene.Checksum.String,
+		Oshash:   &scene.OSHash.String,
 	}
 
 	vars := map[string]interface{}{
@@ -198,25 +184,28 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	}
 
 	client := s.getStashClient()
-	err = client.Query(context.Background(), &q, vars)
-	if err != nil {
+	if err := client.Query(context.Background(), &q, vars); err != nil {
 		return nil, err
 	}
 
 	// need to copy back to a scraped scene
 	ret := models.ScrapedScene{}
-	err = copier.Copy(&ret, q.FindScene)
-	if err != nil {
+	if err := copier.Copy(&ret, q.FindScene); err != nil {
 		return nil, err
 	}
 
 	// get the performer image directly
+	var err error
 	ret.Image, err = getStashSceneImage(s.config.StashServer.URL, q.FindScene.ID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
+}
+
+func (s *stashScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+	return nil, errors.New("scrapeSceneByFragment not supported for stash scraper")
 }
 
 type scrapedGalleryStash struct {
@@ -231,25 +220,7 @@ type scrapedGalleryStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	id, err := strconv.Atoi(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	// query by MD5
-	// assumes that the gallery exists in the database
-	var storedGallery *models.Gallery
-	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		qb := r.Gallery()
-
-		var err error
-		storedGallery, err = qb.Find(id)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
+func (s *stashScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	var q struct {
 		FindGallery *scrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
 	}
@@ -259,7 +230,7 @@ func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) 
 	}
 
 	input := GalleryHashInput{
-		Checksum: &storedGallery.Checksum,
+		Checksum: &gallery.Checksum,
 	}
 
 	vars := map[string]interface{}{
@@ -267,19 +238,21 @@ func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) 
 	}
 
 	client := s.getStashClient()
-	err = client.Query(context.Background(), &q, vars)
-	if err != nil {
+	if err := client.Query(context.Background(), &q, vars); err != nil {
 		return nil, err
 	}
 
 	// need to copy back to a scraped scene
 	ret := models.ScrapedGallery{}
-	err = copier.Copy(&ret, q.FindGallery)
-	if err != nil {
+	if err := copier.Copy(&ret, q.FindGallery); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
+}
+
+func (s *stashScraper) scrapeGalleryByFragment(scene models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
+	return nil, errors.New("scrapeGalleryByFragment not supported for stash scraper")
 }
 
 func (s *stashScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
@@ -298,17 +271,11 @@ func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error
 	return nil, errors.New("scrapeMovieByURL not supported for stash scraper")
 }
 
-func sceneFromUpdateFragment(scene models.SceneUpdateInput, txnManager models.TransactionManager) (*models.Scene, error) {
-	id, err := strconv.Atoi(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO - should we modify it with the input?
+func getScene(sceneID int, txnManager models.TransactionManager) (*models.Scene, error) {
 	var ret *models.Scene
 	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		ret, err = r.Scene().Find(id)
+		ret, err = r.Scene().Find(sceneID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -316,18 +283,66 @@ func sceneFromUpdateFragment(scene models.SceneUpdateInput, txnManager models.Tr
 	return ret, nil
 }
 
-func galleryFromUpdateFragment(gallery models.GalleryUpdateInput, txnManager models.TransactionManager) (ret *models.Gallery, err error) {
-	id, err := strconv.Atoi(gallery.ID)
-	if err != nil {
-		return nil, err
+func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
+	toStringPtr := func(s sql.NullString) *string {
+		if s.Valid {
+			return &s.String
+		}
+
+		return nil
 	}
 
+	dateToStringPtr := func(s models.SQLiteDate) *string {
+		if s.Valid {
+			return &s.String
+		}
+
+		return nil
+	}
+
+	return models.SceneUpdateInput{
+		ID:      strconv.Itoa(scene.ID),
+		Title:   toStringPtr(scene.Title),
+		Details: toStringPtr(scene.Details),
+		URL:     toStringPtr(scene.URL),
+		Date:    dateToStringPtr(scene.Date),
+	}
+}
+
+func getGallery(galleryID int, txnManager models.TransactionManager) (*models.Gallery, error) {
+	var ret *models.Gallery
 	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		ret, err = r.Gallery().Find(id)
+		var err error
+		ret, err = r.Gallery().Find(galleryID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
-
 	return ret, nil
+}
+
+func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
+	toStringPtr := func(s sql.NullString) *string {
+		if s.Valid {
+			return &s.String
+		}
+
+		return nil
+	}
+
+	dateToStringPtr := func(s models.SQLiteDate) *string {
+		if s.Valid {
+			return &s.String
+		}
+
+		return nil
+	}
+
+	return models.GalleryUpdateInput{
+		ID:      strconv.Itoa(gallery.ID),
+		Title:   toStringPtr(gallery.Title),
+		Details: toStringPtr(gallery.Details),
+		URL:     toStringPtr(gallery.URL),
+		Date:    dateToStringPtr(gallery.Date),
+	}
 }

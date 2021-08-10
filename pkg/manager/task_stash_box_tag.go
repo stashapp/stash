@@ -180,7 +180,11 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if err == nil {
-					logger.Infof("Updated performer %s", performer.Name)
+					var name string
+					if performer.Name != nil {
+						name = *performer.Name
+					}
+					logger.Infof("Updated performer %s", name)
 				}
 				return err
 			})

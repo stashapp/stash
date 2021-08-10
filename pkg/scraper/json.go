@@ -143,18 +143,9 @@ func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedP
 	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
 }
 
-func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
-	storedScene, err := sceneFromUpdateFragment(scene, s.txnManager)
-	if err != nil {
-		return nil, err
-	}
-
-	if storedScene == nil {
-		return nil, errors.New("no scene found")
-	}
-
+func (s *jsonScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
-	queryURL := queryURLParametersFromScene(storedScene)
+	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
 		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
 	}
@@ -176,18 +167,13 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mod
 	return scraper.scrapeScene(q)
 }
 
-func (s *jsonScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	storedGallery, err := galleryFromUpdateFragment(gallery, s.txnManager)
-	if err != nil {
-		return nil, err
-	}
+func (s *jsonScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+	return nil, errors.New("scrapeSceneByFragment not supported for json scraper")
+}
 
-	if storedGallery == nil {
-		return nil, errors.New("no scene found")
-	}
-
+func (s *jsonScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
-	queryURL := queryURLParametersFromGallery(storedGallery)
+	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
 		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
 	}
@@ -207,6 +193,10 @@ func (s *jsonScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput)
 
 	q := s.getJsonQuery(doc)
 	return scraper.scrapeGallery(q)
+}
+
+func (s *jsonScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
+	return nil, errors.New("scrapeGalleryByFragment not supported for json scraper")
 }
 
 func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {

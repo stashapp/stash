@@ -63,7 +63,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 
 	if err = cmd.Start(); err != nil {
 		logger.Error("Error running scraper script: " + err.Error())
-		return errors.New("Error running scraper script")
+		return errors.New("error running scraper script")
 	}
 
 	scanner := bufio.NewScanner(stderr)
@@ -86,7 +86,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	logger.Debugf("Scraper script finished")
 
 	if err != nil {
-		return errors.New("Error running scraper script")
+		return errors.New("error running scraper script")
 	}
 
 	return nil
@@ -134,7 +134,21 @@ func (s *scriptScraper) scrapePerformerByURL(url string) (*models.ScrapedPerform
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+	inString, err := json.Marshal(sceneToUpdateInput(scene))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret models.ScrapedScene
+
+	err = s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}
+
+func (s *scriptScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(scene)
 
 	if err != nil {
@@ -148,7 +162,21 @@ func (s *scriptScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*m
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+func (s *scriptScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+	inString, err := json.Marshal(galleryToUpdateInput(gallery))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret models.ScrapedGallery
+
+	err = s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}
+
+func (s *scriptScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
 	inString, err := json.Marshal(gallery)
 
 	if err != nil {

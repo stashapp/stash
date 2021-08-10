@@ -62,6 +62,17 @@ type ScrapedScene {
   fingerprints: [StashBoxFingerprint!]
 }
 
+input ScrapedSceneInput {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  # no image, file, duration or relationships
+
+  remote_site_id: String
+}
+
 type ScrapedGallery {
   title: String
   details: String
@@ -71,6 +82,58 @@ type ScrapedGallery {
   studio: ScrapedStudio
   tags: [ScrapedTag!]
   performers: [ScrapedPerformer!]
+}
+
+input ScrapedGalleryInput {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  # no studio, tags or performers
+}
+
+input ScraperSourceInput {
+  """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
+  stash_box_index: Int
+  """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
+  scraper_id: ID
+}
+
+input ScrapeSingleSceneInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by scene fingerprints"""
+  scene_id: ID
+  """Instructs to query by scene fragment"""
+  scene_input: ScrapedSceneInput
+}
+
+input ScrapeSinglePerformerInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by performer id"""
+  performer_id: ID
+  """Instructs to query by performer fragment"""
+  performer_input: ScrapedPerformerInput
+}
+
+input ScrapeSingleGalleryInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by gallery id"""
+  gallery_id: ID
+  """Instructs to query by gallery fragment"""
+  gallery_input: ScrapedGalleryInput
+}
+
+input ScrapeSingleMovieInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by movie id"""
+  movie_id: ID
+  """Instructs to query by gallery fragment"""
+  movie_input: ScrapedMovieInput
 }
 
 input StashBoxSceneQueryInput {
