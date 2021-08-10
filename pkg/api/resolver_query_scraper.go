@@ -173,8 +173,10 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			singleScene, err = manager.GetInstance().ScraperCache.ScrapeScene(*source.ScraperID, sceneID)
 		} else if input.SceneInput != nil {
 			singleScene, err = manager.GetInstance().ScraperCache.ScrapeSceneFragment(*source.ScraperID, *input.SceneInput)
+		} else if input.Query != nil {
+			return manager.GetInstance().ScraperCache.ScrapeSceneQuery(*source.ScraperID, *input.Query)
 		} else {
-			return nil, errors.New("not implemented")
+			err = errors.New("scene_id, scene_input or query must be set")
 		}
 
 		if err != nil {

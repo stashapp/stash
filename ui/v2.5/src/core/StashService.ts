@@ -842,14 +842,14 @@ export const queryScrapeSceneQuery = (scraperId: string, q: string) =>
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
       source: {
-        scraperId,
+        scraper_id: scraperId,
       },
       input: {
         query: q,
       },
     },
     fetchPolicy: "network-only",
-  });  
+  });
 
 export const queryScrapeSceneURL = (url: string) =>
   client.query<GQL.ScrapeSceneUrlQuery>({
@@ -887,6 +887,23 @@ export const queryScrapeScene = (scraperId: string, sceneId: string) =>
       },
       input: {
         scene_id: sceneId,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeSceneQueryFragment = (
+  scraperId: string,
+  input: GQL.ScrapedSceneInput
+) =>
+  client.query<GQL.ScrapeSingleSceneQuery>({
+    query: GQL.ScrapeSingleSceneDocument,
+    variables: {
+      source: {
+        scraper_id: scraperId,
+      },
+      input: {
+        scene_input: input,
       },
     },
     fetchPolicy: "network-only",

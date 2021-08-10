@@ -38,6 +38,9 @@ type config struct {
 	// Configuration for querying scenes by name
 	SceneByName *scraperTypeConfig `yaml:"sceneByName"`
 
+	// Configuration for querying scenes by query fragment
+	SceneByQueryFragment *scraperTypeConfig `yaml:"sceneByQueryFragment"`
+
 	// Configuration for querying a scene by a URL
 	SceneByURL []*scrapeByURLConfig `yaml:"sceneByURL"`
 
@@ -259,7 +262,7 @@ func (c config) toScraper() *models.Scraper {
 	if c.SceneByFragment != nil {
 		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeFragment)
 	}
-	if c.SceneByName != nil {
+	if c.SceneByName != nil && c.SceneByQueryFragment != nil {
 		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeName)
 	}
 	if len(c.SceneByURL) > 0 {
@@ -400,7 +403,7 @@ func (c config) matchesMovieURL(url string) bool {
 }
 
 func (c config) ScrapeSceneQuery(name string, txnManager models.TransactionManager, globalConfig GlobalConfig) ([]*models.ScrapedScene, error) {
-	if c.PerformerByName != nil {
+	if c.SceneByName != nil {
 		s := getScraper(*c.SceneByName, txnManager, c, globalConfig)
 		return s.scrapeScenesByName(name)
 	}
@@ -418,9 +421,8 @@ func (c config) ScrapeSceneByScene(scene *models.Scene, txnManager models.Transa
 }
 
 func (c config) ScrapeSceneByFragment(scene models.ScrapedSceneInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
-	if c.SceneByFragment != nil {
-		// TODO - this should be sceneByQueryFragment
-		s := getScraper(*c.SceneByFragment, txnManager, c, globalConfig)
+	if c.SceneByQueryFragment != nil {
+		s := getScraper(*c.SceneByQueryFragment, txnManager, c, globalConfig)
 		return s.scrapeSceneByFragment(scene)
 	}
 

@@ -1,10 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { debounce } from "lodash";
-import { Badge, Col, Form, Row } from "react-bootstrap";
+import { Badge, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import { Modal, LoadingIndicator, TruncatedText } from "src/components/Shared";
+import {
+  Modal,
+  LoadingIndicator,
+  TruncatedText,
+  Icon,
+} from "src/components/Shared";
 import {
   queryScrapeSceneQuery,
   queryStashBoxSceneQuery,
@@ -129,6 +133,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [scenes, setScenes] = useState<GQL.ScrapedScene[]>([]);
+  const [error, setError] = useState<Error | undefined>();
 
   const doQuery = useCallback(
     async (input: string) => {
@@ -150,23 +155,21 @@ export const SceneQueryModal: React.FC<IProps> = ({
           setScenes(r.data.scrapeSingleScene);
         }
       } catch (err) {
-        Toast.error(err);
+        setError(err);
       } finally {
         setLoading(false);
       }
     },
-    [Toast, scraper]
+    [scraper]
   );
 
-  const onInputChange = debounce((input: string) => {
-    doQuery(input);
-  }, 500);
-
   useEffect(() => inputRef.current?.focus(), []);
-
   useEffect(() => {
-    if (name) doQuery(name);
-  }, [name, doQuery]);
+    if (error) {
+      Toast.error(error);
+      setError(undefined);
+    }
+  }, [error, Toast]);
 
   // TODO - message for header, placeholder
   return (
@@ -182,13 +185,28 @@ export const SceneQueryModal: React.FC<IProps> = ({
       }}
     >
       <div className={CLASSNAME}>
-        <Form.Control
-          onChange={(e) => onInputChange(e.currentTarget.value)}
-          defaultValue={name ?? ""}
-          placeholder="Scene name..."
-          className="text-input mb-4"
-          ref={inputRef}
-        />
+        <InputGroup>
+          <Form.Control
+            defaultValue={name ?? ""}
+            placeholder="Scene name..."
+            className="text-input"
+            ref={inputRef}
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              e.key === "Enter" && doQuery(inputRef.current?.value ?? "")
+            }
+          />
+          <InputGroup.Append>
+            <Button
+              onClick={() => {
+                doQuery(inputRef.current?.value ?? "");
+              }}
+              variant="primary"
+            >
+              <Icon icon="search" />
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
+
         {loading ? (
           <div className="m-4 text-center">
             <LoadingIndicator inline />

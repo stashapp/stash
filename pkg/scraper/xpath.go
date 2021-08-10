@@ -174,7 +174,27 @@ func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 }
 
 func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
-	return nil, errors.New("scrapeSceneByFragment not supported for xpath scraper")
+	// construct the URL
+	queryURL := queryURLParametersFromScrapedScene(scene)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
+
+	scraper := s.getXpathScraper()
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeScene(q)
 }
 
 func (s *xpathScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {

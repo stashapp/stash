@@ -193,7 +193,27 @@ func (s *jsonScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedSc
 }
 
 func (s *jsonScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
-	return nil, errors.New("scrapeSceneByFragment not supported for json scraper")
+	// construct the URL
+	queryURL := queryURLParametersFromScrapedScene(scene)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
+
+	scraper := s.getJsonScraper()
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc)
+	return scraper.scrapeScene(q)
 }
 
 func (s *jsonScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {

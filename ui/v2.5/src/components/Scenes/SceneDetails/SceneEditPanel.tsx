@@ -19,6 +19,7 @@ import {
   mutateReloadScrapers,
   useConfiguration,
   queryStashBoxScene,
+  queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -329,6 +330,36 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
+  async function scrapeFromQuery(
+    s: GQL.Scraper,
+    fragment: GQL.ScrapedSceneDataFragment
+  ) {
+    setIsLoading(true);
+    try {
+      const input: GQL.ScrapedSceneInput = {
+        date: fragment.date,
+        details: fragment.details,
+        remote_site_id: fragment.remote_site_id,
+        title: fragment.title,
+        url: fragment.url,
+      };
+
+      const result = await queryScrapeSceneQueryFragment(s.id, input);
+      if (!result.data || !result.data.scrapeSingleScene?.length) {
+        Toast.success({
+          content: "No scenes found",
+        });
+        return;
+      }
+      // assume one returned scene
+      setScrapedScene(result.data.scrapeSingleScene[0]);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   function onScrapeStashBoxQueryClicked(stashBox: IStashBox) {
     setScraper(stashBox);
     setIsScraperQueryModalOpen(true);
@@ -382,6 +413,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   function renderScrapeQueryMenu() {
     const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
+    if (stashBoxes.length === 0 && queryableScrapers.length === 0) return;
+
     return (
       <Dropdown
         title={intl.formatMessage({ id: "actions.scrape_query" })}
@@ -424,6 +457,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       setScrapedScene(s);
     } else {
       // must be scraper
+      scrapeFromQuery(scraper as GQL.Scraper, s);
     }
   }
 
