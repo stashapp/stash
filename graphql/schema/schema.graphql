@@ -74,9 +74,13 @@ type Query {
 
   """Scrape for a single scene"""
   scrapeSingleScene(source: ScraperSourceInput!, input: ScrapeSingleSceneInput!): [ScrapedScene!]!
+  """Scrape for multiple scenes"""
+  scrapeMultiScenes(source: ScraperSourceInput!, input: ScrapeMultiScenesInput!): [[ScrapedScene!]!]!
 
   """Scrape for a single performer"""
   scrapeSinglePerformer(source: ScraperSourceInput!, input: ScrapeSinglePerformerInput!): [ScrapedPerformer!]!
+  """Scrape for multiple performers"""
+  scrapeMultiPerformers(source: ScraperSourceInput!, input: ScrapeMultiPerformersInput!): [[ScrapedPerformer!]!]!
 
   """Scrape for a single gallery"""
   scrapeSingleGallery(source: ScraperSourceInput!, input: ScrapeSingleGalleryInput!): [ScrapedGallery!]!
@@ -108,8 +112,9 @@ type Query {
   scrapeFreeonesPerformerList(query: String!): [String!]!
   # === end deprecated methods ===
 
-  """Query StashBox for scenes"""
+  """Query StashBox for scenes (@deprecated - use scrapeSingleScene or scrapeMultiScenes)"""
   queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]!
+  """Query StashBox for performers (@deprecated - use scrapeSinglePerformer or scrapeMultiPerformers)"""
   queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]!
 
   # Plugins

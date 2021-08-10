@@ -48,6 +48,12 @@ query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePe
   }
 }
 
+query ScrapeMultiPerformers($source: ScraperSourceInput!, $input: ScrapeMultiPerformersInput!) {
+  scrapeMultiPerformers(source: $source, input: $input) {
+    ...ScrapedPerformerData
+  }
+}
+
 query ScrapePerformerURL($url: String!) {
   scrapePerformerURL(url: $url) {
     ...ScrapedPerformerData
@@ -56,6 +62,12 @@ query ScrapePerformerURL($url: String!) {
 
 query ScrapeSingleScene($source: ScraperSourceInput!, $input: ScrapeSingleSceneInput!) {
   scrapeSingleScene(source: $source, input: $input) {
+    ...ScrapedSceneData
+  }
+}
+
+query ScrapeMultiScenes($source: ScraperSourceInput!, $input: ScrapeMultiScenesInput!) {
+  scrapeMultiScenes(source: $source, input: $input) {
     ...ScrapedSceneData
   }
 }
@@ -81,17 +93,5 @@ query ScrapeGalleryURL($url: String!) {
 query ScrapeMovieURL($url: String!) {
   scrapeMovieURL(url: $url) {
     ...ScrapedMovieData
-  }
-}
-
-query QueryStashBoxScene($input: StashBoxSceneQueryInput!) {
-  queryStashBoxScene(input: $input) {
-    ...ScrapedStashBoxSceneData
-  }
-}
-
-query QueryStashBoxPerformer($input: StashBoxPerformerQueryInput!) {
-  queryStashBoxPerformer(input: $input) {
-    ...ScrapedStashBoxPerformerData
   }
 }

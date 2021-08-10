@@ -539,7 +539,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       // assume one result
       // if this is a new performer, just dump the data
       if (isNew) {
-        updatePerformerEditStateFromScraper(result.data.scrapeSinglePerformer[0]);
+        updatePerformerEditStateFromScraper(
+          result.data.scrapeSinglePerformer[0]
+        );
         setScraper(undefined);
       } else {
         setScrapedPerformer(result.data.scrapeSinglePerformer[0]);

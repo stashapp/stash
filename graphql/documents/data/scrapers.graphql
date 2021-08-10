@@ -109,6 +109,7 @@ fragment ScrapedSceneData on ScrapedScene {
   url
   date
   image
+  remote_site_id
 
   file {
     size

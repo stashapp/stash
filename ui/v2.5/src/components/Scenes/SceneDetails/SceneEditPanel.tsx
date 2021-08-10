@@ -301,10 +301,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
-      const result = await queryScrapeScene(
-        scraper.id,
-        scene.id,
-      );
+      const result = await queryScrapeScene(scraper.id, scene.id);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",

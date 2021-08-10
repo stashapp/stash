@@ -258,13 +258,13 @@ export const useListPerformerScrapers = () =>
   GQL.useListPerformerScrapersQuery();
 export const useScrapePerformerList = (scraperId: string, q: string) =>
   GQL.useScrapeSinglePerformerQuery({
-    variables: { 
+    variables: {
       source: {
         scraper_id: scraperId,
       },
       input: {
-        query: q ,
-      }
+        query: q,
+      },
     },
     skip: q === "",
   });
@@ -823,7 +823,7 @@ export const queryScrapePerformer = (
       },
       input: {
         performer_input: scrapedPerformer,
-      }
+      },
     },
     fetchPolicy: "network-only",
   });
@@ -864,10 +864,7 @@ export const queryScrapeMovieURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
-export const queryScrapeScene = (
-  scraperId: string,
-  sceneId: string
-) =>
+export const queryScrapeScene = (scraperId: string, sceneId: string) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
@@ -876,7 +873,7 @@ export const queryScrapeScene = (
       },
       input: {
         scene_id: sceneId,
-      }
+      },
     },
     fetchPolicy: "network-only",
   });
@@ -890,7 +887,7 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
       },
       input: {
         scene_id: sceneID,
-      }
+      },
     },
   });
 
@@ -898,20 +895,19 @@ export const queryStashBoxPerformer = (
   stashBoxIndex: number,
   performerID: string
 ) =>
-  client.query<GQL.QueryStashBoxPerformerQuery>({
-    query: GQL.QueryStashBoxPerformerDocument,
+  client.query<GQL.ScrapeSinglePerformerQuery>({
+    query: GQL.ScrapeSinglePerformerDocument,
     variables: {
-      input: {
+      source: {
         stash_box_index: stashBoxIndex,
-        performer_ids: [performerID],
+      },
+      input: {
+        performer_id: performerID,
       },
     },
   });
 
-export const queryScrapeGallery = (
-  scraperId: string,
-  galleryId: string
-) =>
+export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
   client.query<GQL.ScrapeSingleGalleryQuery>({
     query: GQL.ScrapeSingleGalleryDocument,
     variables: {
@@ -1072,33 +1068,39 @@ export const stashBoxSceneQuery = (searchVal: string, stashBoxIndex: number) =>
       },
       input: {
         query: searchVal,
-      }
+      },
     },
-  });  
+  });
 
 export const stashBoxPerformerQuery = (
   searchVal: string,
   stashBoxIndex: number
 ) =>
-  client?.query<
-    GQL.QueryStashBoxPerformerQuery,
-    GQL.QueryStashBoxPerformerQueryVariables
-  >({
-    query: GQL.QueryStashBoxPerformerDocument,
-    variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
+  client.query<GQL.ScrapeSinglePerformerQuery>({
+    query: GQL.ScrapeSinglePerformerDocument,
+    variables: {
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        query: searchVal,
+      },
+    },
   });
 
 export const stashBoxSceneBatchQuery = (
   sceneIds: string[],
   stashBoxIndex: number
 ) =>
-  client?.query<
-    GQL.QueryStashBoxSceneQuery,
-    GQL.QueryStashBoxSceneQueryVariables
-  >({
-    query: GQL.QueryStashBoxSceneDocument,
+  client.query<GQL.ScrapeMultiScenesQuery>({
+    query: GQL.ScrapeMultiScenesDocument,
     variables: {
-      input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        scene_ids: sceneIds,
+      },
     },
   });
 
@@ -1106,12 +1108,14 @@ export const stashBoxPerformerBatchQuery = (
   performerIds: string[],
   stashBoxIndex: number
 ) =>
-  client?.query<
-    GQL.QueryStashBoxPerformerQuery,
-    GQL.QueryStashBoxPerformerQueryVariables
-  >({
-    query: GQL.QueryStashBoxPerformerDocument,
+  client.query<GQL.ScrapeMultiPerformersQuery>({
+    query: GQL.ScrapeMultiPerformersDocument,
     variables: {
-      input: { performer_ids: performerIds, stash_box_index: stashBoxIndex },
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        performer_ids: performerIds,
+      },
     },
   });

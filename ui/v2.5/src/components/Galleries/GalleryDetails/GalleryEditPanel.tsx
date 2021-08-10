@@ -195,7 +195,7 @@ export const GalleryEditPanel: React.FC<
 
   async function onScrapeClicked(scraper: GQL.Scraper) {
     if (!gallery) return;
-    
+
     setIsLoading(true);
     try {
       const result = await queryScrapeGallery(scraper.id, gallery.id);

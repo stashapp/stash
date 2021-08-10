@@ -111,7 +111,7 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	if len(input.SceneIds) > 0 {
-		return client.FindStashBoxScenesByFingerprints(input.SceneIds)
+		return client.FindStashBoxScenesByFingerprintsFlat(input.SceneIds)
 	}
 
 	if input.Q != nil {
@@ -185,12 +185,27 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 		}
 
 		if input.SceneID != nil {
-			return client.FindStashBoxScenesByFingerprints([]string{*input.SceneID})
+			return client.FindStashBoxScenesByFingerprintsFlat([]string{*input.SceneID})
 		} else if input.Query != nil {
 			return client.QueryStashBoxScene(*input.Query)
 		}
 
 		return nil, errors.New("scene_id or query must be set")
+	}
+
+	return nil, errors.New("scraper_id or stash_box_index must be set")
+}
+
+func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiScenesInput) ([][]*models.ScrapedScene, error) {
+	if source.ScraperID != nil {
+		return nil, errors.New("not supported")
+	} else if source.StashBoxIndex != nil {
+		client, err := r.getStashBoxClient(*source.StashBoxIndex)
+		if err != nil {
+			return nil, err
+		}
+
+		return client.FindStashBoxScenesByFingerprints(input.SceneIds)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
@@ -240,6 +255,21 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		}
 
 		return nil, nil
+	}
+
+	return nil, errors.New("scraper_id or stash_box_index must be set")
+}
+
+func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiPerformersInput) ([][]*models.ScrapedPerformer, error) {
+	if source.ScraperID != nil {
+		return nil, errors.New("not supported")
+	} else if source.StashBoxIndex != nil {
+		client, err := r.getStashBoxClient(*source.StashBoxIndex)
+		if err != nil {
+			return nil, err
+		}
+
+		return client.FindStashBoxPerformersByPerformerNames(input.PerformerIds)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")

@@ -109,6 +109,11 @@ input ScrapeSingleSceneInput {
   scene_input: ScrapedSceneInput
 }
 
+input ScrapeMultiScenesInput {
+  """Instructs to query by scene fingerprints"""
+  scene_ids: [ID!]
+}
+
 input ScrapeSinglePerformerInput {
   """Instructs to query by string"""
   query: String
@@ -116,6 +121,11 @@ input ScrapeSinglePerformerInput {
   performer_id: ID
   """Instructs to query by performer fragment"""
   performer_input: ScrapedPerformerInput
+}
+
+input ScrapeMultiPerformersInput {
+  """Instructs to query by scene fingerprints"""
+  performer_ids: [ID!]
 }
 
 input ScrapeSingleGalleryInput {
