@@ -1,11 +1,12 @@
 package packr
 
 import (
+	"fmt"
+
 	"github.com/gobuffalo/packr/v2/file/resolver"
 	"github.com/gobuffalo/packr/v2/jam/parser"
 	"github.com/gobuffalo/packr/v2/plog"
 	"github.com/markbates/safe"
-	"github.com/pkg/errors"
 )
 
 var boxes = &boxMap{}
@@ -39,7 +40,7 @@ func findBox(name string) (*Box, error) {
 	b, ok := boxes.Load(key)
 	if !ok {
 		plog.Debug("packr", "findBox", "name", name, "key", key, "found", ok)
-		return nil, errors.Errorf("could not find box %s", name)
+		return nil, fmt.Errorf("could not find box %s", name)
 	}
 
 	plog.Debug(b, "found", "box", b)

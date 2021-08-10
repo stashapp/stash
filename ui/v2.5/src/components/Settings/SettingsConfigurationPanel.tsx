@@ -126,6 +126,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);
+  const [
+    customPerformerImageLocation,
+    setCustomPerformerImageLocation,
+  ] = useState<string>();
   const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
@@ -166,6 +170,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     galleryExtensions: commaDelimitedToList(galleryExtensions),
     excludes,
     imageExcludes,
+    customPerformerImageLocation,
     stashBoxes: stashBoxes.map(
       (b) =>
         ({
@@ -213,6 +218,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       );
       setExcludes(conf.general.excludes);
       setImageExcludes(conf.general.imageExcludes);
+      setCustomPerformerImageLocation(
+        conf.general.customPerformerImageLocation ?? ""
+      );
       setStashBoxes(
         conf.general.stashBoxes.map((box, i) => ({
           name: box?.name ?? undefined,
@@ -817,6 +825,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
+      <Form.Group>
+        <h4>{intl.formatMessage({ id: "performers" })}</h4>
+        <Form.Group>
+          <h6>
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.heading",
+            })}
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            value={customPerformerImageLocation}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setCustomPerformerImageLocation(e.currentTarget.value);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
       <hr />
 
       <Form.Group id="stashbox">

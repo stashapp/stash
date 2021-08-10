@@ -167,6 +167,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	c.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
 
+	if input.CustomPerformerImageLocation != nil {
+		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
+		initialiseCustomImages()
+	}
+
 	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
 		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)

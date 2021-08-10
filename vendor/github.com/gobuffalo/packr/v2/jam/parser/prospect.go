@@ -9,7 +9,7 @@ import (
 	"github.com/gobuffalo/packr/v2/plog"
 )
 
-var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures"}
+var DefaultIgnoredFolders = []string{".", "_", "vendor", "node_modules", "_fixtures", "testdata"}
 
 func IsProspect(path string, ignore ...string) (status bool) {
 	// plog.Debug("parser", "IsProspect", "path", path, "ignore", ignore)

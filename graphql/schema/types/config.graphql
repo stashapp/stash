@@ -89,6 +89,8 @@ input ConfigGeneralInput {
   excludes: [String!]
   """Array of file regexp to exclude from Image Scans"""
   imageExcludes: [String!]
+  """Custom Performer Image Location"""
+  customPerformerImageLocation: String
   """Scraper user agent string"""
   scraperUserAgent: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Scraper CDP path. Path to chrome executable or remote address"""
@@ -162,6 +164,8 @@ type ConfigGeneralResult {
   excludes: [String!]!
   """Array of file regexp to exclude from Image Scans"""
   imageExcludes: [String!]!
+  """Custom Performer Image Location"""
+  customPerformerImageLocation: String
   """Scraper user agent string"""
   scraperUserAgent: String @deprecated(reason: "use ConfigResult.scraping instead")
   """Scraper CDP path. Path to chrome executable or remote address"""
