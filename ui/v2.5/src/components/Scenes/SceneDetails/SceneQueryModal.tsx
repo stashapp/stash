@@ -9,11 +9,7 @@ import {
   TruncatedText,
   Icon,
 } from "src/components/Shared";
-import {
-  queryScrapeSceneQuery,
-  queryStashBoxSceneQuery,
-} from "src/core/StashService";
-import { IStashBox } from "src/components/Performers/PerformerDetails/PerformerStashBoxModal";
+import { queryScrapeSceneQuery } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 interface ISceneSearchResultDetailsProps {
@@ -98,10 +94,6 @@ export interface ISceneSearchResult {
 }
 
 export const SceneSearchResult: React.FC<ISceneSearchResult> = ({ scene }) => {
-  // const width = scene.file.width ? scene.file.width : 0;
-  // const height = scene.file.height ? scene.file.height : 0;
-  // const isPortrait = height > width;
-
   return (
     <div className="mt-3 search-item">
       <div className="row">
@@ -112,7 +104,7 @@ export const SceneSearchResult: React.FC<ISceneSearchResult> = ({ scene }) => {
 };
 
 interface IProps {
-  scraper: GQL.Scraper | IStashBox;
+  scraper: GQL.ScraperSourceInput;
   onHide: () => void;
   onSelectScene: (scene: GQL.ScrapedSceneDataFragment) => void;
   name?: string;
@@ -141,19 +133,8 @@ export const SceneQueryModal: React.FC<IProps> = ({
 
       setLoading(true);
       try {
-        if ((scraper as IStashBox).index !== undefined) {
-          const r = await queryStashBoxSceneQuery(
-            (scraper as IStashBox).index,
-            input
-          );
-          setScenes(r.data.scrapeSingleScene);
-        } else {
-          const r = await queryScrapeSceneQuery(
-            (scraper as GQL.Scraper).id,
-            input
-          );
-          setScenes(r.data.scrapeSingleScene);
-        }
+        const r = await queryScrapeSceneQuery(scraper, input);
+        setScenes(r.data.scrapeSingleScene);
       } catch (err) {
         setError(err);
       } finally {
@@ -177,7 +158,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
       show
       onHide={onHide}
       modalProps={{ size: "lg", dialogClassName: "scrape-query-dialog" }}
-      header={`Scrape scene from ${scraper.name}`}
+      header="Scrape scene"
       accept={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: onHide,

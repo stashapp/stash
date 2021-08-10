@@ -18,7 +18,6 @@ import {
   useSceneUpdate,
   mutateReloadScrapers,
   useConfiguration,
-  queryStashBoxScene,
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
@@ -35,7 +34,6 @@ import { ImageUtils, FormUtils, TextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
 import { Prompt } from "react-router";
-import { IStashBox } from "src/components/Performers/PerformerDetails/PerformerStashBoxModal";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
@@ -66,7 +64,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
+  const [scraper, setScraper] = useState<GQL.ScraperSourceInput | undefined>();
   const [
     isScraperQueryModalOpen,
     setIsScraperQueryModalOpen,
@@ -289,32 +287,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onScrapeStashBoxClicked(stashBoxIndex: number) {
+  async function onScrapeClicked(s: GQL.ScraperSourceInput) {
     setIsLoading(true);
     try {
-      const result = await queryStashBoxScene(stashBoxIndex, scene.id);
-      if (!result.data || !result.data.scrapeSingleScene) {
-        return;
-      }
-
-      if (result.data.scrapeSingleScene.length > 0) {
-        setScrapedScene(result.data.scrapeSingleScene[0]);
-      } else {
-        Toast.success({
-          content: "No scenes found",
-        });
-      }
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function onScrapeClicked(s: GQL.Scraper) {
-    setIsLoading(true);
-    try {
-      const result = await queryScrapeScene(s.id, scene.id);
+      const result = await queryScrapeScene(s, scene.id);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
@@ -331,7 +307,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function scrapeFromQuery(
-    s: GQL.Scraper,
+    s: GQL.ScraperSourceInput,
     fragment: GQL.ScrapedSceneDataFragment
   ) {
     setIsLoading(true);
@@ -344,7 +320,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         url: fragment.url,
       };
 
-      const result = await queryScrapeSceneQueryFragment(s.id, input);
+      const result = await queryScrapeSceneQueryFragment(s, input);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
@@ -360,12 +336,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  function onScrapeStashBoxQueryClicked(stashBox: IStashBox) {
-    setScraper(stashBox);
-    setIsScraperQueryModalOpen(true);
-  }
-
-  function onScrapeQueryClicked(s: GQL.Scraper) {
+  function onScrapeQueryClicked(s: GQL.ScraperSourceInput) {
     setScraper(s);
     setIsScraperQueryModalOpen(true);
   }
@@ -428,13 +399,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
           {stashBoxes.map((s, index) => (
             <Dropdown.Item
               key={s.endpoint}
-              onClick={() => onScrapeStashBoxQueryClicked({ ...s, index })}
+              onClick={() => onScrapeQueryClicked({ stash_box_index: index })}
             >
               {s.name ?? "Stash-Box"}
             </Dropdown.Item>
           ))}
           {queryableScrapers.map((s) => (
-            <Dropdown.Item key={s.name} onClick={() => onScrapeQueryClicked(s)}>
+            <Dropdown.Item
+              key={s.name}
+              onClick={() => onScrapeQueryClicked({ scraper_id: s.id })}
+            >
               {s.name}
             </Dropdown.Item>
           ))}
@@ -452,12 +426,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function onSceneSelected(s: GQL.ScrapedSceneDataFragment) {
-    if ((scraper as IStashBox).index !== undefined) {
+    if (!scraper) return;
+
+    if (scraper?.stash_box_index !== undefined) {
       // must be stash-box - assume full scene
       setScrapedScene(s);
     } else {
       // must be scraper
-      scrapeFromQuery(scraper as GQL.Scraper, s);
+      scrapeFromQuery(scraper, s);
     }
   }
 
@@ -490,13 +466,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
         {stashBoxes.map((s, index) => (
           <Dropdown.Item
             key={s.endpoint}
-            onClick={() => onScrapeStashBoxClicked(index)}
+            onClick={() => onScrapeClicked({ stash_box_index: index })}
           >
             {s.name ?? "Stash-Box"}
           </Dropdown.Item>
         ))}
         {fragmentScrapers.map((s) => (
-          <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
+          <Dropdown.Item
+            key={s.name}
+            onClick={() => onScrapeClicked({ scraper_id: s.id })}
+          >
             {s.name}
           </Dropdown.Item>
         ))}

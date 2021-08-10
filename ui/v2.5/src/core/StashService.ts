@@ -837,13 +837,14 @@ export const queryScrapePerformerURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
-export const queryScrapeSceneQuery = (scraperId: string, q: string) =>
+export const queryScrapeSceneQuery = (
+  source: GQL.ScraperSourceInput,
+  q: string
+) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
-      source: {
-        scraper_id: scraperId,
-      },
+      source,
       input: {
         query: q,
       },
@@ -878,13 +879,14 @@ export const queryScrapeMovieURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
-export const queryScrapeScene = (scraperId: string, sceneId: string) =>
+export const queryScrapeScene = (
+  source: GQL.ScraperSourceInput,
+  sceneId: string
+) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
-      source: {
-        scraper_id: scraperId,
-      },
+      source,
       input: {
         scene_id: sceneId,
       },
@@ -893,62 +895,18 @@ export const queryScrapeScene = (scraperId: string, sceneId: string) =>
   });
 
 export const queryScrapeSceneQueryFragment = (
-  scraperId: string,
+  source: GQL.ScraperSourceInput,
   input: GQL.ScrapedSceneInput
 ) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
-      source: {
-        scraper_id: scraperId,
-      },
+      source,
       input: {
         scene_input: input,
       },
     },
     fetchPolicy: "network-only",
-  });
-
-export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
-  client.query<GQL.ScrapeSingleSceneQuery>({
-    query: GQL.ScrapeSingleSceneDocument,
-    variables: {
-      source: {
-        stash_box_index: stashBoxIndex,
-      },
-      input: {
-        scene_id: sceneID,
-      },
-    },
-  });
-
-export const queryStashBoxSceneQuery = (stashBoxIndex: number, q: string) =>
-  client.query<GQL.ScrapeSingleSceneQuery>({
-    query: GQL.ScrapeSingleSceneDocument,
-    variables: {
-      source: {
-        stash_box_index: stashBoxIndex,
-      },
-      input: {
-        query: q,
-      },
-    },
-  });
-
-export const queryStashBoxPerformer = (
-  stashBoxIndex: number,
-  performerID: string
-) =>
-  client.query<GQL.ScrapeSinglePerformerQuery>({
-    query: GQL.ScrapeSinglePerformerDocument,
-    variables: {
-      source: {
-        stash_box_index: stashBoxIndex,
-      },
-      input: {
-        performer_id: performerID,
-      },
-    },
   });
 
 export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
