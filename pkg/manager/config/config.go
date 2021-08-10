@@ -95,6 +95,7 @@ const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
 const ScraperCertCheck = "scraper_cert_check"
 const ScraperCDPPath = "scraper_cdp_path"
+const ScraperExcludeTagPatterns = "scraper_exclude_tag_patterns"
 
 // stash-box options
 const StashBoxes = "stash_boxes"
@@ -120,6 +121,7 @@ var defaultMenuItems = []string{"scenes", "images", "movies", "markers", "galler
 
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
+const CustomPerformerImageLocation = "custom_performer_image_location"
 const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
@@ -367,6 +369,15 @@ func (i *Instance) GetScraperCertCheck() bool {
 	return ret
 }
 
+func (i *Instance) GetScraperExcludeTagPatterns() []string {
+	var ret []string
+	if viper.IsSet(ScraperExcludeTagPatterns) {
+		ret = viper.GetStringSlice(ScraperExcludeTagPatterns)
+	}
+
+	return ret
+}
+
 func (i *Instance) GetStashBoxes() []*models.StashBox {
 	var boxes []*models.StashBox
 	viper.UnmarshalKey(StashBoxes, &boxes)
@@ -583,6 +594,12 @@ func (i *Instance) GetSoundOnPreview() bool {
 func (i *Instance) GetWallShowTitle() bool {
 	viper.SetDefault(WallShowTitle, true)
 	return viper.GetBool(WallShowTitle)
+}
+
+func (i *Instance) GetCustomPerformerImageLocation() string {
+	// don't set the default, as it causes race condition crashes
+	// viper.SetDefault(CustomPerformerImageLocation, "")
+	return viper.GetString(CustomPerformerImageLocation)
 }
 
 func (i *Instance) GetWallPlayback() string {
