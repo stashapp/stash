@@ -198,24 +198,24 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSinglePerformerInput) ([]*models.ScrapedPerformer, error) {
 	if source.ScraperID != nil {
-		var singlePerformer *models.ScrapedPerformer
-		var err error
-
 		if input.PerformerInput != nil {
-			singlePerformer, err = manager.GetInstance().ScraperCache.ScrapePerformer(*source.ScraperID, *input.PerformerInput)
-		} else {
-			return nil, errors.New("not implemented")
+			singlePerformer, err := manager.GetInstance().ScraperCache.ScrapePerformer(*source.ScraperID, *input.PerformerInput)
+			if err != nil {
+				return nil, err
+			}
+
+			if singlePerformer != nil {
+				return []*models.ScrapedPerformer{singlePerformer}, nil
+			}
+
+			return nil, nil
 		}
 
-		if err != nil {
-			return nil, err
+		if input.Query != nil {
+			return manager.GetInstance().ScraperCache.ScrapePerformerList(*source.ScraperID, *input.Query)
 		}
 
-		if singlePerformer != nil {
-			return []*models.ScrapedPerformer{singlePerformer}, nil
-		}
-
-		return nil, nil
+		return nil, errors.New("not implemented")
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {

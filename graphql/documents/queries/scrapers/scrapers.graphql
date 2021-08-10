@@ -42,14 +42,8 @@ query ListMovieScrapers {
   }
 }
 
-query ScrapePerformerList($scraper_id: ID!, $query: String!) {
-  scrapePerformerList(scraper_id: $scraper_id, query: $query) {
-    ...ScrapedPerformerData
-  }
-}
-
-query ScrapePerformer($scraper_id: ID!, $scraped_performer: ScrapedPerformerInput!) {
-  scrapePerformer(scraper_id: $scraper_id, scraped_performer: $scraped_performer) {
+query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {
+  scrapeSinglePerformer(source: $source, input: $input) {
     ...ScrapedPerformerData
   }
 }
@@ -60,8 +54,8 @@ query ScrapePerformerURL($url: String!) {
   }
 }
 
-query ScrapeScene($scraper_id: ID!, $scene: SceneUpdateInput!) {
-  scrapeScene(scraper_id: $scraper_id, scene: $scene) {
+query ScrapeSingleScene($source: ScraperSourceInput!, $input: ScrapeSingleSceneInput!) {
+  scrapeSingleScene(source: $source, input: $input) {
     ...ScrapedSceneData
   }
 }
@@ -72,8 +66,8 @@ query ScrapeSceneURL($url: String!) {
   }
 }
 
-query ScrapeGallery($scraper_id: ID!, $gallery: GalleryUpdateInput!) {
-  scrapeGallery(scraper_id: $scraper_id, gallery: $gallery) {
+query ScrapeSingleGallery($source: ScraperSourceInput!, $input: ScrapeSingleGalleryInput!) {
+  scrapeSingleGallery(source: $source, input: $input) {
     ...ScrapedGalleryData
   }
 }

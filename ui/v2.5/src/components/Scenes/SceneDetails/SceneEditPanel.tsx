@@ -280,12 +280,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryStashBoxScene(stashBoxIndex, scene.id);
-      if (!result.data || !result.data.queryStashBoxScene) {
+      if (!result.data || !result.data.scrapeSingleScene) {
         return;
       }
 
-      if (result.data.queryStashBoxScene.length > 0) {
-        setScrapedScene(result.data.queryStashBoxScene[0]);
+      if (result.data.scrapeSingleScene.length > 0) {
+        setScrapedScene(result.data.scrapeSingleScene[0]);
       } else {
         Toast.success({
           content: "No scenes found",
@@ -303,15 +303,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       const result = await queryScrapeScene(
         scraper.id,
-        getSceneInput(formik.values)
+        scene.id,
       );
-      if (!result.data || !result.data.scrapeScene) {
+      if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
         });
         return;
       }
-      setScrapedScene(result.data.scrapeScene);
+      // assume one returned scene
+      setScrapedScene(result.data.scrapeSingleScene[0]);
     } catch (e) {
       Toast.error(e);
     } finally {

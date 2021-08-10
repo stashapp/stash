@@ -534,14 +534,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       } = selectedPerformer;
 
       const result = await queryScrapePerformer(selectedScraper.id, ret);
-      if (!result?.data?.scrapePerformer) return;
+      if (!result?.data?.scrapeSinglePerformer?.length) return;
 
+      // assume one result
       // if this is a new performer, just dump the data
       if (isNew) {
-        updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+        updatePerformerEditStateFromScraper(result.data.scrapeSinglePerformer[0]);
         setScraper(undefined);
       } else {
-        setScrapedPerformer(result.data.scrapePerformer);
+        setScrapedPerformer(result.data.scrapeSinglePerformer[0]);
       }
     } catch (e) {
       Toast.error(e);

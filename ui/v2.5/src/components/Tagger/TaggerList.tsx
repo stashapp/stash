@@ -25,7 +25,7 @@ interface ITaggerListProps {
   queue?: SceneQueue;
   selectedEndpoint: { endpoint: string; index: number };
   config: ITaggerConfig;
-  queryScene: (searchVal: string) => Promise<GQL.QueryStashBoxSceneQuery>;
+  queryScene: (searchVal: string) => Promise<GQL.ScrapeSingleSceneQuery>;
   fingerprintQueue: IFingerprintQueue;
 }
 
@@ -119,7 +119,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
     queryScene(searchVal)
       .then((queryData) => {
-        const s = selectScenes(queryData.queryStashBoxScene);
+        const s = selectScenes(queryData.scrapeSingleScene);
         setSearchResults({
           ...searchResults,
           [sceneID]: s,
