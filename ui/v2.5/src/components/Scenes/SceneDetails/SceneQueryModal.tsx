@@ -141,13 +141,13 @@ export const SceneQueryModal: React.FC<IProps> = ({
             (scraper as IStashBox).index,
             input
           );
-          setScenes(r.data.queryStashBoxScene);
+          setScenes(r.data.scrapeSingleScene);
         } else {
           const r = await queryScrapeSceneQuery(
             (scraper as GQL.Scraper).id,
             input
           );
-          setScenes(r.data.scrapeSceneQuery);
+          setScenes(r.data.scrapeSingleScene);
         }
       } catch (err) {
         Toast.error(err);
