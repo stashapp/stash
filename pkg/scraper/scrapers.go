@@ -567,8 +567,8 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 	return nil, nil
 }
 
-func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedSceneTag) ([]*models.ScrapedSceneTag, error) {
-	var ret []*models.ScrapedSceneTag
+func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+	var ret []*models.ScrapedTag
 
 	excludePatterns := stash_config.GetInstance().GetScraperExcludeTagPatterns()
 	var excludeRegexps []*regexp.Regexp
