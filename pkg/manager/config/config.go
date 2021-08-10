@@ -95,6 +95,7 @@ const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
 const ScraperCertCheck = "scraper_cert_check"
 const ScraperCDPPath = "scraper_cdp_path"
+const ScraperExcludeTagPatterns = "scraper_exclude_tag_patterns"
 
 // stash-box options
 const StashBoxes = "stash_boxes"
@@ -363,6 +364,15 @@ func (i *Instance) GetScraperCertCheck() bool {
 	ret := true
 	if viper.IsSet(ScraperCertCheck) {
 		ret = viper.GetBool(ScraperCertCheck)
+	}
+
+	return ret
+}
+
+func (i *Instance) GetScraperExcludeTagPatterns() []string {
+	var ret []string
+	if viper.IsSet(ScraperExcludeTagPatterns) {
+		ret = viper.GetStringSlice(ScraperExcludeTagPatterns)
 	}
 
 	return ret

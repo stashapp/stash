@@ -144,8 +144,9 @@ func makeConfigScrapingResult() *models.ConfigScrapingResult {
 	scraperCDPPath := config.GetScraperCDPPath()
 
 	return &models.ConfigScrapingResult{
-		ScraperUserAgent: &scraperUserAgent,
-		ScraperCertCheck: config.GetScraperCertCheck(),
-		ScraperCDPPath:   &scraperCDPPath,
+		ScraperUserAgent:   &scraperUserAgent,
+		ScraperCertCheck:   config.GetScraperCertCheck(),
+		ScraperCDPPath:     &scraperCDPPath,
+		ExcludeTagPatterns: config.GetScraperExcludeTagPatterns(),
 	}
 }

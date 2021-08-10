@@ -17,9 +17,10 @@ import StashConfiguration from "./StashConfiguration";
 interface IExclusionPatternsProps {
   excludes: string[];
   setExcludes: (value: string[]) => void;
+  demo: string;
 }
 
-const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
+export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
   function excludeRegexChanged(idx: number, value: string) {
     const newExcludes = props.excludes.map((regex, i) => {
       const ret = idx !== i ? regex : value;
@@ -35,8 +36,7 @@ const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
   }
 
   function excludeAddRegex() {
-    const demo = "sample\\.mp4$";
-    const newExcludes = props.excludes.concat(demo);
+    const newExcludes = props.excludes.concat(props.demo);
 
     props.setExcludes(newExcludes);
   }
@@ -490,7 +490,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
               id: "config.general.excluded_video_patterns_head",
             })}
           </h6>
-          <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
+          <ExclusionPatterns
+            excludes={excludes}
+            setExcludes={setExcludes}
+            demo="sample\.mp4$"
+          />
           <Form.Text className="text-muted">
             {intl.formatMessage({
               id: "config.general.excluded_video_patterns_desc",
@@ -514,6 +518,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <ExclusionPatterns
             excludes={imageExcludes}
             setExcludes={setImageExcludes}
+            demo="sample\.jpg$"
           />
           <Form.Text className="text-muted">
             {intl.formatMessage({

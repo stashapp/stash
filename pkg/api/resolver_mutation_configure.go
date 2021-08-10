@@ -312,6 +312,10 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.C
 		refreshScraperCache = true
 	}
 
+	if input.ExcludeTagPatterns != nil {
+		c.Set(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
+	}
+
 	c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()

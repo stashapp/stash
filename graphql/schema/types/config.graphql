@@ -255,6 +255,8 @@ input ConfigScrapingInput {
   scraperCDPPath: String
   """Whether the scraper should check for invalid certificates"""
   scraperCertCheck: Boolean!
+  """Tags blacklist during scraping"""
+  excludeTagPatterns: [String!]
 }
 
 type ConfigScrapingResult {
@@ -264,6 +266,8 @@ type ConfigScrapingResult {
   scraperCDPPath: String
   """Whether the scraper should check for invalid certificates"""
   scraperCertCheck: Boolean!
+  """Tags blacklist during scraping"""
+  excludeTagPatterns: [String!]!
 }
 
 """All configuration settings"""
