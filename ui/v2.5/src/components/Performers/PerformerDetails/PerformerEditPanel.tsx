@@ -669,7 +669,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   function maybeRenderScrapeDialog() {
-    if (!scrapedPerformer || !scraper) {
+    if (!scrapedPerformer) {
       return;
     }
 
