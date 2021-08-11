@@ -13,6 +13,7 @@ import (
 
 type GeneratePhashTask struct {
 	Scene               models.Scene
+	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
 	txnManager          models.TransactionManager
 }
@@ -58,5 +59,5 @@ func (t *GeneratePhashTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *GeneratePhashTask) shouldGenerate() bool {
-	return !t.Scene.Phash.Valid
+	return t.Overwrite || !t.Scene.Phash.Valid
 }
