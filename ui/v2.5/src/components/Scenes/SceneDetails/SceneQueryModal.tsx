@@ -152,13 +152,15 @@ export const SceneQueryModal: React.FC<IProps> = ({
     }
   }, [error, Toast]);
 
-  // TODO - message for header, placeholder
   return (
     <Modal
       show
       onHide={onHide}
       modalProps={{ size: "lg", dialogClassName: "scrape-query-dialog" }}
-      header="Scrape scene"
+      header={intl.formatMessage(
+        { id: "dialogs.scrape_entity_query" },
+        { entity_type: intl.formatMessage({ id: "scene" }) }
+      )}
       accept={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: onHide,
@@ -169,7 +171,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
         <InputGroup>
           <Form.Control
             defaultValue={name ?? ""}
-            placeholder="Scene name..."
+            placeholder={`${intl.formatMessage({ id: "name" })}...`}
             className="text-input"
             ref={inputRef}
             onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
@@ -182,6 +184,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
                 doQuery(inputRef.current?.value ?? "");
               }}
               variant="primary"
+              title={intl.formatMessage({ id: "actions.search" })}
             >
               <Icon icon="search" />
             </Button>

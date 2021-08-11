@@ -436,6 +436,7 @@
       "transcodes": "Transcodes (MP4 conversions of unsupported video formats)",
       "video_previews": "Previews (video previews which play when hovering over a scene)"
     },
+    "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
