@@ -219,7 +219,7 @@ export const Tag: React.FC = () => {
   function renderMergeButton() {
     return (
       <Dropdown drop="up">
-        <Dropdown.Toggle variant="secondary">Merge...</Dropdown.Toggle>
+        <Dropdown.Toggle variant="secondary"><FormattedMessage id="actions.merge"/>...</Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white" id="tag-merge-menu">
           <Dropdown.Item
             className="bg-secondary text-white"
