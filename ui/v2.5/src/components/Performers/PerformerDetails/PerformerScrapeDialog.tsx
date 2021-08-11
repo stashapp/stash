@@ -130,7 +130,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 ) => {
   const intl = useIntl();
 
-  const endpoint = (props.scraper as IStashBox).endpoint ?? undefined;
+  const endpoint = (props.scraper as IStashBox)?.endpoint ?? undefined;
 
   function getCurrentRemoteSiteID() {
     if (!endpoint) {
