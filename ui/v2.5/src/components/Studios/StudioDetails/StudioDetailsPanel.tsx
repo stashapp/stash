@@ -45,9 +45,11 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         <TextField id="details" value={studio.details} />
 
         <URLField
-          id="studio"
+          id="parent_studios"
           value={studio.parent_studio?.name}
           url={`/studios/${studio.parent_studio?.id}`}
+          trusted
+          target="_self"
         />
 
         {renderRatingField()}
