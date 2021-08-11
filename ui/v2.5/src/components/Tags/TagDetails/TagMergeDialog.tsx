@@ -75,7 +75,10 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
       show={show}
       header={title}
       icon={mergeType === "from" ? "sign-in-alt" : "sign-out-alt"}
-      accept={{ text: intl.formatMessage({ id: "actions.merge" }), onClick: () => onMerge() }}
+      accept={{
+        text: intl.formatMessage({ id: "actions.merge" }),
+        onClick: () => onMerge(),
+      }}
       disabled={!canMerge()}
       cancel={{
         variant: "secondary",
