@@ -174,7 +174,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     const currentPerPage = filter.itemsPerPage.toString();
     if (!pageSizeOptions.find((o) => o.value === currentPerPage)) {
       pageSizeOptions.push({ label: currentPerPage, value: currentPerPage });
-      pageSizeOptions.sort((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10));
+      pageSizeOptions.sort(
+        (a, b) => parseInt(a.value, 10) - parseInt(b.value, 10)
+      );
     }
 
     pageSizeOptions.push({
