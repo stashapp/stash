@@ -312,30 +312,37 @@ export function createNumberCriterionOption(value: CriterionType) {
 }
 
 export class NumberCriterion extends Criterion<INumberValue> {
+  private getValue() {
+    // backwards compatibility - if this.value is a number, use that
+    if (typeof this.value !== "object") {
+      return this.value as number;
+    }
+
+    return this.value.value;
+  }
+
   public encodeValue() {
     return {
-      value: this.value.value,
+      value: this.getValue(),
       value2: this.value.value2,
     };
   }
 
   protected toCriterionInput(): IntCriterionInput {
+    // backwards compatibility - if this.value is a number, use that
     return {
       modifier: this.modifier,
-      value: this.value.value,
+      value: this.getValue(),
       value2: this.value.value2,
     };
   }
 
   public getLabelValue() {
+    const value = this.getValue();
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
-      ? `${this.value.value}, ${this.value.value2 ?? 0}`
-      : this.modifier === CriterionModifier.GreaterThan
-      ? `${this.value.value}`
-      : this.modifier === CriterionModifier.LessThan
-      ? `${this.value.value}`
-      : `${this.value.value}`;
+      ? `${value}, ${this.value.value2 ?? 0}`
+      : `${value}`;
   }
 
   constructor(type: CriterionOption) {
@@ -482,11 +489,9 @@ export class DurationCriterion extends Criterion<INumberValue> {
       ? `${DurationUtils.secondsToString(
           this.value.value
         )} ${DurationUtils.secondsToString(this.value.value2 ?? 0)}`
-      : this.modifier === CriterionModifier.GreaterThan
-      ? DurationUtils.secondsToString(this.value.value)
-      : this.modifier === CriterionModifier.LessThan
-      ? DurationUtils.secondsToString(this.value.value)
-      : this.modifier === CriterionModifier.Equals ||
+      : this.modifier === CriterionModifier.GreaterThan ||
+        this.modifier === CriterionModifier.LessThan ||
+        this.modifier === CriterionModifier.Equals ||
         this.modifier === CriterionModifier.NotEquals
       ? DurationUtils.secondsToString(this.value.value)
       : "?";
