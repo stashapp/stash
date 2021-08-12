@@ -327,9 +327,9 @@ enum CriterionModifier {
   MATCHES_REGEX,
   """NOT MATCHES REGEX"""
   NOT_MATCHES_REGEX,
-  """> AND <"""
+  """>= AND <="""
   BETWEEN,
-  """<= OR >="""
+  """< OR >"""
   NOT_BETWEEN,
 }
 
