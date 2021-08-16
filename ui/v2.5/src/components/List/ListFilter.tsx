@@ -78,7 +78,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
   function onChangePageSize(val: string) {
     if (val === "custom") {
-      setCustomPageSizeShowing(true);
+      // added timeout since Firefox seems to trigger the rootClose immediately
+      // without it
+      setTimeout(() => setCustomPageSizeShowing(true), 0);
       return;
     }
 
@@ -303,30 +305,36 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           >
             <Popover id="custom_pagesize_popover">
               <Form inline>
-                <Form.Control
-                  type="number"
-                  min={1}
-                  className="text-input"
-                  ref={perPageInput}
-                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (e.key === "Enter") {
-                      onChangePageSize(
-                        (perPageInput.current as HTMLInputElement)?.value ?? ""
-                      );
-                      e.preventDefault();
-                    }
-                  }}
-                />
-                <Button
-                  variant="primary"
-                  onClick={() =>
-                    onChangePageSize(
-                      (perPageInput.current as HTMLInputElement)?.value ?? ""
-                    )
-                  }
-                >
-                  <Icon icon="check" />
-                </Button>
+                <InputGroup>
+                  <Form.Control
+                    type="number"
+                    min={1}
+                    className="text-input"
+                    ref={perPageInput}
+                    onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                      if (e.key === "Enter") {
+                        onChangePageSize(
+                          (perPageInput.current as HTMLInputElement)?.value ??
+                            ""
+                        );
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  <InputGroup.Append>
+                    <Button
+                      variant="primary"
+                      onClick={() =>
+                        onChangePageSize(
+                          (perPageInput.current as HTMLInputElement)?.value ??
+                            ""
+                        )
+                      }
+                    >
+                      <Icon icon="check" />
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
               </Form>
             </Popover>
           </Overlay>
