@@ -54,10 +54,14 @@
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `a` | Details tab |
+| `q` | Queue tab |
 | `k` | Markers tab |
 | `f` | File info tab |
 | `e` | Edit tab |
 | `o` | Increment O-Counter |
+| `p n` | Play next scene in queue |
+| `p p` | Play previous scene in queue |
+| `p r` | Play random scene in queue |
 
 ### Scene Markers tab shortcuts
 
