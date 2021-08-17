@@ -191,6 +191,7 @@ ui-validate:
 .PHONY: packr
 packr:
 	$(SET) GO111MODULES=on
+	packr2 version
 	packr2
 
 # runs all of the tests and checks required for a PR to be accepted
