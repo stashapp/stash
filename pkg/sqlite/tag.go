@@ -271,14 +271,6 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 		query.not(qb.makeFilter(tagFilter.Not))
 	}
 
-	// if markerCount := tagFilter.MarkerCount; markerCount != nil {
-	// 	clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
-	// 	query.addHaving(clause)
-	// 	if count == 1 {
-	// 		query.addArg(markerCount.Value)
-	// 	}
-	// }
-
 	query.handleCriterion(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(tagAliasCriterionHandler(qb, tagFilter.Aliases))
 
@@ -287,6 +279,7 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	query.handleCriterion(tagImageCountCriterionHandler(qb, tagFilter.ImageCount))
 	query.handleCriterion(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
 	query.handleCriterion(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
+	query.handleCriterion(tagMarkerCountCriterionHandler(qb, tagFilter.MarkerCount))
 
 	return query
 }
@@ -302,19 +295,6 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs(tagTable)
-
-	/*
-		query.body += `
-		left join tags_image on tags_image.tag_id = tags.id
-		left join scenes_tags on scenes_tags.tag_id = tags.id
-		left join scene_markers_tags on scene_markers_tags.tag_id = tags.id
-		left join scene_markers on scene_markers.primary_tag_id = tags.id OR scene_markers.id = scene_markers_tags.scene_marker_id
-		left join scenes on scenes_tags.scene_id = scenes.id`
-	*/
-
-	// the presence of joining on scene_markers.primary_tag_id and scene_markers_tags.tag_id
-	// appears to confuse sqlite and causes serious performance issues.
-	// Disabling querying/sorting on marker count for now.
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
@@ -379,12 +359,7 @@ func tagSceneCountCriterionHandler(qb *tagQueryBuilder, sceneCount *models.IntCr
 	return func(f *filterBuilder) {
 		if sceneCount != nil {
 			f.addJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
-			clause, count := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
-
-			args := []interface{}{}
-			if count == 1 {
-				args = append(args, sceneCount.Value)
-			}
+			clause, args := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
 
 			f.addHaving(clause, args...)
 		}
@@ -395,12 +370,7 @@ func tagImageCountCriterionHandler(qb *tagQueryBuilder, imageCount *models.IntCr
 	return func(f *filterBuilder) {
 		if imageCount != nil {
 			f.addJoin("images_tags", "", "images_tags.tag_id = tags.id")
-			clause, count := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
-
-			args := []interface{}{}
-			if count == 1 {
-				args = append(args, imageCount.Value)
-			}
+			clause, args := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
 
 			f.addHaving(clause, args...)
 		}
@@ -411,12 +381,7 @@ func tagGalleryCountCriterionHandler(qb *tagQueryBuilder, galleryCount *models.I
 	return func(f *filterBuilder) {
 		if galleryCount != nil {
 			f.addJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
-			clause, count := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
-
-			args := []interface{}{}
-			if count == 1 {
-				args = append(args, galleryCount.Value)
-			}
+			clause, args := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
 
 			f.addHaving(clause, args...)
 		}
@@ -427,12 +392,19 @@ func tagPerformerCountCriterionHandler(qb *tagQueryBuilder, performerCount *mode
 	return func(f *filterBuilder) {
 		if performerCount != nil {
 			f.addJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
-			clause, count := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
+			clause, args := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
 
-			args := []interface{}{}
-			if count == 1 {
-				args = append(args, performerCount.Value)
-			}
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if markerCount != nil {
+			f.addJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
+			f.addJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
 
 			f.addHaving(clause, args...)
 		}
@@ -459,6 +431,9 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 		case "scenes_count":
 			query.join("scenes_tags", "", "scenes_tags.tag_id = tags.id")
 			return " ORDER BY COUNT(distinct scenes_tags.scene_id) " + direction
+		case "scene_markers_count":
+			query.join("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
+			return " ORDER BY COUNT(distinct scene_markers_tags.scene_marker_id) " + direction
 		case "images_count":
 			query.join("images_tags", "", "images_tags.tag_id = tags.id")
 			return " ORDER BY COUNT(distinct images_tags.image_id) " + direction

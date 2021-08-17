@@ -151,7 +151,7 @@
       "interface": "Interface",
       "logs": "Logs",
       "plugins": "Plugins",
-      "scrapers": "Scrapers",
+      "scraping": "Scraping",
       "tasks": "Tasks",
       "tools": "Tools"
     },
@@ -240,9 +240,12 @@
       "hooks": "Hooks",
       "triggers_on": "Triggers on"
     },
-    "scrapers": {
+    "scraping": {
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} scrapers",
+      "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results",
+      "excluded_tag_patterns_head": "Excluded Tag Patterns",
+      "scrapers": "Scrapers",
       "search_by_name": "Search by name",
       "supported_types": "Supported types",
       "supported_urls": "URLs"
@@ -320,6 +323,14 @@
         "description": "Show or hide different types of content on the navigation bar",
         "heading": "Menu Items"
       },
+      "performers": {
+        "options": {
+          "image_location": {
+            "heading": "Custom Performer Image Path",
+            "description": "Custom path for default performer images. Leave empty to use in-built defaults"
+          }
+        }
+      },
       "preview_type": {
         "description": "Configuration for wall items",
         "heading": "Preview Type",
@@ -369,6 +380,11 @@
   "country": "Country",
   "cover_image": "Cover Image",
   "created_at": "Created At",
+  "criterion": {
+    "greater_than": "Greater than",
+    "less_than": "Less than",
+    "value": "Value"
+  },
   "criterion_modifier": {
     "equals": "is",
     "excludes": "excludes",
@@ -381,7 +397,9 @@
     "matches_regex": "matches regex",
     "not_equals": "is not",
     "not_matches_regex": "not matches regex",
-    "not_null": "is not null"
+    "not_null": "is not null",
+    "between": "between",
+    "not_between": "not between"
   },
   "date": "Date",
   "death_date": "Death Date",

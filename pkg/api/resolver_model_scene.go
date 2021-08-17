@@ -67,12 +67,12 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 	bitrate := int(obj.Bitrate.Int64)
 	return &models.SceneFileType{
 		Size:       &obj.Size.String,
-		Duration:   &obj.Duration.Float64,
+		Duration:   handleFloat64(obj.Duration.Float64),
 		VideoCodec: &obj.VideoCodec.String,
 		AudioCodec: &obj.AudioCodec.String,
 		Width:      &width,
 		Height:     &height,
-		Framerate:  &obj.Framerate.Float64,
+		Framerate:  handleFloat64(obj.Framerate.Float64),
 		Bitrate:    &bitrate,
 	}, nil
 }

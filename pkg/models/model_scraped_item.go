@@ -46,6 +46,7 @@ type ScrapedPerformer struct {
 	DeathDate    *string            `graphql:"death_date" json:"death_date"`
 	HairColor    *string            `graphql:"hair_color" json:"hair_color"`
 	Weight       *string            `graphql:"weight" json:"weight"`
+	RemoteSiteID *string            `graphql:"remote_site_id" json:"remote_site_id"`
 }
 
 // this type has no Image field

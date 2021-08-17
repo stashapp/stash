@@ -13,6 +13,7 @@ interface IProps {
   ): void;
   onReset?(): void;
   className?: string;
+  placeholder?: string;
 }
 
 export const DurationInput: React.FC<IProps> = (props: IProps) => {
@@ -108,7 +109,13 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
               props.onValueChange(undefined);
             }
           }}
-          placeholder={!props.disabled ? "hh:mm:ss" : undefined}
+          placeholder={
+            !props.disabled
+              ? props.placeholder
+                ? `${props.placeholder} (hh:mm:ss)`
+                : "hh:mm:ss"
+              : undefined
+          }
         />
         <InputGroup.Append>
           {maybeRenderReset()}
