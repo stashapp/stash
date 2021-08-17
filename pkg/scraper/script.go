@@ -204,7 +204,6 @@ func findPythonExecutable() (string, error) {
 	return "python3", nil
 }
 
-
 func handleStderrLine(line string, defaultLogLevel *log.Level) {
 	level, l := log.DetectLogLevel(line)
 
@@ -229,20 +228,20 @@ func handleStderrLine(line string, defaultLogLevel *log.Level) {
 		logger.Warn(scraperPrefix, l)
 	case log.ErrorLevel:
 		logger.Error(scraperPrefix, l)
-	// case log.ProgressLevel:
-	// 	progress, err := strconv.ParseFloat(l, 64)
-	// 	if err != nil {
-	// 		logger.Errorf("Error parsing progress value '%s': %s", l, err.Error())
-	// 	} else {
-	// 		// only pass progress through if channel present
-	// 		if s.progress != nil {
-	// 			// don't block on this
-	// 			select {
-	// 			case s.progress <- progress:
-	// 			default:
-	// 			}
-	// 		}
-	// 	}
+		// case log.ProgressLevel:
+		// 	progress, err := strconv.ParseFloat(l, 64)
+		// 	if err != nil {
+		// 		logger.Errorf("Error parsing progress value '%s': %s", l, err.Error())
+		// 	} else {
+		// 		// only pass progress through if channel present
+		// 		if s.progress != nil {
+		// 			// don't block on this
+		// 			select {
+		// 			case s.progress <- progress:
+		// 			default:
+		// 			}
+		// 		}
+		// 	}
 	}
 }
 
