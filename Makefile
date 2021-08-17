@@ -23,6 +23,7 @@ ifdef OUTPUT
 endif
 
 export CGO_ENABLED = 1
+export GO111MODULE = on
 
 .PHONY: release pre-build install clean 
 
@@ -190,8 +191,7 @@ ui-validate:
 # rebuilding the UI
 .PHONY: packr
 packr:
-	$(SET) GO111MODULES=on
-	packr2 version
+	$(SET) GO111MODULE=on
 	packr2
 
 # runs all of the tests and checks required for a PR to be accepted
