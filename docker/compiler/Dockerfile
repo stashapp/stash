@@ -1,6 +1,6 @@
-FROM golang:1.13.15
+FROM golang:1.17
 
-LABEL maintainer="stashappdev@gmail.com"
+LABEL maintainer="https://discord.gg/2TsNFKt"
 
 ENV PACKR2_VERSION=2.0.2
 ENV PACKR2_SHA=f95ff4c96d7a28813220df030ad91700b8464fe292ab3e1dc9582305c2a338d2
@@ -66,4 +66,4 @@ CMD ["packr2", "version"]
 
 # Darwin
 # CC=o64-clang CXX=o64-clang++ GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -tags extended
-# env GO111MODULE=on goreleaser --config=goreleaser-extended.yml --skip-publish --skip-validate --rm-dist --release-notes=temp/0.48-relnotes-ready.md
+# env goreleaser --config=goreleaser-extended.yml --skip-publish --skip-validate --rm-dist --release-notes=temp/0.48-relnotes-ready.md

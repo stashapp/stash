@@ -112,8 +112,7 @@ TODO
 2. Download and install [MingW](https://sourceforge.net/projects/mingw-w64/)
 3. Search for "advanced system settings" and open the system properties dialog.
     1. Click the `Environment Variables` button
-    2. Add `GO111MODULE=on`
-    3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+    2. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
 
 NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
@@ -121,6 +120,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 * `make generate` - Generate Go and UI GraphQL files
 * `make build` - Builds the binary (make sure to build the UI as well... see below)
+* `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
 * `make fmt-ui` - Formats the UI source code.
 * `make ui` - Builds the frontend and the packr2 files

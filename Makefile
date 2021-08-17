@@ -23,7 +23,6 @@ ifdef OUTPUT
 endif
 
 export CGO_ENABLED = 1
-export GO111MODULE = on
 
 .PHONY: release pre-build install clean 
 
@@ -44,14 +43,15 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
-# consider -trimpath in go build if we move to go 1.13+
 build-release: EXTRA_LDFLAGS := -s -w
+build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 
 # cross-compile- targets should be run within the compiler docker container
@@ -104,10 +104,15 @@ clean:
 	packr2 clean
 
 # Regenerates GraphQL files
-.PHONY: generate
-generate:
-	go generate -mod=vendor
+generate: generate-backend generate-frontend
+
+.PHONY: generate-frontend
+generate-frontend:
 	cd ui/v2.5 && yarn run gqlgen
+
+.PHONY: generate-backend
+generate-backend:
+	go generate -mod=vendor
 
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client
@@ -190,3 +195,8 @@ packr:
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
 validate: ui-validate fmt-check vet lint it
+
+# locally builds and tags a 'stash/build' docker image
+.PHONY: docker-build
+docker-build: 
+	docker build -t stash/build -f docker/build/x86_64/Dockerfile .

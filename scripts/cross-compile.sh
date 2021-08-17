@@ -8,8 +8,8 @@ GITHASH=`git rev-parse --short HEAD`
 STASH_VERSION=`git describe --tags --exclude latest_develop`
 
 SETENV="BUILD_DATE=\"$BUILD_DATE\" GITHASH=$GITHASH STASH_VERSION=\"$STASH_VERSION\""
-SETUP="export GO111MODULE=on; export CGO_ENABLED=1; set -e; echo '=== Running packr ==='; make packr;"
-SETUP_FAST="export GO111MODULE=on; export CGO_ENABLED=1;"
+SETUP="export CGO_ENABLED=1; set -e; echo '=== Running packr ==='; make packr;"
+SETUP_FAST="export CGO_ENABLED=1;"
 WINDOWS="echo '=== Building Windows binary ==='; $SETENV make cross-compile-windows;"
 DARWIN="echo '=== Building OSX binary ==='; $SETENV make cross-compile-osx;"
 LINUX_AMD64="echo '=== Building Linux (amd64) binary ==='; $SETENV make cross-compile-linux;"
