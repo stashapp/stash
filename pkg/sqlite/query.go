@@ -18,6 +18,7 @@ type queryBuilder struct {
 	havingClauses []string
 	args          []interface{}
 	withClauses   []string
+	recursiveWith bool
 
 	sortAndPagination string
 
@@ -32,7 +33,7 @@ func (qb queryBuilder) executeFind() ([]int, int, error) {
 	body := qb.body
 	body += qb.joins.toSQL()
 
-	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses)
+	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
 }
 
 func (qb queryBuilder) executeCount() (int, error) {
@@ -45,7 +46,11 @@ func (qb queryBuilder) executeCount() (int, error) {
 
 	withClause := ""
 	if len(qb.withClauses) > 0 {
-		withClause = "WITH " + strings.Join(qb.withClauses, ", ") + " "
+		var recursive string
+		if qb.recursiveWith {
+			recursive = " RECURSIVE "
+		}
+		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 
 	body = qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
@@ -69,12 +74,14 @@ func (qb *queryBuilder) addHaving(clauses ...string) {
 	}
 }
 
-func (qb *queryBuilder) addWith(clauses ...string) {
+func (qb *queryBuilder) addWith(recursive bool, clauses ...string) {
 	for _, clause := range clauses {
 		if len(clause) > 0 {
 			qb.withClauses = append(qb.withClauses, clause)
 		}
 	}
+
+	qb.recursiveWith = qb.recursiveWith || recursive
 }
 
 func (qb *queryBuilder) addArg(args ...interface{}) {
@@ -104,7 +111,7 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) {
 
 	clause, args := f.generateWithClauses()
 	if len(clause) > 0 {
-		qb.addWith(clause)
+		qb.addWith(f.recursiveWith, clause)
 	}
 
 	if len(args) > 0 {

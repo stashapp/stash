@@ -97,6 +97,7 @@ type filterBuilder struct {
 	whereClauses  []sqlClause
 	havingClauses []sqlClause
 	withClauses   []sqlClause
+	recursiveWith bool
 
 	err error
 }
@@ -186,6 +187,16 @@ func (f *filterBuilder) addWith(sql string, args ...interface{}) {
 	}
 
 	f.withClauses = append(f.withClauses, makeClause(sql, args...))
+}
+
+// addRecursiveWith adds a with clause and arguments to the filter, and sets it to recursive
+func (f *filterBuilder) addRecursiveWith(sql string, args ...interface{}) {
+	if sql == "" {
+		return
+	}
+
+	f.addWith(sql, args...)
+	f.recursiveWith = true
 }
 
 func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) string {
@@ -567,13 +578,13 @@ UNION {recursiveSelect} {depthCondition}
 `, withClauseMap)
 	}
 
-	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
+	withClause := utils.StrFormat(`{derivedTable} AS (
 SELECT id as id, id as child_id, 0 as depth FROM {table}
 WHERE id in {inBinding}
 {unionClause})
 `, withClauseMap)
 
-	f.addWith(withClause, args...)
+	f.addRecursiveWith(withClause, args...)
 }
 
 func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
