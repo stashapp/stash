@@ -563,11 +563,11 @@ func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, t
 	}
 
 	if relationsTable != "" {
-		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.id, c.child_id, depth + 1 FROM {relationsTable} AS c
+		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.child_id, depth + 1 FROM {relationsTable} AS c
 INNER JOIN {derivedTable} as p ON c.parent_id = p.child_id
 `, withClauseMap)
 	} else {
-		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.id, c.id, depth + 1 FROM {table} as c
+		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.id, depth + 1 FROM {table} as c
 INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id
 `, withClauseMap)
 	}
@@ -579,7 +579,7 @@ UNION {recursiveSelect} {depthCondition}
 	}
 
 	withClause := utils.StrFormat(`{derivedTable} AS (
-SELECT id as id, id as child_id, 0 as depth FROM {table}
+SELECT id as root_id, id as child_id, 0 as depth FROM {table}
 WHERE id in {inBinding}
 {unionClause})
 `, withClauseMap)
@@ -605,7 +605,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 
 			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
 
-			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "id")
+			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "root_id")
 		}
 	}
 }
@@ -631,7 +631,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 
 			joinAlias := m.joinAs
 			f.addWith(utils.StrFormat(`{joinAlias} AS (
-	SELECT j.*, d.id AS parent_id, d.child_id FROM {joinTable} AS j
+	SELECT j.*, d.root_id, d.child_id FROM {joinTable} AS j
 	INNER JOIN {derivedTable} AS d ON j.{foreignFK} = d.child_id
 )
 `, utils.StrFormatMap{
@@ -643,7 +643,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 
 			f.addJoin(joinAlias, "", fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
 
-			addHierarchicalConditionClauses(f, criterion, joinAlias, "parent_id")
+			addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
 		}
 	}
 }

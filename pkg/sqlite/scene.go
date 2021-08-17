@@ -621,7 +621,7 @@ func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.Hier
 			addHierarchicalWithClause(f, tags.Value, "tags_for_performer", tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (
-SELECT ps.scene_id, t.id AS root_tag_id FROM performers_scenes ps
+SELECT ps.scene_id, t.root_id AS root_tag_id FROM performers_scenes ps
 INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
 INNER JOIN tags_for_performer t ON t.child_id = pt.tag_id
 )`)

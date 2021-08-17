@@ -194,10 +194,10 @@ func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.H
 			addHierarchicalWithClause(f, tags.Value, "tags_for_marker", tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`marker_tags AS (
-SELECT mt.scene_marker_id, t.id AS root_tag_id, t.child_id FROM scene_markers_tags mt
+SELECT mt.scene_marker_id, t.root_id AS root_tag_id, t.child_id FROM scene_markers_tags mt
 INNER JOIN tags_for_marker t ON t.child_id = mt.tag_id
 UNION
-SELECT m.id, t.id, t.child_id FROM scene_markers m
+SELECT m.id, t.root_id, t.child_id FROM scene_markers m
 INNER JOIN tags_for_marker t	 ON t.child_id = m.primary_tag_id
 )`)
 
@@ -214,7 +214,7 @@ func sceneMarkerSceneTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *mod
 			addHierarchicalWithClause(f, tags.Value, "tags_for_scene", tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`scene_tags AS (
-SELECT st.scene_id, t.id AS root_tag_id FROM scenes_tags st
+SELECT st.scene_id, t.root_id AS root_tag_id FROM scenes_tags st
 INNER JOIN tags_for_scene t ON t.child_id = st.tag_id
 )`)
 

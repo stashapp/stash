@@ -428,7 +428,7 @@ func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.Hier
 			addHierarchicalWithClause(f, tags.Value, "tags_for_performer", tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (
-SELECT pi.image_id, t.id AS root_tag_id FROM performers_images pi
+SELECT pi.image_id, t.root_id AS root_tag_id FROM performers_images pi
 INNER JOIN performers_tags pt ON pt.performer_id = pi.performer_id
 INNER JOIN tags_for_performer t ON t.child_id = pt.tag_id
 )`)
