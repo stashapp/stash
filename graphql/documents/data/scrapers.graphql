@@ -19,7 +19,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   tags {
     ...ScrapedSceneTagData
   }
-  image
+  images
   details
   death_date
   hair_color

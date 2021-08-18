@@ -309,6 +309,14 @@ func (c Client) QueryStashBoxPerformer(queryStr string) ([]*models.StashBoxPerfo
 			Results: performers,
 		},
 	}
+
+	// set the deprecated image field
+	for _, p := range res[0].Results {
+		if len(p.Images) > 0 {
+			p.Image = &p.Images[0]
+		}
+	}
+
 	return res, err
 }
 
@@ -546,8 +554,11 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		RemoteSiteID: &id,
 		Images:       images,
 		// TODO - tags not currently supported
-		// TODO - Image - should be returned as a set of URLs. Will need a
 		// graphql schema change to accommodate this. Leave off for now.
+	}
+
+	if len(sp.Images) > 0 {
+		sp.Image = &sp.Images[0]
 	}
 
 	if p.Height != nil && *p.Height > 0 {

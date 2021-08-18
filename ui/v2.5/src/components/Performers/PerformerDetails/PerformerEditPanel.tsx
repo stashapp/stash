@@ -334,9 +334,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // otherwise follow existing behaviour (`undefined`)
     if (
       (!isNew || [null, undefined].includes(formik.values.image)) &&
-      state.image !== undefined
+      state.images &&
+      state.images.length > 0
     ) {
-      const imageStr = state.image;
+      const imageStr = state.images[0];
       formik.setFieldValue("image", imageStr ?? undefined);
     }
     if (state.details) {
@@ -527,7 +528,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       const {
         __typename,
-        image: _image,
+        images: _image,
         tags: _tags,
         ...ret
       } = selectedPerformer;
@@ -580,7 +581,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
     const result: GQL.ScrapedPerformerDataFragment = {
       ...performerResult,
-      image: performerResult.images?.[0] ?? undefined,
+      images: performerResult.images ?? undefined,
       country: getCountryByISO(performerResult.country),
       __typename: "ScrapedPerformer",
     };

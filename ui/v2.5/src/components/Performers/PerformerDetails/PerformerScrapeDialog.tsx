@@ -304,7 +304,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.image, props.scraped.image)
+    new ScrapeResult<string>(
+      props.performer.image,
+      props.scraped.images && props.scraped.images.length > 0
+        ? props.scraped.images[0]
+        : undefined
+    )
   );
 
   const allFields = [
