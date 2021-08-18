@@ -131,7 +131,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
           value={(props.scene.file.bitrate ?? 0) / 1000000}
           maximumFractionDigits={2}
         />{" "}
-        frames per second
+        megabits per second
       </TextField>
       <TextField
         id="media_info.video_codec"
