@@ -644,7 +644,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 				RemoteSiteID: &studioID,
 			}
 
-			err := scraper.MatchScrapedSceneStudio(r.Studio(), ss.Studio)
+			err := scraper.MatchScrapedStudio(r.Studio(), ss.Studio)
 			if err != nil {
 				return err
 			}
@@ -653,7 +653,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := scraper.MatchScrapedScenePerformer(pqb, sp)
+			err := scraper.MatchScrapedPerformer(pqb, sp)
 			if err != nil {
 				return err
 			}
@@ -666,7 +666,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 				Name: t.Name,
 			}
 
-			err := scraper.MatchScrapedSceneTag(tqb, st)
+			err := scraper.MatchScrapedTag(tqb, st)
 			if err != nil {
 				return err
 			}

@@ -198,7 +198,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiScenesInput) ([][]*models.ScrapedScene, error) {
 	if source.ScraperID != nil {
-		return nil, errors.New("not supported")
+		return nil, errors.New("not implemented")
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
@@ -262,7 +262,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 
 func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiPerformersInput) ([][]*models.ScrapedPerformer, error) {
 	if source.ScraperID != nil {
-		return nil, errors.New("not supported")
+		return nil, errors.New("not implemented")
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
@@ -306,7 +306,7 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source models.S
 		return nil, errors.New("not supported")
 	}
 
-	return nil, errors.New("scraper_id or stash_box_index must be set")
+	return nil, errors.New("scraper_id must be set")
 }
 
 func (r *queryResolver) ScrapeSingleMovie(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleMovieInput) ([]*models.ScrapedMovie, error) {
