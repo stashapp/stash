@@ -39,10 +39,12 @@ ENV OSX_NDK_X86 		/usr/local/osx-ndk-x86
 RUN  wget ${OSX_SDK_DOWNLOAD_URL}
 RUN  echo "$OSX_SDK_SHA $OSX_SDK_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
      git clone https://github.com/tpoechtrager/osxcross.git; \
-     mv $OSX_SDK_DOWNLOAD_FILE osxcross/tarballs/ && \
-     UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.9 osxcross/build.sh || exit 1; \
-     mv osxcross/target $OSX_NDK_X86; \
-     rm -rf osxcross;
+     mv $OSX_SDK_DOWNLOAD_FILE osxcross/tarballs/
+
+RUN     UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.10 osxcross/build.sh || exit 1;
+RUN     cp osxcross/target/lib/* /usr/lib/ ; \
+        mv osxcross/target $OSX_NDK_X86; \
+        rm -rf osxcross;
 
 ENV PATH $OSX_NDK_X86/bin:$PATH
 

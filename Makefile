@@ -67,7 +67,7 @@ cross-compile-osx-intel: export GOOS := darwin
 cross-compile-osx-intel: export GOARCH := amd64
 cross-compile-osx-intel: export CC := o64-clang
 cross-compile-osx-intel: export CXX := o64-clang++
-cross-compile-osx-intel: OUTPUT := -o dist/stash-osx-intel
+cross-compile-osx-intel: OUTPUT := -o dist/stash-osx
 # can't use static build for OSX
 cross-compile-osx-intel: build-release
 

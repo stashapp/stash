@@ -109,8 +109,8 @@ jobs:
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
-        name: stash-osx-intel
-        path: dist/stash-osx-intel
+        name: stash-osx
+        path: dist/stash-osx
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
@@ -133,7 +133,7 @@ jobs:
         automatic_release_tag: latest_develop
         title: "${{ env.STASH_VERSION }}: Latest development build"
         files: |
-          dist/stash-osx-intel
+          dist/stash-osx
           dist/stash-osx-applesilicon
           dist/stash-win.exe
           dist/stash-linux
@@ -149,7 +149,7 @@ jobs:
         token: "${{ secrets.GITHUB_TOKEN }}"
         allow_override: true
         files: |
-          dist/stash-osx-intel
+          dist/stash-osx
           dist/stash-osx-applesilicon
           dist/stash-win.exe
           dist/stash-linux
