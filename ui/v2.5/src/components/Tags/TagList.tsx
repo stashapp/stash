@@ -195,8 +195,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   function renderTags(
     result: FindTagsQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     if (!result.data?.findTags) return;
 
@@ -207,7 +206,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
             <TagCard
               key={tag.id}
               tag={tag}
-              zoomIndex={zoomIndex}
+              zoomIndex={filter.zoomIndex}
               selecting={selectedIds.size > 0}
               selected={selectedIds.has(tag.id)}
               onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
@@ -310,13 +309,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   function renderContent(
     result: FindTagsQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     return (
       <>
         {maybeRenderExportDialog(selectedIds)}
-        {renderTags(result, filter, selectedIds, zoomIndex)}
+        {renderTags(result, filter, selectedIds)}
       </>
     );
   }

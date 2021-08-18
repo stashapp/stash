@@ -322,6 +322,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,
 					txnManager:          s.TxnManager,
+					Overwrite:           overwrite,
 				}
 				wg.Add()
 				go progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", scene.Path), func() {

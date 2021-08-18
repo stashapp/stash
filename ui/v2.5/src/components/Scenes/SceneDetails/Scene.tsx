@@ -291,7 +291,9 @@ export const Scene: React.FC = () => {
       const { query } = sceneQueue;
       const pages = Math.ceil(queueTotal / query.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
-      const index = Math.floor(Math.random() * query.itemsPerPage);
+      const index = Math.floor(
+        Math.random() * Math.min(query.itemsPerPage, queueTotal)
+      );
       const filterCopy = sceneQueue.query.clone();
       filterCopy.currentPage = page;
       const queryResults = await queryFindScenes(filterCopy);
@@ -554,17 +556,25 @@ export const Scene: React.FC = () => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
     Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("o", () => onIncrementClick());
+    Mousetrap.bind("p n", () => onQueueNext());
+    Mousetrap.bind("p p", () => onQueuePrevious());
+    Mousetrap.bind("p r", () => onQueueRandom());
 
     return () => {
       Mousetrap.unbind("a");
+      Mousetrap.unbind("q");
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
       Mousetrap.unbind("f");
       Mousetrap.unbind("o");
+      Mousetrap.unbind("p n");
+      Mousetrap.unbind("p p");
+      Mousetrap.unbind("p r");
     };
   });
 
