@@ -227,8 +227,9 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
     );
 
   const getFingerprintCount = () => {
-    return scenes.filter((s) => s.stash_ids.length === 0 && fingerprints[s.id])
-      .length;
+    return scenes.filter(
+      (s) => s.stash_ids.length === 0 && fingerprints[s.id]?.length > 0
+    ).length;
   };
 
   const getFingerprintCountMessage = () => {
