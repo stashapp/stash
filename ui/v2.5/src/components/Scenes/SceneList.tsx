@@ -217,7 +217,14 @@ export const SceneList: React.FC<ISceneList> = ({
     }
     if (filter.displayMode === DisplayMode.List) {
       return (
-        <SceneListTable scenes={result.data.findScenes.scenes} queue={queue} />
+        <SceneListTable
+          scenes={result.data.findScenes.scenes}
+          queue={queue}
+          selectedIds={selectedIds}
+          onSelectChange={(id, selected, shiftKey) =>
+            listData.onSelectChange(id, selected, shiftKey)
+          }
+        />
       );
     }
     if (filter.displayMode === DisplayMode.Wall) {
