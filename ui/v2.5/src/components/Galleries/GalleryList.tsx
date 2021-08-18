@@ -156,8 +156,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   function renderGalleries(
     result: FindGalleriesQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     if (!result.data || !result.data.findGalleries) {
       return;
@@ -169,7 +168,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
             <GalleryCard
               key={gallery.id}
               gallery={gallery}
-              zoomIndex={zoomIndex}
+              zoomIndex={filter.zoomIndex}
               selecting={selectedIds.size > 0}
               selected={selectedIds.has(gallery.id)}
               onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
@@ -235,13 +234,12 @@ export const GalleryList: React.FC<IGalleryList> = ({
   function renderContent(
     result: FindGalleriesQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     return (
       <>
         {maybeRenderGalleryExportDialog(selectedIds)}
-        {renderGalleries(result, filter, selectedIds, zoomIndex)}
+        {renderGalleries(result, filter, selectedIds)}
       </>
     );
   }
