@@ -539,18 +539,27 @@ func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, t
 		depthCondition = fmt.Sprintf("WHERE depth < %d", depth)
 	}
 
-	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
-SELECT id as id, id as child_id, 0 as depth FROM {table} 
-WHERE id in {inBinding} 
-UNION SELECT p.id, c.id, depth + 1 FROM {table} as c 
-INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition})
-`, utils.StrFormatMap{
+	withClauseMap := utils.StrFormatMap{
 		"derivedTable":   derivedTable,
 		"table":          table,
 		"inBinding":      getInBinding(inCount),
 		"parentFK":       parentFK,
 		"depthCondition": depthCondition,
-	})
+		"unionClause":    "",
+	}
+
+	if depth != 0 {
+		withClauseMap["unionClause"] = utils.StrFormat(`
+UNION SELECT p.id, c.id, depth + 1 FROM {table} as c
+INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition}
+`, withClauseMap)
+	}
+
+	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
+SELECT id as id, id as child_id, 0 as depth FROM {table}
+WHERE id in {inBinding}
+{unionClause})
+`, withClauseMap)
 
 	f.addWith(withClause, args...)
 }
