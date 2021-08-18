@@ -28,7 +28,8 @@ var ErrNoVersion = errors.New("no stash version")
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
-		"darwin/amd64":  "stash-osx",
+		"darwin/amd64":  "stash-osx-intel",
+		"darwin/arm64":  "stash-osx-applesilicon",
 		"linux/amd64":   "stash-linux",
 		"windows/amd64": "stash-win.exe",
 		"linux/arm":     "stash-pi",

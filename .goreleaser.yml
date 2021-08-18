@@ -17,7 +17,7 @@ builds:
       - windows
     goarch:
       - amd64
-  - binary: stash-osx
+  - binary: stash-osx-intel
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
@@ -29,6 +29,18 @@ builds:
       - darwin
     goarch:
       - amd64
+  - binary: stash-osx-applesilicon
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    flags:
+      - -tags
+      - extended
+    goos:
+      - darwin
+    goarch:
+      - arm64
   - binary: stash-linux
     env:
       - CGO_ENABLED=1

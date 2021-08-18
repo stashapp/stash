@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # "stashapp/compiler:develop" "stashapp/compiler:4"
-COMPILER_CONTAINER="stashapp/compiler:4"
+COMPILER_CONTAINER="stashapp/compiler:5"
 
 BUILD_DATE=`go run -mod=vendor scripts/getDate.go`
 GITHASH=`git rev-parse --short HEAD`
@@ -11,7 +11,8 @@ SETENV="BUILD_DATE=\"$BUILD_DATE\" GITHASH=$GITHASH STASH_VERSION=\"$STASH_VERSI
 SETUP="export CGO_ENABLED=1; set -e; echo '=== Running packr ==='; make packr;"
 SETUP_FAST="export CGO_ENABLED=1;"
 WINDOWS="echo '=== Building Windows binary ==='; $SETENV make cross-compile-windows;"
-DARWIN="echo '=== Building OSX binary ==='; $SETENV make cross-compile-osx;"
+DARWIN="echo '=== Building OSX binary ==='; $SETENV make cross-compile-osx-intel;"
+DARWIN-ARM64="echo '=== Building OSX (arm64) binary ==='; $SETENV make cross-compile-osx-applesilicon;"
 LINUX_AMD64="echo '=== Building Linux (amd64) binary ==='; $SETENV make cross-compile-linux;"
 LINUX_ARM64v8="echo '=== Building Linux (armv8/arm64) binary ==='; $SETENV make cross-compile-linux-arm64v8;"
 LINUX_ARM32v7="echo '=== Building Linux (armv7/armhf) binary ==='; $SETENV make cross-compile-linux-arm32v7;"

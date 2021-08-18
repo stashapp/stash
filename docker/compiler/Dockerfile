@@ -18,10 +18,10 @@ RUN cat yarn.gpg | apt-key add - && \
     rm yarn.gpg
 
 RUN apt-get update && \
-    apt-get install -y automake autogen \
+    apt-get install -y automake autogen cmake \
     libtool libxml2-dev uuid-dev libssl-dev bash \
-    patch make tar xz-utils bzip2 gzip sed cpio \
-	gcc-8-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
+    patch make tar xz-utils bzip2 gzip zlib1g-dev sed cpio \
+	gcc-10-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
 	gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
     gcc-arm-linux-gnueabihf libc-dev-armhf-cross \
     gcc-aarch64-linux-gnu libc-dev-arm64-cross \
@@ -29,17 +29,16 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*;
 
 # Cross compile setup
-ENV OSX_SDK_VERSION 	10.11
+ENV OSX_SDK_VERSION 	11.3
 ENV OSX_SDK_DOWNLOAD_FILE=MacOSX${OSX_SDK_VERSION}.sdk.tar.xz
-ENV OSX_SDK_DOWNLOAD_URL=https://github.com/ndeloof/golang-cross/raw/113fix/${OSX_SDK_DOWNLOAD_FILE}
-ENV OSX_SDK_SHA=98cdd56e0f6c1f9e1af25e11dd93d2e7d306a4aa50430a2bc6bc083ac67efbb8
+ENV OSX_SDK_DOWNLOAD_URL=https://github.com/phracker/MacOSX-SDKs/releases/download/${OSX_SDK_VERSION}/${OSX_SDK_DOWNLOAD_FILE}
+ENV OSX_SDK_SHA=cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4
 ENV OSX_SDK     		MacOSX$OSX_SDK_VERSION.sdk
 ENV OSX_NDK_X86 		/usr/local/osx-ndk-x86
 
 RUN  wget ${OSX_SDK_DOWNLOAD_URL}
 RUN  echo "$OSX_SDK_SHA $OSX_SDK_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
-     git clone https://github.com/tpoechtrager/osxcross.git && \
-     git -C osxcross checkout a9317c18a3a457ca0a657f08cc4d0d43c6cf8953 || exit 1; \
+     git clone https://github.com/tpoechtrager/osxcross.git; \
      mv $OSX_SDK_DOWNLOAD_FILE osxcross/tarballs/ && \
      UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.9 osxcross/build.sh || exit 1; \
      mv osxcross/target $OSX_NDK_X86; \

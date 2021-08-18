@@ -63,13 +63,21 @@ cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: build-release-static
 
-cross-compile-osx: export GOOS := darwin
-cross-compile-osx: export GOARCH := amd64
-cross-compile-osx: export CC := o64-clang
-cross-compile-osx: export CXX := o64-clang++
-cross-compile-osx: OUTPUT := -o dist/stash-osx
+cross-compile-osx-intel: export GOOS := darwin
+cross-compile-osx-intel: export GOARCH := amd64
+cross-compile-osx-intel: export CC := o64-clang
+cross-compile-osx-intel: export CXX := o64-clang++
+cross-compile-osx-intel: OUTPUT := -o dist/stash-osx-intel
 # can't use static build for OSX
-cross-compile-osx: build-release
+cross-compile-osx-intel: build-release
+
+cross-compile-osx-applesilicon: export GOOS := darwin
+cross-compile-osx-applesilicon: export GOARCH := arm64
+cross-compile-osx-applesilicon: export CC := oa64e-clang
+cross-compile-osx-applesilicon: export CXX := oa64e-clang++
+cross-compile-osx-applesilicon: OUTPUT := -o dist/stash-osx-applesilicon
+# can't use static build for OSX
+cross-compile-osx-applesilicon: build-release
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
@@ -96,7 +104,7 @@ cross-compile-pi: export CC := arm-linux-gnueabi-gcc
 cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
 
-cross-compile-all: cross-compile-windows cross-compile-osx cross-compile-linux cross-compile-linux-arm64v8 cross-compile-linux-arm32v7 cross-compile-pi
+cross-compile-all: cross-compile-windows cross-compile-osx-intel cross-compile-osx-applesilicon cross-compile-linux cross-compile-linux-arm64v8 cross-compile-linux-arm32v7 cross-compile-pi
 
 install:
 	packr2 install
