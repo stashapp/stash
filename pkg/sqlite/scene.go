@@ -68,13 +68,15 @@ SELECT GROUP_CONCAT(id) as ids
 FROM scenes
 WHERE phash IS NOT NULL
 GROUP BY phash
-HAVING COUNT(*) > 1;
+HAVING COUNT(phash) > 1
+ORDER BY SUM(size) DESC;
 `
 
 var findAllPhashesQuery = `
 SELECT id, phash
 FROM scenes
 WHERE phash IS NOT NULL
+ORDER BY size DESC
 `
 
 type sceneQueryBuilder struct {

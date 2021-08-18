@@ -401,6 +401,7 @@
     "between": "between",
     "not_between": "not between"
   },
+  "custom": "Custom",
   "date": "Date",
   "death_date": "Death Date",
   "death_year": "Death Year",
