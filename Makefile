@@ -104,7 +104,14 @@ cross-compile-pi: export CC := arm-linux-gnueabi-gcc
 cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
 
-cross-compile-all: cross-compile-windows cross-compile-osx-intel cross-compile-osx-applesilicon cross-compile-linux cross-compile-linux-arm64v8 cross-compile-linux-arm32v7 cross-compile-pi
+cross-compile-all: 
+	make cross-compile-windows 
+	make cross-compile-osx-intel 
+	make cross-compile-osx-applesilicon 
+	make cross-compile-linux 
+	make cross-compile-linux-arm64v8 
+	make cross-compile-linux-arm32v7 
+	make cross-compile-pi
 
 install:
 	packr2 install
