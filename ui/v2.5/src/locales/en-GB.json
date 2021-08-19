@@ -91,8 +91,8 @@
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
   "career_length": "Career Length",
-  "child_studios": "Child Studios",
-  "child_tags": "Child Tags",
+  "subsidiary_studios": "Subsidiary Studios",
+  "sub_tags": "Sub-Tags",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -517,7 +517,8 @@
   "image_count": "Image Count",
   "images": "Images",
   "images-size": "Images size",
-  "include_children": "Include children",
+  "include_sub_studios": "Include subsidiary studios",
+  "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "isMissing": "Is Missing",

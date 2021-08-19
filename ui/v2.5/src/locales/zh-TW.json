@@ -91,7 +91,7 @@
   "birthdate": "出生日期",
   "bitrate": "位元率",
   "career_length": "活躍年代",
-  "child_studios": "子工作室",
+  "subsidiary_studios": "子工作室",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -604,6 +604,5 @@
   "filters": "過濾條件",
   "filter": "過濾",
   "filter_name": "過濾條件名稱",
-  "detail": "詳情",
-  "include_child_studios": "包含子工作室"
+  "detail": "詳情"
 }

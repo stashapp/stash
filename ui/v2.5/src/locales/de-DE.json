@@ -91,7 +91,7 @@
   "birthdate": "Geburtsdatum",
   "bitrate": "Bitrate",
   "career_length": "Länge der Karriere",
-  "child_studios": "Tochterstudios",
+  "subsidiary_studios": "Tochterstudios",
   "component_tagger": {
     "config": {
       "active_instance": "Aktive stash-box Instanz:",

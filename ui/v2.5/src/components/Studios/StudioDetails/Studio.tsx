@@ -278,7 +278,7 @@ export const Studio: React.FC = () => {
             </Tab>
             <Tab
               eventKey="childstudios"
-              title={intl.formatMessage({ id: "child_studios" })}
+              title={intl.formatMessage({ id: "subsidiary_studios" })}
             >
               <StudioChildrenPanel studio={studio} />
             </Tab>

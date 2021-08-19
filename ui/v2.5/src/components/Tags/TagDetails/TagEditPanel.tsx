@@ -185,9 +185,9 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           </Col>
         </Form.Group>
 
-        <Form.Group controlId="child_tags" as={Row}>
+        <Form.Group controlId="sub_tags" as={Row}>
           {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "child_tags" }),
+            title: intl.formatMessage({ id: "sub_tags" }),
             labelProps: {
               column: true,
               sm: 3,

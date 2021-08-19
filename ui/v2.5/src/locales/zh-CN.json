@@ -91,7 +91,7 @@
   "birthdate": "出生日期",
   "bitrate": "比特率",
   "career_length": "活跃年代",
-  "child_studios": "子工作室",
+  "subsidiary_studios": "子工作室",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -499,7 +499,6 @@
   "image_count": "图片数量",
   "images": "图片",
   "images-size": "图片大小",
-  "include_child_studios": "包含子工作室",
   "instagram": "Instagram",
   "interactive": "互动",
   "isMissing": "缺失",
