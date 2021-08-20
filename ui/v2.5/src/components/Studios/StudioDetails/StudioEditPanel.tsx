@@ -74,11 +74,8 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   function getStudioInput(values: InputValues) {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       ...values,
-      stash_ids: values.stash_ids?.map(s => {
-        const {
-          __typename,
-          ...ret
-        } = s;
+      stash_ids: values.stash_ids?.map((s) => {
+        const { __typename, ...ret } = s;
 
         return ret;
       }),

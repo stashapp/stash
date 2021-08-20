@@ -380,6 +380,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   }
 
   function makeNewScrapedItem(): GQL.ScrapedPerformer {
+    const newImage = image.getNewValue();
     return {
       name: name.getNewValue() ?? "",
       aliases: aliases.getNewValue(),
@@ -403,7 +404,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           name: "",
         };
       }),
-      image: image.getNewValue(),
+      images: newImage ? [newImage] : undefined,
       details: details.getNewValue(),
       death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),
