@@ -79,6 +79,7 @@ func TestGalleryStudios(t *testing.T) {
 		mockGalleryReader := &mocks.GalleryReaderWriter{}
 
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
 		if test.Matches {
 			mockGalleryReader.On("Find", galleryID).Return(&models.Gallery{}, nil).Once()

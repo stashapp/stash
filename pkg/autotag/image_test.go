@@ -79,6 +79,7 @@ func TestImageStudios(t *testing.T) {
 		mockImageReader := &mocks.ImageReaderWriter{}
 
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
 		if test.Matches {
 			mockImageReader.On("Find", imageID).Return(&models.Image{}, nil).Once()

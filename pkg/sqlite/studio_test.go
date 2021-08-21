@@ -62,6 +62,17 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[0].Name.String))
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[1].Name.String))
 
+		// find by alias
+		name = getStudioStringValue(studioIdxWithScene, "Alias")
+		studios, err = tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
+
+		assert.Len(t, studios, 1)
+		assert.Equal(t, studioIDs[studioIdxWithScene], studios[0].ID)
+
 		return nil
 	})
 }

@@ -199,13 +199,13 @@ func (_m *StudioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
 	return r0, r1
 }
 
-// GetAliases provides a mock function with given fields: tagID
-func (_m *StudioReaderWriter) GetAliases(tagID int) ([]string, error) {
-	ret := _m.Called(tagID)
+// GetAliases provides a mock function with given fields: studioID
+func (_m *StudioReaderWriter) GetAliases(studioID int) ([]string, error) {
+	ret := _m.Called(studioID)
 
 	var r0 []string
 	if rf, ok := ret.Get(0).(func(int) []string); ok {
-		r0 = rf(tagID)
+		r0 = rf(studioID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -214,7 +214,7 @@ func (_m *StudioReaderWriter) GetAliases(tagID int) ([]string, error) {
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(tagID)
+		r1 = rf(studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -365,13 +365,13 @@ func (_m *StudioReaderWriter) Update(updatedStudio models.StudioPartial) (*model
 	return r0, r1
 }
 
-// UpdateAliases provides a mock function with given fields: tagID, aliases
-func (_m *StudioReaderWriter) UpdateAliases(tagID int, aliases []string) error {
-	ret := _m.Called(tagID, aliases)
+// UpdateAliases provides a mock function with given fields: studioID, aliases
+func (_m *StudioReaderWriter) UpdateAliases(studioID int, aliases []string) error {
+	ret := _m.Called(studioID, aliases)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []string) error); ok {
-		r0 = rf(tagID, aliases)
+		r0 = rf(studioID, aliases)
 	} else {
 		r0 = ret.Error(0)
 	}
