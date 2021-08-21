@@ -199,6 +199,8 @@ input StudioFilterType {
   gallery_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by studio aliases"""
+  aliases: StringCriterionInput
 }
 
 input GalleryFilterType {

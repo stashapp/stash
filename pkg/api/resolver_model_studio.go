@@ -45,6 +45,17 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	return &imagePath, nil
 }
 
+func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) (ret []string, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().GetAliases(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, err
+}
+
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res int
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
