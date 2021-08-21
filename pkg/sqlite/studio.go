@@ -10,6 +10,8 @@ import (
 
 const studioTable = "studios"
 const studioIDColumn = "studio_id"
+const studioAliasesTable = "studio_aliases"
+const studioAliasColumn = "alias"
 
 type studioQueryBuilder struct {
 	repository
@@ -159,6 +161,7 @@ func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) 
 	query.handleCriterion(studioImageCountCriterionHandler(qb, studioFilter.ImageCount))
 	query.handleCriterion(studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
 	query.handleCriterion(studioParentCriterionHandler(qb, studioFilter.Parents))
+	query.handleCriterion(studioAliasCriterionHandler(qb, studioFilter.Aliases))
 
 	return query
 }
@@ -176,7 +179,8 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	query.body = selectDistinctIDs("studios")
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"studios.name"}
+		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")
+		searchColumns := []string{"studios.name", "studio_aliases.alias"}
 
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
@@ -271,6 +275,18 @@ func studioParentCriterionHandler(qb *studioQueryBuilder, parents *models.MultiC
 	return h.handler(parents)
 }
 
+func studioAliasCriterionHandler(qb *studioQueryBuilder, alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    studioAliasesTable,
+		stringColumn: studioAliasColumn,
+		addJoinTable: func(f *filterBuilder) {
+			qb.aliasRepository().join(f, "", "studios.id")
+		},
+	}
+
+	return h.handler(alias)
+}
+
 func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -352,4 +368,23 @@ func (qb *studioQueryBuilder) GetStashIDs(studioID int) ([]*models.StashID, erro
 
 func (qb *studioQueryBuilder) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(studioID, stashIDs)
+}
+
+func (qb *studioQueryBuilder) aliasRepository() *stringRepository {
+	return &stringRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: studioAliasesTable,
+			idColumn:  studioIDColumn,
+		},
+		stringColumn: studioAliasColumn,
+	}
+}
+
+func (qb *studioQueryBuilder) GetAliases(studioID int) ([]string, error) {
+	return qb.aliasRepository().get(studioID)
+}
+
+func (qb *studioQueryBuilder) UpdateAliases(studioID int, aliases []string) error {
+	return qb.aliasRepository().replace(studioID, aliases)
 }
