@@ -215,13 +215,18 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 				}
 
 				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					if err := autotag.StudioScenes(studio, paths, r.Scene()); err != nil {
+					aliases, err := r.Studio().GetAliases(studio.ID)
+					if err != nil {
 						return err
 					}
-					if err := autotag.StudioImages(studio, paths, r.Image()); err != nil {
+
+					if err := autotag.StudioScenes(studio, paths, aliases, r.Scene()); err != nil {
 						return err
 					}
-					if err := autotag.StudioGalleries(studio, paths, r.Gallery()); err != nil {
+					if err := autotag.StudioImages(studio, paths, aliases, r.Image()); err != nil {
+						return err
+					}
+					if err := autotag.StudioGalleries(studio, paths, aliases, r.Gallery()); err != nil {
 						return err
 					}
 

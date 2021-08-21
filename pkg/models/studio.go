@@ -14,7 +14,7 @@ type StudioReader interface {
 	GetImage(studioID int) ([]byte, error)
 	HasImage(studioID int) (bool, error)
 	GetStashIDs(studioID int) ([]*StashID, error)
-	GetAliases(tagID int) ([]string, error)
+	GetAliases(studioID int) ([]string, error)
 }
 
 type StudioWriter interface {
@@ -25,7 +25,7 @@ type StudioWriter interface {
 	UpdateImage(studioID int, image []byte) error
 	DestroyImage(studioID int) error
 	UpdateStashIDs(studioID int, stashIDs []StashID) error
-	UpdateAliases(tagID int, aliases []string) error
+	UpdateAliases(studioID int, aliases []string) error
 }
 
 type StudioReaderWriter interface {
