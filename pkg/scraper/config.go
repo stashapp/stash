@@ -448,7 +448,7 @@ func (c config) ScrapeSceneURL(url string, txnManager models.TransactionManager,
 }
 
 func (c config) ScrapeGalleryByGallery(gallery *models.Gallery, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
-	if c.SceneByFragment != nil {
+	if c.GalleryByFragment != nil {
 		s := getScraper(*c.GalleryByFragment, txnManager, c, globalConfig)
 		return s.scrapeGalleryByGallery(gallery)
 	}
