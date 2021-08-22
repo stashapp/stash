@@ -191,14 +191,14 @@ func sceneMarkerTagIDCriterionHandler(qb *sceneMarkerQueryBuilder, tagID *string
 func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if tags != nil && len(tags.Value) > 0 {
-			addHierarchicalWithClause(f, tags.Value, "tags_for_marker", tagTable, "tags_relations", "", tags.Depth)
+			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`marker_tags AS (
-SELECT mt.scene_marker_id, t.root_id AS root_tag_id, t.child_id FROM scene_markers_tags mt
-INNER JOIN tags_for_marker t ON t.child_id = mt.tag_id
+SELECT mt.scene_marker_id, t.column1 AS root_tag_id FROM scene_markers_tags mt
+INNER JOIN (` + valuesClause + `) t ON t.column2 = mt.tag_id
 UNION
-SELECT m.id, t.root_id, t.child_id FROM scene_markers m
-INNER JOIN tags_for_marker t	 ON t.child_id = m.primary_tag_id
+SELECT m.id, t.column1 FROM scene_markers m
+INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 )`)
 
 			f.addJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
@@ -211,11 +211,11 @@ INNER JOIN tags_for_marker t	 ON t.child_id = m.primary_tag_id
 func sceneMarkerSceneTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if tags != nil && len(tags.Value) > 0 {
-			addHierarchicalWithClause(f, tags.Value, "tags_for_scene", tagTable, "tags_relations", "", tags.Depth)
+			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`scene_tags AS (
-SELECT st.scene_id, t.root_id AS root_tag_id FROM scenes_tags st
-INNER JOIN tags_for_scene t ON t.child_id = st.tag_id
+SELECT st.scene_id, t.column1 AS root_tag_id FROM scenes_tags st
+INNER JOIN (` + valuesClause + `) t ON t.column2 = st.tag_id
 )`)
 
 			f.addJoin("scene_tags", "", "scene_tags.scene_id = scene_markers.scene_id")

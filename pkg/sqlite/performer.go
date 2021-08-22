@@ -280,7 +280,7 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 
 	query.handleCriterion(performerTagsCriterionHandler(qb, filter.Tags))
 
-	query.handleCriterion(performerStudiosCriterionHandler(filter.Studios))
+	query.handleCriterion(performerStudiosCriterionHandler(qb, filter.Studios))
 
 	query.handleCriterion(performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(performerSceneCountCriterionHandler(qb, filter.SceneCount))
@@ -375,10 +375,11 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 
 func performerTagsCriterionHandler(qb *performerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: performerTable,
 		foreignTable: tagTable,
 		foreignFK:    "tag_id",
-		derivedTable: "tag",
 
 		relationsTable: "tags_relations",
 		joinAs:         "image_tag",
@@ -429,7 +430,7 @@ func performerGalleryCountCriterionHandler(qb *performerQueryBuilder, count *mod
 	return h.handler(count)
 }
 
-func performerStudiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if studios != nil {
 			var clauseCondition string
@@ -462,13 +463,13 @@ func performerStudiosCriterionHandler(studios *models.HierarchicalMultiCriterion
 				},
 			}
 
-			const derivedStudioTable = "studio"
 			const derivedPerformerStudioTable = "performer_studio"
-			addHierarchicalWithClause(f, studios.Value, derivedStudioTable, studioTable, "", "parent_id", studios.Depth)
+			valuesClause := getHierarchicalValues(qb.tx, studios.Value, studioTable, "", "parent_id", studios.Depth)
+			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
 			templStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.child_id`
+	INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
 
 			var unions []string
 			for _, c := range formatMaps {

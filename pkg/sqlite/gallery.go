@@ -324,10 +324,11 @@ func (qb *galleryQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joi
 
 func galleryTagsCriterionHandler(qb *galleryQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: galleryTable,
 		foreignTable: tagTable,
 		foreignFK:    "tag_id",
-		derivedTable: "tag",
 
 		relationsTable: "tags_relations",
 		joinAs:         "image_tag",
@@ -386,6 +387,8 @@ func galleryImageCountCriterionHandler(qb *galleryQueryBuilder, imageCount *mode
 
 func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: galleryTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
@@ -399,12 +402,12 @@ func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.Hier
 func galleryPerformerTagsCriterionHandler(qb *galleryQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if tags != nil && len(tags.Value) > 0 {
-			addHierarchicalWithClause(f, tags.Value, "tags_for_performer", tagTable, "tags_relations", "", tags.Depth)
+			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (
-SELECT pg.gallery_id, t.root_id AS root_tag_id FROM performers_galleries pg
+SELECT pg.gallery_id, t.column1 AS root_tag_id FROM performers_galleries pg
 INNER JOIN performers_tags pt ON pt.performer_id = pg.performer_id
-INNER JOIN tags_for_performer t ON t.child_id = pt.tag_id
+INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
 			f.addJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")

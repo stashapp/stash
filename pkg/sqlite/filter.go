@@ -3,7 +3,9 @@ package sqlite
 import (
 	"errors"
 	"fmt"
+	"github.com/stashapp/stash/pkg/logger"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -529,6 +531,8 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 }
 
 type hierarchicalMultiCriterionHandlerBuilder struct {
+	tx dbi
+
 	primaryTable string
 	foreignTable string
 	foreignFK    string
@@ -538,10 +542,30 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, table, relationsTable, parentFK string, depth int) {
+func getHierarchicalValues(tx dbi, values []string, table, relationsTable, parentFK string, depth int) string {
 	var args []interface{}
 
-	for _, value := range value {
+	if depth == 0 {
+		valid := true
+		var valuesClauses []string
+		for _, value := range values {
+			id, err := strconv.Atoi(value)
+			// In case of invalid value just run the query.
+			// Building VALUES() based on provided values just saves a query when depth is 0.
+			if err != nil {
+				valid = false
+				break
+			}
+
+			valuesClauses = append(valuesClauses, fmt.Sprintf("(%d,%d)", id, id))
+		}
+
+		if valid {
+			return "VALUES" + strings.Join(valuesClauses, ",")
+		}
+	}
+
+	for _, value := range values {
 		args = append(args, value)
 	}
 	inCount := len(args)
@@ -552,7 +576,6 @@ func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, t
 	}
 
 	withClauseMap := utils.StrFormatMap{
-		"derivedTable":    derivedTable,
 		"table":           table,
 		"relationsTable":  relationsTable,
 		"inBinding":       getInBinding(inCount),
@@ -564,11 +587,11 @@ func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, t
 
 	if relationsTable != "" {
 		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.child_id, depth + 1 FROM {relationsTable} AS c
-INNER JOIN {derivedTable} as p ON c.parent_id = p.child_id
+INNER JOIN items as p ON c.parent_id = p.item_id
 `, withClauseMap)
 	} else {
 		withClauseMap["recursiveSelect"] = utils.StrFormat(`SELECT p.root_id, c.id, depth + 1 FROM {table} as c
-INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id
+INNER JOIN items as p ON c.{parentFK} = p.item_id
 `, withClauseMap)
 	}
 
@@ -578,13 +601,23 @@ UNION {recursiveSelect} {depthCondition}
 `, withClauseMap)
 	}
 
-	withClause := utils.StrFormat(`{derivedTable} AS (
-SELECT id as root_id, id as child_id, 0 as depth FROM {table}
+	withClause := utils.StrFormat(`items AS (
+SELECT id as root_id, id as item_id, 0 as depth FROM {table}
 WHERE id in {inBinding}
 {unionClause})
 `, withClauseMap)
 
-	f.addRecursiveWith(withClause, args...)
+	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || GROUP_CONCAT('(' || root_id || ', ' || item_id || ')') AS val FROM items", withClause)
+
+	var valuesClause string
+	err := tx.Get(&valuesClause, query, args...)
+	if err != nil {
+		logger.Error(err)
+		// return record which never matches so we don't have to handle error here
+		return "VALUES(NULL, NULL)"
+	}
+
+	return valuesClause
 }
 
 func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
@@ -601,9 +634,9 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.Hierarc
 func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
-			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			f.addJoin(m.derivedTable, "", fmt.Sprintf("%s.child_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
+			f.addJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
 
 			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "root_id")
 		}
@@ -611,11 +644,12 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 }
 
 type joinedHierarchicalMultiCriterionHandlerBuilder struct {
+	tx dbi
+
 	primaryTable string
 	foreignTable string
 	foreignFK    string
 
-	derivedTable   string
 	parentFK       string
 	relationsTable string
 
@@ -627,21 +661,20 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
-			addHierarchicalWithClause(f, criterion.Value, m.derivedTable, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 			joinAlias := m.joinAs
-			f.addWith(utils.StrFormat(`{joinAlias} AS (
-	SELECT j.*, d.root_id, d.child_id FROM {joinTable} AS j
-	INNER JOIN {derivedTable} AS d ON j.{foreignFK} = d.child_id
+			joinTable := utils.StrFormat(`(
+	SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j
+	INNER JOIN ({valuesClause}) AS d ON j.{foreignFK} = d.column2
 )
 `, utils.StrFormatMap{
-				"joinAlias":    joinAlias,
 				"joinTable":    m.joinTable,
-				"derivedTable": m.derivedTable,
 				"foreignFK":    m.foreignFK,
-			}))
+				"valuesClause": valuesClause,
+			})
 
-			f.addJoin(joinAlias, "", fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+			f.addJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
 
 			addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
 		}

@@ -544,10 +544,11 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 
 func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: sceneTable,
 		foreignTable: tagTable,
 		foreignFK:    "tag_id",
-		derivedTable: "tag",
 
 		relationsTable: "tags_relations",
 		joinAs:         "scene_tag",
@@ -596,6 +597,8 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 
 func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: sceneTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
@@ -618,12 +621,12 @@ func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCrit
 func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if tags != nil && len(tags.Value) > 0 {
-			addHierarchicalWithClause(f, tags.Value, "tags_for_performer", tagTable, "tags_relations", "", tags.Depth)
+			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (
-SELECT ps.scene_id, t.root_id AS root_tag_id FROM performers_scenes ps
+SELECT ps.scene_id, t.column1 AS root_tag_id FROM performers_scenes ps
 INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
-INNER JOIN tags_for_performer t ON t.child_id = pt.tag_id
+INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
 			f.addJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
