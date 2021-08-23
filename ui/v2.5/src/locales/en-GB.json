@@ -79,7 +79,11 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
-    "view_random": "View Random"
+    "view_random": "View Random",
+    "confirm": "Confirm",
+    "select_folders": "Select folders",
+    "browse_for_image": "Browse for image…",
+    "open_random": "Open Random"
   },
   "actions_name": "Actions",
   "age": "Age",

@@ -79,7 +79,11 @@
     "merge_from": "與其他項目合併",
     "save_filter": "儲存過濾條件",
     "set_as_default": "設為預設",
-    "merge_into": "合併至其他項目"
+    "merge_into": "合併至其他項目",
+    "confirm": "確認",
+    "select_folders": "選擇資料夾",
+    "browse_for_image": "選擇圖像…",
+    "open_random": "隨機開啟"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -220,7 +224,7 @@
       "maximum_streaming_transcode_size_head": "最大的串流轉碼解析度大小",
       "maximum_transcode_size_desc": "轉碼生成的影片最大大小",
       "maximum_transcode_size_head": "最大的轉碼解析度大小",
-      "number_of_parallel_task_for_scan_generation_desc": "設置為 0 以自動偵測。請注意，運行比使用 100% CPU 使用率所需的排成數量，可能會降低性能並導致其他問題。",
+      "number_of_parallel_task_for_scan_generation_desc": "設置為 0 以自動偵測。請注意，運行比使用 100% CPU 使用率所需的排程數量，可能會降低性能並導致其他問題。",
       "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
       "parallel_scan_head": "並行掃描/生成",
       "preview_generation": "預覽檔案生成",
@@ -255,7 +259,7 @@
       "title": "Stash-box 端點"
     },
     "tasks": {
-      "added_job_to_queue": "已新增『{operation_name}』至作業排成",
+      "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
       "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
       "auto_tagging": "自動套用標籤",
       "backing_up_database": "備份資料庫中",
@@ -390,7 +394,9 @@
     "matches_regex": "符合正則表達式",
     "not_equals": "不是",
     "not_matches_regex": "不符合正則表達式",
-    "not_null": "不為空"
+    "not_null": "不為空",
+    "between": "與 ... 之間",
+    "not_between": "不與 ... 之間"
   },
   "date": "日期",
   "death_date": "去世日期",
@@ -580,12 +586,12 @@
   "title": "標題",
   "toast": {
     "added_entity": "已新增{singularEntity}",
-    "added_generation_job_to_queue": "將生成作業新增至工作排程",
+    "added_generation_job_to_queue": "已將『生成作業』加入至工作排程",
     "delete_entity": "刪除{singularEntity}",
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
     "rescanning_entity": "重新掃描{singularEntity}中…",
-    "started_auto_tagging": "已開始自動套用標籤",
+    "started_auto_tagging": "已將『自動套用標籤』加入至工作排程",
     "updated_entity": "已更新{entity}",
     "merged_tags": "已合併的標籤",
     "create_entity": "已建立 {entity}",
@@ -605,5 +611,11 @@
   "filter": "過濾",
   "filter_name": "過濾條件名稱",
   "detail": "詳情",
-  "include_child_studios": "包含子工作室"
+  "include_child_studios": "包含子工作室",
+  "criterion": {
+    "greater_than": "大於",
+    "less_than": "小於",
+    "value": "數值"
+  },
+  "custom": "自訂"
 }
