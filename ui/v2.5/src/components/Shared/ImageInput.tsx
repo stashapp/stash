@@ -36,7 +36,9 @@ export const ImageInput: React.FC<IImageInput> = ({
     // just return the file input
     return (
       <Form.Label className="image-input">
-        <Button variant="secondary">{text ?? intl.formatMessage({ id: "actions.browse_for_image" })}</Button>
+        <Button variant="secondary">
+          {text ?? intl.formatMessage({ id: "actions.browse_for_image" })}
+        </Button>
         <Form.Control
           type="file"
           onChange={onImageChange}
@@ -61,7 +63,10 @@ export const ImageInput: React.FC<IImageInput> = ({
         show={!!isShowDialog}
         onHide={() => setIsShowDialog(false)}
         header={intl.formatMessage({ id: "dialogs.set_image_url_title" })}
-        accept={{ onClick: onConfirmURL, text: intl.formatMessage({ id: "actions.confirm" }) }}
+        accept={{
+          onClick: onConfirmURL,
+          text: intl.formatMessage({ id: "actions.confirm" }),
+        }}
       >
         <div className="dialog-content">
           <Form.Group controlId="url" as={Row}>
