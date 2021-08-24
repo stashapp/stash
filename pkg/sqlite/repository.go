@@ -246,12 +246,16 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 	return body
 }
 
-func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string) ([]int, int, error) {
+func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
 	body = r.buildQueryBody(body, whereClauses, havingClauses)
 
 	withClause := ""
 	if len(withClauses) > 0 {
-		withClause = "WITH " + strings.Join(withClauses, ", ") + " "
+		var recursive string
+		if recursiveWith {
+			recursive = " RECURSIVE "
+		}
+		withClause = "WITH " + recursive + strings.Join(withClauses, ", ") + " "
 	}
 
 	countQuery := withClause + r.buildCountQuery(body)
