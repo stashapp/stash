@@ -24,6 +24,7 @@ const initialParserInput = {
   page: 1,
   pageSize: 20,
   findClicked: false,
+  ignoreOrganized: true,
 };
 
 const initialShowFieldsState = new Map<string, boolean>([
@@ -127,6 +128,7 @@ export const SceneFilenameParser: React.FC = () => {
       ignoreWords: parserInput.ignoreWords,
       whitespaceCharacters: parserInput.whitespaceCharacters,
       capitalizeTitle: parserInput.capitalizeTitle,
+      ignoreOrganized: parserInput.ignoreOrganized,
     };
 
     queryParseSceneFilenames(parserFilter, parserInputData)

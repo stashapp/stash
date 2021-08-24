@@ -484,6 +484,11 @@ func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.Sce
 		},
 	}
 
+	if p.ParserInput.IgnoreOrganized != nil && *p.ParserInput.IgnoreOrganized {
+		organized := false
+		sceneFilter.Organized = &organized
+	}
+
 	p.Filter.Q = nil
 
 	scenes, total, err := repo.Scene().Query(sceneFilter, p.Filter)

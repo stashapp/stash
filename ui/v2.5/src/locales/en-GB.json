@@ -295,6 +295,7 @@
         "escape_chars": "Use \\ to escape literal characters",
         "filename": "Filename",
         "filename_pattern": "Filename Pattern",
+        "ignore_organized": "Ignore organised scenes",
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
