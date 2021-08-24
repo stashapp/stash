@@ -295,6 +295,7 @@
         "escape_chars": "Use \\ to escape literal characters",
         "filename": "Filename",
         "filename_pattern": "Filename Pattern",
+        "ignore_organized": "Ignore organised scenes",
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
@@ -505,6 +506,7 @@
   "filter_name": "Filter name",
   "filters": "Filters",
   "framerate": "Frame Rate",
+  "frames_per_second": "{value} frames per second",
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
@@ -541,6 +543,7 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
+  "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",

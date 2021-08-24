@@ -2,5 +2,10 @@
   "eye_color": "Eye Color",
   "favourite": "Favorite",
   "hair_color": "Hair Color",
-  "organized": "Organized"
+  "organized": "Organized",
+  "tools": {
+    "scene_filename_parser": {
+      "ignore_organized": "Ignore organized scenes"
+    }
+  }
 }
