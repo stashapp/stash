@@ -299,7 +299,8 @@
         "select_parser_recipe": "選擇預設分析字串",
         "title": "短片名稱分析工具",
         "whitespace_chars": "空白字元",
-        "whitespace_chars_desc": "這些字元將在標題中被的空格替換"
+        "whitespace_chars_desc": "這些字元將在標題中被的空格替換",
+        "ignore_organized": "忽略已整理的短片"
       },
       "scene_tools": "短片工具"
     },
@@ -617,5 +618,12 @@
     "less_than": "小於",
     "value": "數值"
   },
-  "custom": "自訂"
+  "custom": "自訂",
+  "frames_per_second": "{value} 幀/秒",
+  "megabits_per_second": "{value} megabits/秒",
+  "tools": {
+    "scene_filename_parser": {
+      "ignore_organized": "忽略已整理的短片"
+    }
+  }
 }
