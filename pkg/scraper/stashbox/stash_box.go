@@ -104,7 +104,7 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models
 			if scene.Phash.Valid {
 				phashStr := utils.PhashToString(scene.Phash.Int64)
 				fingerprints = append(fingerprints, phashStr)
-				fpToScene[scene.OSHash.String] = append(fpToScene[phashStr], index)
+				fpToScene[phashStr] = append(fpToScene[phashStr], index)
 			}
 		}
 
