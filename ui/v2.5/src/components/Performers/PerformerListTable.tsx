@@ -1,10 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 
 import React from "react";
+import { useIntl } from "react-intl";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { Icon, TruncatedText } from "src/components/Shared";
+import { Icon } from "src/components/Shared";
 import { NavUtils } from "src/utils";
 
 interface IPerformerListTableProps {
@@ -14,6 +15,8 @@ interface IPerformerListTableProps {
 export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
+  const intl = useIntl();
+
   const renderPerformerRow = (performer: GQL.PerformerDataFragment) => (
     <tr key={performer.id}>
       <td>
@@ -27,9 +30,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       </td>
       <td className="text-left">
         <Link to={`/performers/${performer.id}`}>
-          <h5>
-            <TruncatedText text={performer.name} />
-          </h5>
+          <h5>{performer.name}</h5>
         </Link>
       </td>
       <td>{performer.aliases ? performer.aliases : ""}</td>
@@ -45,6 +46,16 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
           <h6>{performer.scene_count}</h6>
         </Link>
       </td>
+      <td>
+        <Link to={NavUtils.makePerformerImagesUrl(performer)}>
+          <h6>{performer.image_count}</h6>
+        </Link>
+      </td>
+      <td>
+        <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
+          <h6>{performer.gallery_count}</h6>
+        </Link>
+      </td>
       <td>{performer.birthdate}</td>
       <td>{performer.height}</td>
     </tr>
@@ -56,12 +67,14 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
         <thead>
           <tr>
             <th />
-            <th>Name</th>
-            <th>Aliases</th>
-            <th>Favourite</th>
-            <th>Scene Count</th>
-            <th>Birthdate</th>
-            <th>Height</th>
+            <th>{intl.formatMessage({ id: "name" })}</th>
+            <th>{intl.formatMessage({ id: "aliases" })}</th>
+            <th>{intl.formatMessage({ id: "favourite" })}</th>
+            <th>{intl.formatMessage({ id: "scene_count" })}</th>
+            <th>{intl.formatMessage({ id: "image_count" })}</th>
+            <th>{intl.formatMessage({ id: "gallery_count" })}</th>
+            <th>{intl.formatMessage({ id: "birthdate" })}</th>
+            <th>{intl.formatMessage({ id: "height" })}</th>
           </tr>
         </thead>
         <tbody>{props.performers.map(renderPerformerRow)}</tbody>
