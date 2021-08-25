@@ -48,6 +48,16 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
           <h6>{performer.scene_count}</h6>
         </Link>
       </td>
+      <td>
+        <Link to={NavUtils.makePerformerImagesUrl(performer)}>
+          <h6>{performer.image_count}</h6>
+        </Link>
+      </td>
+      <td>
+        <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
+          <h6>{performer.gallery_count}</h6>
+        </Link>
+      </td>
       <td>{performer.birthdate}</td>
       <td>{performer.height}</td>
     </tr>
@@ -63,6 +73,8 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
             <th>{intl.formatMessage({ id: "aliases" })}</th>
             <th>{intl.formatMessage({ id: "favourite" })}</th>
             <th>{intl.formatMessage({ id: "scene_count" })}</th>
+            <th>{intl.formatMessage({ id: "image_count" })}</th>
+            <th>{intl.formatMessage({ id: "gallery_count" })}</th>
             <th>{intl.formatMessage({ id: "birthdate" })}</th>
             <th>{intl.formatMessage({ id: "height" })}</th>
           </tr>
