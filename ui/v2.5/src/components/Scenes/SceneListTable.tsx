@@ -5,7 +5,7 @@ import { Table, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
-import { Icon, TruncatedText } from "src/components/Shared";
+import { Icon } from "src/components/Shared";
 import { FormattedMessage } from "react-intl";
 
 interface ISceneListTableProps {
@@ -80,11 +80,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         </td>
         <td className="text-left">
           <Link to={sceneLink}>
-            <h5>
-              <TruncatedText
-                text={scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-              />
-            </h5>
+            <h5>{scene.title ?? TextUtils.fileNameFromPath(scene.path)}</h5>
           </Link>
         </td>
         <td>{scene.rating ? scene.rating : ""}</td>
