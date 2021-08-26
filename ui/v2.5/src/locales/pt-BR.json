@@ -308,8 +308,10 @@
         "heading": "CSS customizado",
         "option_label": "CSS customizado habilitado"
       },
-      "handy_connection_key": "Chave de conexão",
-      "handy_connection_key_desc": "Chave de conexão para usar em cenas interativas.",
+      "handy_connection_key": {
+        "description": "Chave de conexão para usar em cenas interativas.",
+        "heading": "Chave de conexão"
+      },
       "language": {
         "heading": "Idioma"
       },

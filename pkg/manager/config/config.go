@@ -132,6 +132,7 @@ const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
 const HandyKey = "handy_key"
+const FunscriptOffset = "funscript_offset"
 
 // DLNA options
 const DLNAServerName = "dlna.server_name"
@@ -796,6 +797,11 @@ func (i *Instance) GetHandyKey() string {
 	i.RLock()
 	defer i.RUnlock()
 	return viper.GetString(HandyKey)
+}
+
+func (i *Instance) GetFunscriptOffset() int {
+	viper.SetDefault(FunscriptOffset, 0)
+	return viper.GetInt(FunscriptOffset)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,

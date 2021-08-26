@@ -200,6 +200,8 @@ input ConfigInterfaceInput {
   slideshowDelay: Int
   """Handy Connection Key"""
   handyKey: String
+  """Funscript Time Offset"""
+  funscriptOffset: Int
 }
 
 type ConfigInterfaceResult {
@@ -226,6 +228,8 @@ type ConfigInterfaceResult {
   slideshowDelay: Int
   """Handy Connection Key"""
   handyKey: String
+  """Funscript Time Offset"""
+  funscriptOffset: Int
 }
 
 input ConfigDLNAInput {

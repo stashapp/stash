@@ -41,6 +41,7 @@ query Stats {
   stats {
     scene_count,
     scenes_size,
+    scenes_duration,
     image_count,
     images_size,
     gallery_count,

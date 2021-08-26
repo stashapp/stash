@@ -118,6 +118,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		tagsQB := repo.Tag()
 		scenesCount, _ := scenesQB.Count()
 		scenesSize, _ := scenesQB.Size()
+		scenesDuration, _ := scenesQB.Duration()
 		imageCount, _ := imageQB.Count()
 		imageSize, _ := imageQB.Size()
 		galleryCount, _ := galleryQB.Count()
@@ -129,6 +130,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		ret = models.StatsResultType{
 			SceneCount:     scenesCount,
 			ScenesSize:     scenesSize,
+			ScenesDuration: scenesDuration,
 			ImageCount:     imageCount,
 			ImagesSize:     imageSize,
 			GalleryCount:   galleryCount,

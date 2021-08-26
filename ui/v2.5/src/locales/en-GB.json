@@ -79,7 +79,11 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
-    "view_random": "View Random"
+    "view_random": "View Random",
+    "confirm": "Confirm",
+    "select_folders": "Select folders",
+    "browse_for_image": "Browse for image…",
+    "open_random": "Open Random"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -311,8 +315,14 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
-      "handy_connection_key": "Handy Connection Key",
-      "handy_connection_key_desc": "Handy connection key to use for interactive scenes.",
+      "handy_connection_key": {
+        "description": "Handy connection key to use for interactive scenes.",
+        "heading": "Handy Connection Key"
+      },
+      "funscript_offset": {
+        "description": "Time offset in milliseconds for interactive scripts playback.",
+        "heading": "Funscript Offset (ms)"
+      },
       "language": {
         "heading": "Language"
       },
@@ -576,6 +586,7 @@
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
+  "scenes-duration": "Scenes duration",
   "scenes-size": "Scenes size",
   "scenes_updated_at": "Scene Updated At",
   "sceneTagger": "Scene Tagger",

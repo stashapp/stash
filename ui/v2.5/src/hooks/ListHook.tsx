@@ -10,6 +10,7 @@ import React, {
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
@@ -96,6 +97,8 @@ export interface IListHookOperation<T> {
     selectedIds: Set<string>
   ) => boolean;
   postRefetch?: boolean;
+  icon?: IconProp;
+  buttonVariant?: string;
 }
 
 export enum PersistanceLevel {
@@ -357,6 +360,8 @@ const RenderList = <
 
         return true;
       },
+      icon: o.icon,
+      buttonVariant: o.buttonVariant,
     }));
 
   function onEdit() {
