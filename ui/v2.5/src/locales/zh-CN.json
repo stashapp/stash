@@ -308,8 +308,10 @@
         "heading": "自定义样式",
         "option_label": "自定义样式已启用"
       },
-      "handy_connection_key": "快速连接密钥",
-      "handy_connection_key_desc": "用于互动场景的快速连接密钥",
+      "handy_connection_key": {
+        "description": "用于互动场景的快速连接密钥",
+        "heading": "快速连接密钥"
+      },
       "language": {
         "heading": "语言"
       },
