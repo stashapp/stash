@@ -103,6 +103,7 @@ input BulkSceneUpdateInput {
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
+  movie_ids:  BulkUpdateIds
 }
 
 input SceneDestroyInput {

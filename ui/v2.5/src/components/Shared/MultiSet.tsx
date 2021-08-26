@@ -12,7 +12,7 @@ type ValidTypes =
   | GQL.SlimMovieDataFragment;
 
 interface IMultiSetProps {
-  type: "performers" | "studios" | "tags";
+  type: "performers" | "studios" | "tags" | "movies";
   existingIds?: string[];
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;
