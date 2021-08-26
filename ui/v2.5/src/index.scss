@@ -89,6 +89,10 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
+.table-list {
+  min-width: min-content;
+}
+
 .table-list a {
   color: $text-color;
 }
