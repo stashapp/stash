@@ -301,7 +301,9 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
       <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.ui.funscript_offset.heading" })}</h5>
+        <h5>
+          {intl.formatMessage({ id: "config.ui.funscript_offset.heading" })}
+        </h5>
         <Form.Control
           className="col col-sm-6 text-input"
           type="number"
