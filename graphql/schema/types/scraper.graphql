@@ -26,49 +26,7 @@ type Scraper {
     movie: ScraperSpec
 }
 
-type ScrapedScenePerformer {
-  """Set if performer matched"""
-  stored_id: ID
-  name: String!
-  gender: String
-  url: String
-  twitter: String
-  instagram: String
-  birthdate: String
-  ethnicity: String
-  country: String
-  eye_color: String
-  height: String
-  measurements: String
-  fake_tits: String
-  career_length: String
-  tattoos: String
-  piercings: String
-  aliases: String
-  tags: [ScrapedSceneTag!]
-
-  remote_site_id: String
-  images: [String!]
-  details: String
-  death_date: String
-  hair_color: String
-  weight: String
-}
-
-type ScrapedSceneMovie {
-  """Set if movie matched"""
-  stored_id: ID
-  name: String!
-  aliases: String
-  duration: String
-  date: String
-  rating: String
-  director: String
-  synopsis: String
-  url: String
-}
-
-type ScrapedSceneStudio {
+type ScrapedStudio {
   """Set if studio matched"""
   stored_id: ID
   name: String!
@@ -77,7 +35,7 @@ type ScrapedSceneStudio {
   remote_site_id: String
 }
 
-type ScrapedSceneTag {
+type ScrapedTag {
   """Set if tag matched"""
   stored_id: ID
   name: String!
@@ -94,14 +52,25 @@ type ScrapedScene {
 
   file: SceneFileType # Resolver
 
-  studio: ScrapedSceneStudio
-  tags: [ScrapedSceneTag!]
-  performers: [ScrapedScenePerformer!]
-  movies: [ScrapedSceneMovie!]
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
+  movies: [ScrapedMovie!]
 
   remote_site_id: String
   duration: Int
   fingerprints: [StashBoxFingerprint!]
+}
+
+input ScrapedSceneInput {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  # no image, file, duration or relationships
+
+  remote_site_id: String
 }
 
 type ScrapedGallery {
@@ -110,9 +79,71 @@ type ScrapedGallery {
   url: String
   date: String
 
-  studio: ScrapedSceneStudio
-  tags: [ScrapedSceneTag!]
-  performers: [ScrapedScenePerformer!]
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
+}
+
+input ScrapedGalleryInput {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  # no studio, tags or performers
+}
+
+input ScraperSourceInput {
+  """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
+  stash_box_index: Int
+  """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
+  scraper_id: ID
+}
+
+input ScrapeSingleSceneInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by scene fingerprints"""
+  scene_id: ID
+  """Instructs to query by scene fragment"""
+  scene_input: ScrapedSceneInput
+}
+
+input ScrapeMultiScenesInput {
+  """Instructs to query by scene fingerprints"""
+  scene_ids: [ID!]
+}
+
+input ScrapeSinglePerformerInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by performer id"""
+  performer_id: ID
+  """Instructs to query by performer fragment"""
+  performer_input: ScrapedPerformerInput
+}
+
+input ScrapeMultiPerformersInput {
+  """Instructs to query by scene fingerprints"""
+  performer_ids: [ID!]
+}
+
+input ScrapeSingleGalleryInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by gallery id"""
+  gallery_id: ID
+  """Instructs to query by gallery fragment"""
+  gallery_input: ScrapedGalleryInput
+}
+
+input ScrapeSingleMovieInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by movie id"""
+  movie_id: ID
+  """Instructs to query by gallery fragment"""
+  movie_input: ScrapedMovieInput
 }
 
 input StashBoxSceneQueryInput {
@@ -135,7 +166,7 @@ input StashBoxPerformerQueryInput {
 
 type StashBoxPerformerQueryResult {
   query: String!
-  results: [ScrapedScenePerformer!]!
+  results: [ScrapedPerformer!]!
 }
 
 type StashBoxFingerprint {

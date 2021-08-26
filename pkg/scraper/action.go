@@ -37,10 +37,12 @@ type scraper interface {
 	scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 	scrapePerformerByURL(url string) (*models.ScrapedPerformer, error)
 
-	scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error)
+	scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error)
+	scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
 	scrapeSceneByURL(url string) (*models.ScrapedScene, error)
 
-	scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error)
+	scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
+	scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error)
 	scrapeGalleryByURL(url string) (*models.ScrapedGallery, error)
 
 	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)

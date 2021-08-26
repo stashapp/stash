@@ -593,7 +593,7 @@ func makeSceneXPathConfig() mappedScraper {
 	return scraper
 }
 
-func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedSceneTag) {
+func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedTag) {
 	t.Helper()
 
 	i := 0
@@ -614,7 +614,7 @@ func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.Sc
 	}
 }
 
-func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedSceneMovie) {
+func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedMovie) {
 	t.Helper()
 
 	i := 0
@@ -625,7 +625,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 			expectedMovie = expectedMovieNames[i]
 		}
 		if i < len(actualMovies) {
-			actualMovie = actualMovies[i].Name
+			actualMovie = *actualMovies[i].Name
 		}
 
 		if expectedMovie != actualMovie {
@@ -635,7 +635,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 	}
 }
 
-func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedScenePerformer) {
+func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedPerformer) {
 	t.Helper()
 
 	i := 0
@@ -651,7 +651,7 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 			expectedURL = expectedURLs[i]
 		}
 		if i < len(actualPerformers) {
-			actualName = actualPerformers[i].Name
+			actualName = *actualPerformers[i].Name
 			if actualPerformers[i].URL != nil {
 				actualURL = *actualPerformers[i].URL
 			}

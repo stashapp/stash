@@ -30,7 +30,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
   const [query, setQuery] = useState<string>(name ?? "");
   const { data, loading } = useScrapePerformerList(scraper.id, query);
 
-  const performers = data?.scrapePerformerList ?? [];
+  const performers = data?.scrapeSinglePerformer ?? [];
 
   const onInputChange = debounce((input: string) => {
     setQuery(input);

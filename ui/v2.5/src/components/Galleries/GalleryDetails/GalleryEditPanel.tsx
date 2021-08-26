@@ -229,19 +229,18 @@ export const GalleryEditPanel: React.FC<
   }
 
   async function onScrapeClicked(scraper: GQL.Scraper) {
+    if (!gallery) return;
+
     setIsLoading(true);
     try {
-      const galleryInput = getGalleryInput(
-        formik.values
-      ) as GQL.GalleryUpdateInput;
-      const result = await queryScrapeGallery(scraper.id, galleryInput);
-      if (!result.data || !result.data.scrapeGallery) {
+      const result = await queryScrapeGallery(scraper.id, gallery.id);
+      if (!result.data || !result.data.scrapeSingleGallery?.length) {
         Toast.success({
           content: "No galleries found",
         });
         return;
       }
-      setScrapedGallery(result.data.scrapeGallery);
+      setScrapedGallery(result.data.scrapeSingleGallery[0]);
     } catch (e) {
       Toast.error(e);
     } finally {

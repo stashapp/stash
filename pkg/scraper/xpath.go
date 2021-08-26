@@ -124,18 +124,9 @@ func (s *xpathScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 	return nil, errors.New("scrapePerformerByFragment not supported for xpath scraper")
 }
 
-func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
-	storedScene, err := sceneFromUpdateFragment(scene, s.txnManager)
-	if err != nil {
-		return nil, err
-	}
-
-	if storedScene == nil {
-		return nil, errors.New("no scene found")
-	}
-
+func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
-	queryURL := queryURLParametersFromScene(storedScene)
+	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
 		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
 	}
@@ -157,18 +148,13 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	return scraper.scrapeScene(q)
 }
 
-func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	storedGallery, err := galleryFromUpdateFragment(gallery, s.txnManager)
-	if err != nil {
-		return nil, err
-	}
+func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+	return nil, errors.New("scrapeSceneByFragment not supported for xpath scraper")
+}
 
-	if storedGallery == nil {
-		return nil, errors.New("no scene found")
-	}
-
+func (s *xpathScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
-	queryURL := queryURLParametersFromGallery(storedGallery)
+	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
 		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
 	}
@@ -188,6 +174,10 @@ func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput
 
 	q := s.getXPathQuery(doc)
 	return scraper.scrapeGallery(q)
+}
+
+func (s *xpathScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
+	return nil, errors.New("scrapeGalleryByFragment not supported for xpath scraper")
 }
 
 func (s *xpathScraper) loadURL(url string) (*html.Node, error) {

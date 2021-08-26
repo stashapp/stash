@@ -8,7 +8,6 @@ import { stashBoxSceneBatchQuery, useTagCreate } from "src/core/StashService";
 
 import { SceneQueue } from "src/models/sceneQueue";
 import { useToast } from "src/hooks";
-import { uniqBy } from "lodash";
 import { ITaggerConfig } from "./constants";
 import { selectScenes, IStashBoxScene } from "./utils";
 import { TaggerScene } from "./TaggerScene";
@@ -25,7 +24,7 @@ interface ITaggerListProps {
   queue?: SceneQueue;
   selectedEndpoint: { endpoint: string; index: number };
   config: ITaggerConfig;
-  queryScene: (searchVal: string) => Promise<GQL.QueryStashBoxSceneQuery>;
+  queryScene: (searchVal: string) => Promise<GQL.ScrapeSingleSceneQuery>;
   fingerprintQueue: IFingerprintQueue;
 }
 
@@ -42,27 +41,8 @@ function fingerprintSearchResults(
     return ret;
   }
 
-  // perform matching here
-  scenes.forEach((scene) => {
-    // ignore where scene entry is not in results
-    if (
-      (scene.checksum && fingerprints[scene.checksum] !== undefined) ||
-      (scene.oshash && fingerprints[scene.oshash] !== undefined) ||
-      (scene.phash && fingerprints[scene.phash] !== undefined)
-    ) {
-      const fingerprintMatches = uniqBy(
-        [
-          ...(fingerprints[scene.checksum ?? ""] ?? []),
-          ...(fingerprints[scene.oshash ?? ""] ?? []),
-          ...(fingerprints[scene.phash ?? ""] ?? []),
-        ].flat(),
-        (f) => f.stash_id
-      );
-
-      ret[scene.id] = fingerprintMatches;
-    } else {
-      delete ret[scene.id];
-    }
+  scenes.forEach((s) => {
+    ret[s.id] = fingerprints[s.id];
   });
 
   return ret;
@@ -119,7 +99,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
     queryScene(searchVal)
       .then((queryData) => {
-        const s = selectScenes(queryData.queryStashBoxScene);
+        const s = selectScenes(queryData.scrapeSingleScene);
         setSearchResults({
           ...searchResults,
           [sceneID]: s,
@@ -179,26 +159,10 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
     // clear search errors
     setSearchErrors({});
 
-    selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
-      scene.fingerprints?.forEach((f) => {
-        newFingerprints[f.hash] = newFingerprints[f.hash]
-          ? [...newFingerprints[f.hash], scene]
-          : [scene];
-      });
-    });
-
-    // Null any ids that are still undefined since it means they weren't found
-    filteredScenes.forEach((scene) => {
-      if (scene.oshash) {
-        newFingerprints[scene.oshash] = newFingerprints[scene.oshash] ?? null;
-      }
-      if (scene.checksum) {
-        newFingerprints[scene.checksum] =
-          newFingerprints[scene.checksum] ?? null;
-      }
-      if (scene.phash) {
-        newFingerprints[scene.phash] = newFingerprints[scene.phash] ?? null;
-      }
+    sceneIDs.forEach((sceneID, index) => {
+      newFingerprints[sceneID] = selectScenes(
+        results.data.scrapeMultiScenes[index]
+      );
     });
 
     const newSearchResults = fingerprintSearchResults(scenes, newFingerprints);
@@ -210,7 +174,7 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
     setFingerprintError("");
   };
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({
@@ -259,20 +223,12 @@ export const TaggerList: React.FC<ITaggerListProps> = ({
 
   const canFingerprintSearch = () =>
     scenes.some(
-      (s) =>
-        s.stash_ids.length === 0 &&
-        (!s.oshash || fingerprints[s.oshash] === undefined) &&
-        (!s.checksum || fingerprints[s.checksum] === undefined) &&
-        (!s.phash || fingerprints[s.phash] === undefined)
+      (s) => s.stash_ids.length === 0 && fingerprints[s.id] === undefined
     );
 
   const getFingerprintCount = () => {
     return scenes.filter(
-      (s) =>
-        s.stash_ids.length === 0 &&
-        ((s.checksum && fingerprints[s.checksum]) ||
-          (s.oshash && fingerprints[s.oshash]) ||
-          (s.phash && fingerprints[s.phash]))
+      (s) => s.stash_ids.length === 0 && fingerprints[s.id]?.length > 0
     ).length;
   };
 

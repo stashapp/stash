@@ -45,8 +45,8 @@ function renderScrapedStudioRow(
   title: string,
   result: ScrapeResult<string>,
   onChange: (value: ScrapeResult<string>) => void,
-  newStudio?: GQL.ScrapedSceneStudio,
-  onCreateNew?: (value: GQL.ScrapedSceneStudio) => void
+  newStudio?: GQL.ScrapedStudio,
+  onCreateNew?: (value: GQL.ScrapedStudio) => void
 ) {
   return (
     <ScrapeDialogRow
@@ -92,9 +92,14 @@ function renderScrapedPerformersRow(
   title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
-  newPerformers: GQL.ScrapedScenePerformer[],
-  onCreateNew?: (value: GQL.ScrapedScenePerformer) => void
+  newPerformers: GQL.ScrapedPerformer[],
+  onCreateNew?: (value: GQL.ScrapedPerformer) => void
 ) {
+  const performersCopy = newPerformers.map((p) => {
+    const name: string = p.name ?? "";
+    return { ...p, name };
+  });
+
   return (
     <ScrapeDialogRow
       title={title}
@@ -106,7 +111,7 @@ function renderScrapedPerformersRow(
         )
       }
       onChange={onChange}
-      newValues={newPerformers}
+      newValues={performersCopy}
       onCreateNew={onCreateNew}
     />
   );
@@ -139,8 +144,8 @@ function renderScrapedTagsRow(
   title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
-  newTags: GQL.ScrapedSceneTag[],
-  onCreateNew?: (value: GQL.ScrapedSceneTag) => void
+  newTags: GQL.ScrapedTag[],
+  onCreateNew?: (value: GQL.ScrapedTag) => void
 ) {
   return (
     <ScrapeDialogRow
@@ -189,9 +194,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       props.scraped.studio?.stored_id
     )
   );
-  const [newStudio, setNewStudio] = useState<
-    GQL.ScrapedSceneStudio | undefined
-  >(
+  const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
     props.scraped.studio && !props.scraped.studio.stored_id
       ? props.scraped.studio
       : undefined
@@ -241,9 +244,9 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       mapStoredIdObjects(props.scraped.performers ?? undefined)
     )
   );
-  const [newPerformers, setNewPerformers] = useState<
-    GQL.ScrapedScenePerformer[]
-  >(props.scraped.performers?.filter((t) => !t.stored_id) ?? []);
+  const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
+    props.scraped.performers?.filter((t) => !t.stored_id) ?? []
+  );
 
   const [tags, setTags] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
@@ -251,7 +254,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       mapStoredIdObjects(props.scraped.tags ?? undefined)
     )
   );
-  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>(
+  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
     props.scraped.tags?.filter((t) => !t.stored_id) ?? []
   );
 
@@ -275,7 +278,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     return <></>;
   }
 
-  async function createNewStudio(toCreate: GQL.ScrapedSceneStudio) {
+  async function createNewStudio(toCreate: GQL.ScrapedStudio) {
     try {
       const result = await createStudio({
         variables: {
@@ -308,7 +311,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     }
   }
 
-  async function createNewPerformer(toCreate: GQL.ScrapedScenePerformer) {
+  async function createNewPerformer(toCreate: GQL.ScrapedPerformer) {
     const input = makePerformerCreateInput(toCreate);
 
     try {
@@ -349,7 +352,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     }
   }
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({

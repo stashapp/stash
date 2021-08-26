@@ -1,5 +1,7 @@
 """A performer from a scraping operation..."""
 type ScrapedPerformer {
+  """Set if performer matched"""
+  stored_id: ID
   name: String
   gender: String
   url: String
@@ -16,11 +18,11 @@ type ScrapedPerformer {
   tattoos: String
   piercings: String
   aliases: String
-  # Should be ScrapedPerformerTag - but would be identical types
-  tags: [ScrapedSceneTag!]
+  tags: [ScrapedTag!]
 
   """This should be a base64 encoded data URL"""
-  image: String
+  image: String @deprecated(reason: "use images instead")
+  images: [String!]
   details: String
   death_date: String
   hair_color: String
@@ -29,6 +31,8 @@ type ScrapedPerformer {
 }
 
 input ScrapedPerformerInput {
+  """Set if performer matched"""
+  stored_id: ID
   name: String
   gender: String
   url: String

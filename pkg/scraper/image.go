@@ -28,6 +28,8 @@ func setPerformerImage(p *models.ScrapedPerformer, globalConfig GlobalConfig) er
 	}
 
 	p.Image = img
+	// Image is deprecated. Use images instead
+	p.Images = []string{*img}
 
 	return nil
 }

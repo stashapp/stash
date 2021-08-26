@@ -16,7 +16,7 @@ export interface IStashBox extends GQL.StashBox {
 interface IProps {
   instance: IStashBox;
   onHide: () => void;
-  onSelectPerformer: (performer: GQL.ScrapedScenePerformer) => void;
+  onSelectPerformer: (performer: GQL.ScrapedPerformer) => void;
   name?: string;
 }
 const PerformerStashBoxModal: React.FC<IProps> = ({
@@ -28,17 +28,19 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
   const intl = useIntl();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState<string>(name ?? "");
-  const { data, loading } = GQL.useQueryStashBoxPerformerQuery({
+  const { data, loading } = GQL.useScrapeSinglePerformerQuery({
     variables: {
-      input: {
+      source: {
         stash_box_index: instance.index,
-        q: query,
+      },
+      input: {
+        query,
       },
     },
     skip: query === "",
   });
 
-  const performers = data?.queryStashBoxPerformer?.[0].results ?? [];
+  const performers = data?.scrapeSinglePerformer ?? [];
 
   const onInputChange = debounce((input: string) => {
     setQuery(input);
