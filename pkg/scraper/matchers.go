@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 )
 
@@ -29,18 +30,26 @@ func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedScen
 // MatchScrapedSceneStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
 func MatchScrapedSceneStudio(qb models.StudioReader, s *models.ScrapedSceneStudio) error {
-	studio, err := qb.FindByName(s.Name, true)
+	st, err := studio.ByName(qb, s.Name)
 
 	if err != nil {
 		return err
 	}
 
-	if studio == nil {
+	if st == nil {
+		// try matching by alias
+		st, err = studio.ByAlias(qb, s.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if st == nil {
 		// ignore - cannot match
 		return nil
 	}
 
-	id := strconv.Itoa(studio.ID)
+	id := strconv.Itoa(st.ID)
 	s.ID = &id
 	return nil
 }

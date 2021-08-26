@@ -17,6 +17,7 @@ type Studio struct {
 	UpdatedAt    models.JSONTime `json:"updated_at,omitempty"`
 	Rating       int             `json:"rating,omitempty"`
 	Details      string          `json:"details,omitempty"`
+	Aliases      []string        `json:"aliases,omitempty"`
 }
 
 func LoadStudioFile(filePath string) (*Studio, error) {

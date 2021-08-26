@@ -11,4 +11,5 @@ fragment SlimStudioData on Studio {
   }
   details
   rating
+  aliases
 }

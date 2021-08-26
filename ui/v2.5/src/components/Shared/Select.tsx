@@ -427,13 +427,74 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 export const StudioSelect: React.FC<
   IFilterProps & { excludeIds?: string[] }
 > = (props) => {
+  const [studioAliases, setStudioAliases] = useState<Record<string, string[]>>(
+    {}
+  );
+  const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate();
 
-  const exclude = props.excludeIds ?? [];
-  const studios = (data?.allStudios ?? []).filter(
-    (studio) => !exclude.includes(studio.id)
+  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
+  const studios = useMemo(
+    () =>
+      (data?.allStudios ?? []).filter((studio) => !exclude.includes(studio.id)),
+    [data?.allStudios, exclude]
   );
+
+  useEffect(() => {
+    // build the studio aliases map
+    const newAliases: Record<string, string[]> = {};
+    const newAll: string[] = [];
+    studios.forEach((s) => {
+      newAliases[s.id] = s.aliases;
+      newAll.push(...s.aliases);
+    });
+    setStudioAliases(newAliases);
+    setAllAliases(newAll);
+  }, [studios]);
+
+  const StudioOption: React.FC<OptionProps<Option, boolean>> = (
+    optionProps
+  ) => {
+    const { inputValue } = optionProps.selectProps;
+
+    let thisOptionProps = optionProps;
+    if (
+      inputValue &&
+      !optionProps.label.toLowerCase().includes(inputValue.toLowerCase())
+    ) {
+      // must be alias
+      const newLabel = `${optionProps.data.label} (alias)`;
+      thisOptionProps = {
+        ...optionProps,
+        children: newLabel,
+      };
+    }
+
+    return <reactSelectComponents.Option {...thisOptionProps} />;
+  };
+
+  const filterOption = (option: Option, rawInput: string): boolean => {
+    if (!rawInput) {
+      return true;
+    }
+
+    const input = rawInput.toLowerCase();
+    const optionVal = option.label.toLowerCase();
+
+    if (optionVal.includes(input)) {
+      return true;
+    }
+
+    // search for studio aliases
+    const aliases = studioAliases[option.value];
+    // only match on alias if exact
+    if (aliases && aliases.some((a) => a.toLowerCase() === input)) {
+      return true;
+    }
+
+    return false;
+  };
 
   const onCreate = async (name: string) => {
     const result = await createStudio({
@@ -444,9 +505,36 @@ export const StudioSelect: React.FC<
     return { item: result.data!.studioCreate!, message: "Created studio" };
   };
 
+  const isValidNewOption = (
+    inputValue: string,
+    value: ValueType<Option, boolean>,
+    options: OptionsType<Option> | GroupedOptionsType<Option>
+  ) => {
+    if (!inputValue) {
+      return false;
+    }
+
+    if (
+      (options as OptionsType<Option>).some((o: Option) => {
+        return o.label.toLowerCase() === inputValue.toLowerCase();
+      })
+    ) {
+      return false;
+    }
+
+    if (allAliases.some((a) => a.toLowerCase() === inputValue.toLowerCase())) {
+      return false;
+    }
+
+    return true;
+  };
+
   return (
     <FilterSelectComponent
       {...props}
+      filterOption={filterOption}
+      isValidNewOption={isValidNewOption}
+      components={{ Option: StudioOption }}
       isMulti={props.isMulti ?? false}
       type="studios"
       isLoading={loading}
