@@ -27,6 +27,14 @@ const sortByOptions = [
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "image_count",
+      value: "images_count",
+    },
+    {
+      messageID: "gallery_count",
+      value: "galleries_count",
+    },
   ]);
 
 const displayModeOptions = [

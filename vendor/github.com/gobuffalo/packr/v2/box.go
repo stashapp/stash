@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -16,7 +17,6 @@ import (
 	"github.com/gobuffalo/packr/v2/file/resolver"
 	"github.com/gobuffalo/packr/v2/plog"
 	"github.com/markbates/oncer"
-	"github.com/pkg/errors"
 )
 
 var _ packd.Box = &Box{}
@@ -64,6 +64,13 @@ func New(name string, path string) *Box {
 	return b
 }
 
+// Folder returns a Box that will NOT be packed.
+// This is useful for writing tests or tools that
+// need to work with a folder at runtime.
+func Folder(path string) *Box {
+	return New(path, path)
+}
+
 // SetResolver allows for the use of a custom resolver for
 // the specified file
 func (b *Box) SetResolver(file string, res resolver.Resolver) {
@@ -83,7 +90,7 @@ func (b *Box) AddBytes(path string, t []byte) error {
 	m := map[string]file.File{}
 	f, err := file.NewFile(path, t)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	m[resolver.Key(path)] = f
 	res := resolver.NewInMemory(m)
@@ -118,10 +125,11 @@ func (b *Box) Has(name string) bool {
 
 // HasDir returns true if the directory exists in the box
 func (b *Box) HasDir(name string) bool {
-	oncer.Do("packr2/box/HasDir", func() {
+	oncer.Do("packr2/box/HasDir"+b.Name, func() {
 		for _, f := range b.List() {
-			d := filepath.Dir(f)
-			b.dirs.Store(d, true)
+			for d := filepath.Dir(f); d != "."; d = filepath.Dir(d) {
+				b.dirs.Store(d, true)
+			}
 		}
 	})
 	if name == "/" {
@@ -134,21 +142,29 @@ func (b *Box) HasDir(name string) bool {
 // Open returns a File using the http.File interface
 func (b *Box) Open(name string) (http.File, error) {
 	plog.Debug(b, "Open", "name", name)
-	if len(filepath.Ext(name)) == 0 {
-		if !b.HasDir(name) {
-			return nil, os.ErrNotExist
-		}
-		d, err := file.NewDir(name)
-		plog.Debug(b, "Open", "name", name, "dir", d)
-		return d, err
-	}
 	f, err := b.Resolve(name)
 	if err != nil {
+		if len(filepath.Ext(name)) == 0 {
+			return b.openWoExt(name)
+		}
 		return f, err
 	}
 	f, err = file.NewFileR(name, f)
 	plog.Debug(b, "Open", "name", f.Name(), "file", f.Name())
 	return f, err
+}
+
+func (b *Box) openWoExt(name string) (http.File, error) {
+	if !b.HasDir(name) {
+		id := path.Join(name, "index.html")
+		if b.Has(id) {
+			return b.Open(id)
+		}
+		return nil, os.ErrNotExist
+	}
+	d, err := file.NewDir(name)
+	plog.Debug(b, "Open", "name", name, "dir", d)
+	return d, err
 }
 
 // List shows "What's in the box?"
@@ -191,7 +207,7 @@ func (b *Box) Resolve(key string) (file.File, error) {
 		if r == nil {
 			r = resolver.DefaultResolver
 			if r == nil {
-				return nil, errors.New("resolver.DefaultResolver is nil")
+				return nil, fmt.Errorf("resolver.DefaultResolver is nil")
 			}
 		}
 	}
@@ -199,7 +215,12 @@ func (b *Box) Resolve(key string) (file.File, error) {
 
 	f, err := r.Resolve(b.Name, key)
 	if err != nil {
-		z := filepath.Join(resolver.OsPath(b.ResolutionDir), resolver.OsPath(key))
+		z, err := resolver.ResolvePathInBase(resolver.OsPath(b.ResolutionDir), filepath.FromSlash(path.Clean("/"+resolver.OsPath(key))))
+		if err != nil {
+			plog.Debug(r, "Resolve", "box", b.Name, "key", key, "err", err)
+			return f, err
+		}
+
 		f, err = r.Resolve(b.Name, z)
 		if err != nil {
 			plog.Debug(r, "Resolve", "box", b.Name, "key", z, "err", err)
@@ -207,11 +228,11 @@ func (b *Box) Resolve(key string) (file.File, error) {
 		}
 		b, err := ioutil.ReadAll(f)
 		if err != nil {
-			return f, errors.WithStack(err)
+			return f, err
 		}
 		f, err = file.NewFile(key, b)
 		if err != nil {
-			return f, errors.WithStack(err)
+			return f, err
 		}
 	}
 	plog.Debug(r, "Resolve", "box", b.Name, "key", key, "file", f.Name())

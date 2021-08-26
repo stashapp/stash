@@ -58,7 +58,6 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
-		_ = utils.EnsureDir(paths.GetStashHomeDirectory())
 		cfg, err := config.Initialize()
 
 		if err != nil {
@@ -268,6 +267,14 @@ func setSetupDefaults(input *models.SetupInput) {
 
 func (s *singleton) Setup(input models.SetupInput) error {
 	setSetupDefaults(&input)
+
+	// create the config directory if it does not exist
+	configDir := filepath.Dir(input.ConfigLocation)
+	if exists, _ := utils.DirExists(configDir); !exists {
+		if err := os.Mkdir(configDir, 0755); err != nil {
+			return fmt.Errorf("abc: %s", err.Error())
+		}
+	}
 
 	// create the generated directory if it does not exist
 	if exists, _ := utils.DirExists(input.GeneratedLocation); !exists {

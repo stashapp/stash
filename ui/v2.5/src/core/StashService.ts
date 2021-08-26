@@ -598,9 +598,8 @@ export const studioMutationImpactedQueries = [
   GQL.AllStudiosForFilterDocument,
 ];
 
-export const useStudioCreate = (input: GQL.StudioCreateInput) =>
+export const useStudioCreate = () =>
   GQL.useStudioCreateMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.AllStudiosForFilterDocument]),
     update: deleteCache([
       GQL.FindStudiosDocument,

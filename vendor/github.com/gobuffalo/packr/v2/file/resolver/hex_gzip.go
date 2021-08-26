@@ -13,7 +13,6 @@ import (
 	"github.com/gobuffalo/packr/v2/plog"
 
 	"github.com/gobuffalo/packr/v2/file"
-	"github.com/pkg/errors"
 )
 
 var _ Resolver = &HexGzip{}
@@ -61,12 +60,12 @@ func (hg *HexGzip) Resolve(box string, name string) (file.File, error) {
 
 	unpacked, err := UnHexGzipString(packed)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	f, err := file.NewFile(OsPath(name), []byte(unpacked))
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	hg.unpacked[name] = f.String()
 	return f, nil
@@ -101,13 +100,13 @@ func UnHexGzipString(packed string) (string, error) {
 	dec := hex.NewDecoder(br)
 	zr, err := gzip.NewReader(dec)
 	if err != nil {
-		return "", errors.WithStack(err)
+		return "", err
 	}
 	defer zr.Close()
 
 	b, err := ioutil.ReadAll(zr)
 	if err != nil {
-		return "", errors.WithStack(err)
+		return "", err
 	}
 	return string(b), nil
 }

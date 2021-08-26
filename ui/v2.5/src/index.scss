@@ -89,6 +89,10 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
+.table-list {
+  min-width: min-content;
+}
+
 .table-list a {
   color: $text-color;
 }
@@ -229,7 +233,7 @@ div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 3;
+  z-index: 16;
 
   .react-select__option,
   .dropdown-item {
@@ -642,4 +646,10 @@ div.dropdown-menu {
   .btn:last-child {
     border-bottom-right-radius: 0;
   }
+}
+
+dl.details-list {
+  display: grid;
+  grid-column-gap: 10px;
+  grid-template-columns: minmax(16.67%, auto) 1fr;
 }

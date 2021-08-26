@@ -35,12 +35,12 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
       show
       disabled={paths.length === 0}
       icon="pencil-alt"
-      header="Select folders"
+      header={intl.formatMessage({ id: "actions.select_folders" })}
       accept={{
         onClick: () => {
           props.onClose(paths);
         },
-        text: "Confirm",
+        text: intl.formatMessage({ id: "actions.confirm" }),
       }}
       cancel={{
         onClick: () => props.onClose(),

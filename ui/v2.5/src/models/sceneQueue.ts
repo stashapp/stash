@@ -103,7 +103,9 @@ export class SceneQueue {
       ret.query = query;
     } else if (parsed.qs) {
       // must be scene list
-      ret.sceneIDs = parsed.qs.map((v) => Number(v));
+      ret.sceneIDs = Array.isArray(parsed.qs)
+        ? parsed.qs.map((v) => Number(v))
+        : [Number(parsed.qs)];
     }
 
     return ret;

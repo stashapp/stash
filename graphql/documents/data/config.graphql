@@ -32,6 +32,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   galleryExtensions
   excludes
   imageExcludes
+  customPerformerImageLocation
   scraperUserAgent
   scraperCertCheck
   scraperCDPPath
@@ -68,6 +69,7 @@ fragment ConfigScrapingData on ConfigScrapingResult {
   scraperUserAgent
   scraperCertCheck
   scraperCDPPath
+  excludeTagPatterns
 }
 
 fragment ConfigData on ConfigResult {

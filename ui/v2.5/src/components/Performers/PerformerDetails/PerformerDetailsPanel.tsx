@@ -23,18 +23,18 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <dl className="row">
-        <dt className="col-3 col-xl-2">
+      <>
+        <dt>
           <FormattedMessage id="tags" />
         </dt>
-        <dd className="col-9 col-xl-10">
+        <dd>
           <ul className="pl-0">
             {(performer.tags ?? []).map((tag) => (
               <TagLink key={tag.id} tagType="performer" tag={tag} />
             ))}
           </ul>
         </dd>
-      </dl>
+      </>
     );
   }
 
@@ -44,14 +44,14 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <dl className="row mb-0">
-        <dt className="col-3 col-xl-2">
+      <>
+        <dt>
           <FormattedMessage id="rating" />:
         </dt>
-        <dd className="col-9 col-xl-10">
+        <dd>
           <RatingStars value={performer.rating} />
         </dd>
-      </dl>
+      </>
     );
   }
 
@@ -61,9 +61,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <dl className="row">
-        <dt className="col-3 col-xl-2">StashIDs</dt>
-        <dd className="col-9 col-xl-10">
+      <>
+        <dt>StashIDs</dt>
+        <dd>
           <ul className="pl-0">
             {performer.stash_ids.map((stashID) => {
               const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
@@ -86,7 +86,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             })}
           </ul>
         </dd>
-      </dl>
+      </>
     );
   }
 
@@ -113,7 +113,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   };
 
   return (
-    <>
+    <dl className="details-list">
       <TextField
         id="gender"
         value={genderToString(performer.gender ?? undefined)}
@@ -162,6 +162,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       {renderRating()}
       {renderTagsField()}
       {renderStashIDs()}
-    </>
+    </dl>
   );
 };

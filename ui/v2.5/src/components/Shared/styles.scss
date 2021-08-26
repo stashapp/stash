@@ -186,6 +186,10 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     max-width: 300px;
     white-space: pre-line;
   }
+
+  .file-info-panel a > & {
+    word-break: break-all;
+  }
 }
 
 .RatingStars {
