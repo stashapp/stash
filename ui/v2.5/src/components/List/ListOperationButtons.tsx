@@ -93,7 +93,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
       }
     }
 
-    if (buttons) {
+    if (buttons.length > 0) {
       return (
         <ButtonGroup className="ml-2 mb-1">
           {buttons.map((button) => {
