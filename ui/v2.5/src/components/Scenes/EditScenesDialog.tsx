@@ -33,6 +33,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   );
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
+  const [movieMode, setMovieMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
+  const [movieIds, setMovieIds] = useState<string[]>();
+  const [existingMovieIds, setExistingMovieIds] = useState<string[]>();
   const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
@@ -58,6 +63,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     const aggregateStudioId = getStudioId(props.selected);
     const aggregatePerformerIds = getPerformerIds(props.selected);
     const aggregateTagIds = getTagIds(props.selected);
+    const aggregateMovieIds = getMovieIds(props.selected);
 
     const sceneInput: GQL.BulkSceneUpdateInput = {
       ids: props.selected.map((scene) => {
@@ -125,6 +131,21 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     } else {
       // if tagIds non-empty, then we are setting them
       sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
+    }
+
+    // if movieIds non-empty, then we are setting them
+    if (
+      movieMode === GQL.BulkUpdateIdMode.Set &&
+      (!movieIds || movieIds.length === 0)
+    ) {
+      // and all scenes have the same ids,
+      if (aggregateMovieIds.length > 0) {
+        // then unset the movieIds, otherwise ignore
+        sceneInput.movie_ids = makeBulkUpdateIds(movieIds || [], movieMode);
+      }
+    } else {
+      // if movieIds non-empty, then we are setting them
+      sceneInput.movie_ids = makeBulkUpdateIds(movieIds || [], movieMode);
     }
 
     if (organized !== undefined) {
@@ -228,12 +249,35 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
+  function getMovieIds(state: GQL.SlimSceneDataFragment[]) {
+    let ret: string[] = [];
+    let first = true;
+
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
+      if (first) {
+        ret = scene.movies ? scene.movies.map((m) => m.movie.id).sort() : [];
+        first = false;
+      } else {
+        const mIds = scene.movies
+          ? scene.movies.map((m) => m.movie.id).sort()
+          : [];
+
+        if (!_.isEqual(ret, mIds)) {
+          ret = [];
+        }
+      }
+    });
+
+    return ret;
+  }
+
   useEffect(() => {
     const state = props.selected;
     let updateRating: number | undefined;
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
+    let updateMovieIds: string[] = [];
     let updateOrganized: boolean | undefined;
     let first = true;
 
@@ -244,12 +288,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         .map((p) => p.id)
         .sort();
       const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
+      const sceneMovieIDs = (scene.movies ?? []).map((m) => m.movie.id).sort();
 
       if (first) {
         updateRating = sceneRating ?? undefined;
         updateStudioID = sceneStudioID;
         updatePerformerIds = scenePerformerIDs;
         updateTagIds = sceneTagIDs;
+        updateMovieIds = sceneMovieIDs;
         first = false;
         updateOrganized = scene.organized;
       } else {
@@ -265,6 +311,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         if (!_.isEqual(sceneTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (!_.isEqual(sceneMovieIDs, updateMovieIds)) {
+          updateMovieIds = [];
+        }
         if (scene.organized !== updateOrganized) {
           updateOrganized = undefined;
         }
@@ -275,8 +324,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setStudioId(updateStudioID);
     setExistingPerformerIds(updatePerformerIds);
     setExistingTagIds(updateTagIds);
+    setExistingMovieIds(updateMovieIds);
     setOrganized(updateOrganized);
-  }, [props.selected, performerMode, tagMode]);
+  }, [props.selected, performerMode, tagMode, movieMode]);
 
   useEffect(() => {
     if (checkboxRef.current) {
@@ -285,7 +335,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   }, [organized, checkboxRef]);
 
   function renderMultiSelect(
-    type: "performers" | "tags",
+    type: "performers" | "tags" | "movies",
     ids: string[] | undefined
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
@@ -298,6 +348,10 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       case "tags":
         mode = tagMode;
         existingIds = existingTagIds;
+        break;
+      case "movies":
+        mode = movieMode;
+        existingIds = existingMovieIds;
         break;
     }
 
@@ -313,6 +367,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             case "tags":
               setTagIds(itemIDs);
               break;
+            case "movies":
+              setMovieIds(itemIDs);
+              break;
           }
         }}
         onSetMode={(newMode) => {
@@ -322,6 +379,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               break;
             case "tags":
               setTagMode(newMode);
+              break;
+            case "movies":
+              setMovieMode(newMode);
               break;
           }
         }}
@@ -407,6 +467,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               <FormattedMessage id="tags" />
             </Form.Label>
             {renderMultiSelect("tags", tagIds)}
+          </Form.Group>
+
+          <Form.Group controlId="movies">
+            <Form.Label>
+              <FormattedMessage id="movies" />
+            </Form.Label>
+            {renderMultiSelect("movies", movieIds)}
           </Form.Group>
 
           <Form.Group controlId="organized">
