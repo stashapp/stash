@@ -274,6 +274,10 @@ func (qb *sceneQueryBuilder) Size() (float64, error) {
 	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
 }
 
+func (qb *sceneQueryBuilder) Duration() (float64, error) {
+	return qb.runSumQuery("SELECT SUM(cast(duration as double)) as sum FROM scenes", nil)
+}
+
 func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return qb.runCountQuery(qb.buildCountQuery(scenesForStudioQuery), args)
