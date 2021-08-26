@@ -319,7 +319,7 @@
         "description": "Handy connection key to use for interactive scenes.",
         "heading": "Handy Connection Key"
       },
-      "script_offset": {
+      "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
       },

@@ -260,8 +260,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.HandyKey, *input.HandyKey)
 	}
 
-	if input.ScriptOffset != nil {
-		c.Set(config.ScriptOffset, *input.ScriptOffset)
+	if input.FunscriptOffset != nil {
+		c.Set(config.FunscriptOffset, *input.FunscriptOffset)
 	}
 
 	if err := c.Write(); err != nil {

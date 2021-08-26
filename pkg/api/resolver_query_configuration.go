@@ -109,7 +109,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	language := config.GetLanguage()
 	slideshowDelay := config.GetSlideshowDelay()
 	handyKey := config.GetHandyKey()
-	scriptOffset := config.GetScriptOffset()
+	scriptOffset := config.GetFunscriptOffset()
 
 	return &models.ConfigInterfaceResult{
 		MenuItems:           menuItems,
@@ -124,7 +124,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		Language:            &language,
 		SlideshowDelay:      &slideshowDelay,
 		HandyKey:            &handyKey,
-		ScriptOffset:        &scriptOffset,
+		FunscriptOffset:     &scriptOffset,
 	}
 }
 

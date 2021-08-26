@@ -56,7 +56,7 @@ export class ScenePlayerImpl extends React.Component<
       config: this.makeJWPlayerConfig(props.scene),
       interactiveClient: new Interactive(
         this.props.config?.handyKey || "",
-        this.props.config?.scriptOffset || 0
+        this.props.config?.funscriptOffset || 0
       ),
     };
 

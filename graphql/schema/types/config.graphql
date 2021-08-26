@@ -201,7 +201,7 @@ input ConfigInterfaceInput {
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
-  scriptOffset: Int
+  funscriptOffset: Int
 }
 
 type ConfigInterfaceResult {
@@ -229,7 +229,7 @@ type ConfigInterfaceResult {
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
-  scriptOffset: Int
+  funscriptOffset: Int
 }
 
 input ConfigDLNAInput {

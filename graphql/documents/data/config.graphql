@@ -56,7 +56,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   language
   slideshowDelay
   handyKey
-  scriptOffset
+  funscriptOffset
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {
