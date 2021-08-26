@@ -3,6 +3,7 @@ import _ from "lodash";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   FindScenesQueryResult,
   SlimSceneDataFragment,
@@ -44,6 +45,7 @@ export const SceneList: React.FC<ISceneList> = ({
       text: intl.formatMessage({ id: "actions.play_selected" }),
       onClick: playSelected,
       isDisplayed: showWhenSelected,
+      icon: "play" as IconProp,
     },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
