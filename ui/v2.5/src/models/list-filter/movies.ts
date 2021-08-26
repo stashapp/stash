@@ -5,6 +5,7 @@ import {
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
 import { StudiosCriterionOption } from "./criteria/studios";
+import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
@@ -28,6 +29,7 @@ const criterionOptions = [
   createStringCriterionOption("synopsis"),
   createMandatoryNumberCriterionOption("duration"),
   RatingCriterionOption,
+  PerformersCriterionOption,
 ];
 
 export const MovieListFilterOptions = new ListFilterOptions(

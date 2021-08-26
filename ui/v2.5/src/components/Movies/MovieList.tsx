@@ -18,7 +18,11 @@ import {
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { MovieCard } from "./MovieCard";
 
-export const MovieList: React.FC = () => {
+interface IMovieList {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+}
+
+export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
   const intl = useIntl();
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -73,6 +77,7 @@ export const MovieList: React.FC = () => {
     selectable: true,
     persistState: PersistanceLevel.ALL,
     renderDeleteDialog,
+    filterHook,
   });
 
   async function viewRandom(
