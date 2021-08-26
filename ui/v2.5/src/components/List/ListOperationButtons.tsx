@@ -8,12 +8,15 @@ import {
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import { FormattedMessage, useIntl } from "react-intl";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { Icon } from "../Shared";
 
 interface IListFilterOperation {
   text: string;
   onClick: () => void;
   isDisplayed?: () => boolean;
+  icon?: IconProp;
+  buttonVariant?: string;
 }
 
 interface IListOperationButtonsProps {
@@ -60,37 +63,53 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     };
   });
 
-  function maybeRenderSelectedButtons() {
-    if (itemsSelected && (onEdit || onDelete)) {
+  function maybeRenderButtons() {
+    const buttons = (otherOperations ?? []).filter((o) => {
+      if (!o.icon) {
+        return false;
+      }
+
+      if (!o.isDisplayed) {
+        return true;
+      }
+
+      return o.isDisplayed();
+    });
+    if (itemsSelected) {
+      if (onEdit) {
+        buttons.push({
+          icon: "pencil-alt",
+          text: intl.formatMessage({ id: "actions.edit" }),
+          onClick: onEdit,
+        });
+      }
+      if (onDelete) {
+        buttons.push({
+          icon: "trash",
+          text: intl.formatMessage({ id: "actions.delete" }),
+          onClick: onDelete,
+          buttonVariant: "danger",
+        });
+      }
+    }
+
+    if (buttons.length > 0) {
       return (
         <ButtonGroup className="ml-2 mb-1">
-          {onEdit && (
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="edit">
-                  {intl.formatMessage({ id: "actions.edit" })}
-                </Tooltip>
-              }
-            >
-              <Button variant="secondary" onClick={onEdit}>
-                <Icon icon="pencil-alt" />
-              </Button>
-            </OverlayTrigger>
-          )}
-
-          {onDelete && (
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="delete">
-                  {intl.formatMessage({ id: "actions.delete" })}
-                </Tooltip>
-              }
-            >
-              <Button variant="danger" onClick={onDelete}>
-                <Icon icon="trash" />
-              </Button>
-            </OverlayTrigger>
-          )}
+          {buttons.map((button) => {
+            return (
+              <OverlayTrigger
+                overlay={<Tooltip id="edit">{button.text}</Tooltip>}
+              >
+                <Button
+                  variant={button.buttonVariant ?? "secondary"}
+                  onClick={button.onClick}
+                >
+                  <Icon icon={button.icon as IconProp} />
+                </Button>
+              </OverlayTrigger>
+            );
+          })}
         </ButtonGroup>
       );
     }
@@ -165,7 +184,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
   return (
     <>
-      {maybeRenderSelectedButtons()}
+      {maybeRenderButtons()}
 
       <div className="mx-2">{renderMore()}</div>
     </>
