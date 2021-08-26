@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/spf13/viper"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -26,16 +25,12 @@ func setInitialMD5Config(txnManager models.TransactionManager) {
 
 	usingMD5 := count != 0
 	defaultAlgorithm := models.HashAlgorithmOshash
-
 	if usingMD5 {
 		defaultAlgorithm = models.HashAlgorithmMd5
 	}
 
-	// TODO - this should use the config instance
-	viper.SetDefault(config.VideoFileNamingAlgorithm, defaultAlgorithm)
-	viper.SetDefault(config.CalculateMD5, usingMD5)
-
 	config := config.GetInstance()
+	config.SetChecksumDefaultValues(defaultAlgorithm, usingMD5)
 	if err := config.Write(); err != nil {
 		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}

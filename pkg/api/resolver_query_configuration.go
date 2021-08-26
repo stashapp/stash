@@ -39,6 +39,7 @@ func makeConfigResult() *models.ConfigResult {
 		General:   makeConfigGeneralResult(),
 		Interface: makeConfigInterfaceResult(),
 		Dlna:      makeConfigDLNAResult(),
+		Scraping:  makeConfigScrapingResult(),
 	}
 }
 
@@ -49,45 +50,48 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 	maxTranscodeSize := config.GetMaxTranscodeSize()
 	maxStreamingTranscodeSize := config.GetMaxStreamingTranscodeSize()
 
+	customPerformerImageLocation := config.GetCustomPerformerImageLocation()
+
 	scraperUserAgent := config.GetScraperUserAgent()
 	scraperCDPPath := config.GetScraperCDPPath()
 
 	return &models.ConfigGeneralResult{
-		Stashes:                    config.GetStashPaths(),
-		DatabasePath:               config.GetDatabasePath(),
-		GeneratedPath:              config.GetGeneratedPath(),
-		ConfigFilePath:             config.GetConfigFilePath(),
-		ScrapersPath:               config.GetScrapersPath(),
-		CachePath:                  config.GetCachePath(),
-		CalculateMd5:               config.IsCalculateMD5(),
-		VideoFileNamingAlgorithm:   config.GetVideoFileNamingAlgorithm(),
-		ParallelTasks:              config.GetParallelTasks(),
-		PreviewAudio:               config.GetPreviewAudio(),
-		PreviewSegments:            config.GetPreviewSegments(),
-		PreviewSegmentDuration:     config.GetPreviewSegmentDuration(),
-		PreviewExcludeStart:        config.GetPreviewExcludeStart(),
-		PreviewExcludeEnd:          config.GetPreviewExcludeEnd(),
-		PreviewPreset:              config.GetPreviewPreset(),
-		MaxTranscodeSize:           &maxTranscodeSize,
-		MaxStreamingTranscodeSize:  &maxStreamingTranscodeSize,
-		APIKey:                     config.GetAPIKey(),
-		Username:                   config.GetUsername(),
-		Password:                   config.GetPasswordHash(),
-		MaxSessionAge:              config.GetMaxSessionAge(),
-		LogFile:                    &logFile,
-		LogOut:                     config.GetLogOut(),
-		LogLevel:                   config.GetLogLevel(),
-		LogAccess:                  config.GetLogAccess(),
-		VideoExtensions:            config.GetVideoExtensions(),
-		ImageExtensions:            config.GetImageExtensions(),
-		GalleryExtensions:          config.GetGalleryExtensions(),
-		CreateGalleriesFromFolders: config.GetCreateGalleriesFromFolders(),
-		Excludes:                   config.GetExcludes(),
-		ImageExcludes:              config.GetImageExcludes(),
-		ScraperUserAgent:           &scraperUserAgent,
-		ScraperCertCheck:           config.GetScraperCertCheck(),
-		ScraperCDPPath:             &scraperCDPPath,
-		StashBoxes:                 config.GetStashBoxes(),
+		Stashes:                      config.GetStashPaths(),
+		DatabasePath:                 config.GetDatabasePath(),
+		GeneratedPath:                config.GetGeneratedPath(),
+		ConfigFilePath:               config.GetConfigFilePath(),
+		ScrapersPath:                 config.GetScrapersPath(),
+		CachePath:                    config.GetCachePath(),
+		CalculateMd5:                 config.IsCalculateMD5(),
+		VideoFileNamingAlgorithm:     config.GetVideoFileNamingAlgorithm(),
+		ParallelTasks:                config.GetParallelTasks(),
+		PreviewAudio:                 config.GetPreviewAudio(),
+		PreviewSegments:              config.GetPreviewSegments(),
+		PreviewSegmentDuration:       config.GetPreviewSegmentDuration(),
+		PreviewExcludeStart:          config.GetPreviewExcludeStart(),
+		PreviewExcludeEnd:            config.GetPreviewExcludeEnd(),
+		PreviewPreset:                config.GetPreviewPreset(),
+		MaxTranscodeSize:             &maxTranscodeSize,
+		MaxStreamingTranscodeSize:    &maxStreamingTranscodeSize,
+		APIKey:                       config.GetAPIKey(),
+		Username:                     config.GetUsername(),
+		Password:                     config.GetPasswordHash(),
+		MaxSessionAge:                config.GetMaxSessionAge(),
+		LogFile:                      &logFile,
+		LogOut:                       config.GetLogOut(),
+		LogLevel:                     config.GetLogLevel(),
+		LogAccess:                    config.GetLogAccess(),
+		VideoExtensions:              config.GetVideoExtensions(),
+		ImageExtensions:              config.GetImageExtensions(),
+		GalleryExtensions:            config.GetGalleryExtensions(),
+		CreateGalleriesFromFolders:   config.GetCreateGalleriesFromFolders(),
+		Excludes:                     config.GetExcludes(),
+		ImageExcludes:                config.GetImageExcludes(),
+		CustomPerformerImageLocation: &customPerformerImageLocation,
+		ScraperUserAgent:             &scraperUserAgent,
+		ScraperCertCheck:             config.GetScraperCertCheck(),
+		ScraperCDPPath:               &scraperCDPPath,
+		StashBoxes:                   config.GetStashBoxes(),
 	}
 }
 
@@ -132,5 +136,19 @@ func makeConfigDLNAResult() *models.ConfigDLNAResult {
 		Enabled:        config.GetDLNADefaultEnabled(),
 		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
 		Interfaces:     config.GetDLNAInterfaces(),
+	}
+}
+
+func makeConfigScrapingResult() *models.ConfigScrapingResult {
+	config := config.GetInstance()
+
+	scraperUserAgent := config.GetScraperUserAgent()
+	scraperCDPPath := config.GetScraperCDPPath()
+
+	return &models.ConfigScrapingResult{
+		ScraperUserAgent:   &scraperUserAgent,
+		ScraperCertCheck:   config.GetScraperCertCheck(),
+		ScraperCDPPath:     &scraperCDPPath,
+		ExcludeTagPatterns: config.GetScraperExcludeTagPatterns(),
 	}
 }

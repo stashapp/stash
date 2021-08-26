@@ -26,6 +26,13 @@
   background-color: #495b68;
   border-radius: 3px;
   padding: 1rem;
+
+  .scene-details {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
 }
 
 .search-result {
@@ -58,12 +65,11 @@
   max-width: 14rem;
   min-width: 168px;
   object-fit: contain;
-  padding: 0 1rem;
+  padding-right: 1rem;
 }
 
 .scene-metadata {
   margin-right: 1rem;
-  width: calc(100% - 17rem);
 }
 
 .select-existing {
@@ -179,9 +185,9 @@
 
     &-item {
       align-items: center;
-      align-text: left;
       display: flex;
       overflow: hidden;
+      text-align: left;
     }
   }
 
@@ -202,5 +208,50 @@
 .FieldSelect {
   .fa-icon {
     width: 12px;
+  }
+}
+
+.include-exclude-button {
+  display: inline-block;
+  margin-right: 0.38em;
+  padding: 0.2em;
+}
+
+li:not(.active) {
+  .include-exclude-button {
+    // visibility: hidden;
+    display: none;
+  }
+
+  .scene-image {
+    padding-left: 1rem;
+  }
+}
+
+.optional-field {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+li.active .optional-field.excluded,
+li.active .optional-field.excluded .scene-link {
+  color: #bfccd6;
+  text-decoration: line-through;
+
+  img {
+    opacity: 0.5;
+  }
+}
+
+li.active .scene-image-container {
+  margin-left: 1rem;
+}
+
+.scene-details {
+  margin-top: 0.5rem;
+
+  > .row {
+    width: 100%;
   }
 }

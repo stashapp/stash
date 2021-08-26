@@ -1,3 +1,7 @@
+**NOTICE: Please consider migrating your projects to github.com/markbates/pkger. It has an idiomatic API, minimal dependencies, a stronger test suite (tested directly against the std lib counterparts), transparent tooling, and more.**
+
+https://blog.gobuffalo.io/introducing-pkger-static-file-embedding-in-go-1ce76dc79c65
+
 # Packr (v2)
 
 [![GoDoc](https://godoc.org/github.com/gobuffalo/packr/v2?status.svg)](https://godoc.org/github.com/gobuffalo/packr/v2)
@@ -26,7 +30,7 @@ In version `v2.0.0` the file format changed and is not backward compatible with 
 
 #### Can `packr-v1.x` read the new format?
 
-No, it can not. Because of the way the new file format works porting it to `packr-v1.x` would be difficult. PR's are welcome though. :)
+No, it can not. Because of the way the new file format works porting it to `packr-v1.x` would be difficult. PRs are welcome though. :)
 
 #### Can `packr-v2.x` read `packr-v1.x` files?
 
@@ -40,8 +44,6 @@ The `--legacy` command is available on all commands that generate `-packr.go` fi
 
 ```bash
 $ packr2 --legacy
-$ packr2 install --legacy
-$ packr2 build --legacy
 ```
 
 ## Usage
@@ -112,13 +114,13 @@ Packr uses the following resolution rules when looking for a file:
 
 Because Packr knows how to fall through to the file system, developers don't need to worry about constantly compiling their static files into a binary. They can work unimpeded.
 
-Packr takes file resolution a step further. When declaring a new box you use a relative path, `./templates`. When Packr recieves this call it calculates out the absolute path to that directory. By doing this it means you can be guaranteed that Packr can find your files correctly, even if you're not running in the directory that the box was created in. This helps with the problem of testing, where Go changes the `pwd` for each package, making relative paths difficult to work with. This is not a problem when using Packr.
+Packr takes file resolution a step further. When declaring a new box you use a relative path, `./templates`. When Packr receives this call it calculates out the absolute path to that directory. By doing this it means you can be guaranteed that Packr can find your files correctly, even if you're not running in the directory that the box was created in. This helps with the problem of testing, where Go changes the `pwd` for each package, making relative paths difficult to work with. This is not a problem when using Packr.
 
 ---
 
 ## Usage with HTTP
 
-A box implements the [`http.FileSystem`](https://golang.org/pkg/net/http/#FileSystemhttps://golang.org/pkg/net/http/#FileSystem) interface, meaning it can be used to serve static files.
+A box implements the [`http.FileSystem`](https://golang.org/pkg/net/http/#FileSystem) interface, meaning it can be used to serve static files.
 
 ```go
 package main
@@ -139,11 +141,7 @@ func main() {
 
 ---
 
-## Building a Binary (the easy way)
-
-When it comes time to build, or install, your Go binary, simply use `packr2 build` or `packr2 install` just as you would `go build` or `go install`. All flags for the `go` tool are supported and everything works the way you expect, the only difference is your static assets are now bundled in the generated binary. If you want more control over how this happens, looking at the following section on building binaries (the hard way).
-
-## Building a Binary (the hard way)
+## Building a Binary
 
 Before you build your Go binary, run the `packr2` command first. It will look for all the boxes in your code and then generate `.go` files that pack the static files into bytes that can be bundled into the Go binary.
 
@@ -170,3 +168,72 @@ Why do you want to do this? Packr first looks to the information stored in these
 ## Debugging
 
 The `packr2` command passes all arguments down to the underlying `go` command, this includes the `-v` flag to print out `go build` information. Packr looks for the `-v` flag, and will turn on its own verbose logging. This is very useful for trying to understand what the `packr` command is doing when it is run.
+
+---
+
+## FAQ
+
+### Compilation Errors with Go Templates
+
+Q: I have a program with Go template files, those files are named `foo.go` and look like the following:
+
+```
+// Copyright {{.Year}} {{.Author}}. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package {{.Project}}
+```
+
+When I run `packr2` I get errors like:
+
+```
+expected 'IDENT', found '{'
+```
+
+A: Packr works by searching your `.go` files for [`github.com/gobuffalo/packr/v2#New`](https://godoc.org/github.com/gobuffalo/packr/v2#New) or [`github.com/gobuffalo/packr/v2#NewBox`](https://godoc.org/github.com/gobuffalo/packr/v2#NewBox) calls. Because those files aren't "proper" Go files, Packr can't parse them to find the box declarations. To fix this you need to tell Packr to ignore those files when searching for boxes. A couple solutions to this problem are:
+
+* Name the files something else. The `.tmpl` extension is the idiomatic way of naming these types of files.
+* Rename the folder containing these files to start with an `_`, for example `_templates`. Packr, like Go, will ignore folders starting with the `_` character when searching for boxes.
+
+### Dynamic Box Paths
+
+Q: I need to set the path of a box using a variable, but `packr.New("foo", myVar)` doesn't work correctly.
+
+A: Packr attempts to "automagically" set it's resolution directory when using [`github.com/gobuffalo/packr/v2#New`](https://godoc.org/github.com/gobuffalo/packr/v2#New), however, for dynamic paths you need to set it manually:
+
+```go
+box := packr.New("foo", "|")
+box.ResolutionDir = myVar
+```
+
+### I don't want to pack files, but still use the Packr interface.
+
+Q: I want to write code that using the Packr tools, but doesn't actually pack the files into my binary. How can I do that?
+
+A: Using [`github.com/gobuffalo/packr/v2#Folder`](https://godoc.org/github.com/gobuffalo/packr/v2#Folder) gives you back a `*packr.Box` that can be used as normal, but is excluded by the Packr tool when compiling.
+
+### Packr Finds No Boxes
+
+Q: I run `packr2 -v` but it doesn't find my boxes:
+
+```
+DEBU[2019-03-18T18:48:52+01:00] *parser.Parser#NewFromRoots found prospects=0
+DEBU[2019-03-18T18:48:52+01:00] found 0 boxes
+```
+
+A: Packr works by parsing `.go` files to find [`github.com/gobuffalo/packr/v2#Box`](https://godoc.org/github.com/gobuffalo/packr/v2#Box) and [`github.com/gobuffalo/packr/v2#NewBox`](https://godoc.org/github.com/gobuffalo/packr/v2#NewBox) declarations. If there aren't any `.go` in the folder that `packr2` is run in it can not find those declarations. To fix this problem run the `packr2` command in the directory containing your `.go` files.
+
+### Box Interfaces
+
+Q: I want to be able to easily test my applications by passing in mock boxes. How do I do that?
+
+A: Packr boxes and files conform to the interfaces found at [`github.com/gobuffalo/packd`](https://godoc.org/github.com/gobuffalo/packd). Change your application to use those interfaces instead of the concrete Packr types.
+
+```go
+// using concrete type
+func myFunc(box *packr.Box) {}
+
+// using interfaces
+func myFunc(box packd.Box) {}
+```

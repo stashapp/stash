@@ -428,7 +428,7 @@ export const StudioSelect: React.FC<
   IFilterProps & { excludeIds?: string[] }
 > = (props) => {
   const { data, loading } = useAllStudiosForFilter();
-  const [createStudio] = useStudioCreate({ name: "" });
+  const [createStudio] = useStudioCreate();
 
   const exclude = props.excludeIds ?? [];
   const studios = (data?.allStudios ?? []).filter(

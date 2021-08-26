@@ -310,7 +310,7 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 	}
 
 	if len(clauses) > 0 {
-		c := strings.Join(clauses, " AND ")
+		c := "(" + strings.Join(clauses, ") AND (") + ")"
 		if len(clauses) > 1 {
 			c = "(" + c + ")"
 		}
@@ -368,13 +368,8 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if c != nil {
-			clause, count := getIntCriterionWhereClause(column, *c)
-
-			if count == 1 {
-				f.addWhere(clause, c.Value)
-			} else {
-				f.addWhere(clause)
-			}
+			clause, args := getIntCriterionWhereClause(column, *c)
+			f.addWhere(clause, args...)
 		}
 	}
 }
@@ -495,13 +490,9 @@ type countCriterionHandlerBuilder struct {
 func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if criterion != nil {
-			clause, count := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
+			clause, args := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
 
-			if count == 1 {
-				f.addWhere(clause, criterion.Value)
-			} else {
-				f.addWhere(clause)
-			}
+			f.addWhere(clause, args...)
 		}
 	}
 }
@@ -548,18 +539,27 @@ func addHierarchicalWithClause(f *filterBuilder, value []string, derivedTable, t
 		depthCondition = fmt.Sprintf("WHERE depth < %d", depth)
 	}
 
-	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
-SELECT id as id, id as child_id, 0 as depth FROM {table} 
-WHERE id in {inBinding} 
-UNION SELECT p.id, c.id, depth + 1 FROM {table} as c 
-INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition})
-`, utils.StrFormatMap{
+	withClauseMap := utils.StrFormatMap{
 		"derivedTable":   derivedTable,
 		"table":          table,
 		"inBinding":      getInBinding(inCount),
 		"parentFK":       parentFK,
 		"depthCondition": depthCondition,
-	})
+		"unionClause":    "",
+	}
+
+	if depth != 0 {
+		withClauseMap["unionClause"] = utils.StrFormat(`
+UNION SELECT p.id, c.id, depth + 1 FROM {table} as c
+INNER JOIN {derivedTable} as p ON c.{parentFK} = p.child_id {depthCondition}
+`, withClauseMap)
+	}
+
+	withClause := utils.StrFormat(`RECURSIVE {derivedTable} AS (
+SELECT id as id, id as child_id, 0 as depth FROM {table}
+WHERE id in {inBinding}
+{unionClause})
+`, withClauseMap)
 
 	f.addWith(withClause, args...)
 }

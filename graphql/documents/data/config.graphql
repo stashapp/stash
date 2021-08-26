@@ -32,6 +32,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   galleryExtensions
   excludes
   imageExcludes
+  customPerformerImageLocation
   scraperUserAgent
   scraperCertCheck
   scraperCDPPath
@@ -65,6 +66,13 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   interfaces
 }
 
+fragment ConfigScrapingData on ConfigScrapingResult {
+  scraperUserAgent
+  scraperCertCheck
+  scraperCDPPath
+  excludeTagPatterns
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
@@ -74,5 +82,8 @@ fragment ConfigData on ConfigResult {
   }
   dlna {
     ...ConfigDLNAData
+  }
+  scraping {
+    ...ConfigScrapingData
   }
 }

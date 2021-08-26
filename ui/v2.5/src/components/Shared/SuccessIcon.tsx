@@ -6,7 +6,7 @@ interface ISuccessIconProps {
 }
 
 const SuccessIcon: React.FC<ISuccessIconProps> = ({ className }) => (
-  <Icon icon="check" className={className} color="#0f9960" />
+  <Icon icon={["far", "check-circle"]} className={className} color="#0f9960" />
 );
 
 export default SuccessIcon;

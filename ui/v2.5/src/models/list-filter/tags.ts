@@ -8,13 +8,7 @@ import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
-// scene markers count has been disabled for now due to performance
-// issues
-const sortByOptions = [
-  "name",
-  "random",
-  /* "scene_markers_count" */
-]
+const sortByOptions = ["name", "random"]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -33,6 +27,10 @@ const sortByOptions = [
       messageID: "scene_count",
       value: "scenes_count",
     },
+    {
+      messageID: "marker_count",
+      value: "scene_markers_count",
+    },
   ]);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
@@ -44,8 +42,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("performer_count"),
-  // marker count has been disabled for now due to performance issues
-  // ListFilterModel.createCriterionOption("marker_count"),
+  createMandatoryNumberCriterionOption("marker_count"),
 ];
 
 export const TagListFilterOptions = new ListFilterOptions(

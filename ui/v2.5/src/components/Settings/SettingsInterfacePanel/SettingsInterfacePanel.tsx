@@ -122,7 +122,10 @@ export const SettingsInterfacePanel: React.FC = () => {
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
+          <option value="de-DE">German (Germany)</option>
+          <option value="pt-BR">Portuguese (Brazil)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
+          <option value="zh-CN">简体中文 (中国)</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>
@@ -137,6 +140,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           {intl.formatMessage({ id: "config.ui.menu_items.description" })}
         </Form.Text>
       </Form.Group>
+
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.ui.scene_wall.heading" })}</h5>
         <Form.Check
