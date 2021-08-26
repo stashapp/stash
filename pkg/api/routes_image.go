@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/image"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -32,15 +33,23 @@ func (rs imageRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
-	image := r.Context().Value(imageKey).(*models.Image)
-	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
+	img := r.Context().Value(imageKey).(*models.Image)
+	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
 
-	// if the thumbnail doesn't exist, fall back to the original file
+	w.Header().Add("Cache-Control", "max-age=604800000")
+
+	// if the thumbnail doesn't exist, encode on the fly
 	exists, _ := utils.FileExists(filepath)
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		rs.Image(w, r)
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEGPath)
+		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
+		if err != nil {
+			logger.Errorf("error generating thumbnail for image: %s", err.Error())
+			return
+		}
+		w.Write(data)
 	}
 }
 
