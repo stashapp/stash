@@ -12,6 +12,7 @@ type Tag struct {
 	Name      string          `json:"name,omitempty"`
 	Aliases   []string        `json:"aliases,omitempty"`
 	Image     string          `json:"image,omitempty"`
+	Parents   []string        `json:"parents,omitempty"`
 	CreatedAt models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt models.JSONTime `json:"updated_at,omitempty"`
 }
