@@ -66,7 +66,7 @@ Stash can run over HTTPS with some additional work.  First you must generate a S
 
 This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
-Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the `~/.stash` directory.  Stash detects these and starts up using HTTPS rather than HTTP.
+Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the same directory as the `config.yml` file, or the `~/.stash` directory.  Stash detects these and starts up using HTTPS rather than HTTP.
 
 # Customization
 
