@@ -49,7 +49,7 @@ func createJSONTag(aliases []string, image string, parents []string) *jsonschema
 		UpdatedAt: models.JSONTime{
 			Time: updateTime,
 		},
-		Image: image,
+		Image:   image,
 		Parents: parents,
 	}
 }
