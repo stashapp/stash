@@ -133,7 +133,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 		Dir:           c.config.GetConfigPath(),
 	}
 
-	if config.HasTLSConfig() {
+	if c.config.HasTLSConfig() {
 		serverConnection.Scheme = "https"
 	}
 
