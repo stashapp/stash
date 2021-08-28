@@ -23,11 +23,17 @@ func (e *NameUsedByAliasError) Error() string {
 }
 
 type InvalidTagHierarchyError struct {
-	Message string
+	Direction   string
+	InvalidTag  string
+	ApplyingTag string
 }
 
 func (e *InvalidTagHierarchyError) Error() string {
-	return e.Message
+	if e.InvalidTag == e.ApplyingTag {
+		return fmt.Sprintf("Cannot apply tag \"%s\" as it already is a %s", e.InvalidTag, e.Direction)
+	} else {
+		return fmt.Sprintf("Cannot apply tag \"%s\" as it is linked to \"%s\" which already is a %s", e.ApplyingTag, e.InvalidTag, e.Direction)
+	}
 }
 
 // EnsureTagNameUnique returns an error if the tag name provided
@@ -76,104 +82,91 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 	allDescendants := make(map[int]*models.Tag)
 	excludeIDs := []int{id}
 
-	validateParent := func(id int) error {
-		if parentTag, exists := allAncestors[id]; exists {
+	validateParent := func(testID, applyingID int) error {
+		if parentTag, exists := allAncestors[testID]; exists {
+			applyingTag, err := qb.Find(applyingID)
+
+			if err != nil {
+				return nil
+			}
+
 			return &InvalidTagHierarchyError{
-				Message: fmt.Sprintf("Parent tag '%s' is already applied", parentTag.Name),
+				Direction:   "parent",
+				InvalidTag:  parentTag.Name,
+				ApplyingTag: applyingTag.Name,
 			}
 		}
 
 		return nil
 	}
 
-	validateChild := func(id int) error {
-		if childTag, exists := allDescendants[id]; exists {
+	validateChild := func(testID, applyingID int) error {
+		if childTag, exists := allDescendants[testID]; exists {
+			applyingTag, err := qb.Find(applyingID)
+
+			if err != nil {
+				return nil
+			}
+
 			return &InvalidTagHierarchyError{
-				Message: fmt.Sprintf("Child tag '%s' is already applied", childTag.Name),
+				Direction:   "child",
+				InvalidTag:  childTag.Name,
+				ApplyingTag: applyingTag.Name,
 			}
 		}
 
-		if parentTag, exists := allAncestors[id]; exists {
-			return &InvalidTagHierarchyError{
-				Message: fmt.Sprintf("Cannot apply child tag '%s' as it also is a parent", parentTag.Name),
-			}
-		}
-
-		return nil
+		return validateParent(testID, applyingID)
 	}
 
-	if parentIDs != nil {
-		for _, parentID := range parentIDs {
-			if err := validateParent(parentID); err != nil {
-				return err
-			}
-
-			parentTag, err := qb.Find(parentID)
-			if err != nil {
-				return err
-			}
-			allAncestors[parentID] = parentTag
-
-			parentsAncestors, err := qb.FindAllAncestors(parentID, excludeIDs)
-			if err != nil {
-				return err
-			}
-
-			for _, ancestorTag := range parentsAncestors {
-				if err := validateParent(ancestorTag.ID); err != nil {
-					return err
-				}
-
-				allAncestors[ancestorTag.ID] = ancestorTag
-			}
-		}
-	} else {
-		ancestors, err := qb.FindAllAncestors(id, excludeIDs)
+	if parentIDs == nil {
+		parentTags, err := qb.FindByChildTagID(id)
 		if err != nil {
 			return err
 		}
 
-		for _, ancestorTag := range ancestors {
+		for _, parentTag := range parentTags {
+			parentIDs = append(parentIDs, parentTag.ID)
+		}
+	}
+
+	if childIDs == nil {
+		childTags, err := qb.FindByParentTagID(id)
+		if err != nil {
+			return err
+		}
+
+		for _, childTag := range childTags {
+			childIDs = append(childIDs, childTag.ID)
+		}
+	}
+
+	for _, parentID := range parentIDs {
+		parentsAncestors, err := qb.FindAllAncestors(parentID, excludeIDs)
+		if err != nil {
+			return err
+		}
+
+		for _, ancestorTag := range parentsAncestors {
+			if err := validateParent(ancestorTag.ID, parentID); err != nil {
+				return err
+			}
+
 			allAncestors[ancestorTag.ID] = ancestorTag
 		}
 	}
 
-	if childIDs != nil {
-		for _, childID := range childIDs {
-			if err := validateChild(childID); err != nil {
-				return err
-			}
-
-			childTag, err := qb.Find(childID)
-			if err != nil {
-				return err
-			}
-			allAncestors[childID] = childTag
-
-			childsDescendants, err := qb.FindAllDescendants(childID, excludeIDs)
-			if err != nil {
-				return err
-			}
-
-			for _, descendentTag := range childsDescendants {
-				if err := validateChild(descendentTag.ID); err != nil {
-					return err
-				}
-
-				allDescendants[descendentTag.ID] = descendentTag
-			}
-		}
-	} else {
-		descendants, err := qb.FindAllDescendants(id, excludeIDs)
+	for _, childID := range childIDs {
+		childsDescendants, err := qb.FindAllDescendants(childID, excludeIDs)
 		if err != nil {
 			return err
 		}
 
-		for _, descendantTag := range descendants {
-			if err := validateChild(descendantTag.ID); err != nil {
+		for _, descendentTag := range childsDescendants {
+			if err := validateChild(descendentTag.ID, childID); err != nil {
 				return err
 			}
-			allDescendants[descendantTag.ID] = descendantTag
+
+			allDescendants[descendentTag.ID] = descendentTag
 		}
 	}
 
