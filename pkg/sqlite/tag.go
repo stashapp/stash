@@ -642,23 +642,31 @@ func (qb *tagQueryBuilder) UpdateChildTags(tagID int, childIDs []int) error {
 }
 
 func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.Tag, error) {
-	var excludeClause string
-	if len(excludeIDs) > 0 {
-		excludeClause = " AND parent_id NOT IN " + getInBinding(len(excludeIDs))
-	}
-	query := `WITH RECURSIVE parents AS (
-	SELECT tags_relations.* FROM tags_relations WHERE child_id = ?` + excludeClause + `
+	inBinding := getInBinding(len(excludeIDs) + 1)
+
+	query := `WITH RECURSIVE
+parents AS (
+	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
 	UNION
-	SELECT tags_relations.* FROM tags_relations INNER JOIN parents AS children ON children.parent_id = tags_relations.child_id
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+),
+children AS (
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
 )
-SELECT tags.* FROM tags INNER JOIN parents ON parents.parent_id = tags.id
+SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+UNION
+SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
 `
 
 	var ret models.Tags
-	args := []interface{}{tagID}
+	excludeArgs := []interface{}{tagID}
 	for _, excludeID := range excludeIDs {
-		args = append(args, excludeID)
+		excludeArgs = append(excludeArgs, excludeID)
 	}
+	args := []interface{}{tagID}
+	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
 	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
@@ -667,23 +675,31 @@ SELECT tags.* FROM tags INNER JOIN parents ON parents.parent_id = tags.id
 }
 
 func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.Tag, error) {
-	var excludeClause string
-	if len(excludeIDs) > 0 {
-		excludeClause = " AND child_id NOT IN " + getInBinding(len(excludeIDs))
-	}
-	query := `WITH RECURSIVE children AS (
-	SELECT tags_relations.* FROM tags_relations WHERE parent_id = ?` + excludeClause + `
+	inBinding := getInBinding(len(excludeIDs) + 1)
+
+	query := `WITH RECURSIVE
+children AS (
+	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
 	UNION
-	SELECT tags_relations.* FROM tags_relations INNER JOIN children AS parents ON parents.child_id = tags_relations.parent_id
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+),
+parents AS (
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
 )
-SELECT tags.* FROM tags INNER JOIN children ON children.child_id = tags.id
+SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+UNION
+SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
 `
 
 	var ret models.Tags
-	args := []interface{}{tagID}
+	excludeArgs := []interface{}{tagID}
 	for _, excludeID := range excludeIDs {
-		args = append(args, excludeID)
+		excludeArgs = append(excludeArgs, excludeID)
 	}
+	args := []interface{}{tagID}
+	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
 	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
