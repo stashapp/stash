@@ -68,6 +68,17 @@ const typePolicies: TypePolicies = {
       },
     },
   },
+
+  Tag: {
+    fields: {
+      parents: {
+        merge: false,
+      },
+      children: {
+        merge: false,
+      },
+    },
+  },
 };
 
 export const getPlatformURL = (ws?: boolean) => {
