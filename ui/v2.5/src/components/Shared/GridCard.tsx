@@ -8,6 +8,7 @@ interface ICardProps {
   linkClassName?: string;
   thumbnailSectionClassName?: string;
   url: string;
+  heatmap?: string;
   title: string;
   image: JSX.Element;
   details?: JSX.Element;
@@ -75,6 +76,12 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     }
   }
 
+  function maybeRenderHeatmap() {
+    if (props.heatmap) {
+      return <img src={props.heatmap} alt="heatmap" />;
+    }
+  }
+
   return (
     <Card
       className={`${props.className} grid-card`}
@@ -95,6 +102,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
         </Link>
         {props.overlays}
       </div>
+      {maybeRenderHeatmap()}
       <div className="card-section">
         <Link to={props.url} onClick={handleImageClick}>
           <h5 className="card-section-title">

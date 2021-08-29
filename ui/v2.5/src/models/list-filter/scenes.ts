@@ -38,6 +38,7 @@ const sortByOptions = [
   "random",
   "movie_scene_number",
   "interactive",
+  "interactive_speed",
 ].map(ListFilterOptions.createSortBy);
 
 const displayModeOptions = [
@@ -75,6 +76,7 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
+  createMandatoryNumberCriterionOption("interactive_speed"),
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(

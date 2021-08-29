@@ -62,3 +62,7 @@ func (b SceneURLBuilder) GetSceneMarkerStreamPreviewURL(sceneMarkerID int) strin
 func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }
+
+func (b SceneURLBuilder) GetHeatmapURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/heatmap"
+}

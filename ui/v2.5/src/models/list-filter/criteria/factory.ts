@@ -59,6 +59,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "organized":
       return new OrganizedCriterion();
     case "o_counter":
+    case "interactive_speed":
     case "scene_count":
     case "marker_count":
     case "image_count":

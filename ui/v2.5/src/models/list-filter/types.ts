@@ -105,6 +105,7 @@ export type CriterionType =
   | "url"
   | "stash_id"
   | "interactive"
+  | "interactive_speed"
   | "name"
   | "details"
   | "title"

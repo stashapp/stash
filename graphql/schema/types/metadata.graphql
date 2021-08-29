@@ -8,6 +8,7 @@ input GenerateMetadataInput {
   markers: Boolean!
   transcodes: Boolean!
   phashes: Boolean!
+  heatmap: Boolean!
 
   """scene ids to generate for"""
   sceneIDs: [ID!]

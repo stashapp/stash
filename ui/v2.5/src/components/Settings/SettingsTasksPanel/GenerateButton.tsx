@@ -9,6 +9,7 @@ export const GenerateButton: React.FC = () => {
   const intl = useIntl();
   const [sprites, setSprites] = useState(true);
   const [phashes, setPhashes] = useState(true);
+  const [heatmap, setHeatmap] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
@@ -19,6 +20,7 @@ export const GenerateButton: React.FC = () => {
       await mutateMetadataGenerate({
         sprites,
         phashes,
+        heatmap,
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
@@ -79,6 +81,12 @@ export const GenerateButton: React.FC = () => {
           checked={phashes}
           label={intl.formatMessage({ id: "dialogs.scene_gen.phash" })}
           onChange={() => setPhashes(!phashes)}
+        />
+        <Form.Check
+          id="heatmap-task"
+          checked={heatmap}
+          label={intl.formatMessage({ id: "dialogs.scene_gen.heatmap" })}
+          onChange={() => setHeatmap(!heatmap)}
         />
       </Form.Group>
       <Form.Group>

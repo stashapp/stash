@@ -94,6 +94,15 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		}
 	}
 
+	heatmapPath := GetInstance().Paths.Scene.GetHeatmapPath(sceneHash)
+	exists, _ = utils.FileExists(heatmapPath)
+	if exists {
+		err := os.Remove(heatmapPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", heatmapPath, err.Error())
+		}
+	}
+
 	streamPreviewPath := GetInstance().Paths.Scene.GetStreamPreviewPath(sceneHash)
 	exists, _ = utils.FileExists(streamPreviewPath)
 	if exists {

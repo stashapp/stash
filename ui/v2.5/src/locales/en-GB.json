@@ -436,10 +436,11 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
+      "heatmap": "Generate heatmaps and speeds",
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "markers": "Markers (20 second videos which begin at the given timecode)",
       "overwrite": "Overwrite existing generated files",
-      "phash": "Perceptual hashes (for deduplication)",
+      "phash": "Perceptual hashes (for deduplication)",      
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
       "preview_exclude_start_time_desc": "Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -532,6 +533,7 @@
   "include_child_studios": "Include child studios",
   "instagram": "Instagram",
   "interactive": "Interactive",
+  "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
   "library": "Library",
   "loading": {
@@ -545,10 +547,11 @@
     "checksum": "Checksum",
     "downloaded_from": "Downloaded From",
     "hash": "Hash",
+    "interactive_speed": "Interactive speed",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in this scene"
-    },
+    },    
     "phash": "PHash",
     "stream": "Stream",
     "video_codec": "Video Codec"

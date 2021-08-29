@@ -231,7 +231,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				logger.Infof("Taking too long to count content. Skipping...")
 				logger.Infof("Generating content")
 			} else {
-				logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
+				logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes, totalsNeeded.heatmaps)
 			}
 		})
 
@@ -326,6 +326,19 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				}
 				wg.Add()
 				go progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", scene.Path), func() {
+					task.Start(&wg)
+				})
+			}
+
+			if input.Heatmap && scene.Interactive {
+				task := GenerateHeatmapTask{
+					Scene:               *scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+					TxnManager:          s.TxnManager,
+				}
+				wg.Add()
+				go progress.ExecuteTask(fmt.Sprintf("Generating funscript heatmap for %s", scene.Path), func() {
 					task.Start(&wg)
 				})
 			}
@@ -610,6 +623,7 @@ type totalsGenerate struct {
 	markers       int64
 	transcodes    int64
 	phashes       int64
+	heatmaps      int64
 }
 
 func (s *singleton) neededGenerate(scenes []*models.Scene, input models.GenerateMetadataInput) *totalsGenerate {
@@ -692,6 +706,18 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 
 				if task.shouldGenerate() {
 					totals.phashes++
+				}
+			}
+
+			if input.Heatmap && scene.Interactive {
+				task := GenerateHeatmapTask{
+					Scene:               *scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
+
+				if overwrite || task.required() {
+					totals.heatmaps++
 				}
 			}
 		}

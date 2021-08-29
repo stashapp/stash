@@ -53,6 +53,14 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return nil, nil
 }
 
+func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene) (*int, error) {
+	if obj.InteractiveSpeed.Valid {
+		interactive_speed := int(obj.InteractiveSpeed.Int64)
+		return &interactive_speed, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, error) {
 	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)
@@ -89,6 +97,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
+	heatmapPath := builder.GetHeatmapURL()
 
 	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
@@ -99,6 +108,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		ChaptersVtt: &chaptersVttPath,
 		Sprite:      &spritePath,
 		Funscript:   &funscriptPath,
+		Heatmap:     &heatmapPath,
 	}, nil
 }
 

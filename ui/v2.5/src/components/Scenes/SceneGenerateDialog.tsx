@@ -21,6 +21,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
 
   const [sprites, setSprites] = useState(true);
   const [phashes, setPhashes] = useState(true);
+  const [heatmap, setHeatmap] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
@@ -64,6 +65,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
       await mutateMetadataGenerate({
         sprites,
         phashes,
+        heatmap,
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
@@ -287,6 +289,12 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
             checked={phashes}
             label={intl.formatMessage({ id: "dialogs.scene_gen.phash" })}
             onChange={() => setPhashes(!phashes)}
+          />
+          <Form.Check
+            id="heatmap-task"
+            checked={heatmap}
+            label={intl.formatMessage({ id: "dialogs.scene_gen.heatmap" })}
+            onChange={() => setHeatmap(!heatmap)}
           />
 
           <hr />

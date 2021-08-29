@@ -111,6 +111,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     );
   }
 
+  function maybeRenderInteractiveSpeedOverlay() {
+    return (
+      <div className="scene-interactive-speed-overlay">
+        {props.scene.interactive_speed !== 0
+          ? props.scene.interactive_speed
+          : ""}
+      </div>
+    );
+  }
+
   function maybeRenderSceneStudioOverlay() {
     if (!props.scene.studio) return;
 
@@ -309,6 +319,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       }
       linkClassName="scene-card-link"
       thumbnailSectionClassName="video-section"
+      heatmap={
+        props.scene.interactive_speed
+          ? props.scene.paths.heatmap ?? undefined
+          : undefined
+      }
       image={
         <>
           <ScenePreview
@@ -321,6 +336,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           />
           <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}
+          {maybeRenderInteractiveSpeedOverlay()}
         </>
       }
       overlays={maybeRenderSceneStudioOverlay()}

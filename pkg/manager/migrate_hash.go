@@ -22,6 +22,10 @@ func MigrateHash(oldHash string, newHash string) {
 	newPath = scenePaths.GetScreenshotPath(newHash)
 	migrate(oldPath, newPath)
 
+	oldPath = scenePaths.GetHeatmapPath(oldHash)
+	newPath = scenePaths.GetHeatmapPath(newHash)
+	migrate(oldPath, newPath)
+
 	oldPath = scenePaths.GetStreamPreviewPath(oldHash)
 	newPath = scenePaths.GetStreamPreviewPath(newHash)
 	migrate(oldPath, newPath)

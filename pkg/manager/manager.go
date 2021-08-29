@@ -237,6 +237,7 @@ func (s *singleton) RefreshConfig() {
 	config := s.Config
 	if config.Validate() == nil {
 		utils.EnsureDir(s.Paths.Generated.Screenshots)
+		utils.EnsureDir(s.Paths.Generated.Heatmaps)
 		utils.EnsureDir(s.Paths.Generated.Vtt)
 		utils.EnsureDir(s.Paths.Generated.Markers)
 		utils.EnsureDir(s.Paths.Generated.Transcodes)

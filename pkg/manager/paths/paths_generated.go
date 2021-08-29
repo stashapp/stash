@@ -14,6 +14,7 @@ const thumbDirLength int = 2 // thumbDirDepth * thumbDirLength must be smaller t
 type generatedPaths struct {
 	Screenshots string
 	Thumbnails  string
+	Heatmaps    string
 	Vtt         string
 	Markers     string
 	Transcodes  string
@@ -25,6 +26,7 @@ func newGeneratedPaths(path string) *generatedPaths {
 	gp := generatedPaths{}
 	gp.Screenshots = filepath.Join(path, "screenshots")
 	gp.Thumbnails = filepath.Join(path, "thumbnails")
+	gp.Heatmaps = filepath.Join(path, "heatmaps")
 	gp.Vtt = filepath.Join(path, "vtt")
 	gp.Markers = filepath.Join(path, "markers")
 	gp.Transcodes = filepath.Join(path, "transcodes")

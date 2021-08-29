@@ -1,8 +1,9 @@
 package paths
 
 import (
-	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type scenePaths struct {
@@ -13,6 +14,10 @@ func newScenePaths(p Paths) *scenePaths {
 	sp := scenePaths{}
 	sp.generated = *p.Generated
 	return &sp
+}
+
+func (sp *scenePaths) GetHeatmapPath(checksum string) string {
+	return filepath.Join(sp.generated.Heatmaps, checksum+".png")
 }
 
 func (sp *scenePaths) GetScreenshotPath(checksum string) string {
