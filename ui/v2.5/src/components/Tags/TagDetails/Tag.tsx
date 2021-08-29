@@ -21,6 +21,7 @@ import {
   Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { tagRelationHook } from "src/core/tags";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 import { TagImagesPanel } from "./TagImagesPanel";
@@ -123,6 +124,10 @@ export const Tag: React.FC = () => {
     input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
   ) {
     try {
+      const oldRelations = {
+        parents: tag?.parents ?? [],
+        children: tag?.children ?? [],
+      };
       if (!isNew) {
         const result = await updateTag({
           variables: {
@@ -131,7 +136,12 @@ export const Tag: React.FC = () => {
         });
         if (result.data?.tagUpdate) {
           setIsEditing(false);
-          return result.data.tagUpdate.id;
+          const updated = result.data.tagUpdate;
+          tagRelationHook(updated, oldRelations, {
+            parents: updated.parents,
+            children: updated.children,
+          });
+          return updated.id;
         }
       } else {
         const result = await createTag({
@@ -141,7 +151,12 @@ export const Tag: React.FC = () => {
         });
         if (result.data?.tagCreate?.id) {
           setIsEditing(false);
-          return result.data.tagCreate.id;
+          const created = result.data.tagCreate;
+          tagRelationHook(created, oldRelations, {
+            parents: created.parents,
+            children: created.children,
+          });
+          return created.id;
         }
       }
     } catch (e) {
@@ -161,7 +176,15 @@ export const Tag: React.FC = () => {
 
   async function onDelete() {
     try {
+      const oldRelations = {
+        parents: tag?.parents ?? [],
+        children: tag?.children ?? [],
+      };
       await deleteTag();
+      tagRelationHook(tag as GQL.TagDataFragment, oldRelations, {
+        parents: [],
+        children: [],
+      });
     } catch (e) {
       Toast.error(e);
     }

@@ -1,4 +1,6 @@
+import { gql } from "@apollo/client";
 import * as GQL from "src/core/generated-graphql";
+import { getClient } from "src/core/StashService";
 import {
   TagsCriterion,
   TagsCriterionOption,
@@ -40,4 +42,63 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
 
     return filter;
   };
+};
+
+interface ITagRelationTuple {
+  parents: GQL.SlimTagDataFragment[];
+  children: GQL.SlimTagDataFragment[];
+}
+
+export const tagRelationHook = (
+  tag: GQL.SlimTagDataFragment | GQL.TagDataFragment,
+  old: ITagRelationTuple,
+  updated: ITagRelationTuple
+) => {
+  const { cache } = getClient();
+
+  const tagRef = cache.writeFragment({
+    data: tag,
+    fragment: gql`
+      fragment Tag on Tag {
+        id
+      }
+    `,
+  });
+
+  function updater(
+    property: "parents" | "children",
+    oldTags: GQL.SlimTagDataFragment[],
+    updatedTags: GQL.SlimTagDataFragment[]
+  ) {
+    oldTags.forEach((o) => {
+      if (!updatedTags.some((u) => u.id === o.id)) {
+        cache.modify({
+          id: cache.identify(o),
+          fields: {
+            [property](value, { readField }) {
+              return value.filter(
+                (t: GQL.SlimTagDataFragment) => readField("id", t) !== tag.id
+              );
+            },
+          },
+        });
+      }
+    });
+
+    updatedTags.forEach((u) => {
+      if (!oldTags.some((o) => o.id === u.id)) {
+        cache.modify({
+          id: cache.identify(u),
+          fields: {
+            [property](value) {
+              return [...value, tagRef];
+            },
+          },
+        });
+      }
+    });
+  }
+
+  updater("children", old.parents, updated.parents);
+  updater("parents", old.children, updated.children);
 };
