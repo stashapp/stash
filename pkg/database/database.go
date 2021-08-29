@@ -91,7 +91,7 @@ func Initialize(databasePath string) error {
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + databasePath + "?_journal=WAL"
+	url := "file:" + databasePath + "?_journal=WAL&_sync=NORMAL"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
