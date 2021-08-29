@@ -10,6 +10,7 @@ import React, {
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
@@ -96,6 +97,8 @@ export interface IListHookOperation<T> {
     selectedIds: Set<string>
   ) => boolean;
   postRefetch?: boolean;
+  icon?: IconProp;
+  buttonVariant?: string;
 }
 
 export enum PersistanceLevel {
@@ -124,7 +127,6 @@ interface IListHookOptions<T, E> {
     result: T,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number,
     onChangePage: (page: number) => void,
     pageCount: number
   ) => React.ReactNode;
@@ -170,7 +172,6 @@ const RenderList = <
   QueryResult extends IQueryResult,
   QueryData extends IDataItem
 >({
-  defaultZoomIndex,
   filter,
   filterOptions,
   onChangePage,
@@ -194,7 +195,6 @@ const RenderList = <
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
-  const [zoomIndex, setZoomIndex] = useState<number>(defaultZoomIndex ?? 1);
 
   const [editingCriterion, setEditingCriterion] = useState<
     Criterion<CriterionValue> | undefined
@@ -334,7 +334,9 @@ const RenderList = <
   }
 
   function onChangeZoom(newZoomIndex: number) {
-    setZoomIndex(newZoomIndex);
+    const newFilter = _.cloneDeep(filter);
+    newFilter.zoomIndex = newZoomIndex;
+    updateQueryParams(newFilter);
   }
 
   async function onOperationClicked(o: IListHookOperation<QueryResult>) {
@@ -358,6 +360,8 @@ const RenderList = <
 
         return true;
       },
+      icon: o.icon,
+      buttonVariant: o.buttonVariant,
     }));
 
   function onEdit() {
@@ -405,14 +409,7 @@ const RenderList = <
     return (
       <>
         {renderPagination()}
-        {renderContent(
-          result,
-          filter,
-          selectedIds,
-          zoomIndex,
-          onChangePage,
-          pages
-        )}
+        {renderContent(result, filter, selectedIds, onChangePage, pages)}
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
@@ -501,7 +498,7 @@ const RenderList = <
           displayMode={filter.displayMode}
           displayModeOptions={filterOptions.displayModeOptions}
           onSetDisplayMode={onChangeDisplayMode}
-          zoomIndex={zoomable ? zoomIndex : undefined}
+          zoomIndex={zoomable ? filter.zoomIndex : undefined}
           onSetZoom={zoomable ? onChangeZoom : undefined}
         />
       </ButtonToolbar>
@@ -566,7 +563,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       options.filterMode,
       queryString.parse(location.search),
       defaultSort,
-      defaultDisplayMode
+      defaultDisplayMode,
+      options.defaultZoomIndex
     )
   );
 

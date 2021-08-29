@@ -213,8 +213,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   function renderTags(
     result: FindTagsQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     if (!result.data?.findTags) return;
 
@@ -225,7 +224,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
             <TagCard
               key={tag.id}
               tag={tag}
-              zoomIndex={zoomIndex}
+              zoomIndex={filter.zoomIndex}
               selecting={selectedIds.size > 0}
               selected={selectedIds.has(tag.id)}
               onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
@@ -287,6 +286,34 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
               </Button>
               <Button variant="secondary" className="tag-list-button">
                 <Link
+                  to={NavUtils.makeTagImagesUrl(tag)}
+                  className="tag-list-anchor"
+                >
+                  <FormattedMessage
+                    id="countables.images"
+                    values={{
+                      count: tag.image_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.image_count ?? 0} />
+                </Link>
+              </Button>
+              <Button variant="secondary" className="tag-list-button">
+                <Link
+                  to={NavUtils.makeTagGalleriesUrl(tag)}
+                  className="tag-list-anchor"
+                >
+                  <FormattedMessage
+                    id="countables.galleries"
+                    values={{
+                      count: tag.gallery_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.gallery_count ?? 0} />
+                </Link>
+              </Button>
+              <Button variant="secondary" className="tag-list-button">
+                <Link
                   to={NavUtils.makeTagSceneMarkersUrl(tag)}
                   className="tag-list-anchor"
                 >
@@ -302,7 +329,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
               <span className="tag-list-count">
                 <FormattedMessage id="total" />:{" "}
                 <FormattedNumber
-                  value={(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
+                  value={
+                    (tag.scene_count || 0) +
+                    (tag.scene_marker_count || 0) +
+                    (tag.image_count || 0) +
+                    (tag.gallery_count || 0)
+                  }
                 />
               </span>
               <Button variant="danger" onClick={() => setDeletingTag(tag)}>
@@ -328,13 +360,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   function renderContent(
     result: FindTagsQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     return (
       <>
         {maybeRenderExportDialog(selectedIds)}
-        {renderTags(result, filter, selectedIds, zoomIndex)}
+        {renderTags(result, filter, selectedIds)}
       </>
     );
   }

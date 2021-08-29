@@ -68,13 +68,15 @@ SELECT GROUP_CONCAT(id) as ids
 FROM scenes
 WHERE phash IS NOT NULL
 GROUP BY phash
-HAVING COUNT(*) > 1;
+HAVING COUNT(phash) > 1
+ORDER BY SUM(size) DESC;
 `
 
 var findAllPhashesQuery = `
 SELECT id, phash
 FROM scenes
 WHERE phash IS NOT NULL
+ORDER BY size DESC
 `
 
 type sceneQueryBuilder struct {
@@ -270,6 +272,10 @@ func (qb *sceneQueryBuilder) Count() (int, error) {
 
 func (qb *sceneQueryBuilder) Size() (float64, error) {
 	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
+}
+
+func (qb *sceneQueryBuilder) Duration() (float64, error) {
+	return qb.runSumQuery("SELECT SUM(cast(duration as double)) as sum FROM scenes", nil)
 }
 
 func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {

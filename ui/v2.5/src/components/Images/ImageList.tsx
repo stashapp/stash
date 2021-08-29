@@ -262,7 +262,6 @@ export const ImageList: React.FC<IImageList> = ({
     result: FindImagesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number,
     onChangePage: (page: number) => void,
     pageCount: number
   ) {
@@ -273,7 +272,7 @@ export const ImageList: React.FC<IImageList> = ({
       return (
         <div className="row justify-content-center">
           {result.data.findImages.images.map((image) =>
-            renderImageCard(image, selectedIds, zoomIndex)
+            renderImageCard(image, selectedIds, filter.zoomIndex)
           )}
         </div>
       );
@@ -294,21 +293,13 @@ export const ImageList: React.FC<IImageList> = ({
     result: FindImagesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number,
     onChangePage: (page: number) => void,
     pageCount: number
   ) {
     return (
       <>
         {maybeRenderImageExportDialog(selectedIds)}
-        {renderImages(
-          result,
-          filter,
-          selectedIds,
-          zoomIndex,
-          onChangePage,
-          pageCount
-        )}
+        {renderImages(result, filter, selectedIds, onChangePage, pageCount)}
       </>
     );
   }

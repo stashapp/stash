@@ -308,8 +308,10 @@
         "heading": "Benutzerdefinierte CSS",
         "option_label": "Benutzerdefiniertes CSS aktiviert"
       },
-      "handy_connection_key": "Handy Verbindungsschlüssel",
-      "handy_connection_key_desc": "Handy Verbindungsschlüssel für interaktive Szenen.",
+      "handy_connection_key": {
+        "description": "Handy Verbindungsschlüssel für interaktive Szenen.",
+        "heading": "Handy Verbindungsschlüssel"
+      },
       "language": {
         "heading": "Sprache"
       },
