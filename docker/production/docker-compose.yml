@@ -4,9 +4,9 @@ version: '3.4'
 services:
   stash:
     image: stashapp/stash:latest
+    container_name: stash
     restart: unless-stopped
-    ports:
-      - "9999:9999"
+    network_mode: host
     logging:
       driver: "json-file"
       options:
