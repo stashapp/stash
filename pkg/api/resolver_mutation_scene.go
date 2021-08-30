@@ -108,6 +108,10 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedScene.Organized = input.Organized
 
+	if input.Path != nil && *input.Path != "" {
+		updatedScene.Path = input.Path
+	}
+
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(*input.CoverImage)

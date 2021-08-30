@@ -70,6 +70,7 @@ input SceneUpdateInput {
   rating: Int
   organized: Boolean
   studio_id: ID
+  path: String
   gallery_ids: [ID!]
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
@@ -100,6 +101,7 @@ input BulkSceneUpdateInput {
   rating: Int
   organized: Boolean
   studio_id: ID
+  path: String
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
