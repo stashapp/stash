@@ -156,7 +156,7 @@ func Backup(db *sqlx.DB, backupPath string) error {
 	logger.Infof("Backing up database into: %s", backupPath)
 	_, err := db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
-		return fmt.Errorf("Vacuum failed: %s", err)
+		return fmt.Errorf("vacuum failed: %s", err)
 	}
 
 	return nil
@@ -272,7 +272,7 @@ func registerCustomDriver() {
 
 				for name, fn := range funcs {
 					if err := conn.RegisterFunc(name, fn, true); err != nil {
-						return fmt.Errorf("Error registering function %s: %s", name, err.Error())
+						return fmt.Errorf("error registering function %s: %s", name, err.Error())
 					}
 				}
 
@@ -286,7 +286,7 @@ func registerCustomDriver() {
 				})
 
 				if err != nil {
-					return fmt.Errorf("Error registering natural sort collation: %s", err.Error())
+					return fmt.Errorf("error registering natural sort collation: %s", err.Error())
 				}
 
 				return nil
