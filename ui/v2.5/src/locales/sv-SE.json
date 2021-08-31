@@ -3,10 +3,10 @@
     "add": "Lägg till",
     "add_directory": "Lägg till mapp",
     "add_entity": "Lägg till {entityType}",
-    "add_to_entity": "Koppla med {entityType}", // weird word choice
+    "add_to_entity": "Koppla med {entityType}",
     "allow": "Tillåt",
     "allow_temporarily": "Tillåt temporärt",
-    "apply": "Anwenden",
+    "apply": "Applicera",
     "auto_tag": "Auto Tagga",
     "backup": "Backup",
     "cancel": "Avbryt",
