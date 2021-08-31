@@ -29,11 +29,3 @@ func GetStashHomeDirectory() string {
 func GetDefaultDatabaseFilePath() string {
 	return filepath.Join(GetStashHomeDirectory(), "stash-go.sqlite")
 }
-
-func GetSSLKey() string {
-	return filepath.Join(GetStashHomeDirectory(), "stash.key")
-}
-
-func GetSSLCert() string {
-	return filepath.Join(GetStashHomeDirectory(), "stash.crt")
-}
