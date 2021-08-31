@@ -137,6 +137,12 @@ fragment ScrapedSceneData on ScrapedScene {
   movies {
     ...ScrapedSceneMovieData
   }
+
+  fingerprints {
+    hash
+    algorithm
+    duration
+  }
 }
 
 fragment ScrapedGalleryData on ScrapedGallery {
