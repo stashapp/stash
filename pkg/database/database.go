@@ -232,6 +232,7 @@ func RunMigrations() error {
 	if err != nil {
 		panic(err.Error())
 	}
+	defer m.Close()
 
 	databaseSchemaVersion, _, _ = m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
@@ -240,13 +241,9 @@ func RunMigrations() error {
 		err = m.Steps(int(stepNumber))
 		if err != nil {
 			// migration failed
-			logger.Errorf("Error migrating database: %s", err.Error())
-			m.Close()
 			return err
 		}
 	}
-
-	m.Close()
 
 	// re-initialise the database
 	Initialize(dbPath)
@@ -255,7 +252,7 @@ func RunMigrations() error {
 	logger.Info("Performing vacuum on database")
 	_, err = DB.Exec("VACUUM")
 	if err != nil {
-		logger.Warnf("error while performing post-migration vacuum: %s", err.Error())
+		logger.Warnf("error while performing post-migration vacuum: %v", err)
 	}
 
 	return nil
