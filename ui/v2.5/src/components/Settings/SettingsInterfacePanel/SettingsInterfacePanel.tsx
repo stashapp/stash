@@ -124,7 +124,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="en-GB">English (United Kingdom)</option>
           <option value="de-DE">German (Germany)</option>
           <option value="pt-BR">Portuguese (Brazil)</option>
-          <option value="se-SE">Swedish (Sweden)</option>
+          <option value="sv-SE">Swedish (Sweden)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </Form.Control>
