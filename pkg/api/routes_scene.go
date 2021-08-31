@@ -58,7 +58,7 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 		// shouldn't happen, fallback to ffprobe
 		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 		if err != nil {
-			logger.Errorf("[transcode] error reading video file: %s", err.Error())
+			logger.Errorf("[transcode] error reading video file: %v", err)
 			return ffmpeg.Container("")
 		}
 
@@ -104,7 +104,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 
 	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 	if err != nil {
-		logger.Errorf("[stream] error reading video file: %s", err.Error())
+		logger.Errorf("[stream] error reading video file: %v", err)
 		return
 	}
 
@@ -140,7 +140,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 	if err != nil {
-		logger.Errorf("[stream] error reading video file: %s", err.Error())
+		logger.Errorf("[stream] error reading video file: %v", err)
 		return
 	}
 
@@ -167,7 +167,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	stream, err = encoder.GetTranscodeStream(options)
 
 	if err != nil {
-		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
+		logger.Errorf("[stream] error transcoding video file: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
