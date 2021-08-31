@@ -32,9 +32,7 @@ func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 
 	ret := src
 	for commonKey, commonVal := range c {
-		if strings.Contains(ret, commonKey) {
-			ret = strings.Replace(ret, commonKey, commonVal, -1)
-		}
+		ret = strings.Replace(ret, commonKey, commonVal, -1)
 	}
 
 	return ret
