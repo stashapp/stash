@@ -328,9 +328,18 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	c.InitTLS()
 	certFile, keyFile := c.GetTLSFiles()
 
-	if certFile == "" || keyFile == "" {
+	if certFile == "" && keyFile == "" {
 		// assume http configuration
 		return nil, nil
+	}
+
+	// ensure both files are present
+	if certFile == "" {
+		return nil, errors.New("SSL certificate file must be present if key file is present")
+	}
+
+	if keyFile == "" {
+		return nil, errors.New("SSL key file must be present if certificate file is present")
 	}
 
 	cert, err := ioutil.ReadFile(certFile)
