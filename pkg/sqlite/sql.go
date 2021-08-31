@@ -209,20 +209,16 @@ func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (
 	switch input.Modifier {
 	case "EQUALS", "NOT_EQUALS":
 		args = []interface{}{input.Value}
-		break
 	case "LESS_THAN":
 		args = []interface{}{input.Value}
-		break
 	case "GREATER_THAN":
 		args = []interface{}{input.Value}
-		break
 	case "BETWEEN", "NOT_BETWEEN":
 		upper := 0
 		if input.Value2 != nil {
 			upper = *input.Value2
 		}
 		args = []interface{}{input.Value, upper}
-		break
 	}
 
 	return column + " " + binding, args
