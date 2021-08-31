@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const invalidImage = "aW1hZ2VCeXRlcw&&"
-
 const (
 	path = "path"
 

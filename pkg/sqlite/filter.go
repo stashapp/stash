@@ -389,14 +389,6 @@ func boolCriterionHandler(c *bool, column string) criterionHandlerFunc {
 	}
 }
 
-func stringLiteralCriterionHandler(v *string, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
-		if v != nil {
-			f.addWhere(column+" = ?", v)
-		}
-	}
-}
-
 // handle for MultiCriterion where there is a join table between the new
 // objects
 type joinedMultiCriterionHandlerBuilder struct {

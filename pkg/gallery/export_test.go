@@ -39,11 +39,6 @@ const (
 	studioName = "studioName"
 )
 
-var names = []string{
-	"name1",
-	"name2",
-}
-
 var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
 var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 
@@ -71,18 +66,6 @@ func createFullGallery(id int) models.Gallery {
 	}
 }
 
-func createEmptyGallery(id int) models.Gallery {
-	return models.Gallery{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
-	}
-}
-
 func createFullJSONGallery() *jsonschema.Gallery {
 	return &jsonschema.Gallery{
 		Title:     title,
@@ -94,17 +77,6 @@ func createFullJSONGallery() *jsonschema.Gallery {
 		Rating:    rating,
 		Organized: organized,
 		URL:       url,
-		CreatedAt: models.JSONTime{
-			Time: createTime,
-		},
-		UpdatedAt: models.JSONTime{
-			Time: updateTime,
-		},
-	}
-}
-
-func createEmptyJSONGallery() *jsonschema.Gallery {
-	return &jsonschema.Gallery{
 		CreatedAt: models.JSONTime{
 			Time: createTime,
 		},

@@ -72,14 +72,6 @@ func (qb *scrapedItemQueryBuilder) getScrapedItemsSort(findFilter *models.FindFi
 	return getSort(sort, direction, "scraped_items")
 }
 
-func (qb *scrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}) (*models.ScrapedItem, error) {
-	results, err := qb.queryScrapedItems(query, args)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
-}
-
 func (qb *scrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}) ([]*models.ScrapedItem, error) {
 	var ret models.ScrapedItems
 	if err := qb.query(query, args, &ret); err != nil {
