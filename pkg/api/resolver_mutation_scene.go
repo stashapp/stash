@@ -257,6 +257,10 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedScene.Organized = input.Organized
 
+	if input.Path != nil && *input.Path != "" {
+		updatedScene.Path = input.Path
+	}
+
 	ret := []*models.Scene{}
 
 	// Start the transaction and save the scene marker
