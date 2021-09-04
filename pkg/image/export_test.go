@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	imageID    = 1
-	noImageID  = 2
+	imageID = 1
+	// noImageID  = 2
 	errImageID = 3
 
 	studioID        = 4
@@ -24,7 +24,7 @@ const (
 	// noGalleryID  = 7
 	// errGalleryID = 8
 
-	noTagsID  = 11
+	// noTagsID  = 11
 	errTagsID = 12
 
 	// noMoviesID     = 13

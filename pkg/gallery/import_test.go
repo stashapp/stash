@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	galleryNameErr      = "galleryNameErr"
-	existingGalleryName = "existingGalleryName"
+	galleryNameErr = "galleryNameErr"
+	// existingGalleryName = "existingGalleryName"
 
 	existingGalleryID   = 100
 	existingStudioID    = 101

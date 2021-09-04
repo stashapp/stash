@@ -19,7 +19,7 @@ const (
 	missingStudioID = 5
 	errStudioID     = 6
 
-	noTagsID  = 11
+	// noTagsID  = 11
 	errTagsID = 12
 )
 

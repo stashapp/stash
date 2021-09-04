@@ -64,8 +64,8 @@ const (
 )
 
 const (
-	studioName      = "studioName"
-	galleryChecksum = "galleryChecksum"
+	studioName = "studioName"
+	// galleryChecksum = "galleryChecksum"
 
 	validMovie1  = 1
 	validMovie2  = 2
