@@ -7,6 +7,8 @@ import (
 	"hash/fnv"
 	"io"
 	"os"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 func MD5FromBytes(data []byte) string {
@@ -40,7 +42,10 @@ func MD5FromReader(src io.Reader) (string, error) {
 
 func GenerateRandomKey(l int) string {
 	b := make([]byte, l)
-	rand.Read(b)
+	n, err := rand.Read(b)
+	if err != nil {
+		logger.Warnf("failure generating random key: %v (only read %v bytes)", err, n)
+	}
 	return fmt.Sprintf("%x", b)
 }
 

@@ -224,7 +224,12 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 	}
 
 	registerRunningEncoder(probeResult.Path, cmd.Process)
-	go waitAndDeregister(probeResult.Path, cmd)
+	go func() {
+		err := waitAndDeregister(probeResult.Path, cmd)
+		if err != nil {
+			logger.Warnf("Error while deregistering ffmpeg stream: %v", err)
+		}
+	}()
 
 	// stderr must be consumed or the process deadlocks
 	go func() {
