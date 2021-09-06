@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -37,16 +38,16 @@ func (gp *generatedPaths) GetTmpPath(fileName string) string {
 	return filepath.Join(gp.Tmp, fileName)
 }
 
-func (gp *generatedPaths) EnsureTmpDir() {
-	utils.EnsureDir(gp.Tmp)
+func (gp *generatedPaths) EnsureTmpDir() error {
+	return utils.EnsureDir(gp.Tmp)
 }
 
-func (gp *generatedPaths) EmptyTmpDir() {
-	utils.EmptyDir(gp.Tmp)
+func (gp *generatedPaths) EmptyTmpDir() error {
+	return utils.EmptyDir(gp.Tmp)
 }
 
-func (gp *generatedPaths) RemoveTmpDir() {
-	utils.RemoveDir(gp.Tmp)
+func (gp *generatedPaths) RemoveTmpDir() error {
+	return utils.RemoveDir(gp.Tmp)
 }
 
 func (gp *generatedPaths) TempDir(pattern string) (string, error) {
@@ -56,7 +57,10 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 		return "", err
 	}
 
-	utils.EmptyDir(ret)
+	err = utils.EmptyDir(ret)
+	if err != nil {
+		logger.Warnf("could not recursively empty dir: %v", err)
+	}
 
 	return ret, nil
 }
