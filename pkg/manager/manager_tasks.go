@@ -163,7 +163,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
 	}
-	instance.Paths.Generated.EnsureTmpDir()
+	err := instance.Paths.Generated.EnsureTmpDir()
+	if err != nil {
+		logger.Warnf("could not generate temporary directory: %v", err)
+	}
 
 	sceneIDs, err := utils.StringSliceToIntSlice(input.SceneIDs)
 	if err != nil {
@@ -250,14 +253,20 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 
 		// Start measuring how long the generate has taken. (consider moving this up)
 		start := time.Now()
-		instance.Paths.Generated.EnsureTmpDir()
+		err = instance.Paths.Generated.EnsureTmpDir()
+		if err != nil {
+			logger.Warnf("could not create temprary directory: %v", err)
+		}
 
 		for _, scene := range scenes {
 			progress.Increment()
 			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				wg.Wait()
-				instance.Paths.Generated.EmptyTmpDir()
+				err := instance.Paths.Generated.EmptyTmpDir()
+				if err != nil {
+					logger.Warnf("failure emptying temporary directory: %v", err)
+				}
 				return
 			}
 
@@ -338,7 +347,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				wg.Wait()
-				instance.Paths.Generated.EmptyTmpDir()
+				err := instance.Paths.Generated.EmptyTmpDir()
+				if err != nil {
+					logger.Warnf("failure emptying temporary directory: %v", err)
+				}
 				elapsed := time.Since(start)
 				logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 				return
@@ -363,7 +375,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 
 		wg.Wait()
 
-		instance.Paths.Generated.EmptyTmpDir()
+		err = instance.Paths.Generated.EmptyTmpDir()
+		if err != nil {
+			logger.Warnf("failure emptying temporary directory: %v", err)
+		}
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 	})
@@ -381,7 +396,10 @@ func (s *singleton) GenerateScreenshot(ctx context.Context, sceneId string, at f
 
 // generate default screenshot if at is nil
 func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *float64) int {
-	instance.Paths.Generated.EnsureTmpDir()
+	err := instance.Paths.Generated.EnsureTmpDir()
+	if err != nil {
+		logger.Warnf("failure generating screenshot: %v", err)
+	}
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		sceneIdInt, err := strconv.Atoi(sceneId)

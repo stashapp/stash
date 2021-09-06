@@ -91,10 +91,13 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		http.ServeFile(w, r, filepath)
 	} else {
 		var cover []byte
-		s.TXNManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := s.TXNManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			cover, _ = repo.Scene().GetCover(scene.ID)
 			return nil
 		})
+		if err != nil {
+			logger.Warnf("read transaction failed while serving screenshot: %v", err)
+		}
 		utils.ServeImage(cover, w, r)
 	}
 }
