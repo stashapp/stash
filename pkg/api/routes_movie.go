@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -32,17 +33,23 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Movie().GetFrontImage(movie.ID)
 			return nil
 		})
+		if err != nil {
+			logger.Warnf("read transaction error while getting front image: %v", err)
+		}
 	}
 
 	if len(image) == 0 {
 		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
-	utils.ServeImage(image, w, r)
+	err := utils.ServeImage(image, w, r)
+	if err != nil {
+		logger.Warnf("error serving front image: %v", err)
+	}
 }
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +57,23 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Movie().GetBackImage(movie.ID)
 			return nil
 		})
+		if err != nil {
+			logger.Warnf("read transaction error on fetch back image: %v", err)
+		}
 	}
 
 	if len(image) == 0 {
 		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
-	utils.ServeImage(image, w, r)
+	err := utils.ServeImage(image, w, r)
+	if err != nil {
+		logger.Warnf("error while serving image: %v", err)
+	}
 }
 
 func MovieCtx(next http.Handler) http.Handler {

@@ -84,7 +84,10 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	container := getSceneFileContainer(scene)
 	if container != ffmpeg.Matroska {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("not an mkv file"))
+		_, err := w.Write([]byte("not an mkv file"))
+		if err != nil {
+			logger.Warnf("[stream] error writing to stream: %v", err)
+		}
 		return
 	}
 
@@ -125,7 +128,10 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	rangeStr := requestByteRange.ToHeaderValue(int64(str.Len()))
 	w.Header().Set("Content-Range", rangeStr)
 
-	w.Write(ret)
+	n, err := w.Write(ret)
+	if err != nil {
+		logger.Warnf("[stream] error writing stream (wrote %v bytes): %v", n, err)
+	}
 }
 
 func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +151,11 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	}
 
 	// start stream based on query param, if provided
-	r.ParseForm()
+	err = r.ParseForm()
+	if err != nil {
+		logger.Warnf("[stream] error parsing query form: %v", err)
+	}
+
 	startTime := r.Form.Get("start")
 	requestedSize := r.Form.Get("resolution")
 
@@ -169,7 +179,10 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			logger.Warnf("[stream] error writing response: %v", err)
+		}
 		return
 	}
 
@@ -327,7 +340,7 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			qb := repo.Scene()
 			if sceneID == 0 {
 				// determine checksum/os by the length of the query param
@@ -342,6 +355,9 @@ func SceneCtx(next http.Handler) http.Handler {
 
 			return nil
 		})
+		if readTxnErr != nil {
+			logger.Warnf("error executing SceneCtx transaction: %v", readTxnErr)
+		}
 
 		if scene == nil {
 			http.Error(w, http.StatusText(404), 404)

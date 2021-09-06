@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -33,17 +34,23 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		readTxnErr := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Performer().GetImage(performer.ID)
 			return nil
 		})
+		if readTxnErr != nil {
+			logger.Warnf("couldn't execute getting a performer image from read transaction: %v", readTxnErr)
+		}
 	}
 
 	if len(image) == 0 || defaultParam == "true" {
 		image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, config.GetInstance().GetCustomPerformerImageLocation())
 	}
 
-	utils.ServeImage(image, w, r)
+	err := utils.ServeImage(image, w, r)
+	if err != nil {
+		logger.Warnf("error serving image: %v", err)
+	}
 }
 
 func PerformerCtx(next http.Handler) http.Handler {
