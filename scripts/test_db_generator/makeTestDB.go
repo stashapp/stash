@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -43,12 +44,15 @@ func main() {
 	var err error
 	c, err = loadConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalf("couldn't load configuration: %v", err)
 	}
 
 	initNaming(*c)
 
-	database.Initialize(c.Database)
+	err = database.Initialize(c.Database)
+	if err != nil {
+		log.Fatalf("couldn't initialize database: %v", err)
+	}
 	populateDB()
 }
 
