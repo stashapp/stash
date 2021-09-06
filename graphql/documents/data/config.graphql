@@ -32,6 +32,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   galleryExtensions
   excludes
   imageExcludes
+  customPerformerImageLocation
   scraperUserAgent
   scraperCertCheck
   scraperCDPPath
@@ -55,6 +56,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   language
   slideshowDelay
   handyKey
+  funscriptOffset
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {
@@ -62,6 +64,13 @@ fragment ConfigDLNAData on ConfigDLNAResult {
   enabled
   whitelistedIPs
   interfaces
+}
+
+fragment ConfigScrapingData on ConfigScrapingResult {
+  scraperUserAgent
+  scraperCertCheck
+  scraperCDPPath
+  excludeTagPatterns
 }
 
 fragment ConfigData on ConfigResult {
@@ -73,5 +82,8 @@ fragment ConfigData on ConfigResult {
   }
   dlna {
     ...ConfigDLNAData
+  }
+  scraping {
+    ...ConfigScrapingData
   }
 }

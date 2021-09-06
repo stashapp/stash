@@ -75,7 +75,15 @@
     },
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
-    "view_random": "隨機開啟"
+    "view_random": "隨機開啟",
+    "merge_from": "與其他項目合併",
+    "save_filter": "儲存過濾條件",
+    "set_as_default": "設為預設",
+    "merge_into": "合併至其他項目",
+    "confirm": "確認",
+    "select_folders": "選擇資料夾",
+    "browse_for_image": "選擇圖像…",
+    "open_random": "隨機開啟"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -118,7 +126,9 @@
       "hash_matches": "{hash_type} 符合資料庫中的雜湊值",
       "match_failed_already_tagged": "短片先前已標記完畢",
       "match_failed_no_result": "未找到結果",
-      "match_success": "已成功標記短片"
+      "match_success": "已成功標記短片",
+      "duration_off": "片長差至少 {number} 秒",
+      "duration_unknown": "未知片長"
     },
     "verb_match_fp": "特徵碼辨別",
     "verb_matched": "符合",
@@ -144,7 +154,7 @@
       "interface": "介面",
       "logs": "日誌",
       "plugins": "插件",
-      "scrapers": "爬蟲",
+      "scraping": "爬蟲設定",
       "tasks": "排程",
       "tools": "工具"
     },
@@ -214,7 +224,7 @@
       "maximum_streaming_transcode_size_head": "最大的串流轉碼解析度大小",
       "maximum_transcode_size_desc": "轉碼生成的影片最大大小",
       "maximum_transcode_size_head": "最大的轉碼解析度大小",
-      "number_of_parallel_task_for_scan_generation_desc": "設置為 0 以自動偵測。請注意，運行比使用 100% CPU 使用率所需的排成數量，可能會降低性能並導致其他問題。",
+      "number_of_parallel_task_for_scan_generation_desc": "設置為 0 以自動偵測。請注意，運行比使用 100% CPU 使用率所需的排程數量，可能會降低性能並導致其他問題。",
       "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
       "parallel_scan_head": "並行掃描/生成",
       "preview_generation": "預覽檔案生成",
@@ -229,12 +239,15 @@
     "logs": {
       "log_level": "日誌級別"
     },
-    "scrapers": {
+    "scraping": {
       "entity_metadata": "{entityType}資訊",
       "entity_scrapers": "{entityType}爬蟲",
+      "scrapers": "爬蟲",
       "search_by_name": "透過名稱搜尋",
       "supported_types": "支援類型",
-      "supported_urls": "支援網址"
+      "supported_urls": "支援網址",
+      "excluded_tag_patterns_head": "排除符合正則表達式的標籤",
+      "excluded_tag_patterns_desc": "自爬蟲結果中，排除符合以下正則表達式的標籤"
     },
     "stashbox": {
       "add_instance": "新增 Stash-box 端點",
@@ -246,7 +259,7 @@
       "title": "Stash-box 端點"
     },
     "tasks": {
-      "added_job_to_queue": "已新增『{operation_name}』至作業排成",
+      "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
       "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
       "auto_tagging": "自動套用標籤",
       "backing_up_database": "備份資料庫中",
@@ -286,7 +299,8 @@
         "select_parser_recipe": "選擇預設分析字串",
         "title": "短片名稱分析工具",
         "whitespace_chars": "空白字元",
-        "whitespace_chars_desc": "這些字元將在標題中被的空格替換"
+        "whitespace_chars_desc": "這些字元將在標題中被的空格替換",
+        "ignore_organized": "忽略已整理的短片"
       },
       "scene_tools": "短片工具"
     },
@@ -296,8 +310,10 @@
         "heading": "自定義 CSS",
         "option_label": "啟用自定義 CSS"
       },
-      "handy_connection_key": "Handy 連線金鑰",
-      "handy_connection_key_desc": "播放支援互動性的短片時所用的 Handy 連線金鑰。",
+      "handy_connection_key": {
+        "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。",
+        "heading": "Handy 連線金鑰"
+      },
       "language": {
         "heading": "語言"
       },
@@ -341,7 +357,18 @@
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
         "heading": "幻燈片延遲"
       },
-      "title": "使用者介面"
+      "title": "使用者介面",
+      "performers": {
+        "options": {
+          "image_location": {
+            "description": "自訂演員圖像路徑，留空以使用內建預設。",
+            "heading": "自訂演員圖像路徑"
+          }
+        }
+      }
+    },
+    "plugins": {
+      "triggers_on": "觸發於"
     }
   },
   "configuration": "設定",
@@ -370,7 +397,9 @@
     "matches_regex": "符合正則表達式",
     "not_equals": "不是",
     "not_matches_regex": "不符合正則表達式",
-    "not_null": "不為空"
+    "not_null": "不為空",
+    "between": "與 ... 之間",
+    "not_between": "不與 ... 之間"
   },
   "date": "日期",
   "death_date": "去世日期",
@@ -412,7 +441,12 @@
     "scrape_results_existing": "現有資訊",
     "scrape_results_scraped": "爬取資訊",
     "set_image_url_title": "圖片連結",
-    "unsaved_changes": "尚有未保存的更改。你確定要離開嗎？"
+    "unsaved_changes": "尚有未保存的更改。你確定要離開嗎？",
+    "merge_tags": {
+      "source": "來源",
+      "destination": "目的地"
+    },
+    "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？"
   },
   "dimensions": "解析度",
   "director": "導演",
@@ -497,7 +531,8 @@
       "age_context": "這齣戲裡面 {age} {years_old}"
     },
     "stream": "串流連結",
-    "video_codec": "影片編碼"
+    "video_codec": "影片編碼",
+    "phash": "PHash"
   },
   "movie": "電影",
   "movie_scene_number": "電影短片編號",
@@ -537,7 +572,8 @@
   "search_filter": {
     "add_filter": "新增篩選",
     "name": "篩選",
-    "update_filter": "更新篩選"
+    "update_filter": "更新篩選",
+    "saved_filters": "已儲存的過濾條件"
   },
   "seconds": "秒",
   "settings": "設定",
@@ -553,18 +589,43 @@
   "title": "標題",
   "toast": {
     "added_entity": "已新增{singularEntity}",
-    "added_generation_job_to_queue": "將生成作業新增至工作排程",
+    "added_generation_job_to_queue": "已將『生成作業』加入至工作排程",
     "delete_entity": "刪除{singularEntity}",
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
     "rescanning_entity": "重新掃描{singularEntity}中…",
-    "started_auto_tagging": "已開始自動套用標籤",
-    "updated_entity": "已更新{entity}"
+    "started_auto_tagging": "已將『自動套用標籤』加入至工作排程",
+    "updated_entity": "已更新{entity}",
+    "merged_tags": "已合併的標籤",
+    "create_entity": "已建立 {entity}",
+    "default_filter_set": "已設定預設過濾選項",
+    "saved_entity": "已儲存 {entity}"
   },
   "total": "總計",
   "up-dir": "往上一層",
   "updated_at": "更新於",
   "url": "連結",
   "weight": "體重",
-  "years_old": "歲"
+  "years_old": "歲",
+  "twitter": "Twitter",
+  "stash_id": "Stash ID",
+  "instagram": "Instagram",
+  "filters": "過濾條件",
+  "filter": "過濾",
+  "filter_name": "過濾條件名稱",
+  "detail": "詳情",
+  "include_child_studios": "包含子工作室",
+  "criterion": {
+    "greater_than": "大於",
+    "less_than": "小於",
+    "value": "數值"
+  },
+  "custom": "自訂",
+  "frames_per_second": "{value} 幀/秒",
+  "megabits_per_second": "{value} megabits/秒",
+  "tools": {
+    "scene_filename_parser": {
+      "ignore_organized": "忽略已整理的短片"
+    }
+  }
 }

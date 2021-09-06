@@ -17,9 +17,10 @@ import StashConfiguration from "./StashConfiguration";
 interface IExclusionPatternsProps {
   excludes: string[];
   setExcludes: (value: string[]) => void;
+  demo: string;
 }
 
-const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
+export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
   function excludeRegexChanged(idx: number, value: string) {
     const newExcludes = props.excludes.map((regex, i) => {
       const ret = idx !== i ? regex : value;
@@ -35,8 +36,7 @@ const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
   }
 
   function excludeAddRegex() {
-    const demo = "sample\\.mp4$";
-    const newExcludes = props.excludes.concat(demo);
+    const newExcludes = props.excludes.concat(props.demo);
 
     props.setExcludes(newExcludes);
   }
@@ -126,13 +126,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);
-  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
-    undefined
-  );
-  const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
-    undefined
-  );
-  const [scraperCertCheck, setScraperCertCheck] = useState<boolean>(true);
+  const [
+    customPerformerImageLocation,
+    setCustomPerformerImageLocation,
+  ] = useState<string>();
   const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
@@ -173,9 +170,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     galleryExtensions: commaDelimitedToList(galleryExtensions),
     excludes,
     imageExcludes,
-    scraperUserAgent,
-    scraperCDPPath,
-    scraperCertCheck,
+    customPerformerImageLocation,
     stashBoxes: stashBoxes.map(
       (b) =>
         ({
@@ -223,9 +218,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       );
       setExcludes(conf.general.excludes);
       setImageExcludes(conf.general.imageExcludes);
-      setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
-      setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
-      setScraperCertCheck(conf.general.scraperCertCheck);
+      setCustomPerformerImageLocation(
+        conf.general.customPerformerImageLocation ?? ""
+      );
       setStashBoxes(
         conf.general.stashBoxes.map((box, i) => ({
           name: box?.name ?? undefined,
@@ -495,7 +490,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
               id: "config.general.excluded_video_patterns_head",
             })}
           </h6>
-          <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
+          <ExclusionPatterns
+            excludes={excludes}
+            setExcludes={setExcludes}
+            demo="sample\.mp4$"
+          />
           <Form.Text className="text-muted">
             {intl.formatMessage({
               id: "config.general.excluded_video_patterns_desc",
@@ -519,6 +518,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <ExclusionPatterns
             excludes={imageExcludes}
             setExcludes={setImageExcludes}
+            demo="sample\.jpg$"
           />
           <Form.Text className="text-muted">
             {intl.formatMessage({
@@ -831,58 +831,27 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h4>{intl.formatMessage({ id: "config.general.scraping" })}</h4>
-        <Form.Group id="scraperUserAgent">
-          <h6>
-            {intl.formatMessage({ id: "config.general.scraper_user_agent" })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={scraperUserAgent}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setScraperUserAgent(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.scraper_user_agent_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group id="scraperCDPPath">
-          <h6>
-            {intl.formatMessage({ id: "config.general.chrome_cdp_path" })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={scraperCDPPath}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setScraperCDPPath(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.chrome_cdp_path_desc" })}
-          </Form.Text>
-        </Form.Group>
-
+        <h4>{intl.formatMessage({ id: "performers" })}</h4>
         <Form.Group>
-          <Form.Check
-            id="scaper-cert-check"
-            checked={scraperCertCheck}
-            label={intl.formatMessage({
-              id: "config.general.check_for_insecure_certificates",
+          <h6>
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.heading",
             })}
-            onChange={() => setScraperCertCheck(!scraperCertCheck)}
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            value={customPerformerImageLocation}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setCustomPerformerImageLocation(e.currentTarget.value);
+            }}
           />
           <Form.Text className="text-muted">
             {intl.formatMessage({
-              id: "config.general.check_for_insecure_certificates_desc",
+              id: "config.ui.performers.options.image_location.description",
             })}
           </Form.Text>
         </Form.Group>
       </Form.Group>
-
       <hr />
 
       <Form.Group id="stashbox">

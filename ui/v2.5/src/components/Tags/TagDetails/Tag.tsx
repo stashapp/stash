@@ -219,7 +219,10 @@ export const Tag: React.FC = () => {
   function renderMergeButton() {
     return (
       <Dropdown drop="up">
-        <Dropdown.Toggle variant="secondary">Merge...</Dropdown.Toggle>
+        <Dropdown.Toggle variant="secondary">
+          <FormattedMessage id="actions.merge" />
+          ...
+        </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white" id="tag-merge-menu">
           <Dropdown.Item
             className="bg-secondary text-white"
@@ -259,7 +262,7 @@ export const Tag: React.FC = () => {
       <div
         className={cx("tag-details", {
           "col-md-4": !isNew,
-          "col-8": isNew,
+          "col-md-8": isNew,
         })}
       >
         <div className="text-center logo-container">

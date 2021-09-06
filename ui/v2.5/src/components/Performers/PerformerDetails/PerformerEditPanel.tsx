@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
   Button,
-  Popover,
-  OverlayTrigger,
   Form,
   Col,
   InputGroup,
   Row,
   Badge,
+  Dropdown,
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
@@ -31,7 +30,7 @@ import {
   Modal,
   TagSelect,
 } from "src/components/Shared";
-import { ImageUtils } from "src/utils";
+import { ImageUtils, getStashIDs } from "src/utils";
 import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
@@ -74,6 +73,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
+  const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
@@ -351,6 +351,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.weight) {
       formik.setFieldValue("weight", state.weight);
     }
+
+    const remoteSiteID = state.remote_site_id;
+    if (remoteSiteID && (scraper as IStashBox).endpoint) {
+      const newIDs =
+        formik.values.stash_ids?.filter(
+          (s) => s.endpoint !== (scraper as IStashBox).endpoint
+        ) ?? [];
+      newIDs?.push({
+        endpoint: (scraper as IStashBox).endpoint,
+        stash_id: remoteSiteID,
+      });
+      formik.setFieldValue("stash_ids", newIDs);
+    }
   }
 
   function onImageLoad(imageData: string) {
@@ -367,10 +380,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           variables: {
             input: {
               ...input,
-              stash_ids: performerInput?.stash_ids?.map((s) => ({
-                endpoint: s.endpoint,
-                stash_id: s.stash_id,
-              })),
+              stash_ids: getStashIDs(performerInput?.stash_ids),
             },
           },
         });
@@ -466,7 +476,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   function getUpdateValues(values: InputValues): GQL.PerformerUpdateInput {
     return {
       ...values,
-      gender: stringToGender(values.gender),
+      gender: stringToGender(values.gender) ?? null,
       rating: values.rating ?? null,
       weight: Number(values.weight),
       id: performer.id ?? "",
@@ -507,7 +517,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     selectedPerformer: GQL.ScrapedPerformerDataFragment,
     selectedScraper: GQL.Scraper
   ) {
-    setScraper(undefined);
+    setIsScraperModalOpen(false);
     try {
       if (!scraper) return;
       setIsLoading(true);
@@ -525,6 +535,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       // if this is a new performer, just dump the data
       if (isNew) {
         updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+        setScraper(undefined);
       } else {
         setScrapedPerformer(result.data.scrapePerformer);
       }
@@ -559,7 +570,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   async function onScrapeStashBox(performerResult: GQL.ScrapedScenePerformer) {
-    setScraper(undefined);
+    setIsScraperModalOpen(false);
 
     const result: Partial<GQL.ScrapedPerformerDataFragment> = {
       ...performerResult,
@@ -571,9 +582,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // if this is a new performer, just dump the data
     if (isNew) {
       updatePerformerEditStateFromScraper(result);
+      setScraper(undefined);
     } else {
       setScrapedPerformer(result);
     }
+  }
+
+  function onScraperSelected(s: GQL.Scraper | IStashBox | undefined) {
+    setScraper(s);
+    setIsScraperModalOpen(true);
   }
 
   function renderScraperMenu() {
@@ -583,58 +600,51 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
     const popover = (
-      <Popover id="performer-scraper-popover">
-        <Popover.Content>
-          <>
-            {stashBoxes.map((s, index) => (
-              <div key={s.endpoint}>
-                <Button
-                  className="minimal"
-                  onClick={() => setScraper({ ...s, index })}
-                >
-                  {s.name ?? "Stash-Box"}
-                </Button>
-              </div>
-            ))}
-            {queryableScrapers
-              ? queryableScrapers.map((s) => (
-                  <div key={s.name}>
-                    <Button
-                      key={s.name}
-                      className="minimal"
-                      onClick={() => setScraper(s)}
-                    >
-                      {s.name}
-                    </Button>
-                  </div>
-                ))
-              : ""}
-            <div>
-              <Button className="minimal" onClick={() => onReloadScrapers()}>
-                <span className="fa-icon">
-                  <Icon icon="sync-alt" />
-                </span>
-                <span>
-                  <FormattedMessage id="actions.reload_scrapers" />
-                </span>
-              </Button>
-            </div>
-          </>
-        </Popover.Content>
-      </Popover>
+      <Dropdown.Menu id="performer-scraper-popover">
+        {stashBoxes.map((s, index) => (
+          <Dropdown.Item
+            as={Button}
+            key={s.endpoint}
+            className="minimal"
+            onClick={() => onScraperSelected({ ...s, index })}
+          >
+            {s.name ?? "Stash-Box"}
+          </Dropdown.Item>
+        ))}
+        {queryableScrapers
+          ? queryableScrapers.map((s) => (
+              <Dropdown.Item
+                as={Button}
+                key={s.name}
+                className="minimal"
+                onClick={() => onScraperSelected(s)}
+              >
+                {s.name}
+              </Dropdown.Item>
+            ))
+          : ""}
+        <Dropdown.Item
+          as={Button}
+          className="minimal"
+          onClick={() => onReloadScrapers()}
+        >
+          <span className="fa-icon">
+            <Icon icon="sync-alt" />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Dropdown.Item>
+      </Dropdown.Menu>
     );
 
     return (
-      <OverlayTrigger
-        trigger="click"
-        placement="top"
-        overlay={popover}
-        rootClose
-      >
-        <Button variant="secondary" className="mr-2">
+      <Dropdown drop="up" className="d-inline-block">
+        <Dropdown.Toggle variant="secondary" className="mr-2">
           <FormattedMessage id="actions.scrape_with" />
-        </Button>
-      </OverlayTrigger>
+        </Dropdown.Toggle>
+        {popover}
+      </Dropdown>
     );
   }
 
@@ -663,6 +673,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       <PerformerScrapeDialog
         performer={currentPerformer}
         scraped={scrapedPerformer}
+        scraper={scraper}
         onClose={(p) => {
           onScrapeDialogClosed(p);
         }}
@@ -675,6 +686,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       updatePerformerEditStateFromScraper(p);
     }
     setScrapedPerformer(undefined);
+    setScraper(undefined);
   }
 
   function maybeRenderScrapeButton() {
@@ -731,8 +743,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  const renderScrapeModal = () =>
-    scraper !== undefined && isScraper(scraper) ? (
+  const renderScrapeModal = () => {
+    if (!isScraperModalOpen) return;
+
+    return scraper !== undefined && isScraper(scraper) ? (
       <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
@@ -747,6 +761,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         name={formik.values.name || ""}
       />
     ) : undefined;
+  };
 
   function renderDeleteAlert() {
     return (

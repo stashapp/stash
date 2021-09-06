@@ -3,6 +3,7 @@ import _ from "lodash";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   FindScenesQueryResult,
   SlimSceneDataFragment,
@@ -44,6 +45,7 @@ export const SceneList: React.FC<ISceneList> = ({
       text: intl.formatMessage({ id: "actions.play_selected" }),
       onClick: playSelected,
       isDisplayed: showWhenSelected,
+      icon: "play" as IconProp,
     },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
@@ -194,8 +196,7 @@ export const SceneList: React.FC<ISceneList> = ({
   function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     if (!result.data || !result.data.findScenes) {
       return;
@@ -208,7 +209,7 @@ export const SceneList: React.FC<ISceneList> = ({
         <SceneCardsGrid
           scenes={result.data.findScenes.scenes}
           queue={queue}
-          zoomIndex={zoomIndex}
+          zoomIndex={filter.zoomIndex}
           selectedIds={selectedIds}
           onSelectChange={(id, selected, shiftKey) =>
             listData.onSelectChange(id, selected, shiftKey)
@@ -218,7 +219,14 @@ export const SceneList: React.FC<ISceneList> = ({
     }
     if (filter.displayMode === DisplayMode.List) {
       return (
-        <SceneListTable scenes={result.data.findScenes.scenes} queue={queue} />
+        <SceneListTable
+          scenes={result.data.findScenes.scenes}
+          queue={queue}
+          selectedIds={selectedIds}
+          onSelectChange={(id, selected, shiftKey) =>
+            listData.onSelectChange(id, selected, shiftKey)
+          }
+        />
       );
     }
     if (filter.displayMode === DisplayMode.Wall) {
@@ -234,14 +242,13 @@ export const SceneList: React.FC<ISceneList> = ({
   function renderContent(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
-    zoomIndex: number
+    selectedIds: Set<string>
   ) {
     return (
       <>
         {maybeRenderSceneGenerateDialog(selectedIds)}
         {maybeRenderSceneExportDialog(selectedIds)}
-        {renderScenes(result, filter, selectedIds, zoomIndex)}
+        {renderScenes(result, filter, selectedIds)}
       </>
     );
   }

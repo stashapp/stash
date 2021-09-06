@@ -39,7 +39,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
 
   const otherOperations = [
     {
-      text: "Open Random",
+      text: intl.formatMessage({ id: "actions.open_random" }),
       onClick: getRandom,
     },
     {

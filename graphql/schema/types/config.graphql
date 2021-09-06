@@ -89,12 +89,14 @@ input ConfigGeneralInput {
   excludes: [String!]
   """Array of file regexp to exclude from Image Scans"""
   imageExcludes: [String!]
+  """Custom Performer Image Location"""
+  customPerformerImageLocation: String
   """Scraper user agent string"""
-  scraperUserAgent: String
+  scraperUserAgent: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Scraper CDP path. Path to chrome executable or remote address"""
-  scraperCDPPath: String
+  scraperCDPPath: String @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Whether the scraper should check for invalid certificates"""
-  scraperCertCheck: Boolean!
+  scraperCertCheck: Boolean @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBoxInput!]!
 }
@@ -162,12 +164,14 @@ type ConfigGeneralResult {
   excludes: [String!]!
   """Array of file regexp to exclude from Image Scans"""
   imageExcludes: [String!]!
+  """Custom Performer Image Location"""
+  customPerformerImageLocation: String
   """Scraper user agent string"""
-  scraperUserAgent: String
+  scraperUserAgent: String @deprecated(reason: "use ConfigResult.scraping instead")
   """Scraper CDP path. Path to chrome executable or remote address"""
-  scraperCDPPath: String
+  scraperCDPPath: String @deprecated(reason: "use ConfigResult.scraping instead")
   """Whether the scraper should check for invalid certificates"""
-  scraperCertCheck: Boolean!
+  scraperCertCheck: Boolean! @deprecated(reason: "use ConfigResult.scraping instead")
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBox!]!
 }
@@ -196,6 +200,8 @@ input ConfigInterfaceInput {
   slideshowDelay: Int
   """Handy Connection Key"""
   handyKey: String
+  """Funscript Time Offset"""
+  funscriptOffset: Int
 }
 
 type ConfigInterfaceResult {
@@ -222,6 +228,8 @@ type ConfigInterfaceResult {
   slideshowDelay: Int
   """Handy Connection Key"""
   handyKey: String
+  """Funscript Time Offset"""
+  funscriptOffset: Int
 }
 
 input ConfigDLNAInput {
@@ -244,11 +252,34 @@ type ConfigDLNAResult {
   interfaces: [String!]!
 }
 
+input ConfigScrapingInput {
+  """Scraper user agent string"""
+  scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
+  """Whether the scraper should check for invalid certificates"""
+  scraperCertCheck: Boolean!
+  """Tags blacklist during scraping"""
+  excludeTagPatterns: [String!]
+}
+
+type ConfigScrapingResult {
+  """Scraper user agent string"""
+  scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
+  """Whether the scraper should check for invalid certificates"""
+  scraperCertCheck: Boolean!
+  """Tags blacklist during scraping"""
+  excludeTagPatterns: [String!]!
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
+  scraping: ConfigScrapingResult!
 }
 
 """Directory structure of a path"""

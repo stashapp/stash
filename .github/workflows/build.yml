@@ -182,4 +182,4 @@ jobs:
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
         docker buildx ls
-        bash ./docker/ci/x86_64/docker_push.sh latest
+        bash ./docker/ci/x86_64/docker_push.sh latest "${{ github.event.release.tag_name }}"

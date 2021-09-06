@@ -277,7 +277,7 @@ export const Gallery: React.FC = () => {
   if (isNew)
     return (
       <div className="row new-view">
-        <div className="col-6">
+        <div className="col-md-6">
           <h2>
             <FormattedMessage
               id="actions.create_entity"

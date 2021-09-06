@@ -285,7 +285,7 @@ export const MainNavbar: React.FC = () => {
           </Fade>
         </Navbar.Collapse>
         <Nav className="order-2 flex-row">
-          <div className="d-none d-sm-block">{newButton}</div>
+          <div>{newButton}</div>
           <Nav.Link
             href="https://opencollective.com/stashapp"
             target="_blank"

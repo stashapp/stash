@@ -61,7 +61,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     return (
       <Button
         variant="danger"
-        className="delete d-none d-sm-block"
+        className="delete"
         onClick={() => setIsDeleteAlertOpen(true)}
       >
         <FormattedMessage id="actions.delete" />

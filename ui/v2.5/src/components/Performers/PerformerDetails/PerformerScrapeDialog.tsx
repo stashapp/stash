@@ -19,6 +19,7 @@ import {
   genderToString,
   stringToGender,
 } from "src/utils/gender";
+import { IStashBox } from "./PerformerStashBoxModal";
 
 function renderScrapedGender(
   result: ScrapeResult<string>,
@@ -119,6 +120,7 @@ function renderScrapedTagsRow(
 interface IPerformerScrapeDialogProps {
   performer: Partial<GQL.PerformerUpdateInput>;
   scraped: GQL.ScrapedPerformer;
+  scraper?: GQL.Scraper | IStashBox;
 
   onClose: (scrapedPerformer?: GQL.ScrapedPerformer) => void;
 }
@@ -127,6 +129,17 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   props: IPerformerScrapeDialogProps
 ) => {
   const intl = useIntl();
+
+  const endpoint = (props.scraper as IStashBox)?.endpoint ?? undefined;
+
+  function getCurrentRemoteSiteID() {
+    if (!endpoint) {
+      return;
+    }
+
+    return props.performer.stash_ids?.find((s) => s.endpoint === endpoint)
+      ?.stash_id;
+  }
 
   function translateScrapedGender(scrapedGender?: string | null) {
     if (!scrapedGender) {
@@ -227,6 +240,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [details, setDetails] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.details, props.scraped.details)
   );
+  const [remoteSiteID, setRemoteSiteID] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(
+      getCurrentRemoteSiteID(),
+      props.scraped.remote_site_id
+    )
+  );
 
   const [createTag] = useTagCreate();
   const Toast = useToast();
@@ -311,6 +330,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     deathDate,
     hairColor,
     weight,
+    remoteSiteID,
   ];
   // don't show the dialog if nothing was scraped
   if (allFields.every((r) => !r.scraped)) {
@@ -383,6 +403,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),
       weight: weight.getNewValue(),
+      remote_site_id: remoteSiteID.getNewValue(),
     };
   }
 
@@ -501,6 +522,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           className="performer-image"
           result={image}
           onChange={(value) => setImage(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "stash_id" })}
+          result={remoteSiteID}
+          locked
+          onChange={(value) => setRemoteSiteID(value)}
         />
       </>
     );

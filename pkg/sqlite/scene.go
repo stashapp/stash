@@ -68,13 +68,15 @@ SELECT GROUP_CONCAT(id) as ids
 FROM scenes
 WHERE phash IS NOT NULL
 GROUP BY phash
-HAVING COUNT(*) > 1;
+HAVING COUNT(phash) > 1
+ORDER BY SUM(size) DESC;
 `
 
 var findAllPhashesQuery = `
 SELECT id, phash
 FROM scenes
 WHERE phash IS NOT NULL
+ORDER BY size DESC
 `
 
 type sceneQueryBuilder struct {
@@ -272,6 +274,10 @@ func (qb *sceneQueryBuilder) Size() (float64, error) {
 	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
 }
 
+func (qb *sceneQueryBuilder) Duration() (float64, error) {
+	return qb.runSumQuery("SELECT SUM(cast(duration as double)) as sum FROM scenes", nil)
+}
+
 func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return qb.runCountQuery(qb.buildCountQuery(scenesForStudioQuery), args)
@@ -461,54 +467,28 @@ func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHa
 func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if durationFilter != nil {
-			clause, thisArgs := getDurationWhereClause(*durationFilter, column)
-			f.addWhere(clause, thisArgs...)
+			clause, args := getIntCriterionWhereClause("cast("+column+" as int)", *durationFilter)
+			f.addWhere(clause, args...)
 		}
 	}
 }
 
-func getDurationWhereClause(durationFilter models.IntCriterionInput, column string) (string, []interface{}) {
-	// special case for duration. We accept duration as seconds as int but the
-	// field is floating point. Change the equals filter to return a range
-	// between x and x + 1
-	// likewise, not equals needs to be duration < x OR duration >= x
-	var clause string
-	args := []interface{}{}
-
-	value := durationFilter.Value
-	if durationFilter.Modifier == models.CriterionModifierEquals {
-		clause = fmt.Sprintf("%[1]s >= ? AND %[1]s < ?", column)
-		args = append(args, value)
-		args = append(args, value+1)
-	} else if durationFilter.Modifier == models.CriterionModifierNotEquals {
-		clause = fmt.Sprintf("(%[1]s < ? OR %[1]s >= ?)", column)
-		args = append(args, value)
-		args = append(args, value+1)
-	} else {
-		var count int
-		clause, count = getIntCriterionWhereClause(column, durationFilter)
-		if count == 1 {
-			args = append(args, value)
-		}
-	}
-
-	return clause, args
-}
-
-func resolutionCriterionHandler(resolution *models.ResolutionEnum, heightColumn string, widthColumn string) criterionHandlerFunc {
+func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, heightColumn string, widthColumn string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if resolution != nil && resolution.IsValid() {
-			min := resolution.GetMinResolution()
-			max := resolution.GetMaxResolution()
+		if resolution != nil && resolution.Value.IsValid() {
+			min := resolution.Value.GetMinResolution()
+			max := resolution.Value.GetMaxResolution()
 
 			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
 
-			if min > 0 {
-				f.addWhere(widthHeight + " >= " + strconv.Itoa(min))
-			}
-
-			if max > 0 {
-				f.addWhere(widthHeight + " < " + strconv.Itoa(max))
+			if resolution.Modifier == models.CriterionModifierEquals {
+				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
+			} else if resolution.Modifier == models.CriterionModifierNotEquals {
+				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
+			} else if resolution.Modifier == models.CriterionModifierLessThan {
+				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, min))
+			} else if resolution.Modifier == models.CriterionModifierGreaterThan {
+				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
 		}
 	}

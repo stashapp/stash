@@ -41,6 +41,35 @@ export const Stats: React.FC = () => {
         </div>
         <div className="stats-element">
           <p className="title">
+            <FormattedNumber value={data.stats.movie_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="movies" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            {` ${TextUtils.secondsAsTimeString(data.stats.scenes_duration, 3)}`}
+          </p>
+          <p className="heading">
+            <FormattedMessage
+              id="scenes-duration"
+              defaultMessage="Scenes duration"
+            />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.performer_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="performers" />
+          </p>
+        </div>
+      </div>
+      <div className="col col-sm-8 m-sm-auto row stats">
+        <div className="stats-element">
+          <p className="title">
             <FormattedNumber
               value={imagesSize.size}
               maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
@@ -55,24 +84,6 @@ export const Stats: React.FC = () => {
         </div>
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber value={data.stats.image_count} />
-          </p>
-          <p className="heading">
-            <FormattedMessage id="images" />
-          </p>
-        </div>
-      </div>
-      <div className="col col-sm-8 m-sm-auto row stats">
-        <div className="stats-element">
-          <p className="title">
-            <FormattedNumber value={data.stats.movie_count} />
-          </p>
-          <p className="heading">
-            <FormattedMessage id="movies" />
-          </p>
-        </div>
-        <div className="stats-element">
-          <p className="title">
             <FormattedNumber value={data.stats.gallery_count} />
           </p>
           <p className="heading">
@@ -81,10 +92,10 @@ export const Stats: React.FC = () => {
         </div>
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber value={data.stats.performer_count} />
+            <FormattedNumber value={data.stats.image_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="performers" />
+            <FormattedMessage id="images" />
           </p>
         </div>
         <div className="stats-element">

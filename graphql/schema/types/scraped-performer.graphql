@@ -25,6 +25,7 @@ type ScrapedPerformer {
   death_date: String
   hair_color: String
   weight: String
+  remote_site_id: String
 }
 
 input ScrapedPerformerInput {
@@ -51,4 +52,5 @@ input ScrapedPerformerInput {
   death_date: String
   hair_color: String
   weight: String
+  remote_site_id: String
 }

@@ -3,10 +3,11 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 
-import { SuccessIcon, Modal, StudioSelect } from "src/components/Shared";
+import { Modal, StudioSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
 import { IStashBoxStudio } from "./utils";
+import { OptionalField } from "./IncludeButton";
 
 export type StudioOperation =
   | { type: "create"; data: IStashBoxStudio }
@@ -103,12 +104,22 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
           :<b className="ml-2">{studio?.name}</b>
         </div>
         <span className="ml-auto">
-          <SuccessIcon className="mr-2" />
-          Matched:
+          <OptionalField
+            exclude={selectedSource === "skip"}
+            setExclude={(v) =>
+              v ? handleStudioSkip() : setSelectedSource("existing")
+            }
+          >
+            <div>
+              <span className="mr-2">
+                <FormattedMessage id="component_tagger.verb_matched" />:
+              </span>
+              <b className="col-3 text-right">
+                {stashIDData.findStudios.studios[0].name}
+              </b>
+            </div>
+          </OptionalField>
         </span>
-        <b className="col-3 text-right">
-          {stashIDData.findStudios.studios[0].name}
-        </b>
       </div>
     );
   }

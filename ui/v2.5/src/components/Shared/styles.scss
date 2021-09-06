@@ -180,9 +180,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   -webkit-box-orient: vertical;
   display: -webkit-box;
   overflow: hidden;
+  white-space: pre-line;
 
   &-tooltip .tooltip-inner {
     max-width: 300px;
+    white-space: pre-line;
+  }
+
+  .file-info-panel a > & {
+    word-break: break-all;
   }
 }
 

@@ -252,14 +252,14 @@ func TestGenerateWhereClauses(t *testing.T) {
 	// ensure single where clause is generated correctly
 	f.addWhere(clause1)
 	r, rArgs := f.generateWhereClauses()
-	assert.Equal(clause1, r)
+	assert.Equal(fmt.Sprintf("(%s)", clause1), r)
 	assert.Len(rArgs, 0)
 
 	// ensure multiple where clauses are surrounded with parenthesis and
 	// ANDed together
 	f.addWhere(clause2, arg1, arg2)
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s AND %s)", clause1, clause2), r)
+	assert.Equal(fmt.Sprintf("((%s) AND (%s))", clause1, clause2), r)
 	assert.Len(rArgs, 2)
 
 	// ensure empty subfilter is not added to generated where clause
@@ -267,13 +267,13 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.and(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s AND %s)", clause1, clause2), r)
+	assert.Equal(fmt.Sprintf("((%s) AND (%s))", clause1, clause2), r)
 	assert.Len(rArgs, 2)
 
 	// ensure sub-filter is generated correctly
 	sf.addWhere(clause3, arg3)
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s AND %s) AND (%s)", clause1, clause2, clause3), r)
+	assert.Equal(fmt.Sprintf("((%s) AND (%s)) AND ((%s))", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 
 	// ensure OR sub-filter is generated correctly
@@ -283,7 +283,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.or(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s AND %s) OR (%s)", clause1, clause2, clause3), r)
+	assert.Equal(fmt.Sprintf("((%s) AND (%s)) OR ((%s))", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 
 	// ensure NOT sub-filter is generated correctly
@@ -293,7 +293,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.not(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s AND %s) AND NOT (%s)", clause1, clause2, clause3), r)
+	assert.Equal(fmt.Sprintf("((%s) AND (%s)) AND NOT ((%s))", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 
 	// ensure empty filter with ANDed sub-filter does not include AND
@@ -301,7 +301,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.and(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s)", clause3), r)
+	assert.Equal(fmt.Sprintf("((%s))", clause3), r)
 	assert.Len(rArgs, 1)
 
 	// ensure empty filter with ORed sub-filter does not include OR
@@ -309,7 +309,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.or(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("(%s)", clause3), r)
+	assert.Equal(fmt.Sprintf("((%s))", clause3), r)
 	assert.Len(rArgs, 1)
 
 	// ensure empty filter with NOTed sub-filter does not include AND
@@ -317,7 +317,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.not(sf)
 
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("NOT (%s)", clause3), r)
+	assert.Equal(fmt.Sprintf("NOT ((%s))", clause3), r)
 	assert.Len(rArgs, 1)
 
 	// (clause1) AND ((clause2) OR (clause3))
@@ -328,7 +328,7 @@ func TestGenerateWhereClauses(t *testing.T) {
 	f.and(sf2)
 	sf2.or(sf)
 	r, rArgs = f.generateWhereClauses()
-	assert.Equal(fmt.Sprintf("%s AND (%s OR (%s))", clause1, clause2, clause3), r)
+	assert.Equal(fmt.Sprintf("(%s) AND ((%s) OR ((%s)))", clause1, clause2, clause3), r)
 	assert.Len(rArgs, 3)
 }
 
@@ -348,14 +348,14 @@ func TestGenerateHavingClauses(t *testing.T) {
 	// ensure single Having clause is generated correctly
 	f.addHaving(clause1)
 	r, rArgs := f.generateHavingClauses()
-	assert.Equal(clause1, r)
+	assert.Equal(fmt.Sprintf("(%s)", clause1), r)
 	assert.Len(rArgs, 0)
 
 	// ensure multiple Having clauses are surrounded with parenthesis and
 	// ANDed together
 	f.addHaving(clause2, arg1, arg2)
 	r, rArgs = f.generateHavingClauses()
-	assert.Equal("("+clause1+" AND "+clause2+")", r)
+	assert.Equal("(("+clause1+") AND ("+clause2+"))", r)
 	assert.Len(rArgs, 2)
 
 	// ensure empty subfilter is not added to generated Having clause
@@ -363,13 +363,13 @@ func TestGenerateHavingClauses(t *testing.T) {
 	f.and(sf)
 
 	r, rArgs = f.generateHavingClauses()
-	assert.Equal("("+clause1+" AND "+clause2+")", r)
+	assert.Equal("(("+clause1+") AND ("+clause2+"))", r)
 	assert.Len(rArgs, 2)
 
 	// ensure sub-filter is generated correctly
 	sf.addHaving(clause3, arg3)
 	r, rArgs = f.generateHavingClauses()
-	assert.Equal("("+clause1+" AND "+clause2+") AND ("+clause3+")", r)
+	assert.Equal("(("+clause1+") AND ("+clause2+")) AND (("+clause3+"))", r)
 	assert.Len(rArgs, 3)
 
 	// ensure OR sub-filter is generated correctly
@@ -379,7 +379,7 @@ func TestGenerateHavingClauses(t *testing.T) {
 	f.or(sf)
 
 	r, rArgs = f.generateHavingClauses()
-	assert.Equal("("+clause1+" AND "+clause2+") OR ("+clause3+")", r)
+	assert.Equal("(("+clause1+") AND ("+clause2+")) OR (("+clause3+"))", r)
 	assert.Len(rArgs, 3)
 
 	// ensure NOT sub-filter is generated correctly
@@ -389,7 +389,7 @@ func TestGenerateHavingClauses(t *testing.T) {
 	f.not(sf)
 
 	r, rArgs = f.generateHavingClauses()
-	assert.Equal("("+clause1+" AND "+clause2+") AND NOT ("+clause3+")", r)
+	assert.Equal("(("+clause1+") AND ("+clause2+")) AND NOT (("+clause3+"))", r)
 	assert.Len(rArgs, 3)
 }
 

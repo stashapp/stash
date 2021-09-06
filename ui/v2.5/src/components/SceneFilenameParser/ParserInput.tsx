@@ -63,6 +63,7 @@ export interface IParserInput {
   page: number;
   pageSize: number;
   findClicked: boolean;
+  ignoreOrganized: boolean;
 }
 
 interface IParserRecipe {
@@ -95,6 +96,9 @@ export const ParserInput: React.FC<IParserInputProps> = (
   const [capitalizeTitle, setCapitalizeTitle] = useState<boolean>(
     props.input.capitalizeTitle
   );
+  const [ignoreOrganized, setIgnoreOrganized] = useState<boolean>(
+    props.input.ignoreOrganized
+  );
 
   function onFind() {
     props.onFind({
@@ -105,6 +109,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
       page: 1,
       pageSize: props.input.pageSize,
       findClicked: props.input.findClicked,
+      ignoreOrganized,
     });
   }
 
@@ -223,6 +228,20 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <Form.Label htmlFor="capitalize-title">
           {intl.formatMessage({
             id: "config.tools.scene_filename_parser.capitalize_title",
+          })}
+        </Form.Label>
+      </Form.Group>
+      <Form.Group>
+        <Form.Check
+          inline
+          className="m-0"
+          id="ignore-organized"
+          checked={ignoreOrganized}
+          onChange={() => setIgnoreOrganized(!ignoreOrganized)}
+        />
+        <Form.Label htmlFor="ignore-organized">
+          {intl.formatMessage({
+            id: "config.tools.scene_filename_parser.ignore_organized",
           })}
         </Form.Label>
       </Form.Group>
