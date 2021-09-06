@@ -15,6 +15,7 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
@@ -93,6 +94,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			task := ScanTask{
 				TxnManager:           j.txnManager,
 				FilePath:             path,
+				FileInfo:             info,
 				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
 				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
 				fileNamingAlgorithm:  fileNamingAlgo,
@@ -206,6 +208,7 @@ type ScanTask struct {
 	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	FilePath             string
+	FileInfo             os.FileInfo
 	UseFileMetadata      bool
 	StripFileExtension   bool
 	calculateMD5         bool
@@ -584,42 +587,24 @@ func (t *ScanTask) scanScene() *models.Scene {
 		return nil
 	}
 
-	fileModTime, err := t.getFileModTime()
-	if err != nil {
-		return logError(err)
+	scanner := file.Scanner{
+		Hasher:          &file.FSHasher{},
+		CalculateOSHash: true,
+		CalculateMD5:    t.fileNamingAlgorithm == models.HashAlgorithmMd5 || t.calculateMD5,
 	}
+
 	interactive := t.getInteractive()
 
 	if s != nil {
-		// if file mod time is not set, set it now
-		if !s.FileModTime.Valid {
-			logger.Infof("setting file modification time on %s", t.FilePath)
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				qb := r.Scene()
-				if _, err := scene.UpdateFileModTime(qb, s.ID, models.NullSQLiteTimestamp{
-					Timestamp: fileModTime,
-					Valid:     true,
-				}); err != nil {
-					return err
-				}
-
-				// update our copy of the scene
-				var err error
-				s, err = qb.Find(s.ID)
-				return err
-			}); err != nil {
-				return logError(err)
-			}
+		scanned, err := scanner.ScanExisting(s, t.FilePath, t.FileInfo)
+		if err != nil {
+			return logError(err)
 		}
 
-		// if the mod time of the file is different than that of the associated
-		// scene, then recalculate the checksum and regenerate the thumbnail
-		modified := t.isFileModified(fileModTime, s.FileModTime)
-		config := config.GetInstance()
-		if modified || !s.Size.Valid {
+		if scanned.ContentsChanged() {
+			config := config.GetInstance()
 			oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
-			s, err = t.rescanScene(s, fileModTime)
+			s, err = t.rescanScene(s, *scanned.New.FileModTime)
 			if err != nil {
 				return logError(err)
 			}
@@ -628,6 +613,37 @@ func (t *ScanTask) scanScene() *models.Scene {
 			newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 			if newHash != oldHash {
 				MigrateHash(oldHash, newHash)
+			}
+		} else if scanned.FileUpdated() || s.Interactive != interactive {
+			// update fields as needed
+			scenePartial := models.ScenePartial{
+				ID:          s.ID,
+				Interactive: &interactive,
+			}
+
+			scenePartial.SetFile(*scanned.New)
+
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				qb := r.Scene()
+				// ensure no clashes of hashes
+				if scenePartial.Checksum != nil {
+					dupe, _ := qb.FindByChecksum(*scanned.New.Checksum)
+					if dupe != nil {
+						return fmt.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
+					}
+				}
+
+				if scenePartial.OSHash != nil {
+					dupe, _ := qb.FindByOSHash(*scanned.New.OSHash)
+					if dupe != nil {
+						return fmt.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
+					}
+				}
+
+				_, err := qb.Update(scenePartial)
+				return err
+			}); err != nil {
+				return logError(err)
 			}
 		}
 
@@ -652,70 +668,6 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}
 		}
 
-		// check if oshash is set
-		if !s.OSHash.Valid {
-			logger.Infof("Calculating oshash for existing file %s ...", t.FilePath)
-			oshash, err := utils.OSHashFromFilePath(t.FilePath)
-			if err != nil {
-				return nil
-			}
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				qb := r.Scene()
-				// check if oshash clashes with existing scene
-				dupe, _ := qb.FindByOSHash(oshash)
-				if dupe != nil {
-					return fmt.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
-				}
-
-				_, err := scene.UpdateOSHash(qb, s.ID, oshash)
-				return err
-			}); err != nil {
-				return logError(err)
-			}
-		}
-
-		// check if MD5 is set, if calculateMD5 is true
-		if t.calculateMD5 && !s.Checksum.Valid {
-			checksum, err := t.calculateChecksum()
-			if err != nil {
-				return logError(err)
-			}
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				qb := r.Scene()
-				// check if checksum clashes with existing scene
-				dupe, _ := qb.FindByChecksum(checksum)
-				if dupe != nil {
-					return fmt.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
-				}
-
-				_, err := scene.UpdateChecksum(qb, s.ID, checksum)
-				return err
-			}); err != nil {
-				return logError(err)
-			}
-		}
-
-		if s.Interactive != interactive {
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				qb := r.Scene()
-				scenePartial := models.ScenePartial{
-					ID:          s.ID,
-					Interactive: &interactive,
-				}
-				_, err := qb.Update(scenePartial)
-				return err
-			}); err != nil {
-				return logError(err)
-			}
-		}
-
-		return nil
-	}
-
-	// Ignore directories.
-	if isDir, _ := utils.DirExists(t.FilePath); isDir {
 		return nil
 	}
 
@@ -731,20 +683,16 @@ func (t *ScanTask) scanScene() *models.Scene {
 		videoFile.SetTitleFromPath(t.StripFileExtension)
 	}
 
-	var checksum string
-
-	logger.Infof("%s not found. Calculating oshash...", t.FilePath)
-	oshash, err := utils.OSHashFromFilePath(t.FilePath)
+	file, err := scanner.ScanNew(t.FilePath, t.FileInfo)
 	if err != nil {
 		return logError(err)
 	}
 
-	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 || t.calculateMD5 {
-		checksum, err = t.calculateChecksum()
-		if err != nil {
-			return logError(err)
-		}
+	var checksum string
+	if file.Checksum != nil {
+		checksum = *file.Checksum
 	}
+	oshash := *file.OSHash
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
@@ -815,7 +763,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 			Bitrate:    sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
 			Size:       sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true},
 			FileModTime: models.NullSQLiteTimestamp{
-				Timestamp: fileModTime,
+				Timestamp: *file.FileModTime,
 				Valid:     true,
 			},
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},

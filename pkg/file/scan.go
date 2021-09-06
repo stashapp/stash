@@ -81,7 +81,7 @@ func (o Scanner) ScanExisting(existing FileBased, path string, info os.FileInfo)
 	return
 }
 
-func (o Scanner) ScanNew(path string, info os.FileInfo) (h *Scanned, err error) {
+func (o Scanner) ScanNew(path string, info os.FileInfo) (*models.File, error) {
 	sizeStr := strconv.FormatInt(info.Size(), 10)
 	modTime := info.ModTime()
 	f := models.File{
@@ -90,12 +90,11 @@ func (o Scanner) ScanNew(path string, info os.FileInfo) (h *Scanned, err error) 
 		FileModTime: &modTime,
 	}
 
-	_, err = o.generateHashes(&f, false)
-	if err != nil {
+	if _, err := o.generateHashes(&f, false); err != nil {
 		return nil, err
 	}
 
-	return
+	return &f, nil
 }
 
 // generateHashes regenerates and sets the hashes in the provided File.
