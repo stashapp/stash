@@ -176,6 +176,8 @@ input MovieFilterType {
   is_missing: String
   """Filter by url"""
   url: StringCriterionInput
+  """Filter to only include movies where performer appears in a scene"""
+  performers: MultiCriterionInput
 }
 
 input StudioFilterType {
