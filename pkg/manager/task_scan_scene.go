@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -72,55 +71,27 @@ func (t *ScanTask) scanScene() *models.Scene {
 func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (err error) {
 	interactive := t.getInteractive()
 
+	config := config.GetInstance()
+	oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+	changed := false
+
 	if scanned.ContentsChanged() {
-		config := config.GetInstance()
-		oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
-		s, err = t.rescanScene(s, *scanned.New.FileModTime)
+		logger.Infof("%s has been updated: rescanning", t.FilePath)
+
+		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
 		if err != nil {
 			return err
 		}
 
-		// Migrate any generated files if the hash has changed
-		newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
-		if newHash != oldHash {
-			MigrateHash(oldHash, newHash)
-		}
+		t.videoFileToScene(s, videoFile)
+		changed = true
 	} else if scanned.FileUpdated() || s.Interactive != interactive {
+		logger.Infof("Updated scene file %s", t.FilePath)
+
 		// update fields as needed
-		scenePartial := models.ScenePartial{
-			ID:          s.ID,
-			Interactive: &interactive,
-		}
-
-		scenePartial.SetFile(*scanned.New)
-
-		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			qb := r.Scene()
-			// ensure no clashes of hashes
-			if scenePartial.Checksum != nil {
-				dupe, _ := qb.FindByChecksum(*scanned.New.Checksum)
-				if dupe != nil {
-					return fmt.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
-				}
-			}
-
-			if scenePartial.OSHash != nil {
-				dupe, _ := qb.FindByOSHash(*scanned.New.OSHash)
-				if dupe != nil {
-					return fmt.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
-				}
-			}
-
-			_, err := qb.Update(scenePartial)
-			return err
-		}); err != nil {
-			return err
-		}
+		s.SetFile(*scanned.New)
+		changed = true
 	}
-
-	// We already have this item in the database
-	// check for thumbnails,screenshots
-	t.makeScreenshots(nil, s.GetHash(t.fileNamingAlgorithm))
 
 	// check for container
 	if !s.Format.Valid {
@@ -130,16 +101,63 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 		}
 		container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
 		logger.Infof("Adding container %s to file %s", container, t.FilePath)
+		s.Format = models.NullString(string(container))
+		changed = true
+	}
 
+	if changed {
 		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			_, err := scene.UpdateFormat(r.Scene(), s.ID, string(container))
+			qb := r.Scene()
+
+			// ensure no clashes of hashes
+			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
+				dupe, _ := qb.FindByChecksum(s.Checksum.String)
+				if dupe != nil {
+					return fmt.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
+				}
+			}
+
+			if scanned.New.OSHash != "" && scanned.Old.OSHash != scanned.New.OSHash {
+				dupe, _ := qb.FindByOSHash(scanned.New.OSHash)
+				if dupe != nil {
+					return fmt.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
+				}
+			}
+
+			_, err := qb.UpdateFull(*s)
 			return err
 		}); err != nil {
 			return err
 		}
+
+		// Migrate any generated files if the hash has changed
+		newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+		if newHash != oldHash {
+			MigrateHash(oldHash, newHash)
+		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 	}
 
+	// We already have this item in the database
+	// check for thumbnails, screenshots
+	t.makeScreenshots(nil, s.GetHash(t.fileNamingAlgorithm))
+
 	return nil
+}
+
+func (t *ScanTask) videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
+	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
+
+	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
+	s.VideoCodec = sql.NullString{String: videoFile.VideoCodec, Valid: true}
+	s.AudioCodec = sql.NullString{String: videoFile.AudioCodec, Valid: true}
+	s.Format = sql.NullString{String: string(container), Valid: true}
+	s.Width = sql.NullInt64{Int64: int64(videoFile.Width), Valid: true}
+	s.Height = sql.NullInt64{Int64: int64(videoFile.Height), Valid: true}
+	s.Framerate = sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true}
+	s.Bitrate = sql.NullInt64{Int64: videoFile.Bitrate, Valid: true}
+	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
 }
 
 func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err error) {
@@ -147,18 +165,14 @@ func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err 
 	if err != nil {
 		return nil, err
 	}
-	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
 
 	// Override title to be filename if UseFileMetadata is false
 	if !t.UseFileMetadata {
 		videoFile.SetTitleFromPath(t.StripFileExtension)
 	}
 
-	var checksum string
-	if file.Checksum != nil {
-		checksum = *file.Checksum
-	}
-	oshash := *file.OSHash
+	checksum := file.Checksum
+	oshash := file.OSHash
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
@@ -217,27 +231,20 @@ func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err 
 		logger.Infof("%s doesn't exist. Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newScene := models.Scene{
-			Checksum:   sql.NullString{String: checksum, Valid: checksum != ""},
-			OSHash:     sql.NullString{String: oshash, Valid: oshash != ""},
-			Path:       t.FilePath,
-			Title:      sql.NullString{String: videoFile.Title, Valid: true},
-			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
-			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
-			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},
-			Format:     sql.NullString{String: string(container), Valid: true},
-			Width:      sql.NullInt64{Int64: int64(videoFile.Width), Valid: true},
-			Height:     sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
-			Framerate:  sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
-			Bitrate:    sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
-			Size:       sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true},
+			Checksum: sql.NullString{String: checksum, Valid: checksum != ""},
+			OSHash:   sql.NullString{String: oshash, Valid: oshash != ""},
+			Path:     t.FilePath,
 			FileModTime: models.NullSQLiteTimestamp{
-				Timestamp: *file.FileModTime,
+				Timestamp: file.FileModTime,
 				Valid:     true,
 			},
+			Title:       sql.NullString{String: videoFile.Title, Valid: true},
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
 		}
+
+		t.videoFileToScene(&newScene, videoFile)
 
 		if t.UseFileMetadata {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
@@ -258,77 +265,6 @@ func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err 
 	return retScene, nil
 }
 
-func (t *ScanTask) rescanScene(s *models.Scene, fileModTime time.Time) (*models.Scene, error) {
-	logger.Infof("%s has been updated: rescanning", t.FilePath)
-
-	// update the oshash/checksum and the modification time
-	logger.Infof("Calculating oshash for existing file %s ...", t.FilePath)
-	oshash, err := utils.OSHashFromFilePath(t.FilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	var checksum *sql.NullString
-	if t.calculateMD5 {
-		cs, err := t.calculateChecksum()
-		if err != nil {
-			return nil, err
-		}
-
-		checksum = &sql.NullString{
-			String: cs,
-			Valid:  true,
-		}
-	}
-
-	// regenerate the file details as well
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
-	if err != nil {
-		return nil, err
-	}
-	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
-
-	currentTime := time.Now()
-	scenePartial := models.ScenePartial{
-		ID:       s.ID,
-		Checksum: checksum,
-		OSHash: &sql.NullString{
-			String: oshash,
-			Valid:  true,
-		},
-		Duration:   &sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
-		VideoCodec: &sql.NullString{String: videoFile.VideoCodec, Valid: true},
-		AudioCodec: &sql.NullString{String: videoFile.AudioCodec, Valid: true},
-		Format:     &sql.NullString{String: string(container), Valid: true},
-		Width:      &sql.NullInt64{Int64: int64(videoFile.Width), Valid: true},
-		Height:     &sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
-		Framerate:  &sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
-		Bitrate:    &sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
-		Size:       &sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true},
-		FileModTime: &models.NullSQLiteTimestamp{
-			Timestamp: fileModTime,
-			Valid:     true,
-		},
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
-	}
-
-	var ret *models.Scene
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		var err error
-		ret, err = r.Scene().Update(scenePartial)
-		return err
-	}); err != nil {
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.SceneUpdatePost, nil, nil)
-
-	// leave the generated files as is - the scene file may have been moved
-	// elsewhere
-
-	return ret, nil
-}
 func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
 	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)

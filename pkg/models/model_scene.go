@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"time"
 )
 
 // Scene stores the metadata for a single video scene.
@@ -41,19 +42,50 @@ func (s *Scene) File() File {
 	}
 
 	if s.Checksum.Valid {
-		ret.Checksum = &s.Checksum.String
+		ret.Checksum = s.Checksum.String
 	}
 	if s.OSHash.Valid {
-		ret.OSHash = &s.OSHash.String
+		ret.OSHash = s.OSHash.String
 	}
 	if s.FileModTime.Valid {
-		ret.FileModTime = &s.FileModTime.Timestamp
+		ret.FileModTime = s.FileModTime.Timestamp
 	}
 	if s.Size.Valid {
-		ret.Size = &s.Size.String
+		ret.Size = s.Size.String
 	}
 
 	return ret
+}
+
+func (s *Scene) SetFile(f File) {
+	path := f.Path
+	s.Path = path
+
+	if f.Checksum != "" {
+		s.Checksum = sql.NullString{
+			String: f.Checksum,
+			Valid:  true,
+		}
+	}
+	if f.OSHash != "" {
+		s.OSHash = sql.NullString{
+			String: f.OSHash,
+			Valid:  true,
+		}
+	}
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
+		s.FileModTime = NullSQLiteTimestamp{
+			Timestamp: f.FileModTime,
+			Valid:     true,
+		}
+	}
+	if f.Size != "" {
+		s.Size = sql.NullString{
+			String: f.Size,
+			Valid:  true,
+		}
+	}
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
@@ -91,27 +123,28 @@ func (s *ScenePartial) SetFile(f File) {
 	path := f.Path
 	s.Path = &path
 
-	if f.Checksum != nil {
+	if f.Checksum != "" {
 		s.Checksum = &sql.NullString{
-			String: *f.Checksum,
+			String: f.Checksum,
 			Valid:  true,
 		}
 	}
-	if f.OSHash != nil {
+	if f.OSHash != "" {
 		s.OSHash = &sql.NullString{
-			String: *f.OSHash,
+			String: f.OSHash,
 			Valid:  true,
 		}
 	}
-	if f.FileModTime != nil {
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
 		s.FileModTime = &NullSQLiteTimestamp{
-			Timestamp: *f.FileModTime,
+			Timestamp: f.FileModTime,
 			Valid:     true,
 		}
 	}
-	if f.Size != nil {
+	if f.Size != "" {
 		s.Size = &sql.NullString{
-			String: *f.Size,
+			String: f.Size,
 			Valid:  true,
 		}
 	}

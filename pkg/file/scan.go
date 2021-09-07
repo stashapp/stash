@@ -3,6 +3,7 @@ package file
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -35,11 +36,11 @@ func (s Scanned) ContentsChanged() bool {
 		return false
 	}
 
-	if s.Old.Checksum != nil && s.New.Checksum != nil && *s.Old.Checksum != *s.New.Checksum {
+	if s.Old.Checksum != s.New.Checksum {
 		return true
 	}
 
-	if s.Old.OSHash != nil && s.New.OSHash != nil && *s.Old.OSHash != *s.New.OSHash {
+	if s.Old.OSHash != s.New.OSHash {
 		return true
 	}
 
@@ -63,13 +64,10 @@ func (o Scanner) ScanExisting(existing FileBased, path string, info os.FileInfo)
 	h.New = &updatedFile
 
 	//  update existing data if needed
-	//  if item file mod time not set, then set it
-	if existingFile.FileModTime == nil {
-		t := info.ModTime()
-		updatedFile.FileModTime = &t
-	}
+	// truncate to seconds, since we don't store beyond that in the database
+	updatedFile.FileModTime = info.ModTime().Truncate(time.Second)
 
-	modTimeChanged := existingFile.FileModTime == nil || existingFile.FileModTime.Equal(info.ModTime())
+	modTimeChanged := !existingFile.FileModTime.Equal(updatedFile.FileModTime)
 
 	//  regenerate hash(es)
 	if _, err = o.generateHashes(&updatedFile, modTimeChanged); err != nil {
@@ -86,8 +84,8 @@ func (o Scanner) ScanNew(path string, info os.FileInfo) (*models.File, error) {
 	modTime := info.ModTime()
 	f := models.File{
 		Path:        path,
-		Size:        &sizeStr,
-		FileModTime: &modTime,
+		Size:        sizeStr,
+		FileModTime: modTime,
 	}
 
 	if _, err := o.generateHashes(&f, false); err != nil {
@@ -102,7 +100,7 @@ func (o Scanner) ScanNew(path string, info os.FileInfo) (*models.File, error) {
 func (o Scanner) generateHashes(file *models.File, regenerate bool) (changed bool, err error) {
 	existing := *file
 
-	if o.CalculateOSHash && (regenerate || file.OSHash == nil) {
+	if o.CalculateOSHash && (regenerate || file.OSHash == "") {
 		logger.Infof("Calculating oshash for %s ...", file.Path)
 		// regenerate hash
 		var oshash string
@@ -111,7 +109,7 @@ func (o Scanner) generateHashes(file *models.File, regenerate bool) (changed boo
 			return
 		}
 
-		file.OSHash = &oshash
+		file.OSHash = oshash
 	}
 
 	// always generate if MD5 is nil
@@ -119,7 +117,7 @@ func (o Scanner) generateHashes(file *models.File, regenerate bool) (changed boo
 	// - OSHash was not calculated, or
 	// - existing OSHash is different to generated one
 	// or if it was different to the previous version
-	if o.CalculateMD5 && (file.Checksum == nil || (regenerate && (!o.CalculateOSHash || existing.OSHash == nil || *existing.OSHash != *file.OSHash))) {
+	if o.CalculateMD5 && (file.Checksum == "" || (regenerate && (!o.CalculateOSHash || existing.OSHash != file.OSHash))) {
 		logger.Infof("Calculating checksum for %s...", file.Path)
 
 		// regenerate checksum
@@ -129,10 +127,10 @@ func (o Scanner) generateHashes(file *models.File, regenerate bool) (changed boo
 			return
 		}
 
-		file.Checksum = &checksum
+		file.Checksum = checksum
 	}
 
-	changed = (o.CalculateOSHash && (existing.OSHash == nil || *file.OSHash != *existing.OSHash)) || (o.CalculateMD5 && (existing.Checksum == nil || *file.Checksum != *existing.Checksum))
+	changed = (o.CalculateOSHash && (file.OSHash != existing.OSHash)) || (o.CalculateMD5 && (file.Checksum != existing.Checksum))
 
 	return
 }
