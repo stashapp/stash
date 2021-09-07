@@ -126,6 +126,7 @@ func (qb *movieQueryBuilder) makeFilter(movieFilter *models.MovieFilterType) *fi
 	query.handleCriterion(movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
 	query.handleCriterion(stringCriterionHandler(movieFilter.URL, "movies.url"))
 	query.handleCriterion(movieStudioCriterionHandler(qb, movieFilter.Studios))
+	query.handleCriterion(moviePerformersCriterionHandler(qb, movieFilter.Performers))
 
 	return query
 }
@@ -202,6 +203,35 @@ func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.Hierarch
 	}
 
 	return h.handler(studios)
+}
+
+func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performers != nil && len(performers.Value) > 0 {
+			var args []interface{}
+			for _, arg := range performers.Value {
+				args = append(args, arg)
+			}
+
+			// Hack, can't apply args to join, nor inner join on a left join, so use CTE instead
+			f.addWith(`movies_performers AS (
+				SELECT movies_scenes.movie_id, performers_scenes.performer_id
+				FROM movies_scenes
+				INNER JOIN performers_scenes ON movies_scenes.scene_id = performers_scenes.scene_id
+				WHERE performers_scenes.performer_id IN`+getInBinding(len(performers.Value))+`
+			)`, args...)
+			f.addJoin("movies_performers", "", "movies.id = movies_performers.movie_id")
+
+			if performers.Modifier == models.CriterionModifierIncludes {
+				f.addWhere("movies_performers.performer_id IS NOT NULL")
+			} else if performers.Modifier == models.CriterionModifierIncludesAll {
+				f.addWhere("movies_performers.performer_id IS NOT NULL")
+				f.addHaving("COUNT(DISTINCT movies_performers.performer_id) = ?", len(performers.Value))
+			} else if performers.Modifier == models.CriterionModifierExcludes {
+				f.addWhere("movies_performers.performer_id IS NULL")
+			}
+		}
+	}
 }
 
 func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) string {
