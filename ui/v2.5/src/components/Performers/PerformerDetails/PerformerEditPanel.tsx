@@ -30,7 +30,7 @@ import {
   Modal,
   TagSelect,
 } from "src/components/Shared";
-import { ImageUtils } from "src/utils";
+import { ImageUtils, getStashIDs } from "src/utils";
 import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
@@ -380,10 +380,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           variables: {
             input: {
               ...input,
-              stash_ids: performerInput?.stash_ids?.map((s) => ({
-                endpoint: s.endpoint,
-                stash_id: s.stash_id,
-              })),
+              stash_ids: getStashIDs(performerInput?.stash_ids),
             },
           },
         });

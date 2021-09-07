@@ -5,7 +5,7 @@ import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
 import { Button, Form, Col, Row } from "react-bootstrap";
-import { FormUtils, ImageUtils } from "src/utils";
+import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
@@ -74,6 +74,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   function getStudioInput(values: InputValues) {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       ...values,
+      stash_ids: getStashIDs(values.stash_ids),
     };
 
     if (studio && studio.id) {
