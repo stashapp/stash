@@ -3,7 +3,7 @@
     "add": "Lägg till",
     "add_directory": "Lägg till mapp",
     "add_entity": "Lägg till {entityType}",
-    "add_to_entity": "Koppla med {entityType}",
+    "add_to_entity": "Lägg till {entityType}",
     "allow": "Tillåt",
     "allow_temporarily": "Tillåt temporärt",
     "apply": "Applicera",
@@ -79,7 +79,11 @@
     },
     "temp_disable": "Stäng av tillfälligt…",
     "temp_enable": "Sätt på tillfälligt…",
-    "view_random": "Visa slumpad"
+    "view_random": "Visa slumpad",
+    "confirm": "Bekräfta",
+    "select_folders": "Välj mappar",
+    "browse_for_image": "Bläddra efter bild…",
+    "open_random": "Öppna slumpad"
   },
   "actions_name": "Handlingar",
   "age": "Ålder",
@@ -240,9 +244,12 @@
       "hooks": "Krokar",
       "triggers_on": "Triggar på"
     },
-    "scrapers": {
+    "scraping": {
       "entity_metadata": "{entityType} Metadata",
       "entity_scrapers": "{entityType} skrapare",
+      "excluded_tag_patterns_desc": "Regexps av tagg-namn att exkludera från skrapresultat",
+      "excluded_tag_patterns_head": "Exkluderade tagg-mönster",
+      "scrapers": "Scrapers",
       "search_by_name": "Sök med namn",
       "supported_types": "Stöttade typer",
       "supported_urls": "URL:er"
@@ -256,6 +263,7 @@
       "name": "Namn",
       "title": "Stash-box Adresser"
     },
+    "tasks": {
       "added_job_to_queue": "Köade {operation_name}",
       "auto_tag_based_on_filenames": "Auto-taga innehåll baserat på filnamn.",
       "auto_tagging": "Auto-Taggar",
@@ -291,6 +299,7 @@
         "escape_chars": "Använd \\ för att undvika speciella karaktärer",
         "filename": "Filnamn",
         "filename_pattern": "Filnamnsmönster",
+        "ignore_organized": "Ignorera organiserade filer",
         "ignored_words": "Ignorerade ord",
         "matches_with": "Matchar med {i}",
         "select_parser_recipe": "Välj Parser Recept",
@@ -306,8 +315,14 @@
         "heading": "Egen CSS",
         "option_label": "Egen CSS aktiverad"
       },
-      "handy_connection_key": "Handy uppkopplingsnyckel",
-      "handy_connection_key_desc": "Handy uppkopplingsnyckel för interaktiva scener.",
+      "handy_connection_key": {
+        "description": "Handy uppkopplingsnyckel för interaktiva scener.",
+        "heading": "Handy Connection Key"
+      },
+      "funscript_offset": {
+        "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
+        "heading": "Funscript fördröjning (ms)"
+      },
       "language": {
         "heading": "Språk"
       },
@@ -317,7 +332,15 @@
       },
       "menu_items": {
         "description": "Visa eller göm olika flikar på navigationsremsan",
-        "heading": "Menuobjekt"
+        "heading": "Menyobjekt"
+      },
+      "performers": {
+        "options": {
+          "image_location": {
+            "heading": "Sökväg för egna stjärnbilder",
+            "description": "Sökväg för egna standardstjärnbilder. Lämna blank för att använda inbyggd standard"
+          }
+        }
       },
       "preview_type": {
         "description": "Konfiguration av väggobjekt",
@@ -367,7 +390,12 @@
   },
   "country": "Land",
   "cover_image": "Omslagsbild",
-  "created_at": "Skapad den",
+  "created_at": "Skapad vid",
+  "criterion": {
+    "greater_than": "Större än",
+    "less_than": "Mindre än",
+    "value": "Värde"
+  },
   "criterion_modifier": {
     "equals": "är",
     "excludes": "exkluderar",
@@ -380,8 +408,11 @@
     "matches_regex": "matchar regex",
     "not_equals": "är inte",
     "not_matches_regex": "matchar ej regex",
-    "not_null": "är inte null"
+    "not_null": "är inte null",
+    "between": "mellan",
+    "not_between": "inte mellan"
   },
+  "custom": "Custom",
   "date": "Datum",
   "death_date": "Dödsdatum",
   "death_year": "Dödsår",
@@ -484,7 +515,8 @@
   "filter": "Filter",
   "filter_name": "Filternamn",
   "filters": "Filter",
-  "framerate": "Bilhastighet",
+  "framerate": "Bildhastighet",
+  "frames_per_second": "{value} bilder i sekunden",
   "galleries": "Gallerier",
   "gallery": "Galleri",
   "gallery_count": "Antal Gallerier",
@@ -521,6 +553,7 @@
     "stream": "Ström",
     "video_codec": "Videokodek"
   },
+  "megabits_per_second": "{value} megabit i sekunden",
   "metadata": "Metadata",
   "movie": "Film",
   "movie_scene_number": "Filmscennummer",
@@ -553,6 +586,7 @@
   "scene_count": "Antal scener",
   "scene_id": "Scenens ID",
   "scenes": "Scener",
+  "scenes-duration": "Total speltid",
   "scenes-size": "Scenens storlek",
   "scenes_updated_at": "Scen uppdaterad vid",
   "sceneTagger": "Scentaggaren",
