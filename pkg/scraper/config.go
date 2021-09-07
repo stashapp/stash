@@ -393,8 +393,18 @@ func (c config) matchesMovieURL(url string) bool {
 	return false
 }
 
-func (c config) ScrapeScene(scene models.SceneUpdateInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
+func (c config) ScrapeSceneByScene(scene *models.Scene, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
 	if c.SceneByFragment != nil {
+		s := getScraper(*c.SceneByFragment, txnManager, c, globalConfig)
+		return s.scrapeSceneByScene(scene)
+	}
+
+	return nil, nil
+}
+
+func (c config) ScrapeSceneByFragment(scene models.ScrapedSceneInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
+	if c.SceneByFragment != nil {
+		// TODO - this should be sceneByQueryFragment
 		s := getScraper(*c.SceneByFragment, txnManager, c, globalConfig)
 		return s.scrapeSceneByFragment(scene)
 	}
@@ -420,8 +430,18 @@ func (c config) ScrapeSceneURL(url string, txnManager models.TransactionManager,
 	return nil, nil
 }
 
-func (c config) ScrapeGallery(gallery models.GalleryUpdateInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
+func (c config) ScrapeGalleryByGallery(gallery *models.Gallery, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
+	if c.SceneByFragment != nil {
+		s := getScraper(*c.GalleryByFragment, txnManager, c, globalConfig)
+		return s.scrapeGalleryByGallery(gallery)
+	}
+
+	return nil, nil
+}
+
+func (c config) ScrapeGalleryByFragment(gallery models.ScrapedGalleryInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
 	if c.GalleryByFragment != nil {
+		// TODO - this should be galleryByQueryFragment
 		s := getScraper(*c.GalleryByFragment, txnManager, c, globalConfig)
 		return s.scrapeGalleryByFragment(gallery)
 	}

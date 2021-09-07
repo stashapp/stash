@@ -1,4 +1,5 @@
 fragment ScrapedPerformerData on ScrapedPerformer {
+  stored_id
   name
   gender
   url
@@ -18,7 +19,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   tags {
     ...ScrapedSceneTagData
   }
-  image
+  images
   details
   death_date
   hair_color
@@ -26,7 +27,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   remote_site_id
 }
 
-fragment ScrapedScenePerformerData on ScrapedScenePerformer {
+fragment ScrapedScenePerformerData on ScrapedPerformer {
   stored_id
   name
   gender
@@ -55,8 +56,8 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   weight
 }
 
-fragment ScrapedMovieStudioData on ScrapedMovieStudio {
-  id
+fragment ScrapedMovieStudioData on ScrapedStudio {
+  stored_id
   name
   url
 }
@@ -78,7 +79,7 @@ fragment ScrapedMovieData on ScrapedMovie {
   }
 }
 
-fragment ScrapedSceneMovieData on ScrapedSceneMovie {
+fragment ScrapedSceneMovieData on ScrapedMovie {
   stored_id
   name
   aliases
@@ -90,14 +91,14 @@ fragment ScrapedSceneMovieData on ScrapedSceneMovie {
   synopsis
 }
 
-fragment ScrapedSceneStudioData on ScrapedSceneStudio {
+fragment ScrapedSceneStudioData on ScrapedStudio {
   stored_id
   name
   url
   remote_site_id
 }
 
-fragment ScrapedSceneTagData on ScrapedSceneTag {
+fragment ScrapedSceneTagData on ScrapedTag {
   stored_id
   name
 }
@@ -108,6 +109,7 @@ fragment ScrapedSceneData on ScrapedScene {
   url
   date
   image
+  remote_site_id
 
   file {
     size
@@ -134,6 +136,12 @@ fragment ScrapedSceneData on ScrapedScene {
 
   movies {
     ...ScrapedSceneMovieData
+  }
+
+  fingerprints {
+    hash
+    algorithm
+    duration
   }
 }
 
