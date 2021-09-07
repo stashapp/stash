@@ -61,10 +61,13 @@ func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
 
 func countImagesInZip(path string) int {
 	ret := 0
-	walkGalleryZip(path, func(file *zip.File) error {
+	err := walkGalleryZip(path, func(file *zip.File) error {
 		ret++
 		return nil
 	})
+	if err != nil {
+		logger.Warnf("Error while walking gallery zip: %v", err)
+	}
 
 	return ret
 }
