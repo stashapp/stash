@@ -2,6 +2,7 @@ package js
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 
 	"github.com/robertkrimen/otto"
@@ -64,14 +65,37 @@ func logProgressFunc(c chan float64) func(call otto.FunctionCall) otto.Value {
 	}
 }
 
-func AddLogAPI(vm *otto.Otto, progress chan float64) {
+func AddLogAPI(vm *otto.Otto, progress chan float64) error {
 	log, _ := vm.Object("({})")
-	log.Set("Trace", logTrace)
-	log.Set("Debug", logDebug)
-	log.Set("Info", logInfo)
-	log.Set("Warn", logWarn)
-	log.Set("Error", logError)
-	log.Set("Progress", logProgressFunc(progress))
+	err := log.Set("Trace", logTrace)
+	if err != nil {
+		return fmt.Errorf("error setting Trace: %v", err)
+	}
+	err = log.Set("Debug", logDebug)
+	if err != nil {
+		return fmt.Errorf("error setting Debug: %v", err)
+	}
+	err = log.Set("Info", logInfo)
+	if err != nil {
+		return fmt.Errorf("error setting Info: %v", err)
+	}
+	err = log.Set("Warn", logWarn)
+	if err != nil {
+		return fmt.Errorf("error setting Warn: %v", err)
+	}
+	err = log.Set("Error", logError)
+	if err != nil {
+		return fmt.Errorf("error setting Error: %v", err)
+	}
+	err = log.Set("Progress", logProgressFunc(progress))
+	if err != nil {
+		return fmt.Errorf("error setting Progress: %v", err)
+	}
 
-	vm.Set("log", log)
+	err = vm.Set("log", log)
+	if err != nil {
+		return fmt.Errorf("unable to set log: %v", err)
+	}
+
+	return nil
 }

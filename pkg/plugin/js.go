@@ -77,7 +77,11 @@ func (t *jsPluginTask) Start() error {
 		return fmt.Errorf("error setting input: %w", err)
 	}
 
-	js.AddLogAPI(t.vm, t.progress)
+	err = js.AddLogAPI(t.vm, t.progress)
+	if err != nil {
+		return fmt.Errorf("error adding log API: %w", err)
+	}
+
 	err = js.AddUtilAPI(t.vm)
 	if err != nil {
 		return fmt.Errorf("error adding util API: %w", err)
