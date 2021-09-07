@@ -89,6 +89,13 @@ func Initialize(databasePath string) error {
 	return nil
 }
 
+func Close() error {
+	WriteMu.Lock()
+	defer WriteMu.Unlock()
+
+	return DB.Close()
+}
+
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
 	url := "file:" + databasePath + "?_journal=WAL"
