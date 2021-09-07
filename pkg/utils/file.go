@@ -346,3 +346,14 @@ func IsFsPathCaseSensitive(path string) (bool, error) {
 	}
 	return false, fmt.Errorf("can not determine case sensitivity of path %s", path)
 }
+
+func FindInPaths(paths []string, baseName string) string {
+	for _, p := range paths {
+		filePath := filepath.Join(p, baseName)
+		if exists, _ := FileExists(filePath); exists {
+			return filePath
+		}
+	}
+
+	return ""
+}

@@ -97,9 +97,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const doBoxSearch = (performerID: string, searchVal: string) => {
     stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
-        const s = selectPerformers(
-          queryData.data?.queryStashBoxPerformer?.[0].results ?? []
-        );
+        const s = selectPerformers(queryData.data?.scrapeSinglePerformer ?? []);
         setSearchResults({
           ...searchResults,
           [performerID]: s,
@@ -137,7 +135,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     stashBoxPerformerQuery(stashID, endpointIndex)
       .then((queryData) => {
         const data = selectPerformers(
-          queryData.data?.queryStashBoxPerformer?.[0].results ?? []
+          queryData.data?.scrapeSinglePerformer ?? []
         );
         if (data.length > 0) {
           setModalPerformer({
