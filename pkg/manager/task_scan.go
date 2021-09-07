@@ -10,6 +10,7 @@ import (
 
 	"github.com/remeh/sizedwaitgroup"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -84,8 +85,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			wg.Add()
 			task := ScanTask{
 				TxnManager:           j.txnManager,
-				FilePath:             path,
-				FileInfo:             info,
+				file:                 file.FSFile(path, info),
 				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
 				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
 				fileNamingAlgorithm:  fileNamingAlgo,
@@ -132,7 +132,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			wg.Add()
 			task := ScanTask{
 				TxnManager:      j.txnManager,
-				FilePath:        path,
+				file:            file.FSFile(path, nil), // hopefully info is not needed
 				UseFileMetadata: false,
 			}
 
@@ -161,7 +161,7 @@ func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (
 	for _, sp := range paths {
 		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 			t++
-			task := ScanTask{FilePath: path, TxnManager: j.txnManager}
+			task := ScanTask{file: file.FSFile(path, info), TxnManager: j.txnManager}
 			if !task.doesPathExist() {
 				n++
 			}
@@ -198,8 +198,7 @@ func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (
 type ScanTask struct {
 	ctx                  context.Context
 	TxnManager           models.TransactionManager
-	FilePath             string
-	FileInfo             os.FileInfo
+	file                 file.SourceFile
 	UseFileMetadata      bool
 	StripFileExtension   bool
 	calculateMD5         bool
@@ -217,13 +216,13 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
 	var s *models.Scene
-
-	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
-		if isGallery(t.FilePath) {
+	path := t.file.Path()
+	t.progress.ExecuteTask("Scanning "+path, func() {
+		if isGallery(path) {
 			t.scanGallery()
-		} else if isVideo(t.FilePath) {
+		} else if isVideo(path) {
 			s = t.scanScene()
-		} else if isImage(t.FilePath) {
+		} else if isImage(path) {
 			t.scanImage()
 		}
 	})
@@ -234,7 +233,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 		if t.GenerateSprite {
 			iwg.Add()
 
-			go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", t.FilePath), func() {
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", path), func() {
 				taskSprite := GenerateSpriteTask{
 					Scene:               *s,
 					Overwrite:           false,
@@ -247,7 +246,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 		if t.GeneratePhash {
 			iwg.Add()
 
-			go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", t.FilePath), func() {
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", path), func() {
 				taskPhash := GeneratePhashTask{
 					Scene:               *s,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
@@ -260,7 +259,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 		if t.GeneratePreview {
 			iwg.Add()
 
-			go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", t.FilePath), func() {
+			go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
 				config := config.GetInstance()
 				var previewSegmentDuration = config.GetPreviewSegmentDuration()
 				var previewSegments = config.GetPreviewSegments()
@@ -293,10 +292,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *ScanTask) getFileModTime() (time.Time, error) {
-	fi, err := os.Stat(t.FilePath)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("error performing stat on %s: %s", t.FilePath, err.Error())
-	}
+	fi := t.file.FileInfo()
 
 	ret := fi.ModTime()
 	// truncate to seconds, since we don't store beyond that in the database
@@ -310,8 +306,9 @@ func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLi
 }
 
 func (t *ScanTask) calculateChecksum() (string, error) {
-	logger.Infof("Calculating checksum for %s...", t.FilePath)
-	checksum, err := utils.MD5FromFilePath(t.FilePath)
+	path := t.file.Path()
+	logger.Infof("Calculating checksum for %s...", path)
+	checksum, err := utils.MD5FromFilePath(path)
 	if err != nil {
 		return "", err
 	}
@@ -320,9 +317,10 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 }
 
 func (t *ScanTask) calculateImageChecksum() (string, error) {
-	logger.Infof("Calculating checksum for %s...", image.PathDisplayName(t.FilePath))
+	path := t.file.Path()
+	logger.Infof("Calculating checksum for %s...", image.PathDisplayName(path))
 	// uses image.CalculateMD5 to read files in zips
-	checksum, err := image.CalculateMD5(t.FilePath)
+	checksum, err := image.CalculateMD5(path)
 	if err != nil {
 		return "", err
 	}
@@ -336,20 +334,21 @@ func (t *ScanTask) doesPathExist() bool {
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
 
+	path := t.file.Path()
 	ret := false
 	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		if matchExtension(t.FilePath, gExt) {
-			gallery, _ := r.Gallery().FindByPath(t.FilePath)
+		if matchExtension(path, gExt) {
+			gallery, _ := r.Gallery().FindByPath(path)
 			if gallery != nil {
 				ret = true
 			}
-		} else if matchExtension(t.FilePath, vidExt) {
-			s, _ := r.Scene().FindByPath(t.FilePath)
+		} else if matchExtension(path, vidExt) {
+			s, _ := r.Scene().FindByPath(path)
 			if s != nil {
 				ret = true
 			}
-		} else if matchExtension(t.FilePath, imgExt) {
-			i, _ := r.Image().FindByPath(t.FilePath)
+		} else if matchExtension(path, imgExt) {
+			i, _ := r.Image().FindByPath(path)
 			if i != nil {
 				ret = true
 			}

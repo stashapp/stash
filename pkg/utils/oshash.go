@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -34,6 +35,40 @@ func oshash(size int64, head []byte, tail []byte) (string, error) {
 	return fmt.Sprintf("%016x", sum), nil
 }
 
+func OSHashFromReader(src io.ReadSeeker, fileSize int64) (string, error) {
+	if fileSize == 0 {
+		return "", nil
+	}
+
+	fileChunkSize := chunkSize
+	if fileSize < fileChunkSize {
+		fileChunkSize = fileSize
+	}
+
+	head := make([]byte, fileChunkSize)
+	tail := make([]byte, fileChunkSize)
+
+	// read the head of the file into the start of the buffer
+	_, err := src.Read(head)
+	if err != nil {
+		return "", err
+	}
+
+	// seek to the end of the file - the chunk size
+	_, err = src.Seek(-fileChunkSize, 2)
+	if err != nil {
+		return "", err
+	}
+
+	// read the tail of the file
+	_, err = src.Read(tail)
+	if err != nil {
+		return "", err
+	}
+
+	return oshash(fileSize, head, tail)
+}
+
 // OSHashFromFilePath calculates the hash using the same algorithm that
 // OpenSubtitles.org uses.
 //
@@ -53,35 +88,5 @@ func OSHashFromFilePath(filePath string) (string, error) {
 
 	fileSize := fi.Size()
 
-	if fileSize == 0 {
-		return "", nil
-	}
-
-	fileChunkSize := chunkSize
-	if fileSize < fileChunkSize {
-		fileChunkSize = fileSize
-	}
-
-	head := make([]byte, fileChunkSize)
-	tail := make([]byte, fileChunkSize)
-
-	// read the head of the file into the start of the buffer
-	_, err = f.Read(head)
-	if err != nil {
-		return "", err
-	}
-
-	// seek to the end of the file - the chunk size
-	_, err = f.Seek(-fileChunkSize, 2)
-	if err != nil {
-		return "", err
-	}
-
-	// read the tail of the file
-	_, err = f.Read(tail)
-	if err != nil {
-		return "", err
-	}
-
-	return oshash(fileSize, head, tail)
+	return OSHashFromReader(f, fileSize)
 }

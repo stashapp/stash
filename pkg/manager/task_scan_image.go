@@ -19,17 +19,18 @@ import (
 
 func (t *ScanTask) scanImage() {
 	var i *models.Image
+	path := t.file.Path()
 
 	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		i, err = r.Image().FindByPath(t.FilePath)
+		i, err = r.Image().FindByPath(path)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())
 		return
 	}
 
-	fileModTime, err := image.GetFileModTime(t.FilePath)
+	fileModTime, err := image.GetFileModTime(path)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -38,7 +39,7 @@ func (t *ScanTask) scanImage() {
 	if i != nil {
 		// if file mod time is not set, set it now
 		if !i.FileModTime.Valid {
-			logger.Infof("setting file modification time on %s", t.FilePath)
+			logger.Infof("setting file modification time on %s", path)
 
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				qb := r.Image()
@@ -75,16 +76,16 @@ func (t *ScanTask) scanImage() {
 		t.generateThumbnail(i)
 	} else {
 		// Ignore directories.
-		if isDir, _ := utils.DirExists(t.FilePath); isDir {
+		if isDir, _ := utils.DirExists(path); isDir {
 			return
 		}
 
 		var checksum string
 
-		logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
+		logger.Infof("%s not found.  Calculating checksum...", path)
 		checksum, err = t.calculateImageChecksum()
 		if err != nil {
-			logger.Errorf("error calculating checksum for %s: %s", t.FilePath, err.Error())
+			logger.Errorf("error calculating checksum for %s: %s", path, err.Error())
 			return
 		}
 
@@ -104,18 +105,18 @@ func (t *ScanTask) scanImage() {
 			if !t.CaseSensitiveFs {
 				// #1426 - if file exists but is a case-insensitive match for the
 				// original filename, then treat it as a move
-				if exists && strings.EqualFold(t.FilePath, i.Path) {
+				if exists && strings.EqualFold(path, i.Path) {
 					exists = false
 				}
 			}
 
 			if exists {
-				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
+				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(path), image.PathDisplayName(i.Path))
 			} else {
-				logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(t.FilePath))
+				logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(path))
 				imagePartial := models.ImagePartial{
 					ID:   i.ID,
-					Path: &t.FilePath,
+					Path: &path,
 				}
 
 				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -129,11 +130,11 @@ func (t *ScanTask) scanImage() {
 				GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
 			}
 		} else {
-			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
+			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(path))
 			currentTime := time.Now()
 			newImage := models.Image{
 				Checksum: checksum,
-				Path:     t.FilePath,
+				Path:     path,
 				FileModTime: models.NullSQLiteTimestamp{
 					Timestamp: fileModTime,
 					Valid:     true,
@@ -187,7 +188,8 @@ func (t *ScanTask) scanImage() {
 }
 
 func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.Image, error) {
-	logger.Infof("%s has been updated: rescanning", t.FilePath)
+	path := t.file.Path()
+	logger.Infof("%s has been updated: rescanning", path)
 
 	oldChecksum := i.Checksum
 
@@ -198,7 +200,7 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 	}
 
 	// regenerate the file details as well
-	fileDetails, err := image.GetFileDetails(t.FilePath)
+	fileDetails, err := image.GetFileDetails(path)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +243,7 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 
 func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) error {
 	// find a gallery with the path specified
-	path := filepath.Dir(t.FilePath)
+	path := filepath.Dir(t.file.Path())
 	g, err := qb.FindByPath(path)
 	if err != nil {
 		return err

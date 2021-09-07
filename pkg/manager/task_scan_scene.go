@@ -29,7 +29,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		s, err = r.Scene().FindByPath(t.FilePath)
+		s, err = r.Scene().FindByPath(t.file.Path())
 		return err
 	}); err != nil {
 		logger.Error(err.Error())
@@ -43,7 +43,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 	}
 
 	if s != nil {
-		scanned, err := scanner.ScanExisting(s, t.FilePath, t.FileInfo)
+		scanned, err := scanner.ScanExisting(s, t.file)
 		if err != nil {
 			return logError(err)
 		}
@@ -55,7 +55,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		return nil
 	}
 
-	file, err := scanner.ScanNew(t.FilePath, t.FileInfo)
+	file, err := scanner.ScanNew(t.file)
 	if err != nil {
 		return logError(err)
 	}
@@ -69,6 +69,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 }
 
 func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (err error) {
+	path := t.file.Path()
 	interactive := t.getInteractive()
 
 	config := config.GetInstance()
@@ -76,9 +77,9 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 	changed := false
 
 	if scanned.ContentsChanged() {
-		logger.Infof("%s has been updated: rescanning", t.FilePath)
+		logger.Infof("%s has been updated: rescanning", path)
 
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
+		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
 		if err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 		t.videoFileToScene(s, videoFile)
 		changed = true
 	} else if scanned.FileUpdated() || s.Interactive != interactive {
-		logger.Infof("Updated scene file %s", t.FilePath)
+		logger.Infof("Updated scene file %s", path)
 
 		// update fields as needed
 		s.SetFile(*scanned.New)
@@ -95,12 +96,12 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 
 	// check for container
 	if !s.Format.Valid {
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
+		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
 		if err != nil {
 			return err
 		}
-		container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
-		logger.Infof("Adding container %s to file %s", container, t.FilePath)
+		container := ffmpeg.MatchContainer(videoFile.Container, path)
+		logger.Infof("Adding container %s to file %s", container, path)
 		s.Format = models.NullString(string(container))
 		changed = true
 	}
@@ -113,14 +114,14 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
 				dupe, _ := qb.FindByChecksum(s.Checksum.String)
 				if dupe != nil {
-					return fmt.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
+					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path)
 				}
 			}
 
 			if scanned.New.OSHash != "" && scanned.Old.OSHash != scanned.New.OSHash {
 				dupe, _ := qb.FindByOSHash(scanned.New.OSHash)
 				if dupe != nil {
-					return fmt.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
+					return fmt.Errorf("OSHash for file %s is the same as that of %s", path, dupe.Path)
 				}
 			}
 
@@ -147,7 +148,7 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 }
 
 func (t *ScanTask) videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
-	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
+	container := ffmpeg.MatchContainer(videoFile.Container, t.file.Path())
 
 	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
 	s.VideoCodec = sql.NullString{String: videoFile.VideoCodec, Valid: true}
@@ -161,7 +162,8 @@ func (t *ScanTask) videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile
 }
 
 func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err error) {
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
+	path := t.file.Path()
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
 	if err != nil {
 		return nil, err
 	}
@@ -204,18 +206,18 @@ func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err 
 		if !t.CaseSensitiveFs {
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, then treat it as a move
-			if exists && strings.EqualFold(t.FilePath, s.Path) {
+			if exists && strings.EqualFold(path, s.Path) {
 				exists = false
 			}
 		}
 
 		if exists {
-			logger.Infof("%s already exists. Duplicate of %s", t.FilePath, s.Path)
+			logger.Infof("%s already exists. Duplicate of %s", path, s.Path)
 		} else {
-			logger.Infof("%s already exists. Updating path...", t.FilePath)
+			logger.Infof("%s already exists. Updating path...", path)
 			scenePartial := models.ScenePartial{
 				ID:          s.ID,
-				Path:        &t.FilePath,
+				Path:        &path,
 				Interactive: &interactive,
 			}
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -228,12 +230,12 @@ func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err 
 			GetInstance().PluginCache.ExecutePostHooks(t.ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	} else {
-		logger.Infof("%s doesn't exist. Creating new item...", t.FilePath)
+		logger.Infof("%s doesn't exist. Creating new item...", path)
 		currentTime := time.Now()
 		newScene := models.Scene{
 			Checksum: sql.NullString{String: checksum, Valid: checksum != ""},
 			OSHash:   sql.NullString{String: oshash, Valid: oshash != ""},
-			Path:     t.FilePath,
+			Path:     path,
 			FileModTime: models.NullSQLiteTimestamp{
 				Timestamp: file.FileModTime,
 				Valid:     true,
@@ -266,6 +268,7 @@ func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err 
 }
 
 func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
+	path := t.file.Path()
 	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
@@ -278,29 +281,29 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 
 	if probeResult == nil {
 		var err error
-		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
+		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
 
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
-		logger.Infof("Regenerating images for %s", t.FilePath)
+		logger.Infof("Regenerating images for %s", path)
 	}
 
 	at := float64(probeResult.Duration) * 0.2
 
 	if !thumbExists {
-		logger.Debugf("Creating thumbnail for %s", t.FilePath)
+		logger.Debugf("Creating thumbnail for %s", path)
 		makeScreenshot(*probeResult, thumbPath, 5, 320, at)
 	}
 
 	if !normalExists {
-		logger.Debugf("Creating screenshot for %s", t.FilePath)
+		logger.Debugf("Creating screenshot for %s", path)
 		makeScreenshot(*probeResult, normalPath, 2, probeResult.Width, at)
 	}
 }
 
 func (t *ScanTask) getInteractive() bool {
-	_, err := os.Stat(utils.GetFunscriptPath(t.FilePath))
+	_, err := os.Stat(utils.GetFunscriptPath(t.file.Path()))
 	return err == nil
 }

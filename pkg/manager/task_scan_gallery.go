@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/remeh/sizedwaitgroup"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
-	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -21,17 +21,18 @@ import (
 
 func (t *ScanTask) scanGallery() {
 	var g *models.Gallery
+	path := t.file.Path()
 	images := 0
 	scanImages := false
 
 	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		g, err = r.Gallery().FindByPath(t.FilePath)
+		g, err = r.Gallery().FindByPath(path)
 
 		if g != nil && err != nil {
 			images, err = r.Image().CountByGalleryID(g.ID)
 			if err != nil {
-				return fmt.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
+				return fmt.Errorf("error getting images for zip gallery %s: %s", path, err.Error())
 			}
 		}
 
@@ -54,7 +55,7 @@ func (t *ScanTask) scanGallery() {
 		if !g.FileModTime.Valid {
 			// we will also need to rescan the zip contents
 			scanImages = true
-			logger.Infof("setting file modification time on %s", t.FilePath)
+			logger.Infof("setting file modification time on %s", path)
 
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				qb := r.Gallery()
@@ -80,7 +81,7 @@ func (t *ScanTask) scanGallery() {
 		modified := t.isFileModified(fileModTime, g.FileModTime)
 		if modified {
 			scanImages = true
-			logger.Infof("%s has been updated: rescanning", t.FilePath)
+			logger.Infof("%s has been updated: rescanning", path)
 
 			// update the checksum and the modification time
 			checksum, err := t.calculateChecksum()
@@ -113,7 +114,7 @@ func (t *ScanTask) scanGallery() {
 		scanImages = scanImages || images == 0
 	} else {
 		// Ignore directories.
-		if isDir, _ := utils.DirExists(t.FilePath); isDir {
+		if isDir, _ := utils.DirExists(path); isDir {
 			return
 		}
 
@@ -131,17 +132,17 @@ func (t *ScanTask) scanGallery() {
 				if !t.CaseSensitiveFs {
 					// #1426 - if file exists but is a case-insensitive match for the
 					// original filename, then treat it as a move
-					if exists && strings.EqualFold(t.FilePath, g.Path.String) {
+					if exists && strings.EqualFold(path, g.Path.String) {
 						exists = false
 					}
 				}
 
 				if exists {
-					logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, g.Path.String)
+					logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
 				} else {
-					logger.Infof("%s already exists.  Updating path...", t.FilePath)
+					logger.Infof("%s already exists.  Updating path...", path)
 					g.Path = sql.NullString{
-						String: t.FilePath,
+						String: path,
 						Valid:  true,
 					}
 					g, err = qb.Update(*g)
@@ -158,7 +159,7 @@ func (t *ScanTask) scanGallery() {
 					Checksum: checksum,
 					Zip:      true,
 					Path: sql.NullString{
-						String: t.FilePath,
+						String: path,
 						Valid:  true,
 					},
 					FileModTime: models.NullSQLiteTimestamp{
@@ -166,7 +167,7 @@ func (t *ScanTask) scanGallery() {
 						Valid:     true,
 					},
 					Title: sql.NullString{
-						String: utils.GetNameFromPath(t.FilePath, t.StripFileExtension),
+						String: utils.GetNameFromPath(path, t.StripFileExtension),
 						Valid:  true,
 					},
 					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
@@ -174,14 +175,14 @@ func (t *ScanTask) scanGallery() {
 				}
 
 				// don't create gallery if it has no images
-				if countImagesInZip(t.FilePath) > 0 {
+				if countImagesInZip(path) > 0 {
 					// only warn when creating the gallery
-					ok, err := utils.IsZipFileUncompressed(t.FilePath)
+					ok, err := utils.IsZipFileUncompressed(path)
 					if err == nil && !ok {
-						logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
+						logger.Warnf("%s is using above store (0) level compression.", path)
 					}
 
-					logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
+					logger.Infof("%s doesn't exist.  Creating new item...", path)
 					g, err = qb.Create(newGallery)
 					if err != nil {
 						return err
@@ -211,10 +212,11 @@ func (t *ScanTask) scanGallery() {
 
 // associates a gallery to a scene with the same basename
 func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
+	path := t.file.Path()
 	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Gallery()
 		sqb := r.Scene()
-		g, err := qb.FindByPath(t.FilePath)
+		g, err := qb.FindByPath(path)
 		if err != nil {
 			return err
 		}
@@ -222,11 +224,11 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 		if g == nil {
 			// associate is run after scan is finished
 			// should only happen if gallery is a directory or an io error occurs during hashing
-			logger.Warnf("associate: gallery %s not found in DB", t.FilePath)
+			logger.Warnf("associate: gallery %s not found in DB", path)
 			return nil
 		}
 
-		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
+		basename := strings.TrimSuffix(path, filepath.Ext(path))
 		var relatedFiles []string
 		vExt := config.GetInstance().GetVideoExtensions()
 		// make a list of media files that can be related to the gallery
@@ -250,7 +252,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 					}
 				}
 				if !isAssoc {
-					logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+					logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
 					if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
 						return err
 					}
@@ -265,12 +267,12 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
-	err := walkGalleryZip(zipGallery.Path.String, func(file *zip.File) error {
+	err := walkGalleryZip(zipGallery.Path.String, func(f *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
 
 		// filepath is the zip file and the internal file name, separated by a null byte
-		subTask.FilePath = image.ZipFilename(zipGallery.Path.String, file.Name)
+		subTask.file = file.ZipFile(zipGallery.Path.String, f)
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete

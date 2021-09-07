@@ -1,7 +1,9 @@
 package file
 
 import (
-	"os"
+	"fmt"
+	"io"
+	"io/fs"
 	"strconv"
 	"time"
 
@@ -9,13 +11,19 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type SourceFile interface {
+	Open() (io.ReadCloser, error)
+	Path() string
+	FileInfo() fs.FileInfo
+}
+
 type FileBased interface {
 	File() models.File
 }
 
 type Hasher interface {
-	OSHash(path string) (string, error)
-	MD5(path string) (string, error)
+	OSHash(src io.ReadSeeker, size int64) (string, error)
+	MD5(src io.Reader) (string, error)
 }
 
 type Scanned struct {
@@ -54,7 +62,8 @@ type Scanner struct {
 	CalculateOSHash bool
 }
 
-func (o Scanner) ScanExisting(existing FileBased, path string, info os.FileInfo) (h *Scanned, err error) {
+func (o Scanner) ScanExisting(existing FileBased, file SourceFile) (h *Scanned, err error) {
+	info := file.FileInfo()
 	h = &Scanned{}
 
 	existingFile := existing.File()
@@ -70,7 +79,7 @@ func (o Scanner) ScanExisting(existing FileBased, path string, info os.FileInfo)
 	modTimeChanged := !existingFile.FileModTime.Equal(updatedFile.FileModTime)
 
 	//  regenerate hash(es)
-	if _, err = o.generateHashes(&updatedFile, modTimeChanged); err != nil {
+	if _, err = o.generateHashes(&updatedFile, file, modTimeChanged); err != nil {
 		return nil, err
 	}
 
@@ -79,16 +88,17 @@ func (o Scanner) ScanExisting(existing FileBased, path string, info os.FileInfo)
 	return
 }
 
-func (o Scanner) ScanNew(path string, info os.FileInfo) (*models.File, error) {
+func (o Scanner) ScanNew(file SourceFile) (*models.File, error) {
+	info := file.FileInfo()
 	sizeStr := strconv.FormatInt(info.Size(), 10)
 	modTime := info.ModTime()
 	f := models.File{
-		Path:        path,
+		Path:        file.Path(),
 		Size:        sizeStr,
 		FileModTime: modTime,
 	}
 
-	if _, err := o.generateHashes(&f, false); err != nil {
+	if _, err := o.generateHashes(&f, file, false); err != nil {
 		return nil, err
 	}
 
@@ -97,19 +107,32 @@ func (o Scanner) ScanNew(path string, info os.FileInfo) (*models.File, error) {
 
 // generateHashes regenerates and sets the hashes in the provided File.
 // It will not recalculate unless specified.
-func (o Scanner) generateHashes(file *models.File, regenerate bool) (changed bool, err error) {
-	existing := *file
+func (o Scanner) generateHashes(f *models.File, file SourceFile, regenerate bool) (changed bool, err error) {
+	existing := *f
 
-	if o.CalculateOSHash && (regenerate || file.OSHash == "") {
-		logger.Infof("Calculating oshash for %s ...", file.Path)
+	var src io.ReadCloser
+	if o.CalculateOSHash && (regenerate || f.OSHash == "") {
+		logger.Infof("Calculating oshash for %s ...", f.Path)
+
+		src, err = file.Open()
+		if err != nil {
+			return false, err
+		}
+		defer src.Close()
+
+		seekSrc, valid := src.(io.ReadSeeker)
+		if !valid {
+			return false, fmt.Errorf("invalid source file type: %s", file.Path())
+		}
+
 		// regenerate hash
 		var oshash string
-		oshash, err = o.Hasher.OSHash(file.Path)
+		oshash, err = o.Hasher.OSHash(seekSrc, file.FileInfo().Size())
 		if err != nil {
 			return
 		}
 
-		file.OSHash = oshash
+		f.OSHash = oshash
 	}
 
 	// always generate if MD5 is nil
@@ -117,20 +140,28 @@ func (o Scanner) generateHashes(file *models.File, regenerate bool) (changed boo
 	// - OSHash was not calculated, or
 	// - existing OSHash is different to generated one
 	// or if it was different to the previous version
-	if o.CalculateMD5 && (file.Checksum == "" || (regenerate && (!o.CalculateOSHash || existing.OSHash != file.OSHash))) {
-		logger.Infof("Calculating checksum for %s...", file.Path)
+	if o.CalculateMD5 && (f.Checksum == "" || (regenerate && (!o.CalculateOSHash || existing.OSHash != f.OSHash))) {
+		logger.Infof("Calculating checksum for %s...", f.Path)
+
+		if src == nil {
+			src, err = file.Open()
+			if err != nil {
+				return false, err
+			}
+			defer src.Close()
+		}
 
 		// regenerate checksum
 		var checksum string
-		checksum, err = o.Hasher.MD5(file.Path)
+		checksum, err = o.Hasher.MD5(src)
 		if err != nil {
 			return
 		}
 
-		file.Checksum = checksum
+		f.Checksum = checksum
 	}
 
-	changed = (o.CalculateOSHash && (file.OSHash != existing.OSHash)) || (o.CalculateMD5 && (file.Checksum != existing.Checksum))
+	changed = (o.CalculateOSHash && (f.OSHash != existing.OSHash)) || (o.CalculateMD5 && (f.Checksum != existing.Checksum))
 
 	return
 }
