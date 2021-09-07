@@ -9,7 +9,7 @@ on:
     types: [ published ]
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:4
+  COMPILER_IMAGE: stashapp/compiler:5
 
 jobs:
   build:
