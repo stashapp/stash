@@ -3,6 +3,7 @@ package paths
 import (
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -43,14 +44,38 @@ func GetJSONPaths(baseDir string) *JSONPaths {
 
 func EnsureJSONDirs(baseDir string) {
 	jsonPaths := GetJSONPaths(baseDir)
-	utils.EnsureDir(jsonPaths.Metadata)
-	utils.EnsureDir(jsonPaths.Scenes)
-	utils.EnsureDir(jsonPaths.Images)
-	utils.EnsureDir(jsonPaths.Galleries)
-	utils.EnsureDir(jsonPaths.Performers)
-	utils.EnsureDir(jsonPaths.Studios)
-	utils.EnsureDir(jsonPaths.Movies)
-	utils.EnsureDir(jsonPaths.Tags)
+	err := utils.EnsureDir(jsonPaths.Metadata)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Metadata: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Scenes)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Scenes: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Images)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Images: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Galleries)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Galleries: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Performers)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Performers: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Studios)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Studios: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Movies)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Movies: %v", err)
+	}
+	err = utils.EnsureDir(jsonPaths.Tags)
+	if err != nil {
+		logger.Warnf("couldn't create directories for Tags: %v", err)
+	}
 }
 
 func (jp *JSONPaths) PerformerJSONPath(checksum string) string {

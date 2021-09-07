@@ -51,7 +51,10 @@ func (gp *generatedPaths) RemoveTmpDir() error {
 }
 
 func (gp *generatedPaths) TempDir(pattern string) (string, error) {
-	gp.EnsureTmpDir()
+	err := gp.EnsureTmpDir()
+	if err != nil {
+		logger.Warnf("Could not ensure existence of a temporary directory: %v", err)
+	}
 	ret, err := ioutil.TempDir(gp.Tmp, pattern)
 	if err != nil {
 		return "", err
