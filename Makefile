@@ -52,7 +52,7 @@ build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
-build-release: GO_BUILD_FLAGS := -trimpath
+build-release-static: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 
 # cross-compile- targets should be run within the compiler docker container
