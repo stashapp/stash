@@ -86,7 +86,11 @@ func (t *jsPluginTask) Start() error {
 	if err != nil {
 		return fmt.Errorf("error adding util API: %w", err)
 	}
-	js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler)
+
+	err = js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler)
+	if err != nil {
+		return fmt.Errorf("error adding GraphQL API: %w", err)
+	}
 
 	t.vm.Interrupt = make(chan func(), 1)
 

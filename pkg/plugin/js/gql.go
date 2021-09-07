@@ -103,9 +103,17 @@ func gqlRequestFunc(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler)
 	}
 }
 
-func AddGQLAPI(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) {
+func AddGQLAPI(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) error {
 	gql, _ := vm.Object("({})")
-	gql.Set("Do", gqlRequestFunc(vm, cookie, gqlHandler))
+	err := gql.Set("Do", gqlRequestFunc(vm, cookie, gqlHandler))
+	if err != nil {
+		return fmt.Errorf("unable to set GraphQL Do function: %w", err)
+	}
 
-	vm.Set("gql", gql)
+	err = vm.Set("gql", gql)
+	if err != nil {
+		return fmt.Errorf("unable to set gql: %w", err)
+	}
+
+	return nil
 }
