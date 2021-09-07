@@ -85,6 +85,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			task := ScanTask{
 				TxnManager:           j.txnManager,
 				FilePath:             path,
+				FileInfo:             info,
 				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
 				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
 				fileNamingAlgorithm:  fileNamingAlgo,
@@ -198,6 +199,7 @@ type ScanTask struct {
 	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	FilePath             string
+	FileInfo             os.FileInfo
 	UseFileMetadata      bool
 	StripFileExtension   bool
 	calculateMD5         bool
