@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -73,7 +74,10 @@ func (t *jsPluginTask) Start() error {
 
 	t.vm.Set("input", t.input)
 	js.AddLogAPI(t.vm, t.progress)
-	js.AddUtilAPI(t.vm)
+	err = js.AddUtilAPI(t.vm)
+	if err != nil {
+		return fmt.Errorf("error adding util API: %w", err)
+	}
 	js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler)
 
 	t.vm.Interrupt = make(chan func(), 1)
