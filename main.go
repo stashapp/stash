@@ -25,7 +25,7 @@ func main() {
 
 	err := manager.GetInstance().Shutdown()
 	if err != nil {
-		logger.Error("Error when closing: %v", err)
+		logger.Errorf("Error when closing: %s", err)
 	}
 }
 
