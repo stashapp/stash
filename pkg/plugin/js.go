@@ -72,7 +72,11 @@ func (t *jsPluginTask) Start() error {
 		return err
 	}
 
-	t.vm.Set("input", t.input)
+	err = t.vm.Set("input", t.input)
+	if err != nil {
+		return fmt.Errorf("error setting input: %w", err)
+	}
+
 	js.AddLogAPI(t.vm, t.progress)
 	err = js.AddUtilAPI(t.vm)
 	if err != nil {
