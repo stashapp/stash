@@ -219,7 +219,10 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 
 			select {
 			case <-ctx.Done():
-				task.Stop()
+				err := task.Stop()
+				if err != nil {
+					logger.Warnf("could not stop task: %v", err)
+				}
 				return fmt.Errorf("operation cancelled")
 			case <-c:
 				// task finished normally
