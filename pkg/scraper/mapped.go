@@ -763,7 +763,7 @@ func (s mappedScraper) scrapePerformer(q mappedQuery) (*models.ScrapedPerformer,
 			tagResults := performerTagsMap.process(q, s.Common)
 
 			for _, p := range tagResults {
-				tag := &models.ScrapedSceneTag{}
+				tag := &models.ScrapedTag{}
 				p.apply(tag)
 				ret.Tags = append(ret.Tags, tag)
 			}
@@ -824,11 +824,11 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 			performerResults := scenePerformersMap.process(q, s.Common)
 
 			for _, p := range performerResults {
-				performer := &models.ScrapedScenePerformer{}
+				performer := &models.ScrapedPerformer{}
 				p.apply(performer)
 
 				for _, p := range performerTagResults {
-					tag := &models.ScrapedSceneTag{}
+					tag := &models.ScrapedTag{}
 					p.apply(tag)
 					ret.Tags = append(ret.Tags, tag)
 				}
@@ -842,7 +842,7 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 			tagResults := sceneTagsMap.process(q, s.Common)
 
 			for _, p := range tagResults {
-				tag := &models.ScrapedSceneTag{}
+				tag := &models.ScrapedTag{}
 				p.apply(tag)
 				ret.Tags = append(ret.Tags, tag)
 			}
@@ -853,7 +853,7 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 			studioResults := sceneStudioMap.process(q, s.Common)
 
 			if len(studioResults) > 0 {
-				studio := &models.ScrapedSceneStudio{}
+				studio := &models.ScrapedStudio{}
 				studioResults[0].apply(studio)
 				ret.Studio = studio
 			}
@@ -864,7 +864,7 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 			movieResults := sceneMoviesMap.process(q, s.Common)
 
 			for _, p := range movieResults {
-				movie := &models.ScrapedSceneMovie{}
+				movie := &models.ScrapedMovie{}
 				p.apply(movie)
 				ret.Movies = append(ret.Movies, movie)
 			}
@@ -899,7 +899,7 @@ func (s mappedScraper) scrapeGallery(q mappedQuery) (*models.ScrapedGallery, err
 			performerResults := galleryPerformersMap.process(q, s.Common)
 
 			for _, p := range performerResults {
-				performer := &models.ScrapedScenePerformer{}
+				performer := &models.ScrapedPerformer{}
 				p.apply(performer)
 				ret.Performers = append(ret.Performers, performer)
 			}
@@ -910,7 +910,7 @@ func (s mappedScraper) scrapeGallery(q mappedQuery) (*models.ScrapedGallery, err
 			tagResults := galleryTagsMap.process(q, s.Common)
 
 			for _, p := range tagResults {
-				tag := &models.ScrapedSceneTag{}
+				tag := &models.ScrapedTag{}
 				p.apply(tag)
 				ret.Tags = append(ret.Tags, tag)
 			}
@@ -921,7 +921,7 @@ func (s mappedScraper) scrapeGallery(q mappedQuery) (*models.ScrapedGallery, err
 			studioResults := galleryStudioMap.process(q, s.Common)
 
 			if len(studioResults) > 0 {
-				studio := &models.ScrapedSceneStudio{}
+				studio := &models.ScrapedStudio{}
 				studioResults[0].apply(studio)
 				ret.Studio = studio
 			}
@@ -951,7 +951,7 @@ func (s mappedScraper) scrapeMovie(q mappedQuery) (*models.ScrapedMovie, error) 
 			studioResults := movieStudioMap.process(q, s.Common)
 
 			if len(studioResults) > 0 {
-				studio := &models.ScrapedMovieStudio{}
+				studio := &models.ScrapedStudio{}
 				studioResults[0].apply(studio)
 				ret.Studio = studio
 			}

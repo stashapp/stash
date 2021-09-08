@@ -72,31 +72,50 @@ type Query {
   listGalleryScrapers: [Scraper!]!
   listMovieScrapers: [Scraper!]!
 
-  """Scrape a list of performers based on name"""
-  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
-  """Scrapes a complete performer record based on a scrapePerformerList result"""
-  scrapePerformer(scraper_id: ID!, scraped_performer: ScrapedPerformerInput!): ScrapedPerformer
+  """Scrape for a single scene"""
+  scrapeSingleScene(source: ScraperSourceInput!, input: ScrapeSingleSceneInput!): [ScrapedScene!]!
+  """Scrape for multiple scenes"""
+  scrapeMultiScenes(source: ScraperSourceInput!, input: ScrapeMultiScenesInput!): [[ScrapedScene!]!]!
+
+  """Scrape for a single performer"""
+  scrapeSinglePerformer(source: ScraperSourceInput!, input: ScrapeSinglePerformerInput!): [ScrapedPerformer!]!
+  """Scrape for multiple performers"""
+  scrapeMultiPerformers(source: ScraperSourceInput!, input: ScrapeMultiPerformersInput!): [[ScrapedPerformer!]!]!
+
+  """Scrape for a single gallery"""
+  scrapeSingleGallery(source: ScraperSourceInput!, input: ScrapeSingleGalleryInput!): [ScrapedGallery!]!
+
+  """Scrape for a single movie"""
+  scrapeSingleMovie(source: ScraperSourceInput!, input: ScrapeSingleMovieInput!): [ScrapedMovie!]!
+
   """Scrapes a complete performer record based on a URL"""
   scrapePerformerURL(url: String!): ScrapedPerformer
-  """Scrapes a complete scene record based on an existing scene"""
-  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
   """Scrapes a complete performer record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
-  """Scrapes a complete gallery record based on an existing gallery"""
-  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
   """Scrapes a complete gallery record based on a URL"""
   scrapeGalleryURL(url: String!): ScrapedGallery
   """Scrapes a complete movie record based on a URL"""
   scrapeMovieURL(url: String!): ScrapedMovie
 
+  """Scrape a list of performers based on name"""
+  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]! @deprecated(reason: "use scrapeSinglePerformer")
+  """Scrapes a complete performer record based on a scrapePerformerList result"""
+  scrapePerformer(scraper_id: ID!, scraped_performer: ScrapedPerformerInput!): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer")
+  """Scrapes a complete scene record based on an existing scene"""
+  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene @deprecated(reason: "use scrapeSingleScene")
+  """Scrapes a complete gallery record based on an existing gallery"""
+  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery @deprecated(reason: "use scrapeSingleGallery")
+
   """Scrape a performer using Freeones"""
-  scrapeFreeones(performer_name: String!): ScrapedPerformer
+  scrapeFreeones(performer_name: String!): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
   """Scrape a list of performers from a query"""
-  scrapeFreeonesPerformerList(query: String!): [String!]!
+  scrapeFreeonesPerformerList(query: String!): [String!]! @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
 
   """Query StashBox for scenes"""
-  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]!
-  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]!
+  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]! @deprecated(reason: "use scrapeSingleScene or scrapeMultiScenes")
+  """Query StashBox for performers"""
+  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]! @deprecated(reason: "use scrapeSinglePerformer or scrapeMultiPerformers")
+  # === end deprecated methods ===
 
   # Plugins
   """List loaded plugins"""
