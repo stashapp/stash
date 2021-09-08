@@ -229,9 +229,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if len(performer.Images) > 0 {
-					image, err := utils.ReadImageFromURL(performer.Images[0])
-					if err != nil {
-						return err
+					image, imageErr := utils.ReadImageFromURL(performer.Images[0])
+					if imageErr != nil {
+						return imageErr
 					}
 					err = r.Performer().UpdateImage(createdPerformer.ID, image)
 				}
