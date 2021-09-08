@@ -656,17 +656,21 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 
 	re, err := regexp.Compile("^http.*graphql$")
 	if err != nil {
-		return errors.New("Failure to generate regular expression")
+		return errors.New("failure to generate regular expression")
 	}
 
 	for _, box := range boxes {
 		if box.APIKey == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box API Key cannot be blank")
 		} else if box.Endpoint == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint cannot be blank")
 		} else if !re.Match([]byte(box.Endpoint)) {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Name cannot be blank")
 		}
 	}

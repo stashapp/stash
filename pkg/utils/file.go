@@ -193,12 +193,12 @@ func IsZipFileUncompressed(path string) (bool, error) {
 func WriteFile(path string, file []byte) error {
 	pathErr := EnsureDirAll(filepath.Dir(path))
 	if pathErr != nil {
-		return fmt.Errorf("Cannot ensure path %s", pathErr)
+		return fmt.Errorf("cannot ensure path %s", pathErr)
 	}
 
 	err := ioutil.WriteFile(path, file, 0755)
 	if err != nil {
-		return fmt.Errorf("Write error for thumbnail %s: %s ", path, err)
+		return fmt.Errorf("write error for thumbnail %s: %s ", path, err)
 	}
 	return nil
 }

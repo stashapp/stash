@@ -109,7 +109,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
 
 	if !driverOptions.UseCDP {
-		return nil, fmt.Errorf("Url shouldn't be feetched through CDP")
+		return nil, fmt.Errorf("URL shouldn't be fetched through CDP")
 	}
 
 	sleepDuration := scrapeDefaultSleep
