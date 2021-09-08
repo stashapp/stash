@@ -82,7 +82,10 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 
 	// Make the folder for the scenes markers
 	markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
-	utils.EnsureDir(markersFolder)
+	err = utils.EnsureDir(markersFolder)
+	if err != nil {
+		logger.Warnf("could not create the marker folder (%v): %v", markersFolder, err)
+	}
 
 	for i, sceneMarker := range sceneMarkers {
 		index := i + 1

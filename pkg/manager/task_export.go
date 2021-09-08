@@ -174,7 +174,10 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 func (t *ExportTask) generateDownload() error {
 	// zip the files and register a download link
-	utils.EnsureDir(instance.Paths.Generated.Downloads)
+	err := utils.EnsureDir(instance.Paths.Generated.Downloads)
+	if err != nil {
+		return err
+	}
 	z, err := ioutil.TempFile(instance.Paths.Generated.Downloads, "export*.zip")
 	if err != nil {
 		return err

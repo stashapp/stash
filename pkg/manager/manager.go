@@ -110,11 +110,17 @@ func Initialize() *singleton {
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
-		initFFMPEG()
+		err = initFFMPEG()
+		if err != nil {
+			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
+		}
 
 		// if DLNA is enabled, start it now
 		if instance.Config.GetDLNADefaultEnabled() {
-			instance.DLNAService.Start(nil)
+			err := instance.DLNAService.Start(nil)
+			if err != nil {
+				logger.Warnf("could not start DLNA service: %v", err)
+			}
 		}
 	})
 
@@ -134,7 +140,10 @@ func initProfiling(cpuProfilePath string) {
 	logger.Infof("profiling to %s", cpuProfilePath)
 
 	// StopCPUProfile is defer called in main
-	pprof.StartCPUProfile(f)
+	err = pprof.StartCPUProfile(f)
+	if err != nil {
+		logger.Warnf("could not start CPU profiling: %v", err)
+	}
 }
 
 func initFFMPEG() error {
@@ -182,7 +191,10 @@ func initLog() {
 // configuration has been set. Should only be called if the configuration
 // is valid.
 func (s *singleton) PostInit() error {
-	s.Config.SetInitialConfig()
+	err := s.Config.SetInitialConfig()
+	if err != nil {
+		logger.Warnf("could not set initial configuration: %v", err)
+	}
 
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	s.RefreshConfig()
@@ -201,8 +213,14 @@ func (s *singleton) PostInit() error {
 		const deleteTimeout = 1 * time.Second
 
 		utils.Timeout(func() {
-			utils.EmptyDir(instance.Paths.Generated.Downloads)
-			utils.EmptyDir(instance.Paths.Generated.Tmp)
+			err := utils.EmptyDir(instance.Paths.Generated.Downloads)
+			if err != nil {
+				logger.Warnf("could not empty Downloads directory: %v", err)
+			}
+			err = utils.EmptyDir(instance.Paths.Generated.Tmp)
+			if err != nil {
+				logger.Warnf("could not empty Tmp directory: %v", err)
+			}
 		}, deleteTimeout, func(done chan struct{}) {
 			logger.Info("Please wait. Deleting temporary files...") // print
 			<-done                                                  // and wait for deletion
@@ -236,11 +254,26 @@ func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	config := s.Config
 	if config.Validate() == nil {
-		utils.EnsureDir(s.Paths.Generated.Screenshots)
-		utils.EnsureDir(s.Paths.Generated.Vtt)
-		utils.EnsureDir(s.Paths.Generated.Markers)
-		utils.EnsureDir(s.Paths.Generated.Transcodes)
-		utils.EnsureDir(s.Paths.Generated.Downloads)
+		err := utils.EnsureDir(s.Paths.Generated.Screenshots)
+		if err != nil {
+			logger.Warnf("could not create directory for Screenshots: %v", err)
+		}
+		err = utils.EnsureDir(s.Paths.Generated.Vtt)
+		if err != nil {
+			logger.Warnf("could not create directory for VTT: %v", err)
+		}
+		err = utils.EnsureDir(s.Paths.Generated.Markers)
+		if err != nil {
+			logger.Warnf("could not create directory for Markers: %v", err)
+		}
+		err = utils.EnsureDir(s.Paths.Generated.Transcodes)
+		if err != nil {
+			logger.Warnf("could not create directory for Transcodes: %v", err)
+		}
+		err = utils.EnsureDir(s.Paths.Generated.Downloads)
+		if err != nil {
+			logger.Warnf("could not create directory for Downloads: %v", err)
+		}
 	}
 }
 
@@ -304,7 +337,9 @@ func (s *singleton) Setup(input models.SetupInput) error {
 
 	s.Config.FinalizeSetup()
 
-	initFFMPEG()
+	if err := initFFMPEG(); err != nil {
+		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
+	}
 
 	return nil
 }
