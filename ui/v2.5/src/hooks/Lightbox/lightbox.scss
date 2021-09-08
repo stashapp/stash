@@ -53,16 +53,6 @@
       &-inline {
         display: none;
       }
-
-      @media screen and (min-width: 1300px) {
-        &-icon {
-          display: none;
-        }
-
-        &-inline {
-          display: flex;
-        }
-      }
     }
 
     &-right {
@@ -117,9 +107,24 @@
 
       img {
         margin: auto;
-        max-height: 100%;
-        max-width: 100%;
         object-fit: contain;
+      }
+
+      &.Lightbox-nav-fitxy img {
+        max-height: 100%;
+      }
+
+      &.Lightbox-nav-fitx {
+        overflow-y: auto;
+
+        img {
+          max-width: 100%;
+        }
+      }
+
+      &.Lightbox-nav-original {
+        overflow-x: auto;
+        overflow-y: auto;
       }
     }
   }

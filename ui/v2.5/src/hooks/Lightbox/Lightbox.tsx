@@ -8,6 +8,7 @@ import {
   FormLabel,
   OverlayTrigger,
   Popover,
+  Form,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -39,6 +40,16 @@ const DEFAULT_SLIDESHOW_DELAY = 5000;
 const SECONDS_TO_MS = 1000;
 const MIN_VALID_INTERVAL_SECONDS = 1;
 
+enum DisplayMode {
+  ORIGINAL = "ORIGINAL",
+  FIT_XY = "FIT_XY",
+  FIT_X = "FIT_X",
+}
+
+const CLASSNAME_FITXY = `${CLASSNAME_NAV}-fitxy`;
+const CLASSNAME_FITX = `${CLASSNAME_NAV}-fitx`;
+const CLASSNAME_ORIGINAL = `${CLASSNAME_NAV}-original`;
+
 type Image = Pick<GQL.Image, "paths">;
 interface IProps {
   images: Image[];
@@ -67,6 +78,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
+  const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -185,7 +197,8 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
-    if (className === CLASSNAME_IMAGE) close();
+    if (className && className.includes && className.includes(CLASSNAME_IMAGE))
+      close();
   };
 
   const handleLeft = useCallback(
@@ -359,6 +372,17 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   };
 
+  function getModeClass() {
+    switch (displayMode) {
+      case DisplayMode.FIT_XY:
+        return CLASSNAME_FITXY;
+      case DisplayMode.FIT_X:
+        return CLASSNAME_FITX;
+      case DisplayMode.ORIGINAL:
+        return CLASSNAME_ORIGINAL;
+    }
+  }
+
   const currentIndex = index.current === null ? initialIndex : index.current;
 
   const DelayForm: React.FC<{}> = () => (
@@ -376,6 +400,27 @@ export const LightboxComponent: React.FC<IProps> = ({
           size="sm"
           id="delay-input"
         />
+      </Col>
+      <FormLabel column sm="5">
+        Display Mode
+      </FormLabel>
+      <Col sm="4">
+        <Form.Control
+          as="select"
+          onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
+          value={displayMode}
+          className="btn-secondary mx-1 mb-1"
+        >
+          <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
+            Original
+          </option>
+          <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
+            Fit to screen
+          </option>
+          <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
+            Fit horizontally
+          </option>
+        </Form.Control>
       </Col>
     </>
   );
@@ -475,7 +520,10 @@ export const LightboxComponent: React.FC<IProps> = ({
               ref={carouselRef}
             >
               {images.map((image) => (
-                <div className={CLASSNAME_IMAGE} key={image.paths.image}>
+                <div
+                  className={`${CLASSNAME_IMAGE} ${getModeClass()}`}
+                  key={image.paths.image}
+                >
                   <picture>
                     <source
                       srcSet={image.paths.image ?? ""}
