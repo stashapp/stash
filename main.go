@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/stashapp/stash/pkg/api"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -21,6 +22,11 @@ func main() {
 	// stop any profiling at exit
 	defer pprof.StopCPUProfile()
 	blockForever()
+
+	err := manager.GetInstance().Shutdown()
+	if err != nil {
+		logger.Errorf("Error when closing: %s", err)
+	}
 }
 
 func blockForever() {

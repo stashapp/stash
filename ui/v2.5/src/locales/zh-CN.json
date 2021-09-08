@@ -79,7 +79,11 @@
     },
     "temp_disable": "暂时关闭...",
     "temp_enable": "暂时启用...",
-    "view_random": "随机查看"
+    "view_random": "随机查看",
+    "confirm": "确认",
+    "select_folders": "选择目录",
+    "browse_for_image": "浏览图片…",
+    "open_random": "开启随机"
   },
   "actions_name": "操作",
   "age": "年龄",
@@ -243,6 +247,8 @@
     "scraping": {
       "entity_metadata": "{entityType} 元数据",
       "entity_scrapers": "{entityType} 爬虫",
+      "excluded_tag_patterns_desc": "从抓取结果中排除的标签名称的正则表达式",
+      "excluded_tag_patterns_head": "排除标签的正则表达式",
       "scrapers": "爬虫",
       "search_by_name": "按名称搜索",
       "supported_types": "支持类型",
@@ -293,6 +299,7 @@
         "escape_chars": "使用\\转义特殊字符",
         "filename": "文件名称",
         "filename_pattern": "文件名规则",
+        "ignore_organized": "忽略已经整理的短片",
         "ignored_words": "忽略字符",
         "matches_with": "使用 {i} 进行匹配",
         "select_parser_recipe": "选择需要分析的字段",
@@ -312,6 +319,10 @@
         "description": "用于互动场景的快速连接密钥",
         "heading": "快速连接密钥"
       },
+      "funscript_offset": {
+        "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
+        "heading": "Funscript偏移量（毫秒）"
+      },
       "language": {
         "heading": "语言"
       },
@@ -322,6 +333,14 @@
       "menu_items": {
         "description": "在导航栏上显示或隐藏不同类型的内容",
         "heading": "菜单列表"
+      },
+      "performers": {
+        "options": {
+          "image_location": {
+            "heading": "自定义演员图像路径",
+            "description": "默认演员图像的自定义路径。 留空以使用内置默认值"
+          }
+        }
       },
       "preview_type": {
         "description": "影片预览设置",
@@ -372,6 +391,11 @@
   "country": "国家",
   "cover_image": "封面图片",
   "created_at": "创建时间",
+  "criterion": {
+    "greater_than": "大于",
+    "less_than": "小于",
+    "value": "值"
+  },
   "criterion_modifier": {
     "equals": "是",
     "excludes": "不包含",
@@ -384,14 +408,17 @@
     "matches_regex": "符合正则表达式",
     "not_equals": "不是",
     "not_matches_regex": "不符合正则表达式",
-    "not_null": "不为空"
+    "not_null": "不为空",
+    "between": "在中间",
+    "not_between": "不在中间"
   },
+  "custom": "自定义",
   "date": "日期",
   "death_date": "去世日期",
   "death_year": "去世年份",
   "descending": "降序",
   "detail": "详情",
-  "details": "介绍",
+  "details": "简介",
   "developmentVersion": "开发版本",
   "dialogs": {
     "delete_confirm": "确定要删除 {entityName} 吗?",
@@ -456,24 +483,24 @@
     "search_accuracy_label": "搜索准确度",
     "title": "重复短片"
   },
-  "duration": "长度",
+  "duration": "时长",
   "effect_filters": {
     "aspect": "比例",
-    "blue": "蓝",
+    "blue": "蓝色",
     "blur": "模糊",
     "brightness": "亮度",
     "contrast": "对比",
     "gamma": "伽马",
-    "green": "绿",
+    "green": "绿色",
     "hue": "色调",
     "name": "滤镜",
     "name_transforms": "视频变换",
-    "red": "红",
+    "red": "红色",
     "reset_filters": "重置滤镜",
     "reset_transforms": "重置变换",
     "rotate": "旋转",
-    "rotate_left_and_scale": "向左旋转 & 度",
-    "rotate_right_and_scale": "向右旋转 & 度",
+    "rotate_left_and_scale": "向左旋转 90 度",
+    "rotate_right_and_scale": "向右旋转 90 度",
     "saturation": "饱和",
     "scale": "大小",
     "warmth": "色温"
@@ -489,6 +516,7 @@
   "filter_name": "过滤器名称",
   "filters": "过滤器",
   "framerate": "帧率",
+  "frames_per_second": "{value} 帧每秒",
   "galleries": "图库",
   "gallery": "图库",
   "gallery_count": "图库数量",
@@ -525,6 +553,7 @@
     "stream": "视频流地址",
     "video_codec": "视频编码"
   },
+  "megabits_per_second": "{value} Mbps/s",
   "metadata": "元数据",
   "movie": "电影",
   "movie_scene_number": "电影短片编码",
@@ -557,6 +586,7 @@
   "scene_count": "短片数量",
   "scene_id": "短片ID",
   "scenes": "短片",
+  "scenes-duration": "短片时长",
   "scenes-size": "短片大小",
   "scenes_updated_at": "短片更新时间",
   "sceneTagger": "短片标记器",

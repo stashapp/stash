@@ -118,10 +118,12 @@ func makeGithubRequest(url string, output interface{}) error {
 	response, err := client.Do(req)
 
 	if err != nil {
+		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API request failed: %s", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
+		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API request failed: %s", response.Status)
 	}
 
@@ -129,12 +131,13 @@ func makeGithubRequest(url string, output interface{}) error {
 
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
+		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API read response failed: %s", err)
 	}
 
 	err = json.Unmarshal(data, output)
 	if err != nil {
-		return fmt.Errorf("Unmarshalling Github API response failed: %s", err)
+		return fmt.Errorf("unmarshalling Github API response failed: %s", err)
 	}
 
 	return nil
@@ -197,7 +200,7 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 	}
 
 	if latestVersion == "" {
-		return "", "", fmt.Errorf("No version found for \"%s\"", version)
+		return "", "", fmt.Errorf("no version found for \"%s\"", version)
 	}
 	return latestVersion, latestRelease, nil
 }
