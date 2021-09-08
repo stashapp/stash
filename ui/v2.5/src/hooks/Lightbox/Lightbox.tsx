@@ -17,6 +17,7 @@ import debounce from "lodash/debounce";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility } from "src/hooks";
 import { useConfiguration } from "src/core/StashService";
+import { DisplayMode, LightboxImage } from "./LightboxImage";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -32,23 +33,12 @@ const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
 const CLASSNAME_NAVBUTTON = `${CLASSNAME}-navbutton`;
 const CLASSNAME_NAV = `${CLASSNAME}-nav`;
-const CLASSNAME_NAVZONE = `${CLASSNAME}-navzone`;
 const CLASSNAME_NAVIMAGE = `${CLASSNAME_NAV}-image`;
 const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 
 const DEFAULT_SLIDESHOW_DELAY = 5000;
 const SECONDS_TO_MS = 1000;
 const MIN_VALID_INTERVAL_SECONDS = 1;
-
-enum DisplayMode {
-  ORIGINAL = "ORIGINAL",
-  FIT_XY = "FIT_XY",
-  FIT_X = "FIT_X",
-}
-
-const CLASSNAME_FITXY = `${CLASSNAME_NAV}-fitxy`;
-const CLASSNAME_FITX = `${CLASSNAME_NAV}-fitx`;
-const CLASSNAME_ORIGINAL = `${CLASSNAME_NAV}-original`;
 
 type Image = Pick<GQL.Image, "paths">;
 interface IProps {
@@ -372,17 +362,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   };
 
-  function getModeClass() {
-    switch (displayMode) {
-      case DisplayMode.FIT_XY:
-        return CLASSNAME_FITXY;
-      case DisplayMode.FIT_X:
-        return CLASSNAME_FITX;
-      case DisplayMode.ORIGINAL:
-        return CLASSNAME_ORIGINAL;
-    }
-  }
-
   const currentIndex = index.current === null ? initialIndex : index.current;
 
   const DelayForm: React.FC<{}> = () => (
@@ -441,7 +420,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       className={CLASSNAME}
       role="presentation"
       ref={containerRef}
-      onMouseDown={handleClose}
+      onClick={handleClose}
     >
       {images.length > 0 && !isLoading && !isSwitchingPage ? (
         <>
@@ -520,29 +499,13 @@ export const LightboxComponent: React.FC<IProps> = ({
               ref={carouselRef}
             >
               {images.map((image) => (
-                <div
-                  className={`${CLASSNAME_IMAGE} ${getModeClass()}`}
-                  key={image.paths.image}
-                >
-                  <picture>
-                    <source
-                      srcSet={image.paths.image ?? ""}
-                      media="(min-width: 800px)"
-                    />
-                    <img src={image.paths.thumbnail ?? ""} alt="" />
-                    <div>
-                      <div
-                        aria-hidden
-                        className={CLASSNAME_NAVZONE}
-                        onClick={handleLeft}
-                      />
-                      <div
-                        aria-hidden
-                        className={CLASSNAME_NAVZONE}
-                        onClick={handleRight}
-                      />
-                    </div>
-                  </picture>
+                <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
+                  <LightboxImage
+                    src={image.paths.image ?? ""}
+                    mode={displayMode}
+                    onLeft={() => handleLeft(true)}
+                    onRight={handleRight}
+                  />
                 </div>
               ))}
             </div>
