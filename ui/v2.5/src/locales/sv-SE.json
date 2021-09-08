@@ -626,4 +626,9 @@
   "url": "URL",
   "weight": "Vikt",
   "years_old": "år gammal"
+  "stats": {
+    "image_size": "Bildstorlek",
+    "scenes_duration": "Total speltid",
+    "scenes_size": "Scenens storlek"
+  }
 }
