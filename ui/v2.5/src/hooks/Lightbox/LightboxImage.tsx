@@ -153,7 +153,7 @@ export const LightboxImage: React.FC<IProps> = ({
       onMouseDown={(e) => onImageMouseDown(e)}
       onMouseMove={(e) => onImageMouseOver(e)}
     >
-      {zoom && (
+      {zoom ? (
         <picture
           style={{
             transform: `translate(${positionX}px, ${positionY}px) scale(${zoom})`,
@@ -162,7 +162,7 @@ export const LightboxImage: React.FC<IProps> = ({
           <source srcSet={src} media="(min-width: 800px)" />
           <img src={src} alt="" draggable={false} />
         </picture>
-      )}
+      ) : undefined}
     </div>
   );
 };

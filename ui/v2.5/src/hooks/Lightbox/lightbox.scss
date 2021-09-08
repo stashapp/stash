@@ -107,23 +107,6 @@
       img {
         object-fit: contain;
       }
-
-      &.Lightbox-nav-fitxy img {
-        max-height: 100%;
-      }
-
-      &.Lightbox-nav-fitx {
-        overflow-y: auto;
-
-        img {
-          max-width: 100%;
-        }
-      }
-
-      &.Lightbox-nav-original {
-        overflow-x: auto;
-        overflow-y: auto;
-      }
     }
   }
 
