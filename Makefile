@@ -44,14 +44,15 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
-# consider -trimpath in go build if we move to go 1.13+
 build-release: EXTRA_LDFLAGS := -s -w
+build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release-static: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 
 # cross-compile- targets should be run within the compiler docker container
@@ -62,13 +63,21 @@ cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: build-release-static
 
-cross-compile-osx: export GOOS := darwin
-cross-compile-osx: export GOARCH := amd64
-cross-compile-osx: export CC := o64-clang
-cross-compile-osx: export CXX := o64-clang++
-cross-compile-osx: OUTPUT := -o dist/stash-osx
+cross-compile-osx-intel: export GOOS := darwin
+cross-compile-osx-intel: export GOARCH := amd64
+cross-compile-osx-intel: export CC := o64-clang
+cross-compile-osx-intel: export CXX := o64-clang++
+cross-compile-osx-intel: OUTPUT := -o dist/stash-osx
 # can't use static build for OSX
-cross-compile-osx: build-release
+cross-compile-osx-intel: build-release
+
+cross-compile-osx-applesilicon: export GOOS := darwin
+cross-compile-osx-applesilicon: export GOARCH := arm64
+cross-compile-osx-applesilicon: export CC := oa64e-clang
+cross-compile-osx-applesilicon: export CXX := oa64e-clang++
+cross-compile-osx-applesilicon: OUTPUT := -o dist/stash-osx-applesilicon
+# can't use static build for OSX
+cross-compile-osx-applesilicon: build-release
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
@@ -95,7 +104,14 @@ cross-compile-pi: export CC := arm-linux-gnueabi-gcc
 cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
 
-cross-compile-all: cross-compile-windows cross-compile-osx cross-compile-linux cross-compile-linux-arm64v8 cross-compile-linux-arm32v7 cross-compile-pi
+cross-compile-all: 
+	make cross-compile-windows 
+	make cross-compile-osx-intel 
+	make cross-compile-osx-applesilicon 
+	make cross-compile-linux 
+	make cross-compile-linux-arm64v8 
+	make cross-compile-linux-arm32v7 
+	make cross-compile-pi
 
 install:
 	packr2 install
@@ -104,10 +120,15 @@ clean:
 	packr2 clean
 
 # Regenerates GraphQL files
-.PHONY: generate
-generate:
-	go generate -mod=vendor
+generate: generate-backend generate-frontend
+
+.PHONY: generate-frontend
+generate-frontend:
 	cd ui/v2.5 && yarn run gqlgen
+
+.PHONY: generate-backend
+generate-backend:
+	go generate -mod=vendor
 
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client
@@ -185,8 +206,14 @@ ui-validate:
 # rebuilding the UI
 .PHONY: packr
 packr:
+	$(SET) GO111MODULE=on
 	packr2
 
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
 validate: ui-validate fmt-check vet lint it
+
+# locally builds and tags a 'stash/build' docker image
+.PHONY: docker-build
+docker-build: 
+	docker build -t stash/build -f docker/build/x86_64/Dockerfile .
