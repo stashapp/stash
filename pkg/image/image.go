@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	_ "golang.org/x/image/webp"
@@ -240,7 +241,10 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 			return
 		}
 
-		w.Write(data)
+		k, err := w.Write(data)
+		if err != nil {
+			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
+		}
 	}
 }
 
