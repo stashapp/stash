@@ -40,6 +40,10 @@ performerByFragment:
   <single scraper config>
 performerByURL:
   <multiple scraper URL configs>
+sceneByName:
+  <single scraper config>
+sceneByQueryFragment:
+  <single scraper config>
 sceneByFragment:
   <single scraper config>
 sceneByURL:
@@ -63,6 +67,7 @@ The scraping types and their required fields are outlined in the following table
 |-----------|------------------------|
 | Scraper in `Scrape...` dropdown button in Performer Edit page | Valid `performerByName` and `performerByFragment` configurations. |
 | Scrape performer from URL | Valid `performerByURL` configuration with matching URL. |
+| Scraper in query dropdown button in Scene Edit page | Valid `sceneByName` and `sceneByQueryFragment` configurations. |
 | Scraper in `Scrape...` dropdown button in Scene Edit page | Valid `sceneByFragment` configuration. |
 | Scrape scene from URL | Valid `sceneByURL` configuration with matching URL. |
 | Scrape movie from URL | Valid `movieByURL` configuration with matching URL. |
@@ -97,7 +102,8 @@ The script is sent input and expects output based on the scraping type, as detai
 | `performerByName` | `{"name": "<performer query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
 | `performerByFragment` | JSON-encoded performer fragment | JSON-encoded performer fragment |
 | `performerByURL` | `{"url": "<url>"}` | JSON-encoded performer fragment |
-| `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
+| `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
+| `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
 | `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
 | `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
 | `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
@@ -217,9 +223,9 @@ xPathScrapers:
     # ... performer scraper details ...
 ```
 
-### scrapeXPath and scrapeJson use with `sceneByFragment`
+### scrapeXPath and scrapeJson use with `sceneByFragment` and `sceneByQueryFragment`
 
-For `sceneByFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
+For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
 * `{checksum}` - the MD5 checksum of the scene
 * `{oshash}` - the oshash of the scene
 * `{filename}` - the base filename of the scene
