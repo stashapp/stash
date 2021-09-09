@@ -878,10 +878,10 @@ export const queryScrapeMovieURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
-  export const queryScrapeScene = (
-    source: GQL.ScraperSourceInput,
-    sceneId: string
-  ) =>
+export const queryScrapeScene = (
+  source: GQL.ScraperSourceInput,
+  sceneId: string
+) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
