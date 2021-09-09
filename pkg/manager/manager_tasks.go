@@ -299,6 +299,8 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 					Scene:               scene,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
+					ImagePreview:        input.MarkerImagePreviews,
+					Screenshot:          input.MarkerScreenshots,
 				}
 				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
 					task.Start(&wg)

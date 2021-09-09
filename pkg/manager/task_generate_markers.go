@@ -19,6 +19,9 @@ type GenerateMarkersTask struct {
 	Marker              *models.SceneMarker
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
+
+	ImagePreview bool
+	Screenshot   bool
 }
 
 func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
@@ -94,8 +97,8 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 	seconds := int(sceneMarker.Seconds)
 
 	videoExists := t.videoExists(sceneHash, seconds)
-	imageExists := t.imageExists(sceneHash, seconds)
-	screenshotExists := t.screenshotExists(sceneHash, seconds)
+	imageExists := !t.ImagePreview || t.imageExists(sceneHash, seconds)
+	screenshotExists := !t.Screenshot || t.screenshotExists(sceneHash, seconds)
 
 	baseFilename := strconv.Itoa(seconds)
 
@@ -120,7 +123,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		}
 	}
 
-	if t.Overwrite || !imageExists {
+	if t.ImagePreview && (t.Overwrite || !imageExists) {
 		imageFilename := baseFilename + ".webp"
 		imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneHash, seconds)
 
@@ -133,7 +136,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		}
 	}
 
-	if t.Overwrite || !screenshotExists {
+	if t.Screenshot && (t.Overwrite || !screenshotExists) {
 		screenshotFilename := baseFilename + ".jpg"
 		screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneHash, seconds)
 
@@ -185,12 +188,9 @@ func (t *GenerateMarkersTask) markerExists(sceneChecksum string, seconds int) bo
 		return false
 	}
 
-	videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneChecksum, seconds)
-	imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneChecksum, seconds)
-	screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneChecksum, seconds)
-	videoExists, _ := utils.FileExists(videoPath)
-	imageExists, _ := utils.FileExists(imagePath)
-	screenshotExists, _ := utils.FileExists(screenshotPath)
+	videoExists := t.videoExists(sceneChecksum, seconds)
+	imageExists := !t.ImagePreview || t.imageExists(sceneChecksum, seconds)
+	screenshotExists := !t.Screenshot || t.screenshotExists(sceneChecksum, seconds)
 
 	return videoExists && imageExists && screenshotExists
 }
