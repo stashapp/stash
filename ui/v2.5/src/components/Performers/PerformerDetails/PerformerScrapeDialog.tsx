@@ -130,7 +130,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
 ) => {
   const intl = useIntl();
 
-  const endpoint = (props.scraper as IStashBox).endpoint ?? undefined;
+  const endpoint = (props.scraper as IStashBox)?.endpoint ?? undefined;
 
   function getCurrentRemoteSiteID() {
     if (!endpoint) {
@@ -304,7 +304,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.image, props.scraped.image)
+    new ScrapeResult<string>(
+      props.performer.image,
+      props.scraped.images && props.scraped.images.length > 0
+        ? props.scraped.images[0]
+        : undefined
+    )
   );
 
   const allFields = [
@@ -375,6 +380,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   }
 
   function makeNewScrapedItem(): GQL.ScrapedPerformer {
+    const newImage = image.getNewValue();
     return {
       name: name.getNewValue() ?? "",
       aliases: aliases.getNewValue(),
@@ -398,7 +404,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           name: "",
         };
       }),
-      image: image.getNewValue(),
+      images: newImage ? [newImage] : undefined,
       details: details.getNewValue(),
       death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),

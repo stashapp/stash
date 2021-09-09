@@ -79,7 +79,11 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
-    "view_random": "View Random"
+    "view_random": "View Random",
+    "confirm": "Confirm",
+    "select_folders": "Select folders",
+    "browse_for_image": "Browse for image…",
+    "open_random": "Open Random"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -295,6 +299,7 @@
         "escape_chars": "Use \\ to escape literal characters",
         "filename": "Filename",
         "filename_pattern": "Filename Pattern",
+        "ignore_organized": "Ignore organised scenes",
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
@@ -310,8 +315,14 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
-      "handy_connection_key": "Handy Connection Key",
-      "handy_connection_key_desc": "Handy connection key to use for interactive scenes.",
+      "handy_connection_key": {
+        "description": "Handy connection key to use for interactive scenes.",
+        "heading": "Handy Connection Key"
+      },
+      "funscript_offset": {
+        "description": "Time offset in milliseconds for interactive scripts playback.",
+        "heading": "Funscript Offset (ms)"
+      },
       "language": {
         "heading": "Language"
       },
@@ -380,6 +391,11 @@
   "country": "Country",
   "cover_image": "Cover Image",
   "created_at": "Created At",
+  "criterion": {
+    "greater_than": "Greater than",
+    "less_than": "Less than",
+    "value": "Value"
+  },
   "criterion_modifier": {
     "equals": "is",
     "excludes": "excludes",
@@ -392,8 +408,11 @@
     "matches_regex": "matches regex",
     "not_equals": "is not",
     "not_matches_regex": "not matches regex",
-    "not_null": "is not null"
+    "not_null": "is not null",
+    "between": "between",
+    "not_between": "not between"
   },
+  "custom": "Custom",
   "date": "Date",
   "death_date": "Death Date",
   "death_year": "Death Year",
@@ -498,6 +517,7 @@
   "filter_name": "Filter name",
   "filters": "Filters",
   "framerate": "Frame Rate",
+  "frames_per_second": "{value} frames per second",
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
@@ -534,6 +554,7 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
+  "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
@@ -566,6 +587,7 @@
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
+  "scenes-duration": "Scenes duration",
   "scenes-size": "Scenes size",
   "scenes_updated_at": "Scene Updated At",
   "sceneTagger": "Scene Tagger",

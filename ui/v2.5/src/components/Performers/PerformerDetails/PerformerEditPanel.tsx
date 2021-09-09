@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
   Button,
-  Popover,
-  OverlayTrigger,
   Form,
   Col,
   InputGroup,
   Row,
   Badge,
+  Dropdown,
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
@@ -31,7 +30,7 @@ import {
   Modal,
   TagSelect,
 } from "src/components/Shared";
-import { ImageUtils } from "src/utils";
+import { ImageUtils, getStashIDs } from "src/utils";
 import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
@@ -335,9 +334,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // otherwise follow existing behaviour (`undefined`)
     if (
       (!isNew || [null, undefined].includes(formik.values.image)) &&
-      state.image !== undefined
+      state.images &&
+      state.images.length > 0
     ) {
-      const imageStr = state.image;
+      const imageStr = state.images[0];
       formik.setFieldValue("image", imageStr ?? undefined);
     }
     if (state.details) {
@@ -381,10 +381,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           variables: {
             input: {
               ...input,
-              stash_ids: performerInput?.stash_ids?.map((s) => ({
-                endpoint: s.endpoint,
-                stash_id: s.stash_id,
-              })),
+              stash_ids: getStashIDs(performerInput?.stash_ids),
             },
           },
         });
@@ -528,7 +525,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       const {
         __typename,
-        image: _image,
+        images: _image,
         tags: _tags,
         ...ret
       } = selectedPerformer;
@@ -581,7 +578,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
     const result: GQL.ScrapedPerformerDataFragment = {
       ...performerResult,
-      image: performerResult.images?.[0] ?? undefined,
+      images: performerResult.images ?? undefined,
       country: getCountryByISO(performerResult.country),
       __typename: "ScrapedPerformer",
     };
@@ -607,58 +604,51 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
     const popover = (
-      <Popover id="performer-scraper-popover">
-        <Popover.Content>
-          <>
-            {stashBoxes.map((s, index) => (
-              <div key={s.endpoint}>
-                <Button
-                  className="minimal"
-                  onClick={() => onScraperSelected({ ...s, index })}
-                >
-                  {s.name ?? "Stash-Box"}
-                </Button>
-              </div>
-            ))}
-            {queryableScrapers
-              ? queryableScrapers.map((s) => (
-                  <div key={s.name}>
-                    <Button
-                      key={s.name}
-                      className="minimal"
-                      onClick={() => onScraperSelected(s)}
-                    >
-                      {s.name}
-                    </Button>
-                  </div>
-                ))
-              : ""}
-            <div>
-              <Button className="minimal" onClick={() => onReloadScrapers()}>
-                <span className="fa-icon">
-                  <Icon icon="sync-alt" />
-                </span>
-                <span>
-                  <FormattedMessage id="actions.reload_scrapers" />
-                </span>
-              </Button>
-            </div>
-          </>
-        </Popover.Content>
-      </Popover>
+      <Dropdown.Menu id="performer-scraper-popover">
+        {stashBoxes.map((s, index) => (
+          <Dropdown.Item
+            as={Button}
+            key={s.endpoint}
+            className="minimal"
+            onClick={() => onScraperSelected({ ...s, index })}
+          >
+            {s.name ?? "Stash-Box"}
+          </Dropdown.Item>
+        ))}
+        {queryableScrapers
+          ? queryableScrapers.map((s) => (
+              <Dropdown.Item
+                as={Button}
+                key={s.name}
+                className="minimal"
+                onClick={() => onScraperSelected(s)}
+              >
+                {s.name}
+              </Dropdown.Item>
+            ))
+          : ""}
+        <Dropdown.Item
+          as={Button}
+          className="minimal"
+          onClick={() => onReloadScrapers()}
+        >
+          <span className="fa-icon">
+            <Icon icon="sync-alt" />
+          </span>
+          <span>
+            <FormattedMessage id="actions.reload_scrapers" />
+          </span>
+        </Dropdown.Item>
+      </Dropdown.Menu>
     );
 
     return (
-      <OverlayTrigger
-        trigger="click"
-        placement="top"
-        overlay={popover}
-        rootClose
-      >
-        <Button variant="secondary" className="mr-2">
+      <Dropdown drop="up" className="d-inline-block">
+        <Dropdown.Toggle variant="secondary" className="mr-2">
           <FormattedMessage id="actions.scrape_with" />
-        </Button>
-      </OverlayTrigger>
+        </Dropdown.Toggle>
+        {popover}
+      </Dropdown>
     );
   }
 
@@ -672,7 +662,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   }
 
   function maybeRenderScrapeDialog() {
-    if (!scrapedPerformer || !scraper) {
+    if (!scrapedPerformer) {
       return;
     }
 

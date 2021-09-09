@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -290,13 +289,13 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 				return err
 			}
 
-			if err := MatchScrapedScenePerformer(pqb, p); err != nil {
+			if err := MatchScrapedPerformer(pqb, p); err != nil {
 				return err
 			}
 		}
 
 		for _, p := range ret.Movies {
-			err := MatchScrapedSceneMovie(mqb, p)
+			err := MatchScrapedMovie(mqb, p)
 			if err != nil {
 				return err
 			}
@@ -309,7 +308,7 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := MatchScrapedSceneStudio(sqb, ret.Studio)
+			err := MatchScrapedStudio(sqb, ret.Studio)
 			if err != nil {
 				return err
 			}
@@ -335,7 +334,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			err := MatchScrapedScenePerformer(pqb, p)
+			err := MatchScrapedPerformer(pqb, p)
 			if err != nil {
 				return err
 			}
@@ -348,7 +347,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := MatchScrapedSceneStudio(sqb, ret.Studio)
+			err := MatchScrapedStudio(sqb, ret.Studio)
 			if err != nil {
 				return err
 			}
@@ -529,23 +528,6 @@ func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 	return nil, nil
 }
 
-func matchMovieStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
-	studio, err := qb.FindByName(s.Name, true)
-
-	if err != nil {
-		return err
-	}
-
-	if studio == nil {
-		// ignore - cannot match
-		return nil
-	}
-
-	id := strconv.Itoa(studio.ID)
-	s.StoredID = &id
-	return nil
-}
-
 // ScrapeMovieURL uses the first scraper it finds that matches the URL
 // provided to scrape a movie. If no scrapers are found that matches
 // the URL, then nil is returned.
@@ -559,7 +541,7 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 
 			if ret.Studio != nil {
 				if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-					return matchMovieStudio(r.Studio(), ret.Studio)
+					return MatchScrapedStudio(r.Studio(), ret.Studio)
 				}); err != nil {
 					return nil, err
 				}
@@ -605,7 +587,7 @@ ScrapeTag:
 			}
 		}
 
-		err := MatchScrapedSceneTag(tqb, t)
+		err := MatchScrapedTag(tqb, t)
 		if err != nil {
 			return nil, err
 		}

@@ -43,6 +43,9 @@ interface IURLField {
   value?: string | null;
   url?: string | null;
   truncate?: boolean | null;
+  target?: string;
+  // use for internal links
+  trusted?: boolean;
 }
 
 export const URLField: React.FC<IURLField> = ({
@@ -53,6 +56,8 @@ export const URLField: React.FC<IURLField> = ({
   abbr,
   truncate,
   children,
+  target,
+  trusted,
 }) => {
   if (!value && !children) {
     return null;
@@ -62,12 +67,14 @@ export const URLField: React.FC<IURLField> = ({
     <>{id ? <FormattedMessage id={id} defaultMessage={name} /> : name}:</>
   );
 
+  const rel = !trusted ? "noopener noreferrer" : undefined;
+
   return (
     <>
       <dt>{abbr ? <abbr title={abbr}>{message}</abbr> : message}</dt>
       <dd>
         {url ? (
-          <a href={url} target="_blank" rel="noopener noreferrer">
+          <a href={url} target={target || "_blank"} rel={rel}>
             {value ? (
               truncate ? (
                 <TruncatedText text={value} />

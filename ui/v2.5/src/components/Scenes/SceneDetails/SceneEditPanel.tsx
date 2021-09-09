@@ -19,6 +19,7 @@ import {
   mutateReloadScrapers,
   useConfiguration,
   queryScrapeSceneQueryFragment,
+  queryStashBoxScene,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -30,7 +31,7 @@ import {
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, FormUtils, TextUtils } from "src/utils";
+import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
 import { Prompt } from "react-router";
@@ -117,10 +118,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }),
     tag_ids: (scene.tags ?? []).map((t) => t.id),
     cover_image: undefined,
-    stash_ids: (scene.stash_ids ?? []).map((s) => ({
-      stash_id: s.stash_id,
-      endpoint: s.endpoint,
-    })),
+    stash_ids: getStashIDs(scene.stash_ids),
   };
 
   type InputValues = typeof initialValues;

@@ -262,7 +262,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     new ScrapeResult<string>(props.gallery.details, props.scraped.details)
   );
 
-  const [createStudio] = useStudioCreate({ name: "" });
+  const [createStudio] = useStudioCreate();
   const [createPerformer] = usePerformerCreate();
   const [createTag] = useTagCreate();
 

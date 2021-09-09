@@ -304,6 +304,18 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 					return err
 				}
 			}
+
+			// Save the movies
+			if translator.hasField("movie_ids") {
+				movies, err := adjustSceneMovieIDs(qb, sceneID, *input.MovieIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateMovies(sceneID, movies); err != nil {
+					return err
+				}
+			}
 		}
 
 		return nil
@@ -393,6 +405,48 @@ func adjustSceneGalleryIDs(qb models.SceneReader, sceneID int, ids models.BulkUp
 	}
 
 	return adjustIDs(ret, ids), nil
+}
+
+func adjustSceneMovieIDs(qb models.SceneReader, sceneID int, updateIDs models.BulkUpdateIds) ([]models.MoviesScenes, error) {
+	existingMovies, err := qb.GetMovies(sceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	// if we are setting the ids, just return the ids
+	if updateIDs.Mode == models.BulkUpdateIDModeSet {
+		existingMovies = []models.MoviesScenes{}
+		for _, idStr := range updateIDs.Ids {
+			id, _ := strconv.Atoi(idStr)
+			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
+		}
+
+		return existingMovies, nil
+	}
+
+	for _, idStr := range updateIDs.Ids {
+		id, _ := strconv.Atoi(idStr)
+
+		// look for the id in the list
+		foundExisting := false
+		for idx, existingMovie := range existingMovies {
+			if existingMovie.MovieID == id {
+				if updateIDs.Mode == models.BulkUpdateIDModeRemove {
+					// remove from the list
+					existingMovies = append(existingMovies[:idx], existingMovies[idx+1:]...)
+				}
+
+				foundExisting = true
+				break
+			}
+		}
+
+		if !foundExisting && updateIDs.Mode != models.BulkUpdateIDModeRemove {
+			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
+		}
+	}
+
+	return existingMovies, err
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {

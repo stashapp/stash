@@ -23,11 +23,23 @@ export interface IHierarchicalLabelValue {
   depth: number;
 }
 
+export interface INumberValue {
+  value: number;
+  value2: number | undefined;
+}
+
 export function criterionIsHierarchicalLabelValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
 ): value is IHierarchicalLabelValue {
   return typeof value === "object" && "items" in value && "depth" in value;
+}
+
+export function criterionIsNumberValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is INumberValue {
+  return typeof value === "object" && "value" in value && "value2" in value;
 }
 
 export function encodeILabeledId(o: ILabeledId) {

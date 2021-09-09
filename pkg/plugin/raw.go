@@ -56,18 +56,18 @@ func (t *rawPluginTask) Start() error {
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		logger.Error("Plugin stderr not available: " + err.Error())
+		logger.Error("plugin stderr not available: " + err.Error())
 	}
 
 	stdout, err := cmd.StdoutPipe()
 	if nil != err {
-		logger.Error("Plugin stdout not available: " + err.Error())
+		logger.Error("plugin stdout not available: " + err.Error())
 	}
 
 	t.waitGroup.Add(1)
 	t.done = make(chan bool, 1)
 	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("Error running plugin: %s", err.Error())
+		return fmt.Errorf("error running plugin: %s", err.Error())
 	}
 
 	go t.handlePluginStderr(stderr)

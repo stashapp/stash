@@ -2,31 +2,11 @@ package api
 
 import (
 	"context"
-	"time"
 
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-type throttledUpdate struct {
-	id             int
-	pendingUpdate  *job.Job
-	lastUpdate     time.Time
-	broadcastTimer *time.Timer
-	killTimer      *time.Timer
-}
-
-func (tu *throttledUpdate) broadcast(output chan *models.JobStatusUpdate) {
-	tu.lastUpdate = time.Now()
-	output <- &models.JobStatusUpdate{
-		Type: models.JobStatusUpdateTypeUpdate,
-		Job:  jobToJobModel(*tu.pendingUpdate),
-	}
-
-	tu.broadcastTimer = nil
-	tu.pendingUpdate = nil
-}
 
 func makeJobStatusUpdate(t models.JobStatusUpdateType, j job.Job) *models.JobStatusUpdate {
 	return &models.JobStatusUpdate{

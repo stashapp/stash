@@ -89,6 +89,10 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
+.table-list {
+  min-width: min-content;
+}
+
 .table-list a {
   color: $text-color;
 }
@@ -229,7 +233,7 @@ div.react-select__menu,
 div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
-  z-index: 3;
+  z-index: 16;
 
   .react-select__option,
   .dropdown-item {

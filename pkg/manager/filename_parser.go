@@ -11,8 +11,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/tag"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type parserField struct {
@@ -50,10 +48,6 @@ func newFullDateParserField(field string, regex string) parserField {
 
 func (f parserField) replaceInPattern(pattern string) string {
 	return string(f.fieldRegex.ReplaceAllString(pattern, f.regex))
-}
-
-func (f parserField) getFieldPattern() string {
-	return "{" + f.field + "}"
 }
 
 var validFields map[string]parserField
@@ -405,26 +399,6 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 	return sceneHolder
 }
 
-type performerQueryer interface {
-	FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*models.Performer, error)
-}
-
-type sceneQueryer interface {
-	QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int)
-}
-
-type tagQueryer interface {
-	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Tag, error)
-}
-
-type studioQueryer interface {
-	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Studio, error)
-}
-
-type movieQueryer interface {
-	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Movie, error)
-}
-
 type SceneFilenameParser struct {
 	Pattern        string
 	ParserInput    models.SceneParserInput
@@ -482,6 +456,11 @@ func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.Sce
 			Modifier: models.CriterionModifierMatchesRegex,
 			Value:    "(?i)" + mapper.regexString,
 		},
+	}
+
+	if p.ParserInput.IgnoreOrganized != nil && *p.ParserInput.IgnoreOrganized {
+		organized := false
+		sceneFilter.Organized = &organized
 	}
 
 	p.Filter.Q = nil

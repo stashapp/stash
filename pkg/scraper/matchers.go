@@ -7,9 +7,9 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-// MatchScrapedScenePerformer matches the provided performer with the
+// MatchScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
+func MatchScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
 	if p.Name == nil {
 		return nil
 	}
@@ -30,9 +30,9 @@ func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedPerf
 	return nil
 }
 
-// MatchScrapedSceneStudio matches the provided studio with the studios
+// MatchScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
+func MatchScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
 	studio, err := qb.FindByName(s.Name, true)
 
 	if err != nil {
@@ -49,9 +49,9 @@ func MatchScrapedSceneStudio(qb models.StudioReader, s *models.ScrapedStudio) er
 	return nil
 }
 
-// MatchScrapedSceneMovie matches the provided movie with the movies
+// MatchScrapedMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
+func MatchScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
 	if m.Name == nil {
 		return nil
 	}
@@ -72,9 +72,9 @@ func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedMovie) error
 	return nil
 }
 
-// MatchScrapedSceneTag matches the provided tag with the tags
+// MatchScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneTag(qb models.TagReader, s *models.ScrapedTag) error {
+func MatchScrapedTag(qb models.TagReader, s *models.ScrapedTag) error {
 	t, err := tag.ByName(qb, s.Name)
 
 	if err != nil {

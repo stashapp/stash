@@ -236,7 +236,7 @@ func NewVideoFile(ffprobePath string, videoPath string, stripExt bool) (*VideoFi
 
 	probeJSON := &FFProbeJSON{}
 	if err := json.Unmarshal(out, probeJSON); err != nil {
-		return nil, fmt.Errorf("Error unmarshalling video data for <%s>: %s", videoPath, err.Error())
+		return nil, fmt.Errorf("error unmarshalling video data for <%s>: %s", videoPath, err.Error())
 	}
 
 	return parse(videoPath, probeJSON, stripExt)

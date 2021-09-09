@@ -16,6 +16,7 @@ interface IQueryParameters {
   q?: string;
   p?: string;
   c?: string[];
+  z?: string;
 }
 
 const DEFAULT_PARAMS = {
@@ -34,19 +35,26 @@ export class ListFilterModel {
   public sortDirection: SortDirectionEnum = SortDirectionEnum.Asc;
   public sortBy?: string;
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
+  public zoomIndex: number = 1;
   public criteria: Array<Criterion<CriterionValue>> = [];
   public randomSeed = -1;
+  private defaultZoomIndex: number = 1;
 
   public constructor(
     mode: FilterMode,
     rawParms?: ParsedQuery<string>,
     defaultSort?: string,
-    defaultDisplayMode?: DisplayMode
+    defaultDisplayMode?: DisplayMode,
+    defaultZoomIndex?: number
   ) {
     this.mode = mode;
     const params = rawParms as IQueryParameters;
     this.sortBy = defaultSort;
     if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
+    if (defaultZoomIndex !== undefined) {
+      this.defaultZoomIndex = defaultZoomIndex;
+      this.zoomIndex = defaultZoomIndex;
+    }
     if (params) this.configureFromQueryParameters(params);
   }
 
@@ -85,6 +93,12 @@ export class ListFilterModel {
       this.currentPage = Number.parseInt(params.p, 10);
     }
     if (params.perPage) this.itemsPerPage = Number.parseInt(params.perPage, 10);
+    if (params.z !== undefined) {
+      const zoomIndex = Number.parseInt(params.z, 10);
+      if (zoomIndex >= 0 && !Number.isNaN(zoomIndex)) {
+        this.zoomIndex = zoomIndex;
+      }
+    }
 
     if (params.c !== undefined) {
       this.criteria = [];
@@ -158,6 +172,7 @@ export class ListFilterModel {
         this.currentPage !== DEFAULT_PARAMS.currentPage
           ? this.currentPage
           : undefined,
+      z: this.zoomIndex !== this.defaultZoomIndex ? this.zoomIndex : undefined,
       c: encodedCriteria,
     };
 
@@ -176,6 +191,7 @@ export class ListFilterModel {
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp: this.displayMode,
       q: this.searchTerm,
+      z: this.zoomIndex,
       c: encodedCriteria,
     };
 

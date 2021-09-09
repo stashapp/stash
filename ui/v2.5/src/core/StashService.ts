@@ -598,9 +598,8 @@ export const studioMutationImpactedQueries = [
   GQL.AllStudiosForFilterDocument,
 ];
 
-export const useStudioCreate = (input: GQL.StudioCreateInput) =>
+export const useStudioCreate = () =>
   GQL.useStudioCreateMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.AllStudiosForFilterDocument]),
     update: deleteCache([
       GQL.FindStudiosDocument,
@@ -879,16 +878,30 @@ export const queryScrapeMovieURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
-export const queryScrapeScene = (
-  source: GQL.ScraperSourceInput,
-  sceneId: string
-) =>
+  export const queryScrapeScene = (
+    source: GQL.ScraperSourceInput,
+    sceneId: string
+  ) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
       source,
       input: {
         scene_id: sceneId,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
+export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
+  client.query<GQL.ScrapeSingleSceneQuery>({
+    query: GQL.ScrapeSingleSceneDocument,
+    variables: {
+      source: {
+        stash_box_index: stashBoxIndex,
+      },
+      input: {
+        scene_id: sceneID,
       },
     },
     fetchPolicy: "network-only",

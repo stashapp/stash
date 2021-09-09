@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -148,32 +147,6 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func getCriterionModifierBinding(criterionModifier models.CriterionModifier, value interface{}) (string, int) {
-	var length int
-	switch x := value.(type) {
-	case []string:
-		length = len(x)
-	case []int:
-		length = len(x)
-	default:
-		length = 1
-	}
-	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
-		switch modifier {
-		case "EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN", "IS_NULL", "NOT_NULL":
-			return getSimpleCriterionClause(criterionModifier, "?")
-		case "INCLUDES":
-			return "IN " + getInBinding(length), length // TODO?
-		case "EXCLUDES":
-			return "NOT IN " + getInBinding(length), length // TODO?
-		default:
-			logger.Errorf("todo")
-			return "= ?", 1 // TODO
-		}
-	}
-	return "= ?", 1 // TODO
-}
-
 func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs string) (string, int) {
 	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
 		switch modifier {
@@ -189,6 +162,10 @@ func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs st
 			return "IS NULL", 0
 		case "NOT_NULL":
 			return "IS NOT NULL", 0
+		case "BETWEEN":
+			return "BETWEEN (" + rhs + ") AND (" + rhs + ")", 2
+		case "NOT_BETWEEN":
+			return "NOT BETWEEN (" + rhs + ") AND (" + rhs + ")", 2
 		default:
 			logger.Errorf("todo")
 			return "= ?", 1 // TODO
@@ -198,9 +175,26 @@ func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs st
 	return "= ?", 1 // TODO
 }
 
-func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (string, int) {
-	binding, count := getCriterionModifierBinding(input.Modifier, input.Value)
-	return column + " " + binding, count
+func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (string, []interface{}) {
+	binding, _ := getSimpleCriterionClause(input.Modifier, "?")
+	var args []interface{}
+
+	switch input.Modifier {
+	case "EQUALS", "NOT_EQUALS":
+		args = []interface{}{input.Value}
+	case "LESS_THAN":
+		args = []interface{}{input.Value}
+	case "GREATER_THAN":
+		args = []interface{}{input.Value}
+	case "BETWEEN", "NOT_BETWEEN":
+		upper := 0
+		if input.Value2 != nil {
+			upper = *input.Value2
+		}
+		args = []interface{}{input.Value, upper}
+	}
+
+	return column + " " + binding, args
 }
 
 // returns where clause and having clause
@@ -226,15 +220,9 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 	return whereClause, havingClause
 }
 
-func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, int) {
+func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
 	return getIntCriterionWhereClause(lhs, criterion)
-}
-
-func ensureTx(tx *sqlx.Tx) {
-	if tx == nil {
-		panic("must use a transaction")
-	}
 }
 
 func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {

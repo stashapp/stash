@@ -104,7 +104,7 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models
 			if scene.Phash.Valid {
 				phashStr := utils.PhashToString(scene.Phash.Int64)
 				fingerprints = append(fingerprints, phashStr)
-				fpToScene[scene.OSHash.String] = append(fpToScene[phashStr], index)
+				fpToScene[phashStr] = append(fpToScene[phashStr], index)
 			}
 		}
 
@@ -309,6 +309,14 @@ func (c Client) QueryStashBoxPerformer(queryStr string) ([]*models.StashBoxPerfo
 			Results: performers,
 		},
 	}
+
+	// set the deprecated image field
+	for _, p := range res[0].Results {
+		if len(p.Images) > 0 {
+			p.Image = &p.Images[0]
+		}
+	}
+
 	return res, err
 }
 
@@ -546,8 +554,11 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		RemoteSiteID: &id,
 		Images:       images,
 		// TODO - tags not currently supported
-		// TODO - Image - should be returned as a set of URLs. Will need a
 		// graphql schema change to accommodate this. Leave off for now.
+	}
+
+	if len(sp.Images) > 0 {
+		sp.Image = &sp.Images[0]
 	}
 
 	if p.Height != nil && *p.Height > 0 {
@@ -633,7 +644,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 				RemoteSiteID: &studioID,
 			}
 
-			err := scraper.MatchScrapedSceneStudio(r.Studio(), ss.Studio)
+			err := scraper.MatchScrapedStudio(r.Studio(), ss.Studio)
 			if err != nil {
 				return err
 			}
@@ -642,7 +653,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := scraper.MatchScrapedScenePerformer(pqb, sp)
+			err := scraper.MatchScrapedPerformer(pqb, sp)
 			if err != nil {
 				return err
 			}
@@ -655,7 +666,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 				Name: t.Name,
 			}
 
-			err := scraper.MatchScrapedSceneTag(tqb, st)
+			err := scraper.MatchScrapedTag(tqb, st)
 			if err != nil {
 				return err
 			}

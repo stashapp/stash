@@ -269,10 +269,10 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	idsResult, idsErr = r.runIdsQuery(idsQuery, args)
 
 	if countErr != nil {
-		return nil, 0, fmt.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
+		return nil, 0, fmt.Errorf("error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
 	}
 	if idsErr != nil {
-		return nil, 0, fmt.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
+		return nil, 0, fmt.Errorf("error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
 	}
 
 	return idsResult, countResult, nil

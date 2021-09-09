@@ -21,9 +21,8 @@ func WriteHLSPlaylist(probeResult VideoFile, baseUrl string, w io.Writer) {
 	leftover := duration
 	upTo := 0.0
 
-	tsURL := baseUrl
 	i := strings.LastIndex(baseUrl, ".m3u8")
-	tsURL = baseUrl[0:i] + ".ts"
+	tsURL := baseUrl[0:i] + ".ts"
 
 	for leftover > 0 {
 		thisLength := hlsSegmentLength
