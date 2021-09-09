@@ -97,7 +97,7 @@ export const LightboxImage: React.FC<IProps> = ({
   }, [width, height, boxWidth, boxHeight, mode]);
 
   function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
-    const percent = ev.deltaY > 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+    const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
     setZoom(zoom * percent);
   }
 
