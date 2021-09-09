@@ -362,7 +362,7 @@ func (c config) ScrapePerformerURL(url string, txnManager models.TransactionMana
 }
 
 func (c config) supportsScenes() bool {
-	return c.SceneByFragment != nil || len(c.SceneByURL) > 0
+	return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
 }
 
 func (c config) supportsGalleries() bool {
