@@ -963,6 +963,12 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 			return err
 		}
 
+		// add alias
+		alias := getStudioStringValue(i, "Alias")
+		if err := sqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+			return fmt.Errorf("error setting studio alias: %s", err.Error())
+		}
+
 		studioIDs = append(studioIDs, created.ID)
 		studioNames = append(studioNames, created.Name.String)
 	}

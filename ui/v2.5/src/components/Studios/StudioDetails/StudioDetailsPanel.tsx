@@ -1,5 +1,6 @@
 import React from "react";
-import { useIntl } from "react-intl";
+import { Badge } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
@@ -29,6 +30,27 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
+  function renderTagsList() {
+    if (!studio?.aliases?.length) {
+      return;
+    }
+
+    return (
+      <>
+        <dt>
+          <FormattedMessage id="aliases" />
+        </dt>
+        <dd>
+          {studio.aliases.map((a) => (
+            <Badge className="tag-item" variant="secondary">
+              {a}
+            </Badge>
+          ))}
+        </dd>
+      </>
+    );
+  }
+
   return (
     <div className="studio-details">
       <div>
@@ -53,6 +75,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         />
 
         {renderRatingField()}
+        {renderTagsList()}
       </dl>
     </div>
   );

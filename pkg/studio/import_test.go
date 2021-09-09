@@ -53,7 +53,7 @@ func TestImporterPreImport(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	i.Input = *createFullJSONStudio(studioName, image)
+	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"})
 	i.Input.ParentStudio = ""
 
 	err = i.PreImport()
@@ -151,18 +151,30 @@ func TestImporterPostImport(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: readerWriter,
-		imageData:    imageBytes,
+		Input: jsonschema.Studio{
+			Aliases: []string{"alias"},
+		},
+		imageData: imageBytes,
 	}
 
 	updateStudioImageErr := errors.New("UpdateImage error")
+	updateTagAliasErr := errors.New("UpdateAlias error")
 
 	readerWriter.On("UpdateImage", studioID, imageBytes).Return(nil).Once()
 	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updateStudioImageErr).Once()
+	readerWriter.On("UpdateImage", errAliasID, imageBytes).Return(nil).Once()
+
+	readerWriter.On("UpdateAliases", studioID, i.Input.Aliases).Return(nil).Once()
+	readerWriter.On("UpdateAliases", errImageID, i.Input.Aliases).Return(nil).Maybe()
+	readerWriter.On("UpdateAliases", errAliasID, i.Input.Aliases).Return(updateTagAliasErr).Once()
 
 	err := i.PostImport(studioID)
 	assert.Nil(t, err)
 
 	err = i.PostImport(errImageID)
+	assert.NotNil(t, err)
+
+	err = i.PostImport(errAliasID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

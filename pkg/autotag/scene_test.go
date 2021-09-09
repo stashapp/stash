@@ -212,6 +212,7 @@ func TestSceneStudios(t *testing.T) {
 		mockSceneReader := &mocks.SceneReaderWriter{}
 
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
 		if test.Matches {
 			mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()

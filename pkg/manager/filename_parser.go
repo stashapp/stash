@@ -3,6 +3,7 @@ package manager
 import (
 	"database/sql"
 	"errors"
+	"github.com/stashapp/stash/pkg/studio"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -537,7 +538,12 @@ func (p *SceneFilenameParser) queryStudio(qb models.StudioReader, studioName str
 		return ret
 	}
 
-	ret, _ := qb.FindByName(studioName, true)
+	ret, _ := studio.ByName(qb, studioName)
+
+	// try to match on alias
+	if ret == nil {
+		ret, _ = studio.ByAlias(qb, studioName)
+	}
 
 	// add result to cache
 	p.studioCache[studioName] = ret
