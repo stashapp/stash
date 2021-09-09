@@ -145,14 +145,7 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   return (
-    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions */
-    <div
-      ref={container}
-      className={`${CLASSNAME_IMAGE}`}
-      onWheel={(e) => onImageScroll(e)}
-      onMouseDown={(e) => onImageMouseDown(e)}
-      onMouseMove={(e) => onImageMouseOver(e)}
-    >
+    <div ref={container} className={`${CLASSNAME_IMAGE}`}>
       {zoom ? (
         <picture
           style={{
@@ -160,7 +153,15 @@ export const LightboxImage: React.FC<IProps> = ({
           }}
         >
           <source srcSet={src} media="(min-width: 800px)" />
-          <img src={src} alt="" draggable={false} />
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          <img
+            src={src}
+            alt=""
+            draggable={false}
+            onWheel={(e) => onImageScroll(e)}
+            onMouseDown={(e) => onImageMouseDown(e)}
+            onMouseMove={(e) => onImageMouseOver(e)}
+          />
         </picture>
       ) : undefined}
     </div>
