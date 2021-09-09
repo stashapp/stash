@@ -20,6 +20,7 @@ interface IDeleteEntityDialogProps {
   singularEntity: string;
   pluralEntity: string;
   destroyMutation: DestroyMutation;
+  onDeleted?: () => void;
 }
 
 const messages = defineMessages({
@@ -43,6 +44,7 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
   singularEntity,
   pluralEntity,
   destroyMutation,
+  onDeleted,
 }) => {
   const intl = useIntl();
   const Toast = useToast();
@@ -56,6 +58,9 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
     setIsDeleting(true);
     try {
       await deleteEntities();
+      if (onDeleted) {
+        onDeleted();
+      }
       Toast.success({
         content: intl.formatMessage(messages.deleteToast, {
           count,

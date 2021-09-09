@@ -195,6 +195,8 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 
 func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: movieTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
