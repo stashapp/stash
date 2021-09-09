@@ -19,7 +19,6 @@ import {
   mutateReloadScrapers,
   useConfiguration,
   queryScrapeSceneQueryFragment,
-  queryStashBoxScene,
 } from "src/core/StashService";
 import {
   PerformerSelect,
