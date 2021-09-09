@@ -74,13 +74,7 @@ func TestImageStudios(t *testing.T) {
 
 	assert := assert.New(t)
 
-	for _, test := range testTables {
-		mockStudioReader := &mocks.StudioReaderWriter{}
-		mockImageReader := &mocks.ImageReaderWriter{}
-
-		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
-		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
-
+	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
 			mockImageReader.On("Find", imageID).Return(&models.Image{}, nil).Once()
 			expectedStudioID := models.NullInt64(studioID)
@@ -99,6 +93,33 @@ func TestImageStudios(t *testing.T) {
 		assert.Nil(err)
 		mockStudioReader.AssertExpectations(t)
 		mockImageReader.AssertExpectations(t)
+	}
+
+	for _, test := range testTables {
+		mockStudioReader := &mocks.StudioReaderWriter{}
+		mockImageReader := &mocks.ImageReaderWriter{}
+
+		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+
+		doTest(mockStudioReader, mockImageReader, test)
+	}
+
+	// test against aliases
+	const unmatchedName = "unmatched"
+	studio.Name.String = unmatchedName
+
+	for _, test := range testTables {
+		mockStudioReader := &mocks.StudioReaderWriter{}
+		mockImageReader := &mocks.ImageReaderWriter{}
+
+		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", studioID).Return([]string{
+			studioName,
+		}, nil).Once()
+		mockStudioReader.On("GetAliases", reversedStudioID).Return([]string{}, nil).Once()
+
+		doTest(mockStudioReader, mockImageReader, test)
 	}
 }
 
@@ -149,6 +170,7 @@ func TestImageTags(t *testing.T) {
 		doTest(mockTagReader, mockImageReader, test)
 	}
 
+	// test against aliases
 	const unmatchedName = "unmatched"
 	tag.Name = unmatchedName
 
