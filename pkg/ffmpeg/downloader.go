@@ -16,17 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func findInPaths(paths []string, baseName string) string {
-	for _, p := range paths {
-		filePath := filepath.Join(p, baseName)
-		if exists, _ := utils.FileExists(filePath); exists {
-			return filePath
-		}
-	}
-
-	return ""
-}
-
 func GetPaths(paths []string) (string, string) {
 	var ffmpegPath, ffprobePath string
 
@@ -38,10 +27,10 @@ func GetPaths(paths []string) (string, string) {
 
 	// Check if ffmpeg exists in the config directory
 	if ffmpegPath == "" {
-		ffmpegPath = findInPaths(paths, getFFMPEGFilename())
+		ffmpegPath = utils.FindInPaths(paths, getFFMPEGFilename())
 	}
 	if ffprobePath == "" {
-		ffprobePath = findInPaths(paths, getFFProbeFilename())
+		ffprobePath = utils.FindInPaths(paths, getFFProbeFilename())
 	}
 
 	return ffmpegPath, ffprobePath

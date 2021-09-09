@@ -20,7 +20,7 @@ func getArgumentMap(ctx context.Context) map[string]interface{} {
 func getUpdateInputMap(ctx context.Context) map[string]interface{} {
 	args := getArgumentMap(ctx)
 
-	input, _ := args[updateInputField]
+	input := args[updateInputField]
 	var ret map[string]interface{}
 	if input != nil {
 		ret, _ = input.(map[string]interface{})
@@ -36,7 +36,7 @@ func getUpdateInputMap(ctx context.Context) map[string]interface{} {
 func getUpdateInputMaps(ctx context.Context) []map[string]interface{} {
 	args := getArgumentMap(ctx)
 
-	input, _ := args[updateInputField]
+	input := args[updateInputField]
 	var ret []map[string]interface{}
 	if input != nil {
 		// convert []interface{} into []map[string]interface{}

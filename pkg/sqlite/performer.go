@@ -345,6 +345,9 @@ func performerIsMissingCriterionHandler(qb *performerQueryBuilder, isMissing *st
 			case "image":
 				f.addJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
 				f.addWhere("image_join.performer_id IS NULL")
+			case "stash_id":
+				qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+				f.addWhere("performer_stash_ids.performer_id IS NULL")
 			default:
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}

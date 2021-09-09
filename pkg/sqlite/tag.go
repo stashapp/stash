@@ -78,7 +78,7 @@ func (qb *tagQueryBuilder) Destroy(id int) error {
 	}
 
 	if primaryMarkers > 0 {
-		return errors.New("Cannot delete tag used as a primary tag in scene markers")
+		return errors.New("cannot delete tag used as a primary tag in scene markers")
 	}
 
 	return qb.destroyExisting([]int{id})

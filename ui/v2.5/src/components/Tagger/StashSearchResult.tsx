@@ -105,7 +105,7 @@ interface IStashSearchResultProps {
   setTags: boolean;
   endpoint: string;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
-  createNewTag: (toCreate: GQL.ScrapedSceneTag) => void;
+  createNewTag: (toCreate: GQL.ScrapedTag) => void;
   excludedFields: Record<string, boolean>;
   setExcludedFields: (v: Record<string, boolean>) => void;
 }

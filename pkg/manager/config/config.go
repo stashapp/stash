@@ -157,18 +157,11 @@ func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
 }
 
-func HasTLSConfig() bool {
-	ret, _ := utils.FileExists(paths.GetSSLCert())
-	if ret {
-		ret, _ = utils.FileExists(paths.GetSSLKey())
-	}
-
-	return ret
-}
-
 type Instance struct {
 	cpuProfilePath string
 	isNewSystem    bool
+	certFile       string
+	keyFile        string
 	sync.RWMutex
 	//deadlock.RWMutex // for deadlock testing/issues
 }
@@ -190,6 +183,26 @@ func (i *Instance) SetConfigFile(fn string) {
 	i.Lock()
 	defer i.Unlock()
 	viper.SetConfigFile(fn)
+}
+
+func (i *Instance) InitTLS() {
+	configDirectory := i.GetConfigPath()
+	tlsPaths := []string{
+		configDirectory,
+		paths.GetStashHomeDirectory(),
+	}
+
+	i.certFile = utils.FindInPaths(tlsPaths, "stash.crt")
+	i.keyFile = utils.FindInPaths(tlsPaths, "stash.key")
+}
+
+func (i *Instance) GetTLSFiles() (certFile, keyFile string) {
+	return i.certFile, i.keyFile
+}
+
+func (i *Instance) HasTLSConfig() bool {
+	certFile, keyFile := i.GetTLSFiles()
+	return certFile != "" && keyFile != ""
 }
 
 // GetCPUProfilePath returns the path to the CPU profile file to output
@@ -643,17 +656,21 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 
 	re, err := regexp.Compile("^http.*graphql$")
 	if err != nil {
-		return errors.New("Failure to generate regular expression")
+		return errors.New("failure to generate regular expression")
 	}
 
 	for _, box := range boxes {
 		if box.APIKey == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box API Key cannot be blank")
 		} else if box.Endpoint == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint cannot be blank")
 		} else if !re.Match([]byte(box.Endpoint)) {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Name cannot be blank")
 		}
 	}

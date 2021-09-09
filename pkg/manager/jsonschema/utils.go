@@ -4,12 +4,9 @@ import (
 	"bytes"
 
 	"io/ioutil"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
-
-var nilTime = (time.Time{}).UnixNano()
 
 func CompareJSON(a interface{}, b interface{}) bool {
 	aBuf, _ := encode(a)

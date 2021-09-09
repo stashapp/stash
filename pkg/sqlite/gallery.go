@@ -311,17 +311,6 @@ func galleryIsMissingCriterionHandler(qb *galleryQueryBuilder, isMissing *string
 	}
 }
 
-func (qb *galleryQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
-	return multiCriterionHandlerBuilder{
-		primaryTable: galleryTable,
-		foreignTable: foreignTable,
-		joinTable:    joinTable,
-		primaryFK:    galleryIDColumn,
-		foreignFK:    foreignFK,
-		addJoinsFunc: addJoinsFunc,
-	}
-}
-
 func galleryTagsCriterionHandler(qb *galleryQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
 		tx: qb.tx,

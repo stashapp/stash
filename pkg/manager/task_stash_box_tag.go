@@ -40,7 +40,7 @@ func (t *StashBoxPerformerTagTask) Description() string {
 }
 
 func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
-	var performer *models.ScrapedScenePerformer
+	var performer *models.ScrapedPerformer
 	var err error
 
 	client := stashbox.NewClient(*t.box, t.txnManager)
@@ -132,8 +132,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				value := getNullString(performer.Measurements)
 				partial.Measurements = &value
 			}
-			if excluded["name"] {
-				value := sql.NullString{String: performer.Name, Valid: true}
+			if excluded["name"] && performer.Name != nil {
+				value := sql.NullString{String: *performer.Name, Valid: true}
 				partial.Name = &value
 			}
 			if performer.Piercings != nil && !excluded["piercings"] {
@@ -180,17 +180,21 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if err == nil {
-					logger.Infof("Updated performer %s", performer.Name)
+					var name string
+					if performer.Name != nil {
+						name = *performer.Name
+					}
+					logger.Infof("Updated performer %s", name)
 				}
 				return err
 			})
-		} else if t.name != nil {
+		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
 			newPerformer := models.Performer{
 				Aliases:      getNullString(performer.Aliases),
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getNullString(performer.CareerLength),
-				Checksum:     utils.MD5FromString(performer.Name),
+				Checksum:     utils.MD5FromString(*performer.Name),
 				Country:      getNullString(performer.Country),
 				CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 				Ethnicity:    getNullString(performer.Ethnicity),
@@ -201,7 +205,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				Height:       getNullString(performer.Height),
 				Instagram:    getNullString(performer.Instagram),
 				Measurements: getNullString(performer.Measurements),
-				Name:         sql.NullString{String: performer.Name, Valid: true},
+				Name:         sql.NullString{String: *performer.Name, Valid: true},
 				Piercings:    getNullString(performer.Piercings),
 				Tattoos:      getNullString(performer.Tattoos),
 				Twitter:      getNullString(performer.Twitter),
@@ -225,9 +229,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if len(performer.Images) > 0 {
-					image, err := utils.ReadImageFromURL(performer.Images[0])
-					if err != nil {
-						return err
+					image, imageErr := utils.ReadImageFromURL(performer.Images[0])
+					if imageErr != nil {
+						return imageErr
 					}
 					err = r.Performer().UpdateImage(createdPerformer.ID, image)
 				}
