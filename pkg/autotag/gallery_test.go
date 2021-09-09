@@ -122,12 +122,7 @@ func TestGalleryTags(t *testing.T) {
 
 	assert := assert.New(t)
 
-	for _, test := range testTables {
-		mockTagReader := &mocks.TagReaderWriter{}
-		mockGalleryReader := &mocks.GalleryReaderWriter{}
-
-		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
-
+	doTest := func(mockTagReader *mocks.TagReaderWriter, mockGalleryReader *mocks.GalleryReaderWriter, test pathTestTable) {
 		if test.Matches {
 			mockGalleryReader.On("GetTagIDs", galleryID).Return(nil, nil).Once()
 			mockGalleryReader.On("UpdateTags", galleryID, []int{tagID}).Return(nil).Once()
@@ -142,5 +137,31 @@ func TestGalleryTags(t *testing.T) {
 		assert.Nil(err)
 		mockTagReader.AssertExpectations(t)
 		mockGalleryReader.AssertExpectations(t)
+	}
+
+	for _, test := range testTables {
+		mockTagReader := &mocks.TagReaderWriter{}
+		mockGalleryReader := &mocks.GalleryReaderWriter{}
+
+		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+
+		doTest(mockTagReader, mockGalleryReader, test)
+	}
+
+	const unmatchedName = "unmatched"
+	tag.Name = unmatchedName
+
+	for _, test := range testTables {
+		mockTagReader := &mocks.TagReaderWriter{}
+		mockGalleryReader := &mocks.GalleryReaderWriter{}
+
+		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", tagID).Return([]string{
+			tagName,
+		}, nil).Once()
+		mockTagReader.On("GetAliases", reversedTagID).Return([]string{}, nil).Once()
+
+		doTest(mockTagReader, mockGalleryReader, test)
 	}
 }

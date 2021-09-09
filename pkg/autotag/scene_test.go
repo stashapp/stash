@@ -255,12 +255,7 @@ func TestSceneTags(t *testing.T) {
 
 	assert := assert.New(t)
 
-	for _, test := range testTables {
-		mockTagReader := &mocks.TagReaderWriter{}
-		mockSceneReader := &mocks.SceneReaderWriter{}
-
-		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
-
+	doTest := func(mockTagReader *mocks.TagReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
 			mockSceneReader.On("GetTagIDs", sceneID).Return(nil, nil).Once()
 			mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
@@ -275,5 +270,32 @@ func TestSceneTags(t *testing.T) {
 		assert.Nil(err)
 		mockTagReader.AssertExpectations(t)
 		mockSceneReader.AssertExpectations(t)
+	}
+
+	for _, test := range testTables {
+		mockTagReader := &mocks.TagReaderWriter{}
+		mockSceneReader := &mocks.SceneReaderWriter{}
+
+		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+
+		doTest(mockTagReader, mockSceneReader, test)
+	}
+
+	const unmatchedName = "unmatched"
+	tag.Name = unmatchedName
+
+	// test against aliases
+	for _, test := range testTables {
+		mockTagReader := &mocks.TagReaderWriter{}
+		mockSceneReader := &mocks.SceneReaderWriter{}
+
+		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", tagID).Return([]string{
+			tagName,
+		}, nil).Once()
+		mockTagReader.On("GetAliases", reversedTagID).Return([]string{}, nil).Once()
+
+		doTest(mockTagReader, mockSceneReader, test)
 	}
 }
