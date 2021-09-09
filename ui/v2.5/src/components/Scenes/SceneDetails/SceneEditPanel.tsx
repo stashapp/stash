@@ -638,7 +638,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
-          <div className="ml-auto text-right d-flex">
+          <div className="ml-auto pr-3 text-right d-flex">
             {renderScrapeQueryMenu()}
             {renderScraperMenu()}
           </div>
