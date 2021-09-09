@@ -32,7 +32,10 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 	notify := r.Context().Done()
 	go func() {
 		<-notify
-		s.Process.Kill()
+		err := s.Process.Kill()
+		if err != nil {
+			logger.Warnf("enable to kill os process %v: %v", s.Process.Pid, err)
+		}
 	}()
 
 	_, err := io.Copy(w, s.Stdout)

@@ -156,7 +156,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				partial.URL = &value
 			}
 
-			t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			txnErr := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Performer().Update(partial)
 
 				if !t.refresh {
@@ -191,6 +191,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 				return err
 			})
+			if txnErr != nil {
+				logger.Warnf("failure to execute partial update of performer: %v", err)
+			}
 		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
 			newPerformer := models.Performer{

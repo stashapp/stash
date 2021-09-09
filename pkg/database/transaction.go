@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // WithTxn executes the provided function within a transaction. It rolls back
@@ -17,11 +18,17 @@ func WithTxn(fn func(tx *sqlx.Tx) error) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			tx.Rollback()
+			rbErr := tx.Rollback()
+			if rbErr != nil {
+				logger.Warnf("failure when performing tranaction rollback: %v", err)
+			}
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			tx.Rollback()
+			rbErr := tx.Rollback()
+			if rbErr != nil {
+				logger.Warnf("failure when performing tranaction rollback: %v", err)
+			}
 		} else {
 			// all good, commit
 			err = tx.Commit()
