@@ -2,11 +2,12 @@ package tag
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 var testUniqueHierarchyTags = map[int]*models.Tag{
@@ -211,8 +212,7 @@ func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryPa
 	mockTagReader := &mocks.TagReaderWriter{}
 
 	var parentIDs, childIDs []int
-	var find map[int]*models.Tag
-	find = make(map[int]*models.Tag)
+	find := make(map[int]*models.Tag)
 	if tc.parents != nil {
 		parentIDs = make([]int, 0)
 		for _, parent := range tc.parents {
@@ -262,7 +262,7 @@ func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryPa
 		}
 		return nil
 	}, func(tagID int, excludeIDs []int) error {
-		for id, _ := range tc.onFindAllAncestors {
+		for id := range tc.onFindAllAncestors {
 			if id == tagID {
 				return nil
 			}
@@ -278,7 +278,7 @@ func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryPa
 		}
 		return nil
 	}, func(tagID int, excludeIDs []int) error {
-		for id, _ := range tc.onFindAllDescendants {
+		for id := range tc.onFindAllDescendants {
 			if id == tagID {
 				return nil
 			}
