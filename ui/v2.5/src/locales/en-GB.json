@@ -430,6 +430,15 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "lightbox": {
+      "delay": "Delay (Sec)",
+      "display_mode": {
+        "label": "Display Mode",
+        "original": "Original",
+        "fit_to_screen": "Fit to screen",
+        "fit_horizontally": "Fit horizontally"
+      }
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"

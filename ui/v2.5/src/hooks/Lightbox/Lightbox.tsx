@@ -16,6 +16,7 @@ import debounce from "lodash/debounce";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility } from "src/hooks";
 import { useConfiguration } from "src/core/StashService";
+import { FormattedMessage, useIntl } from "react-intl";
 import { DisplayMode, LightboxImage } from "./LightboxImage";
 
 const CLASSNAME = "Lightbox";
@@ -71,12 +72,15 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
   const [zoomed, setZoomed] = useState(false);
   const [resetZoom, setResetZoom] = useState(false);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const clearIntervalCallback = useRef<() => void>();
   const resetIntervalCallback = useRef<() => void>();
+
+  const intl = useIntl();
   const config = useConfiguration();
 
   const userSelectedSlideshowDelayOrDefault =
@@ -344,8 +348,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       <Form.Group controlId="delay" as={Row} className="form-container">
         <Col xs={4}>
           <Form.Label className="col-form-label">
-            {/* <FormattedMessage id="url" /> */}
-            Delay (Sec)
+            <FormattedMessage id="dialogs.lightbox.delay" />
           </Form.Label>
         </Col>
         <Col xs={8}>
@@ -363,8 +366,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       <Form.Group controlId="displayMode" as={Row}>
         <Col xs={4}>
           <Form.Label className="col-form-label">
-            {/* <FormattedMessage id="url" /> */}
-            Display Mode
+            <FormattedMessage id="dialogs.lightbox.display_mode.label" />
           </Form.Label>
         </Col>
         <Col xs={8}>
@@ -375,13 +377,19 @@ export const LightboxComponent: React.FC<IProps> = ({
             className="btn-secondary mx-1 mb-1"
           >
             <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
-              Original
+              {intl.formatMessage({
+                id: "dialogs.lightbox.display_mode.original",
+              })}
             </option>
             <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
-              Fit to screen
+              {intl.formatMessage({
+                id: "dialogs.lightbox.display_mode.fit_to_screen",
+              })}
             </option>
             <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
-              Fit horizontally
+              {intl.formatMessage({
+                id: "dialogs.lightbox.display_mode.fit_horizontally",
+              })}
             </option>
           </Form.Control>
         </Col>
