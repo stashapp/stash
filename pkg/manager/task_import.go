@@ -376,6 +376,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportTags(ctx context.Context) {
+	pendingParent := make(map[string][]*jsonschema.Tag)
 	logger.Info("[tags] importing")
 
 	for i, mappingJSON := range t.mappings.Tags {
@@ -389,21 +390,62 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 		logger.Progressf("[tags] %d of %d", index, len(t.mappings.Tags))
 
 		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-			readerWriter := r.Tag()
-
-			tagImporter := &tag.Importer{
-				ReaderWriter: readerWriter,
-				Input:        *tagJSON,
+			return t.ImportTag(tagJSON, pendingParent, false, r.Tag())
+		}); err != nil {
+			if parentError, ok := err.(tag.ParentTagNotExistError); ok {
+				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
+				continue
 			}
 
-			return performImport(tagImporter, t.DuplicateBehaviour)
-		}); err != nil {
 			logger.Errorf("[tags] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
 			continue
 		}
 	}
 
+	for _, s := range pendingParent {
+		for _, orphanTagJSON := range s {
+			if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+				return t.ImportTag(orphanTagJSON, nil, true, r.Tag())
+			}); err != nil {
+				logger.Errorf("[tags] <%s> failed to create: %s", orphanTagJSON.Name, err.Error())
+				continue
+			}
+		}
+	}
+
 	logger.Info("[tags] import complete")
+}
+
+func (t *ImportTask) ImportTag(tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter models.TagReaderWriter) error {
+	importer := &tag.Importer{
+		ReaderWriter:        readerWriter,
+		Input:               *tagJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
+	}
+
+	// first phase: return error if parent does not exist
+	if !fail {
+		importer.MissingRefBehaviour = models.ImportMissingRefEnumFail
+	}
+
+	if err := performImport(importer, t.DuplicateBehaviour); err != nil {
+		return err
+	}
+
+	for _, childTagJSON := range pendingParent[tagJSON.Name] {
+		if err := t.ImportTag(childTagJSON, pendingParent, fail, readerWriter); err != nil {
+			if parentError, ok := err.(tag.ParentTagNotExistError); ok {
+				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
+				continue
+			}
+
+			return fmt.Errorf("failed to create child tag <%s>: %s", childTagJSON.Name, err.Error())
+		}
+	}
+
+	delete(pendingParent, tagJSON.Name)
+
+	return nil
 }
 
 func (t *ImportTask) ImportScrapedItems(ctx context.Context) {

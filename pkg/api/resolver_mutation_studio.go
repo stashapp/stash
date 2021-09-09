@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"github.com/stashapp/stash/pkg/studio"
 	"strconv"
 	"time"
 
@@ -64,19 +65,19 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	// Start the transaction and save the studio
-	var studio *models.Studio
+	var s *models.Studio
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Studio()
 
 		var err error
-		studio, err = qb.Create(newStudio)
+		s, err = qb.Create(newStudio)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(studio.ID, imageData); err != nil {
+			if err := qb.UpdateImage(s.ID, imageData); err != nil {
 				return err
 			}
 		}
@@ -84,7 +85,17 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		// Save the stash_ids
 		if input.StashIds != nil {
 			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(studio.ID, stashIDJoins); err != nil {
+			if err := qb.UpdateStashIDs(s.ID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		if len(input.Aliases) > 0 {
+			if err := studio.EnsureAliasesUnique(s.ID, input.Aliases, qb); err != nil {
+				return err
+			}
+
+			if err := qb.UpdateAliases(s.ID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -94,8 +105,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, studio.ID, plugin.StudioCreatePost, input, nil)
-	return r.getStudio(ctx, studio.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioCreatePost, input, nil)
+	return r.getStudio(ctx, s.ID)
 }
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
@@ -136,7 +147,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.Rating = translator.nullInt64(input.Rating, "rating")
 
 	// Start the transaction and save the studio
-	var studio *models.Studio
+	var s *models.Studio
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Studio()
 
@@ -145,19 +156,19 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		}
 
 		var err error
-		studio, err = qb.Update(updatedStudio)
+		s, err = qb.Update(updatedStudio)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(studio.ID, imageData); err != nil {
+			if err := qb.UpdateImage(s.ID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(studio.ID); err != nil {
+			if err := qb.DestroyImage(s.ID); err != nil {
 				return err
 			}
 		}
@@ -170,13 +181,23 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 			}
 		}
 
+		if translator.hasField("aliases") {
+			if err := studio.EnsureAliasesUnique(studioID, input.Aliases, qb); err != nil {
+				return err
+			}
+
+			if err := qb.UpdateAliases(studioID, input.Aliases); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, studio.ID, plugin.StudioUpdatePost, input, translator.getFields())
-	return r.getStudio(ctx, studio.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.StudioUpdatePost, input, translator.getFields())
+	return r.getStudio(ctx, s.ID)
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
