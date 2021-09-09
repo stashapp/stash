@@ -305,6 +305,8 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 	}
 
 	switch sort {
+	case "scenes_count":
+		return getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "images_count":
 		return getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":
