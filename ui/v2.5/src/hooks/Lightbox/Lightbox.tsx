@@ -117,7 +117,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (index === oldIndex.current) return;
     if (index === null) return;
 
-    if (carouselRef.current) carouselRef.current.style.left = `${index * -100}vw`;
+    if (carouselRef.current)
+      carouselRef.current.style.left = `${index * -100}vw`;
     if (indicatorRef.current)
       indicatorRef.current.innerHTML = `${index + 1} / ${images.length}`;
     if (navRef.current) {
@@ -125,8 +126,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (currentThumb instanceof HTMLImageElement) {
         const offset =
           -1 *
-          (currentThumb.offsetLeft -
-            document.documentElement.clientWidth / 2);
+          (currentThumb.offsetLeft - document.documentElement.clientWidth / 2);
         navRef.current.style.left = `${offset}px`;
 
         const previouslySelected = navRef.current.getElementsByClassName(
@@ -214,7 +214,14 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback, index]
+    [
+      images,
+      setIndex,
+      pageCallback,
+      isSwitchingPage,
+      resetIntervalCallback,
+      index,
+    ]
   );
 
   const handleRight = useCallback(
@@ -237,7 +244,14 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback, index]
+    [
+      images,
+      setIndex,
+      pageCallback,
+      isSwitchingPage,
+      resetIntervalCallback,
+      index,
+    ]
   );
 
   const handleKey = useCallback(
@@ -273,9 +287,9 @@ export const LightboxComponent: React.FC<IProps> = ({
     const handleMove = (e: TouchEvent) => {
       position = e.touches[0].clientX;
       if (carouselRef.current)
-        carouselRef.current.style.left = `calc(${
-          (index ?? 0) * -100
-        }vw + ${e.touches[0].clientX - startX}px)`;
+        carouselRef.current.style.left = `calc(${(index ?? 0) * -100}vw + ${
+          e.touches[0].clientX - startX
+        }px)`;
     };
     const handleEnd = () => {
       const diff = position - startX;
