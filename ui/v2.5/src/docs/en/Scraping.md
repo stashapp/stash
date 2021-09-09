@@ -102,7 +102,7 @@ The script is sent input and expects output based on the scraping type, as detai
 | `performerByName` | `{"name": "<performer query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
 | `performerByFragment` | JSON-encoded performer fragment | JSON-encoded performer fragment |
 | `performerByURL` | `{"url": "<url>"}` | JSON-encoded performer fragment |
-| `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
+| `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded scene fragments |
 | `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
 | `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
 | `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
