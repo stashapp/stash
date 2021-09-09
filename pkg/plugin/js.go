@@ -72,23 +72,19 @@ func (t *jsPluginTask) Start() error {
 		return err
 	}
 
-	err = t.vm.Set("input", t.input)
-	if err != nil {
+	if err := t.vm.Set("input", t.input); err != nil {
 		return fmt.Errorf("error setting input: %w", err)
 	}
 
-	err = js.AddLogAPI(t.vm, t.progress)
-	if err != nil {
+	if err := js.AddLogAPI(t.vm, t.progress); err != nil {
 		return fmt.Errorf("error adding log API: %w", err)
 	}
 
-	err = js.AddUtilAPI(t.vm)
-	if err != nil {
+	if err := js.AddUtilAPI(t.vm); err != nil {
 		return fmt.Errorf("error adding util API: %w", err)
 	}
 
-	err = js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler)
-	if err != nil {
+	if err := js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler); err != nil {
 		return fmt.Errorf("error adding GraphQL API: %w", err)
 	}
 

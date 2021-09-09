@@ -44,36 +44,28 @@ func GetJSONPaths(baseDir string) *JSONPaths {
 
 func EnsureJSONDirs(baseDir string) {
 	jsonPaths := GetJSONPaths(baseDir)
-	err := utils.EnsureDir(jsonPaths.Metadata)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Metadata); err != nil {
 		logger.Warnf("couldn't create directories for Metadata: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Scenes)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Scenes); err != nil {
 		logger.Warnf("couldn't create directories for Scenes: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Images)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Images); err != nil {
 		logger.Warnf("couldn't create directories for Images: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Galleries)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Galleries); err != nil {
 		logger.Warnf("couldn't create directories for Galleries: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Performers)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Performers); err != nil {
 		logger.Warnf("couldn't create directories for Performers: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Studios)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Studios); err != nil {
 		logger.Warnf("couldn't create directories for Studios: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Movies)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Movies); err != nil {
 		logger.Warnf("couldn't create directories for Movies: %v", err)
 	}
-	err = utils.EnsureDir(jsonPaths.Tags)
-	if err != nil {
+	if err := utils.EnsureDir(jsonPaths.Tags); err != nil {
 		logger.Warnf("couldn't create directories for Tags: %v", err)
 	}
 }

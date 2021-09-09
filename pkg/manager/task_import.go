@@ -160,8 +160,7 @@ func (t *ImportTask) unzipFile() error {
 		fn := filepath.Join(t.BaseDir, f.Name)
 
 		if f.FileInfo().IsDir() {
-			err := os.MkdirAll(fn, os.ModePerm)
-			if err != nil {
+			if err := os.MkdirAll(fn, os.ModePerm); err != nil {
 				logger.Warnf("couldn't create directory %v while unzipping import file: %v", fn, err)
 			}
 			continue

@@ -127,8 +127,7 @@ func initEnvs() {
 }
 
 func bindEnv(key string) {
-	err := viper.BindEnv(key)
-	if err != nil {
+	if err := viper.BindEnv(key); err != nil {
 		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
 	}
 }

@@ -251,8 +251,7 @@ func (s *Service) Stop(duration *time.Duration) {
 
 		if s.startTimer == nil {
 			s.startTimer = time.AfterFunc(*duration, func() {
-				err := s.Start(nil)
-				if err != nil {
+				if err := s.Start(nil); err != nil {
 					logger.Warnf("error restarting DLNA server: %v", err)
 				}
 			})

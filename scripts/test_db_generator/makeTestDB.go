@@ -49,8 +49,7 @@ func main() {
 
 	initNaming(*c)
 
-	err = database.Initialize(c.Database)
-	if err != nil {
+	if err = database.Initialize(c.Database); err != nil {
 		log.Fatalf("couldn't initialize database: %v", err)
 	}
 	populateDB()

@@ -84,8 +84,7 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	container := getSceneFileContainer(scene)
 	if container != ffmpeg.Matroska {
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte("not an mkv file"))
-		if err != nil {
+		if _, err := w.Write([]byte("not an mkv file")); err != nil {
 			logger.Warnf("[stream] error writing to stream: %v", err)
 		}
 		return
@@ -128,8 +127,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	rangeStr := requestByteRange.ToHeaderValue(int64(str.Len()))
 	w.Header().Set("Content-Range", rangeStr)
 
-	n, err := w.Write(ret)
-	if err != nil {
+	if n, err := w.Write(ret); err != nil {
 		logger.Warnf("[stream] error writing stream (wrote %v bytes): %v", n, err)
 	}
 }
@@ -151,8 +149,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	}
 
 	// start stream based on query param, if provided
-	err = r.ParseForm()
-	if err != nil {
+	if err = r.ParseForm(); err != nil {
 		logger.Warnf("[stream] error parsing query form: %v", err)
 	}
 
@@ -179,8 +176,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
+		if _, err := w.Write([]byte(err.Error())); err != nil {
 			logger.Warnf("[stream] error writing response: %v", err)
 		}
 		return

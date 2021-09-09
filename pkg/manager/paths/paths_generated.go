@@ -51,8 +51,7 @@ func (gp *generatedPaths) RemoveTmpDir() error {
 }
 
 func (gp *generatedPaths) TempDir(pattern string) (string, error) {
-	err := gp.EnsureTmpDir()
-	if err != nil {
+	if err := gp.EnsureTmpDir(); err != nil {
 		logger.Warnf("Could not ensure existence of a temporary directory: %v", err)
 	}
 	ret, err := ioutil.TempDir(gp.Tmp, pattern)
@@ -60,8 +59,7 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 		return "", err
 	}
 
-	err = utils.EmptyDir(ret)
-	if err != nil {
+	if err = utils.EmptyDir(ret); err != nil {
 		logger.Warnf("could not recursively empty dir: %v", err)
 	}
 

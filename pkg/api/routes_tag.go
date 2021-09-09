@@ -46,8 +46,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		image = models.DefaultTagImage
 	}
 
-	err := utils.ServeImage(image, w, r)
-	if err != nil {
+	if err := utils.ServeImage(image, w, r); err != nil {
 		logger.Warnf("error serving tag image: %v", err)
 	}
 }

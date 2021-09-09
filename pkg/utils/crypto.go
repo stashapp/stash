@@ -42,8 +42,7 @@ func MD5FromReader(src io.Reader) (string, error) {
 
 func GenerateRandomKey(l int) string {
 	b := make([]byte, l)
-	n, err := rand.Read(b)
-	if err != nil {
+	if n, err := rand.Read(b); err != nil {
 		logger.Warnf("failure generating random key: %v (only read %v bytes)", err, n)
 	}
 	return fmt.Sprintf("%x", b)

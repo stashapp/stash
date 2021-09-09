@@ -47,8 +47,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String, config.GetInstance().GetCustomPerformerImageLocation())
 	}
 
-	err := utils.ServeImage(image, w, r)
-	if err != nil {
+	if err := utils.ServeImage(image, w, r); err != nil {
 		logger.Warnf("error serving image: %v", err)
 	}
 }

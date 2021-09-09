@@ -51,8 +51,7 @@ func (t *rawPluginTask) Start() error {
 		defer stdin.Close()
 
 		inBytes, _ := json.Marshal(t.input)
-		k, err := io.WriteString(stdin, string(inBytes))
-		if err != nil {
+		if k, err := io.WriteString(stdin, string(inBytes)); err != nil {
 			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
 		}
 	}()

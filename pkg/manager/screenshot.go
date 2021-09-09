@@ -13,8 +13,8 @@ func makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int
 		Time:       time,
 		Width:      width,
 	}
-	err := encoder.Screenshot(probeResult, options)
-	if err != nil {
+
+	if err := encoder.Screenshot(probeResult, options); err != nil {
 		logger.Warnf("[encoder] failure to generate screenshot: %v", err)
 	}
 }

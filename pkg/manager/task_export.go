@@ -218,8 +218,7 @@ func (t *ExportTask) zipFiles(w io.Writer) error {
 
 // like filepath.Walk but issue a warning on error
 func walkWarn(root string, fn filepath.WalkFunc) {
-	err := filepath.Walk(root, fn)
-	if err != nil {
+	if err := filepath.Walk(root, fn); err != nil {
 		logger.Warnf("error walking structure %v: %v", root, err)
 	}
 }

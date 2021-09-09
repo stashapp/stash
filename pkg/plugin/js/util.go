@@ -17,13 +17,11 @@ func sleepFunc(call otto.FunctionCall) otto.Value {
 
 func AddUtilAPI(vm *otto.Otto) error {
 	util, _ := vm.Object("({})")
-	err := util.Set("Sleep", sleepFunc)
-	if err != nil {
+	if err := util.Set("Sleep", sleepFunc); err != nil {
 		return fmt.Errorf("unable to set sleep func: %w", err)
 	}
 
-	err = vm.Set("util", util)
-	if err != nil {
+	if err := vm.Set("util", util); err != nil {
 		return fmt.Errorf("unable to set util: %w", err)
 	}
 

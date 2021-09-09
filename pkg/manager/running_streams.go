@@ -98,8 +98,8 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		if err != nil {
 			logger.Warnf("read transaction failed while serving screenshot: %v", err)
 		}
-		err = utils.ServeImage(cover, w, r)
-		if err != nil {
+
+		if err = utils.ServeImage(cover, w, r); err != nil {
 			logger.Warnf("unable to serve screenshot image: %v", err)
 		}
 	}

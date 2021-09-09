@@ -87,8 +87,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				galleries = append(galleries, path)
 			}
 
-			tmpDirErr := instance.Paths.Generated.EnsureTmpDir()
-			if tmpDirErr != nil {
+			if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
 				logger.Warnf("couldn't create temporary directory: %v", err)
 			}
 
@@ -129,10 +128,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
-	tmpDirErr := instance.Paths.Generated.EmptyTmpDir()
-	if tmpDirErr != nil {
-		logger.Warnf("couldn't empty temporary directory: %v", tmpDirErr)
+
+	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+		logger.Warnf("couldn't empty temporary directory: %v", err)
 	}
+
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 

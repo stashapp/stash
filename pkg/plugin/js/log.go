@@ -67,33 +67,25 @@ func logProgressFunc(c chan float64) func(call otto.FunctionCall) otto.Value {
 
 func AddLogAPI(vm *otto.Otto, progress chan float64) error {
 	log, _ := vm.Object("({})")
-	err := log.Set("Trace", logTrace)
-	if err != nil {
+	if err := log.Set("Trace", logTrace); err != nil {
 		return fmt.Errorf("error setting Trace: %w", err)
 	}
-	err = log.Set("Debug", logDebug)
-	if err != nil {
+	if err := log.Set("Debug", logDebug); err != nil {
 		return fmt.Errorf("error setting Debug: %w", err)
 	}
-	err = log.Set("Info", logInfo)
-	if err != nil {
+	if err := log.Set("Info", logInfo); err != nil {
 		return fmt.Errorf("error setting Info: %w", err)
 	}
-	err = log.Set("Warn", logWarn)
-	if err != nil {
+	if err := log.Set("Warn", logWarn); err != nil {
 		return fmt.Errorf("error setting Warn: %w", err)
 	}
-	err = log.Set("Error", logError)
-	if err != nil {
+	if err := log.Set("Error", logError); err != nil {
 		return fmt.Errorf("error setting Error: %w", err)
 	}
-	err = log.Set("Progress", logProgressFunc(progress))
-	if err != nil {
+	if err := log.Set("Progress", logProgressFunc(progress)); err != nil {
 		return fmt.Errorf("error setting Progress: %v", err)
 	}
-
-	err = vm.Set("log", log)
-	if err != nil {
+	if err := vm.Set("log", log); err != nil {
 		return fmt.Errorf("unable to set log: %w", err)
 	}
 

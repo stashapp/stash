@@ -454,8 +454,7 @@ func (i *Instance) GetStashBoxes() []*models.StashBox {
 	i.RLock()
 	defer i.RUnlock()
 	var boxes []*models.StashBox
-	err := viper.UnmarshalKey(StashBoxes, &boxes)
-	if err != nil {
+	if err := viper.UnmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
 
@@ -806,8 +805,7 @@ func (i *Instance) SetCSS(css string) {
 
 	buf := []byte(css)
 
-	err := ioutil.WriteFile(fn, buf, 0777)
-	if err != nil {
+	if err := ioutil.WriteFile(fn, buf, 0777); err != nil {
 		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
 	}
 }
