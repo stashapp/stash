@@ -557,7 +557,7 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "subtractDays")
 		}
-		found = "subtractDays"
+		// found = "subtractDays"
 		action := postProcessSubtractDays(a.SubtractDays)
 		ret = &action
 	}

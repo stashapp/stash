@@ -16,8 +16,7 @@ import (
 )
 
 type sceneRoutes struct {
-	txnManager  models.TransactionManager
-	sceneServer manager.SceneServer
+	txnManager models.TransactionManager
 }
 
 func (rs sceneRoutes) Routes() chi.Router {

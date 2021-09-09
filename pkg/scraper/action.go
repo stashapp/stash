@@ -11,25 +11,12 @@ const (
 	scraperActionJson   scraperAction = "scrapeJson"
 )
 
-var allScraperAction = []scraperAction{
-	scraperActionScript,
-	scraperActionStash,
-	scraperActionXPath,
-	scraperActionJson,
-}
-
 func (e scraperAction) IsValid() bool {
 	switch e {
 	case scraperActionScript, scraperActionStash, scraperActionXPath, scraperActionJson:
 		return true
 	}
 	return false
-}
-
-type scrapeOptions struct {
-	scraper      scraperTypeConfig
-	config       config
-	globalConfig GlobalConfig
 }
 
 type scraper interface {

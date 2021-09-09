@@ -10,11 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 )
 
-const cookieName = "session"
-const usernameFormKey = "username"
-const passwordFormKey = "password"
-const userIDKey = "userID"
-
 const returnURLParam = "returnURL"
 
 type loginTemplateData struct {
