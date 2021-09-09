@@ -4,6 +4,7 @@ fragment SceneMarkerData on SceneMarker {
   seconds
   stream
   preview
+  screenshot
 
   scene {
     id
