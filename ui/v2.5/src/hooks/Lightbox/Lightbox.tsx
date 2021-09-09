@@ -64,7 +64,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   pageCallback,
   hide,
 }) => {
-  const index = useRef<number | null>(null);
+  const [index, setIndex] = useState<number | null>(null);
+  const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
@@ -96,9 +97,10 @@ export const LightboxComponent: React.FC<IProps> = ({
   );
 
   useEffect(() => {
+    if (!isSwitchingPage) return;
     setIsSwitchingPage(false);
-    if (index.current === -1) index.current = images.length - 1;
-  }, [images]);
+    if (index === -1) setIndex(images.length - 1);
+  }, [isSwitchingPage, images, index]);
 
   const disableInstantTransition = debounce(
     () => setInstantTransition(false),
@@ -110,35 +112,35 @@ export const LightboxComponent: React.FC<IProps> = ({
     disableInstantTransition();
   }, [disableInstantTransition]);
 
-  const setIndex = useCallback(
-    (i: number) => {
-      if (images.length < 2) return;
+  useEffect(() => {
+    if (images.length < 2) return;
+    if (index === oldIndex.current) return;
+    if (index === null) return;
 
-      index.current = i;
-      if (carouselRef.current) carouselRef.current.style.left = `${i * -100}vw`;
-      if (indicatorRef.current)
-        indicatorRef.current.innerHTML = `${i + 1} / ${images.length}`;
-      if (navRef.current) {
-        const currentThumb = navRef.current.children[i + 1];
-        if (currentThumb instanceof HTMLImageElement) {
-          const offset =
-            -1 *
-            (currentThumb.offsetLeft -
-              document.documentElement.clientWidth / 2);
-          navRef.current.style.left = `${offset}px`;
+    if (carouselRef.current) carouselRef.current.style.left = `${index * -100}vw`;
+    if (indicatorRef.current)
+      indicatorRef.current.innerHTML = `${index + 1} / ${images.length}`;
+    if (navRef.current) {
+      const currentThumb = navRef.current.children[index + 1];
+      if (currentThumb instanceof HTMLImageElement) {
+        const offset =
+          -1 *
+          (currentThumb.offsetLeft -
+            document.documentElement.clientWidth / 2);
+        navRef.current.style.left = `${offset}px`;
 
-          const previouslySelected = navRef.current.getElementsByClassName(
-            CLASSNAME_NAVSELECTED
-          )?.[0];
-          if (previouslySelected)
-            previouslySelected.className = CLASSNAME_NAVIMAGE;
+        const previouslySelected = navRef.current.getElementsByClassName(
+          CLASSNAME_NAVSELECTED
+        )?.[0];
+        if (previouslySelected)
+          previouslySelected.className = CLASSNAME_NAVIMAGE;
 
-          currentThumb.className = `${CLASSNAME_NAVIMAGE} ${CLASSNAME_NAVSELECTED}`;
-        }
+        currentThumb.className = `${CLASSNAME_NAVIMAGE} ${CLASSNAME_NAVSELECTED}`;
       }
-    },
-    [images]
-  );
+    }
+
+    oldIndex.current = index;
+  }, [index, images.length]);
 
   const selectIndex = (e: React.MouseEvent, i: number) => {
     setIndex(i);
@@ -147,12 +149,12 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   useEffect(() => {
     if (isVisible) {
-      if (index.current === null) setIndex(initialIndex);
+      if (index === null) setIndex(initialIndex);
       document.body.style.overflow = "hidden";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (Mousetrap as any).pause();
     }
-  }, [initialIndex, isVisible, setIndex]);
+  }, [initialIndex, isVisible, setIndex, index]);
 
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
@@ -193,9 +195,9 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleLeft = useCallback(
     (isUserAction = true) => {
-      if (isSwitchingPage || index.current === -1) return;
+      if (isSwitchingPage || index === -1) return;
 
-      if (index.current === 0) {
+      if (index === 0) {
         if (pageCallback) {
           setIsSwitchingPage(true);
           setIndex(-1);
@@ -206,20 +208,20 @@ export const LightboxComponent: React.FC<IProps> = ({
             setIndex(0);
           }
         } else setIndex(images.length - 1);
-      } else setIndex((index.current ?? 0) - 1);
+      } else setIndex((index ?? 0) - 1);
 
       if (isUserAction && resetIntervalCallback.current) {
         resetIntervalCallback.current();
       }
     },
-    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]
+    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback, index]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
 
-      if (index.current === images.length - 1) {
+      if (index === images.length - 1) {
         if (pageCallback) {
           setIsSwitchingPage(true);
           setIndex(0);
@@ -229,13 +231,13 @@ export const LightboxComponent: React.FC<IProps> = ({
             setIndex(images.length - 1);
           }
         } else setIndex(0);
-      } else setIndex((index.current ?? 0) + 1);
+      } else setIndex((index ?? 0) + 1);
 
       if (isUserAction && resetIntervalCallback.current) {
         resetIntervalCallback.current();
       }
     },
-    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]
+    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback, index]
   );
 
   const handleKey = useCallback(
@@ -266,13 +268,13 @@ export const LightboxComponent: React.FC<IProps> = ({
 
     const resetPosition = () => {
       if (carouselRef.current)
-        carouselRef.current.style.left = `${(index.current ?? 0) * -100}vw`;
+        carouselRef.current.style.left = `${(index ?? 0) * -100}vw`;
     };
     const handleMove = (e: TouchEvent) => {
       position = e.touches[0].clientX;
       if (carouselRef.current)
         carouselRef.current.style.left = `calc(${
-          (index.current ?? 0) * -100
+          (index ?? 0) * -100
         }vw + ${e.touches[0].clientX - startX}px)`;
     };
     const handleEnd = () => {
@@ -335,7 +337,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       src={image.paths.thumbnail ?? ""}
       alt=""
       className={cx(CLASSNAME_NAVIMAGE, {
-        [CLASSNAME_NAVSELECTED]: i === index.current,
+        [CLASSNAME_NAVSELECTED]: i === index,
       })}
       onClick={(e: React.MouseEvent) => selectIndex(e, i)}
       role="presentation"
@@ -362,7 +364,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   };
 
-  const currentIndex = index.current === null ? initialIndex : index.current;
+  const currentIndex = index === null ? initialIndex : index;
 
   const DelayForm: React.FC<{}> = () => (
     <>
@@ -498,14 +500,16 @@ export const LightboxComponent: React.FC<IProps> = ({
               style={{ left: `${currentIndex * -100}vw` }}
               ref={carouselRef}
             >
-              {images.map((image) => (
+              {images.map((image, i) => (
                 <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
-                  <LightboxImage
-                    src={image.paths.image ?? ""}
-                    mode={displayMode}
-                    onLeft={() => handleLeft(true)}
-                    onRight={handleRight}
-                  />
+                  {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
+                    <LightboxImage
+                      src={image.paths.image ?? ""}
+                      mode={displayMode}
+                      onLeft={() => handleLeft(true)}
+                      onRight={handleRight}
+                    />
+                  ) : undefined}
                 </div>
               ))}
             </div>
