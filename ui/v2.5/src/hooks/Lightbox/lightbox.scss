@@ -30,6 +30,10 @@
       display: flex;
       flex: 1;
       justify-content: center;
+
+      @media (max-width: 575px) {
+        display: none;
+      }
     }
 
     &-indicator {
@@ -40,7 +44,7 @@
       text-align: center;
     }
 
-    &-delay {
+    &-options {
       display: flex;
       flex-direction: column;
       margin-left: 100px;

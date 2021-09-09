@@ -22,9 +22,9 @@ const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
 const CLASSNAME_LEFT_SPACER = `${CLASSNAME_HEADER}-left-spacer`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
-const CLASSNAME_DELAY = `${CLASSNAME_HEADER}-delay`;
-const CLASSNAME_DELAY_ICON = `${CLASSNAME_DELAY}-icon`;
-const CLASSNAME_DELAY_INLINE = `${CLASSNAME_DELAY}-inline`;
+const CLASSNAME_OPTIONS = `${CLASSNAME_HEADER}-options`;
+const CLASSNAME_OPTIONS_ICON = `${CLASSNAME_OPTIONS}-icon`;
+const CLASSNAME_OPTIONS_INLINE = `${CLASSNAME_OPTIONS}-inline`;
 const CLASSNAME_RIGHT = `${CLASSNAME_HEADER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
@@ -69,6 +69,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
+  const [zoomed, setZoomed] = useState(false);
+  const [resetZoom, setResetZoom] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -112,6 +114,9 @@ export const LightboxComponent: React.FC<IProps> = ({
   }, [disableInstantTransition]);
 
   useEffect(() => {
+    // reset zoom status
+    setZoomed(false);
+
     if (images.length < 2) return;
     if (index === oldIndex.current) return;
     if (index === null) return;
@@ -384,7 +389,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     </>
   );
 
-  const delayPopover = (
+  const optionsPopover = (
     <Popover id="slideshow-options">
       <Popover.Title>Options</Popover.Title>
       <Popover.Content>
@@ -413,19 +418,19 @@ export const LightboxComponent: React.FC<IProps> = ({
             <div className={CLASSNAME_RIGHT}>
               {slideshowEnabled && (
                 <>
-                  <div className={CLASSNAME_DELAY}>
-                    <div className={CLASSNAME_DELAY_ICON}>
+                  <div className={CLASSNAME_OPTIONS}>
+                    <div className={CLASSNAME_OPTIONS_ICON}>
                       <OverlayTrigger
                         trigger="click"
                         placement="bottom"
-                        overlay={delayPopover}
+                        overlay={optionsPopover}
                       >
-                        <Button variant="link" title="Slideshow delay settings">
+                        <Button variant="link" title="Options">
                           <Icon icon="cog" />
                         </Button>
                       </OverlayTrigger>
                     </div>
-                    <InputGroup className={CLASSNAME_DELAY_INLINE}>
+                    <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
                       <OptionsForm />
                     </InputGroup>
                   </div>
@@ -439,6 +444,18 @@ export const LightboxComponent: React.FC<IProps> = ({
                     />
                   </Button>
                 </>
+              )}
+              {zoomed && (
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    setResetZoom(!resetZoom);
+                    setZoomed(false);
+                  }}
+                  title="Reset zoom"
+                >
+                  <Icon icon="search-minus" />
+                </Button>
               )}
               {document.fullscreenEnabled && (
                 <Button
@@ -484,6 +501,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                       mode={displayMode}
                       onLeft={() => handleLeft(true)}
                       onRight={handleRight}
+                      onZoomed={() => setZoomed(true)}
+                      resetZoom={resetZoom}
                     />
                   ) : undefined}
                 </div>

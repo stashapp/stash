@@ -14,8 +14,16 @@ export enum DisplayMode {
 interface IProps {
   src: string;
   mode: DisplayMode;
+  resetZoom?: boolean;
   onLeft: () => void;
   onRight: () => void;
+  onZoomed?: () => void;
+}
+
+interface IInitialPosition {
+  x: number;
+  y: number;
+  zoom: number;
 }
 
 export const LightboxImage: React.FC<IProps> = ({
@@ -23,6 +31,8 @@ export const LightboxImage: React.FC<IProps> = ({
   onLeft,
   onRight,
   mode,
+  onZoomed,
+  resetZoom,
 }) => {
   const [zoom, setZoom] = useState(0);
   const [moving, setMoving] = useState(false);
@@ -33,10 +43,11 @@ export const LightboxImage: React.FC<IProps> = ({
   const [boxWidth, setBoxWidth] = useState(0);
   const [boxHeight, setBoxHeight] = useState(0);
 
+  const initialPosition = useRef<IInitialPosition | undefined>();
   const container = React.createRef<HTMLDivElement>();
   const startPoints = useRef<number[]>([0, 0]);
   const pointerCache = useRef<React.PointerEvent<HTMLDivElement>[]>([]);
-  const prevDiff = useRef<number | undefined>(undefined);
+  const prevDiff = useRef<number | undefined>();
 
   useEffect(() => {
     const box = container.current;
@@ -64,6 +75,11 @@ export const LightboxImage: React.FC<IProps> = ({
     }
 
     if (width < boxWidth && height < boxHeight) {
+      initialPosition.current = {
+        zoom: 1,
+        x: 0,
+        y: 0,
+      };
       setZoom(1);
       setPositionX(0);
       setPositionY(0);
@@ -93,14 +109,34 @@ export const LightboxImage: React.FC<IProps> = ({
     const newPositionX = Math.min((boxWidth - width) / 2, 0);
     const newPositionY = Math.min((boxHeight - height) / 2, 0);
 
+    initialPosition.current = {
+      zoom: newZoom,
+      x: newPositionX,
+      y: newPositionY,
+    };
     setZoom(newZoom);
     setPositionX(newPositionX);
     setPositionY(newPositionY);
   }, [width, height, boxWidth, boxHeight, mode]);
 
+  useEffect(() => {
+    if (initialPosition.current !== undefined) {
+      setZoom(initialPosition.current.zoom);
+      setPositionX(initialPosition.current.x);
+      setPositionY(initialPosition.current.y);
+    }
+  }, [resetZoom, initialPosition]);
+
+  function zoomed() {
+    if (onZoomed) {
+      onZoomed();
+    }
+  }
+
   function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
     const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
     setZoom(zoom * percent);
+    zoomed();
   }
 
   function onImageMouseOver(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -173,7 +209,6 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onPointerUp(ev: React.PointerEvent<HTMLDivElement>) {
-
     for (let i = 0; i < pointerCache.current.length; i++) {
       if (pointerCache.current[i].pointerId === ev.pointerId) {
         pointerCache.current.splice(i, 1);
@@ -184,7 +219,9 @@ export const LightboxImage: React.FC<IProps> = ({
 
   function onPointerMove(ev: React.PointerEvent<HTMLDivElement>) {
     // find the event in the cache
-    const cachedIndex = pointerCache.current.findIndex(c => c.pointerId === ev.pointerId);
+    const cachedIndex = pointerCache.current.findIndex(
+      (c) => c.pointerId === ev.pointerId
+    );
     if (cachedIndex !== -1) {
       pointerCache.current[cachedIndex] = ev;
     }
@@ -196,16 +233,17 @@ export const LightboxImage: React.FC<IProps> = ({
       const diffX = Math.abs(ev1.clientX - ev2.clientX);
       const diffY = Math.abs(ev1.clientY - ev2.clientY);
       const diff = Math.sqrt(diffX ** 2 + diffY ** 2);
-      
+
       if (prevDiff.current !== undefined) {
         const diffDiff = diff - prevDiff.current;
-        const factor = Math.abs(diffDiff) / 20 * 0.1 + 1;
+        const factor = (Math.abs(diffDiff) / 20) * 0.1 + 1;
 
         if (diffDiff > 0) {
           setZoom(zoom * factor);
         } else if (diffDiff < 0) {
           setZoom(zoom / factor);
         }
+        zoomed();
       }
 
       prevDiff.current = diff;
@@ -226,7 +264,7 @@ export const LightboxImage: React.FC<IProps> = ({
             src={src}
             alt=""
             draggable={false}
-            style={{touchAction: "none"}}
+            style={{ touchAction: "none" }}
             onWheel={(e) => onImageScroll(e)}
             onMouseDown={(e) => onImageMouseDown(e)}
             onMouseMove={(e) => onImageMouseOver(e)}
