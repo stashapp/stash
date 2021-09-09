@@ -41,7 +41,6 @@ func Init(logFile string, logOut bool, logLevel string) {
 
 		if err != nil {
 			fmt.Printf("Could not open '%s' for log output due to error: %s\n", logFile, err.Error())
-			logFile = ""
 		}
 	}
 

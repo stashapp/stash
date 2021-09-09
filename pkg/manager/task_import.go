@@ -376,6 +376,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportTags(ctx context.Context) {
+	pendingParent := make(map[string][]*jsonschema.Tag)
 	logger.Info("[tags] importing")
 
 	for i, mappingJSON := range t.mappings.Tags {
@@ -389,21 +390,62 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 		logger.Progressf("[tags] %d of %d", index, len(t.mappings.Tags))
 
 		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-			readerWriter := r.Tag()
-
-			tagImporter := &tag.Importer{
-				ReaderWriter: readerWriter,
-				Input:        *tagJSON,
+			return t.ImportTag(tagJSON, pendingParent, false, r.Tag())
+		}); err != nil {
+			if parentError, ok := err.(tag.ParentTagNotExistError); ok {
+				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
+				continue
 			}
 
-			return performImport(tagImporter, t.DuplicateBehaviour)
-		}); err != nil {
 			logger.Errorf("[tags] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
 			continue
 		}
 	}
 
+	for _, s := range pendingParent {
+		for _, orphanTagJSON := range s {
+			if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+				return t.ImportTag(orphanTagJSON, nil, true, r.Tag())
+			}); err != nil {
+				logger.Errorf("[tags] <%s> failed to create: %s", orphanTagJSON.Name, err.Error())
+				continue
+			}
+		}
+	}
+
 	logger.Info("[tags] import complete")
+}
+
+func (t *ImportTask) ImportTag(tagJSON *jsonschema.Tag, pendingParent map[string][]*jsonschema.Tag, fail bool, readerWriter models.TagReaderWriter) error {
+	importer := &tag.Importer{
+		ReaderWriter:        readerWriter,
+		Input:               *tagJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
+	}
+
+	// first phase: return error if parent does not exist
+	if !fail {
+		importer.MissingRefBehaviour = models.ImportMissingRefEnumFail
+	}
+
+	if err := performImport(importer, t.DuplicateBehaviour); err != nil {
+		return err
+	}
+
+	for _, childTagJSON := range pendingParent[tagJSON.Name] {
+		if err := t.ImportTag(childTagJSON, pendingParent, fail, readerWriter); err != nil {
+			if parentError, ok := err.(tag.ParentTagNotExistError); ok {
+				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
+				continue
+			}
+
+			return fmt.Errorf("failed to create child tag <%s>: %s", childTagJSON.Name, err.Error())
+		}
+	}
+
+	delete(pendingParent, tagJSON.Name)
+
+	return nil
 }
 
 func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
@@ -567,101 +609,6 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	}
 
 	logger.Info("[images] import complete")
-}
-
-func (t *ImportTask) getPerformers(names []string, qb models.PerformerReader) ([]*models.Performer, error) {
-	performers, err := qb.FindByNames(names, false)
-	if err != nil {
-		return nil, err
-	}
-
-	var pluckedNames []string
-	for _, performer := range performers {
-		if !performer.Name.Valid {
-			continue
-		}
-		pluckedNames = append(pluckedNames, performer.Name.String)
-	}
-
-	missingPerformers := utils.StrFilter(names, func(name string) bool {
-		return !utils.StrInclude(pluckedNames, name)
-	})
-
-	for _, missingPerformer := range missingPerformers {
-		logger.Warnf("[scenes] performer %s does not exist", missingPerformer)
-	}
-
-	return performers, nil
-}
-
-func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, mqb models.MovieReader) ([]models.MoviesScenes, error) {
-	var movies []models.MoviesScenes
-	for _, inputMovie := range input {
-		movie, err := mqb.FindByName(inputMovie.MovieName, false)
-		if err != nil {
-			return nil, err
-		}
-
-		if movie == nil {
-			logger.Warnf("[scenes] movie %s does not exist", inputMovie.MovieName)
-		} else {
-			toAdd := models.MoviesScenes{
-				MovieID: movie.ID,
-				SceneID: sceneID,
-			}
-
-			if inputMovie.SceneIndex != 0 {
-				toAdd.SceneIndex = sql.NullInt64{
-					Int64: int64(inputMovie.SceneIndex),
-					Valid: true,
-				}
-			}
-
-			movies = append(movies, toAdd)
-		}
-	}
-
-	return movies, nil
-}
-
-func (t *ImportTask) getTags(sceneChecksum string, names []string, tqb models.TagReader) ([]*models.Tag, error) {
-	tags, err := tqb.FindByNames(names, false)
-	if err != nil {
-		return nil, err
-	}
-
-	var pluckedNames []string
-	for _, tag := range tags {
-		if tag.Name == "" {
-			continue
-		}
-		pluckedNames = append(pluckedNames, tag.Name)
-	}
-
-	missingTags := utils.StrFilter(names, func(name string) bool {
-		return !utils.StrInclude(pluckedNames, name)
-	})
-
-	for _, missingTag := range missingTags {
-		logger.Warnf("[scenes] <%s> tag %s does not exist", sceneChecksum, missingTag)
-	}
-
-	return tags, nil
-}
-
-// https://www.reddit.com/r/golang/comments/5ia523/idiomatic_way_to_remove_duplicates_in_a_slice/db6qa2e
-func (t *ImportTask) getUnique(s []string) []string {
-	seen := make(map[string]struct{}, len(s))
-	j := 0
-	for _, v := range s {
-		if _, ok := seen[v]; ok {
-			continue
-		}
-		seen[v] = struct{}{}
-		s[j] = v
-		j++
-	}
-	return s[:j]
 }
 
 var currentLocation = time.Now().Location()

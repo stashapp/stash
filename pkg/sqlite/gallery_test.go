@@ -621,12 +621,13 @@ func TestGalleryQueryPerformers(t *testing.T) {
 func TestGalleryQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithGallery]),
 				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		galleryFilter := models.GalleryFilterType{
@@ -641,12 +642,13 @@ func TestGalleryQueryTags(t *testing.T) {
 			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithTag] || gallery.ID == galleryIDs[galleryIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
 				strconv.Itoa(tagIDs[tagIdx2WithGallery]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
+			Depth:    0,
 		}
 
 		galleries = queryGallery(t, sqb, &galleryFilter, nil)
@@ -654,11 +656,12 @@ func TestGalleryQueryTags(t *testing.T) {
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithTwoTags], galleries[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getGalleryStringValue(galleryIdxWithTwoTags, titleField)
@@ -776,12 +779,13 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 func TestGalleryQueryPerformerTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		galleryFilter := models.GalleryFilterType{
@@ -796,12 +800,13 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformerTag] || gallery.ID == galleryIDs[galleryIdxWithPerformerTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
+			Depth:    0,
 		}
 
 		galleries = queryGallery(t, sqb, &galleryFilter, nil)
@@ -809,11 +814,12 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getGalleryStringValue(galleryIdxWithPerformerTwoTags, titleField)

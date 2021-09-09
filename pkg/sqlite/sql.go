@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -148,32 +147,6 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func getCriterionModifierBinding(criterionModifier models.CriterionModifier, value interface{}) (string, int) {
-	var length int
-	switch x := value.(type) {
-	case []string:
-		length = len(x)
-	case []int:
-		length = len(x)
-	default:
-		length = 1
-	}
-	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
-		switch modifier {
-		case "EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN", "IS_NULL", "NOT_NULL", "BETWEEN", "NOT_BETWEEN":
-			return getSimpleCriterionClause(criterionModifier, "?")
-		case "INCLUDES":
-			return "IN " + getInBinding(length), length // TODO?
-		case "EXCLUDES":
-			return "NOT IN " + getInBinding(length), length // TODO?
-		default:
-			logger.Errorf("todo")
-			return "= ?", 1 // TODO
-		}
-	}
-	return "= ?", 1 // TODO
-}
-
 func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs string) (string, int) {
 	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
 		switch modifier {
@@ -250,12 +223,6 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
 	return getIntCriterionWhereClause(lhs, criterion)
-}
-
-func ensureTx(tx *sqlx.Tx) {
-	if tx == nil {
-		panic("must use a transaction")
-	}
 }
 
 func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {

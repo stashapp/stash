@@ -1034,12 +1034,13 @@ func TestSceneQueryPerformers(t *testing.T) {
 func TestSceneQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithScene]),
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1054,12 +1055,13 @@ func TestSceneQueryTags(t *testing.T) {
 			assert.True(t, scene.ID == sceneIDs[sceneIdxWithTag] || scene.ID == sceneIDs[sceneIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 				strconv.Itoa(tagIDs[tagIdx2WithScene]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
+			Depth:    0,
 		}
 
 		scenes = queryScene(t, sqb, &sceneFilter, nil)
@@ -1067,11 +1069,12 @@ func TestSceneQueryTags(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
@@ -1089,12 +1092,13 @@ func TestSceneQueryTags(t *testing.T) {
 func TestSceneQueryPerformerTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1109,12 +1113,13 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformerTag] || scene.ID == sceneIDs[sceneIdxWithPerformerTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
+			Depth:    0,
 		}
 
 		scenes = queryScene(t, sqb, &sceneFilter, nil)
@@ -1122,11 +1127,12 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithPerformerTwoTags, titleField)

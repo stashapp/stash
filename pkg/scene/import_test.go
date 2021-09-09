@@ -16,8 +16,8 @@ const invalidImage = "aW1hZ2VCeXRlcw&&"
 const (
 	path = "path"
 
-	sceneNameErr      = "sceneNameErr"
-	existingSceneName = "existingSceneName"
+	sceneNameErr = "sceneNameErr"
+	// existingSceneName = "existingSceneName"
 
 	existingSceneID     = 100
 	existingStudioID    = 101

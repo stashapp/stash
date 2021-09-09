@@ -32,9 +32,7 @@ func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 
 	ret := src
 	for commonKey, commonVal := range c {
-		if strings.Contains(ret, commonKey) {
-			ret = strings.Replace(ret, commonKey, commonVal, -1)
-		}
+		ret = strings.Replace(ret, commonKey, commonVal, -1)
 	}
 
 	return ret
@@ -557,7 +555,7 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "subtractDays")
 		}
-		found = "subtractDays"
+		// found = "subtractDays"
 		action := postProcessSubtractDays(a.SubtractDays)
 		ret = &action
 	}

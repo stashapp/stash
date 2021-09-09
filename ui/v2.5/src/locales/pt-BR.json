@@ -91,7 +91,7 @@
   "birthdate": "Data de nascimento",
   "bitrate": "Taxa de bits",
   "career_length": "Duração da carreira",
-  "child_studios": "Estúdios filhos",
+  "subsidiary_studios": "Estúdios filhos",
   "component_tagger": {
     "config": {
       "active_instance": "Ativar stash-box:",
@@ -501,7 +501,6 @@
   "image_count": "Contagem de imagem",
   "images": "Imagens",
   "images-size": "Tamanho das imagens",
-  "include_child_studios": "Incluem estúdios filho",
   "instagram": "Instagram",
   "interactive": "Interativo",
   "isMissing": "Está faltando",

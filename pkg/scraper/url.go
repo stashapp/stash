@@ -235,17 +235,6 @@ func getRemoteCDPWSAddress(address string) (string, error) {
 	return remote, err
 }
 
-func cdpNetwork(enable bool) chromedp.Action {
-	return chromedp.ActionFunc(func(ctx context.Context) error {
-		if enable {
-			network.Enable().Do(ctx)
-		} else {
-			network.Disable().Do(ctx)
-		}
-		return nil
-	})
-}
-
 func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {
 	headers := map[string]interface{}{}
 	if driverOptions.Headers != nil {
