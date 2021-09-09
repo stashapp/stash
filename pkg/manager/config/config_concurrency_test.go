@@ -17,7 +17,10 @@ func TestConcurrentConfigAccess(t *testing.T) {
 		wg.Add(1)
 		go func(wk int) {
 			for l := 0; l < loops; l++ {
-				i.SetInitialConfig()
+				err := i.SetInitialMemoryConfig()
+				if err != nil {
+					t.Errorf("Failure setting initial configuration in worker %v iteration %v: %v", wk, l, err)
+				}
 
 				i.HasCredentials()
 				i.GetCPUProfilePath()

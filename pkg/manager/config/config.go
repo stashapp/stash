@@ -951,8 +951,7 @@ func (i *Instance) SetChecksumDefaultValues(defaultAlgorithm models.HashAlgorith
 	viper.SetDefault(CalculateMD5, usingMD5)
 }
 
-func (i *Instance) setDefaultValues() error {
-
+func (i *Instance) setDefaultValues(write bool) error {
 	// read data before write lock scope
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
@@ -976,11 +975,23 @@ func (i *Instance) setDefaultValues() error {
 	// Set default scrapers and plugins paths
 	viper.SetDefault(ScrapersPath, defaultScrapersPath)
 	viper.SetDefault(PluginsPath, defaultPluginsPath)
-	return viper.WriteConfig()
+	if write {
+		return viper.WriteConfig()
+	}
+
+	return nil
+}
+
+func (i *Instance) SetInitialConfig() error {
+	return i.setInitialConfig(true)
+}
+
+func (i *Instance) SetInitialMemoryConfig() error {
+	return i.setInitialConfig(false)
 }
 
 // SetInitialConfig fills in missing required config fields
-func (i *Instance) SetInitialConfig() error {
+func (i *Instance) setInitialConfig(write bool) error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -994,7 +1005,7 @@ func (i *Instance) SetInitialConfig() error {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	return i.setDefaultValues()
+	return i.setDefaultValues(write)
 }
 
 func (i *Instance) FinalizeSetup() {
