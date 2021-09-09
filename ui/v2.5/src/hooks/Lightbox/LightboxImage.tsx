@@ -35,6 +35,8 @@ export const LightboxImage: React.FC<IProps> = ({
 
   const container = React.createRef<HTMLDivElement>();
   const startPoints = useRef<number[]>([0, 0]);
+  const pointerCache = useRef<React.PointerEvent<HTMLDivElement>[]>([]);
+  const prevDiff = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const box = container.current;
@@ -144,6 +146,72 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
+  function onTouchStart(ev: React.TouchEvent<HTMLDivElement>) {
+    ev.preventDefault();
+    if (ev.touches.length === 1) {
+      startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
+      setMoving(true);
+    }
+  }
+
+  function onTouchMove(ev: React.TouchEvent<HTMLDivElement>) {
+    if (!moving) return;
+
+    if (ev.touches.length === 1) {
+      const posX = ev.touches[0].pageX - startPoints.current[0];
+      const posY = ev.touches[0].pageY - startPoints.current[1];
+      startPoints.current = [ev.touches[0].pageX, ev.touches[0].pageY];
+
+      setPositionX(positionX + posX);
+      setPositionY(positionY + posY);
+    }
+  }
+
+  function onPointerDown(ev: React.PointerEvent<HTMLDivElement>) {
+    pointerCache.current.push(ev);
+    prevDiff.current = undefined;
+  }
+
+  function onPointerUp(ev: React.PointerEvent<HTMLDivElement>) {
+
+    for (let i = 0; i < pointerCache.current.length; i++) {
+      if (pointerCache.current[i].pointerId === ev.pointerId) {
+        pointerCache.current.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  function onPointerMove(ev: React.PointerEvent<HTMLDivElement>) {
+    // find the event in the cache
+    const cachedIndex = pointerCache.current.findIndex(c => c.pointerId === ev.pointerId);
+    if (cachedIndex !== -1) {
+      pointerCache.current[cachedIndex] = ev;
+    }
+
+    // compare the difference between the two pointers
+    if (pointerCache.current.length === 2) {
+      const ev1 = pointerCache.current[0];
+      const ev2 = pointerCache.current[1];
+      const diffX = Math.abs(ev1.clientX - ev2.clientX);
+      const diffY = Math.abs(ev1.clientY - ev2.clientY);
+      const diff = Math.sqrt(diffX ** 2 + diffY ** 2);
+      
+      if (prevDiff.current !== undefined) {
+        const diffDiff = diff - prevDiff.current;
+        const factor = Math.abs(diffDiff) / 20 * 0.1 + 1;
+
+        if (diffDiff > 0) {
+          setZoom(zoom * factor);
+        } else if (diffDiff < 0) {
+          setZoom(zoom / factor);
+        }
+      }
+
+      prevDiff.current = diff;
+    }
+  }
+
   return (
     <div ref={container} className={`${CLASSNAME_IMAGE}`}>
       {zoom ? (
@@ -158,9 +226,15 @@ export const LightboxImage: React.FC<IProps> = ({
             src={src}
             alt=""
             draggable={false}
+            style={{touchAction: "none"}}
             onWheel={(e) => onImageScroll(e)}
             onMouseDown={(e) => onImageMouseDown(e)}
             onMouseMove={(e) => onImageMouseOver(e)}
+            onTouchStart={(e) => onTouchStart(e)}
+            onTouchMove={(e) => onTouchMove(e)}
+            onPointerDown={(e) => onPointerDown(e)}
+            onPointerUp={(e) => onPointerUp(e)}
+            onPointerMove={(e) => onPointerMove(e)}
           />
         </picture>
       ) : undefined}
