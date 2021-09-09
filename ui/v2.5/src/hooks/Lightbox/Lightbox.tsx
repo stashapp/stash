@@ -3,12 +3,11 @@ import * as GQL from "src/core/generated-graphql";
 import {
   Button,
   Col,
-  FormControl,
   InputGroup,
-  FormLabel,
   OverlayTrigger,
   Popover,
   Form,
+  Row,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -271,51 +270,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     setFullscreen(document.fullscreenElement !== null);
   };
 
-  const handleTouchStart = (ev: React.TouchEvent<HTMLDivElement>) => {
-    setInstantTransition(true);
-
-    const el = ev.currentTarget;
-    if (ev.touches.length !== 1) return;
-
-    const startX = ev.touches[0].clientX;
-    let position = 0;
-
-    const resetPosition = () => {
-      if (carouselRef.current)
-        carouselRef.current.style.left = `${(index ?? 0) * -100}vw`;
-    };
-    const handleMove = (e: TouchEvent) => {
-      position = e.touches[0].clientX;
-      if (carouselRef.current)
-        carouselRef.current.style.left = `calc(${(index ?? 0) * -100}vw + ${
-          e.touches[0].clientX - startX
-        }px)`;
-    };
-    const handleEnd = () => {
-      const diff = position - startX;
-      if (diff <= -50) handleRight();
-      else if (diff >= 50) handleLeft();
-      else resetPosition();
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      cleanup();
-    };
-    const handleCancel = () => {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      cleanup();
-      resetPosition();
-    };
-    const cleanup = () => {
-      el.removeEventListener("touchmove", handleMove);
-      el.removeEventListener("touchend", handleEnd);
-      el.removeEventListener("touchcancel", handleCancel);
-      setInstantTransition(false);
-    };
-
-    el.addEventListener("touchmove", handleMove);
-    el.addEventListener("touchend", handleEnd);
-    el.addEventListener("touchcancel", handleCancel);
-  };
-
   const [clearCallback, resetCallback] = useInterval(
     () => {
       handleRight(false);
@@ -380,53 +334,61 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const currentIndex = index === null ? initialIndex : index;
 
-  const DelayForm: React.FC<{}> = () => (
+  const OptionsForm: React.FC<{}> = () => (
     <>
-      <FormLabel column sm="5">
-        Delay (Sec)
-      </FormLabel>
-      <Col sm="4">
-        <FormControl
-          type="number"
-          className="text-input"
-          min={1}
-          value={displayedSlideshowInterval ?? 0}
-          onChange={onDelayChange}
-          size="sm"
-          id="delay-input"
-        />
-      </Col>
-      <FormLabel column sm="5">
-        Display Mode
-      </FormLabel>
-      <Col sm="4">
-        <Form.Control
-          as="select"
-          onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
-          value={displayMode}
-          className="btn-secondary mx-1 mb-1"
-        >
-          <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
-            Original
-          </option>
-          <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
-            Fit to screen
-          </option>
-          <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
-            Fit horizontally
-          </option>
-        </Form.Control>
-      </Col>
+      <Form.Group controlId="delay" as={Row} className="form-container">
+        <Col xs={4}>
+          <Form.Label className="col-form-label">
+            {/* <FormattedMessage id="url" /> */}
+            Delay (Sec)
+          </Form.Label>
+        </Col>
+        <Col xs={8}>
+          <Form.Control
+            type="number"
+            className="text-input"
+            min={1}
+            value={displayedSlideshowInterval ?? 0}
+            onChange={onDelayChange}
+            size="sm"
+            id="delay-input"
+          />
+        </Col>
+      </Form.Group>
+      <Form.Group controlId="displayMode" as={Row}>
+        <Col xs={4}>
+          <Form.Label className="col-form-label">
+            {/* <FormattedMessage id="url" /> */}
+            Display Mode
+          </Form.Label>
+        </Col>
+        <Col xs={8}>
+          <Form.Control
+            as="select"
+            onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
+            value={displayMode}
+            className="btn-secondary mx-1 mb-1"
+          >
+            <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
+              Original
+            </option>
+            <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
+              Fit to screen
+            </option>
+            <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
+              Fit horizontally
+            </option>
+          </Form.Control>
+        </Col>
+      </Form.Group>
     </>
   );
 
   const delayPopover = (
-    <Popover id="basic-bitch">
-      <Popover.Title>Set slideshow delay</Popover.Title>
+    <Popover id="slideshow-options">
+      <Popover.Title>Options</Popover.Title>
       <Popover.Content>
-        <InputGroup>
-          <DelayForm />
-        </InputGroup>
+        <OptionsForm />
       </Popover.Content>
     </Popover>
   );
@@ -464,7 +426,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                       </OverlayTrigger>
                     </div>
                     <InputGroup className={CLASSNAME_DELAY_INLINE}>
-                      <DelayForm />
+                      <OptionsForm />
                     </InputGroup>
                   </div>
                   <Button
@@ -496,7 +458,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               </Button>
             </div>
           </div>
-          <div className={CLASSNAME_DISPLAY} onTouchStart={handleTouchStart}>
+          <div className={CLASSNAME_DISPLAY}>
             {images.length > 1 && (
               <Button
                 variant="link"
