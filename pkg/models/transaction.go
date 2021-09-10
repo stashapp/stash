@@ -34,16 +34,14 @@ func WithTxn(txn Transaction, fn func(r Repository) error) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			rbErr := txn.Rollback()
-			if rbErr != nil {
-				logger.Warnf("error while trying to roll back transaction: %v", rbErr)
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back transaction: %v", err)
 			}
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			rbErr := txn.Rollback()
-			if rbErr != nil {
-				logger.Warnf("error while trying to roll back transaction: %v", rbErr)
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back transaction: %v", err)
 			}
 		} else {
 			// all good, commit
@@ -64,16 +62,14 @@ func WithROTxn(txn ReadTransaction, fn func(r ReaderRepository) error) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			rbErr := txn.Rollback()
-			if rbErr != nil {
-				logger.Warnf("error while trying to roll back RO transaction: %v", rbErr)
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back RO transaction: %v", err)
 			}
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			rbErr := txn.Rollback()
-			if rbErr != nil {
-				logger.Warnf("error while trying to roll back RO transaction: %v", rbErr)
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back RO transaction: %v", err)
 			}
 		} else {
 			// all good, commit

@@ -241,8 +241,7 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 			return
 		}
 
-		k, err := w.Write(data)
-		if err != nil {
+		if k, err := w.Write(data); err != nil {
 			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
 		}
 	}

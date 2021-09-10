@@ -235,8 +235,7 @@ func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
 
 	if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
 		var b bytes.Buffer
-		err := html.Render(&b, ret)
-		if err != nil {
+		if err := html.Render(&b, ret); err != nil {
 			logger.Warnf("could not render HTML: %v", err)
 		}
 		logger.Infof("loadURL (%s) response: \n%s", url, b.String())

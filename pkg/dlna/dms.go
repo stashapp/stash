@@ -577,9 +577,8 @@ func (me *Server) initMux(mux *http.ServeMux) {
 		w.Header().Set("content-type", `text/xml; charset="utf-8"`)
 		w.Header().Set("content-length", fmt.Sprint(len(me.rootDescXML)))
 		w.Header().Set("server", serverField)
-		_, err := w.Write(me.rootDescXML)
-		if err != nil {
-			logger.Warnf("could not write rootDescXML: %v", err)
+		if k, err := w.Write(me.rootDescXML); err != nil {
+			logger.Warnf("could not write rootDescXML (wrote %v bytes of %v): %v", k, len(me.rootDescXML), err)
 		}
 	})
 	handleSCPDs(mux)

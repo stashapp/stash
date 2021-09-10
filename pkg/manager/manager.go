@@ -110,15 +110,13 @@ func Initialize() *singleton {
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
-		err = initFFMPEG()
-		if err != nil {
+		if err = initFFMPEG(); err != nil {
 			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 		}
 
 		// if DLNA is enabled, start it now
 		if instance.Config.GetDLNADefaultEnabled() {
-			err := instance.DLNAService.Start(nil)
-			if err != nil {
+			if err := instance.DLNAService.Start(nil); err != nil {
 				logger.Warnf("could not start DLNA service: %v", err)
 			}
 		}
@@ -140,8 +138,7 @@ func initProfiling(cpuProfilePath string) {
 	logger.Infof("profiling to %s", cpuProfilePath)
 
 	// StopCPUProfile is defer called in main
-	err = pprof.StartCPUProfile(f)
-	if err != nil {
+	if err = pprof.StartCPUProfile(f); err != nil {
 		logger.Warnf("could not start CPU profiling: %v", err)
 	}
 }
@@ -191,8 +188,7 @@ func initLog() {
 // configuration has been set. Should only be called if the configuration
 // is valid.
 func (s *singleton) PostInit() error {
-	err := s.Config.SetInitialConfig()
-	if err != nil {
+	if err := s.Config.SetInitialConfig(); err != nil {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
 
@@ -213,12 +209,10 @@ func (s *singleton) PostInit() error {
 		const deleteTimeout = 1 * time.Second
 
 		utils.Timeout(func() {
-			err := utils.EmptyDir(instance.Paths.Generated.Downloads)
-			if err != nil {
+			if err := utils.EmptyDir(instance.Paths.Generated.Downloads); err != nil {
 				logger.Warnf("could not empty Downloads directory: %v", err)
 			}
-			err = utils.EmptyDir(instance.Paths.Generated.Tmp)
-			if err != nil {
+			if err := utils.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
 				logger.Warnf("could not empty Tmp directory: %v", err)
 			}
 		}, deleteTimeout, func(done chan struct{}) {
@@ -254,24 +248,19 @@ func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	config := s.Config
 	if config.Validate() == nil {
-		err := utils.EnsureDir(s.Paths.Generated.Screenshots)
-		if err != nil {
+		if err := utils.EnsureDir(s.Paths.Generated.Screenshots); err != nil {
 			logger.Warnf("could not create directory for Screenshots: %v", err)
 		}
-		err = utils.EnsureDir(s.Paths.Generated.Vtt)
-		if err != nil {
+		if err := utils.EnsureDir(s.Paths.Generated.Vtt); err != nil {
 			logger.Warnf("could not create directory for VTT: %v", err)
 		}
-		err = utils.EnsureDir(s.Paths.Generated.Markers)
-		if err != nil {
+		if err := utils.EnsureDir(s.Paths.Generated.Markers); err != nil {
 			logger.Warnf("could not create directory for Markers: %v", err)
 		}
-		err = utils.EnsureDir(s.Paths.Generated.Transcodes)
-		if err != nil {
+		if err := utils.EnsureDir(s.Paths.Generated.Transcodes); err != nil {
 			logger.Warnf("could not create directory for Transcodes: %v", err)
 		}
-		err = utils.EnsureDir(s.Paths.Generated.Downloads)
-		if err != nil {
+		if err := utils.EnsureDir(s.Paths.Generated.Downloads); err != nil {
 			logger.Warnf("could not create directory for Downloads: %v", err)
 		}
 	}

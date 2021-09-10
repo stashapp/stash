@@ -63,8 +63,7 @@ func KillRunningEncoders(path string) {
 	for _, process := range processes {
 		// assume it worked, don't check for error
 		logger.Infof("Killing encoder process for file: %s", path)
-		err := process.Kill()
-		if err != nil {
+		if err := process.Kill(); err != nil {
 			logger.Warnf("failed to kill process %v: %v", process.Pid, err)
 		}
 

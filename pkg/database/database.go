@@ -141,11 +141,11 @@ func Reset(databasePath string) error {
 		}
 	}
 
-	err = Initialize(databasePath)
-	if err != nil {
+	if err := Initialize(databasePath); err != nil {
 		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
 	}
-	return err
+
+	return nil
 }
 
 // Backup the database. If db is nil, then uses the existing database
@@ -253,8 +253,7 @@ func RunMigrations() error {
 	}
 
 	// re-initialise the database
-	err = Initialize(dbPath)
-	if err != nil {
+	if err = Initialize(dbPath); err != nil {
 		logger.Warnf("Error re-initializing the database: %v", err)
 	}
 
