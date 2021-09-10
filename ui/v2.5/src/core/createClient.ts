@@ -83,10 +83,9 @@ const typePolicies: TypePolicies = {
 
 export const getBaseURL = () => {
   const baseURL = window.STASH_BASE_URL;
-  if (baseURL === '%BASE_URL%')
-    return '/';
+  if (baseURL === "%BASE_URL%") return "/";
   return baseURL;
-}
+};
 
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin + getBaseURL());
