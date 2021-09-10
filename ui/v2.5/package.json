@@ -2,6 +2,7 @@
   "name": "stash",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "sideEffects": false,
   "scripts": {
     "start": "react-scripts start",
