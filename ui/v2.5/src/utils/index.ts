@@ -1,3 +1,4 @@
+export { default as ScreenUtils } from "./screen";
 export { default as ImageUtils } from "./image";
 export { default as NavUtils } from "./navigation";
 export { default as TableUtils } from "./table";
