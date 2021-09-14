@@ -155,7 +155,8 @@
       "logs": "Loggar",
       "plugins": "Tillägg",
       "tasks": "Uppgifter",
-      "tools": "Verktyg"
+      "tools": "Verktyg",
+      "scraping": "Skrapare"
     },
     "dlna": {
       "allow_temp_ip": "Tillåt {tempIP}",
@@ -625,7 +626,7 @@
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "weight": "Vikt",
-  "years_old": "år gammal"
+  "years_old": "år gammal",
   "stats": {
     "image_size": "Bildstorlek",
     "scenes_duration": "Total speltid",
