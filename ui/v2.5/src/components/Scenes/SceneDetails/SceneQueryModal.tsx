@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -124,7 +124,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [scenes, setScenes] = useState<GQL.ScrapedScene[]>([]);
+  const [scenes, setScenes] = useState<GQL.ScrapedScene[] | undefined>();
   const [error, setError] = useState<Error | undefined>();
 
   const doQuery = useCallback(
@@ -151,6 +151,31 @@ export const SceneQueryModal: React.FC<IProps> = ({
       setError(undefined);
     }
   }, [error, Toast]);
+
+  function renderResults() {
+    if (!scenes) {
+      return;
+    }
+
+    return (
+      <div className={CLASSNAME_LIST_CONTAINER}>
+        <div className="mt-1">
+          <FormattedMessage
+            id="dialogs.scenes_found"
+            values={{ count: scenes.length }}
+          />
+        </div>
+        <ul className={CLASSNAME_LIST}>
+          {scenes.map((s, i) => (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
+            <li key={i} onClick={() => onSelectScene(s)}>
+              <SceneSearchResult scene={s} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
   return (
     <Modal
@@ -196,16 +221,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
             <LoadingIndicator inline />
           </div>
         ) : (
-          <div className={CLASSNAME_LIST_CONTAINER}>
-            <ul className={CLASSNAME_LIST}>
-              {scenes.map((s, i) => (
-                // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
-                <li key={i} onClick={() => onSelectScene(s)}>
-                  <SceneSearchResult scene={s} />
-                </li>
-              ))}
-            </ul>
-          </div>
+          renderResults()
         )}
       </div>
     </Modal>
