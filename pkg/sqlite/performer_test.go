@@ -165,7 +165,7 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 	})
 }
 
-func TestPerformerQueryPathNotRating(t *testing.T) {
+func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 	const performerIdx = 1
 
 	performerRating := getRating(performerIdx)

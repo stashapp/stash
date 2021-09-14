@@ -181,6 +181,10 @@ input MovieFilterType {
 }
 
 input StudioFilterType {
+  AND: StudioFilterType
+  OR: StudioFilterType
+  NOT: StudioFilterType
+
   name: StringCriterionInput
   details: StringCriterionInput
   """Filter to only include studios with this parent studio"""
