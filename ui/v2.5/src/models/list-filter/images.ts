@@ -13,22 +13,14 @@ import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "path";
 
-const sortByOptions = [
-  "title",
-  "path",
-  "rating",
-  "o_counter",
-  "filesize",
-  "file_mod_time",
-  "tag_count",
-  "performer_count",
-  "random",
-].map(ListFilterOptions.createSortBy);
+const sortByOptions = ["o_counter", "filesize", ...MediaSortByOptions].map(
+  ListFilterOptions.createSortBy
+);
 
 const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
 const criterionOptions = [
