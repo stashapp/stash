@@ -7,6 +7,7 @@ import {
   Form,
   Col,
   Row,
+  ButtonGroup,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -384,10 +385,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (stashBoxes.length === 0 && queryableScrapers.length === 0) return;
 
     return (
-      <Dropdown
-        title={intl.formatMessage({ id: "actions.scrape_query" })}
-        className="edit-button"
-      >
+      <Dropdown title={intl.formatMessage({ id: "actions.scrape_query" })}>
         <Dropdown.Toggle variant="secondary">
           <Icon icon="search" />
         </Dropdown.Toggle>
@@ -639,8 +637,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </Button>
           </div>
           <div className="ml-auto pr-3 text-right d-flex">
-            {renderScrapeQueryMenu()}
-            {renderScraperMenu()}
+            <ButtonGroup className="scraper-group">
+              {renderScraperMenu()}
+              {renderScrapeQueryMenu()}
+            </ButtonGroup>
           </div>
         </div>
         <div className="form-container row px-3">
