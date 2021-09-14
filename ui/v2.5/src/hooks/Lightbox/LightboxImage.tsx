@@ -90,6 +90,7 @@ export const LightboxImage: React.FC<IProps> = ({
     let xZoom: number;
     let yZoom: number;
     let newZoom = 1;
+    let newPositionY = 0;
     switch (mode) {
       case DisplayMode.FIT_XY:
         xZoom = Math.min(boxWidth / width, 1);
@@ -107,7 +108,14 @@ export const LightboxImage: React.FC<IProps> = ({
 
     // Center image from container's center
     const newPositionX = Math.min((boxWidth - width) / 2, 0);
-    const newPositionY = Math.min((boxHeight - height) / 2, 0);
+
+    // if fitting to screen, then centre, other
+    if (mode === DisplayMode.FIT_XY) {
+      newPositionY = Math.min((boxHeight - height) / 2, 0);
+    } else {
+      // otherwise, align top of image with container
+      newPositionY = Math.min(((height * newZoom) - height) / 2, 0);
+    }
 
     initialPosition.current = {
       zoom: newZoom,
