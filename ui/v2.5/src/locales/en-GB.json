@@ -437,6 +437,12 @@
         "original": "Original",
         "fit_to_screen": "Fit to screen",
         "fit_horizontally": "Fit horizontally"
+      },
+      "scroll_mode": {
+        "label": "Scroll Mode",
+        "zoom": "Zoom",
+        "pan_y": "Pan Y",
+        "description": "Hold shift to temporarily use other mode."
       }
     },
     "merge_tags": {

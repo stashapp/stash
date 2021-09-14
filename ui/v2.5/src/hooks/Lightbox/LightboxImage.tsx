@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const ZOOM_STEP = 1.1;
+const SCROLL_PAN_STEP = 75;
 const CLASSNAME = "Lightbox";
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
@@ -11,9 +12,15 @@ export enum DisplayMode {
   FIT_X = "FIT_X",
 }
 
+export enum ScrollMode {
+  ZOOM = "ZOOM",
+  PAN_Y = "PAN_Y",
+}
+
 interface IProps {
   src: string;
-  mode: DisplayMode;
+  displayMode: DisplayMode;
+  scrollMode: ScrollMode;
   resetZoom?: boolean;
   onLeft: () => void;
   onRight: () => void;
@@ -30,7 +37,8 @@ export const LightboxImage: React.FC<IProps> = ({
   src,
   onLeft,
   onRight,
-  mode,
+  displayMode,
+  scrollMode,
   onZoomed,
   resetZoom,
 }) => {
@@ -91,7 +99,7 @@ export const LightboxImage: React.FC<IProps> = ({
     let yZoom: number;
     let newZoom = 1;
     let newPositionY = 0;
-    switch (mode) {
+    switch (displayMode) {
       case DisplayMode.FIT_XY:
         xZoom = Math.min(boxWidth / width, 1);
         yZoom = Math.min(boxHeight / height, 1);
@@ -110,11 +118,11 @@ export const LightboxImage: React.FC<IProps> = ({
     const newPositionX = Math.min((boxWidth - width) / 2, 0);
 
     // if fitting to screen, then centre, other
-    if (mode === DisplayMode.FIT_XY) {
+    if (displayMode === DisplayMode.FIT_XY) {
       newPositionY = Math.min((boxHeight - height) / 2, 0);
     } else {
       // otherwise, align top of image with container
-      newPositionY = Math.min(((height * newZoom) - height) / 2, 0);
+      newPositionY = Math.min((height * newZoom - height) / 2, 0);
     }
 
     initialPosition.current = {
@@ -125,7 +133,7 @@ export const LightboxImage: React.FC<IProps> = ({
     setZoom(newZoom);
     setPositionX(newPositionX);
     setPositionY(newPositionY);
-  }, [width, height, boxWidth, boxHeight, mode]);
+  }, [width, height, boxWidth, boxHeight, displayMode]);
 
   useEffect(() => {
     if (initialPosition.current !== undefined) {
@@ -141,10 +149,47 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
+  function getScrollMode(ev: React.WheelEvent<HTMLDivElement>) {
+    if (ev.shiftKey) {
+      switch (scrollMode) {
+        case ScrollMode.ZOOM:
+          return ScrollMode.PAN_Y;
+        case ScrollMode.PAN_Y:
+          return ScrollMode.ZOOM;
+      }
+    }
+
+    return scrollMode;
+  }
+
+  function onContainerScroll(ev: React.WheelEvent<HTMLDivElement>) {
+    // don't zoom if mouse isn't over image
+    if (getScrollMode(ev) === ScrollMode.PAN_Y) {
+      onImageScroll(ev);
+    }
+  }
+
   function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
     const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-    setZoom(zoom * percent);
-    zoomed();
+    const minY = (zoom * height - height) / 2 - zoom * height + 1;
+    const maxY = (zoom * height - height) / 2 + boxHeight - 1;
+    let newPositionY =
+      positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
+
+    switch (getScrollMode(ev)) {
+      case ScrollMode.ZOOM:
+        setZoom(zoom * percent);
+        zoomed();
+        break;
+      case ScrollMode.PAN_Y:
+        // ensure image doesn't go offscreen
+        newPositionY = Math.max(newPositionY, minY);
+        newPositionY = Math.min(newPositionY, maxY);
+
+        setPositionY(newPositionY);
+        ev.stopPropagation();
+        break;
+    }
   }
 
   function onImageMouseOver(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -161,6 +206,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
     setPositionX(positionX + posX);
     setPositionY(positionY + posY);
+    zoomed();
   }
 
   function onImageMouseDown(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -208,6 +254,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
       setPositionX(positionX + posX);
       setPositionY(positionY + posY);
+      zoomed();
     }
   }
 
@@ -259,7 +306,11 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   return (
-    <div ref={container} className={`${CLASSNAME_IMAGE}`}>
+    <div
+      ref={container}
+      className={`${CLASSNAME_IMAGE}`}
+      onWheel={(e) => onContainerScroll(e)}
+    >
       {zoom ? (
         <picture
           style={{

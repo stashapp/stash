@@ -17,7 +17,7 @@ import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility } from "src/hooks";
 import { useConfiguration } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DisplayMode, LightboxImage } from "./LightboxImage";
+import { DisplayMode, LightboxImage, ScrollMode } from "./LightboxImage";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -70,6 +70,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
+  const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
   const [zoomed, setZoomed] = useState(false);
   const [resetZoom, setResetZoom] = useState(false);
 
@@ -119,7 +120,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   useEffect(() => {
     // reset zoom status
-    setResetZoom(!resetZoom);
+    setResetZoom((r) => !r);
     setZoomed(false);
 
     if (images.length < 2) return;
@@ -346,24 +347,27 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const OptionsForm: React.FC<{}> = () => (
     <>
-      <Form.Group controlId="delay" as={Row} className="form-container">
-        <Col xs={4}>
-          <Form.Label className="col-form-label">
-            <FormattedMessage id="dialogs.lightbox.delay" />
-          </Form.Label>
-        </Col>
-        <Col xs={8}>
-          <Form.Control
-            type="number"
-            className="text-input"
-            min={1}
-            value={displayedSlideshowInterval ?? 0}
-            onChange={onDelayChange}
-            size="sm"
-            id="delay-input"
-          />
-        </Col>
-      </Form.Group>
+      {slideshowEnabled ? (
+        <Form.Group controlId="delay" as={Row} className="form-container">
+          <Col xs={4}>
+            <Form.Label className="col-form-label">
+              <FormattedMessage id="dialogs.lightbox.delay" />
+            </Form.Label>
+          </Col>
+          <Col xs={8}>
+            <Form.Control
+              type="number"
+              className="text-input"
+              min={1}
+              value={displayedSlideshowInterval ?? 0}
+              onChange={onDelayChange}
+              size="sm"
+              id="delay-input"
+            />
+          </Col>
+        </Form.Group>
+      ) : undefined}
+
       <Form.Group controlId="displayMode" as={Row}>
         <Col xs={4}>
           <Form.Label className="col-form-label">
@@ -395,6 +399,39 @@ export const LightboxComponent: React.FC<IProps> = ({
           </Form.Control>
         </Col>
       </Form.Group>
+      <Form.Group controlId="scrollMode">
+        <Form.Group as={Row}>
+          <Col xs={4}>
+            <Form.Label className="col-form-label">
+              <FormattedMessage id="dialogs.lightbox.scroll_mode.label" />
+            </Form.Label>
+          </Col>
+          <Col xs={8}>
+            <Form.Control
+              as="select"
+              onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
+              value={scrollMode}
+              className="btn-secondary mx-1 mb-1"
+            >
+              <option value={ScrollMode.ZOOM} key={ScrollMode.ZOOM}>
+                {intl.formatMessage({
+                  id: "dialogs.lightbox.scroll_mode.zoom",
+                })}
+              </option>
+              <option value={ScrollMode.PAN_Y} key={ScrollMode.PAN_Y}>
+                {intl.formatMessage({
+                  id: "dialogs.lightbox.scroll_mode.pan_y",
+                })}
+              </option>
+            </Form.Control>
+          </Col>
+        </Form.Group>
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.lightbox.scroll_mode.description",
+          })}
+        </Form.Text>
+      </Form.Group>
     </>
   );
 
@@ -425,34 +462,32 @@ export const LightboxComponent: React.FC<IProps> = ({
               </b>
             </div>
             <div className={CLASSNAME_RIGHT}>
-              {slideshowEnabled && (
-                <>
-                  <div className={CLASSNAME_OPTIONS}>
-                    <div className={CLASSNAME_OPTIONS_ICON}>
-                      <OverlayTrigger
-                        trigger="click"
-                        placement="bottom"
-                        overlay={optionsPopover}
-                      >
-                        <Button variant="link" title="Options">
-                          <Icon icon="cog" />
-                        </Button>
-                      </OverlayTrigger>
-                    </div>
-                    <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
-                      <OptionsForm />
-                    </InputGroup>
+              {!isFullscreen && (
+                <div className={CLASSNAME_OPTIONS}>
+                  <div className={CLASSNAME_OPTIONS_ICON}>
+                    <OverlayTrigger
+                      trigger="click"
+                      placement="bottom"
+                      overlay={optionsPopover}
+                    >
+                      <Button variant="link" title="Options">
+                        <Icon icon="cog" />
+                      </Button>
+                    </OverlayTrigger>
                   </div>
-                  <Button
-                    variant="link"
-                    onClick={toggleSlideshow}
-                    title="Toggle Slideshow"
-                  >
-                    <Icon
-                      icon={slideshowInterval !== null ? "pause" : "play"}
-                    />
-                  </Button>
-                </>
+                  <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
+                    <OptionsForm />
+                  </InputGroup>
+                </div>
+              )}
+              {slideshowEnabled && (
+                <Button
+                  variant="link"
+                  onClick={toggleSlideshow}
+                  title="Toggle Slideshow"
+                >
+                  <Icon icon={slideshowInterval !== null ? "pause" : "play"} />
+                </Button>
               )}
               {zoomed && (
                 <Button
@@ -507,7 +542,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                   {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
                     <LightboxImage
                       src={image.paths.image ?? ""}
-                      mode={displayMode}
+                      displayMode={displayMode}
+                      scrollMode={scrollMode}
                       onLeft={() => handleLeft(true)}
                       onRight={handleRight}
                       onZoomed={() => setZoomed(true)}
