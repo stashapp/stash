@@ -627,11 +627,6 @@
   "custom": "自訂",
   "frames_per_second": "{value} 幀/秒",
   "megabits_per_second": "{value} megabits/秒",
-  "tools": {
-    "scene_filename_parser": {
-      "ignore_organized": "忽略已整理的短片"
-    }
-  },
   "stats": {
     "image_size": "圖片大小",
     "scenes_size": "短片大小",
