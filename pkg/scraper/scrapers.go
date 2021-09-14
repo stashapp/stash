@@ -3,7 +3,6 @@ package scraper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -366,30 +365,43 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s == nil {
-		return nil, fmt.Errorf("scraper with ID %s not found", scraperID)
-	}
-
-	// get scene from id
-	scene, err := getScene(sceneID, c.txnManager)
-	if err != nil {
-		return nil, err
-	}
-
-	ret, err := s.ScrapeSceneByScene(scene, c.txnManager, c.globalConfig)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if ret != nil {
-		err = c.postScrapeScene(ret)
+	if s != nil {
+		// get scene from id
+		scene, err := getScene(sceneID, c.txnManager)
 		if err != nil {
 			return nil, err
 		}
+
+		ret, err := s.ScrapeSceneByScene(scene, c.txnManager, c.globalConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if ret != nil {
+			err = c.postScrapeScene(ret)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ret, nil
 	}
 
-	return ret, nil
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
+// ScrapeSceneQuery uses the scraper with the provided ID to query for
+// scenes using the provided query string. It returns a list of
+// scraped scene data.
+func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.ScrapedScene, error) {
+	// find scraper with the provided id
+	s := c.findScraper(scraperID)
+	if s != nil {
+		return s.ScrapeSceneQuery(query, c.txnManager, c.globalConfig)
+	}
+
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
 }
 
 // ScrapeSceneFragment uses the scraper with the provided ID to scrape a scene.
