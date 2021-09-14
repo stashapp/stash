@@ -148,6 +148,24 @@ func (s *scriptScraper) scrapeSceneByScene(scene *models.Scene) (*models.Scraped
 	return &ret, err
 }
 
+func (s *scriptScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+	inString := `{"name": "` + name + `"}`
+
+	var scenes []models.ScrapedScene
+
+	err := s.runScraperScript(inString, &scenes)
+
+	// convert to pointers
+	var ret []*models.ScrapedScene
+	if err == nil {
+		for i := 0; i < len(scenes); i++ {
+			ret = append(ret, &scenes[i])
+		}
+	}
+
+	return ret, err
+}
+
 func (s *scriptScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(scene)
 

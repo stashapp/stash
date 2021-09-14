@@ -6,6 +6,16 @@ interface ISortByOption {
   value: string;
 }
 
+export const MediaSortByOptions = [
+  "title",
+  "path",
+  "rating",
+  "file_mod_time",
+  "tag_count",
+  "performer_count",
+  "random",
+];
+
 export class ListFilterOptions {
   public readonly defaultSortBy: string = "";
   public readonly sortByOptions: ISortByOption[] = [];
