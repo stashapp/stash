@@ -119,6 +119,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   useEffect(() => {
     // reset zoom status
+    setResetZoom(!resetZoom);
     setZoomed(false);
 
     if (images.length < 2) return;
