@@ -440,6 +440,8 @@
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "markers": "Markers (20 second videos which begin at the given timecode)",
+      "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
+      "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
