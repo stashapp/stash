@@ -285,7 +285,7 @@
       "set_name_date_details_from_metadata_if_present": "Name, Datum, Details aus Metadaten festlegen (falls vorhanden)"
     },
     "tools": {
-      "scene_duplicate_checker": "Szenenduplikatsprüfung",
+      "scene_duplicate_checker": "Duplikatsprüfung für Szenen",
       "scene_filename_parser": {
         "add_field": "Feld hinzufügen",
         "capitalize_title": "Titel groß schreiben",
