@@ -201,7 +201,7 @@ export interface IStashBoxScene {
   fingerprints: IStashBoxFingerprint[];
 }
 
-const selectStudio = (studio: GQL.ScrapedSceneStudio): IStashBoxStudio => ({
+const selectStudio = (studio: GQL.ScrapedStudio): IStashBoxStudio => ({
   id: studio?.stored_id ?? undefined,
   stash_id: studio.remote_site_id!,
   name: studio.name,
@@ -212,14 +212,14 @@ const selectFingerprints = (
   scene: GQL.ScrapedScene | null
 ): IStashBoxFingerprint[] => scene?.fingerprints ?? [];
 
-const selectTags = (tags: GQL.ScrapedSceneTag[]): IStashBoxTag[] =>
+const selectTags = (tags: GQL.ScrapedTag[]): IStashBoxTag[] =>
   tags.map((t) => ({
     id: t.stored_id ?? undefined,
     name: t.name ?? "",
   }));
 
 export const selectPerformers = (
-  performers: GQL.ScrapedScenePerformer[]
+  performers: GQL.ScrapedPerformer[]
 ): IStashBoxPerformer[] =>
   performers.map((p) => ({
     id: p.stored_id ?? undefined,

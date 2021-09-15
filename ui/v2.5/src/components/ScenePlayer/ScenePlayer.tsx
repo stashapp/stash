@@ -3,7 +3,7 @@ import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { JWUtils } from "src/utils";
+import { JWUtils, ScreenUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { Interactive } from "../../utils/interactive";
 
@@ -54,7 +54,10 @@ export class ScenePlayerImpl extends React.Component<
     this.state = {
       scrubberPosition: 0,
       config: this.makeJWPlayerConfig(props.scene),
-      interactiveClient: new Interactive(this.props.config?.handyKey || ""),
+      interactiveClient: new Interactive(
+        this.props.config?.handyKey || "",
+        this.props.config?.funscriptOffset || 0
+      ),
     };
 
     // Default back to Direct Streaming
@@ -291,14 +294,20 @@ export class ScenePlayerImpl extends React.Component<
 
     this.playlist = this.makePlaylist();
 
+    // TODO: leverage the floating.mode option after upgrading JWPlayer
+    const extras: any = {};
+
+    if (!ScreenUtils.isMobile()) {
+      extras.floating = {
+        dismissible: true,
+      };
+    }
+
     const ret = {
       playlist: this.playlist,
       image: scene.paths.screenshot,
       width: "100%",
       height: "100%",
-      floating: {
-        dismissible: true,
-      },
       cast: {},
       primary: "html5",
       autostart:
@@ -311,6 +320,7 @@ export class ScenePlayerImpl extends React.Component<
       getDurationHook,
       seekHook,
       getCurrentTimeHook,
+      ...extras,
     };
 
     return ret;

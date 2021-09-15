@@ -280,7 +280,7 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 
 	query.handleCriterion(performerTagsCriterionHandler(qb, filter.Tags))
 
-	query.handleCriterion(performerStudiosCriterionHandler(filter.Studios))
+	query.handleCriterion(performerStudiosCriterionHandler(qb, filter.Studios))
 
 	query.handleCriterion(performerTagCountCriterionHandler(qb, filter.TagCount))
 	query.handleCriterion(performerSceneCountCriterionHandler(qb, filter.SceneCount))
@@ -345,6 +345,9 @@ func performerIsMissingCriterionHandler(qb *performerQueryBuilder, isMissing *st
 			case "image":
 				f.addJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
 				f.addWhere("image_join.performer_id IS NULL")
+			case "stash_id":
+				qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+				f.addWhere("performer_stash_ids.performer_id IS NULL")
 			default:
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}
@@ -373,17 +376,18 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 	}
 }
 
-func performerTagsCriterionHandler(qb *performerQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
-	h := joinedMultiCriterionHandlerBuilder{
-		primaryTable: performerTable,
-		joinTable:    performersTagsTable,
-		joinAs:       "tags_join",
-		primaryFK:    performerIDColumn,
-		foreignFK:    tagIDColumn,
+func performerTagsCriterionHandler(qb *performerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
 
-		addJoinTable: func(f *filterBuilder) {
-			qb.tagsRepository().join(f, "tags_join", "performers.id")
-		},
+		primaryTable: performerTable,
+		foreignTable: tagTable,
+		foreignFK:    "tag_id",
+
+		relationsTable: "tags_relations",
+		joinAs:         "image_tag",
+		joinTable:      performersTagsTable,
+		primaryFK:      performerIDColumn,
 	}
 
 	return h.handler(tags)
@@ -429,7 +433,7 @@ func performerGalleryCountCriterionHandler(qb *performerQueryBuilder, count *mod
 	return h.handler(count)
 }
 
-func performerStudiosCriterionHandler(studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if studios != nil {
 			var clauseCondition string
@@ -462,13 +466,13 @@ func performerStudiosCriterionHandler(studios *models.HierarchicalMultiCriterion
 				},
 			}
 
-			const derivedStudioTable = "studio"
 			const derivedPerformerStudioTable = "performer_studio"
-			addHierarchicalWithClause(f, studios.Value, derivedStudioTable, studioTable, "parent_id", studios.Depth)
+			valuesClause := getHierarchicalValues(qb.tx, studios.Value, studioTable, "", "parent_id", studios.Depth)
+			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
 			templStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.child_id`
+	INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
 
 			var unions []string
 			for _, c := range formatMaps {
@@ -499,6 +503,12 @@ func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterT
 	}
 	if sort == "scenes_count" {
 		return getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	}
+	if sort == "images_count" {
+		return getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
+	}
+	if sort == "galleries_count" {
+		return getCountSort(performerTable, performersGalleriesTable, performerIDColumn, direction)
 	}
 
 	return getSort(sort, direction, "performers")

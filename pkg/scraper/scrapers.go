@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -260,7 +259,7 @@ func (c Cache) postScrapePerformer(ret *models.ScrapedPerformer) error {
 	return nil
 }
 
-func (c Cache) postScrapeScenePerformer(ret *models.ScrapedScenePerformer) error {
+func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
 	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
@@ -290,13 +289,13 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 				return err
 			}
 
-			if err := MatchScrapedScenePerformer(pqb, p); err != nil {
+			if err := MatchScrapedPerformer(pqb, p); err != nil {
 				return err
 			}
 		}
 
 		for _, p := range ret.Movies {
-			err := MatchScrapedSceneMovie(mqb, p)
+			err := MatchScrapedMovie(mqb, p)
 			if err != nil {
 				return err
 			}
@@ -309,7 +308,7 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := MatchScrapedSceneStudio(sqb, ret.Studio)
+			err := MatchScrapedStudio(sqb, ret.Studio)
 			if err != nil {
 				return err
 			}
@@ -335,7 +334,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			err := MatchScrapedScenePerformer(pqb, p)
+			err := MatchScrapedPerformer(pqb, p)
 			if err != nil {
 				return err
 			}
@@ -348,7 +347,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := MatchScrapedSceneStudio(sqb, ret.Studio)
+			err := MatchScrapedStudio(sqb, ret.Studio)
 			if err != nil {
 				return err
 			}
@@ -362,12 +361,55 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 	return nil
 }
 
-// ScrapeScene uses the scraper with the provided ID to scrape a scene.
-func (c Cache) ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+// ScrapeScene uses the scraper with the provided ID to scrape a scene using existing data.
+func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapeScene(scene, c.txnManager, c.globalConfig)
+		// get scene from id
+		scene, err := getScene(sceneID, c.txnManager)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, err := s.ScrapeSceneByScene(scene, c.txnManager, c.globalConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if ret != nil {
+			err = c.postScrapeScene(ret)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ret, nil
+	}
+
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
+// ScrapeSceneQuery uses the scraper with the provided ID to query for
+// scenes using the provided query string. It returns a list of
+// scraped scene data.
+func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.ScrapedScene, error) {
+	// find scraper with the provided id
+	s := c.findScraper(scraperID)
+	if s != nil {
+		return s.ScrapeSceneQuery(query, c.txnManager, c.globalConfig)
+	}
+
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
+// ScrapeSceneFragment uses the scraper with the provided ID to scrape a scene.
+func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+	// find scraper with the provided id
+	s := c.findScraper(scraperID)
+	if s != nil {
+		ret, err := s.ScrapeSceneByFragment(scene, c.txnManager, c.globalConfig)
 
 		if err != nil {
 			return nil, err
@@ -410,11 +452,40 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 	return nil, nil
 }
 
-// ScrapeGallery uses the scraper with the provided ID to scrape a scene.
-func (c Cache) ScrapeGallery(scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+// ScrapeGallery uses the scraper with the provided ID to scrape a gallery using existing data.
+func (c Cache) ScrapeGallery(scraperID string, galleryID int) (*models.ScrapedGallery, error) {
 	s := c.findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapeGallery(gallery, c.txnManager, c.globalConfig)
+		// get gallery from id
+		gallery, err := getGallery(galleryID, c.txnManager)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, err := s.ScrapeGalleryByGallery(gallery, c.txnManager, c.globalConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if ret != nil {
+			err = c.postScrapeGallery(ret)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ret, nil
+	}
+
+	return nil, errors.New("Scraped with ID " + scraperID + " not found")
+}
+
+// ScrapeGalleryFragment uses the scraper with the provided ID to scrape a gallery.
+func (c Cache) ScrapeGalleryFragment(scraperID string, gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
+	s := c.findScraper(scraperID)
+	if s != nil {
+		ret, err := s.ScrapeGalleryByFragment(gallery, c.txnManager, c.globalConfig)
 
 		if err != nil {
 			return nil, err
@@ -457,23 +528,6 @@ func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 	return nil, nil
 }
 
-func matchMovieStudio(qb models.StudioReader, s *models.ScrapedMovieStudio) error {
-	studio, err := qb.FindByName(s.Name, true)
-
-	if err != nil {
-		return err
-	}
-
-	if studio == nil {
-		// ignore - cannot match
-		return nil
-	}
-
-	id := strconv.Itoa(studio.ID)
-	s.ID = &id
-	return nil
-}
-
 // ScrapeMovieURL uses the first scraper it finds that matches the URL
 // provided to scrape a movie. If no scrapers are found that matches
 // the URL, then nil is returned.
@@ -487,7 +541,7 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 
 			if ret.Studio != nil {
 				if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-					return matchMovieStudio(r.Studio(), ret.Studio)
+					return MatchScrapedStudio(r.Studio(), ret.Studio)
 				}); err != nil {
 					return nil, err
 				}
@@ -508,8 +562,8 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 	return nil, nil
 }
 
-func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedSceneTag) ([]*models.ScrapedSceneTag, error) {
-	var ret []*models.ScrapedSceneTag
+func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+	var ret []*models.ScrapedTag
 
 	excludePatterns := stash_config.GetInstance().GetScraperExcludeTagPatterns()
 	var excludeRegexps []*regexp.Regexp
@@ -533,7 +587,7 @@ ScrapeTag:
 			}
 		}
 
-		err := MatchScrapedSceneTag(tqb, t)
+		err := MatchScrapedTag(tqb, t)
 		if err != nil {
 			return nil, err
 		}

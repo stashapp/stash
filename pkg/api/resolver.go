@@ -53,22 +53,6 @@ func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
 
-func (r *Resolver) ScrapedSceneTag() models.ScrapedSceneTagResolver {
-	return &scrapedSceneTagResolver{r}
-}
-
-func (r *Resolver) ScrapedSceneMovie() models.ScrapedSceneMovieResolver {
-	return &scrapedSceneMovieResolver{r}
-}
-
-func (r *Resolver) ScrapedScenePerformer() models.ScrapedScenePerformerResolver {
-	return &scrapedScenePerformerResolver{r}
-}
-
-func (r *Resolver) ScrapedSceneStudio() models.ScrapedSceneStudioResolver {
-	return &scrapedSceneStudioResolver{r}
-}
-
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
@@ -81,10 +65,6 @@ type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
-type scrapedSceneTagResolver struct{ *Resolver }
-type scrapedSceneMovieResolver struct{ *Resolver }
-type scrapedScenePerformerResolver struct{ *Resolver }
-type scrapedSceneStudioResolver struct{ *Resolver }
 
 func (r *Resolver) withTxn(ctx context.Context, fn func(r models.Repository) error) error {
 	return r.txnManager.WithTxn(ctx, fn)
@@ -138,6 +118,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		tagsQB := repo.Tag()
 		scenesCount, _ := scenesQB.Count()
 		scenesSize, _ := scenesQB.Size()
+		scenesDuration, _ := scenesQB.Duration()
 		imageCount, _ := imageQB.Count()
 		imageSize, _ := imageQB.Size()
 		galleryCount, _ := galleryQB.Count()
@@ -149,6 +130,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		ret = models.StatsResultType{
 			SceneCount:     scenesCount,
 			ScenesSize:     scenesSize,
+			ScenesDuration: scenesDuration,
 			ImageCount:     imageCount,
 			ImagesSize:     imageSize,
 			GalleryCount:   galleryCount,

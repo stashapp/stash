@@ -89,6 +89,10 @@ textarea.text-input {
   overflow-y: scroll;
 }
 
+.table-list {
+  min-width: min-content;
+}
+
 .table-list a {
   color: $text-color;
 }
@@ -213,6 +217,7 @@ div.react-select__control {
   border-color: $secondary;
   color: $text-color;
   cursor: pointer;
+  white-space: nowrap;
 
   .react-select__single-value,
   .react-select__input {

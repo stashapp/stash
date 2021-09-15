@@ -16,28 +16,22 @@ import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import { PhashCriterionOption } from "./criteria/phash";
 
 const defaultSortBy = "date";
 const sortByOptions = [
-  "title",
-  "path",
-  "rating",
   "organized",
   "o_counter",
   "date",
   "filesize",
-  "file_mod_time",
   "duration",
   "framerate",
   "bitrate",
-  "tag_count",
-  "performer_count",
-  "random",
   "movie_scene_number",
   "interactive",
+  ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
 const displayModeOptions = [

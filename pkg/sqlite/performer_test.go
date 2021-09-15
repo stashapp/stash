@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -499,12 +500,13 @@ func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *m
 func TestPerformerQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Performer()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludes,
+			Depth:    0,
 		}
 
 		performerFilter := models.PerformerFilterType{
@@ -518,12 +520,13 @@ func TestPerformerQueryTags(t *testing.T) {
 			assert.True(t, performer.ID == performerIDs[performerIdxWithTag] || performer.ID == performerIDs[performerIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
+			Depth:    0,
 		}
 
 		performers = queryPerformers(t, sqb, &performerFilter, nil)
@@ -531,11 +534,12 @@ func TestPerformerQueryTags(t *testing.T) {
 		assert.Len(t, performers, 1)
 		assert.Equal(t, sceneIDs[performerIdxWithTwoTags], performers[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierExcludes,
+			Depth:    0,
 		}
 
 		q := getSceneStringValue(performerIdxWithTwoTags, titleField)

@@ -254,6 +254,27 @@ func (_m *SceneReaderWriter) DestroyCover(sceneID int) error {
 	return r0
 }
 
+// Duration provides a mock function with given fields:
+func (_m *SceneReaderWriter) Duration() (float64, error) {
+	ret := _m.Called()
+
+	var r0 float64
+	if rf, ok := ret.Get(0).(func() float64); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *SceneReaderWriter) Find(id int) (*models.Scene, error) {
 	ret := _m.Called(id)

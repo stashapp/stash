@@ -61,6 +61,7 @@
     "save_filter": "Save filter",
     "scan": "Scan",
     "scrape_with": "Scrape with…",
+    "scrape_query": "Scrape query",
     "search": "Search",
     "select_all": "Select All",
     "select_none": "Select None",
@@ -79,7 +80,11 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
-    "view_random": "View Random"
+    "view_random": "View Random",
+    "confirm": "Confirm",
+    "select_folders": "Select folders",
+    "browse_for_image": "Browse for image…",
+    "open_random": "Open Random"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -91,7 +96,8 @@
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
   "career_length": "Career Length",
-  "child_studios": "Child Studios",
+  "subsidiary_studios": "Subsidiary Studios",
+  "sub_tags": "Sub-Tags",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -295,6 +301,7 @@
         "escape_chars": "Use \\ to escape literal characters",
         "filename": "Filename",
         "filename_pattern": "Filename Pattern",
+        "ignore_organized": "Ignore organised scenes",
         "ignored_words": "Ignored words",
         "matches_with": "Matches with {i}",
         "select_parser_recipe": "Select Parser Recipe",
@@ -310,8 +317,14 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
-      "handy_connection_key": "Handy Connection Key",
-      "handy_connection_key_desc": "Handy connection key to use for interactive scenes.",
+      "handy_connection_key": {
+        "description": "Handy connection key to use for interactive scenes.",
+        "heading": "Handy Connection Key"
+      },
+      "funscript_offset": {
+        "description": "Time offset in milliseconds for interactive scripts playback.",
+        "heading": "Funscript Offset (ms)"
+      },
       "language": {
         "heading": "Language"
       },
@@ -401,6 +414,7 @@
     "between": "between",
     "not_between": "not between"
   },
+  "custom": "Custom",
   "date": "Date",
   "death_date": "Death Date",
   "death_year": "Death Year",
@@ -426,6 +440,8 @@
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "markers": "Markers (20 second videos which begin at the given timecode)",
+      "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
+      "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -443,6 +459,8 @@
       "transcodes": "Transcodes (MP4 conversions of unsupported video formats)",
       "video_previews": "Previews (video previews which play when hovering over a scene)"
     },
+    "scenes_found": "{count} scenes found",
+    "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
@@ -504,6 +522,7 @@
   "filter_name": "Filter name",
   "filters": "Filters",
   "framerate": "Frame Rate",
+  "frames_per_second": "{value} frames per second",
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
@@ -516,7 +535,8 @@
   "image_count": "Image Count",
   "images": "Images",
   "images-size": "Images size",
-  "include_child_studios": "Include child studios",
+  "include_sub_studios": "Include subsidiary studios",
+  "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "isMissing": "Is Missing",
@@ -540,6 +560,7 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
+  "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
@@ -557,6 +578,7 @@
     "previous": "Previous"
   },
   "parent_studios": "Parent Studios",
+  "parent_tags": "Parent Tags",
   "path": "Path",
   "performer": "Performer",
   "performer_count": "Performer Count",
@@ -572,6 +594,7 @@
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
+  "scenes-duration": "Scenes duration",
   "scenes-size": "Scenes size",
   "scenes_updated_at": "Scene Updated At",
   "sceneTagger": "Scene Tagger",

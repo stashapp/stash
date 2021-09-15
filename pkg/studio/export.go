@@ -42,6 +42,13 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		newStudioJSON.Rating = int(studio.Rating.Int64)
 	}
 
+	aliases, err := reader.GetAliases(studio.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting studio aliases: %s", err.Error())
+	}
+
+	newStudioJSON.Aliases = aliases
+
 	image, err := reader.GetImage(studio.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio image: %s", err.Error())

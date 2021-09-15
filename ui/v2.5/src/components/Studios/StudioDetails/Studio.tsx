@@ -28,6 +28,7 @@ import { StudioChildrenPanel } from "./StudioChildrenPanel";
 import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
+import { StudioMoviesPanel } from "./StudioMoviesPanel";
 
 interface IStudioParams {
   id?: string;
@@ -186,7 +187,8 @@ export const Studio: React.FC = () => {
     tab === "childstudios" ||
     tab === "images" ||
     tab === "galleries" ||
-    tab === "performers"
+    tab === "performers" ||
+    tab === "movies"
       ? tab
       : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
@@ -276,9 +278,12 @@ export const Studio: React.FC = () => {
             >
               <StudioPerformersPanel studio={studio} />
             </Tab>
+            <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+              <StudioMoviesPanel studio={studio} />
+            </Tab>
             <Tab
               eventKey="childstudios"
-              title={intl.formatMessage({ id: "child_studios" })}
+              title={intl.formatMessage({ id: "subsidiary_studios" })}
             >
               <StudioChildrenPanel studio={studio} />
             </Tab>

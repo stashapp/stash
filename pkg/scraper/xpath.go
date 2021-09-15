@@ -124,18 +124,34 @@ func (s *xpathScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 	return nil, errors.New("scrapePerformerByFragment not supported for xpath scraper")
 }
 
-func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
-	storedScene, err := sceneFromUpdateFragment(scene, s.txnManager)
+func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+	scraper := s.getXpathScraper()
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	const placeholder = "{}"
+
+	// replace the placeholder string with the URL-escaped name
+	escapedName := url.QueryEscape(name)
+
+	url := s.scraper.QueryURL
+	url = strings.Replace(url, placeholder, escapedName, -1)
+
+	doc, err := s.loadURL(url)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if storedScene == nil {
-		return nil, errors.New("no scene found")
-	}
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeScenes(q)
+}
 
+func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
-	queryURL := queryURLParametersFromScene(storedScene)
+	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
 		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
 	}
@@ -157,18 +173,33 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	return scraper.scrapeScene(q)
 }
 
-func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	storedGallery, err := galleryFromUpdateFragment(gallery, s.txnManager)
+func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+	// construct the URL
+	queryURL := queryURLParametersFromScrapedScene(scene)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
+
+	scraper := s.getXpathScraper()
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(url)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if storedGallery == nil {
-		return nil, errors.New("no scene found")
-	}
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeScene(q)
+}
 
+func (s *xpathScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
-	queryURL := queryURLParametersFromGallery(storedGallery)
+	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
 		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
 	}
@@ -188,6 +219,10 @@ func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput
 
 	q := s.getXPathQuery(doc)
 	return scraper.scrapeGallery(q)
+}
+
+func (s *xpathScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
+	return nil, errors.New("scrapeGalleryByFragment not supported for xpath scraper")
 }
 
 func (s *xpathScraper) loadURL(url string) (*html.Node, error) {

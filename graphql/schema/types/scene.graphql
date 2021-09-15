@@ -103,6 +103,7 @@ input BulkSceneUpdateInput {
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
+  movie_ids:  BulkUpdateIds
 }
 
 input SceneDestroyInput {
@@ -125,7 +126,8 @@ type FindScenesResultType {
 input SceneParserInput {
   ignoreWords: [String!],
   whitespaceCharacters: String,
-  capitalizeTitle: Boolean
+  capitalizeTitle: Boolean,
+  ignoreOrganized: Boolean
 }
 
 type SceneMovieID {

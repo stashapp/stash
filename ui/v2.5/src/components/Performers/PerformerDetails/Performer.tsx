@@ -22,6 +22,7 @@ import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
+import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 
@@ -70,6 +71,7 @@ export const Performer: React.FC = () => {
     tab === "scenes" ||
     tab === "galleries" ||
     tab === "images" ||
+    tab === "movies" ||
     tab === "edit" ||
     tab === "operations"
       ? tab
@@ -91,6 +93,7 @@ export const Performer: React.FC = () => {
     Mousetrap.bind("e", () => setActiveTabKey("edit"));
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
     Mousetrap.bind("g", () => setActiveTabKey("galleries"));
+    Mousetrap.bind("m", () => setActiveTabKey("movies"));
     Mousetrap.bind("o", () => setActiveTabKey("operations"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
 
@@ -139,6 +142,9 @@ export const Performer: React.FC = () => {
       </Tab>
       <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
         <PerformerImagesPanel performer={performer} />
+      </Tab>
+      <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+        <PerformerMoviesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title={intl.formatMessage({ id: "actions.edit" })}>
         <PerformerEditPanel

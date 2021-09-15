@@ -27,7 +27,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
@@ -93,16 +92,6 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			ctx = session.SetCurrentUserID(ctx, userID)
 
 			r = r.WithContext(ctx)
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func visitedPluginHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// get the visited plugins and set them in the context
 
 			next.ServeHTTP(w, r)
 		})
@@ -286,34 +275,31 @@ func Start() {
 	displayAddress := displayHost + ":" + strconv.Itoa(c.GetPort())
 
 	address := c.GetHost() + ":" + strconv.Itoa(c.GetPort())
-	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
-		httpsServer := &http.Server{
-			Addr:      address,
-			Handler:   r,
-			TLSConfig: tlsConfig,
-		}
+	tlsConfig, err := makeTLSConfig(c)
+	if err != nil {
+		// assume we don't want to start with a broken TLS configuration
+		panic(fmt.Errorf("error loading TLS config: %s", err.Error()))
+	}
 
-		go func() {
-			printVersion()
-			printLatestVersion()
-			logger.Infof("stash is listening on " + address)
+	server := &http.Server{
+		Addr:      address,
+		Handler:   r,
+		TLSConfig: tlsConfig,
+	}
+
+	go func() {
+		printVersion()
+		printLatestVersion()
+		logger.Infof("stash is listening on " + address)
+
+		if tlsConfig != nil {
 			logger.Infof("stash is running at https://" + displayAddress + "/")
-			logger.Error(httpsServer.ListenAndServeTLS("", ""))
-		}()
-	} else {
-		server := &http.Server{
-			Addr:    address,
-			Handler: r,
-		}
-
-		go func() {
-			printVersion()
-			printLatestVersion()
-			logger.Infof("stash is listening on " + address)
+			logger.Error(server.ListenAndServeTLS("", ""))
+		} else {
 			logger.Infof("stash is running at http://" + displayAddress + "/")
 			logger.Error(server.ListenAndServe())
-		}()
-	}
+		}
+	}()
 }
 
 func printVersion() {
@@ -328,27 +314,44 @@ func GetVersion() (string, string, string) {
 	return version, githash, buildstamp
 }
 
-func makeTLSConfig() *tls.Config {
-	cert, err := ioutil.ReadFile(paths.GetSSLCert())
-	if err != nil {
-		return nil
+func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
+	c.InitTLS()
+	certFile, keyFile := c.GetTLSFiles()
+
+	if certFile == "" && keyFile == "" {
+		// assume http configuration
+		return nil, nil
 	}
 
-	key, err := ioutil.ReadFile(paths.GetSSLKey())
+	// ensure both files are present
+	if certFile == "" {
+		return nil, errors.New("SSL certificate file must be present if key file is present")
+	}
+
+	if keyFile == "" {
+		return nil, errors.New("SSL key file must be present if certificate file is present")
+	}
+
+	cert, err := ioutil.ReadFile(certFile)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("error reading SSL certificate file %s: %s", certFile, err.Error())
+	}
+
+	key, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		return nil, fmt.Errorf("error reading SSL key file %s: %s", keyFile, err.Error())
 	}
 
 	certs := make([]tls.Certificate, 1)
 	certs[0], err = tls.X509KeyPair(cert, key)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("error parsing key pair: %s", err.Error())
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,
 	}
 
-	return tlsConfig
+	return tlsConfig, nil
 }
 
 type contextKey struct {
