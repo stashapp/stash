@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"io"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
 type scriptScraper struct {
@@ -250,51 +248,12 @@ func findPythonExecutable() (string, error) {
 	return "python3", nil
 }
 
-func handleStderrLine(line string, defaultLogLevel *log.Level) {
-	level, l := log.DetectLogLevel(line)
-
-	const scraperPrefix = "[Scrape] "
-	// if no log level, just output to info
-	if level == nil {
-		if defaultLogLevel != nil {
-			level = defaultLogLevel
-		} else {
-			level = &log.InfoLevel
-		}
-	}
-
-	switch *level {
-	case log.TraceLevel:
-		logger.Trace(scraperPrefix, l)
-	case log.DebugLevel:
-		logger.Debug(scraperPrefix, l)
-	case log.InfoLevel:
-		logger.Info(scraperPrefix, l)
-	case log.WarningLevel:
-		logger.Warn(scraperPrefix, l)
-	case log.ErrorLevel:
-		logger.Error(scraperPrefix, l)
-	}
-}
-
-func handleScraperOutput(scraperOutputReader io.ReadCloser, defaultLogLevel *log.Level) {
-	// pipe plugin stderr to our logging
-	scanner := bufio.NewScanner(scraperOutputReader)
-	for scanner.Scan() {
-		str := scanner.Text()
-		if str != "" {
-			handleStderrLine(str, defaultLogLevel)
-		}
-	}
-
-	str := scanner.Text()
-	if str != "" {
-		handleStderrLine(str, defaultLogLevel)
-	}
-
-	scraperOutputReader.Close()
-}
-
 func handleScraperStderr(scraperOutputReader io.ReadCloser) {
-	handleScraperOutput(scraperOutputReader, &log.ErrorLevel)
+	const scraperPrefix = "[Scrape] "
+
+	lgr := logger.PluginLogger{
+		Prefix:          scraperPrefix,
+		DefaultLogLevel: &logger.ErrorLevel,
+	}
+	lgr.HandlePluginStdErr(scraperOutputReader)
 }
