@@ -9,20 +9,12 @@ import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
 } from "./criteria/tags";
-import { ListFilterOptions } from "./filter-options";
+import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "path";
 
-const sortByOptions = [
-  "date",
-  "path",
-  "file_mod_time",
-  "tag_count",
-  "performer_count",
-  "title",
-  "random",
-]
+const sortByOptions = ["date", ...MediaSortByOptions]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {

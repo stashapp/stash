@@ -61,6 +61,7 @@
     "save_filter": "Save filter",
     "scan": "Scan",
     "scrape_with": "Scrape with…",
+    "scrape_query": "Scrape query",
     "search": "Search",
     "select_all": "Select All",
     "select_none": "Select None",
@@ -458,6 +459,8 @@
       "transcodes": "Transcodes (MP4 conversions of unsupported video formats)",
       "video_previews": "Previews (video previews which play when hovering over a scene)"
     },
+    "scenes_found": "{count} scenes found",
+    "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",

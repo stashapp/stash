@@ -93,7 +93,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
   }
 
   return (
-    <Form.Group className={`duration-input ${props.className}`}>
+    <div className={`duration-input ${props.className}`}>
       <InputGroup>
         <Form.Control
           className="duration-control text-input"
@@ -122,6 +122,6 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           {renderButtons()}
         </InputGroup.Append>
       </InputGroup>
-    </Form.Group>
+    </div>
   );
 };

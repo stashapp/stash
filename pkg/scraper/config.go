@@ -35,6 +35,12 @@ type config struct {
 	// Configuration for querying gallery by a Gallery fragment
 	GalleryByFragment *scraperTypeConfig `yaml:"galleryByFragment"`
 
+	// Configuration for querying scenes by name
+	SceneByName *scraperTypeConfig `yaml:"sceneByName"`
+
+	// Configuration for querying scenes by query fragment
+	SceneByQueryFragment *scraperTypeConfig `yaml:"sceneByQueryFragment"`
+
 	// Configuration for querying a scene by a URL
 	SceneByURL []*scrapeByURLConfig `yaml:"sceneByURL"`
 
@@ -256,6 +262,9 @@ func (c config) toScraper() *models.Scraper {
 	if c.SceneByFragment != nil {
 		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeFragment)
 	}
+	if c.SceneByName != nil && c.SceneByQueryFragment != nil {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeName)
+	}
 	if len(c.SceneByURL) > 0 {
 		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeURL)
 		for _, v := range c.SceneByURL {
@@ -353,7 +362,7 @@ func (c config) ScrapePerformerURL(url string, txnManager models.TransactionMana
 }
 
 func (c config) supportsScenes() bool {
-	return c.SceneByFragment != nil || len(c.SceneByURL) > 0
+	return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
 }
 
 func (c config) supportsGalleries() bool {
@@ -393,6 +402,15 @@ func (c config) matchesMovieURL(url string) bool {
 	return false
 }
 
+func (c config) ScrapeSceneQuery(name string, txnManager models.TransactionManager, globalConfig GlobalConfig) ([]*models.ScrapedScene, error) {
+	if c.SceneByName != nil {
+		s := getScraper(*c.SceneByName, txnManager, c, globalConfig)
+		return s.scrapeScenesByName(name)
+	}
+
+	return nil, nil
+}
+
 func (c config) ScrapeSceneByScene(scene *models.Scene, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
 	if c.SceneByFragment != nil {
 		s := getScraper(*c.SceneByFragment, txnManager, c, globalConfig)
@@ -403,9 +421,8 @@ func (c config) ScrapeSceneByScene(scene *models.Scene, txnManager models.Transa
 }
 
 func (c config) ScrapeSceneByFragment(scene models.ScrapedSceneInput, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
-	if c.SceneByFragment != nil {
-		// TODO - this should be sceneByQueryFragment
-		s := getScraper(*c.SceneByFragment, txnManager, c, globalConfig)
+	if c.SceneByQueryFragment != nil {
+		s := getScraper(*c.SceneByQueryFragment, txnManager, c, globalConfig)
 		return s.scrapeSceneByFragment(scene)
 	}
 
@@ -431,7 +448,7 @@ func (c config) ScrapeSceneURL(url string, txnManager models.TransactionManager,
 }
 
 func (c config) ScrapeGalleryByGallery(gallery *models.Gallery, txnManager models.TransactionManager, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
-	if c.SceneByFragment != nil {
+	if c.GalleryByFragment != nil {
 		s := getScraper(*c.GalleryByFragment, txnManager, c, globalConfig)
 		return s.scrapeGalleryByGallery(gallery)
 	}
