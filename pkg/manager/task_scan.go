@@ -402,6 +402,7 @@ func (t *ScanTask) scanGallery() {
 			return
 		}
 
+		isNewGallery := false
 		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 			qb := r.Gallery()
 			g, _ = qb.FindByChecksum(checksum)
@@ -467,7 +468,7 @@ func (t *ScanTask) scanGallery() {
 					}
 					scanImages = true
 
-					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
+					isNewGallery = true
 				}
 			}
 
@@ -475,6 +476,10 @@ func (t *ScanTask) scanGallery() {
 		}); err != nil {
 			logger.Error(err.Error())
 			return
+		}
+
+		if isNewGallery {
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 		}
 	}
 
@@ -1216,15 +1221,15 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 	return ret, nil
 }
 
-func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) (int, bool, error) {
+func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) (galleryID int, isNew bool, err error) {
 	// find a gallery with the path specified
 	path := filepath.Dir(t.FilePath)
-	g, err := qb.FindByPath(path)
+	var g *models.Gallery
+	g, err = qb.FindByPath(path)
 	if err != nil {
-		return 0, false, err
+		return
 	}
 
-	created := false
 	if g == nil {
 		checksum := utils.MD5FromString(path)
 
@@ -1251,12 +1256,13 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 			return 0, false, err
 		}
 
-		created = true
+		isNew = true
 	}
 
 	// associate image with gallery
 	err = gallery.AddImage(qb, g.ID, imageID)
-	return g.ID, created, err
+	galleryID = g.ID
+	return
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
