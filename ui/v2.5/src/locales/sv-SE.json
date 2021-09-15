@@ -95,7 +95,6 @@
   "birthdate": "Födelsedatum",
   "bitrate": "Bithastighet",
   "career_length": "Karriärlängd",
-  "child_studios": "Underordnade studior",
   "component_tagger": {
     "config": {
       "active_instance": "Aktiv stash-box instans:",
@@ -155,9 +154,9 @@
       "interface": "Gränssnitt",
       "logs": "Loggar",
       "plugins": "Tillägg",
-      "scrapers": "Skrapare",
       "tasks": "Uppgifter",
-      "tools": "Verktyg"
+      "tools": "Verktyg",
+      "scraping": "Skrapare"
     },
     "dlna": {
       "allow_temp_ip": "Tillåt {tempIP}",
@@ -528,8 +527,7 @@
   "image": "Bild",
   "image_count": "Antal bilder",
   "images": "Bilder",
-  "images-size": "Bildstorlek",
-  "include_child_studios": "Inkludera underordnade studior",
+  "include_sub_studios": "Inkludera underordnade studior",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
   "isMissing": "Saknas",
@@ -586,8 +584,6 @@
   "scene_count": "Antal scener",
   "scene_id": "Scenens ID",
   "scenes": "Scener",
-  "scenes-duration": "Total speltid",
-  "scenes-size": "Scenens storlek",
   "scenes_updated_at": "Scen uppdaterad vid",
   "sceneTagger": "Scentaggaren",
   "sceneTags": "Scentaggar",
@@ -630,5 +626,10 @@
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "weight": "Vikt",
-  "years_old": "år gammal"
+  "years_old": "år gammal",
+  "stats": {
+    "image_size": "Bildstorlek",
+    "scenes_duration": "Total speltid",
+    "scenes_size": "Scenens storlek"
+  }
 }

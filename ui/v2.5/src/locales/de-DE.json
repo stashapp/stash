@@ -500,7 +500,7 @@
   "image": "Bild",
   "image_count": "Bilderanzahl",
   "images": "Bilder",
-  "images-size": "Bildgröße",
+  "include_sub_studios": "Tochterstudios einbeziehen",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
   "isMissing": "Wird vermisst",
@@ -556,7 +556,6 @@
   "scene_count": "Szenenanzahl",
   "scene_id": "Szenen-ID",
   "scenes": "Szenen",
-  "scenes-size": "Szenengröße",
   "scenes_updated_at": "Szene aktualisiert am",
   "sceneTagger": "Szenen-Tagger",
   "sceneTags": "Szenen-Tags",
@@ -599,5 +598,9 @@
   "updated_at": "Aktualisiert am",
   "url": "URL",
   "weight": "Gewicht",
-  "years_old": "Jahre alt"
+  "years_old": "Jahre alt",
+  "stats": {
+    "image_size": "Bildgröße",
+    "scenes_size": "Szenengröße"
+  }
 }

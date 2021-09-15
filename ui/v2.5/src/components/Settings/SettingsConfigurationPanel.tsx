@@ -735,11 +735,15 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Check
             id="preview-include-audio"
             checked={previewAudio}
-            label="Include audio"
+            label={intl.formatMessage({
+              id: "config.general.include_audio_head",
+            })}
             onChange={() => setPreviewAudio(!previewAudio)}
           />
           <Form.Text className="text-muted">
-            Includes audio stream when generating previews.
+            {intl.formatMessage({
+              id: "config.general.include_audio_desc",
+            })}
           </Form.Text>
         </Form.Group>
 
