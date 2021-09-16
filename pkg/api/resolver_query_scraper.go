@@ -71,6 +71,14 @@ func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*mo
 	return manager.GetInstance().ScraperCache.ScrapePerformerURL(url)
 }
 
+func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, query string) ([]*models.ScrapedScene, error) {
+	if query == "" {
+		return nil, nil
+	}
+
+	return manager.GetInstance().ScraperCache.ScrapeSceneQuery(scraperID, query)
+}
+
 func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
@@ -165,8 +173,10 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			singleScene, err = manager.GetInstance().ScraperCache.ScrapeScene(*source.ScraperID, sceneID)
 		} else if input.SceneInput != nil {
 			singleScene, err = manager.GetInstance().ScraperCache.ScrapeSceneFragment(*source.ScraperID, *input.SceneInput)
+		} else if input.Query != nil {
+			return manager.GetInstance().ScraperCache.ScrapeSceneQuery(*source.ScraperID, *input.Query)
 		} else {
-			return nil, errors.New("not implemented")
+			err = errors.New("scene_id, scene_input or query must be set")
 		}
 
 		if err != nil {

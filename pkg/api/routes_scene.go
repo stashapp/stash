@@ -41,6 +41,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
+		r.Get("/scene_marker/{sceneMarkerId}/screenshot", rs.SceneMarkerScreenshot)
 	})
 	r.With(SceneCtx).Get("/{sceneId}_thumbs.vtt", rs.VttThumbs)
 	r.With(SceneCtx).Get("/{sceneId}_sprite.jpg", rs.VttSprite)
@@ -306,6 +307,33 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
+
+	// If the image doesn't exist, send the placeholder
+	exists, _ := utils.FileExists(filepath)
+	if !exists {
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "no-store")
+		_, _ = w.Write(utils.PendingGenerateResource)
+		return
+	}
+
+	http.ServeFile(w, r, filepath)
+}
+
+func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
+	var sceneMarker *models.SceneMarker
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
+		return err
+	}); err != nil {
+		logger.Warnf("Error when getting scene marker for stream: %s", err.Error())
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
 	exists, _ := utils.FileExists(filepath)

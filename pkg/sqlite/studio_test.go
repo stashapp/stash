@@ -46,6 +46,143 @@ func TestStudioFindByName(t *testing.T) {
 	})
 }
 
+func TestStudioQueryNameOr(t *testing.T) {
+	const studio1Idx = 1
+	const studio2Idx = 2
+
+	studio1Name := getStudioStringValue(studio1Idx, "Name")
+	studio2Name := getStudioStringValue(studio2Idx, "Name")
+
+	studioFilter := models.StudioFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    studio1Name,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.StudioFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    studio2Name,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		assert.Len(t, studios, 2)
+		assert.Equal(t, studio1Name, studios[0].Name.String)
+		assert.Equal(t, studio2Name, studios[1].Name.String)
+
+		return nil
+	})
+}
+
+func TestStudioQueryNameAndUrl(t *testing.T) {
+	const studioIdx = 1
+	studioName := getStudioStringValue(studioIdx, "Name")
+	studioUrl := getStudioNullStringValue(studioIdx, urlField)
+
+	studioFilter := models.StudioFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    studioName,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.StudioFilterType{
+			URL: &models.StringCriterionInput{
+				Value:    studioUrl.String,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		assert.Len(t, studios, 1)
+		assert.Equal(t, studioName, studios[0].Name.String)
+		assert.Equal(t, studioUrl.String, studios[0].URL.String)
+
+		return nil
+	})
+}
+
+func TestStudioQueryNameNotUrl(t *testing.T) {
+	const studioIdx = 1
+
+	studioUrl := getStudioNullStringValue(studioIdx, urlField)
+
+	nameCriterion := models.StringCriterionInput{
+		Value:    "studio_.*1_Name",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    studioUrl.String,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	studioFilter := models.StudioFilterType{
+		Name: &nameCriterion,
+		Not: &models.StudioFilterType{
+			URL: &urlCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		for _, studio := range studios {
+			verifyString(t, studio.Name.String, nameCriterion)
+			urlCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyNullString(t, studio.URL, urlCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const studioIdx = 1
+	subFilter := models.StudioFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    getStudioStringValue(studioIdx, "Name"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	studioFilter := &models.StudioFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		_, _, err := sqb.Query(studioFilter, nil)
+		assert.NotNil(err)
+
+		studioFilter.Or = nil
+		studioFilter.Not = &subFilter
+		_, _, err = sqb.Query(studioFilter, nil)
+		assert.NotNil(err)
+
+		studioFilter.And = nil
+		studioFilter.Or = &subFilter
+		_, _, err = sqb.Query(studioFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Studio()
@@ -374,7 +511,6 @@ func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriteri
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
-					Depth:    0,
 				},
 			}, &models.FindFilterType{
 				PerPage: &pp,
@@ -425,7 +561,6 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
-					Depth:    0,
 				},
 			}, &models.FindFilterType{
 				PerPage: &pp,

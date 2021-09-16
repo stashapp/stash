@@ -24,6 +24,7 @@ type scraper interface {
 	scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 	scrapePerformerByURL(url string) (*models.ScrapedPerformer, error)
 
+	scrapeScenesByName(name string) ([]*models.ScrapedScene, error)
 	scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error)
 	scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
 	scrapeSceneByURL(url string) (*models.ScrapedScene, error)

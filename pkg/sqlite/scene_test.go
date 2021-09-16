@@ -1040,7 +1040,6 @@ func TestSceneQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1061,7 +1060,6 @@ func TestSceneQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx2WithScene]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
-			Depth:    0,
 		}
 
 		scenes = queryScene(t, sqb, &sceneFilter, nil)
@@ -1074,7 +1072,6 @@ func TestSceneQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
@@ -1098,7 +1095,6 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1119,7 +1115,6 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
-			Depth:    0,
 		}
 
 		scenes = queryScene(t, sqb, &sceneFilter, nil)
@@ -1132,7 +1127,6 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithPerformerTwoTags, titleField)
@@ -1155,7 +1149,6 @@ func TestSceneQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1174,7 +1167,6 @@ func TestSceneQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithStudio, titleField)
@@ -1192,12 +1184,13 @@ func TestSceneQueryStudio(t *testing.T) {
 func TestSceneQueryStudioDepth(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
+		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1207,7 +1200,7 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 		scenes := queryScene(t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 1)
 
-		studioCriterion.Depth = 1
+		depth = 1
 
 		scenes = queryScene(t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 0)
@@ -1218,13 +1211,14 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 
 		// ensure id is correct
 		assert.Equal(t, sceneIDs[sceneIdxWithGrandChildStudio], scenes[0].ID)
+		depth = 2
 
 		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		q := getSceneStringValue(sceneIdxWithGrandChildStudio, titleField)
@@ -1235,7 +1229,7 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
-		studioCriterion.Depth = 1
+		depth = 1
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 

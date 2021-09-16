@@ -13,6 +13,8 @@ export const GenerateButton: React.FC = () => {
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
   const [imagePreviews, setImagePreviews] = useState(false);
+  const [markerImagePreviews, setMarkerImagePreviews] = useState(false);
+  const [markerScreenshots, setMarkerScreenshots] = useState(false);
 
   async function onGenerate() {
     try {
@@ -22,6 +24,8 @@ export const GenerateButton: React.FC = () => {
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
+        markerImagePreviews: markers && markerImagePreviews,
+        markerScreenshots: markers && markerScreenshots,
         transcodes,
       });
       Toast.success({
@@ -68,6 +72,31 @@ export const GenerateButton: React.FC = () => {
           label={intl.formatMessage({ id: "dialogs.scene_gen.markers" })}
           onChange={() => setMarkers(!markers)}
         />
+        <div className="d-flex flex-row">
+          <div>↳</div>
+          <Form.Group>
+            <Form.Check
+              id="marker-image-preview-task"
+              checked={markerImagePreviews}
+              disabled={!markers}
+              label={intl.formatMessage({
+                id: "dialogs.scene_gen.marker_image_previews",
+              })}
+              onChange={() => setMarkerImagePreviews(!markerImagePreviews)}
+              className="ml-2 flex-grow"
+            />
+            <Form.Check
+              id="marker-screenshot-task"
+              checked={markerScreenshots}
+              disabled={!markers}
+              label={intl.formatMessage({
+                id: "dialogs.scene_gen.marker_screenshots",
+              })}
+              onChange={() => setMarkerScreenshots(!markerScreenshots)}
+              className="ml-2 flex-grow"
+            />
+          </Form.Group>
+        </div>
         <Form.Check
           id="transcode-task"
           checked={transcodes}
