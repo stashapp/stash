@@ -365,7 +365,7 @@ input GenderCriterionInput {
 input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
-  depth: Int!
+  depth: Int
 }
 
 enum FilterMode {

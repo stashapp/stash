@@ -82,7 +82,6 @@ func TestMovieQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		movieFilter := models.MovieFilterType{
@@ -104,7 +103,6 @@ func TestMovieQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithMovie]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getMovieStringValue(movieIdxWithStudio, titleField)
