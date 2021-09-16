@@ -147,8 +147,49 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 	return qb.queryStudios(query+" WHERE "+where, args)
 }
 
+func (qb *studioQueryBuilder) validateFilter(filter *models.StudioFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if filter.And != nil {
+		if filter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if filter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(filter.And)
+	}
+
+	if filter.Or != nil {
+		if filter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(filter.Or)
+	}
+
+	if filter.Not != nil {
+		return qb.validateFilter(filter.Not)
+	}
+
+	return nil
+}
+
 func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) *filterBuilder {
 	query := &filterBuilder{}
+
+	if studioFilter.And != nil {
+		query.and(qb.makeFilter(studioFilter.And))
+	}
+	if studioFilter.Or != nil {
+		query.or(qb.makeFilter(studioFilter.Or))
+	}
+	if studioFilter.Not != nil {
+		query.not(qb.makeFilter(studioFilter.Not))
+	}
 
 	query.handleCriterion(stringCriterionHandler(studioFilter.Name, studioTable+".name"))
 	query.handleCriterion(stringCriterionHandler(studioFilter.Details, studioTable+".details"))
@@ -193,6 +234,9 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.addArg(thisArgs...)
 	}
 
+	if err := qb.validateFilter(studioFilter); err != nil {
+		return nil, 0, err
+	}
 	filter := qb.makeFilter(studioFilter)
 
 	query.addFilter(filter)
