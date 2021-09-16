@@ -237,7 +237,9 @@
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
-      "video_head": "Video"
+      "video_head": "Video",
+      "include_audio_head": "Include audio",
+      "include_audio_desc": "Includes audio stream when generating previews."
     },
     "logs": {
       "log_level": "Log Level"
@@ -534,7 +536,6 @@
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",
-  "images-size": "Images size",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
@@ -594,8 +595,6 @@
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
-  "scenes-duration": "Scenes duration",
-  "scenes-size": "Scenes size",
   "scenes_updated_at": "Scene Updated At",
   "sceneTagger": "Scene Tagger",
   "sceneTags": "Scene Tags",
@@ -638,5 +637,10 @@
   "updated_at": "Updated At",
   "url": "URL",
   "weight": "Weight",
-  "years_old": "years old"
+  "years_old": "years old",
+  "stats": {
+    "image_size": "Images size",
+    "scenes_size": "Scenes size",
+    "scenes_duration": "Scenes duration"
+  }
 }

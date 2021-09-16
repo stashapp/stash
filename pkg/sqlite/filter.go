@@ -3,10 +3,11 @@ package sqlite
 import (
 	"errors"
 	"fmt"
-	"github.com/stashapp/stash/pkg/logger"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -534,10 +535,15 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func getHierarchicalValues(tx dbi, values []string, table, relationsTable, parentFK string, depth int) string {
+func getHierarchicalValues(tx dbi, values []string, table, relationsTable, parentFK string, depth *int) string {
 	var args []interface{}
 
-	if depth == 0 {
+	depthVal := 0
+	if depth != nil {
+		depthVal = *depth
+	}
+
+	if depthVal == 0 {
 		valid := true
 		var valuesClauses []string
 		for _, value := range values {
@@ -563,8 +569,8 @@ func getHierarchicalValues(tx dbi, values []string, table, relationsTable, paren
 	inCount := len(args)
 
 	var depthCondition string
-	if depth != -1 {
-		depthCondition = fmt.Sprintf("WHERE depth < %d", depth)
+	if depthVal != -1 {
+		depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
 	}
 
 	withClauseMap := utils.StrFormatMap{
@@ -587,7 +593,7 @@ INNER JOIN items as p ON c.{parentFK} = p.item_id
 `, withClauseMap)
 	}
 
-	if depth != 0 {
+	if depthVal != 0 {
 		withClauseMap["unionClause"] = utils.StrFormat(`
 UNION {recursiveSelect} {depthCondition}
 `, withClauseMap)

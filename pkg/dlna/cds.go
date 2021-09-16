@@ -533,7 +533,6 @@ func (me *contentDirectoryService) getStudioScenes(paths []string, host string) 
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Modifier: models.CriterionModifierIncludes,
 			Value:    []string{paths[0]},
-			Depth:    0,
 		},
 	}
 
@@ -573,7 +572,6 @@ func (me *contentDirectoryService) getTagScenes(paths []string, host string) []i
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Modifier: models.CriterionModifierIncludes,
 			Value:    []string{paths[0]},
-			Depth:    0,
 		},
 	}
 

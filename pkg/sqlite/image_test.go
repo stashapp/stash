@@ -728,7 +728,6 @@ func TestImageQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithImage]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -753,7 +752,6 @@ func TestImageQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx2WithImage]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
-			Depth:    0,
 		}
 
 		images, _, err = sqb.Query(&imageFilter, nil)
@@ -769,7 +767,6 @@ func TestImageQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithImage]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getImageStringValue(imageIdxWithTwoTags, titleField)
@@ -795,7 +792,6 @@ func TestImageQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -817,7 +813,6 @@ func TestImageQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getImageStringValue(imageIdxWithStudio, titleField)
@@ -838,12 +833,13 @@ func TestImageQueryStudio(t *testing.T) {
 func TestImageQueryStudioDepth(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
+		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -853,7 +849,7 @@ func TestImageQueryStudioDepth(t *testing.T) {
 		images := queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 1)
 
-		studioCriterion.Depth = 1
+		depth = 1
 
 		images = queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 0)
@@ -865,12 +861,14 @@ func TestImageQueryStudioDepth(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, imageIDs[imageIdxWithGrandChildStudio], images[0].ID)
 
+		depth = 2
+
 		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		q := getImageStringValue(imageIdxWithGrandChildStudio, titleField)
@@ -881,7 +879,7 @@ func TestImageQueryStudioDepth(t *testing.T) {
 		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
 
-		studioCriterion.Depth = 1
+		depth = 1
 		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 1)
 
@@ -911,7 +909,6 @@ func TestImageQueryPerformerTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -932,7 +929,6 @@ func TestImageQueryPerformerTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
-			Depth:    0,
 		}
 
 		images = queryImages(t, sqb, &imageFilter, nil)
@@ -945,7 +941,6 @@ func TestImageQueryPerformerTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getImageStringValue(imageIdxWithPerformerTwoTags, titleField)
