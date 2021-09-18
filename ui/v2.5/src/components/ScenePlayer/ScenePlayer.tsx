@@ -349,6 +349,7 @@ export class ScenePlayerImpl extends React.Component<
           onSeeked={this.onSeeked}
           onTime={this.onTime}
           onOneHundredPercent={() => this.onComplete()}
+          className="video-wrapper"
         />
         <ScenePlayerScrubber
           scene={this.props.scene}
