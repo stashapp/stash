@@ -3,6 +3,7 @@ package scraper
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -65,7 +66,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		return errors.New("error running scraper script")
 	}
 
-	go handleScraperStderr(stderr)
+	go handleScraperStderr(s.config.Name, stderr)
 
 	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
 
@@ -248,11 +249,11 @@ func findPythonExecutable() (string, error) {
 	return "python3", nil
 }
 
-func handleScraperStderr(scraperOutputReader io.ReadCloser) {
-	const scraperPrefix = "[Scrape] "
+func handleScraperStderr(name string, scraperOutputReader io.ReadCloser) {
+	const scraperPrefix = "[Scrape / %s] "
 
 	lgr := logger.PluginLogger{
-		Prefix:          scraperPrefix,
+		Prefix:          fmt.Sprintf(scraperPrefix, name),
 		DefaultLogLevel: &logger.ErrorLevel,
 	}
 	lgr.HandlePluginStdErr(scraperOutputReader)

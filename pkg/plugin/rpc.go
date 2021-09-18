@@ -64,7 +64,7 @@ func (t *rpcPluginTask) Start() error {
 		return err
 	}
 
-	go t.handlePluginStderr(pluginErrReader)
+	go t.handlePluginStderr(t.plugin.Name, pluginErrReader)
 
 	iface := rpcPluginClient{
 		Client: t.client,
