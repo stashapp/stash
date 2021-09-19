@@ -149,7 +149,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 	query.body = selectDistinctIDs("scene_markers")
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"scene_markers.title", "scene.title"}
+		searchColumns := []string{"scene_markers.title", "scenes.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
