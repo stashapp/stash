@@ -70,7 +70,7 @@ func (t *rawPluginTask) Start() error {
 		return fmt.Errorf("error running plugin: %s", err.Error())
 	}
 
-	go t.handlePluginStderr(stderr)
+	go t.handlePluginStderr(t.plugin.Name, stderr)
 	t.cmd = cmd
 
 	// send the stdout to the plugin output

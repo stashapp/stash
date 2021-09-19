@@ -182,6 +182,11 @@ func Progressf(format string, args ...interface{}) {
 
 func Trace(args ...interface{}) {
 	logger.Trace(args...)
+	l := &LogItem{
+		Type:    "trace",
+		Message: fmt.Sprint(args...),
+	}
+	addLogItem(l)
 }
 
 func Tracef(format string, args ...interface{}) {

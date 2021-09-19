@@ -385,8 +385,15 @@ func (t *autoTagFilesTask) makeImageFilter() *models.ImageFilterType {
 
 func (t *autoTagFilesTask) makeGalleryFilter() *models.GalleryFilterType {
 	ret := &models.GalleryFilterType{}
+
 	or := ret
 	sep := string(filepath.Separator)
+
+	if len(t.paths) == 0 {
+		ret.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		}
+	}
 
 	for _, p := range t.paths {
 		if !strings.HasSuffix(p, sep) {
@@ -638,17 +645,17 @@ func (t *autoTagSceneTask) Start(wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		if t.performers {
 			if err := autotag.ScenePerformers(t.scene, r.Scene(), r.Performer()); err != nil {
-				return err
+				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.Path, err)
 			}
 		}
 		if t.studios {
 			if err := autotag.SceneStudios(t.scene, r.Scene(), r.Studio()); err != nil {
-				return err
+				return fmt.Errorf("error tagging scene studio for %s: %v", t.scene.Path, err)
 			}
 		}
 		if t.tags {
 			if err := autotag.SceneTags(t.scene, r.Scene(), r.Tag()); err != nil {
-				return err
+				return fmt.Errorf("error tagging scene tags for %s: %v", t.scene.Path, err)
 			}
 		}
 
@@ -672,17 +679,17 @@ func (t *autoTagImageTask) Start(wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		if t.performers {
 			if err := autotag.ImagePerformers(t.image, r.Image(), r.Performer()); err != nil {
-				return err
+				return fmt.Errorf("error tagging image performers for %s: %v", t.image.Path, err)
 			}
 		}
 		if t.studios {
 			if err := autotag.ImageStudios(t.image, r.Image(), r.Studio()); err != nil {
-				return err
+				return fmt.Errorf("error tagging image studio for %s: %v", t.image.Path, err)
 			}
 		}
 		if t.tags {
 			if err := autotag.ImageTags(t.image, r.Image(), r.Tag()); err != nil {
-				return err
+				return fmt.Errorf("error tagging image tags for %s: %v", t.image.Path, err)
 			}
 		}
 
@@ -706,17 +713,17 @@ func (t *autoTagGalleryTask) Start(wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		if t.performers {
 			if err := autotag.GalleryPerformers(t.gallery, r.Gallery(), r.Performer()); err != nil {
-				return err
+				return fmt.Errorf("error tagging gallery performers for %s: %v", t.gallery.Path.String, err)
 			}
 		}
 		if t.studios {
 			if err := autotag.GalleryStudios(t.gallery, r.Gallery(), r.Studio()); err != nil {
-				return err
+				return fmt.Errorf("error tagging gallery studio for %s: %v", t.gallery.Path.String, err)
 			}
 		}
 		if t.tags {
 			if err := autotag.GalleryTags(t.gallery, r.Gallery(), r.Tag()); err != nil {
-				return err
+				return fmt.Errorf("error tagging gallery tags for %s: %v", t.gallery.Path.String, err)
 			}
 		}
 
