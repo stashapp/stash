@@ -86,6 +86,10 @@ func Initialize(databasePath string) error {
 	DB = open(databasePath, disableForeignKeys)
 	WriteMu = &sync.Mutex{}
 
+	if err := runCustomMigrations(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
