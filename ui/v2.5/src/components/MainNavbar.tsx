@@ -21,6 +21,8 @@ interface IMenuItem {
   message: MessageDescriptor;
   href: string;
   icon: IconName;
+  hotkey: string;
+  userCreatable?: boolean;
 }
 
 const messages = defineMessages({
@@ -72,50 +74,67 @@ const allMenuItems: IMenuItem[] = [
     message: messages.scenes,
     href: "/scenes",
     icon: "play-circle",
+    hotkey: "g s",
   },
   {
     name: "images",
     message: messages.images,
     href: "/images",
     icon: "image",
+    hotkey: "g i",
   },
   {
     name: "movies",
     message: messages.movies,
     href: "/movies",
     icon: "film",
+    hotkey: "g v",
+    userCreatable: true,
   },
   {
     name: "markers",
     message: messages.markers,
     href: "/scenes/markers",
     icon: "map-marker-alt",
+    hotkey: "g k",
   },
   {
     name: "galleries",
     message: messages.galleries,
     href: "/galleries",
     icon: "images",
+    hotkey: "g l",
+    userCreatable: true,
   },
   {
     name: "performers",
     message: messages.performers,
     href: "/performers",
     icon: "user",
+    hotkey: "g p",
+    userCreatable: true,
   },
   {
     name: "studios",
     message: messages.studios,
     href: "/studios",
     icon: "video",
+    hotkey: "g u",
+    userCreatable: true,
   },
   {
     name: "tags",
     message: messages.tags,
     href: "/tags",
     icon: "tag",
+    hotkey: "g t",
+    userCreatable: true,
   },
 ];
+
+const newPathsList = allMenuItems
+  .filter((item) => item.userCreatable)
+  .map((item) => item.href);
 
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
@@ -144,15 +163,18 @@ export const MainNavbar: React.FC = () => {
   const navbarRef = useRef<any>();
   const intl = useIntl();
 
-  const maybeCollapse = (event: Event) => {
-    if (
-      navbarRef.current &&
-      event.target instanceof Node &&
-      !navbarRef.current.contains(event.target)
-    ) {
-      setExpanded(false);
-    }
-  };
+  const maybeCollapse = useCallback(
+    (event: Event) => {
+      if (
+        navbarRef.current &&
+        event.target instanceof Node &&
+        !navbarRef.current.contains(event.target)
+      ) {
+        setExpanded(false);
+      }
+    },
+    [setExpanded]
+  );
 
   useEffect(() => {
     if (expanded) {
@@ -163,50 +185,35 @@ export const MainNavbar: React.FC = () => {
       document.removeEventListener("click", maybeCollapse);
       document.removeEventListener("touchstart", maybeCollapse);
     };
-  }, [expanded]);
+  }, [expanded, maybeCollapse]);
 
-  function goto(page: string) {
-    history.push(page);
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-  }
+  const goto = useCallback(
+    (page: string) => {
+      history.push(page);
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    },
+    [history]
+  );
 
-  const newPath =
-    location.pathname === "/performers"
-      ? "/performers/new"
-      : location.pathname === "/studios"
-      ? "/studios/new"
-      : location.pathname === "/movies"
-      ? "/movies/new"
-      : location.pathname === "/tags"
-      ? "/tags/new"
-      : location.pathname === "/galleries"
-      ? "/galleries/new"
-      : null;
-  const newButton =
-    newPath === null ? (
-      ""
-    ) : (
-      <Link to={newPath}>
-        <Button variant="primary">
-          <FormattedMessage id="new" defaultMessage="New" />
-        </Button>
-      </Link>
-    );
+  const { pathname } = location;
+  const newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
+  const newButton = newPath ? (
+    <Link to={newPath}>
+      <Button variant="primary">
+        <FormattedMessage id="new" defaultMessage="New" />
+      </Button>
+    </Link>
+  ) : null;
 
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => setShowManual(!showManual));
-    Mousetrap.bind("g s", () => goto("/scenes"));
-    Mousetrap.bind("g i", () => goto("/images"));
-    Mousetrap.bind("g v", () => goto("/movies"));
-    Mousetrap.bind("g k", () => goto("/scenes/markers"));
-    Mousetrap.bind("g l", () => goto("/galleries"));
-    Mousetrap.bind("g p", () => goto("/performers"));
-    Mousetrap.bind("g u", () => goto("/studios"));
-    Mousetrap.bind("g t", () => goto("/tags"));
     Mousetrap.bind("g z", () => goto("/settings"));
+    menuItems.forEach((item) =>
+      Mousetrap.bind(item.hotkey, () => goto(item.href))
+    );
 
     if (newPath) {
       Mousetrap.bind("n", () => history.push(newPath));
@@ -214,14 +221,8 @@ export const MainNavbar: React.FC = () => {
 
     return () => {
       Mousetrap.unbind("?");
-      Mousetrap.unbind("g s");
-      Mousetrap.unbind("g v");
-      Mousetrap.unbind("g k");
-      Mousetrap.unbind("g l");
-      Mousetrap.unbind("g p");
-      Mousetrap.unbind("g u");
-      Mousetrap.unbind("g t");
       Mousetrap.unbind("g z");
+      menuItems.forEach((item) => Mousetrap.unbind(item.hotkey));
 
       if (newPath) {
         Mousetrap.unbind("n");
@@ -292,12 +293,12 @@ export const MainNavbar: React.FC = () => {
         <Navbar.Collapse>
           <Fade in={!loading}>
             <Nav className="mr-md-auto">
-              {menuItems.map((i) => (
-                <Nav.Link eventKey={i.href} as="div" key={i.href}>
-                  <LinkContainer activeClassName="active" exact to={i.href}>
+              {menuItems.map(({ href, icon, message }) => (
+                <Nav.Link eventKey={href} as="div" key={href}>
+                  <LinkContainer activeClassName="active" exact to={href}>
                     <Button className="minimal w-100">
-                      <Icon icon={i.icon} />
-                      <span>{intl.formatMessage(i.message)}</span>
+                      <Icon {...{ icon }} />
+                      <span>{intl.formatMessage(message)}</span>
                     </Button>
                   </LinkContainer>
                 </Nav.Link>
