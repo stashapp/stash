@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   defineMessages,
   FormattedMessage,
@@ -239,6 +239,8 @@ export const MainNavbar: React.FC = () => {
     }
   }
 
+  const handleDismiss = useCallback(() => setExpanded(false), [setExpanded]);
+
   return (
     <>
       <Manual show={showManual} onClose={() => setShowManual(false)} />
@@ -247,28 +249,47 @@ export const MainNavbar: React.FC = () => {
         fixed="top"
         variant="dark"
         bg="dark"
-        className="top-nav"
+        className="top-nav justify-content-start"
         expand="xl"
         expanded={expanded}
         onToggle={setExpanded}
         ref={navbarRef}
       >
-        <Navbar.Brand
-          as="div"
-          className="order-1 order-md-0"
-          onClick={() => setExpanded(false)}
-        >
+        <Navbar.Toggle className="mr-3" />
+        <Navbar.Brand as="div" onClick={handleDismiss}>
           <Link to="/">
-            <Button className="minimal brand-link d-none d-md-inline-block">
-              Stash
-            </Button>
-            <Button className="minimal brand-icon d-inline d-md-none">
-              <img src="favicon.ico" alt="" />
-            </Button>
+            <Button className="minimal brand-link d-inline-block">Stash</Button>
           </Link>
         </Navbar.Brand>
-        <Navbar.Toggle className="order-0" />
-        <Navbar.Collapse className="order-3 order-md-1">
+
+        <Nav className="flex-row ml-auto order-xl-1">
+          {!!newButton && <div className="mr-2">{newButton}</div>}
+          <Nav.Link
+            href="https://opencollective.com/stashapp"
+            target="_blank"
+            onClick={handleDismiss}
+          >
+            <Button className="minimal donate" title="Donate">
+              <Icon icon="heart" />
+              <span>{intl.formatMessage(messages.donate)}</span>
+            </Button>
+          </Nav.Link>
+          <NavLink exact to="/settings" onClick={handleDismiss}>
+            <Button className="minimal settings-button" title="Settings">
+              <Icon icon="cog" />
+            </Button>
+          </NavLink>
+          <Button
+            className="minimal help-button"
+            onClick={() => setShowManual(true)}
+            title="Help"
+          >
+            <Icon icon="question-circle" />
+          </Button>
+          {maybeRenderLogout()}
+        </Nav>
+
+        <Navbar.Collapse>
           <Fade in={!loading}>
             <Nav className="mr-md-auto">
               {menuItems.map((i) => (
@@ -284,32 +305,6 @@ export const MainNavbar: React.FC = () => {
             </Nav>
           </Fade>
         </Navbar.Collapse>
-        <Nav className="order-2 flex-row">
-          <div>{newButton}</div>
-          <Nav.Link
-            href="https://opencollective.com/stashapp"
-            target="_blank"
-            onClick={() => setExpanded(false)}
-          >
-            <Button className="minimal donate" title="Donate">
-              <Icon icon="heart" />
-              <span>{intl.formatMessage(messages.donate)}</span>
-            </Button>
-          </Nav.Link>
-          <NavLink exact to="/settings" onClick={() => setExpanded(false)}>
-            <Button className="minimal settings-button" title="Settings">
-              <Icon icon="cog" />
-            </Button>
-          </NavLink>
-          <Button
-            className="minimal help-button"
-            onClick={() => setShowManual(true)}
-            title="Help"
-          >
-            <Icon icon="question-circle" />
-          </Button>
-          {maybeRenderLogout()}
-        </Nav>
       </Navbar>
     </>
   );
