@@ -1,43 +1,31 @@
 $scrubberHeight: 120px;
+$menuHeight: 4rem;
+$sceneTabWidth: 450px;
 
 #jwplayer-container {
-  /* full height minus the top navbar */
-  height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - #{$menuHeight});
   padding-bottom: 0.25rem;
 
-  @media (max-width: 1200px) {
-    height: inherit;
-
-    .jw-aspect {
-      display: block;
-      height: 56.25vw;
-      max-height: calc(100vh - #{$scrubberHeight} - 4.25rem - 15px);
-    }
-
-    &.portrait .jw-aspect {
-      height: 177.78vw;
-    }
-  }
-  @media (max-height: 449px), (max-width: 575px) {
-    .jw-aspect {
-      max-height: calc(100vh - 4.25rem);
-    }
+  @media (min-width: 1200px) {
+    height: 100vh;
   }
 
   & video:focus {
     outline: 0;
   }
 
-  > div:first-child {
-    /* minus the scrubber height and margin */
-    height: calc(100% - #{$scrubberHeight} - 15px);
-  }
-}
+  .video-wrapper {
+    height: 56.25vw;
 
-/* scrubber is hidden when height < 450px or width < 576, so use entire height for scene player */
-@media (max-height: 449px), (max-width: 575px) {
-  #jwplayer-container > div:first-child {
-    height: 100%;
+    @media (min-width: 1200px) {
+      height: 100%;
+    }
+  }
+
+  &.portrait .video-wrapper {
+    height: 177.78vw;
   }
 }
 
@@ -57,9 +45,6 @@ $scrubberHeight: 120px;
     padding-right: 15px;
   }
 }
-
-$sceneTabWidth: 450px;
-
 @media (min-width: 1200px) {
   .scene-tabs {
     flex: 0 0 $sceneTabWidth;
@@ -117,6 +102,7 @@ $sceneTabWidth: 450px;
 }
 
 .scrubber-wrapper {
+  flex-shrink: 0;
   margin: 5px 0;
   overflow: hidden;
   position: relative;
