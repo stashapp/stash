@@ -644,7 +644,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           </div>
         </div>
         <div className="form-container row px-3">
-          <div className="col-12 col-lg-6 col-xl-12">
+          <div className="col-12 col-lg-7 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
             <Form.Group controlId="url" as={Row}>
               <Col xs={3} className="pr-0 url-label">
@@ -685,8 +685,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "galleries" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                },
               })}
-              <Col xs={9}>
+              <Col sm={9}>
                 <GallerySelect
                   galleries={galleries}
                   onSelect={(items) => onSetGalleries(items)}
@@ -697,8 +701,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "studios" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                },
               })}
-              <Col xs={9}>
+              <Col sm={9}>
                 <StudioSelect
                   onSelect={(items) =>
                     formik.setFieldValue(
@@ -815,7 +823,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               </ul>
             </Form.Group>
           </div>
-          <div className="col-12 col-lg-6 col-xl-12">
+          <div className="col-12 col-lg-5 col-xl-12">
             <Form.Group controlId="details">
               <Form.Label>
                 <FormattedMessage id="details" />
