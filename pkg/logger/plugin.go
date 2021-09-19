@@ -146,19 +146,19 @@ func (log *PluginLogger) HandleStderrLine(line string) {
 
 	switch *level {
 	case TraceLevel:
-		logger.Trace(log.Prefix, ll)
+		Trace(log.Prefix, ll)
 	case DebugLevel:
-		logger.Debug(log.Prefix, ll)
+		Debug(log.Prefix, ll)
 	case InfoLevel:
-		logger.Info(log.Prefix, ll)
+		Info(log.Prefix, ll)
 	case WarningLevel:
-		logger.Warn(log.Prefix, ll)
+		Warn(log.Prefix, ll)
 	case ErrorLevel:
-		logger.Error(log.Prefix, ll)
+		Error(log.Prefix, ll)
 	case ProgressLevel:
 		p, err := strconv.ParseFloat(ll, 64)
 		if err != nil {
-			logger.Errorf("Error parsing progress value '%s': %s", ll, err.Error())
+			Errorf("Error parsing progress value '%s': %s", ll, err.Error())
 		} else {
 			// only pass progress through if channel present
 			if log.ProgressChan != nil {
