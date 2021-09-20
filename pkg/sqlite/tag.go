@@ -302,6 +302,8 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	query.handleCriterion(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
 	query.handleCriterion(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
 	query.handleCriterion(tagMarkerCountCriterionHandler(qb, tagFilter.MarkerCount))
+	query.handleCriterion(tagParentsCriterionHandler(qb, tagFilter.Parents))
+	query.handleCriterion(tagChildrenCriterionHandler(qb, tagFilter.Children))
 
 	return query
 }
@@ -429,6 +431,72 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 			clause, args := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
 
 			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if tags != nil && len(tags.Value) > 0 {
+			var args []interface{}
+			for _, val := range tags.Value {
+				args = append(args, val)
+			}
+
+			depthVal := 0
+			if tags.Depth != nil {
+				depthVal = *tags.Depth
+			}
+
+			var depthCondition string
+			if depthVal != -1 {
+				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+			}
+
+			query := `parents AS (
+	SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
+	UNION
+	SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
+)`
+
+			f.addRecursiveWith(query, args...)
+
+			f.addJoin("parents", "", "parents.item_id = tags.id")
+
+			addHierarchicalConditionClauses(f, tags, "parents", "root_id")
+		}
+	}
+}
+
+func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if tags != nil && len(tags.Value) > 0 {
+			var args []interface{}
+			for _, val := range tags.Value {
+				args = append(args, val)
+			}
+
+			depthVal := 0
+			if tags.Depth != nil {
+				depthVal = *tags.Depth
+			}
+
+			var depthCondition string
+			if depthVal != -1 {
+				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+			}
+
+			query := `children AS (
+	SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
+	UNION
+	SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
+)`
+
+			f.addRecursiveWith(query, args...)
+
+			f.addJoin("children", "", "children.item_id = tags.id")
+
+			addHierarchicalConditionClauses(f, tags, "children", "root_id")
 		}
 	}
 }

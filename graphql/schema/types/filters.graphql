@@ -275,6 +275,12 @@ input TagFilterType {
 
   """Filter by number of markers with this tag"""
   marker_count: IntCriterionInput
+
+  """Filter by parent tags"""
+  parents: HierarchicalMultiCriterionInput
+
+  """Filter by child tags"""
+  children: HierarchicalMultiCriterionInput
 }
 
 input ImageFilterType {
