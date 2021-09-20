@@ -87,7 +87,9 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				galleries = append(galleries, path)
 			}
 
-			instance.Paths.Generated.EnsureTmpDir()
+			if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+				logger.Warnf("couldn't create temporary directory: %v", err)
+			}
 
 			wg.Add()
 			task := ScanTask{
@@ -126,7 +128,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
-	instance.Paths.Generated.EmptyTmpDir()
+
+	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+		logger.Warnf("couldn't empty temporary directory: %v", err)
+	}
+
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
@@ -753,7 +759,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		qb := r.Scene()
 		if checksum != "" {
 			s, _ = qb.FindByChecksum(checksum)
@@ -765,6 +771,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error in read transaction: %v", txnErr)
+	}
 
 	sceneHash := oshash
 
@@ -1320,7 +1329,7 @@ func (t *ScanTask) doesPathExist() bool {
 	gExt := config.GetGalleryExtensions()
 
 	ret := false
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		if matchExtension(t.FilePath, gExt) {
 			gallery, _ := r.Gallery().FindByPath(t.FilePath)
 			if gallery != nil {
@@ -1340,6 +1349,9 @@ func (t *ScanTask) doesPathExist() bool {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error while executing read transaction: %v", txnErr)
+	}
 
 	return ret
 }
