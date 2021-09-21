@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -26,7 +27,9 @@ func createImagesChecksumIndex() error {
 
 		if err == nil {
 			var found bool
-			row.Scan(&found)
+			if err := row.Scan(&found); err != nil {
+				return fmt.Errorf("error while scanning for index: %w", err)
+			}
 			if found {
 				return nil
 			}
