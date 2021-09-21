@@ -98,6 +98,7 @@
   "career_length": "Career Length",
   "subsidiary_studios": "Subsidiary Studios",
   "sub_tags": "Sub-Tags",
+  "sub_tag_count": "Sub-Tag Count",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -581,6 +582,7 @@
   },
   "parent_studios": "Parent Studios",
   "parent_tags": "Parent Tags",
+  "parent_tag_count": "Parent Tag Count",
   "path": "Path",
   "performer": "Performer",
   "performer_count": "Performer Count",

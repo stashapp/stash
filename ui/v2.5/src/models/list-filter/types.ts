@@ -116,4 +116,6 @@ export type CriterionType =
   | "galleryChecksum"
   | "phash"
   | "director"
-  | "synopsis";
+  | "synopsis"
+  | "parent_tag_count"
+  | "child_tag_count";

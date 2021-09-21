@@ -151,5 +151,21 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
+    case "parent_tag_count":
+      return new NumberCriterion(
+        new MandatoryNumberCriterionOption(
+          "parent_tag_count",
+          "parent_tag_count",
+          "parent_count"
+        )
+      );
+    case "child_tag_count":
+      return new NumberCriterion(
+        new MandatoryNumberCriterionOption(
+          "sub_tag_count",
+          "child_tag_count",
+          "child_count"
+        )
+      );
   }
 }
