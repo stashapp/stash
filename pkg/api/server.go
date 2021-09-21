@@ -38,7 +38,6 @@ var githash string
 
 var uiBox *packr.Box
 
-//var legacyUiBox *packr.Box
 var loginUIBox *packr.Box
 
 func allowUnauthenticated(r *http.Request) bool {
