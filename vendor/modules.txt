@@ -133,21 +133,6 @@ github.com/fvbommel/sortorder
 ## explicit
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
-# github.com/gobuffalo/logger v1.0.4
-## explicit; go 1.13
-github.com/gobuffalo/logger
-# github.com/gobuffalo/packd v1.0.0
-## explicit; go 1.13
-github.com/gobuffalo/packd
-github.com/gobuffalo/packd/internal/takeon/github.com/markbates/errx
-# github.com/gobuffalo/packr/v2 v2.8.1
-## explicit; go 1.13
-github.com/gobuffalo/packr/v2
-github.com/gobuffalo/packr/v2/file
-github.com/gobuffalo/packr/v2/file/resolver
-github.com/gobuffalo/packr/v2/file/resolver/encoding/hex
-github.com/gobuffalo/packr/v2/jam/parser
-github.com/gobuffalo/packr/v2/plog
 # github.com/gobwas/httphead v0.1.0
 ## explicit; go 1.15
 github.com/gobwas/httphead
@@ -227,9 +212,6 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.9
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/karrick/godirwalk v1.16.1
-## explicit; go 1.13
-github.com/karrick/godirwalk
 # github.com/magiconair/properties v1.8.1
 ## explicit
 github.com/magiconair/properties
@@ -239,15 +221,6 @@ github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/markbates/errx v1.1.0
-## explicit; go 1.12
-github.com/markbates/errx
-# github.com/markbates/oncer v1.0.0
-## explicit; go 1.12
-github.com/markbates/oncer
-# github.com/markbates/safe v1.0.1
-## explicit
-github.com/markbates/safe
 # github.com/matryer/moq v0.0.0-20200106131100-75d0ddfc0007
 ## explicit
 github.com/matryer/moq
