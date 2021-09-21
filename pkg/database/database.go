@@ -21,7 +21,7 @@ import (
 )
 
 var DB *sqlx.DB
-var WriteMu *sync.Mutex
+var WriteMu sync.Mutex
 var dbPath string
 var appSchemaVersion uint = 28
 var databaseSchemaVersion uint
@@ -84,7 +84,6 @@ func Initialize(databasePath string) error {
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
-	WriteMu = &sync.Mutex{}
 
 	if err := runCustomMigrations(); err != nil {
 		return err
@@ -97,7 +96,15 @@ func Close() error {
 	WriteMu.Lock()
 	defer WriteMu.Unlock()
 
-	return DB.Close()
+	if DB != nil {
+		if err := DB.Close(); err != nil {
+			return err
+		}
+
+		DB = nil
+	}
+
+	return nil
 }
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
