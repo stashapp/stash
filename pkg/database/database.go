@@ -23,7 +23,7 @@ import (
 var DB *sqlx.DB
 var WriteMu *sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 25
+var appSchemaVersion uint = 28
 var databaseSchemaVersion uint
 
 var (
@@ -86,6 +86,10 @@ func Initialize(databasePath string) error {
 	DB = open(databasePath, disableForeignKeys)
 	WriteMu = &sync.Mutex{}
 
+	if err := runCustomMigrations(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -98,7 +102,7 @@ func Close() error {
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + databasePath + "?_journal=WAL"
+	url := "file:" + databasePath + "?_journal=WAL&_sync=NORMAL"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
@@ -232,6 +236,7 @@ func RunMigrations() error {
 	if err != nil {
 		panic(err.Error())
 	}
+	defer m.Close()
 
 	databaseSchemaVersion, _, _ = m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
@@ -240,13 +245,9 @@ func RunMigrations() error {
 		err = m.Steps(int(stepNumber))
 		if err != nil {
 			// migration failed
-			logger.Errorf("Error migrating database: %s", err.Error())
-			m.Close()
 			return err
 		}
 	}
-
-	m.Close()
 
 	// re-initialise the database
 	Initialize(dbPath)
@@ -255,7 +256,7 @@ func RunMigrations() error {
 	logger.Info("Performing vacuum on database")
 	_, err = DB.Exec("VACUUM")
 	if err != nil {
-		logger.Warnf("error while performing post-migration vacuum: %s", err.Error())
+		logger.Warnf("error while performing post-migration vacuum: %v", err)
 	}
 
 	return nil

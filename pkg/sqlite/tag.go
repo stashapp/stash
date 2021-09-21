@@ -196,6 +196,28 @@ func (qb *tagQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.T
 	return qb.queryTags(query, args)
 }
 
+func (qb *tagQueryBuilder) FindByParentTagID(parentID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		INNER JOIN tags_relations ON tags_relations.child_id = tags.id
+		WHERE tags_relations.parent_id = ?
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{parentID}
+	return qb.queryTags(query, args)
+}
+
+func (qb *tagQueryBuilder) FindByChildTagID(parentID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		INNER JOIN tags_relations ON tags_relations.parent_id = tags.id
+		WHERE tags_relations.child_id = ?
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{parentID}
+	return qb.queryTags(query, args)
+}
+
 func (qb *tagQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
@@ -571,4 +593,116 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 	}
 
 	return nil
+}
+
+func (qb *tagQueryBuilder) UpdateParentTags(tagID int, parentIDs []int) error {
+	tx := qb.tx
+	if _, err := tx.Exec("DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
+		return err
+	}
+
+	if len(parentIDs) > 0 {
+		var args []interface{}
+		var values []string
+		for _, parentID := range parentIDs {
+			values = append(values, "(? , ?)")
+			args = append(args, parentID, tagID)
+		}
+
+		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
+		if _, err := tx.Exec(query, args...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (qb *tagQueryBuilder) UpdateChildTags(tagID int, childIDs []int) error {
+	tx := qb.tx
+	if _, err := tx.Exec("DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
+		return err
+	}
+
+	if len(childIDs) > 0 {
+		var args []interface{}
+		var values []string
+		for _, childID := range childIDs {
+			values = append(values, "(? , ?)")
+			args = append(args, tagID, childID)
+		}
+
+		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
+		if _, err := tx.Exec(query, args...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+	inBinding := getInBinding(len(excludeIDs) + 1)
+
+	query := `WITH RECURSIVE
+parents AS (
+	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+),
+children AS (
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+)
+SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+UNION
+SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+`
+
+	var ret models.Tags
+	excludeArgs := []interface{}{tagID}
+	for _, excludeID := range excludeIDs {
+		excludeArgs = append(excludeArgs, excludeID)
+	}
+	args := []interface{}{tagID}
+	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
+	if err := qb.query(query, args, &ret); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+	inBinding := getInBinding(len(excludeIDs) + 1)
+
+	query := `WITH RECURSIVE
+children AS (
+	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+),
+parents AS (
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+)
+SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+UNION
+SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+`
+
+	var ret models.Tags
+	excludeArgs := []interface{}{tagID}
+	for _, excludeID := range excludeIDs {
+		excludeArgs = append(excludeArgs, excludeID)
+	}
+	args := []interface{}{tagID}
+	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
+	if err := qb.query(query, args, &ret); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

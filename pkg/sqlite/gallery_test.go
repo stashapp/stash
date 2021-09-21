@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -620,7 +621,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 func TestGalleryQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithGallery]),
 				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
@@ -640,7 +641,7 @@ func TestGalleryQueryTags(t *testing.T) {
 			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithTag] || gallery.ID == galleryIDs[galleryIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
 				strconv.Itoa(tagIDs[tagIdx2WithGallery]),
@@ -653,7 +654,7 @@ func TestGalleryQueryTags(t *testing.T) {
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithTwoTags], galleries[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithGallery]),
 			},
@@ -680,7 +681,6 @@ func TestGalleryQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		galleryFilter := models.GalleryFilterType{
@@ -699,7 +699,6 @@ func TestGalleryQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getGalleryStringValue(galleryIdxWithStudio, titleField)
@@ -717,12 +716,13 @@ func TestGalleryQueryStudio(t *testing.T) {
 func TestGalleryQueryStudioDepth(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()
+		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		galleryFilter := models.GalleryFilterType{
@@ -732,7 +732,7 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 		galleries := queryGallery(t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 1)
 
-		studioCriterion.Depth = 1
+		depth = 1
 
 		galleries = queryGallery(t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 0)
@@ -744,12 +744,14 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, galleryIDs[galleryIdxWithGrandChildStudio], galleries[0].ID)
 
+		depth = 2
+
 		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		q := getGalleryStringValue(galleryIdxWithGrandChildStudio, pathField)
@@ -760,7 +762,7 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
-		studioCriterion.Depth = 1
+		depth = 1
 		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 1)
 
@@ -775,7 +777,7 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 func TestGalleryQueryPerformerTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Gallery()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
@@ -795,7 +797,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformerTag] || gallery.ID == galleryIDs[galleryIdxWithPerformerTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
@@ -808,7 +810,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},

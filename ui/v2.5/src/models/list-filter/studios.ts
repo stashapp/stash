@@ -39,6 +39,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
+  createStringCriterionOption("aliases"),
 ];
 
 export const StudioListFilterOptions = new ListFilterOptions(

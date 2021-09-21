@@ -10,6 +10,8 @@ import (
 
 const studioTable = "studios"
 const studioIDColumn = "studio_id"
+const studioAliasesTable = "studio_aliases"
+const studioAliasColumn = "alias"
 
 type studioQueryBuilder struct {
 	repository
@@ -126,17 +128,89 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	query := selectAll(studioTable)
+	query += " LEFT JOIN studio_aliases ON studio_aliases.studio_id = studios.id"
 
 	var whereClauses []string
 	var args []interface{}
 
 	for _, w := range words {
-		whereClauses = append(whereClauses, "name like ?")
-		args = append(args, w+"%")
+		ww := w + "%"
+		whereClauses = append(whereClauses, "studios.name like ?")
+		args = append(args, ww)
+
+		// include aliases
+		whereClauses = append(whereClauses, "studio_aliases.alias like ?")
+		args = append(args, ww)
 	}
 
 	where := strings.Join(whereClauses, " OR ")
 	return qb.queryStudios(query+" WHERE "+where, args)
+}
+
+func (qb *studioQueryBuilder) validateFilter(filter *models.StudioFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if filter.And != nil {
+		if filter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if filter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(filter.And)
+	}
+
+	if filter.Or != nil {
+		if filter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(filter.Or)
+	}
+
+	if filter.Not != nil {
+		return qb.validateFilter(filter.Not)
+	}
+
+	return nil
+}
+
+func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) *filterBuilder {
+	query := &filterBuilder{}
+
+	if studioFilter.And != nil {
+		query.and(qb.makeFilter(studioFilter.And))
+	}
+	if studioFilter.Or != nil {
+		query.or(qb.makeFilter(studioFilter.Or))
+	}
+	if studioFilter.Not != nil {
+		query.not(qb.makeFilter(studioFilter.Not))
+	}
+
+	query.handleCriterion(stringCriterionHandler(studioFilter.Name, studioTable+".name"))
+	query.handleCriterion(stringCriterionHandler(studioFilter.Details, studioTable+".details"))
+	query.handleCriterion(stringCriterionHandler(studioFilter.URL, studioTable+".url"))
+	query.handleCriterion(intCriterionHandler(studioFilter.Rating, studioTable+".rating"))
+
+	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
+		if studioFilter.StashID != nil {
+			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
+			stringCriterionHandler(studioFilter.StashID, "scene_stash_ids.stash_id")(f)
+		}
+	}))
+
+	query.handleCriterion(studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
+	query.handleCriterion(studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))
+	query.handleCriterion(studioImageCountCriterionHandler(qb, studioFilter.ImageCount))
+	query.handleCriterion(studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
+	query.handleCriterion(studioParentCriterionHandler(qb, studioFilter.Parents))
+	query.handleCriterion(studioAliasCriterionHandler(qb, studioFilter.Aliases))
+
+	return query
 }
 
 func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
@@ -150,57 +224,22 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs("studios")
-	query.body += `
-		left join scenes on studios.id = scenes.studio_id
-		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
-	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"studios.name"}
+		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")
+		searchColumns := []string{"studios.name", "studio_aliases.alias"}
 
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
 	}
 
-	if parentsFilter := studioFilter.Parents; parentsFilter != nil && len(parentsFilter.Value) > 0 {
-		query.body += `
-			left join studios as parent_studio on parent_studio.id = studios.parent_id
-		`
-
-		for _, studioID := range parentsFilter.Value {
-			query.addArg(studioID)
-		}
-
-		whereClause, havingClause := getMultiCriterionClause("studios", "parent_studio", "", "", "parent_id", parentsFilter)
-
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
+	if err := qb.validateFilter(studioFilter); err != nil {
+		return nil, 0, err
 	}
+	filter := qb.makeFilter(studioFilter)
 
-	if rating := studioFilter.Rating; rating != nil {
-		query.handleIntCriterionInput(studioFilter.Rating, "studios.rating")
-	}
-	query.handleCountCriterion(studioFilter.SceneCount, studioTable, sceneTable, studioIDColumn)
-	query.handleCountCriterion(studioFilter.ImageCount, studioTable, imageTable, studioIDColumn)
-	query.handleCountCriterion(studioFilter.GalleryCount, studioTable, galleryTable, studioIDColumn)
-	query.handleStringCriterionInput(studioFilter.Name, "studios.name")
-	query.handleStringCriterionInput(studioFilter.Details, "studios.details")
-	query.handleStringCriterionInput(studioFilter.URL, "studios.url")
-	query.handleStringCriterionInput(studioFilter.StashID, "studio_stash_ids.stash_id")
-
-	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
-		switch *isMissingFilter {
-		case "image":
-			query.body += `left join studios_image on studios_image.studio_id = studios.id
-			`
-			query.addWhere("studios_image.studio_id IS NULL")
-		case "stash_id":
-			query.addWhere("studio_stash_ids.studio_id IS NULL")
-		default:
-			query.addWhere("studios." + *isMissingFilter + " IS NULL")
-		}
-	}
+	query.addFilter(filter)
 
 	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
@@ -221,6 +260,83 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	return studios, countResult, nil
 }
 
+func studioIsMissingCriterionHandler(qb *studioQueryBuilder, isMissing *string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if isMissing != nil && *isMissing != "" {
+			switch *isMissing {
+			case "image":
+				f.addJoin("studios_image", "", "studios_image.studio_id = studios.id")
+				f.addWhere("studios_image.studio_id IS NULL")
+			case "stash_id":
+				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
+				f.addWhere("studio_stash_ids.studio_id IS NULL")
+			default:
+				f.addWhere("(studios." + *isMissing + " IS NULL OR TRIM(studios." + *isMissing + ") = '')")
+			}
+		}
+	}
+}
+
+func studioSceneCountCriterionHandler(qb *studioQueryBuilder, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if sceneCount != nil {
+			f.addJoin("scenes", "", "scenes.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct scenes.id)", *sceneCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func studioImageCountCriterionHandler(qb *studioQueryBuilder, imageCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if imageCount != nil {
+			f.addJoin("images", "", "images.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct images.id)", *imageCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func studioGalleryCountCriterionHandler(qb *studioQueryBuilder, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if galleryCount != nil {
+			f.addJoin("galleries", "", "galleries.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct galleries.id)", *galleryCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func studioParentCriterionHandler(qb *studioQueryBuilder, parents *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder) {
+		f.addJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
+	}
+	h := multiCriterionHandlerBuilder{
+		primaryTable: studioTable,
+		foreignTable: "parent_studio",
+		joinTable:    "",
+		primaryFK:    studioIDColumn,
+		foreignFK:    "parent_id",
+		addJoinsFunc: addJoinsFunc,
+	}
+	return h.handler(parents)
+}
+
+func studioAliasCriterionHandler(qb *studioQueryBuilder, alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    studioAliasesTable,
+		stringColumn: studioAliasColumn,
+		addJoinTable: func(f *filterBuilder) {
+			qb.aliasRepository().join(f, "", "studios.id")
+		},
+	}
+
+	return h.handler(alias)
+}
+
 func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
@@ -233,6 +349,8 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 	}
 
 	switch sort {
+	case "scenes_count":
+		return getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "images_count":
 		return getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":
@@ -302,4 +420,23 @@ func (qb *studioQueryBuilder) GetStashIDs(studioID int) ([]*models.StashID, erro
 
 func (qb *studioQueryBuilder) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(studioID, stashIDs)
+}
+
+func (qb *studioQueryBuilder) aliasRepository() *stringRepository {
+	return &stringRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: studioAliasesTable,
+			idColumn:  studioIDColumn,
+		},
+		stringColumn: studioAliasColumn,
+	}
+}
+
+func (qb *studioQueryBuilder) GetAliases(studioID int) ([]string, error) {
+	return qb.aliasRepository().get(studioID)
+}
+
+func (qb *studioQueryBuilder) UpdateAliases(studioID int, aliases []string) error {
+	return qb.aliasRepository().replace(studioID, aliases)
 }

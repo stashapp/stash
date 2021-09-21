@@ -151,6 +151,62 @@ type scrapedStudioStash struct {
 	URL  *string `graphql:"url" json:"url"`
 }
 
+type stashFindSceneNamesResultType struct {
+	Count  int                  `graphql:"count"`
+	Scenes []*scrapedSceneStash `graphql:"scenes"`
+}
+
+func (s *stashScraper) scrapedStashSceneToScrapedScene(scene *scrapedSceneStash) (*models.ScrapedScene, error) {
+	ret := models.ScrapedScene{}
+	err := copier.Copy(&ret, scene)
+	if err != nil {
+		return nil, err
+	}
+
+	// get the performer image directly
+	ret.Image, err = getStashSceneImage(s.config.StashServer.URL, scene.ID, s.globalConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (s *stashScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+	client := s.getStashClient()
+
+	var q struct {
+		FindScenes stashFindSceneNamesResultType `graphql:"findScenes(filter: $f)"`
+	}
+
+	page := 1
+	perPage := 10
+
+	vars := map[string]interface{}{
+		"f": models.FindFilterType{
+			Q:       &name,
+			Page:    &page,
+			PerPage: &perPage,
+		},
+	}
+
+	err := client.Query(context.Background(), &q, vars)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.ScrapedScene
+	for _, scene := range q.FindScenes.Scenes {
+		converted, err := s.scrapedStashSceneToScrapedScene(scene)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, converted)
+	}
+
+	return ret, nil
+}
+
 type scrapedSceneStash struct {
 	ID         string                   `graphql:"id" json:"id"`
 	Title      *string                  `graphql:"title" json:"title"`
@@ -189,19 +245,18 @@ func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 	}
 
 	// need to copy back to a scraped scene
-	ret := models.ScrapedScene{}
-	if err := copier.Copy(&ret, q.FindScene); err != nil {
+	ret, err := s.scrapedStashSceneToScrapedScene(q.FindScene)
+	if err != nil {
 		return nil, err
 	}
 
 	// get the performer image directly
-	var err error
 	ret.Image, err = getStashSceneImage(s.config.StashServer.URL, q.FindScene.ID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ret, nil
+	return ret, nil
 }
 
 func (s *stashScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {

@@ -114,6 +114,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     ? {
         video: props.sceneMarker.stream,
         animation: props.sceneMarker.preview,
+        image: props.sceneMarker.screenshot,
       }
     : props.scene
     ? {

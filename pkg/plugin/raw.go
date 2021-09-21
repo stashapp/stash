@@ -51,7 +51,9 @@ func (t *rawPluginTask) Start() error {
 		defer stdin.Close()
 
 		inBytes, _ := json.Marshal(t.input)
-		io.WriteString(stdin, string(inBytes))
+		if k, err := io.WriteString(stdin, string(inBytes)); err != nil {
+			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
+		}
 	}()
 
 	stderr, err := cmd.StderrPipe()
@@ -70,7 +72,7 @@ func (t *rawPluginTask) Start() error {
 		return fmt.Errorf("error running plugin: %s", err.Error())
 	}
 
-	go t.handlePluginStderr(stderr)
+	go t.handlePluginStderr(t.plugin.Name, stderr)
 	t.cmd = cmd
 
 	// send the stdout to the plugin output

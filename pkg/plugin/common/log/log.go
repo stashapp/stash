@@ -16,144 +16,94 @@
 package log
 
 import (
-	"fmt"
 	"math"
-	"os"
-	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // Level represents a logging level for plugin outputs.
 type Level struct {
-	char byte
-	Name string
+	*logger.PluginLogLevel
 }
 
 // Valid Level values.
 var (
 	TraceLevel = Level{
-		char: 't',
-		Name: "trace",
+		&logger.TraceLevel,
 	}
 	DebugLevel = Level{
-		char: 'd',
-		Name: "debug",
+		&logger.DebugLevel,
 	}
 	InfoLevel = Level{
-		char: 'i',
-		Name: "info",
+		&logger.InfoLevel,
 	}
 	WarningLevel = Level{
-		char: 'w',
-		Name: "warning",
+		&logger.WarningLevel,
 	}
 	ErrorLevel = Level{
-		char: 'e',
-		Name: "error",
+		&logger.ErrorLevel,
 	}
 	ProgressLevel = Level{
-		char: 'p',
-		Name: "progress",
+		&logger.ProgressLevel,
 	}
 	NoneLevel = Level{
-		Name: "none",
+		&logger.NoneLevel,
 	}
 )
-
-var validLevels = []Level{
-	TraceLevel,
-	DebugLevel,
-	InfoLevel,
-	WarningLevel,
-	ErrorLevel,
-	ProgressLevel,
-	NoneLevel,
-}
-
-const startLevelChar byte = 1
-const endLevelChar byte = 2
-
-func (l Level) prefix() string {
-	return string([]byte{
-		startLevelChar,
-		byte(l.char),
-		endLevelChar,
-	})
-}
-
-func (l Level) log(args ...interface{}) {
-	if l.char == 0 {
-		return
-	}
-
-	argsToUse := []interface{}{
-		l.prefix(),
-	}
-	argsToUse = append(argsToUse, args...)
-	fmt.Fprintln(os.Stderr, argsToUse...)
-}
-
-func (l Level) logf(format string, args ...interface{}) {
-	if l.char == 0 {
-		return
-	}
-
-	formatToUse := string(l.prefix()) + format + "\n"
-	fmt.Fprintf(os.Stderr, formatToUse, args...)
-}
 
 // Trace outputs a trace logging message to os.Stderr. Message is encoded with a
 // prefix that signifies to the server that it is a trace message.
 func Trace(args ...interface{}) {
-	TraceLevel.log(args...)
+	TraceLevel.Log(args...)
 }
 
 // Tracef is the equivalent of Printf outputting as a trace logging message.
 func Tracef(format string, args ...interface{}) {
-	TraceLevel.logf(format, args...)
+	TraceLevel.Logf(format, args...)
 }
 
 // Debug outputs a debug logging message to os.Stderr. Message is encoded with a
 // prefix that signifies to the server that it is a debug message.
 func Debug(args ...interface{}) {
-	DebugLevel.log(args...)
+	DebugLevel.Log(args...)
 }
 
 // Debugf is the equivalent of Printf outputting as a debug logging message.
 func Debugf(format string, args ...interface{}) {
-	DebugLevel.logf(format, args...)
+	DebugLevel.Logf(format, args...)
 }
 
 // Info outputs an info logging message to os.Stderr. Message is encoded with a
 // prefix that signifies to the server that it is an info message.
 func Info(args ...interface{}) {
-	InfoLevel.log(args...)
+	InfoLevel.Log(args...)
 }
 
 // Infof is the equivalent of Printf outputting as an info logging message.
 func Infof(format string, args ...interface{}) {
-	InfoLevel.logf(format, args...)
+	InfoLevel.Logf(format, args...)
 }
 
 // Warn outputs a warning logging message to os.Stderr. Message is encoded with a
 // prefix that signifies to the server that it is a warning message.
 func Warn(args ...interface{}) {
-	WarningLevel.log(args...)
+	WarningLevel.Log(args...)
 }
 
 // Warnf is the equivalent of Printf outputting as a warning logging message.
 func Warnf(format string, args ...interface{}) {
-	WarningLevel.logf(format, args...)
+	WarningLevel.Logf(format, args...)
 }
 
 // Error outputs an error logging message to os.Stderr. Message is encoded with a
 // prefix that signifies to the server that it is an error message.
 func Error(args ...interface{}) {
-	ErrorLevel.log(args...)
+	ErrorLevel.Log(args...)
 }
 
 // Errorf is the equivalent of Printf outputting as an error logging message.
 func Errorf(format string, args ...interface{}) {
-	ErrorLevel.logf(format, args...)
+	ErrorLevel.Logf(format, args...)
 }
 
 // Progress logs the current progress value. The progress value should be
@@ -161,15 +111,16 @@ func Errorf(format string, args ...interface{}) {
 // complete. Values outside of this range will be clamp to be within it.
 func Progress(progress float64) {
 	progress = math.Min(math.Max(0, progress), 1)
-	ProgressLevel.log(progress)
+	ProgressLevel.Log(progress)
 }
 
 // LevelFromName returns the Level that matches the provided name or nil if
 // the name does not match a valid value.
 func LevelFromName(name string) *Level {
-	for _, l := range validLevels {
-		if l.Name == name {
-			return &l
+	l := logger.PluginLogLevelFromName(name)
+	if l != nil {
+		return &Level{
+			l,
 		}
 	}
 
@@ -181,24 +132,14 @@ func LevelFromName(name string) *Level {
 // determines the log level, if present. If not present, the plugin output
 // is returned unchanged with a nil Level.
 func DetectLogLevel(line string) (*Level, string) {
-	if len(line) < 4 || line[0] != startLevelChar || line[2] != endLevelChar {
-		return nil, line
-	}
-
-	char := line[1]
-	var level *Level
-	for _, l := range validLevels {
-		if l.char == char {
-			level = &l
-			break
-		}
-	}
+	var level *logger.PluginLogLevel
+	level, line = logger.DetectLogLevel(line)
 
 	if level == nil {
 		return nil, line
 	}
 
-	line = strings.TrimSpace(line[3:])
-
-	return level, line
+	return &Level{
+		level,
+	}, line
 }

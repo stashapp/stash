@@ -58,6 +58,12 @@ func (r *sceneMarkerResolver) Preview(ctx context.Context, obj *models.SceneMark
 	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamPreviewURL(obj.ID), nil
 }
 
+func (r *sceneMarkerResolver) Screenshot(ctx context.Context, obj *models.SceneMarker) (string, error) {
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	sceneID := int(obj.SceneID.Int64)
+	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamScreenshotURL(obj.ID), nil
+}
+
 func (r *sceneMarkerResolver) CreatedAt(ctx context.Context, obj *models.SceneMarker) (*time.Time, error) {
 	return &obj.CreatedAt.Timestamp, nil
 }

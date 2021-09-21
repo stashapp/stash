@@ -98,16 +98,6 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
-func visitedPluginHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// get the visited plugins and set them in the context
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
 const loginEndPoint = "/login"
 
 func Start() {
