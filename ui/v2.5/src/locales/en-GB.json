@@ -442,6 +442,7 @@
         "fit_to_screen": "Fit to screen",
         "fit_horizontally": "Fit horizontally"
       },
+      "options": "Options",
       "scale_up": {
         "label": "Scale up to fit",
         "description": "Scale smaller images up to fill screen"

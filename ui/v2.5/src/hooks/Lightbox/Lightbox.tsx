@@ -4,7 +4,7 @@ import {
   Button,
   Col,
   InputGroup,
-  OverlayTrigger,
+  Overlay,
   Popover,
   Form,
   Row,
@@ -69,6 +69,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
   const [scaleUp, setScaleUp] = useState(false);
   const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
@@ -76,6 +77,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [resetZoom, setResetZoom] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const overlayTarget = useRef<HTMLButtonElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
@@ -121,8 +123,8 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   useEffect(() => {
     // reset zoom status
-    setResetZoom((r) => !r);
-    setZoomed(false);
+    // setResetZoom((r) => !r);
+    // setZoomed(false);
 
     if (images.length < 2) return;
     if (index === oldIndex.current) return;
@@ -457,12 +459,16 @@ export const LightboxComponent: React.FC<IProps> = ({
   );
 
   const optionsPopover = (
-    <Popover id="slideshow-options">
-      <Popover.Title>Options</Popover.Title>
+    <>
+      <Popover.Title>
+        {intl.formatMessage({
+          id: "dialogs.lightbox.options",
+        })}
+      </Popover.Title>
       <Popover.Content>
         <OptionsForm />
       </Popover.Content>
-    </Popover>
+    </>
   );
 
   const element = isVisible ? (
@@ -483,24 +489,37 @@ export const LightboxComponent: React.FC<IProps> = ({
               </b>
             </div>
             <div className={CLASSNAME_RIGHT}>
-              {!isFullscreen && (
-                <div className={CLASSNAME_OPTIONS}>
-                  <div className={CLASSNAME_OPTIONS_ICON}>
-                    <OverlayTrigger
-                      trigger="click"
-                      placement="bottom"
-                      overlay={optionsPopover}
-                    >
-                      <Button variant="link" title="Options">
-                        <Icon icon="cog" />
-                      </Button>
-                    </OverlayTrigger>
-                  </div>
-                  <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
-                    <OptionsForm />
-                  </InputGroup>
+              <div className={CLASSNAME_OPTIONS}>
+                <div className={CLASSNAME_OPTIONS_ICON}>
+                  <Button
+                    ref={overlayTarget}
+                    variant="link"
+                    title="Options"
+                    onClick={() => setShowOptions(!showOptions)}
+                  >
+                    <Icon icon="cog" />
+                  </Button>
+                  <Overlay
+                    target={overlayTarget.current}
+                    show={showOptions}
+                    placement="bottom"
+                    container={containerRef}
+                  >
+                    {({ placement, arrowProps, show: _show, ...props }) => (
+                      <div
+                        className="popover"
+                        {...props}
+                        style={{ ...props.style }}
+                      >
+                        {optionsPopover}
+                      </div>
+                    )}
+                  </Overlay>
                 </div>
-              )}
+                <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
+                  <OptionsForm />
+                </InputGroup>
+              </div>
               {slideshowEnabled && (
                 <Button
                   variant="link"
