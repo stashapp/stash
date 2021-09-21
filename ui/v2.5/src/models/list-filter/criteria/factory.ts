@@ -27,6 +27,8 @@ import { PerformersCriterion } from "./performers";
 import { AverageResolutionCriterion, ResolutionCriterion } from "./resolution";
 import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
 import {
+  ChildTagsCriterionOption,
+  ParentTagsCriterionOption,
   PerformerTagsCriterionOption,
   SceneTagsCriterionOption,
   TagsCriterion,
@@ -98,6 +100,10 @@ export function makeCriteria(type: CriterionType = "none") {
       return new TagsCriterion(SceneTagsCriterionOption);
     case "performerTags":
       return new TagsCriterion(PerformerTagsCriterionOption);
+    case "parentTags":
+      return new TagsCriterion(ParentTagsCriterionOption);
+    case "childTags":
+      return new TagsCriterion(ChildTagsCriterionOption);
     case "performers":
       return new PerformersCriterion();
     case "studios":

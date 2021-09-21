@@ -75,6 +75,8 @@ export type CriterionType =
   | "tags"
   | "sceneTags"
   | "performerTags"
+  | "parentTags"
+  | "childTags"
   | "tag_count"
   | "performers"
   | "studios"

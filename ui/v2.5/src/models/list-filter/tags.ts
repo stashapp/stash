@@ -6,6 +6,10 @@ import {
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import {
+  ChildTagsCriterionOption,
+  ParentTagsCriterionOption,
+} from "./criteria/tags";
 
 const defaultSortBy = "name";
 const sortByOptions = ["name", "random"]
@@ -43,6 +47,8 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("marker_count"),
+  ParentTagsCriterionOption,
+  ChildTagsCriterionOption,
 ];
 
 export const TagListFilterOptions = new ListFilterOptions(
