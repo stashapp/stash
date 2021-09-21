@@ -982,15 +982,16 @@ func (i *Instance) setDefaultValues(write bool) error {
 	return nil
 }
 
+// SetInitialConfig fills in missing required config fields
 func (i *Instance) SetInitialConfig() error {
 	return i.setInitialConfig(true)
 }
 
+// SetInitialMemoryConfig fills in missing required config fields without writing the configuration
 func (i *Instance) SetInitialMemoryConfig() error {
 	return i.setInitialConfig(false)
 }
 
-// SetInitialConfig fills in missing required config fields
 func (i *Instance) setInitialConfig(write bool) error {
 	// generate some api keys
 	const apiKeyLength = 32
