@@ -12,8 +12,6 @@ require (
 	github.com/disintegration/imaging v1.6.0
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/go-chi/chi v4.0.2+incompatible
-	github.com/gobuffalo/logger v1.0.4 // indirect
-	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
@@ -22,7 +20,6 @@ require (
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/json-iterator/go v1.1.9
-	github.com/karrick/godirwalk v1.16.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 	github.com/remeh/sizedwaitgroup v1.0.0
@@ -55,7 +52,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
-	github.com/gobuffalo/packd v1.0.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0-rc.5 // indirect
@@ -68,9 +64,6 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/markbates/errx v1.1.0 // indirect
-	github.com/markbates/oncer v1.0.0 // indirect
-	github.com/markbates/safe v1.0.1 // indirect
 	github.com/matryer/moq v0.0.0-20200106131100-75d0ddfc0007 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
