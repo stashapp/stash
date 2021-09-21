@@ -13,9 +13,9 @@ func TestConcurrentConfigAccess(t *testing.T) {
 	//const loops = 1000
 	const loops = 200
 	var wg sync.WaitGroup
-	for t := 0; t < workers; t++ {
+	for k := 0; k < workers; k++ {
 		wg.Add(1)
-		go func() {
+		go func(wk int) {
 			for l := 0; l < loops; l++ {
 				i.SetInitialConfig()
 
@@ -93,7 +93,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(MaxUploadSize, i.GetMaxUploadSize())
 			}
 			wg.Done()
-		}()
+		}(k)
 	}
 
 	wg.Wait()

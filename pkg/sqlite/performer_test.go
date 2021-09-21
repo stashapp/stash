@@ -165,7 +165,7 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 	})
 }
 
-func TestPerformerQueryPathNotRating(t *testing.T) {
+func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 	const performerIdx = 1
 
 	performerRating := getRating(performerIdx)
@@ -506,7 +506,6 @@ func TestPerformerQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		performerFilter := models.PerformerFilterType{
@@ -526,7 +525,6 @@ func TestPerformerQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
 			},
 			Modifier: models.CriterionModifierIncludesAll,
-			Depth:    0,
 		}
 
 		performers = queryPerformers(t, sqb, &performerFilter, nil)
@@ -539,7 +537,6 @@ func TestPerformerQueryTags(t *testing.T) {
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getSceneStringValue(performerIdxWithTwoTags, titleField)

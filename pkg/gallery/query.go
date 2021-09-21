@@ -22,7 +22,6 @@ func CountByStudioID(r models.GalleryReader, id int) (int, error) {
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		},
 	}
 
@@ -34,7 +33,6 @@ func CountByTagID(r models.GalleryReader, id int) (int, error) {
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		},
 	}
 

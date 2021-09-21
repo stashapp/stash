@@ -16,6 +16,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -453,7 +454,10 @@ func (i *Instance) GetStashBoxes() []*models.StashBox {
 	i.RLock()
 	defer i.RUnlock()
 	var boxes []*models.StashBox
-	viper.UnmarshalKey(StashBoxes, &boxes)
+	if err := viper.UnmarshalKey(StashBoxes, &boxes); err != nil {
+		logger.Warnf("error in unmarshalkey: %v", err)
+	}
+
 	return boxes
 }
 
@@ -801,7 +805,9 @@ func (i *Instance) SetCSS(css string) {
 
 	buf := []byte(css)
 
-	ioutil.WriteFile(fn, buf, 0777)
+	if err := ioutil.WriteFile(fn, buf, 0777); err != nil {
+		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
+	}
 }
 
 func (i *Instance) GetCSSEnabled() bool {

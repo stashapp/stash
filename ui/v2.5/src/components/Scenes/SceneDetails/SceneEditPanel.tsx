@@ -7,6 +7,7 @@ import {
   Form,
   Col,
   Row,
+  ButtonGroup,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -18,7 +19,7 @@ import {
   useSceneUpdate,
   mutateReloadScrapers,
   useConfiguration,
-  queryStashBoxScene,
+  queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -37,6 +38,7 @@ import { Prompt } from "react-router";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
+import { SceneQueryModal } from "./SceneQueryModal";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -60,8 +62,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
   );
 
   const Scrapers = useListSceneScrapers();
+  const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
+  const [scraper, setScraper] = useState<GQL.ScraperSourceInput | undefined>();
+  const [
+    isScraperQueryModalOpen,
+    setIsScraperQueryModalOpen,
+  ] = useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<
@@ -181,12 +189,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   useEffect(() => {
-    const newQueryableScrapers = (
-      Scrapers?.data?.listSceneScrapers ?? []
-    ).filter((s) =>
+    const toFilter = Scrapers?.data?.listSceneScrapers ?? [];
+
+    const newFragmentScrapers = toFilter.filter((s) =>
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
     );
+    const newQueryableScrapers = toFilter.filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    );
 
+    setFragmentScrapers(newFragmentScrapers);
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers, stashConfig]);
 
@@ -273,32 +285,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onScrapeStashBoxClicked(stashBoxIndex: number) {
+  async function onScrapeClicked(s: GQL.ScraperSourceInput) {
     setIsLoading(true);
     try {
-      const result = await queryStashBoxScene(stashBoxIndex, scene.id);
-      if (!result.data || !result.data.scrapeSingleScene) {
-        return;
-      }
-
-      if (result.data.scrapeSingleScene.length > 0) {
-        setScrapedScene(result.data.scrapeSingleScene[0]);
-      } else {
-        Toast.success({
-          content: "No scenes found",
-        });
-      }
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function onScrapeClicked(scraper: GQL.Scraper) {
-    setIsLoading(true);
-    try {
-      const result = await queryScrapeScene(scraper.id, scene.id);
+      const result = await queryScrapeScene(s, scene.id);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
@@ -312,6 +302,41 @@ export const SceneEditPanel: React.FC<IProps> = ({
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function scrapeFromQuery(
+    s: GQL.ScraperSourceInput,
+    fragment: GQL.ScrapedSceneDataFragment
+  ) {
+    setIsLoading(true);
+    try {
+      const input: GQL.ScrapedSceneInput = {
+        date: fragment.date,
+        details: fragment.details,
+        remote_site_id: fragment.remote_site_id,
+        title: fragment.title,
+        url: fragment.url,
+      };
+
+      const result = await queryScrapeSceneQueryFragment(s, input);
+      if (!result.data || !result.data.scrapeSingleScene?.length) {
+        Toast.success({
+          content: "No scenes found",
+        });
+        return;
+      }
+      // assume one returned scene
+      setScrapedScene(result.data.scrapeSingleScene[0]);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function onScrapeQueryClicked(s: GQL.ScraperSourceInput) {
+    setScraper(s);
+    setIsScraperQueryModalOpen(true);
   }
 
   async function onReloadScrapers() {
@@ -354,10 +379,79 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
+  function renderScrapeQueryMenu() {
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+
+    if (stashBoxes.length === 0 && queryableScrapers.length === 0) return;
+
+    return (
+      <Dropdown title={intl.formatMessage({ id: "actions.scrape_query" })}>
+        <Dropdown.Toggle variant="secondary">
+          <Icon icon="search" />
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu>
+          {stashBoxes.map((s, index) => (
+            <Dropdown.Item
+              key={s.endpoint}
+              onClick={() => onScrapeQueryClicked({ stash_box_index: index })}
+            >
+              {s.name ?? "Stash-Box"}
+            </Dropdown.Item>
+          ))}
+          {queryableScrapers.map((s) => (
+            <Dropdown.Item
+              key={s.name}
+              onClick={() => onScrapeQueryClicked({ scraper_id: s.id })}
+            >
+              {s.name}
+            </Dropdown.Item>
+          ))}
+          <Dropdown.Item onClick={() => onReloadScrapers()}>
+            <span className="fa-icon">
+              <Icon icon="sync-alt" />
+            </span>
+            <span>
+              <FormattedMessage id="actions.reload_scrapers" />
+            </span>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  function onSceneSelected(s: GQL.ScrapedSceneDataFragment) {
+    if (!scraper) return;
+
+    if (scraper?.stash_box_index !== undefined) {
+      // must be stash-box - assume full scene
+      setScrapedScene(s);
+    } else {
+      // must be scraper
+      scrapeFromQuery(scraper, s);
+    }
+  }
+
+  const renderScrapeQueryModal = () => {
+    if (!isScraperQueryModalOpen || !scraper) return;
+
+    return (
+      <SceneQueryModal
+        scraper={scraper}
+        onHide={() => setScraper(undefined)}
+        onSelectScene={(s) => {
+          setIsScraperQueryModalOpen(false);
+          setScraper(undefined);
+          onSceneSelected(s);
+        }}
+        name={formik.values.title || ""}
+      />
+    );
+  };
+
   function renderScraperMenu() {
     const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
-    // TODO - change name based on stashbox configuration
     return (
       <DropdownButton
         className="d-inline-block"
@@ -367,13 +461,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
         {stashBoxes.map((s, index) => (
           <Dropdown.Item
             key={s.endpoint}
-            onClick={() => onScrapeStashBoxClicked(index)}
+            onClick={() => onScrapeClicked({ stash_box_index: index })}
           >
             {s.name ?? "Stash-Box"}
           </Dropdown.Item>
         ))}
-        {queryableScrapers.map((s) => (
-          <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
+        {fragmentScrapers.map((s) => (
+          <Dropdown.Item
+            key={s.name}
+            onClick={() => onScrapeClicked({ scraper_id: s.id })}
+          >
             {s.name}
           </Dropdown.Item>
         ))}
@@ -387,44 +484,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </Dropdown.Item>
       </DropdownButton>
     );
-  }
-
-  function maybeRenderStashboxQueryButton() {
-    // const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
-    // if (stashBoxes.length === 0) {
-    //   return;
-    // }
-    // TODO - hide this button for now, with the view to add it when we get
-    // the query dialog going
-    // if (stashBoxes.length === 1) {
-    //   return (
-    //     <Button
-    //       className="mr-1"
-    //       onClick={() => onStashBoxQueryClicked(0)}
-    //       title="Query"
-    //     >
-    //       <Icon className="fa-fw" icon="search" />
-    //     </Button>
-    //   );
-    // }
-    // // TODO - change name based on stashbox configuration
-    // return (
-    //   <Dropdown className="d-inline-block mr-1">
-    //     <Dropdown.Toggle id="stashbox-query-dropdown">
-    //       <Icon className="fa-fw" icon="search" />
-    //     </Dropdown.Toggle>
-    //     <Dropdown.Menu>
-    //       {stashBoxes.map((s, index) => (
-    //         <Dropdown.Item
-    //           key={s.endpoint}
-    //           onClick={() => onStashBoxQueryClicked(index)}
-    //         >
-    //           stash-box
-    //         </Dropdown.Item>
-    //       ))}
-    //     </Dropdown.Menu>
-    //   </Dropdown>
-    // );
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
@@ -556,10 +615,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
+      {renderScrapeQueryModal()}
       {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
         <div className="form-container row px-3 pt-3">
-          <div className="col-6 edit-buttons mb-3 pl-0">
+          <div className="edit-buttons mb-3 pl-0">
             <Button
               className="edit-button"
               variant="primary"
@@ -576,13 +636,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <FormattedMessage id="actions.delete" />
             </Button>
           </div>
-          <Col xs={6} className="text-right">
-            {maybeRenderStashboxQueryButton()}
-            {renderScraperMenu()}
-          </Col>
+          <div className="ml-auto pr-3 text-right d-flex">
+            <ButtonGroup className="scraper-group">
+              {renderScraperMenu()}
+              {renderScrapeQueryMenu()}
+            </ButtonGroup>
+          </div>
         </div>
         <div className="form-container row px-3">
-          <div className="col-12 col-lg-6 col-xl-12">
+          <div className="col-12 col-lg-7 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
             <Form.Group controlId="url" as={Row}>
               <Col xs={3} className="pr-0 url-label">
@@ -623,8 +685,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "galleries" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                },
               })}
-              <Col xs={9}>
+              <Col sm={9}>
                 <GallerySelect
                   galleries={galleries}
                   onSelect={(items) => onSetGalleries(items)}
@@ -635,8 +701,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "studios" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                },
               })}
-              <Col xs={9}>
+              <Col sm={9}>
                 <StudioSelect
                   onSelect={(items) =>
                     formik.setFieldValue(
@@ -753,7 +823,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               </ul>
             </Form.Group>
           </div>
-          <div className="col-12 col-lg-6 col-xl-12">
+          <div className="col-12 col-lg-5 col-xl-12">
             <Form.Group controlId="details">
               <Form.Label>
                 <FormattedMessage id="details" />
