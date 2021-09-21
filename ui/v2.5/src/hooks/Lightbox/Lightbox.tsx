@@ -70,6 +70,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
+  const [scaleUp, setScaleUp] = useState(false);
   const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
   const [zoomed, setZoomed] = useState(false);
   const [resetZoom, setResetZoom] = useState(false);
@@ -399,8 +400,28 @@ export const LightboxComponent: React.FC<IProps> = ({
           </Form.Control>
         </Col>
       </Form.Group>
+      <Form.Group>
+        <Form.Group controlId="scaleUp" as={Row} className="mb-1">
+          <Col>
+            <Form.Check
+              type="checkbox"
+              label={intl.formatMessage({
+                id: "dialogs.lightbox.scale_up.label",
+              })}
+              checked={scaleUp}
+              disabled={displayMode === DisplayMode.ORIGINAL}
+              onChange={(v) => setScaleUp(v.currentTarget.checked)}
+            />
+          </Col>
+        </Form.Group>
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.lightbox.scale_up.description",
+          })}
+        </Form.Text>
+      </Form.Group>
       <Form.Group controlId="scrollMode">
-        <Form.Group as={Row}>
+        <Form.Group as={Row} className="mb-1">
           <Col xs={4}>
             <Form.Label className="col-form-label">
               <FormattedMessage id="dialogs.lightbox.scroll_mode.label" />
@@ -543,6 +564,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                     <LightboxImage
                       src={image.paths.image ?? ""}
                       displayMode={displayMode}
+                      scaleUp={scaleUp}
                       scrollMode={scrollMode}
                       onLeft={() => handleLeft(true)}
                       onRight={handleRight}

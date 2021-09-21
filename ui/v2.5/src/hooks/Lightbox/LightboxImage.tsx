@@ -20,6 +20,7 @@ export enum ScrollMode {
 interface IProps {
   src: string;
   displayMode: DisplayMode;
+  scaleUp: boolean;
   scrollMode: ScrollMode;
   resetZoom?: boolean;
   onLeft: () => void;
@@ -38,6 +39,7 @@ export const LightboxImage: React.FC<IProps> = ({
   onLeft,
   onRight,
   displayMode,
+  scaleUp,
   scrollMode,
   onZoomed,
   resetZoom,
@@ -82,7 +84,7 @@ export const LightboxImage: React.FC<IProps> = ({
       return;
     }
 
-    if (width < boxWidth && height < boxHeight) {
+    if (!scaleUp && width < boxWidth && height < boxHeight) {
       initialPosition.current = {
         zoom: 1,
         x: 0,
@@ -101,13 +103,21 @@ export const LightboxImage: React.FC<IProps> = ({
     let newPositionY = 0;
     switch (displayMode) {
       case DisplayMode.FIT_XY:
-        xZoom = Math.min(boxWidth / width, 1);
-        yZoom = Math.min(boxHeight / height, 1);
+        xZoom = boxWidth / width;
+        yZoom = boxHeight / height;
+
+        if (!scaleUp) {
+          xZoom = Math.min(xZoom, 1);
+          yZoom = Math.min(yZoom, 1);
+        }
         newZoom = Math.min(xZoom, yZoom);
         break;
       case DisplayMode.FIT_X:
-        xZoom = Math.min(boxWidth / width, 1);
-        newZoom = Math.min(xZoom, 1);
+        newZoom = boxWidth / width;
+
+        if (!scaleUp) {
+          newZoom = Math.min(newZoom, 1);
+        }
         break;
       case DisplayMode.ORIGINAL:
         newZoom = 1;
@@ -133,7 +143,7 @@ export const LightboxImage: React.FC<IProps> = ({
     setZoom(newZoom);
     setPositionX(newPositionX);
     setPositionY(newPositionY);
-  }, [width, height, boxWidth, boxHeight, displayMode]);
+  }, [width, height, boxWidth, boxHeight, displayMode, scaleUp]);
 
   useEffect(() => {
     if (initialPosition.current !== undefined) {
