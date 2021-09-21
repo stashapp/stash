@@ -258,7 +258,15 @@ func Start() {
 
 		if ext == ".html" || ext == "" {
 			data, _ := uiBox.Find("index.html")
-			_, _ = w.Write(data)
+
+			prefix := ""
+			if r.Header.Get("X-Forwarded-Prefix") != "" {
+				prefix = strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
+			}
+
+			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
+			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
+			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
@@ -372,11 +380,22 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		} else {
 			scheme = "http"
 		}
-		baseURL := scheme + "://" + r.Host
+		prefix := ""
+		if r.Header.Get("X-Forwarded-Prefix") != "" {
+			prefix = strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
+		}
+
+		port := ""
+		forwardedPort := r.Header.Get("X-Forwarded-Port")
+		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" {
+			port = ":" + forwardedPort
+		}
+
+		baseURL := scheme + "://" + r.Host + port + prefix
 
 		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
-			baseURL = externalHost
+			baseURL = externalHost + prefix
 		}
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
