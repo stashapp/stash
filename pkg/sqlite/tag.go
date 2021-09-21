@@ -304,6 +304,8 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	query.handleCriterion(tagMarkerCountCriterionHandler(qb, tagFilter.MarkerCount))
 	query.handleCriterion(tagParentsCriterionHandler(qb, tagFilter.Parents))
 	query.handleCriterion(tagChildrenCriterionHandler(qb, tagFilter.Children))
+	query.handleCriterion(tagParentCountCriterionHandler(qb, tagFilter.ParentCount))
+	query.handleCriterion(tagChildCountCriterionHandler(qb, tagFilter.ChildCount))
 
 	return query
 }
@@ -497,6 +499,28 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 			f.addJoin("children", "", "children.item_id = tags.id")
 
 			addHierarchicalConditionClauses(f, tags, "children", "root_id")
+		}
+	}
+}
+
+func tagParentCountCriterionHandler(qb *tagQueryBuilder, parentCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if parentCount != nil {
+			f.addJoin("tags_relations", "parents_count", "parents_count.child_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct parents_count.parent_id)", *parentCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagChildCountCriterionHandler(qb *tagQueryBuilder, childCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if childCount != nil {
+			f.addJoin("tags_relations", "children_count", "children_count.parent_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct children_count.child_id)", *childCount)
+
+			f.addHaving(clause, args...)
 		}
 	}
 }

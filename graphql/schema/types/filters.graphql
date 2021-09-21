@@ -281,6 +281,12 @@ input TagFilterType {
 
   """Filter by child tags"""
   children: HierarchicalMultiCriterionInput
+
+  """Filter by number of parent tags the tag has"""
+  parent_count: IntCriterionInput
+
+  """Filter by number f child tags the tag has"""
+  child_count: IntCriterionInput
 }
 
 input ImageFilterType {
