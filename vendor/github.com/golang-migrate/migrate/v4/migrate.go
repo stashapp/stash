@@ -1,18 +1,20 @@
 // Package migrate reads migrations from sources and runs them against databases.
 // Sources are defined by the `source.Driver` and databases by the `database.Driver`
-// interface. The driver interfaces are kept "dump", all migration logic is kept
+// interface. The driver interfaces are kept "dumb", all migration logic is kept
 // in this package.
 package migrate
 
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-multierror"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
+
 	"github.com/golang-migrate/migrate/v4/database"
+	iurl "github.com/golang-migrate/migrate/v4/internal/url"
 	"github.com/golang-migrate/migrate/v4/source"
 )
 
@@ -85,13 +87,13 @@ type Migrate struct {
 func New(sourceURL, databaseURL string) (*Migrate, error) {
 	m := newCommon()
 
-	sourceName, err := sourceSchemeFromURL(sourceURL)
+	sourceName, err := iurl.SchemeFromURL(sourceURL)
 	if err != nil {
 		return nil, err
 	}
 	m.sourceName = sourceName
 
-	databaseName, err := databaseSchemeFromURL(databaseURL)
+	databaseName, err := iurl.SchemeFromURL(databaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +121,7 @@ func New(sourceURL, databaseURL string) (*Migrate, error) {
 func NewWithDatabaseInstance(sourceURL string, databaseName string, databaseInstance database.Driver) (*Migrate, error) {
 	m := newCommon()
 
-	sourceName, err := schemeFromURL(sourceURL)
+	sourceName, err := iurl.SchemeFromURL(sourceURL)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +147,7 @@ func NewWithDatabaseInstance(sourceURL string, databaseName string, databaseInst
 func NewWithSourceInstance(sourceName string, sourceInstance source.Driver, databaseURL string) (*Migrate, error) {
 	m := newCommon()
 
-	databaseName, err := schemeFromURL(databaseURL)
+	databaseName, err := iurl.SchemeFromURL(databaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -485,7 +487,7 @@ func (m *Migrate) read(from int, to int, ret chan<- interface{}) {
 			}
 
 			prev, err := m.sourceDrv.Prev(suint(from))
-			if os.IsNotExist(err) && to == -1 {
+			if errors.Is(err, os.ErrNotExist) && to == -1 {
 				// apply nil migration
 				migr, err := m.newMigration(suint(from), -1)
 				if err != nil {
@@ -578,7 +580,7 @@ func (m *Migrate) readUp(from int, limit int, ret chan<- interface{}) {
 
 		// apply next migration
 		next, err := m.sourceDrv.Next(suint(from))
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			// no limit, but no migrations applied?
 			if limit == -1 && count == 0 {
 				ret <- ErrNoChange
@@ -664,7 +666,7 @@ func (m *Migrate) readDown(from int, limit int, ret chan<- interface{}) {
 		}
 
 		prev, err := m.sourceDrv.Prev(suint(from))
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			// no limit or haven't reached limit, apply "first" migration
 			if limit == -1 || limit-count > 0 {
 				firstVersion, err := m.sourceDrv.First()
@@ -783,9 +785,9 @@ func (m *Migrate) versionExists(version uint) (result error) {
 			}
 		}()
 	}
-	if os.IsExist(err) {
+	if errors.Is(err, os.ErrExist) {
 		return nil
-	} else if !os.IsNotExist(err) {
+	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
@@ -798,13 +800,15 @@ func (m *Migrate) versionExists(version uint) (result error) {
 			}
 		}()
 	}
-	if os.IsExist(err) {
+	if errors.Is(err, os.ErrExist) {
 		return nil
-	} else if !os.IsNotExist(err) {
+	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
-	return os.ErrNotExist
+	err = fmt.Errorf("no migration found for version %d: %w", version, err)
+	m.logErr(err)
+	return err
 }
 
 // stop returns true if no more migrations should be run against the database
@@ -832,7 +836,7 @@ func (m *Migrate) newMigration(version uint, targetVersion int) (*Migration, err
 
 	if targetVersion >= int(version) {
 		r, identifier, err := m.sourceDrv.ReadUp(version)
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			// create "empty" migration
 			migr, err = NewMigration(nil, "", version, targetVersion)
 			if err != nil {
@@ -852,7 +856,7 @@ func (m *Migrate) newMigration(version uint, targetVersion int) (*Migration, err
 
 	} else {
 		r, identifier, err := m.sourceDrv.ReadDown(version)
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			// create "empty" migration
 			migr, err = NewMigration(nil, "", version, targetVersion)
 			if err != nil {
@@ -950,7 +954,7 @@ func (m *Migrate) unlock() error {
 // if a prevErr is not nil.
 func (m *Migrate) unlockErr(prevErr error) error {
 	if err := m.unlock(); err != nil {
-		return NewMultiError(prevErr, err)
+		return multierror.Append(prevErr, err)
 	}
 	return prevErr
 }

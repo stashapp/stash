@@ -1,23 +1,26 @@
-FROM golang:1.12-alpine3.9 AS downloader
+FROM golang:1.16-alpine3.13 AS builder
 ARG VERSION
 
-RUN apk add --no-cache git gcc musl-dev
+RUN apk add --no-cache git gcc musl-dev make
 
 WORKDIR /go/src/github.com/golang-migrate/migrate
 
+ENV GO111MODULE=on
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
 COPY . ./
 
-ENV GO111MODULE=on
-ENV DATABASES="postgres mysql redshift cassandra spanner cockroachdb clickhouse mongodb"
-ENV SOURCES="file go_bindata github aws_s3 google_cloud_storage godoc_vfs gitlab"
+RUN make build-docker
 
-RUN go build -a -o build/migrate.linux-386 -ldflags="-X main.Version=${VERSION}" -tags "$DATABASES $SOURCES" ./cmd/migrate
-
-FROM alpine:3.9
+FROM alpine:3.13
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=downloader /go/src/github.com/golang-migrate/migrate/build/migrate.linux-386 /migrate
+COPY --from=builder /go/src/github.com/golang-migrate/migrate/build/migrate.linux-386 /usr/local/bin/migrate
+RUN ln -s /usr/local/bin/migrate /migrate
 
-ENTRYPOINT ["/migrate"]
+ENTRYPOINT ["migrate"]
 CMD ["--help"]
