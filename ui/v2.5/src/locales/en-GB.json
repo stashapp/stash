@@ -443,6 +443,7 @@
         "fit_horizontally": "Fit horizontally"
       },
       "options": "Options",
+      "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
         "label": "Scale up to fit",
         "description": "Scale smaller images up to fill screen"

@@ -70,11 +70,15 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isSwitchingPage, setIsSwitchingPage] = useState(false);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
+  const oldDisplayMode = useRef(displayMode);
+
   const [scaleUp, setScaleUp] = useState(false);
   const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
-  const [zoomed, setZoomed] = useState(false);
-  const [resetZoom, setResetZoom] = useState(false);
+  const [resetZoomOnNav, setResetZoomOnNav] = useState(true);
+  const [zoom, setZoom] = useState(1);
+  const [resetPosition, setResetPosition] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const overlayTarget = useRef<HTMLButtonElement | null>(null);
@@ -122,13 +126,17 @@ export const LightboxComponent: React.FC<IProps> = ({
   }, [disableInstantTransition]);
 
   useEffect(() => {
-    // reset zoom status
-    // setResetZoom((r) => !r);
-    // setZoomed(false);
-
     if (images.length < 2) return;
     if (index === oldIndex.current) return;
     if (index === null) return;
+
+    // reset zoom status
+    // setResetZoom((r) => !r);
+    // setZoomed(false);
+    if (resetZoomOnNav) {
+      setZoom(1);
+    }
+    setResetPosition((r) => !r);
 
     if (carouselRef.current)
       carouselRef.current.style.left = `${index * -100}vw`;
@@ -153,7 +161,20 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
 
     oldIndex.current = index;
-  }, [index, images.length]);
+  }, [index, images.length, resetZoomOnNav]);
+
+  useEffect(() => {
+    if (displayMode !== oldDisplayMode.current) {
+      // reset zoom status
+      // setResetZoom((r) => !r);
+      // setZoomed(false);
+      if (resetZoomOnNav) {
+        setZoom(1);
+      }
+      setResetPosition((r) => !r);
+    }
+    oldDisplayMode.current = displayMode;
+  }, [displayMode, resetZoomOnNav]);
 
   const selectIndex = (e: React.MouseEvent, i: number) => {
     setIndex(i);
@@ -365,7 +386,6 @@ export const LightboxComponent: React.FC<IProps> = ({
               value={displayedSlideshowInterval ?? 0}
               onChange={onDelayChange}
               size="sm"
-              id="delay-input"
             />
           </Col>
         </Form.Group>
@@ -421,6 +441,20 @@ export const LightboxComponent: React.FC<IProps> = ({
             id: "dialogs.lightbox.scale_up.description",
           })}
         </Form.Text>
+      </Form.Group>
+      <Form.Group>
+        <Form.Group controlId="resetZoomOnNav" as={Row} className="mb-1">
+          <Col>
+            <Form.Check
+              type="checkbox"
+              label={intl.formatMessage({
+                id: "dialogs.lightbox.reset_zoom_on_nav",
+              })}
+              checked={resetZoomOnNav}
+              onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
+            />
+          </Col>
+        </Form.Group>
       </Form.Group>
       <Form.Group controlId="scrollMode">
         <Form.Group as={Row} className="mb-1">
@@ -529,12 +563,12 @@ export const LightboxComponent: React.FC<IProps> = ({
                   <Icon icon={slideshowInterval !== null ? "pause" : "play"} />
                 </Button>
               )}
-              {zoomed && (
+              {zoom !== 1 && (
                 <Button
                   variant="link"
                   onClick={() => {
-                    setResetZoom(!resetZoom);
-                    setZoomed(false);
+                    setResetPosition(!resetPosition);
+                    setZoom(1);
                   }}
                   title="Reset zoom"
                 >
@@ -587,8 +621,9 @@ export const LightboxComponent: React.FC<IProps> = ({
                       scrollMode={scrollMode}
                       onLeft={() => handleLeft(true)}
                       onRight={handleRight}
-                      onZoomed={() => setZoomed(true)}
-                      resetZoom={resetZoom}
+                      zoom={zoom}
+                      setZoom={(v) => setZoom(v)}
+                      resetPosition={resetPosition}
                     />
                   ) : undefined}
                 </div>

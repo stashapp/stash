@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 const ZOOM_STEP = 1.1;
 const SCROLL_PAN_STEP = 75;
@@ -22,16 +22,11 @@ interface IProps {
   displayMode: DisplayMode;
   scaleUp: boolean;
   scrollMode: ScrollMode;
-  resetZoom?: boolean;
+  resetPosition?: boolean;
+  zoom: number;
+  setZoom: (v: number) => void;
   onLeft: () => void;
   onRight: () => void;
-  onZoomed?: () => void;
-}
-
-interface IInitialPosition {
-  x: number;
-  y: number;
-  zoom: number;
 }
 
 export const LightboxImage: React.FC<IProps> = ({
@@ -41,10 +36,11 @@ export const LightboxImage: React.FC<IProps> = ({
   displayMode,
   scaleUp,
   scrollMode,
-  onZoomed,
-  resetZoom,
+  zoom,
+  setZoom,
+  resetPosition,
 }) => {
-  const [zoom, setZoom] = useState(0);
+  const [defaultZoom, setDefaultZoom] = useState(1);
   const [moving, setMoving] = useState(false);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
@@ -53,7 +49,8 @@ export const LightboxImage: React.FC<IProps> = ({
   const [boxWidth, setBoxWidth] = useState(0);
   const [boxHeight, setBoxHeight] = useState(0);
 
-  const initialPosition = useRef<IInitialPosition | undefined>();
+  const resetPositionRef = useRef(resetPosition);
+
   const container = React.createRef<HTMLDivElement>();
   const startPoints = useRef<number[]>([0, 0]);
   const pointerCache = useRef<React.PointerEvent<HTMLDivElement>[]>([]);
@@ -85,12 +82,7 @@ export const LightboxImage: React.FC<IProps> = ({
     }
 
     if (!scaleUp && width < boxWidth && height < boxHeight) {
-      initialPosition.current = {
-        zoom: 1,
-        x: 0,
-        y: 0,
-      };
-      setZoom(1);
+      setDefaultZoom(1);
       setPositionX(0);
       setPositionY(0);
       return;
@@ -135,29 +127,34 @@ export const LightboxImage: React.FC<IProps> = ({
       newPositionY = Math.min((height * newZoom - height) / 2, 0);
     }
 
-    initialPosition.current = {
-      zoom: newZoom,
-      x: newPositionX,
-      y: newPositionY,
-    };
-    setZoom(newZoom);
+    setDefaultZoom(newZoom);
     setPositionX(newPositionX);
     setPositionY(newPositionY);
   }, [width, height, boxWidth, boxHeight, displayMode, scaleUp]);
 
-  useEffect(() => {
-    if (initialPosition.current !== undefined) {
-      setZoom(initialPosition.current.zoom);
-      setPositionX(initialPosition.current.x);
-      setPositionY(initialPosition.current.y);
-    }
-  }, [resetZoom, initialPosition]);
+  const calculateTopPosition = useCallback(() => {
+    // Center image from container's center
+    const newPositionX = Math.min((boxWidth - width) / 2, 0);
+    let newPositionY: number;
 
-  function zoomed() {
-    if (onZoomed) {
-      onZoomed();
+    if (zoom * defaultZoom * height > boxHeight) {
+      newPositionY = (height * zoom * defaultZoom - height) / 2;
+    } else {
+      newPositionY = Math.min((boxHeight - height) / 2, 0);
     }
-  }
+
+    return [newPositionX, newPositionY];
+  }, [boxWidth, width, boxHeight, height, zoom, defaultZoom]);
+
+  useEffect(() => {
+    if (resetPosition !== resetPositionRef.current) {
+      resetPositionRef.current = resetPosition;
+
+      const [x, y] = calculateTopPosition();
+      setPositionX(x);
+      setPositionY(y);
+    }
+  }, [resetPosition, resetPositionRef, calculateTopPosition]);
 
   function getScrollMode(ev: React.WheelEvent<HTMLDivElement>) {
     if (ev.shiftKey) {
@@ -181,15 +178,14 @@ export const LightboxImage: React.FC<IProps> = ({
 
   function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
     const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-    const minY = (zoom * height - height) / 2 - zoom * height + 1;
-    const maxY = (zoom * height - height) / 2 + boxHeight - 1;
+    const minY = (defaultZoom * height - height) / 2 - defaultZoom * height + 1;
+    const maxY = (defaultZoom * height - height) / 2 + boxHeight - 1;
     let newPositionY =
       positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
 
     switch (getScrollMode(ev)) {
       case ScrollMode.ZOOM:
         setZoom(zoom * percent);
-        zoomed();
         break;
       case ScrollMode.PAN_Y:
         // ensure image doesn't go offscreen
@@ -216,7 +212,6 @@ export const LightboxImage: React.FC<IProps> = ({
 
     setPositionX(positionX + posX);
     setPositionY(positionY + posY);
-    zoomed();
   }
 
   function onImageMouseDown(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -264,7 +259,6 @@ export const LightboxImage: React.FC<IProps> = ({
 
       setPositionX(positionX + posX);
       setPositionY(positionY + posY);
-      zoomed();
     }
   }
 
@@ -306,9 +300,8 @@ export const LightboxImage: React.FC<IProps> = ({
         if (diffDiff > 0) {
           setZoom(zoom * factor);
         } else if (diffDiff < 0) {
-          setZoom(zoom / factor);
+          setZoom((zoom * 1) / factor);
         }
-        zoomed();
       }
 
       prevDiff.current = diff;
@@ -321,10 +314,12 @@ export const LightboxImage: React.FC<IProps> = ({
       className={`${CLASSNAME_IMAGE}`}
       onWheel={(e) => onContainerScroll(e)}
     >
-      {zoom ? (
+      {defaultZoom ? (
         <picture
           style={{
-            transform: `translate(${positionX}px, ${positionY}px) scale(${zoom})`,
+            transform: `translate(${positionX}px, ${positionY}px) scale(${
+              defaultZoom * zoom
+            })`,
           }}
         >
           <source srcSet={src} media="(min-width: 800px)" />
