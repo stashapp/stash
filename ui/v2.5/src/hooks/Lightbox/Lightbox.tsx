@@ -67,9 +67,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [index, setIndex] = useState<number | null>(null);
   const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
-  const [isSwitchingPage, setIsSwitchingPage] = useState(false);
+  const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+
+  const oldImages = useRef<Image[]>([]);
 
   const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
   const oldDisplayMode = useRef(displayMode);
@@ -110,9 +112,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   );
 
   useEffect(() => {
-    if (!isSwitchingPage) return;
-    setIsSwitchingPage(false);
-    if (index === -1) setIndex(images.length - 1);
+    if (images !== oldImages.current && isSwitchingPage) {
+      oldImages.current = images;
+      if (index === -1) setIndex(images.length - 1);
+      setIsSwitchingPage(false);
+    }
   }, [isSwitchingPage, images, index]);
 
   const disableInstantTransition = debounce(
@@ -233,13 +237,11 @@ export const LightboxComponent: React.FC<IProps> = ({
 
       if (index === 0) {
         if (pageCallback) {
-          setIsSwitchingPage(true);
-          setIndex(-1);
           // Check if calling page wants to swap page
           const repage = pageCallback(-1);
-          if (!repage) {
-            setIsSwitchingPage(false);
-            setIndex(0);
+          if (repage) {
+            setIndex(-1);
+            setIsSwitchingPage(true);
           }
         } else setIndex(images.length - 1);
       } else setIndex((index ?? 0) - 1);
@@ -248,14 +250,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      setIndex,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-    ]
+    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
   );
 
   const handleRight = useCallback(
@@ -264,12 +259,10 @@ export const LightboxComponent: React.FC<IProps> = ({
 
       if (index === images.length - 1) {
         if (pageCallback) {
-          setIsSwitchingPage(true);
-          setIndex(0);
-          const repage = pageCallback?.(1);
-          if (!repage) {
-            setIsSwitchingPage(false);
-            setIndex(images.length - 1);
+          const repage = pageCallback(1);
+          if (repage) {
+            setIsSwitchingPage(true);
+            setIndex(0);
           }
         } else setIndex(0);
       } else setIndex((index ?? 0) + 1);
