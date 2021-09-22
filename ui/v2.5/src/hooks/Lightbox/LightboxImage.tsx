@@ -66,14 +66,21 @@ export const LightboxImage: React.FC<IProps> = ({
   }, [container]);
 
   useEffect(() => {
+    let mounted = true;
     const img = new Image();
     function onLoad() {
-      setWidth(img.width);
-      setHeight(img.height);
+      if (mounted) {
+        setWidth(img.width);
+        setHeight(img.height);
+      }
     }
 
     img.onload = onLoad;
     img.src = src;
+
+    return () => {
+      mounted = false;
+    }
   }, [src]);
 
   useEffect(() => {
