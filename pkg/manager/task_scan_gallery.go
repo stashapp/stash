@@ -124,6 +124,7 @@ func (t *ScanTask) scanGallery() {
 			return
 		}
 
+		isNewGallery := false
 		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 			qb := r.Gallery()
 			g, _ = qb.FindByChecksum(checksum)
@@ -150,7 +151,7 @@ func (t *ScanTask) scanGallery() {
 						return err
 					}
 
-					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
+					isNewGallery = true
 				}
 			} else {
 				currentTime := time.Now()
@@ -197,6 +198,10 @@ func (t *ScanTask) scanGallery() {
 		}); err != nil {
 			logger.Error(err.Error())
 			return
+		}
+
+		if isNewGallery {
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 		}
 	}
 
@@ -276,9 +281,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		iwg := sizedwaitgroup.New(1)
-		iwg.Add()
-		subTask.Start(&iwg)
+		subTask.Start()
 		return nil
 	})
 	if err != nil {
