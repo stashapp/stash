@@ -69,8 +69,12 @@ jobs:
       run: docker exec -t build /bin/bash -c "make ui-validate"
 
     # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
+    # create temporary UI directory so that the embed doesn't fail
     - name: Validate
-      run: docker exec -t build /bin/bash -c "make fmt-check vet it"
+      run: |
+        mkdir ui/v2.5/build
+        docker exec -t build /bin/bash -c "make fmt-check vet it"
+        rmdir ui/v2.5/build
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
