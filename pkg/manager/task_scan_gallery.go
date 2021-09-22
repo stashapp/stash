@@ -11,7 +11,6 @@ import (
 
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -42,166 +41,35 @@ func (t *ScanTask) scanGallery() {
 		return
 	}
 
-	fileModTime, err := t.getFileModTime()
-	if err != nil {
-		logger.Error(err.Error())
-		return
+	scanner := file.Scanner{
+		Hasher:       &file.FSHasher{},
+		CalculateMD5: true,
 	}
 
 	if g != nil {
-		// We already have this item in the database, keep going
-
-		// if file mod time is not set, set it now
-		if !g.FileModTime.Valid {
-			// we will also need to rescan the zip contents
-			scanImages = true
-			logger.Infof("setting file modification time on %s", path)
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				qb := r.Gallery()
-				if _, err := gallery.UpdateFileModTime(qb, g.ID, models.NullSQLiteTimestamp{
-					Timestamp: fileModTime,
-					Valid:     true,
-				}); err != nil {
-					return err
-				}
-
-				// update our copy of the gallery
-				var err error
-				g, err = qb.Find(g.ID)
-				return err
-			}); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-		}
-
-		// if the mod time of the zip file is different than that of the associated
-		// gallery, then recalculate the checksum
-		modified := t.isFileModified(fileModTime, g.FileModTime)
-		if modified {
-			scanImages = true
-			logger.Infof("%s has been updated: rescanning", path)
-
-			// update the checksum and the modification time
-			checksum, err := t.calculateChecksum()
-			if err != nil {
-				logger.Error(err.Error())
-				return
-			}
-
-			currentTime := time.Now()
-			galleryPartial := models.GalleryPartial{
-				ID:       g.ID,
-				Checksum: &checksum,
-				FileModTime: &models.NullSQLiteTimestamp{
-					Timestamp: fileModTime,
-					Valid:     true,
-				},
-				UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
-			}
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				_, err := r.Gallery().UpdatePartial(galleryPartial)
-				return err
-			}); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-		}
-
-		// scan the zip files if the gallery has no images
-		scanImages = scanImages || images == 0
-	} else {
-		// Ignore directories.
-		if isDir, _ := utils.DirExists(path); isDir {
-			return
-		}
-
-		checksum, err := t.calculateChecksum()
+		scanned, err := scanner.ScanExisting(g, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
 
-		isNewGallery := false
-		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			qb := r.Gallery()
-			g, _ = qb.FindByChecksum(checksum)
-			if g != nil {
-				exists, _ := utils.FileExists(g.Path.String)
-				if !t.CaseSensitiveFs {
-					// #1426 - if file exists but is a case-insensitive match for the
-					// original filename, then treat it as a move
-					if exists && strings.EqualFold(path, g.Path.String) {
-						exists = false
-					}
-				}
-
-				if exists {
-					logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
-				} else {
-					logger.Infof("%s already exists.  Updating path...", path)
-					g.Path = sql.NullString{
-						String: path,
-						Valid:  true,
-					}
-					g, err = qb.Update(*g)
-					if err != nil {
-						return err
-					}
-
-					isNewGallery = true
-				}
-			} else {
-				currentTime := time.Now()
-
-				newGallery := models.Gallery{
-					Checksum: checksum,
-					Zip:      true,
-					Path: sql.NullString{
-						String: path,
-						Valid:  true,
-					},
-					FileModTime: models.NullSQLiteTimestamp{
-						Timestamp: fileModTime,
-						Valid:     true,
-					},
-					Title: sql.NullString{
-						String: utils.GetNameFromPath(path, t.StripFileExtension),
-						Valid:  true,
-					},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-				}
-
-				// don't create gallery if it has no images
-				if countImagesInZip(path) > 0 {
-					// only warn when creating the gallery
-					ok, err := utils.IsZipFileUncompressed(path)
-					if err == nil && !ok {
-						logger.Warnf("%s is using above store (0) level compression.", path)
-					}
-
-					logger.Infof("%s doesn't exist.  Creating new item...", path)
-					g, err = qb.Create(newGallery)
-					if err != nil {
-						return err
-					}
-					scanImages = true
-
-					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
-				}
-			}
-
-			return nil
-		}); err != nil {
+		g, scanImages, err = t.scanGalleryExisting(g, scanned)
+		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
 
-		if isNewGallery {
-			GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
+		// scan the zip files if the gallery has no images
+		scanImages = scanImages || images == 0
+	} else {
+		file, err := scanner.ScanNew(t.file)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+
+		g, scanImages, err = t.scanGalleryNew(file)
+		if err != nil {
+			logger.Error(err.Error())
 		}
 	}
 
@@ -213,6 +81,138 @@ func (t *ScanTask) scanGallery() {
 			t.regenerateZipImages(g)
 		}
 	}
+}
+
+func (t *ScanTask) scanGalleryExisting(g *models.Gallery, scanned *file.Scanned) (ret *models.Gallery, scanImages bool, err error) {
+	path := t.file.Path()
+	changed := false
+
+	if scanned.ContentsChanged() {
+		logger.Infof("%s has been updated: rescanning", path)
+
+		// TODO - do stuff here?
+
+		g.SetFile(*scanned.New)
+		changed = true
+	} else if scanned.FileUpdated() {
+		logger.Infof("Updated gallery file %s", path)
+
+		g.SetFile(*scanned.New)
+		changed = true
+	}
+
+	if changed {
+		scanImages = true
+		logger.Infof("%s has been updated: rescanning", path)
+
+		g.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+
+		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+
+			// TODO - ensure no clashes of hashes
+
+			_, err = r.Gallery().Update(*g)
+			return err
+		}); err != nil {
+			return nil, false, err
+		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
+	}
+
+	return
+}
+
+func (t *ScanTask) scanGalleryNew(file *models.File) (g *models.Gallery, scanImages bool, err error) {
+	path := t.file.Path()
+	isNewGallery := false
+	isUpdatedGallery := false
+
+	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		qb := r.Gallery()
+
+		checksum := file.Checksum
+
+		g, _ = qb.FindByChecksum(checksum)
+		if g != nil {
+			exists, _ := utils.FileExists(g.Path.String)
+			if !t.CaseSensitiveFs {
+				// #1426 - if file exists but is a case-insensitive match for the
+				// original filename, then treat it as a move
+				if exists && strings.EqualFold(path, g.Path.String) {
+					exists = false
+				}
+			}
+
+			if exists {
+				logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
+			} else {
+				logger.Infof("%s already exists.  Updating path...", path)
+				g.Path = sql.NullString{
+					String: path,
+					Valid:  true,
+				}
+				g, err = qb.Update(*g)
+				if err != nil {
+					return err
+				}
+
+				isUpdatedGallery = true
+			}
+		} else {
+			// don't create gallery if it has no images
+			if countImagesInZip(path) > 0 {
+				currentTime := time.Now()
+
+				newGallery := models.Gallery{
+					Checksum: checksum,
+					Zip:      true,
+					Path: sql.NullString{
+						String: path,
+						Valid:  true,
+					},
+					FileModTime: models.NullSQLiteTimestamp{
+						Timestamp: file.FileModTime,
+						Valid:     true,
+					},
+					Title: sql.NullString{
+						String: utils.GetNameFromPath(path, t.StripFileExtension),
+						Valid:  true,
+					},
+					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+				}
+
+				// only warn when creating the gallery
+				ok, err := utils.IsZipFileUncompressed(path)
+				if err == nil && !ok {
+					logger.Warnf("%s is using above store (0) level compression.", path)
+				}
+
+				logger.Infof("%s doesn't exist.  Creating new item...", path)
+				g, err = qb.Create(newGallery)
+				if err != nil {
+					return err
+				}
+
+				scanImages = true
+				isNewGallery = true
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, false, err
+	}
+
+	if isNewGallery {
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
+	} else if isUpdatedGallery {
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
+	}
+
+	scanImages = isNewGallery
+	return
 }
 
 // associates a gallery to a scene with the same basename

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -30,163 +31,34 @@ func (t *ScanTask) scanImage() {
 		return
 	}
 
-	fileModTime, err := image.GetFileModTime(path)
-	if err != nil {
-		logger.Error(err.Error())
-		return
+	scanner := file.Scanner{
+		Hasher:       &file.FSHasher{},
+		CalculateMD5: true,
 	}
 
 	if i != nil {
-		// if file mod time is not set, set it now
-		if !i.FileModTime.Valid {
-			logger.Infof("setting file modification time on %s", path)
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				qb := r.Image()
-				if _, err := image.UpdateFileModTime(qb, i.ID, models.NullSQLiteTimestamp{
-					Timestamp: fileModTime,
-					Valid:     true,
-				}); err != nil {
-					return err
-				}
-
-				// update our copy of the gallery
-				var err error
-				i, err = qb.Find(i.ID)
-				return err
-			}); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-		}
-
-		// if the mod time of the file is different than that of the associated
-		// image, then recalculate the checksum and regenerate the thumbnail
-		modified := t.isFileModified(fileModTime, i.FileModTime)
-		if modified {
-			i, err = t.rescanImage(i, fileModTime)
-			if err != nil {
-				logger.Error(err.Error())
-				return
-			}
-		}
-
-		// We already have this item in the database
-		// check for thumbnails
-		t.generateThumbnail(i)
-	} else {
-		// Ignore directories.
-		if isDir, _ := utils.DirExists(path); isDir {
-			return
-		}
-
-		var checksum string
-
-		logger.Infof("%s not found.  Calculating checksum...", path)
-		checksum, err = t.calculateImageChecksum()
+		scanned, err := scanner.ScanExisting(i, t.file)
 		if err != nil {
-			logger.Errorf("error calculating checksum for %s: %s", path, err.Error())
-			return
-		}
-
-		// check for scene by checksum and oshash - MD5 should be
-		// redundant, but check both
-		if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			var err error
-			i, err = r.Image().FindByChecksum(checksum)
-			return err
-		}); err != nil {
 			logger.Error(err.Error())
 			return
 		}
 
-		if i != nil {
-			exists := image.FileExists(i.Path)
-			if !t.CaseSensitiveFs {
-				// #1426 - if file exists but is a case-insensitive match for the
-				// original filename, then treat it as a move
-				if exists && strings.EqualFold(path, i.Path) {
-					exists = false
-				}
-			}
-
-			if exists {
-				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(path), image.PathDisplayName(i.Path))
-			} else {
-				logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(path))
-				imagePartial := models.ImagePartial{
-					ID:   i.ID,
-					Path: &path,
-				}
-
-				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					_, err := r.Image().Update(imagePartial)
-					return err
-				}); err != nil {
-					logger.Error(err.Error())
-					return
-				}
-
-				GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
-			}
-		} else {
-			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(path))
-			currentTime := time.Now()
-			newImage := models.Image{
-				Checksum: checksum,
-				Path:     path,
-				FileModTime: models.NullSQLiteTimestamp{
-					Timestamp: fileModTime,
-					Valid:     true,
-				},
-				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			}
-			newImage.Title.String = image.GetFilename(&newImage, t.StripFileExtension)
-			newImage.Title.Valid = true
-
-			if err := image.SetFileDetails(&newImage); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				var err error
-				i, err = r.Image().Create(newImage)
-				return err
-			}); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-
-			GetInstance().PluginCache.ExecutePostHooks(t.ctx, i.ID, plugin.ImageCreatePost, nil, nil)
+		i, err = t.scanImageExisting(i, scanned)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	} else {
+		file, err := scanner.ScanNew(t.file)
+		if err != nil {
+			logger.Error(err.Error())
+			return
 		}
 
-		if t.zipGallery != nil {
-			// associate with gallery
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				return gallery.AddImage(r.Gallery(), t.zipGallery.ID, i.ID)
-			}); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
-			// create gallery from folder or associate with existing gallery
-			logger.Infof("Associating image %s with folder gallery", i.Path)
-			var galleryID int
-			var isNewGallery bool
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				var err error
-				galleryID, isNewGallery, err = t.associateImageWithFolderGallery(i.ID, r.Gallery())
-				return err
-			}); err != nil {
-				logger.Error(err.Error())
-				return
-			}
-
-			if isNewGallery {
-				GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
-			}
+		i, err = t.scanImageNew(file)
+		if err != nil {
+			logger.Error(err.Error())
+			return
 		}
 	}
 
@@ -195,58 +67,150 @@ func (t *ScanTask) scanImage() {
 	}
 }
 
-func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.Image, error) {
+func (t *ScanTask) scanImageExisting(i *models.Image, scanned *file.Scanned) (retImage *models.Image, err error) {
 	path := t.file.Path()
-	logger.Infof("%s has been updated: rescanning", path)
-
 	oldChecksum := i.Checksum
+	changed := false
 
-	// update the checksum and the modification time
-	checksum, err := t.calculateImageChecksum()
-	if err != nil {
-		return nil, err
+	if scanned.ContentsChanged() {
+		logger.Infof("%s has been updated: rescanning", path)
+
+		// regenerate the file details as well
+		if err := image.SetFileDetails(i); err != nil {
+			return nil, err
+		}
+
+		changed = true
+	} else if scanned.FileUpdated() {
+		logger.Infof("Updated scene file %s", path)
+
+		changed = true
 	}
 
-	// regenerate the file details as well
-	fileDetails, err := image.GetFileDetails(path)
-	if err != nil {
-		return nil, err
+	if changed {
+		i.SetFile(*scanned.New)
+		i.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+
+		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			var err error
+			retImage, err = r.Image().UpdateFull(*i)
+			return err
+		}); err != nil {
+			return nil, err
+		}
+
+		// remove the old thumbnail if the checksum changed - we'll regenerate it
+		if oldChecksum != scanned.New.Checksum {
+			err = os.Remove(GetInstance().Paths.Generated.GetThumbnailPath(oldChecksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
+			if err != nil {
+				logger.Errorf("Error deleting thumbnail image: %s", err)
+			}
+		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retImage.ID, plugin.ImageUpdatePost, nil, nil)
 	}
 
-	currentTime := time.Now()
-	imagePartial := models.ImagePartial{
-		ID:       i.ID,
-		Checksum: &checksum,
-		Width:    &fileDetails.Width,
-		Height:   &fileDetails.Height,
-		Size:     &fileDetails.Size,
-		FileModTime: &models.NullSQLiteTimestamp{
-			Timestamp: fileModTime,
-			Valid:     true,
-		},
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
-	}
+	return
+}
 
-	var ret *models.Image
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+func (t *ScanTask) scanImageNew(file *models.File) (retImage *models.Image, err error) {
+	path := t.file.Path()
+	checksum := file.Checksum
+
+	// check for image by checksum
+	var existingImage *models.Image
+	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		ret, err = r.Image().Update(imagePartial)
+		existingImage, err = r.Image().FindByChecksum(checksum)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
-	// remove the old thumbnail if the checksum changed - we'll regenerate it
-	if oldChecksum != checksum {
-		err = os.Remove(GetInstance().Paths.Generated.GetThumbnailPath(oldChecksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
-		if err != nil {
-			logger.Errorf("Error deleting thumbnail image: %s", err)
+	if existingImage != nil {
+		exists := image.FileExists(existingImage.Path)
+		if !t.CaseSensitiveFs {
+			// #1426 - if file exists but is a case-insensitive match for the
+			// original filename, then treat it as a move
+			if exists && strings.EqualFold(path, existingImage.Path) {
+				exists = false
+			}
+		}
+
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(path), image.PathDisplayName(existingImage.Path))
+			return nil, nil
+		} else {
+			logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(path))
+			imagePartial := models.ImagePartial{
+				ID:   existingImage.ID,
+				Path: &path,
+			}
+
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				retImage, err = r.Image().Update(imagePartial)
+				return err
+			}); err != nil {
+				return nil, err
+			}
+
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
+		}
+	} else {
+		logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(path))
+		currentTime := time.Now()
+		newImage := models.Image{
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		}
+		newImage.SetFile(*file)
+		newImage.Title.String = image.GetFilename(&newImage, t.StripFileExtension)
+		newImage.Title.Valid = true
+
+		if err := image.SetFileDetails(&newImage); err != nil {
+			logger.Error(err.Error())
+			return nil, err
+		}
+
+		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			var err error
+			retImage, err = r.Image().Create(newImage)
+			return err
+		}); err != nil {
+			return nil, err
+		}
+
+		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retImage.ID, plugin.ImageCreatePost, nil, nil)
+	}
+
+	if retImage != nil {
+		if t.zipGallery != nil {
+			// associate with gallery
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				return gallery.AddImage(r.Gallery(), t.zipGallery.ID, retImage.ID)
+			}); err != nil {
+				return nil, err
+			}
+		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
+			// create gallery from folder or associate with existing gallery
+			logger.Infof("Associating image %s with folder gallery", retImage.Path)
+			var galleryID int
+			var isNewGallery bool
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				var err error
+				galleryID, isNewGallery, err = t.associateImageWithFolderGallery(retImage.ID, r.Gallery())
+				return err
+			}); err != nil {
+				return nil, err
+			}
+
+			if isNewGallery {
+				GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
+			}
 		}
 	}
 
-	GetInstance().PluginCache.ExecutePostHooks(t.ctx, ret.ID, plugin.ImageUpdatePost, nil, nil)
-
-	return ret, nil
+	return
 }
 
 func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) (galleryID int, isNew bool, err error) {

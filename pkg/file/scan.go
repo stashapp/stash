@@ -31,6 +31,7 @@ type Scanned struct {
 	New *models.File
 }
 
+// FileUpdated returns true if both old and new files are present and not equal.
 func (s Scanned) FileUpdated() bool {
 	if s.Old == nil || s.New == nil {
 		return false
@@ -39,6 +40,7 @@ func (s Scanned) FileUpdated() bool {
 	return s.Old.Equal(*s.New)
 }
 
+// ContentsChanged returns true if both old and new files are present and the file content is different.
 func (s Scanned) ContentsChanged() bool {
 	if s.Old == nil || s.New == nil {
 		return false
@@ -72,13 +74,13 @@ func (o Scanner) ScanExisting(existing FileBased, file SourceFile) (h *Scanned, 
 	updatedFile := existingFile
 	h.New = &updatedFile
 
-	//  update existing data if needed
+	// update existing data if needed
 	// truncate to seconds, since we don't store beyond that in the database
 	updatedFile.FileModTime = info.ModTime().Truncate(time.Second)
 
 	modTimeChanged := !existingFile.FileModTime.Equal(updatedFile.FileModTime)
 
-	//  regenerate hash(es)
+	// regenerate hash(es) if missing or file mod time changed
 	if _, err = o.generateHashes(&updatedFile, file, modTimeChanged); err != nil {
 		return nil, err
 	}
@@ -98,7 +100,7 @@ func (o Scanner) ScanNew(file SourceFile) (*models.File, error) {
 		FileModTime: modTime,
 	}
 
-	if _, err := o.generateHashes(&f, file, false); err != nil {
+	if _, err := o.generateHashes(&f, file, true); err != nil {
 		return nil, err
 	}
 

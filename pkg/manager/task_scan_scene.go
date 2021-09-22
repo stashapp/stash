@@ -79,6 +79,8 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 	if scanned.ContentsChanged() {
 		logger.Infof("%s has been updated: rescanning", path)
 
+		s.SetFile(*scanned.New)
+
 		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
 		if err != nil {
 			return err
@@ -124,6 +126,8 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 					return fmt.Errorf("OSHash for file %s is the same as that of %s", path, dupe.Path)
 				}
 			}
+
+			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 			_, err := qb.UpdateFull(*s)
 			return err

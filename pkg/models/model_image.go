@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"strconv"
+	"time"
 )
 
 // Image stores the metadata for a single image.
@@ -39,6 +41,47 @@ type ImagePartial struct {
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+}
+
+func (i *Image) File() File {
+	ret := File{
+		Path: i.Path,
+	}
+
+	ret.Checksum = i.Checksum
+	if i.FileModTime.Valid {
+		ret.FileModTime = i.FileModTime.Timestamp
+	}
+	if i.Size.Valid {
+		ret.Size = strconv.FormatInt(i.Size.Int64, 10)
+	}
+
+	return ret
+}
+
+func (i *Image) SetFile(f File) {
+	path := f.Path
+	i.Path = path
+
+	if f.Checksum != "" {
+		i.Checksum = f.Checksum
+	}
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
+		i.FileModTime = NullSQLiteTimestamp{
+			Timestamp: f.FileModTime,
+			Valid:     true,
+		}
+	}
+	if f.Size != "" {
+		size, err := strconv.ParseInt(f.Size, 10, 64)
+		if err == nil {
+			i.Size = sql.NullInt64{
+				Int64: size,
+				Valid: true,
+			}
+		}
+	}
 }
 
 // GetTitle returns the title of the image. If the Title field is empty,
