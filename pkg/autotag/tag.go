@@ -16,9 +16,27 @@ func getMatchingTags(path string, tagReader models.TagReader) ([]*models.Tag, er
 	}
 
 	var ret []*models.Tag
-	for _, p := range tags {
-		if nameMatchesPath(p.Name, path) {
-			ret = append(ret, p)
+	for _, t := range tags {
+		matches := false
+		if nameMatchesPath(t.Name, path) {
+			matches = true
+		}
+
+		if !matches {
+			aliases, err := tagReader.GetAliases(t.ID)
+			if err != nil {
+				return nil, err
+			}
+			for _, alias := range aliases {
+				if nameMatchesPath(alias, path) {
+					matches = true
+					break
+				}
+			}
+		}
+
+		if matches {
+			ret = append(ret, t)
 		}
 	}
 

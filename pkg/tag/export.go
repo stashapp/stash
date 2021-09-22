@@ -32,6 +32,13 @@ func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 		newTagJSON.Image = utils.GetBase64StringFromData(image)
 	}
 
+	parents, err := reader.FindByChildTagID(tag.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting parents: %s", err.Error())
+	}
+
+	newTagJSON.Parents = GetNames(parents)
+
 	return &newTagJSON, nil
 }
 

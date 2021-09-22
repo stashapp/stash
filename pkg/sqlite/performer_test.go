@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -164,7 +165,7 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 	})
 }
 
-func TestPerformerQueryPathNotRating(t *testing.T) {
+func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 	const performerIdx = 1
 
 	performerRating := getRating(performerIdx)
@@ -499,7 +500,7 @@ func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *m
 func TestPerformerQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Performer()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
@@ -518,7 +519,7 @@ func TestPerformerQueryTags(t *testing.T) {
 			assert.True(t, performer.ID == performerIDs[performerIdxWithTag] || performer.ID == performerIDs[performerIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
@@ -531,7 +532,7 @@ func TestPerformerQueryTags(t *testing.T) {
 		assert.Len(t, performers, 1)
 		assert.Equal(t, sceneIDs[performerIdxWithTwoTags], performers[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},

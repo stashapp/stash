@@ -82,9 +82,6 @@ func (s *singleton) Import(ctx context.Context) (int, error) {
 	}
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		var wg sync.WaitGroup
-		wg.Add(1)
-
 		task := ImportTask{
 			txnManager:          s.TxnManager,
 			BaseDir:             metadataPath,
@@ -93,7 +90,7 @@ func (s *singleton) Import(ctx context.Context) (int, error) {
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start(&wg)
+		task.Start()
 	})
 
 	return s.JobManager.Add(ctx, "Importing...", j), nil
@@ -125,7 +122,8 @@ func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
 	wg.Add(1)
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		t.Start(&wg)
+		t.Start()
+		wg.Done()
 	})
 
 	return s.JobManager.Add(ctx, t.GetDescription(), j)
@@ -163,7 +161,9 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
 	}
-	instance.Paths.Generated.EnsureTmpDir()
+	if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+		logger.Warnf("could not generate temporary directory: %v", err)
+	}
 
 	sceneIDs, err := utils.StringSliceToIntSlice(input.SceneIDs)
 	if err != nil {
@@ -250,14 +250,18 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 
 		// Start measuring how long the generate has taken. (consider moving this up)
 		start := time.Now()
-		instance.Paths.Generated.EnsureTmpDir()
+		if err = instance.Paths.Generated.EnsureTmpDir(); err != nil {
+			logger.Warnf("could not create temprary directory: %v", err)
+		}
 
 		for _, scene := range scenes {
 			progress.Increment()
 			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				wg.Wait()
-				instance.Paths.Generated.EmptyTmpDir()
+				if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+					logger.Warnf("failure emptying temporary directory: %v", err)
+				}
 				return
 			}
 
@@ -274,7 +278,8 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				}
 				wg.Add()
 				go progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", scene.Path), func() {
-					task.Start(&wg)
+					task.Start()
+					wg.Done()
 				})
 			}
 
@@ -288,7 +293,8 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				}
 				wg.Add()
 				go progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", scene.Path), func() {
-					task.Start(&wg)
+					task.Start()
+					wg.Done()
 				})
 			}
 
@@ -299,9 +305,12 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 					Scene:               scene,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
+					ImagePreview:        input.MarkerImagePreviews,
+					Screenshot:          input.MarkerScreenshots,
 				}
 				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
-					task.Start(&wg)
+					task.Start()
+					wg.Done()
 				})
 			}
 
@@ -313,7 +322,8 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				go progress.ExecuteTask(fmt.Sprintf("Generating transcode for %s", scene.Path), func() {
-					task.Start(&wg)
+					task.Start()
+					wg.Done()
 				})
 			}
 
@@ -326,7 +336,8 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				}
 				wg.Add()
 				go progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", scene.Path), func() {
-					task.Start(&wg)
+					task.Start()
+					wg.Done()
 				})
 			}
 		}
@@ -338,7 +349,9 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 			if job.IsCancelled(ctx) {
 				logger.Info("Stopping due to user request")
 				wg.Wait()
-				instance.Paths.Generated.EmptyTmpDir()
+				if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+					logger.Warnf("failure emptying temporary directory: %v", err)
+				}
 				elapsed := time.Since(start)
 				logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 				return
@@ -357,13 +370,16 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				fileNamingAlgorithm: fileNamingAlgo,
 			}
 			go progress.ExecuteTask(fmt.Sprintf("Generating marker preview for marker ID %d", marker.ID), func() {
-				task.Start(&wg)
+				task.Start()
+				wg.Done()
 			})
 		}
 
 		wg.Wait()
 
-		instance.Paths.Generated.EmptyTmpDir()
+		if err = instance.Paths.Generated.EmptyTmpDir(); err != nil {
+			logger.Warnf("failure emptying temporary directory: %v", err)
+		}
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 	})
@@ -381,7 +397,9 @@ func (s *singleton) GenerateScreenshot(ctx context.Context, sceneId string, at f
 
 // generate default screenshot if at is nil
 func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *float64) int {
-	instance.Paths.Generated.EnsureTmpDir()
+	if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+		logger.Warnf("failure generating screenshot: %v", err)
+	}
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		sceneIdInt, err := strconv.Atoi(sceneId)
@@ -407,9 +425,7 @@ func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *
 			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
 		}
 
-		var wg sync.WaitGroup
-		wg.Add(1)
-		task.Start(&wg)
+		task.Start()
 
 		logger.Infof("Generate screenshot finished")
 	})
@@ -593,7 +609,11 @@ func (s *singleton) MigrateHash(ctx context.Context) int {
 			wg.Add(1)
 
 			task := MigrateHashTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
-			go task.Start(&wg)
+			go func() {
+				task.Start()
+				wg.Done()
+			}()
+
 			wg.Wait()
 		}
 
@@ -797,7 +817,8 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 		for _, task := range tasks {
 			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
-				task.Start(&wg)
+				task.Start()
+				wg.Done()
 			})
 
 			progress.Increment()

@@ -348,17 +348,18 @@ func (qb *imageQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 	}
 }
 
-func imageTagsCriterionHandler(qb *imageQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
-	h := joinedMultiCriterionHandlerBuilder{
-		primaryTable: imageTable,
-		joinTable:    imagesTagsTable,
-		joinAs:       "tags_join",
-		primaryFK:    imageIDColumn,
-		foreignFK:    tagIDColumn,
+func imageTagsCriterionHandler(qb *imageQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
 
-		addJoinTable: func(f *filterBuilder) {
-			qb.tagsRepository().join(f, "tags_join", "images.id")
-		},
+		primaryTable: imageTable,
+		foreignTable: tagTable,
+		foreignFK:    "tag_id",
+
+		relationsTable: "tags_relations",
+		joinAs:         "image_tag",
+		joinTable:      imagesTagsTable,
+		primaryFK:      imageIDColumn,
 	}
 
 	return h.handler(tags)
@@ -412,6 +413,8 @@ func imagePerformerCountCriterionHandler(qb *imageQueryBuilder, performerCount *
 
 func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: imageTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
@@ -422,31 +425,20 @@ func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.Hierarch
 	return h.handler(studios)
 }
 
-func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, performerTagsFilter *models.MultiCriterionInput) criterionHandlerFunc {
+func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
-			qb.performersRepository().join(f, "performers_join", "images.id")
-			f.addJoin("performers_tags", "performer_tags_join", "performers_join.performer_id = performer_tags_join.performer_id")
+		if tags != nil && len(tags.Value) > 0 {
+			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
-			var args []interface{}
-			for _, tagID := range performerTagsFilter.Value {
-				args = append(args, tagID)
-			}
+			f.addWith(`performer_tags AS (
+SELECT pi.image_id, t.column1 AS root_tag_id FROM performers_images pi
+INNER JOIN performers_tags pt ON pt.performer_id = pi.performer_id
+INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
+)`)
 
-			if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
-				// includes any of the provided ids
-				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
-			} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
-				// includes all of the provided ids
-				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
-				f.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
-			} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-				f.addWhere(fmt.Sprintf(`not exists
-					(select performers_images.performer_id from performers_images
-						left join performers_tags on performers_tags.performer_id = performers_images.performer_id where
-						performers_images.image_id = images.id AND
-						performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))), args...)
-			}
+			f.addJoin("performer_tags", "", "performer_tags.image_id = images.id")
+
+			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
 		}
 	}
 }

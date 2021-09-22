@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -22,9 +21,7 @@ type StashBoxPerformerTagTask struct {
 	excluded_fields []string
 }
 
-func (t *StashBoxPerformerTagTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (t *StashBoxPerformerTagTask) Start() {
 	t.stashBoxPerformerTag()
 }
 
@@ -47,7 +44,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 
 	if t.refresh {
 		var performerID string
-		t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		txnErr := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			stashids, _ := r.Performer().GetStashIDs(t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
@@ -56,6 +53,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 			}
 			return nil
 		})
+		if txnErr != nil {
+			logger.Warnf("error while executing read transaction: %v", err)
+		}
 		if performerID != "" {
 			performer, err = client.FindStashBoxPerformerByID(performerID)
 		}
@@ -229,9 +229,9 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if len(performer.Images) > 0 {
-					image, err := utils.ReadImageFromURL(performer.Images[0])
-					if err != nil {
-						return err
+					image, imageErr := utils.ReadImageFromURL(performer.Images[0])
+					if imageErr != nil {
+						return imageErr
 					}
 					err = r.Performer().UpdateImage(createdPerformer.ID, image)
 				}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -32,17 +33,22 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Tag().GetImage(tag.ID)
 			return nil
 		})
+		if err != nil {
+			logger.Warnf("read transaction error while getting tag image: %v", err)
+		}
 	}
 
 	if len(image) == 0 {
 		image = models.DefaultTagImage
 	}
 
-	utils.ServeImage(image, w, r)
+	if err := utils.ServeImage(image, w, r); err != nil {
+		logger.Warnf("error serving tag image: %v", err)
+	}
 }
 
 func TagCtx(next http.Handler) http.Handler {

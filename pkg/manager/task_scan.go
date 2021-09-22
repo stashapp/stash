@@ -80,7 +80,9 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				galleries = append(galleries, path)
 			}
 
-			instance.Paths.Generated.EnsureTmpDir()
+			if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+				logger.Warnf("couldn't create temporary directory: %v", err)
+			}
 
 			wg.Add()
 			task := ScanTask{
@@ -100,7 +102,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			go func() {
-				task.Start(&wg)
+				task.Start()
+				wg.Done()
 				progress.Increment()
 			}()
 
@@ -119,7 +122,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
-	instance.Paths.Generated.EmptyTmpDir()
+
+	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+		logger.Warnf("couldn't empty temporary directory: %v", err)
+	}
+
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
@@ -212,9 +219,7 @@ type ScanTask struct {
 	CaseSensitiveFs      bool
 }
 
-func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *ScanTask) Start() {
 	var s *models.Scene
 	path := t.file.Path()
 	t.progress.ExecuteTask("Scanning "+path, func() {
@@ -239,7 +244,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskSprite.Start(&iwg)
+				taskSprite.Start()
+				iwg.Done()
 			})
 		}
 
@@ -252,7 +258,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 					txnManager:          t.TxnManager,
 				}
-				taskPhash.Start(&iwg)
+				taskPhash.Start()
+				iwg.Done()
 			})
 		}
 
@@ -283,7 +290,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskPreview.Start(wg)
+				taskPreview.Start()
+				iwg.Done()
 			})
 		}
 
@@ -336,7 +344,7 @@ func (t *ScanTask) doesPathExist() bool {
 
 	path := t.file.Path()
 	ret := false
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		if matchExtension(path, gExt) {
 			gallery, _ := r.Gallery().FindByPath(path)
 			if gallery != nil {
@@ -356,6 +364,9 @@ func (t *ScanTask) doesPathExist() bool {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error while executing read transaction: %v", txnErr)
+	}
 
 	return ret
 }

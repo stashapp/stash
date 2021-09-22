@@ -95,7 +95,7 @@
   "birthdate": "出生日期",
   "bitrate": "比特率",
   "career_length": "活跃年代",
-  "child_studios": "子工作室",
+  "subsidiary_studios": "子工作室",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -528,8 +528,7 @@
   "image": "图片",
   "image_count": "图片数量",
   "images": "图片",
-  "images-size": "图片大小",
-  "include_child_studios": "包含子工作室",
+  "include_sub_studios": "包含子工作室",
   "instagram": "Instagram",
   "interactive": "互动",
   "isMissing": "缺失",
@@ -586,8 +585,6 @@
   "scene_count": "短片数量",
   "scene_id": "短片ID",
   "scenes": "短片",
-  "scenes-duration": "短片时长",
-  "scenes-size": "短片大小",
   "scenes_updated_at": "短片更新时间",
   "sceneTagger": "短片标记器",
   "sceneTags": "短片标记",
@@ -630,5 +627,9 @@
   "updated_at": "更新时间",
   "url": "链接",
   "weight": "体重",
-  "years_old": "岁"
+  "years_old": "岁",
+  "stats": {
+    "image_size": "图片大小",
+    "scenes_size": "短片大小"
+  }
 }

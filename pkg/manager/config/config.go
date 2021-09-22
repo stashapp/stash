@@ -16,6 +16,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -453,7 +454,10 @@ func (i *Instance) GetStashBoxes() []*models.StashBox {
 	i.RLock()
 	defer i.RUnlock()
 	var boxes []*models.StashBox
-	viper.UnmarshalKey(StashBoxes, &boxes)
+	if err := viper.UnmarshalKey(StashBoxes, &boxes); err != nil {
+		logger.Warnf("error in unmarshalkey: %v", err)
+	}
+
 	return boxes
 }
 
@@ -656,17 +660,21 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 
 	re, err := regexp.Compile("^http.*graphql$")
 	if err != nil {
-		return errors.New("Failure to generate regular expression")
+		return errors.New("failure to generate regular expression")
 	}
 
 	for _, box := range boxes {
 		if box.APIKey == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box API Key cannot be blank")
 		} else if box.Endpoint == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint cannot be blank")
 		} else if !re.Match([]byte(box.Endpoint)) {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Name cannot be blank")
 		}
 	}
@@ -797,7 +805,9 @@ func (i *Instance) SetCSS(css string) {
 
 	buf := []byte(css)
 
-	ioutil.WriteFile(fn, buf, 0777)
+	if err := ioutil.WriteFile(fn, buf, 0777); err != nil {
+		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
+	}
 }
 
 func (i *Instance) GetCSSEnabled() bool {

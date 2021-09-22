@@ -3,7 +3,7 @@ import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { JWUtils } from "src/utils";
+import { JWUtils, ScreenUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { Interactive } from "../../utils/interactive";
 
@@ -294,14 +294,20 @@ export class ScenePlayerImpl extends React.Component<
 
     this.playlist = this.makePlaylist();
 
+    // TODO: leverage the floating.mode option after upgrading JWPlayer
+    const extras: any = {};
+
+    if (!ScreenUtils.isMobile()) {
+      extras.floating = {
+        dismissible: true,
+      };
+    }
+
     const ret = {
       playlist: this.playlist,
       image: scene.paths.screenshot,
       width: "100%",
       height: "100%",
-      floating: {
-        dismissible: true,
-      },
       cast: {},
       primary: "html5",
       autostart:
@@ -314,6 +320,7 @@ export class ScenePlayerImpl extends React.Component<
       getDurationHook,
       seekHook,
       getCurrentTimeHook,
+      ...extras,
     };
 
     return ret;
@@ -336,12 +343,13 @@ export class ScenePlayerImpl extends React.Component<
       <div id="jwplayer-container" className={className}>
         <ReactJWPlayer
           playerId={JWUtils.playerID}
-          playerScript="/jwplayer/jwplayer.js"
+          playerScript="jwplayer/jwplayer.js"
           customProps={this.state.config}
           onReady={this.onReady}
           onSeeked={this.onSeeked}
           onTime={this.onTime}
           onOneHundredPercent={() => this.onComplete()}
+          className="video-wrapper"
         />
         <ScenePlayerScrubber
           scene={this.props.scene}

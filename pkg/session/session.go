@@ -173,19 +173,6 @@ func setVisitedPlugins(ctx context.Context, visitedPlugins []string) context.Con
 	return context.WithValue(ctx, contextVisitedPlugins, visitedPlugins)
 }
 
-func (s *Store) createSessionCookie(username string) (*http.Cookie, error) {
-	session := sessions.NewSession(s.sessionStore, cookieName)
-	session.Values[userIDKey] = username
-
-	encoded, err := securecookie.EncodeMulti(session.Name(), session.Values,
-		s.sessionStore.Codecs...)
-	if err != nil {
-		return nil, err
-	}
-
-	return sessions.NewCookie(session.Name(), encoded, session.Options), nil
-}
-
 func (s *Store) MakePluginCookie(ctx context.Context) *http.Cookie {
 	currentUser := GetCurrentUserID(ctx)
 	visitedPlugins := GetVisitedPlugins(ctx)

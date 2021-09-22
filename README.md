@@ -68,6 +68,10 @@ This command would need customizing for your environment.  [This link](https://s
 
 Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the same directory as the `config.yml` file, or the `~/.stash` directory.  Stash detects these and starts up using HTTPS rather than HTTP.
 
+## Basepath rewriting
+
+The basepath defaults to `/`. When running stash via a reverse proxy in a subpath, the basepath can be changed by having the reverse proxy pass `X-Forwarded-Prefix` (and optionally `X-Forwarded-Port`) headers. When detects these headers, it alters the basepath URL of the UI.
+
 # Customization
 
 ## Themes and CSS Customization
@@ -92,9 +96,6 @@ For issues not addressed there, there are a few options.
 * [Go](https://golang.org/dl/)
 * [Revive](https://github.com/mgechev/revive) - Configurable linter
     * Go Install: `go get github.com/mgechev/revive`
-* [Packr2](https://github.com/gobuffalo/packr/) - Static asset bundler
-    * Go Install: `go get github.com/gobuffalo/packr/v2/packr2`
-    * [Binary Download](https://github.com/gobuffalo/packr/releases)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
     * Run `yarn install --frozen-lockfile` in the `stash/ui/v2.5` folder (before running make generate for first time).
 
@@ -112,8 +113,7 @@ TODO
 2. Download and install [MingW](https://sourceforge.net/projects/mingw-w64/)
 3. Search for "advanced system settings" and open the system properties dialog.
     1. Click the `Environment Variables` button
-    2. Add `GO111MODULE=on`
-    3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+    2. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
 
 NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
@@ -121,10 +121,10 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 * `make generate` - Generate Go and UI GraphQL files
 * `make build` - Builds the binary (make sure to build the UI as well... see below)
+* `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
-* `make fmt-ui` - Formats the UI source code.
-* `make ui` - Builds the frontend and the packr2 files
-* `make packr` - Generate packr2 files (sub-target of `ui`. Use to regenerate packr2 files without rebuilding UI)
+* `make fmt-ui` - Formats the UI source code
+* `make ui` - Builds the frontend
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter
 * `make fmt` - Run `go fmt`

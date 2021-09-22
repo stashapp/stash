@@ -83,7 +83,8 @@
     "confirm": "確認",
     "select_folders": "選擇資料夾",
     "browse_for_image": "選擇圖像…",
-    "open_random": "隨機開啟"
+    "open_random": "隨機開啟",
+    "scrape_query": "爬蟲搜尋關鍵字"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -95,7 +96,7 @@
   "birthdate": "出生日期",
   "bitrate": "位元率",
   "career_length": "活躍年代",
-  "child_studios": "子工作室",
+  "subsidiary_studios": "子工作室",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -116,7 +117,8 @@
       "set_tag_desc": "選擇套用標籤時，該如何處理現有標籤。",
       "set_tag_label": "標籤設定",
       "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
-      "show_male_label": "顯示男優"
+      "show_male_label": "顯示男優",
+      "query_mode_metadata": "Metadata"
     },
     "noun_query": "關鍵字",
     "results": {
@@ -234,7 +236,9 @@
       "sqlite_location": "SQLite 資料庫的位置（需重新啟動）",
       "video_ext_desc": "以逗號為區隔的副檔名名稱，這些檔案將被視為影片",
       "video_ext_head": "影片副檔名",
-      "video_head": "影片設定"
+      "video_head": "影片設定",
+      "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
+      "include_audio_head": "包含音訊"
     },
     "logs": {
       "log_level": "日誌級別"
@@ -368,7 +372,8 @@
       }
     },
     "plugins": {
-      "triggers_on": "觸發於"
+      "triggers_on": "觸發於",
+      "hooks": "Hooks"
     }
   },
   "configuration": "設定",
@@ -446,7 +451,9 @@
       "source": "來源",
       "destination": "目的地"
     },
-    "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？"
+    "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
+    "scenes_found": "已找到 {count} 個短片",
+    "scrape_entity_query": "{entity_type}爬蟲搜尋"
   },
   "dimensions": "解析度",
   "director": "導演",
@@ -511,7 +518,6 @@
   "image": "圖片",
   "image_count": "圖片數量",
   "images": "圖片",
-  "images-size": "圖片大小",
   "interactive": "互動性支援",
   "isMissing": "缺失",
   "library": "收藏庫",
@@ -565,7 +571,6 @@
   "scene_count": "短片數量",
   "scene_id": "短片 ID",
   "scenes": "短片",
-  "scenes-size": "短片大小",
   "scenes_updated_at": "短片更新時間",
   "sceneTagger": "短片標籤器",
   "sceneTags": "短片標籤",
@@ -614,7 +619,6 @@
   "filter": "過濾",
   "filter_name": "過濾條件名稱",
   "detail": "詳情",
-  "include_child_studios": "包含子工作室",
   "criterion": {
     "greater_than": "大於",
     "less_than": "小於",
@@ -623,9 +627,14 @@
   "custom": "自訂",
   "frames_per_second": "{value} 幀/秒",
   "megabits_per_second": "{value} megabits/秒",
-  "tools": {
-    "scene_filename_parser": {
-      "ignore_organized": "忽略已整理的短片"
-    }
-  }
+  "stats": {
+    "image_size": "圖片大小",
+    "scenes_size": "短片大小",
+    "scenes_duration": "短片長度"
+  },
+  "metadata": "Metadata",
+  "include_sub_studios": "包含子工作室",
+  "include_sub_tags": "包含子標籤",
+  "parent_tags": "母標籤",
+  "sub_tags": "子標籤"
 }

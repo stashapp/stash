@@ -11,13 +11,6 @@ const (
 	scraperActionJson   scraperAction = "scrapeJson"
 )
 
-var allScraperAction = []scraperAction{
-	scraperActionScript,
-	scraperActionStash,
-	scraperActionXPath,
-	scraperActionJson,
-}
-
 func (e scraperAction) IsValid() bool {
 	switch e {
 	case scraperActionScript, scraperActionStash, scraperActionXPath, scraperActionJson:
@@ -26,17 +19,12 @@ func (e scraperAction) IsValid() bool {
 	return false
 }
 
-type scrapeOptions struct {
-	scraper      scraperTypeConfig
-	config       config
-	globalConfig GlobalConfig
-}
-
 type scraper interface {
 	scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error)
 	scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 	scrapePerformerByURL(url string) (*models.ScrapedPerformer, error)
 
+	scrapeScenesByName(name string) ([]*models.ScrapedScene, error)
 	scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error)
 	scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
 	scrapeSceneByURL(url string) (*models.ScrapedScene, error)

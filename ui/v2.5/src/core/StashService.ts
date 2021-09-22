@@ -836,6 +836,21 @@ export const queryScrapePerformerURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const queryScrapeSceneQuery = (
+  source: GQL.ScraperSourceInput,
+  q: string
+) =>
+  client.query<GQL.ScrapeSingleSceneQuery>({
+    query: GQL.ScrapeSingleSceneDocument,
+    variables: {
+      source,
+      input: {
+        query: q,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const queryScrapeSceneURL = (url: string) =>
   client.query<GQL.ScrapeSceneUrlQuery>({
     query: GQL.ScrapeSceneUrlDocument,
@@ -863,13 +878,14 @@ export const queryScrapeMovieURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
-export const queryScrapeScene = (scraperId: string, sceneId: string) =>
+export const queryScrapeScene = (
+  source: GQL.ScraperSourceInput,
+  sceneId: string
+) =>
   client.query<GQL.ScrapeSingleSceneQuery>({
     query: GQL.ScrapeSingleSceneDocument,
     variables: {
-      source: {
-        scraper_id: scraperId,
-      },
+      source,
       input: {
         scene_id: sceneId,
       },
@@ -888,22 +904,22 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
         scene_id: sceneID,
       },
     },
+    fetchPolicy: "network-only",
   });
 
-export const queryStashBoxPerformer = (
-  stashBoxIndex: number,
-  performerID: string
+export const queryScrapeSceneQueryFragment = (
+  source: GQL.ScraperSourceInput,
+  input: GQL.ScrapedSceneInput
 ) =>
-  client.query<GQL.ScrapeSinglePerformerQuery>({
-    query: GQL.ScrapeSinglePerformerDocument,
+  client.query<GQL.ScrapeSingleSceneQuery>({
+    query: GQL.ScrapeSingleSceneDocument,
     variables: {
-      source: {
-        stash_box_index: stashBoxIndex,
-      },
+      source,
       input: {
-        performer_id: performerID,
+        scene_input: input,
       },
     },
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapeGallery = (scraperId: string, galleryId: string) =>

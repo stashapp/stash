@@ -22,3 +22,7 @@ func (sp *sceneMarkerPaths) GetStreamPath(checksum string, seconds int) string {
 func (sp *sceneMarkerPaths) GetStreamPreviewImagePath(checksum string, seconds int) string {
 	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".webp")
 }
+
+func (sp *sceneMarkerPaths) GetStreamScreenshotPath(checksum string, seconds int) string {
+	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".jpg")
+}

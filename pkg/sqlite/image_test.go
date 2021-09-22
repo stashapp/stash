@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -721,7 +722,7 @@ func TestImageQueryPerformers(t *testing.T) {
 func TestImageQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithImage]),
 				strconv.Itoa(tagIDs[tagIdx1WithImage]),
@@ -745,7 +746,7 @@ func TestImageQueryTags(t *testing.T) {
 			assert.True(t, image.ID == imageIDs[imageIdxWithTag] || image.ID == imageIDs[imageIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithImage]),
 				strconv.Itoa(tagIDs[tagIdx2WithImage]),
@@ -761,7 +762,7 @@ func TestImageQueryTags(t *testing.T) {
 		assert.Len(t, images, 1)
 		assert.Equal(t, imageIDs[imageIdxWithTwoTags], images[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithImage]),
 			},
@@ -791,7 +792,6 @@ func TestImageQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -813,7 +813,6 @@ func TestImageQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getImageStringValue(imageIdxWithStudio, titleField)
@@ -834,12 +833,13 @@ func TestImageQueryStudio(t *testing.T) {
 func TestImageQueryStudioDepth(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
+		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		imageFilter := models.ImageFilterType{
@@ -849,7 +849,7 @@ func TestImageQueryStudioDepth(t *testing.T) {
 		images := queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 1)
 
-		studioCriterion.Depth = 1
+		depth = 1
 
 		images = queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 0)
@@ -861,12 +861,14 @@ func TestImageQueryStudioDepth(t *testing.T) {
 		// ensure id is correct
 		assert.Equal(t, imageIDs[imageIdxWithGrandChildStudio], images[0].ID)
 
+		depth = 2
+
 		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		q := getImageStringValue(imageIdxWithGrandChildStudio, titleField)
@@ -877,7 +879,7 @@ func TestImageQueryStudioDepth(t *testing.T) {
 		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
 
-		studioCriterion.Depth = 1
+		depth = 1
 		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 1)
 
@@ -901,7 +903,7 @@ func queryImages(t *testing.T, sqb models.ImageReader, imageFilter *models.Image
 func TestImageQueryPerformerTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
@@ -921,7 +923,7 @@ func TestImageQueryPerformerTags(t *testing.T) {
 			assert.True(t, image.ID == imageIDs[imageIdxWithPerformerTag] || image.ID == imageIDs[imageIdxWithPerformerTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
@@ -934,7 +936,7 @@ func TestImageQueryPerformerTags(t *testing.T) {
 		assert.Len(t, images, 1)
 		assert.Equal(t, imageIDs[imageIdxWithPerformerTwoTags], images[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},

@@ -2,6 +2,7 @@ package manager
 
 import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 func makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int, time float64) {
@@ -12,5 +13,8 @@ func makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int
 		Time:       time,
 		Width:      width,
 	}
-	encoder.Screenshot(probeResult, options)
+
+	if err := encoder.Screenshot(probeResult, options); err != nil {
+		logger.Warnf("[encoder] failure to generate screenshot: %v", err)
+	}
 }

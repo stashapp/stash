@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -1033,7 +1034,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 func TestSceneQueryTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithScene]),
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
@@ -1053,7 +1054,7 @@ func TestSceneQueryTags(t *testing.T) {
 			assert.True(t, scene.ID == sceneIDs[sceneIdxWithTag] || scene.ID == sceneIDs[sceneIdxWithTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 				strconv.Itoa(tagIDs[tagIdx2WithScene]),
@@ -1066,7 +1067,7 @@ func TestSceneQueryTags(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithScene]),
 			},
@@ -1088,7 +1089,7 @@ func TestSceneQueryTags(t *testing.T) {
 func TestSceneQueryPerformerTags(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		tagCriterion := models.MultiCriterionInput{
+		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
@@ -1108,7 +1109,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformerTag] || scene.ID == sceneIDs[sceneIdxWithPerformerTwoTags])
 		}
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
@@ -1121,7 +1122,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
 
-		tagCriterion = models.MultiCriterionInput{
+		tagCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
 			},
@@ -1148,7 +1149,6 @@ func TestSceneQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    0,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1167,7 +1167,6 @@ func TestSceneQueryStudio(t *testing.T) {
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    0,
 		}
 
 		q := getSceneStringValue(sceneIdxWithStudio, titleField)
@@ -1185,12 +1184,13 @@ func TestSceneQueryStudio(t *testing.T) {
 func TestSceneQueryStudioDepth(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
+		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierIncludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		sceneFilter := models.SceneFilterType{
@@ -1200,7 +1200,7 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 		scenes := queryScene(t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 1)
 
-		studioCriterion.Depth = 1
+		depth = 1
 
 		scenes = queryScene(t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 0)
@@ -1211,13 +1211,14 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 
 		// ensure id is correct
 		assert.Equal(t, sceneIDs[sceneIdxWithGrandChildStudio], scenes[0].ID)
+		depth = 2
 
 		studioCriterion = models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGrandChild]),
 			},
 			Modifier: models.CriterionModifierExcludes,
-			Depth:    2,
+			Depth:    &depth,
 		}
 
 		q := getSceneStringValue(sceneIdxWithGrandChildStudio, titleField)
@@ -1228,7 +1229,7 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
-		studioCriterion.Depth = 1
+		depth = 1
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 

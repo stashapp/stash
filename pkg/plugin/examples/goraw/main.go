@@ -1,3 +1,4 @@
+//go:build plugin_example
 // +build plugin_example
 
 package main
