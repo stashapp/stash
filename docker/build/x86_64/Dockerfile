@@ -27,7 +27,6 @@ RUN wget -O /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-rele
     mv /ffmpeg*/ /ffmpeg/
 WORKDIR /stash
 COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
-COPY ./static /stash/static/
 COPY ./scripts /stash/scripts/
 COPY ./vendor /stash/vendor/
 COPY ./pkg /stash/pkg/
