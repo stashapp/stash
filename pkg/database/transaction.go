@@ -19,13 +19,13 @@ func WithTxn(fn func(tx *sqlx.Tx) error) error {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
 			if err := tx.Rollback(); err != nil {
-				logger.Warnf("failure when performing tranaction rollback: %v", err)
+				logger.Warnf("failure when performing transaction rollback: %v", err)
 			}
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
 			if err := tx.Rollback(); err != nil {
-				logger.Warnf("failure when performing tranaction rollback: %v", err)
+				logger.Warnf("failure when performing transaction rollback: %v", err)
 			}
 		} else {
 			// all good, commit
