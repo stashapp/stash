@@ -5,3 +5,6 @@ cli/migrate
 .coverage
 .godoc.pid
 vendor/
+.vscode/
+.idea
+dist/

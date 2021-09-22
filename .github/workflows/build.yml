@@ -8,6 +8,10 @@ on:
   release:
     types: [ published ]
 
+concurrency: 
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   COMPILER_IMAGE: stashapp/compiler:5
 
@@ -73,11 +77,10 @@ jobs:
       # this means that the build version/time may be incorrect if the UI is
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make ui-only"
+      run: docker exec -t build /bin/bash -c "make ui"
 
     - name: Compile for all supported platforms
       run: |
-        docker exec -t build /bin/bash -c "make packr"
         docker exec -t build /bin/bash -c "make cross-compile-windows"
         docker exec -t build /bin/bash -c "make cross-compile-osx-intel"
         docker exec -t build /bin/bash -c "make cross-compile-osx-applesilicon"

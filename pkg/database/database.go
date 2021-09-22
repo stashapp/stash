@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"os"
@@ -9,10 +10,9 @@ import (
 	"time"
 
 	"github.com/fvbommel/sortorder"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
-	"github.com/golang-migrate/migrate/v4/source"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
 
@@ -21,10 +21,13 @@ import (
 )
 
 var DB *sqlx.DB
-var WriteMu *sync.Mutex
+var WriteMu sync.Mutex
 var dbPath string
 var appSchemaVersion uint = 28
 var databaseSchemaVersion uint
+
+//go:embed migrations/*.sql
+var migrationsBox embed.FS
 
 var (
 	// ErrMigrationNeeded indicates that a database migration is needed
@@ -84,7 +87,6 @@ func Initialize(databasePath string) error {
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
-	WriteMu = &sync.Mutex{}
 
 	if err := runCustomMigrations(); err != nil {
 		return err
@@ -97,7 +99,15 @@ func Close() error {
 	WriteMu.Lock()
 	defer WriteMu.Unlock()
 
-	return DB.Close()
+	if DB != nil {
+		if err := DB.Close(); err != nil {
+			return err
+		}
+
+		DB = nil
+	}
+
+	return nil
 }
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
@@ -193,17 +203,13 @@ func Version() uint {
 }
 
 func getMigrate() (*migrate.Migrate, error) {
-	migrationsBox := packr.New("Migrations Box", "./migrations")
-	packrSource := &Packr2Source{
-		Box:        migrationsBox,
-		Migrations: source.NewMigrations(),
+	migrations, err := iofs.New(migrationsBox, "migrations")
+	if err != nil {
+		panic(err.Error())
 	}
 
-	databasePath := utils.FixWindowsPath(dbPath)
-	s, _ := WithInstance(packrSource)
-
 	const disableForeignKeys = true
-	conn := open(databasePath, disableForeignKeys)
+	conn := open(dbPath, disableForeignKeys)
 
 	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
 	if err != nil {
@@ -212,9 +218,9 @@ func getMigrate() (*migrate.Migrate, error) {
 
 	// use sqlite3Driver so that migration has access to durationToTinyInt
 	return migrate.NewWithInstance(
-		"packr2",
-		s,
-		databasePath,
+		"iofs",
+		migrations,
+		dbPath,
 		driver,
 	)
 }

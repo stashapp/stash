@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -79,9 +78,7 @@ func (t *ImportTask) GetDescription() string {
 	return "Importing..."
 }
 
-func (t *ImportTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (t *ImportTask) Start() {
 	if t.TmpZip != "" {
 		defer func() {
 			err := utils.RemoveDir(t.BaseDir)
