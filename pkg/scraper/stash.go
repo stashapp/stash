@@ -69,7 +69,7 @@ func (s *stashScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 		},
 	}
 
-	err := client.Query(context.Background(), &q, vars)
+	err := client.Query(context.TODO(), &q, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 		"f": performerID,
 	}
 
-	err := client.Query(context.Background(), &q, vars)
+	err := client.Query(context.TODO(), &q, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (s *stashScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 		},
 	}
 
-	err := client.Query(context.Background(), &q, vars)
+	err := client.Query(context.TODO(), &q, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +240,7 @@ func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 	}
 
 	client := s.getStashClient()
-	if err := client.Query(context.Background(), &q, vars); err != nil {
+	if err := client.Query(context.TODO(), &q, vars); err != nil {
 		return nil, err
 	}
 
@@ -293,7 +293,7 @@ func (s *stashScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.
 	}
 
 	client := s.getStashClient()
-	if err := client.Query(context.Background(), &q, vars); err != nil {
+	if err := client.Query(context.TODO(), &q, vars); err != nil {
 		return nil, err
 	}
 
