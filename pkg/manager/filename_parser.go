@@ -52,15 +52,11 @@ func (f parserField) replaceInPattern(pattern string) string {
 }
 
 var validFields map[string]parserField
-var escapeCharRE *regexp.Regexp
 var capitalizeTitleRE *regexp.Regexp
 var multiWSRE *regexp.Regexp
 var delimiterRE *regexp.Regexp
 
 func compileREs() {
-	const escapeCharPattern = `([\-\.\(\)\[\]])`
-	escapeCharRE = regexp.MustCompile(escapeCharPattern)
-
 	const capitaliseTitlePattern = `(?:^| )\w`
 	capitalizeTitleRE = regexp.MustCompile(capitaliseTitlePattern)
 
@@ -135,7 +131,7 @@ func getIgnoreClause(ignoreFields []string) string {
 	var ignoreClauses []string
 
 	for _, v := range ignoreFields {
-		newVal := string(escapeCharRE.ReplaceAllString(v, `\$1`))
+		newVal := string(regexp.QuoteMeta(v))
 		newVal = strings.TrimSpace(newVal)
 		newVal = "(?:" + newVal + ")"
 		ignoreClauses = append(ignoreClauses, newVal)
@@ -148,7 +144,7 @@ func newParseMapper(pattern string, ignoreFields []string) (*parseMapper, error)
 	ret := &parseMapper{}
 
 	// escape control characters
-	regex := escapeCharRE.ReplaceAllString(pattern, `\$1`)
+	regex := regexp.QuoteMeta(pattern)
 
 	// replace {} with wildcard
 	braceRE := regexp.MustCompile(`\{\}`)
@@ -438,7 +434,7 @@ func (p *SceneFilenameParser) initWhiteSpaceRegex() {
 	}
 
 	if len(wsChars) > 0 {
-		wsRegExp := escapeCharRE.ReplaceAllString(wsChars, `\$1`)
+		wsRegExp := regexp.QuoteMeta(wsChars)
 		wsRegExp = "[" + wsRegExp + "]"
 		p.whitespaceRE = regexp.MustCompile(wsRegExp)
 	}
