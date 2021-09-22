@@ -49,7 +49,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
           // if the slideshow is running
           // return to the first page
           if (slideshowRunning) {
-            onChangePage(0);
+            onChangePage(1);
             return true;
           }
           return false;
