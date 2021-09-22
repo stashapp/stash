@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/remeh/sizedwaitgroup"
-
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -24,9 +22,7 @@ type GenerateMarkersTask struct {
 	Screenshot   bool
 }
 
-func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *GenerateMarkersTask) Start() {
 	if t.Scene != nil {
 		t.generateSceneMarkers()
 	}
