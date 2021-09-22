@@ -80,7 +80,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
     return () => {
       mounted = false;
-    }
+    };
   }, [src]);
 
   useEffect(() => {
