@@ -120,7 +120,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			go func() {
-				task.Start()
+				task.Start(ctx)
 				wg.Done()
 				progress.Increment()
 			}()
@@ -238,12 +238,12 @@ type ScanTask struct {
 	CaseSensitiveFs      bool
 }
 
-func (t *ScanTask) Start() {
+func (t *ScanTask) Start(ctx context.Context) {
 	var s *models.Scene
 
 	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
 		if isGallery(t.FilePath) {
-			t.scanGallery()
+			t.scanGallery(ctx)
 		} else if isVideo(t.FilePath) {
 			s = t.scanScene()
 		} else if isImage(t.FilePath) {
@@ -318,12 +318,12 @@ func (t *ScanTask) Start() {
 	}
 }
 
-func (t *ScanTask) scanGallery() {
+func (t *ScanTask) scanGallery(ctx context.Context) {
 	var g *models.Gallery
 	images := 0
 	scanImages := false
 
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		g, err = r.Gallery().FindByPath(t.FilePath)
 
@@ -976,7 +976,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		subTask.Start()
+		subTask.Start(context.TODO())
 		return nil
 	})
 	if err != nil {

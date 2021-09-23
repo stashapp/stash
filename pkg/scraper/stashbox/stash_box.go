@@ -45,8 +45,8 @@ func NewClient(box models.StashBox, txnManager models.TransactionManager) *Clien
 }
 
 // QueryStashBoxScene queries stash-box for scenes using a query string.
-func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, error) {
-	scenes, err := c.client.SearchScene(context.TODO(), queryStr)
+func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*models.ScrapedScene, error) {
+	scenes, err := c.client.SearchScene(ctx, queryStr)
 	if err != nil {
 		return nil, err
 	}

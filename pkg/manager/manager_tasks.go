@@ -90,7 +90,7 @@ func (s *singleton) Import(ctx context.Context) (int, error) {
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start()
+		task.Start(ctx)
 	})
 
 	return s.JobManager.Add(ctx, "Importing...", j), nil
@@ -122,7 +122,7 @@ func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
 	wg.Add(1)
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		t.Start()
+		t.Start(ctx)
 		wg.Done()
 	})
 
