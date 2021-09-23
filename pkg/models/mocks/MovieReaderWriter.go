@@ -77,6 +77,27 @@ func (_m *MovieReaderWriter) CountByPerformerID(performerID int) (int, error) {
 	return r0, r1
 }
 
+// CountByStudioID provides a mock function with given fields: studioID
+func (_m *MovieReaderWriter) CountByStudioID(studioID int) (int, error) {
+	ret := _m.Called(studioID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(studioID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(studioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: newMovie
 func (_m *MovieReaderWriter) Create(newMovie models.Movie) (*models.Movie, error) {
 	ret := _m.Called(newMovie)
@@ -213,6 +234,29 @@ func (_m *MovieReaderWriter) FindByPerformerID(performerID int) ([]*models.Movie
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByStudioID provides a mock function with given fields: studioID
+func (_m *MovieReaderWriter) FindByStudioID(studioID int) ([]*models.Movie, error) {
+	ret := _m.Called(studioID)
+
+	var r0 []*models.Movie
+	if rf, ok := ret.Get(0).(func(int) []*models.Movie); ok {
+		r0 = rf(studioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(studioID)
 	} else {
 		r1 = ret.Error(1)
 	}

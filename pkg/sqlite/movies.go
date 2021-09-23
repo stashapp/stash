@@ -329,3 +329,21 @@ WHERE performers_scenes.performer_id = ?
 	args := []interface{}{performerID}
 	return qb.runCountQuery(query, args)
 }
+
+func (qb *movieQueryBuilder) FindByStudioID(studioID int) ([]*models.Movie, error) {
+	query := `SELECT movies.*
+FROM movies
+WHERE movies.studio_id = ?
+`
+	args := []interface{}{studioID}
+	return qb.queryMovies(query, args)
+}
+
+func (qb *movieQueryBuilder) CountByStudioID(studioID int) (int, error) {
+	query := `SELECT COUNT(1) AS count
+FROM movies
+WHERE movies.studio_id = ?
+`
+	args := []interface{}{studioID}
+	return qb.runCountQuery(query, args)
+}
