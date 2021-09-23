@@ -1,8 +1,6 @@
 package manager
 
 import (
-	"github.com/remeh/sizedwaitgroup"
-
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -15,9 +13,7 @@ type GenerateSpriteTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateSpriteTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *GenerateSpriteTask) Start() {
 	if !t.Overwrite && !t.required() {
 		return
 	}
