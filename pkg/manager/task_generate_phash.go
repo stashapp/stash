@@ -1,8 +1,6 @@
 package manager
 
 import (
-	"github.com/remeh/sizedwaitgroup"
-
 	"context"
 	"database/sql"
 
@@ -18,9 +16,7 @@ type GeneratePhashTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GeneratePhashTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *GeneratePhashTask) Start() {
 	if !t.shouldGenerate() {
 		return
 	}

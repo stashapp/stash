@@ -84,6 +84,9 @@ const previewExcludeStartDefault = "0"
 const PreviewExcludeEnd = "preview_exclude_end"
 const previewExcludeEndDefault = "0"
 
+const WriteImageThumbnails = "write_image_thumbnails"
+const writeImageThumbnailsDefault = true
+
 const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
@@ -595,6 +598,14 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	return models.StreamingResolutionEnum(ret)
 }
 
+// IsWriteImageThumbnails returns true if image thumbnails should be written
+// to disk after generating on the fly.
+func (i *Instance) IsWriteImageThumbnails() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(WriteImageThumbnails)
+}
+
 func (i *Instance) GetAPIKey() string {
 	i.RLock()
 	defer i.RUnlock()
@@ -966,6 +977,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	viper.SetDefault(PreviewAudio, previewAudioDefault)
 	viper.SetDefault(SoundOnPreview, false)
+
+	viper.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 
 	viper.SetDefault(Database, defaultDatabaseFilePath)
 

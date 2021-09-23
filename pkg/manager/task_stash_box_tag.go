@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -22,9 +21,7 @@ type StashBoxPerformerTagTask struct {
 	excluded_fields []string
 }
 
-func (t *StashBoxPerformerTagTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (t *StashBoxPerformerTagTask) Start() {
 	t.stashBoxPerformerTag()
 }
 

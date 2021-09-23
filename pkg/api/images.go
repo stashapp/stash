@@ -1,24 +1,36 @@
 package api
 
 import (
+	"io/fs"
+	"io/ioutil"
+	"os"
 	"strings"
 
-	"github.com/gobuffalo/packr/v2"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/static"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type imageBox struct {
-	box   *packr.Box
+	box   fs.FS
 	files []string
 }
 
-func newImageBox(box *packr.Box) *imageBox {
-	return &imageBox{
-		box:   box,
-		files: box.List(),
+func newImageBox(box fs.FS) (*imageBox, error) {
+	ret := &imageBox{
+		box: box,
 	}
+
+	err := fs.WalkDir(box, ".", func(path string, d fs.DirEntry, err error) error {
+		if !d.IsDir() {
+			ret.files = append(ret.files, path)
+		}
+
+		return nil
+	})
+
+	return ret, err
 }
 
 var performerBox *imageBox
@@ -26,8 +38,15 @@ var performerBoxMale *imageBox
 var performerBoxCustom *imageBox
 
 func initialiseImages() {
-	performerBox = newImageBox(packr.New("Performer Box", "../../static/performer"))
-	performerBoxMale = newImageBox(packr.New("Male Performer Box", "../../static/performer_male"))
+	var err error
+	performerBox, err = newImageBox(&static.Performer)
+	if err != nil {
+		logger.Warnf("error loading performer images: %v", err)
+	}
+	performerBoxMale, err = newImageBox(&static.PerformerMale)
+	if err != nil {
+		logger.Warnf("error loading male performer images: %v", err)
+	}
 	initialiseCustomImages()
 }
 
@@ -36,7 +55,11 @@ func initialiseCustomImages() {
 	if customPath != "" {
 		logger.Debugf("Loading custom performer images from %s", customPath)
 		// We need to set performerBoxCustom at runtime, as this is a custom path, and store it in a pointer.
-		performerBoxCustom = newImageBox(packr.Folder(customPath))
+		var err error
+		performerBoxCustom, err = newImageBox(os.DirFS(customPath))
+		if err != nil {
+			logger.Warnf("error loading custom performer from %s: %v", customPath, err)
+		}
 	} else {
 		performerBoxCustom = nil
 	}
@@ -63,5 +86,11 @@ func getRandomPerformerImageUsingName(name, gender, customPath string) ([]byte, 
 
 	imageFiles := box.files
 	index := utils.IntFromString(name) % uint64(len(imageFiles))
-	return box.box.Find(imageFiles[index])
+	img, err := box.box.Open(imageFiles[index])
+	if err != nil {
+		return nil, err
+	}
+	defer img.Close()
+
+	return ioutil.ReadAll(img)
 }

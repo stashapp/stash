@@ -47,6 +47,8 @@ input ScanMetadataInput {
   scanGenerateSprites: Boolean
   """Generate phashes during scan"""
   scanGeneratePhashes: Boolean
+  """Generate image thumbnails during scan"""
+  scanGenerateThumbnails: Boolean
 }
 
 input CleanMetadataInput {

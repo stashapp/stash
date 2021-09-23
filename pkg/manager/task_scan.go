@@ -103,13 +103,15 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
 				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+				GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
 				progress:             progress,
 				CaseSensitiveFs:      csFs,
 				ctx:                  ctx,
 			}
 
 			go func() {
-				task.Start(&wg)
+				task.Start()
+				wg.Done()
 				progress.Increment()
 			}()
 
@@ -220,14 +222,13 @@ type ScanTask struct {
 	GeneratePhash        bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
+	GenerateThumbnails   bool
 	zipGallery           *models.Gallery
 	progress             *job.Progress
 	CaseSensitiveFs      bool
 }
 
-func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *ScanTask) Start() {
 	var s *models.Scene
 
 	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
@@ -252,7 +253,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskSprite.Start(&iwg)
+				taskSprite.Start()
+				iwg.Done()
 			})
 		}
 
@@ -265,7 +267,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 					txnManager:          t.TxnManager,
 				}
-				taskPhash.Start(&iwg)
+				taskPhash.Start()
+				iwg.Done()
 			})
 		}
 
@@ -296,7 +299,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskPreview.Start(wg)
+				taskPreview.Start()
+				iwg.Done()
 			})
 		}
 
@@ -972,9 +976,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		iwg := sizedwaitgroup.New(1)
-		iwg.Add()
-		subTask.Start(&iwg)
+		subTask.Start()
 		return nil
 	})
 	if err != nil {
@@ -1275,20 +1277,26 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
+	if !t.GenerateThumbnails {
+		return
+	}
+
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
 		return
 	}
 
-	srcImage, err := image.GetSourceImage(i)
+	config, _, err := image.DecodeSourceImage(i)
 	if err != nil {
 		logger.Errorf("error reading image %s: %s", i.Path, err.Error())
 		return
 	}
 
-	if image.ThumbnailNeeded(srcImage, models.DefaultGthumbWidth) {
-		data, err := image.GetThumbnail(srcImage, models.DefaultGthumbWidth)
+	if config.Height > models.DefaultGthumbWidth || config.Width > models.DefaultGthumbWidth {
+		encoder := image.NewThumbnailEncoder(instance.FFMPEGPath)
+		data, err := encoder.GetThumbnail(i, models.DefaultGthumbWidth)
+
 		if err != nil {
 			logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
 			return

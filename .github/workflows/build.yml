@@ -69,19 +69,22 @@ jobs:
       run: docker exec -t build /bin/bash -c "make ui-validate"
 
     # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
+    # create UI file so that the embed doesn't fail
     - name: Validate
-      run: docker exec -t build /bin/bash -c "make fmt-check vet it"
+      run: |
+        mkdir -p ui/v2.5/build
+        touch ui/v2.5/build/index.html
+        docker exec -t build /bin/bash -c "make fmt-check vet it"
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
       # this means that the build version/time may be incorrect if the UI is
       # not changed in a pull request
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make ui-only"
+      run: docker exec -t build /bin/bash -c "make ui"
 
     - name: Compile for all supported platforms
       run: |
-        docker exec -t build /bin/bash -c "make packr"
         docker exec -t build /bin/bash -c "make cross-compile-windows"
         docker exec -t build /bin/bash -c "make cross-compile-osx-intel"
         docker exec -t build /bin/bash -c "make cross-compile-osx-applesilicon"
