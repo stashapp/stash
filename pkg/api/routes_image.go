@@ -47,6 +47,9 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
 		if err != nil {
 			logger.Errorf("error generating thumbnail for image: %s", err.Error())
+
+			// backwards compatibility - fallback to original image instead
+			rs.Image(w, r)
 			return
 		}
 
