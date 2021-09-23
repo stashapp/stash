@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -20,9 +19,7 @@ type GenerateScreenshotTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (t *GenerateScreenshotTask) Start() {
 	scenePath := t.Scene.Path
 	probeResult, err := ffmpeg.NewVideoFile(instance.FFProbePath, scenePath, false)
 

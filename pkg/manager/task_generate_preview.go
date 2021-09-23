@@ -1,8 +1,6 @@
 package manager
 
 import (
-	"github.com/remeh/sizedwaitgroup"
-
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -20,9 +18,7 @@ type GeneratePreviewTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GeneratePreviewTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *GeneratePreviewTask) Start() {
 	videoFilename := t.videoFilename()
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imageFilename := t.imageFilename()
