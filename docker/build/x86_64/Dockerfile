@@ -36,7 +36,7 @@ RUN make build
 
 # Final Runnable Image
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates vips-tools
 COPY --from=backend /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
