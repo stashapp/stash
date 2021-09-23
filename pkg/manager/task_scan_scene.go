@@ -76,12 +76,14 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 	oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 	changed := false
 
+	ffprobe := instance.FFProbe
+
 	if scanned.ContentsChanged() {
 		logger.Infof("%s has been updated: rescanning", path)
 
 		s.SetFile(*scanned.New)
 
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
+		videoFile, err := ffprobe.NewVideoFile(path, t.StripFileExtension)
 		if err != nil {
 			return err
 		}
@@ -98,7 +100,7 @@ func (t *ScanTask) scanSceneExisting(s *models.Scene, scanned *file.Scanned) (er
 
 	// check for container
 	if !s.Format.Valid {
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
+		videoFile, err := ffprobe.NewVideoFile(path, t.StripFileExtension)
 		if err != nil {
 			return err
 		}
@@ -167,7 +169,8 @@ func (t *ScanTask) videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile
 
 func (t *ScanTask) scanSceneNew(file *models.File) (retScene *models.Scene, err error) {
 	path := t.file.Path()
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
+	ffprobe := instance.FFProbe
+	videoFile, err := ffprobe.NewVideoFile(path, t.StripFileExtension)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +288,8 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 
 	if probeResult == nil {
 		var err error
-		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, path, t.StripFileExtension)
+		ffprobe := instance.FFProbe
+		probeResult, err = ffprobe.NewVideoFile(path, t.StripFileExtension)
 
 		if err != nil {
 			logger.Error(err.Error())

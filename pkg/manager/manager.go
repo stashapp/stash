@@ -29,8 +29,8 @@ type singleton struct {
 
 	Paths *paths.Paths
 
-	FFMPEGPath  string
-	FFProbePath string
+	FFMPEGPath string
+	FFProbe    ffmpeg.FFProbe
 
 	SessionStore *session.Store
 
@@ -167,7 +167,7 @@ func initFFMPEG() error {
 		}
 
 		instance.FFMPEGPath = ffmpegPath
-		instance.FFProbePath = ffprobePath
+		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 	}
 
 	return nil
@@ -310,7 +310,7 @@ func (s *singleton) Setup(input models.SetupInput) error {
 }
 
 func (s *singleton) validateFFMPEG() error {
-	if s.FFMPEGPath == "" || s.FFProbePath == "" {
+	if s.FFMPEGPath == "" || s.FFProbe == "" {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 
