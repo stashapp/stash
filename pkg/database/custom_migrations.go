@@ -27,7 +27,7 @@ func createImagesChecksumIndex() error {
 
 		if err == nil {
 			var found bool
-			if err := row.Scan(&found); err != nil {
+			if err := row.Scan(&found); err != nil && err != sql.ErrNoRows {
 				return fmt.Errorf("error while scanning for index: %w", err)
 			}
 			if found {
