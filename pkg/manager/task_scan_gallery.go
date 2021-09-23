@@ -165,16 +165,7 @@ func (t *ScanTask) scanGalleryNew(file *models.File) (g *models.Gallery, scanIma
 				currentTime := time.Now()
 
 				newGallery := models.Gallery{
-					Checksum: checksum,
-					Zip:      true,
-					Path: sql.NullString{
-						String: path,
-						Valid:  true,
-					},
-					FileModTime: models.NullSQLiteTimestamp{
-						Timestamp: file.FileModTime,
-						Valid:     true,
-					},
+					Zip: true,
 					Title: sql.NullString{
 						String: utils.GetNameFromPath(path, t.StripFileExtension),
 						Valid:  true,
@@ -182,6 +173,8 @@ func (t *ScanTask) scanGalleryNew(file *models.File) (g *models.Gallery, scanIma
 					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				}
+
+				g.SetFile(*file)
 
 				// only warn when creating the gallery
 				ok, err := utils.IsZipFileUncompressed(path)
