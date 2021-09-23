@@ -9,12 +9,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func setInitialMD5Config(txnManager models.TransactionManager) {
+func setInitialMD5Config(ctx context.Context, txnManager models.TransactionManager) {
 	// if there are no scene files in the database, then default the
 	// VideoFileNamingAlgorithm config setting to oshash and calculateMD5 to
 	// false, otherwise set them to true for backwards compatibility purposes
 	var count int
-	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		count, err = r.Scene().Count()
 		return err

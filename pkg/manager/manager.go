@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -58,6 +59,7 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
+		ctx := context.TODO()
 		cfg, err := config.Initialize()
 
 		if err != nil {
@@ -93,7 +95,7 @@ func Initialize() *singleton {
 			if err != nil {
 				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
 			} else {
-				if err := instance.PostInit(); err != nil {
+				if err := instance.PostInit(ctx); err != nil {
 					panic(err)
 				}
 			}
@@ -195,7 +197,7 @@ func initLog() {
 // PostInit initialises the paths, caches and txnManager after the initial
 // configuration has been set. Should only be called if the configuration
 // is valid.
-func (s *singleton) PostInit() error {
+func (s *singleton) PostInit(ctx context.Context) error {
 	if err := s.Config.SetInitialConfig(); err != nil {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
@@ -235,7 +237,7 @@ func (s *singleton) PostInit() error {
 	}
 
 	if database.Ready() == nil {
-		s.PostMigrate()
+		s.PostMigrate(ctx)
 	}
 
 	return nil
@@ -295,7 +297,7 @@ func setSetupDefaults(input *models.SetupInput) {
 	}
 }
 
-func (s *singleton) Setup(input models.SetupInput) error {
+func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 	setSetupDefaults(&input)
 
 	// create the config directory if it does not exist
@@ -328,7 +330,7 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	}
 
 	// initialise the database
-	if err := s.PostInit(); err != nil {
+	if err := s.PostInit(ctx); err != nil {
 		return fmt.Errorf("error initializing the database: %v", err)
 	}
 
@@ -349,7 +351,7 @@ func (s *singleton) validateFFMPEG() error {
 	return nil
 }
 
-func (s *singleton) Migrate(input models.MigrateInput) error {
+func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) error {
 	// always backup so that we can roll back to the previous version if
 	// migration fails
 	backupPath := input.BackupPath
@@ -377,7 +379,7 @@ func (s *singleton) Migrate(input models.MigrateInput) error {
 	}
 
 	// perform post-migration operations
-	s.PostMigrate()
+	s.PostMigrate(ctx)
 
 	// if no backup path was provided, then delete the created backup
 	if input.BackupPath == "" {

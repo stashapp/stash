@@ -14,12 +14,12 @@ import (
 )
 
 func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
-	err := manager.GetInstance().Setup(input)
+	err := manager.GetInstance().Setup(ctx, input)
 	return err == nil, err
 }
 
 func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInput) (bool, error) {
-	err := manager.GetInstance().Migrate(input)
+	err := manager.GetInstance().Migrate(ctx, input)
 	return err == nil, err
 }
 
