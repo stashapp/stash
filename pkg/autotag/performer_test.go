@@ -23,6 +23,10 @@ func TestPerformerScenes(t *testing.T) {
 			"performer + name",
 			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
 		},
+		{
+			`performer + name\`,
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		},
 	}
 
 	for _, p := range performerNames {
