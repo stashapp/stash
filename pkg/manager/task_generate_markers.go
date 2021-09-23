@@ -106,7 +106,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		Width:     640,
 	}
 
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if t.Overwrite || !videoExists {
 		videoFilename := baseFilename + ".mp4"

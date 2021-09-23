@@ -54,7 +54,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 }
 
 func (g *SpriteGenerator) Generate() error {
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if err := g.generateSpriteImage(&encoder); err != nil {
 		return err

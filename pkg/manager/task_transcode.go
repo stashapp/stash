@@ -59,7 +59,7 @@ func (t *GenerateTranscodeTask) Start() {
 		OutputPath:       outputPath,
 		MaxTranscodeSize: transcodeSize,
 	}
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {

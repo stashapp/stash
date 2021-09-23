@@ -6,7 +6,7 @@ import (
 )
 
 func makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int, time float64) {
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 	options := ffmpeg.ScreenshotOptions{
 		OutputPath: outputPath,
 		Quality:    quality,

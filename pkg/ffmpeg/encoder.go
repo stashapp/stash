@@ -12,20 +12,12 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-type Encoder struct {
-	Path string
-}
+type Encoder string
 
 var (
 	runningEncoders      = make(map[string][]*os.Process)
 	runningEncodersMutex = sync.RWMutex{}
 )
-
-func NewEncoder(ffmpegPath string) Encoder {
-	return Encoder{
-		Path: ffmpegPath,
-	}
-}
 
 func registerRunningEncoder(path string, process *os.Process) {
 	runningEncodersMutex.Lock()
@@ -84,7 +76,7 @@ func KillRunningEncoders(path string) {
 
 // FFmpeg runner with progress output, used for transcodes
 func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, error) {
-	cmd := exec.Command(e.Path, args...)
+	cmd := exec.Command(string(*e), args...)
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -140,7 +132,7 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 }
 
 func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
-	cmd := exec.Command(e.Path, args...)
+	cmd := exec.Command(string(*e), args...)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

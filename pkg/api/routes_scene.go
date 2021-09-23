@@ -173,7 +173,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize)
 	}
 
-	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
+	encoder := manager.GetInstance().FFMPEG
 	stream, err = encoder.GetTranscodeStream(options)
 
 	if err != nil {
