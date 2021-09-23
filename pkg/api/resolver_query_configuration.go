@@ -73,6 +73,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		PreviewPreset:                config.GetPreviewPreset(),
 		MaxTranscodeSize:             &maxTranscodeSize,
 		MaxStreamingTranscodeSize:    &maxStreamingTranscodeSize,
+		WriteImageThumbnails:         config.IsWriteImageThumbnails(),
 		APIKey:                       config.GetAPIKey(),
 		Username:                     config.GetUsername(),
 		Password:                     config.GetPasswordHash(),

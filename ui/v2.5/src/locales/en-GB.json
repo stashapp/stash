@@ -328,6 +328,14 @@
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
       },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "heading": "Write image thumbnails",
+            "description": "Write image thumbnails to disk when generated on-the-fly"
+          }
+        }
+      },
       "language": {
         "heading": "Language"
       },

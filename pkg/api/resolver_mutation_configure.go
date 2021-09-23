@@ -115,6 +115,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
 
+	if input.WriteImageThumbnails != nil {
+		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
+	}
+
 	if input.Username != nil {
 		c.Set(config.Username, input.Username)
 	}
