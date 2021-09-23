@@ -1,49 +1,50 @@
-package manager
+package scene
 
 import (
 	"os"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func MigrateHash(oldHash string, newHash string) {
-	oldPath := filepath.Join(instance.Paths.Generated.Markers, oldHash)
-	newPath := filepath.Join(instance.Paths.Generated.Markers, newHash)
-	migrate(oldPath, newPath)
+func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
+	oldPath := filepath.Join(p.Generated.Markers, oldHash)
+	newPath := filepath.Join(p.Generated.Markers, newHash)
+	migrateSceneFiles(oldPath, newPath)
 
-	scenePaths := GetInstance().Paths.Scene
+	scenePaths := p.Scene
 	oldPath = scenePaths.GetThumbnailScreenshotPath(oldHash)
 	newPath = scenePaths.GetThumbnailScreenshotPath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetScreenshotPath(oldHash)
 	newPath = scenePaths.GetScreenshotPath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetStreamPreviewPath(oldHash)
 	newPath = scenePaths.GetStreamPreviewPath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetStreamPreviewImagePath(oldHash)
 	newPath = scenePaths.GetStreamPreviewImagePath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetTranscodePath(oldHash)
 	newPath = scenePaths.GetTranscodePath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetSpriteVttFilePath(oldHash)
 	newPath = scenePaths.GetSpriteVttFilePath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetSpriteImageFilePath(oldHash)
 	newPath = scenePaths.GetSpriteImageFilePath(newHash)
-	migrate(oldPath, newPath)
+	migrateSceneFiles(oldPath, newPath)
 }
 
-func migrate(oldName, newName string) {
+func migrateSceneFiles(oldName, newName string) {
 	oldExists, err := utils.FileExists(oldName)
 	if err != nil && !os.IsNotExist(err) {
 		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())

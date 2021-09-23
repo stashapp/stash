@@ -135,6 +135,9 @@ func (o Scanner) generateHashes(f *models.File, file SourceFile, regenerate bool
 		}
 
 		f.OSHash = oshash
+
+		// reset reader to start of file
+		seekSrc.Seek(0, io.SeekStart)
 	}
 
 	// always generate if MD5 is nil

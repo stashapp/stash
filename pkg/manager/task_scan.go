@@ -299,43 +299,6 @@ func (t *ScanTask) Start() {
 	}
 }
 
-func (t *ScanTask) getFileModTime() (time.Time, error) {
-	fi := t.file.FileInfo()
-
-	ret := fi.ModTime()
-	// truncate to seconds, since we don't store beyond that in the database
-	ret = ret.Truncate(time.Second)
-
-	return ret, nil
-}
-
-func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLiteTimestamp) bool {
-	return !modTime.Timestamp.Equal(fileModTime)
-}
-
-func (t *ScanTask) calculateChecksum() (string, error) {
-	path := t.file.Path()
-	logger.Infof("Calculating checksum for %s...", path)
-	checksum, err := utils.MD5FromFilePath(path)
-	if err != nil {
-		return "", err
-	}
-	logger.Debugf("Checksum calculated: %s", checksum)
-	return checksum, nil
-}
-
-func (t *ScanTask) calculateImageChecksum() (string, error) {
-	path := t.file.Path()
-	logger.Infof("Calculating checksum for %s...", image.PathDisplayName(path))
-	// uses image.CalculateMD5 to read files in zips
-	checksum, err := image.CalculateMD5(path)
-	if err != nil {
-		return "", err
-	}
-	logger.Debugf("Checksum calculated: %s", checksum)
-	return checksum, nil
-}
-
 func (t *ScanTask) doesPathExist() bool {
 	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
