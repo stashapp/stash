@@ -1,3 +1,5 @@
+// eslint-disable-next-line no-var
+declare var STASH_BASE_URL: string;
 declare module "*.md";
 declare module "string.prototype.replaceall";
 declare module "mousetrap-pause";

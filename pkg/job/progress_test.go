@@ -132,14 +132,18 @@ func TestExecuteTask(t *testing.T) {
 
 	assert := assert.New(t)
 
+	m.mutex.Lock()
 	// ensure task is added to the job details
 	assert.Equal(taskDesciption, j.Details[0])
+	m.mutex.Unlock()
 
 	// allow task to finish
 	close(c)
 
 	time.Sleep(sleepTime)
 
+	m.mutex.Lock()
 	// ensure task is removed from the job details
 	assert.Len(j.Details, 0)
+	m.mutex.Unlock()
 }

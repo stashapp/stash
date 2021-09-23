@@ -112,16 +112,22 @@ func initFlags() flagStruct {
 }
 
 func initEnvs() {
-	viper.SetEnvPrefix("stash")    // will be uppercased automatically
-	viper.BindEnv("host")          // STASH_HOST
-	viper.BindEnv("port")          // STASH_PORT
-	viper.BindEnv("external_host") // STASH_EXTERNAL_HOST
-	viper.BindEnv("generated")     // STASH_GENERATED
-	viper.BindEnv("metadata")      // STASH_METADATA
-	viper.BindEnv("cache")         // STASH_CACHE
+	viper.SetEnvPrefix("stash") // will be uppercased automatically
+	bindEnv("host")             // STASH_HOST
+	bindEnv("port")             // STASH_PORT
+	bindEnv("external_host")    // STASH_EXTERNAL_HOST
+	bindEnv("generated")        // STASH_GENERATED
+	bindEnv("metadata")         // STASH_METADATA
+	bindEnv("cache")            // STASH_CACHE
 
 	// only set stash config flag if not already set
 	if instance.GetStashPaths() == nil {
-		viper.BindEnv("stash") // STASH_STASH
+		bindEnv("stash") // STASH_STASH
+	}
+}
+
+func bindEnv(key string) {
+	if err := viper.BindEnv(key); err != nil {
+		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
 	}
 }

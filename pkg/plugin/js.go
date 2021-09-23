@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -71,10 +72,21 @@ func (t *jsPluginTask) Start() error {
 		return err
 	}
 
-	t.vm.Set("input", t.input)
-	js.AddLogAPI(t.vm, t.progress)
-	js.AddUtilAPI(t.vm)
-	js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler)
+	if err := t.vm.Set("input", t.input); err != nil {
+		return fmt.Errorf("error setting input: %w", err)
+	}
+
+	if err := js.AddLogAPI(t.vm, t.progress); err != nil {
+		return fmt.Errorf("error adding log API: %w", err)
+	}
+
+	if err := js.AddUtilAPI(t.vm); err != nil {
+		return fmt.Errorf("error adding util API: %w", err)
+	}
+
+	if err := js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler); err != nil {
+		return fmt.Errorf("error adding GraphQL API: %w", err)
+	}
 
 	t.vm.Interrupt = make(chan func(), 1)
 

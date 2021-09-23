@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedNumber } from "react-intl";
+import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
@@ -11,6 +11,8 @@ interface ISceneFileInfoPanelProps {
 export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
+  const intl = useIntl();
+
   function renderFileSize() {
     if (props.scene.file.size === undefined) {
       return;
@@ -123,15 +125,21 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         truncate
       />
       <TextField id="framerate">
-        <FormattedNumber value={props.scene.file.framerate ?? 0} /> frames per
-        second
+        <FormattedMessage
+          id="frames_per_second"
+          values={{ value: intl.formatNumber(props.scene.file.framerate ?? 0) }}
+        />
       </TextField>
       <TextField id="bitrate">
-        <FormattedNumber
-          value={(props.scene.file.bitrate ?? 0) / 1000000}
-          maximumFractionDigits={2}
-        />{" "}
-        frames per second
+        <FormattedMessage
+          id="megabits_per_second"
+          values={{
+            value: intl.formatNumber(
+              (props.scene.file.bitrate ?? 0) / 1000000,
+              { maximumFractionDigits: 2 }
+            ),
+          }}
+        />
       </TextField>
       <TextField
         id="media_info.video_codec"

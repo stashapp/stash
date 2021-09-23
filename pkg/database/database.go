@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"embed"
 	"errors"
 	"fmt"
 	"os"
@@ -9,10 +10,9 @@ import (
 	"time"
 
 	"github.com/fvbommel/sortorder"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
-	"github.com/golang-migrate/migrate/v4/source"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
 
@@ -21,10 +21,13 @@ import (
 )
 
 var DB *sqlx.DB
-var WriteMu *sync.Mutex
+var WriteMu sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 25
+var appSchemaVersion uint = 28
 var databaseSchemaVersion uint
+
+//go:embed migrations/*.sql
+var migrationsBox embed.FS
 
 var (
 	// ErrMigrationNeeded indicates that a database migration is needed
@@ -84,14 +87,32 @@ func Initialize(databasePath string) error {
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
-	WriteMu = &sync.Mutex{}
+
+	if err := runCustomMigrations(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Close() error {
+	WriteMu.Lock()
+	defer WriteMu.Unlock()
+
+	if DB != nil {
+		if err := DB.Close(); err != nil {
+			return err
+		}
+
+		DB = nil
+	}
 
 	return nil
 }
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + databasePath + "?_journal=WAL"
+	url := "file:" + databasePath + "?_journal=WAL&_sync=NORMAL"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
@@ -149,7 +170,7 @@ func Backup(db *sqlx.DB, backupPath string) error {
 	logger.Infof("Backing up database into: %s", backupPath)
 	_, err := db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
-		return fmt.Errorf("Vacuum failed: %s", err)
+		return fmt.Errorf("vacuum failed: %s", err)
 	}
 
 	return nil
@@ -182,17 +203,13 @@ func Version() uint {
 }
 
 func getMigrate() (*migrate.Migrate, error) {
-	migrationsBox := packr.New("Migrations Box", "./migrations")
-	packrSource := &Packr2Source{
-		Box:        migrationsBox,
-		Migrations: source.NewMigrations(),
+	migrations, err := iofs.New(migrationsBox, "migrations")
+	if err != nil {
+		panic(err.Error())
 	}
 
-	databasePath := utils.FixWindowsPath(dbPath)
-	s, _ := WithInstance(packrSource)
-
 	const disableForeignKeys = true
-	conn := open(databasePath, disableForeignKeys)
+	conn := open(dbPath, disableForeignKeys)
 
 	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
 	if err != nil {
@@ -201,9 +218,9 @@ func getMigrate() (*migrate.Migrate, error) {
 
 	// use sqlite3Driver so that migration has access to durationToTinyInt
 	return migrate.NewWithInstance(
-		"packr2",
-		s,
-		databasePath,
+		"iofs",
+		migrations,
+		dbPath,
 		driver,
 	)
 }
@@ -225,6 +242,7 @@ func RunMigrations() error {
 	if err != nil {
 		panic(err.Error())
 	}
+	defer m.Close()
 
 	databaseSchemaVersion, _, _ = m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
@@ -233,13 +251,9 @@ func RunMigrations() error {
 		err = m.Steps(int(stepNumber))
 		if err != nil {
 			// migration failed
-			logger.Errorf("Error migrating database: %s", err.Error())
-			m.Close()
 			return err
 		}
 	}
-
-	m.Close()
 
 	// re-initialise the database
 	Initialize(dbPath)
@@ -248,7 +262,7 @@ func RunMigrations() error {
 	logger.Info("Performing vacuum on database")
 	_, err = DB.Exec("VACUUM")
 	if err != nil {
-		logger.Warnf("error while performing post-migration vacuum: %s", err.Error())
+		logger.Warnf("error while performing post-migration vacuum: %v", err)
 	}
 
 	return nil
@@ -265,7 +279,7 @@ func registerCustomDriver() {
 
 				for name, fn := range funcs {
 					if err := conn.RegisterFunc(name, fn, true); err != nil {
-						return fmt.Errorf("Error registering function %s: %s", name, err.Error())
+						return fmt.Errorf("error registering function %s: %s", name, err.Error())
 					}
 				}
 
@@ -279,7 +293,7 @@ func registerCustomDriver() {
 				})
 
 				if err != nil {
-					return fmt.Errorf("Error registering natural sort collation: %s", err.Error())
+					return fmt.Errorf("error registering natural sort collation: %s", err.Error())
 				}
 
 				return nil

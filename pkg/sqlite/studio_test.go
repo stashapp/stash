@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -45,6 +46,143 @@ func TestStudioFindByName(t *testing.T) {
 	})
 }
 
+func TestStudioQueryNameOr(t *testing.T) {
+	const studio1Idx = 1
+	const studio2Idx = 2
+
+	studio1Name := getStudioStringValue(studio1Idx, "Name")
+	studio2Name := getStudioStringValue(studio2Idx, "Name")
+
+	studioFilter := models.StudioFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    studio1Name,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.StudioFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    studio2Name,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		assert.Len(t, studios, 2)
+		assert.Equal(t, studio1Name, studios[0].Name.String)
+		assert.Equal(t, studio2Name, studios[1].Name.String)
+
+		return nil
+	})
+}
+
+func TestStudioQueryNameAndUrl(t *testing.T) {
+	const studioIdx = 1
+	studioName := getStudioStringValue(studioIdx, "Name")
+	studioUrl := getStudioNullStringValue(studioIdx, urlField)
+
+	studioFilter := models.StudioFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    studioName,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.StudioFilterType{
+			URL: &models.StringCriterionInput{
+				Value:    studioUrl.String,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		assert.Len(t, studios, 1)
+		assert.Equal(t, studioName, studios[0].Name.String)
+		assert.Equal(t, studioUrl.String, studios[0].URL.String)
+
+		return nil
+	})
+}
+
+func TestStudioQueryNameNotUrl(t *testing.T) {
+	const studioIdx = 1
+
+	studioUrl := getStudioNullStringValue(studioIdx, urlField)
+
+	nameCriterion := models.StringCriterionInput{
+		Value:    "studio_.*1_Name",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	urlCriterion := models.StringCriterionInput{
+		Value:    studioUrl.String,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	studioFilter := models.StudioFilterType{
+		Name: &nameCriterion,
+		Not: &models.StudioFilterType{
+			URL: &urlCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		for _, studio := range studios {
+			verifyString(t, studio.Name.String, nameCriterion)
+			urlCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyNullString(t, studio.URL, urlCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestStudioIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const studioIdx = 1
+	subFilter := models.StudioFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    getStudioStringValue(studioIdx, "Name"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	studioFilter := &models.StudioFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+
+		_, _, err := sqb.Query(studioFilter, nil)
+		assert.NotNil(err)
+
+		studioFilter.Or = nil
+		studioFilter.Not = &subFilter
+		_, _, err = sqb.Query(studioFilter, nil)
+		assert.NotNil(err)
+
+		studioFilter.And = nil
+		studioFilter.Or = &subFilter
+		_, _, err = sqb.Query(studioFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Studio()
@@ -60,6 +198,17 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		assert.Len(t, studios, 2)
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[0].Name.String))
 		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[1].Name.String))
+
+		// find by alias
+		name = getStudioStringValue(studioIdxWithScene, "Alias")
+		studios, err = tqb.QueryForAutoTag([]string{name})
+
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
+
+		assert.Len(t, studios, 1)
+		assert.Equal(t, studioIDs[studioIdxWithScene], studios[0].ID)
 
 		return nil
 	})
@@ -362,7 +511,6 @@ func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriteri
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
-					Depth:    0,
 				},
 			}, &models.FindFilterType{
 				PerPage: &pp,
@@ -413,7 +561,6 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,
-					Depth:    0,
 				},
 			}, &models.FindFilterType{
 				PerPage: &pp,
@@ -459,7 +606,7 @@ func TestStudioQueryURL(t *testing.T) {
 		URL: &urlCriterion,
 	}
 
-	verifyFn := func(g *models.Studio) {
+	verifyFn := func(g *models.Studio, r models.Repository) {
 		t.Helper()
 		verifyNullString(t, g.URL, urlCriterion)
 	}
@@ -509,7 +656,7 @@ func TestStudioQueryRating(t *testing.T) {
 	verifyStudiosRating(t, ratingCriterion)
 }
 
-func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(s *models.Studio)) {
+func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn func(s *models.Studio, r models.Repository)) {
 	withTxn(func(r models.Repository) error {
 		t.Helper()
 		sqb := r.Studio()
@@ -520,7 +667,7 @@ func verifyStudioQuery(t *testing.T, filter models.StudioFilterType, verifyFn fu
 		assert.Greater(t, len(studios), 0)
 
 		for _, studio := range studios {
-			verifyFn(studio)
+			verifyFn(studio, r)
 		}
 
 		return nil
@@ -579,6 +726,106 @@ func queryStudio(t *testing.T, sqb models.StudioReader, studioFilter *models.Stu
 	}
 
 	return studios
+}
+
+func TestStudioQueryName(t *testing.T) {
+	const studioIdx = 1
+	studioName := getStudioStringValue(studioIdx, "Name")
+
+	nameCriterion := &models.StringCriterionInput{
+		Value:    studioName,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	studioFilter := models.StudioFilterType{
+		Name: nameCriterion,
+	}
+
+	verifyFn := func(studio *models.Studio, r models.Repository) {
+		verifyNullString(t, studio.Name, *nameCriterion)
+	}
+
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierMatchesRegex
+	nameCriterion.Value = "studio_.*1_Name"
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	nameCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyStudioQuery(t, studioFilter, verifyFn)
+}
+
+func TestStudioQueryAlias(t *testing.T) {
+	const studioIdx = 1
+	studioName := getStudioStringValue(studioIdx, "Alias")
+
+	aliasCriterion := &models.StringCriterionInput{
+		Value:    studioName,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	studioFilter := models.StudioFilterType{
+		Aliases: aliasCriterion,
+	}
+
+	verifyFn := func(studio *models.Studio, r models.Repository) {
+		aliases, err := r.Studio().GetAliases(studio.ID)
+		if err != nil {
+			t.Errorf("Error querying studios: %s", err.Error())
+		}
+
+		var alias string
+		if len(aliases) > 0 {
+			alias = aliases[0]
+		}
+
+		verifyString(t, alias, *aliasCriterion)
+	}
+
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierMatchesRegex
+	aliasCriterion.Value = "studio_.*1_Alias"
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyStudioQuery(t, studioFilter, verifyFn)
+}
+
+func TestStudioUpdateAlias(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Studio()
+
+		// create studio to test against
+		const name = "TestStudioUpdateAlias"
+		created, err := createStudio(qb, name, nil)
+		if err != nil {
+			return fmt.Errorf("Error creating studio: %s", err.Error())
+		}
+
+		aliases := []string{"alias1", "alias2"}
+		err = qb.UpdateAliases(created.ID, aliases)
+		if err != nil {
+			return fmt.Errorf("Error updating studio aliases: %s", err.Error())
+		}
+
+		// ensure aliases set
+		storedAliases, err := qb.GetAliases(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting aliases: %s", err.Error())
+		}
+		assert.Equal(t, aliases, storedAliases)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
 }
 
 // TODO Create

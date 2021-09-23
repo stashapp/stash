@@ -260,6 +260,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.HandyKey, *input.HandyKey)
 	}
 
+	if input.FunscriptOffset != nil {
+		c.Set(config.FunscriptOffset, *input.FunscriptOffset)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
 	}
@@ -285,7 +289,9 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 		if !*input.Enabled && dlnaService.IsRunning() {
 			dlnaService.Stop(nil)
 		} else if *input.Enabled && !dlnaService.IsRunning() {
-			dlnaService.Start(nil)
+			if err := dlnaService.Start(nil); err != nil {
+				logger.Warnf("error starting DLNA service: %v", err)
+			}
 		}
 	}
 

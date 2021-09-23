@@ -12,6 +12,8 @@ type SceneMarker {
   stream: String! # Resolver
   """The path to the preview image for this marker"""
   preview: String! # Resolver
+  """The path to the screenshot image for this marker"""
+  screenshot: String! # Resolver
 }
 
 input SceneMarkerCreateInput {

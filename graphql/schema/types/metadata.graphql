@@ -6,6 +6,8 @@ input GenerateMetadataInput {
   imagePreviews: Boolean!
   previewOptions: GeneratePreviewOptionsInput
   markers: Boolean!
+  markerImagePreviews: Boolean!
+  markerScreenshots: Boolean!
   transcodes: Boolean!
   phashes: Boolean!
 

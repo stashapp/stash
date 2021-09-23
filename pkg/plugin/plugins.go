@@ -133,7 +133,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 		Dir:           c.config.GetConfigPath(),
 	}
 
-	if config.HasTLSConfig() {
+	if c.config.HasTLSConfig() {
 		serverConnection.Scheme = "https"
 	}
 
@@ -219,7 +219,9 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 
 			select {
 			case <-ctx.Done():
-				task.Stop()
+				if err := task.Stop(); err != nil {
+					logger.Warnf("could not stop task: %v", err)
+				}
 				return fmt.Errorf("operation cancelled")
 			case <-c:
 				// task finished normally

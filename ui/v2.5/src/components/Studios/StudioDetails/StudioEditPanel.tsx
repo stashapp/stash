@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import Mousetrap from "mousetrap";
 import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
 import { Button, Form, Col, Row } from "react-bootstrap";
-import { FormUtils, ImageUtils } from "src/utils";
+import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
+import { StringListInput } from "../../Shared/StringListInput";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -43,6 +44,17 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     rating: yup.number().optional().nullable(),
     parent_id: yup.string().optional().nullable(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
+    aliases: yup
+      .array(yup.string().required())
+      .optional()
+      .test({
+        name: "unique",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        test: (value: any) => {
+          return (value ?? []).length === new Set(value).size;
+        },
+        message: "aliases must be unique",
+      }),
   });
 
   const initialValues = {
@@ -53,6 +65,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     rating: studio.rating ?? null,
     parent_id: studio.parent_studio?.id,
     stash_ids: studio.stash_ids ?? undefined,
+    aliases: studio.aliases,
   };
 
   type InputValues = typeof initialValues;
@@ -74,6 +87,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   function getStudioInput(values: InputValues) {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       ...values,
+      stash_ids: getStashIDs(values.stash_ids),
     };
 
     if (studio && studio.id) {
@@ -283,6 +297,19 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         </Form.Group>
 
         {renderStashIDs()}
+
+        <Form.Group controlId="aliases" as={Row}>
+          <Form.Label column xs={3}>
+            <FormattedMessage id="aliases" />
+          </Form.Label>
+          <Col xs={9}>
+            <StringListInput
+              value={formik.values.aliases ?? []}
+              setValue={(value) => formik.setFieldValue("aliases", value)}
+              errors={formik.errors.aliases}
+            />
+          </Col>
+        </Form.Group>
       </Form>
 
       <DetailsEditNavbar

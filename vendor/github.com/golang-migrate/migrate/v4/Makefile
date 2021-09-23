@@ -1,15 +1,30 @@
-SOURCE ?= file go_bindata github aws_s3 google_cloud_storage godoc_vfs gitlab
-DATABASE ?= postgres mysql redshift cassandra spanner cockroachdb clickhouse mongodb
+SOURCE ?= file go_bindata github github_ee bitbucket aws_s3 google_cloud_storage godoc_vfs gitlab
+DATABASE ?= postgres mysql redshift cassandra spanner cockroachdb clickhouse mongodb sqlserver firebird neo4j pgx
+DATABASE_TEST ?= $(DATABASE) sqlite sqlite3 sqlcipher
 VERSION ?= $(shell git describe --tags 2>/dev/null | cut -c 2-)
 TEST_FLAGS ?=
 REPO_OWNER ?= $(shell cd .. && basename "$$(pwd)")
 COVERAGE_DIR ?= .coverage
 
+echo-source:
+	@echo "$(SOURCE)"
+
+echo-database:
+	@echo "$(DATABASE)"
+
+build:
+	CGO_ENABLED=0 go build -ldflags='-X main.Version=$(VERSION)' -tags '$(DATABASE) $(SOURCE)' ./cmd/migrate
+
+build-docker:
+	CGO_ENABLED=0 go build -a -o build/migrate.linux-386 -ldflags="-s -w -X main.Version=${VERSION}" -tags "$(DATABASE) $(SOURCE)" ./cmd/migrate
 
 build-cli: clean
 	-mkdir ./cli/build
 	cd ./cmd/migrate && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o ../../cli/build/migrate.linux-amd64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
+	cd ./cmd/migrate && CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -a -o ../../cli/build/migrate.linux-armv7 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
+	cd ./cmd/migrate && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o ../../cli/build/migrate.linux-arm64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
 	cd ./cmd/migrate && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -o ../../cli/build/migrate.darwin-amd64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
+	cd ./cmd/migrate && CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -a -o ../../cli/build/migrate.windows-386.exe -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
 	cd ./cmd/migrate && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -o ../../cli/build/migrate.windows-amd64.exe -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
 	cd ./cli/build && find . -name 'migrate*' | xargs -I{} tar czf {}.tar.gz {}
 	cd ./cli/build && shasum -a 256 * > sha256sum.txt
@@ -27,27 +42,14 @@ test-short:
 test:
 	@-rm -r $(COVERAGE_DIR)
 	@mkdir $(COVERAGE_DIR)
-	make test-with-flags TEST_FLAGS='-v -race -covermode atomic -coverprofile $$(COVERAGE_DIR)/_$$(RAND).txt -bench=. -benchmem -timeout 20m'
-	@echo 'mode: atomic' > $(COVERAGE_DIR)/combined.txt
-	@cat $(COVERAGE_DIR)/_*.txt | grep -v 'mode: atomic' >> $(COVERAGE_DIR)/combined.txt
+	make test-with-flags TEST_FLAGS='-v -race -covermode atomic -coverprofile $$(COVERAGE_DIR)/combined.txt -bench=. -benchmem -timeout 20m'
 
 
 test-with-flags:
-	@echo SOURCE: $(SOURCE) 
-	@echo DATABASE: $(DATABASE)
+	@echo SOURCE: $(SOURCE)
+	@echo DATABASE_TEST: $(DATABASE_TEST)
 
-	@go test $(TEST_FLAGS) .
-	@go test $(TEST_FLAGS) ./cli/...
-	@go test $(TEST_FLAGS) ./database
-	@go test $(TEST_FLAGS) ./testing/...
-
-	@echo -n '$(SOURCE)' | tr -s ' ' '\n' | xargs -I{} go test $(TEST_FLAGS) ./source/{}
-	@go test $(TEST_FLAGS) ./source/testing/...
-	@go test $(TEST_FLAGS) ./source/stub/...
-
-	@echo -n '$(DATABASE)' | tr -s ' ' '\n' | xargs -I{} go test $(TEST_FLAGS) ./database/{}
-	@go test $(TEST_FLAGS) ./database/testing/...
-	@go test $(TEST_FLAGS) ./database/stub/...
+	@go test $(TEST_FLAGS) ./...
 
 
 kill-orphaned-docker-containers:
@@ -84,7 +86,7 @@ rewrite-import-paths:
 docs:
 	-make kill-docs
 	nohup godoc -play -http=127.0.0.1:6064 </dev/null >/dev/null 2>&1 & echo $$! > .godoc.pid
-	cat .godoc.pid  
+	cat .godoc.pid
 
 
 kill-docs:
@@ -109,10 +111,10 @@ define external_deps
 endef
 
 
-.PHONY: build-cli clean test-short test test-with-flags html-coverage \
+.PHONY: build build-docker build-cli clean test-short test test-with-flags html-coverage \
         restore-import-paths rewrite-import-paths list-external-deps release \
         docs kill-docs open-docs kill-orphaned-docker-containers
 
-SHELL = /bin/bash
+SHELL = /bin/sh
 RAND = $(shell echo $$RANDOM)
 

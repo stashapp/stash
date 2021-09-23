@@ -8,6 +8,7 @@ import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { useIntl } from "react-intl";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface IGalleryDetailsProps {
   gallery: GQL.GalleryDataFragment;
@@ -81,6 +82,8 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
       onClick: removeImages,
       isDisplayed: showWhenSelected,
       postRefetch: true,
+      icon: "minus" as IconProp,
+      buttonVariant: "danger",
     },
   ];
 

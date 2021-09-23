@@ -97,8 +97,8 @@ function renderScrapedTagsRow(
   title: string,
   result: ScrapeResult<string[]>,
   onChange: (value: ScrapeResult<string[]>) => void,
-  newTags: GQL.ScrapedSceneTag[],
-  onCreateNew?: (value: GQL.ScrapedSceneTag) => void
+  newTags: GQL.ScrapedTag[],
+  onCreateNew?: (value: GQL.ScrapedTag) => void
 ) {
   return (
     <ScrapeDialogRow
@@ -299,12 +299,17 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
 
-  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>(
+  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>(
     props.scraped.tags?.filter((t) => !t.stored_id) ?? []
   );
 
   const [image, setImage] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.image, props.scraped.image)
+    new ScrapeResult<string>(
+      props.performer.image,
+      props.scraped.images && props.scraped.images.length > 0
+        ? props.scraped.images[0]
+        : undefined
+    )
   );
 
   const allFields = [
@@ -338,7 +343,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     return <></>;
   }
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({
@@ -375,8 +380,9 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   }
 
   function makeNewScrapedItem(): GQL.ScrapedPerformer {
+    const newImage = image.getNewValue();
     return {
-      name: name.getNewValue(),
+      name: name.getNewValue() ?? "",
       aliases: aliases.getNewValue(),
       birthdate: birthdate.getNewValue(),
       ethnicity: ethnicity.getNewValue(),
@@ -398,7 +404,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           name: "",
         };
       }),
-      image: image.getNewValue(),
+      images: newImage ? [newImage] : undefined,
       details: details.getNewValue(),
       death_date: deathDate.getNewValue(),
       hair_color: hairColor.getNewValue(),

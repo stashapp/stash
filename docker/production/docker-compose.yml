@@ -22,7 +22,7 @@ services:
       ## Adjust below paths (the left part) to your liking.
       ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
       
-      ## Keep configs here.
+      ## Keep configs, scrapers, and plugins here.
       - ./config:/root/.stash
       ## Point this at your collection.
       - ./data:/data

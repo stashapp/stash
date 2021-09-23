@@ -1,8 +1,6 @@
 package manager
 
 import (
-	"sync"
-
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -14,9 +12,7 @@ type MigrateHashTask struct {
 }
 
 // Start starts the task.
-func (t *MigrateHashTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (t *MigrateHashTask) Start() {
 	if !t.Scene.OSHash.Valid || !t.Scene.Checksum.Valid {
 		// nothing to do
 		return

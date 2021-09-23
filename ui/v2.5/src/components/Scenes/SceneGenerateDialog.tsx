@@ -40,6 +40,8 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   const [previewPreset, setPreviewPreset] = useState<string>(
     GQL.PreviewPreset.Slow
   );
+  const [markerImagePreviews, setMarkerImagePreviews] = useState(false);
+  const [markerScreenshots, setMarkerScreenshots] = useState(false);
 
   const [previewOptionsOpen, setPreviewOptionsOpen] = useState(false);
 
@@ -67,6 +69,8 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
         previews,
         imagePreviews: previews && imagePreviews,
         markers,
+        markerImagePreviews: markers && markerImagePreviews,
+        markerScreenshots: markers && markerScreenshots,
         transcodes,
         overwrite,
         sceneIDs: props.selectedIds,
@@ -276,6 +280,31 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
             label={intl.formatMessage({ id: "dialogs.scene_gen.markers" })}
             onChange={() => setMarkers(!markers)}
           />
+          <div className="d-flex flex-row">
+            <div>↳</div>
+            <Form.Group>
+              <Form.Check
+                id="marker-image-preview-task"
+                checked={markerImagePreviews}
+                disabled={!markers}
+                label={intl.formatMessage({
+                  id: "dialogs.scene_gen.marker_image_previews",
+                })}
+                onChange={() => setMarkerImagePreviews(!markerImagePreviews)}
+                className="ml-2 flex-grow"
+              />
+              <Form.Check
+                id="marker-screenshot-task"
+                checked={markerScreenshots}
+                disabled={!markers}
+                label={intl.formatMessage({
+                  id: "dialogs.scene_gen.marker_screenshots",
+                })}
+                onChange={() => setMarkerScreenshots(!markerScreenshots)}
+                className="ml-2 flex-grow"
+              />
+            </Form.Group>
+          </div>
           <Form.Check
             id="transcode-task"
             checked={transcodes}

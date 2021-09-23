@@ -8,35 +8,67 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testStudioCase struct {
+	studioName    string
+	expectedRegex string
+	aliasName     string
+	aliasRegex    string
+}
+
+var testStudioCases = []testStudioCase{
+	{
+		"studio name",
+		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		"",
+		"",
+	},
+	{
+		"studio + name",
+		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		"",
+		"",
+	},
+	{
+		"studio name",
+		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		"alias name",
+		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*name(?:$|_|[^\w\d])`,
+	},
+	{
+		"studio + name",
+		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		"alias + name",
+		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+	},
+}
+
 func TestStudioScenes(t *testing.T) {
-	type test struct {
-		studioName    string
-		expectedRegex string
-	}
-
-	studioNames := []test{
-		{
-			"studio name",
-			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
-		},
-		{
-			"studio + name",
-			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
-		},
-	}
-
-	for _, p := range studioNames {
-		testStudioScenes(t, p.studioName, p.expectedRegex)
+	for _, p := range testStudioCases {
+		testStudioScenes(t, p)
 	}
 }
 
-func testStudioScenes(t *testing.T, studioName, expectedRegex string) {
+func testStudioScenes(t *testing.T, tc testStudioCase) {
+	studioName := tc.studioName
+	expectedRegex := tc.expectedRegex
+	aliasName := tc.aliasName
+	aliasRegex := tc.aliasRegex
+
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
 	const studioID = 2
 
+	var aliases []string
+
+	testPathName := studioName
+	if aliasName != "" {
+		aliases = []string{aliasName}
+		testPathName = aliasName
+	}
+
+	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
+
 	var scenes []*models.Scene
-	matchingPaths, falsePaths := generateTestPaths(studioName, sceneExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
 			ID:   i + 1,
@@ -64,7 +96,23 @@ func testStudioScenes(t *testing.T, studioName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockSceneReader.On("Query", expectedSceneFilter, expectedFindFilter).Return(scenes, len(scenes), nil).Once()
+	// if alias provided, then don't find by name
+	onNameQuery := mockSceneReader.On("Query", expectedSceneFilter, expectedFindFilter)
+	if aliasName == "" {
+		onNameQuery.Return(scenes, len(scenes), nil).Once()
+	} else {
+		onNameQuery.Return(nil, 0, nil).Once()
+
+		expectedAliasFilter := &models.SceneFilterType{
+			Organized: &organized,
+			Path: &models.StringCriterionInput{
+				Value:    aliasRegex,
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+		}
+
+		mockSceneReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(scenes, len(scenes), nil).Once()
+	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
@@ -76,7 +124,7 @@ func testStudioScenes(t *testing.T, studioName, expectedRegex string) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioScenes(&studio, nil, mockSceneReader)
+	err := StudioScenes(&studio, nil, aliases, mockSceneReader)
 
 	assert := assert.New(t)
 
@@ -85,34 +133,31 @@ func testStudioScenes(t *testing.T, studioName, expectedRegex string) {
 }
 
 func TestStudioImages(t *testing.T) {
-	type test struct {
-		studioName    string
-		expectedRegex string
-	}
-
-	studioNames := []test{
-		{
-			"studio name",
-			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
-		},
-		{
-			"studio + name",
-			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
-		},
-	}
-
-	for _, p := range studioNames {
-		testStudioImages(t, p.studioName, p.expectedRegex)
+	for _, p := range testStudioCases {
+		testStudioImages(t, p)
 	}
 }
 
-func testStudioImages(t *testing.T, studioName, expectedRegex string) {
+func testStudioImages(t *testing.T, tc testStudioCase) {
+	studioName := tc.studioName
+	expectedRegex := tc.expectedRegex
+	aliasName := tc.aliasName
+	aliasRegex := tc.aliasRegex
+
 	mockImageReader := &mocks.ImageReaderWriter{}
 
 	const studioID = 2
 
+	var aliases []string
+
+	testPathName := studioName
+	if aliasName != "" {
+		aliases = []string{aliasName}
+		testPathName = aliasName
+	}
+
 	var images []*models.Image
-	matchingPaths, falsePaths := generateTestPaths(studioName, imageExt)
+	matchingPaths, falsePaths := generateTestPaths(testPathName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
 			ID:   i + 1,
@@ -140,7 +185,23 @@ func testStudioImages(t *testing.T, studioName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockImageReader.On("Query", expectedImageFilter, expectedFindFilter).Return(images, len(images), nil).Once()
+	// if alias provided, then don't find by name
+	onNameQuery := mockImageReader.On("Query", expectedImageFilter, expectedFindFilter)
+	if aliasName == "" {
+		onNameQuery.Return(images, len(images), nil).Once()
+	} else {
+		onNameQuery.Return(nil, 0, nil).Once()
+
+		expectedAliasFilter := &models.ImageFilterType{
+			Organized: &organized,
+			Path: &models.StringCriterionInput{
+				Value:    aliasRegex,
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+		}
+
+		mockImageReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(images, len(images), nil).Once()
+	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
@@ -152,7 +213,7 @@ func testStudioImages(t *testing.T, studioName, expectedRegex string) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioImages(&studio, nil, mockImageReader)
+	err := StudioImages(&studio, nil, aliases, mockImageReader)
 
 	assert := assert.New(t)
 
@@ -161,34 +222,30 @@ func testStudioImages(t *testing.T, studioName, expectedRegex string) {
 }
 
 func TestStudioGalleries(t *testing.T) {
-	type test struct {
-		studioName    string
-		expectedRegex string
-	}
-
-	studioNames := []test{
-		{
-			"studio name",
-			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
-		},
-		{
-			"studio + name",
-			`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
-		},
-	}
-
-	for _, p := range studioNames {
-		testStudioGalleries(t, p.studioName, p.expectedRegex)
+	for _, p := range testStudioCases {
+		testStudioGalleries(t, p)
 	}
 }
 
-func testStudioGalleries(t *testing.T, studioName, expectedRegex string) {
+func testStudioGalleries(t *testing.T, tc testStudioCase) {
+	studioName := tc.studioName
+	expectedRegex := tc.expectedRegex
+	aliasName := tc.aliasName
+	aliasRegex := tc.aliasRegex
 	mockGalleryReader := &mocks.GalleryReaderWriter{}
 
 	const studioID = 2
 
+	var aliases []string
+
+	testPathName := studioName
+	if aliasName != "" {
+		aliases = []string{aliasName}
+		testPathName = aliasName
+	}
+
 	var galleries []*models.Gallery
-	matchingPaths, falsePaths := generateTestPaths(studioName, galleryExt)
+	matchingPaths, falsePaths := generateTestPaths(testPathName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		galleries = append(galleries, &models.Gallery{
 			ID:   i + 1,
@@ -216,7 +273,23 @@ func testStudioGalleries(t *testing.T, studioName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+	// if alias provided, then don't find by name
+	onNameQuery := mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter)
+	if aliasName == "" {
+		onNameQuery.Return(galleries, len(galleries), nil).Once()
+	} else {
+		onNameQuery.Return(nil, 0, nil).Once()
+
+		expectedAliasFilter := &models.GalleryFilterType{
+			Organized: &organized,
+			Path: &models.StringCriterionInput{
+				Value:    aliasRegex,
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+		}
+
+		mockGalleryReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
@@ -228,7 +301,7 @@ func testStudioGalleries(t *testing.T, studioName, expectedRegex string) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioGalleries(&studio, nil, mockGalleryReader)
+	err := StudioGalleries(&studio, nil, aliases, mockGalleryReader)
 
 	assert := assert.New(t)
 

@@ -79,7 +79,12 @@
     "merge_from": "與其他項目合併",
     "save_filter": "儲存過濾條件",
     "set_as_default": "設為預設",
-    "merge_into": "合併至其他項目"
+    "merge_into": "合併至其他項目",
+    "confirm": "確認",
+    "select_folders": "選擇資料夾",
+    "browse_for_image": "選擇圖像…",
+    "open_random": "隨機開啟",
+    "scrape_query": "爬蟲搜尋關鍵字"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -91,7 +96,7 @@
   "birthdate": "出生日期",
   "bitrate": "位元率",
   "career_length": "活躍年代",
-  "child_studios": "子工作室",
+  "subsidiary_studios": "子工作室",
   "component_tagger": {
     "config": {
       "active_instance": "目前使用的 Stash-box：",
@@ -112,7 +117,8 @@
       "set_tag_desc": "選擇套用標籤時，該如何處理現有標籤。",
       "set_tag_label": "標籤設定",
       "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
-      "show_male_label": "顯示男優"
+      "show_male_label": "顯示男優",
+      "query_mode_metadata": "Metadata"
     },
     "noun_query": "關鍵字",
     "results": {
@@ -220,7 +226,7 @@
       "maximum_streaming_transcode_size_head": "最大的串流轉碼解析度大小",
       "maximum_transcode_size_desc": "轉碼生成的影片最大大小",
       "maximum_transcode_size_head": "最大的轉碼解析度大小",
-      "number_of_parallel_task_for_scan_generation_desc": "設置為 0 以自動偵測。請注意，運行比使用 100% CPU 使用率所需的排成數量，可能會降低性能並導致其他問題。",
+      "number_of_parallel_task_for_scan_generation_desc": "設置為 0 以自動偵測。請注意，運行比使用 100% CPU 使用率所需的排程數量，可能會降低性能並導致其他問題。",
       "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
       "parallel_scan_head": "並行掃描/生成",
       "preview_generation": "預覽檔案生成",
@@ -230,7 +236,9 @@
       "sqlite_location": "SQLite 資料庫的位置（需重新啟動）",
       "video_ext_desc": "以逗號為區隔的副檔名名稱，這些檔案將被視為影片",
       "video_ext_head": "影片副檔名",
-      "video_head": "影片設定"
+      "video_head": "影片設定",
+      "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
+      "include_audio_head": "包含音訊"
     },
     "logs": {
       "log_level": "日誌級別"
@@ -255,7 +263,7 @@
       "title": "Stash-box 端點"
     },
     "tasks": {
-      "added_job_to_queue": "已新增『{operation_name}』至作業排成",
+      "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
       "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
       "auto_tagging": "自動套用標籤",
       "backing_up_database": "備份資料庫中",
@@ -295,7 +303,8 @@
         "select_parser_recipe": "選擇預設分析字串",
         "title": "短片名稱分析工具",
         "whitespace_chars": "空白字元",
-        "whitespace_chars_desc": "這些字元將在標題中被的空格替換"
+        "whitespace_chars_desc": "這些字元將在標題中被的空格替換",
+        "ignore_organized": "忽略已整理的短片"
       },
       "scene_tools": "短片工具"
     },
@@ -305,8 +314,10 @@
         "heading": "自定義 CSS",
         "option_label": "啟用自定義 CSS"
       },
-      "handy_connection_key": "Handy 連線金鑰",
-      "handy_connection_key_desc": "播放支援互動性的短片時所用的 Handy 連線金鑰。",
+      "handy_connection_key": {
+        "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。",
+        "heading": "Handy 連線金鑰"
+      },
       "language": {
         "heading": "語言"
       },
@@ -361,7 +372,8 @@
       }
     },
     "plugins": {
-      "triggers_on": "觸發於"
+      "triggers_on": "觸發於",
+      "hooks": "Hooks"
     }
   },
   "configuration": "設定",
@@ -390,7 +402,9 @@
     "matches_regex": "符合正則表達式",
     "not_equals": "不是",
     "not_matches_regex": "不符合正則表達式",
-    "not_null": "不為空"
+    "not_null": "不為空",
+    "between": "與 ... 之間",
+    "not_between": "不與 ... 之間"
   },
   "date": "日期",
   "death_date": "去世日期",
@@ -437,7 +451,9 @@
       "source": "來源",
       "destination": "目的地"
     },
-    "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？"
+    "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
+    "scenes_found": "已找到 {count} 個短片",
+    "scrape_entity_query": "{entity_type}爬蟲搜尋"
   },
   "dimensions": "解析度",
   "director": "導演",
@@ -502,7 +518,6 @@
   "image": "圖片",
   "image_count": "圖片數量",
   "images": "圖片",
-  "images-size": "圖片大小",
   "interactive": "互動性支援",
   "isMissing": "缺失",
   "library": "收藏庫",
@@ -556,7 +571,6 @@
   "scene_count": "短片數量",
   "scene_id": "短片 ID",
   "scenes": "短片",
-  "scenes-size": "短片大小",
   "scenes_updated_at": "短片更新時間",
   "sceneTagger": "短片標籤器",
   "sceneTags": "短片標籤",
@@ -580,12 +594,12 @@
   "title": "標題",
   "toast": {
     "added_entity": "已新增{singularEntity}",
-    "added_generation_job_to_queue": "將生成作業新增至工作排程",
+    "added_generation_job_to_queue": "已將『生成作業』加入至工作排程",
     "delete_entity": "刪除{singularEntity}",
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
     "rescanning_entity": "重新掃描{singularEntity}中…",
-    "started_auto_tagging": "已開始自動套用標籤",
+    "started_auto_tagging": "已將『自動套用標籤』加入至工作排程",
     "updated_entity": "已更新{entity}",
     "merged_tags": "已合併的標籤",
     "create_entity": "已建立 {entity}",
@@ -605,5 +619,22 @@
   "filter": "過濾",
   "filter_name": "過濾條件名稱",
   "detail": "詳情",
-  "include_child_studios": "包含子工作室"
+  "criterion": {
+    "greater_than": "大於",
+    "less_than": "小於",
+    "value": "數值"
+  },
+  "custom": "自訂",
+  "frames_per_second": "{value} 幀/秒",
+  "megabits_per_second": "{value} megabits/秒",
+  "stats": {
+    "image_size": "圖片大小",
+    "scenes_size": "短片大小",
+    "scenes_duration": "短片長度"
+  },
+  "metadata": "Metadata",
+  "include_sub_studios": "包含子工作室",
+  "include_sub_tags": "包含子標籤",
+  "parent_tags": "母標籤",
+  "sub_tags": "子標籤"
 }

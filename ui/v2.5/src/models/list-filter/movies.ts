@@ -5,12 +5,13 @@ import {
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
 import { StudiosCriterionOption } from "./criteria/studios";
+import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 
 const defaultSortBy = "name";
 
-const sortByOptions = ["name", "random"]
+const sortByOptions = ["name", "random", "date", "duration", "rating"]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -28,6 +29,7 @@ const criterionOptions = [
   createStringCriterionOption("synopsis"),
   createMandatoryNumberCriterionOption("duration"),
   RatingCriterionOption,
+  PerformersCriterionOption,
 ];
 
 export const MovieListFilterOptions = new ListFilterOptions(

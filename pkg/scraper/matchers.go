@@ -4,13 +4,18 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-// MatchScrapedScenePerformer matches the provided performer with the
+// MatchScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedScenePerformer) error {
-	performers, err := qb.FindByNames([]string{p.Name}, true)
+func MatchScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
+	if p.Name == nil {
+		return nil
+	}
+
+	performers, err := qb.FindByNames([]string{*p.Name}, true)
 
 	if err != nil {
 		return err
@@ -22,33 +27,45 @@ func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedScen
 	}
 
 	id := strconv.Itoa(performers[0].ID)
-	p.ID = &id
+	p.StoredID = &id
 	return nil
 }
 
-// MatchScrapedSceneStudio matches the provided studio with the studios
+// MatchScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneStudio(qb models.StudioReader, s *models.ScrapedSceneStudio) error {
-	studio, err := qb.FindByName(s.Name, true)
+func MatchScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
+	st, err := studio.ByName(qb, s.Name)
 
 	if err != nil {
 		return err
 	}
 
-	if studio == nil {
+	if st == nil {
+		// try matching by alias
+		st, err = studio.ByAlias(qb, s.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if st == nil {
 		// ignore - cannot match
 		return nil
 	}
 
-	id := strconv.Itoa(studio.ID)
-	s.ID = &id
+	id := strconv.Itoa(st.ID)
+	s.StoredID = &id
 	return nil
 }
 
-// MatchScrapedSceneMovie matches the provided movie with the movies
+// MatchScrapedMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedSceneMovie) error {
-	movies, err := qb.FindByNames([]string{m.Name}, true)
+func MatchScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
+	if m.Name == nil {
+		return nil
+	}
+
+	movies, err := qb.FindByNames([]string{*m.Name}, true)
 
 	if err != nil {
 		return err
@@ -60,13 +77,13 @@ func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedSceneMovie) 
 	}
 
 	id := strconv.Itoa(movies[0].ID)
-	m.ID = &id
+	m.StoredID = &id
 	return nil
 }
 
-// MatchScrapedSceneTag matches the provided tag with the tags
+// MatchScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneTag(qb models.TagReader, s *models.ScrapedSceneTag) error {
+func MatchScrapedTag(qb models.TagReader, s *models.ScrapedTag) error {
 	t, err := tag.ByName(qb, s.Name)
 
 	if err != nil {
@@ -87,6 +104,6 @@ func MatchScrapedSceneTag(qb models.TagReader, s *models.ScrapedSceneTag) error 
 	}
 
 	id := strconv.Itoa(t.ID)
-	s.ID = &id
+	s.StoredID = &id
 	return nil
 }

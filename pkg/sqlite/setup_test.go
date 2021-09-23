@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -960,6 +961,12 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 
 		if err != nil {
 			return err
+		}
+
+		// add alias
+		alias := getStudioStringValue(i, "Alias")
+		if err := sqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+			return fmt.Errorf("error setting studio alias: %s", err.Error())
 		}
 
 		studioIDs = append(studioIDs, created.ID)

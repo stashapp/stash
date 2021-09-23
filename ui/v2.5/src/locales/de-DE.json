@@ -6,7 +6,7 @@
     "add_to_entity": "Hinzufügen zu {entityType}",
     "allow": "Erlauben",
     "allow_temporarily": "Vorübergehend erlauben",
-    "apply": "Anwenden",
+    "apply": "Übernehmen",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
     "cancel": "Abbrechen",
@@ -84,14 +84,14 @@
   "actions_name": "Aktionen",
   "age": "Alter",
   "aliases": "Aliase",
-  "also_known_as": "Auch bekannt als",
+  "also_known_as": "Auch bekannt unter",
   "ascending": "Aufsteigend",
   "average_resolution": "Durchschnittliche Auflösung",
   "birth_year": "Geburtsjahr",
   "birthdate": "Geburtsdatum",
   "bitrate": "Bitrate",
   "career_length": "Länge der Karriere",
-  "child_studios": "Tochterstudios",
+  "subsidiary_studios": "Tochterstudios",
   "component_tagger": {
     "config": {
       "active_instance": "Aktive stash-box Instanz:",
@@ -285,7 +285,7 @@
       "set_name_date_details_from_metadata_if_present": "Name, Datum, Details aus Metadaten festlegen (falls vorhanden)"
     },
     "tools": {
-      "scene_duplicate_checker": "Szenenduplikatsprüfung",
+      "scene_duplicate_checker": "Duplikatsprüfung für Szenen",
       "scene_filename_parser": {
         "add_field": "Feld hinzufügen",
         "capitalize_title": "Titel groß schreiben",
@@ -308,8 +308,10 @@
         "heading": "Benutzerdefinierte CSS",
         "option_label": "Benutzerdefiniertes CSS aktiviert"
       },
-      "handy_connection_key": "Handy Verbindungsschlüssel",
-      "handy_connection_key_desc": "Handy Verbindungsschlüssel für interaktive Szenen.",
+      "handy_connection_key": {
+        "description": "Handy Verbindungsschlüssel für interaktive Szenen.",
+        "heading": "Handy Verbindungsschlüssel"
+      },
       "language": {
         "heading": "Sprache"
       },
@@ -480,7 +482,7 @@
   "eye_color": "Augenfarbe",
   "fake_tits": "Gemachte Brüste",
   "favourite": "Favorit",
-  "file_info": "Dateiinformation",
+  "file_info": "Datei",
   "file_mod_time": "Dateiänderungszeit",
   "filesize": "Dateigröße",
   "filter": "Filter",
@@ -498,8 +500,7 @@
   "image": "Bild",
   "image_count": "Bilderanzahl",
   "images": "Bilder",
-  "images-size": "Bildgröße",
-  "include_child_studios": "Tochterstudios einbeziehen",
+  "include_sub_studios": "Tochterstudios einbeziehen",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
   "isMissing": "Wird vermisst",
@@ -508,7 +509,7 @@
     "generic": "Wird geladen…"
   },
   "marker_count": "Markierungsanzahl",
-  "markers": "Markierungen",
+  "markers": "Merker",
   "measurements": "Maße",
   "media_info": {
     "audio_codec": "Audio-Codec",
@@ -547,15 +548,14 @@
   "performers": "Darsteller",
   "performerTags": "Darsteller-Tags",
   "piercings": "Piercings",
-  "queue": "Warteschlange",
+  "queue": "Playlist",
   "random": "Zufällig",
-  "rating": "Bewertung",
+  "rating": "Wertung",
   "resolution": "Auflösung",
   "scene": "Szene",
   "scene_count": "Szenenanzahl",
   "scene_id": "Szenen-ID",
   "scenes": "Szenen",
-  "scenes-size": "Szenengröße",
   "scenes_updated_at": "Szene aktualisiert am",
   "sceneTagger": "Szenen-Tagger",
   "sceneTags": "Szenen-Tags",
@@ -598,5 +598,9 @@
   "updated_at": "Aktualisiert am",
   "url": "URL",
   "weight": "Gewicht",
-  "years_old": "Jahre alt"
+  "years_old": "Jahre alt",
+  "stats": {
+    "image_size": "Bildgröße",
+    "scenes_size": "Szenengröße"
+  }
 }

@@ -30,7 +30,7 @@ import {
   Modal,
   TagSelect,
 } from "src/components/Shared";
-import { ImageUtils } from "src/utils";
+import { ImageUtils, getStashIDs } from "src/utils";
 import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
@@ -72,7 +72,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   // Editing state
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
-  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
+  const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
@@ -224,7 +224,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return ret;
   }
 
-  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
     const tagInput: GQL.TagCreateInput = { name: toCreate.name ?? "" };
     try {
       const result = await createTag({
@@ -334,9 +334,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     // otherwise follow existing behaviour (`undefined`)
     if (
       (!isNew || [null, undefined].includes(formik.values.image)) &&
-      state.image !== undefined
+      state.images &&
+      state.images.length > 0
     ) {
-      const imageStr = state.image;
+      const imageStr = state.images[0];
       formik.setFieldValue("image", imageStr ?? undefined);
     }
     if (state.details) {
@@ -380,10 +381,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           variables: {
             input: {
               ...input,
-              stash_ids: performerInput?.stash_ids?.map((s) => ({
-                endpoint: s.endpoint,
-                stash_id: s.stash_id,
-              })),
+              stash_ids: getStashIDs(performerInput?.stash_ids),
             },
           },
         });
@@ -527,20 +525,23 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       const {
         __typename,
-        image: _image,
+        images: _image,
         tags: _tags,
         ...ret
       } = selectedPerformer;
 
       const result = await queryScrapePerformer(selectedScraper.id, ret);
-      if (!result?.data?.scrapePerformer) return;
+      if (!result?.data?.scrapeSinglePerformer?.length) return;
 
+      // assume one result
       // if this is a new performer, just dump the data
       if (isNew) {
-        updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+        updatePerformerEditStateFromScraper(
+          result.data.scrapeSinglePerformer[0]
+        );
         setScraper(undefined);
       } else {
-        setScrapedPerformer(result.data.scrapePerformer);
+        setScrapedPerformer(result.data.scrapeSinglePerformer[0]);
       }
     } catch (e) {
       Toast.error(e);
@@ -572,12 +573,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  async function onScrapeStashBox(performerResult: GQL.ScrapedScenePerformer) {
+  async function onScrapeStashBox(performerResult: GQL.ScrapedPerformer) {
     setIsScraperModalOpen(false);
 
-    const result: Partial<GQL.ScrapedPerformerDataFragment> = {
+    const result: GQL.ScrapedPerformerDataFragment = {
       ...performerResult,
-      image: performerResult.images?.[0] ?? undefined,
+      images: performerResult.images ?? undefined,
       country: getCountryByISO(performerResult.country),
       __typename: "ScrapedPerformer",
     };

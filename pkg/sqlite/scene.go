@@ -274,6 +274,10 @@ func (qb *sceneQueryBuilder) Size() (float64, error) {
 	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
 }
 
+func (qb *sceneQueryBuilder) Duration() (float64, error) {
+	return qb.runSumQuery("SELECT SUM(cast(duration as double)) as sum FROM scenes", nil)
+}
+
 func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return qb.runCountQuery(qb.buildCountQuery(scenesForStudioQuery), args)
@@ -544,12 +548,19 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 	}
 }
 
-func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		qb.tagsRepository().join(f, "tags_join", "scenes.id")
-		f.addJoin("tags", "", "tags_join.tag_id = tags.id")
+func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	h := joinedHierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
+		primaryTable: sceneTable,
+		foreignTable: tagTable,
+		foreignFK:    "tag_id",
+
+		relationsTable: "tags_relations",
+		joinAs:         "scene_tag",
+		joinTable:      scenesTagsTable,
+		primaryFK:      sceneIDColumn,
 	}
-	h := qb.getMultiCriterionHandlerBuilder(tagTable, scenesTagsTable, tagIDColumn, addJoinsFunc)
 
 	return h.handler(tags)
 }
@@ -592,6 +603,8 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 
 func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
+		tx: qb.tx,
+
 		primaryTable: sceneTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
@@ -611,31 +624,20 @@ func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCrit
 	return h.handler(movies)
 }
 
-func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, performerTagsFilter *models.MultiCriterionInput) criterionHandlerFunc {
+func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if performerTagsFilter != nil && len(performerTagsFilter.Value) > 0 {
-			qb.performersRepository().join(f, "performers_join", "scenes.id")
-			f.addJoin("performers_tags", "performer_tags_join", "performers_join.performer_id = performer_tags_join.performer_id")
+		if tags != nil && len(tags.Value) > 0 {
+			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
-			var args []interface{}
-			for _, tagID := range performerTagsFilter.Value {
-				args = append(args, tagID)
-			}
+			f.addWith(`performer_tags AS (
+SELECT ps.scene_id, t.column1 AS root_tag_id FROM performers_scenes ps
+INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
+INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
+)`)
 
-			if performerTagsFilter.Modifier == models.CriterionModifierIncludes {
-				// includes any of the provided ids
-				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
-			} else if performerTagsFilter.Modifier == models.CriterionModifierIncludesAll {
-				// includes all of the provided ids
-				f.addWhere("performer_tags_join.tag_id IN "+getInBinding(len(performerTagsFilter.Value)), args...)
-				f.addHaving(fmt.Sprintf("count(distinct performer_tags_join.tag_id) IS %d", len(performerTagsFilter.Value)))
-			} else if performerTagsFilter.Modifier == models.CriterionModifierExcludes {
-				f.addWhere(fmt.Sprintf(`not exists
-					(select performers_scenes.performer_id from performers_scenes
-						left join performers_tags on performers_tags.performer_id = performers_scenes.performer_id where
-						performers_scenes.scene_id = scenes.id AND
-						performers_tags.tag_id in %s)`, getInBinding(len(performerTagsFilter.Value))), args...)
-			}
+			f.addJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
+
+			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
 		}
 	}
 }

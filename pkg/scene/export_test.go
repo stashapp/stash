@@ -23,8 +23,8 @@ const (
 	missingStudioID = 5
 	errStudioID     = 6
 
-	noGalleryID  = 7
-	errGalleryID = 8
+	// noGalleryID  = 7
+	// errGalleryID = 8
 
 	noTagsID  = 11
 	errTagsID = 12
@@ -64,8 +64,8 @@ const (
 )
 
 const (
-	studioName      = "studioName"
-	galleryChecksum = "galleryChecksum"
+	studioName = "studioName"
+	// galleryChecksum = "galleryChecksum"
 
 	validMovie1  = 1
 	validMovie2  = 2
@@ -291,24 +291,6 @@ func TestGetStudioName(t *testing.T) {
 	}
 
 	mockStudioReader.AssertExpectations(t)
-}
-
-var getGalleryChecksumScenarios = []stringTestScenario{
-	{
-		createEmptyScene(sceneID),
-		galleryChecksum,
-		false,
-	},
-	{
-		createEmptyScene(noGalleryID),
-		"",
-		false,
-	},
-	{
-		createEmptyScene(errGalleryID),
-		"",
-		true,
-	},
 }
 
 type stringSliceTestScenario struct {

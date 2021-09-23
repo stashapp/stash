@@ -87,7 +87,9 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				galleries = append(galleries, path)
 			}
 
-			instance.Paths.Generated.EnsureTmpDir()
+			if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+				logger.Warnf("couldn't create temporary directory: %v", err)
+			}
 
 			wg.Add()
 			task := ScanTask{
@@ -108,7 +110,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			go func() {
-				task.Start(&wg)
+				task.Start()
+				wg.Done()
 				progress.Increment()
 			}()
 
@@ -127,7 +130,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
-	instance.Paths.Generated.EmptyTmpDir()
+
+	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+		logger.Warnf("couldn't empty temporary directory: %v", err)
+	}
+
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
@@ -221,9 +228,7 @@ type ScanTask struct {
 	CaseSensitiveFs      bool
 }
 
-func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *ScanTask) Start() {
 	var s *models.Scene
 
 	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
@@ -248,7 +253,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskSprite.Start(&iwg)
+				taskSprite.Start()
+				iwg.Done()
 			})
 		}
 
@@ -261,7 +267,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 					txnManager:          t.TxnManager,
 				}
-				taskPhash.Start(&iwg)
+				taskPhash.Start()
+				iwg.Done()
 			})
 		}
 
@@ -292,7 +299,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskPreview.Start(wg)
+				taskPreview.Start()
+				iwg.Done()
 			})
 		}
 
@@ -404,6 +412,7 @@ func (t *ScanTask) scanGallery() {
 			return
 		}
 
+		isNewGallery := false
 		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 			qb := r.Gallery()
 			g, _ = qb.FindByChecksum(checksum)
@@ -469,7 +478,7 @@ func (t *ScanTask) scanGallery() {
 					}
 					scanImages = true
 
-					GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
+					isNewGallery = true
 				}
 			}
 
@@ -477,6 +486,10 @@ func (t *ScanTask) scanGallery() {
 		}); err != nil {
 			logger.Error(err.Error())
 			return
+		}
+
+		if isNewGallery {
+			GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 		}
 	}
 
@@ -750,7 +763,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		qb := r.Scene()
 		if checksum != "" {
 			s, _ = qb.FindByChecksum(checksum)
@@ -762,6 +775,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error in read transaction: %v", txnErr)
+	}
 
 	sceneHash := oshash
 
@@ -960,9 +976,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		iwg := sizedwaitgroup.New(1)
-		iwg.Add()
-		subTask.Start(&iwg)
+		subTask.Start()
 		return nil
 	})
 	if err != nil {
@@ -1143,11 +1157,19 @@ func (t *ScanTask) scanImage() {
 		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
 			// create gallery from folder or associate with existing gallery
 			logger.Infof("Associating image %s with folder gallery", i.Path)
+			var galleryID int
+			var isNewGallery bool
 			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				return t.associateImageWithFolderGallery(i.ID, r.Gallery())
+				var err error
+				galleryID, isNewGallery, err = t.associateImageWithFolderGallery(i.ID, r.Gallery())
+				return err
 			}); err != nil {
 				logger.Error(err.Error())
 				return
+			}
+
+			if isNewGallery {
+				GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
 			}
 		}
 	}
@@ -1210,12 +1232,13 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 	return ret, nil
 }
 
-func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) error {
+func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) (galleryID int, isNew bool, err error) {
 	// find a gallery with the path specified
 	path := filepath.Dir(t.FilePath)
-	g, err := qb.FindByPath(path)
+	var g *models.Gallery
+	g, err = qb.FindByPath(path)
 	if err != nil {
-		return err
+		return
 	}
 
 	if g == nil {
@@ -1241,13 +1264,16 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 		logger.Infof("Creating gallery for folder %s", path)
 		g, err = qb.Create(newGallery)
 		if err != nil {
-			return err
+			return 0, false, err
 		}
+
+		isNew = true
 	}
 
 	// associate image with gallery
 	err = gallery.AddImage(qb, g.ID, imageID)
-	return err
+	galleryID = g.ID
+	return
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
@@ -1311,7 +1337,7 @@ func (t *ScanTask) doesPathExist() bool {
 	gExt := config.GetGalleryExtensions()
 
 	ret := false
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		if matchExtension(t.FilePath, gExt) {
 			gallery, _ := r.Gallery().FindByPath(t.FilePath)
 			if gallery != nil {
@@ -1331,6 +1357,9 @@ func (t *ScanTask) doesPathExist() bool {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error while executing read transaction: %v", txnErr)
+	}
 
 	return ret
 }

@@ -24,6 +24,7 @@ import { NavUtils } from "src/utils";
 import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { tagRelationHook } from "../../core/tags";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -138,6 +139,15 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       singularEntity={intl.formatMessage({ id: "tag" })}
       pluralEntity={intl.formatMessage({ id: "tags" })}
       destroyMutation={useTagsDestroy}
+      onDeleted={() => {
+        selectedTags.forEach((t) =>
+          tagRelationHook(
+            t,
+            { parents: t.parents ?? [], children: t.children ?? [] },
+            { parents: [], children: [] }
+          )
+        );
+      }}
     />
   );
 
@@ -175,7 +185,15 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
 
   async function onDelete() {
     try {
+      const oldRelations = {
+        parents: deletingTag?.parents ?? [],
+        children: deletingTag?.children ?? [],
+      };
       await deleteTag();
+      tagRelationHook(deletingTag as GQL.TagDataFragment, oldRelations, {
+        parents: [],
+        children: [],
+      });
       Toast.success({
         content: intl.formatMessage(
           { id: "toast.delete_past_tense" },
@@ -268,6 +286,34 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
               </Button>
               <Button variant="secondary" className="tag-list-button">
                 <Link
+                  to={NavUtils.makeTagImagesUrl(tag)}
+                  className="tag-list-anchor"
+                >
+                  <FormattedMessage
+                    id="countables.images"
+                    values={{
+                      count: tag.image_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.image_count ?? 0} />
+                </Link>
+              </Button>
+              <Button variant="secondary" className="tag-list-button">
+                <Link
+                  to={NavUtils.makeTagGalleriesUrl(tag)}
+                  className="tag-list-anchor"
+                >
+                  <FormattedMessage
+                    id="countables.galleries"
+                    values={{
+                      count: tag.gallery_count ?? 0,
+                    }}
+                  />
+                  : <FormattedNumber value={tag.gallery_count ?? 0} />
+                </Link>
+              </Button>
+              <Button variant="secondary" className="tag-list-button">
+                <Link
                   to={NavUtils.makeTagSceneMarkersUrl(tag)}
                   className="tag-list-anchor"
                 >
@@ -283,7 +329,12 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
               <span className="tag-list-count">
                 <FormattedMessage id="total" />:{" "}
                 <FormattedNumber
-                  value={(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
+                  value={
+                    (tag.scene_count || 0) +
+                    (tag.scene_marker_count || 0) +
+                    (tag.image_count || 0) +
+                    (tag.gallery_count || 0)
+                  }
                 />
               </span>
               <Button variant="danger" onClick={() => setDeletingTag(tag)}>

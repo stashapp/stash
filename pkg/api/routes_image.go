@@ -68,7 +68,7 @@ func ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			qb := repo.Image()
 			if imageID == 0 {
 				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
@@ -78,6 +78,9 @@ func ImageCtx(next http.Handler) http.Handler {
 
 			return nil
 		})
+		if readTxnErr != nil {
+			logger.Warnf("read transaction failure while trying to read image by id: %v", readTxnErr)
+		}
 
 		if image == nil {
 			http.Error(w, http.StatusText(404), 404)

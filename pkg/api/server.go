@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"crypto/tls"
+	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -21,13 +23,11 @@ import (
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
@@ -36,11 +36,6 @@ import (
 var version string
 var buildstamp string
 var githash string
-
-var uiBox *packr.Box
-
-//var legacyUiBox *packr.Box
-var loginUIBox *packr.Box
 
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
@@ -99,23 +94,9 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
-func visitedPluginHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// get the visited plugins and set them in the context
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
 const loginEndPoint = "/login"
 
-func Start() {
-	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
-	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
-	loginUIBox = packr.New("Login UI Box", "../../ui/login")
-
+func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -183,10 +164,10 @@ func Start() {
 	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 
 	// session handlers
-	r.Post(loginEndPoint, handleLogin)
-	r.Get("/logout", handleLogout)
+	r.Post(loginEndPoint, handleLogin(loginUIBox))
+	r.Get("/logout", handleLogout(loginUIBox))
 
-	r.Get(loginEndPoint, getLoginHandler)
+	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
 	r.Mount("/performer", performerRoutes{
 		txnManager: txnManager,
@@ -227,11 +208,14 @@ func Start() {
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data, _ := loginUIBox.Find("login.html")
-			_, _ = w.Write(data)
+			_, _ = w.Write(getLoginPage(loginUIBox))
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
-			http.FileServer(loginUIBox).ServeHTTP(w, r)
+			loginRoot, err := fs.Sub(loginUIBox, loginRootDir)
+			if err != nil {
+				panic(err)
+			}
+			http.FileServer(http.FS(loginRoot)).ServeHTTP(w, r)
 		}
 	})
 
@@ -256,6 +240,8 @@ func Start() {
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		const uiRootDir = "ui/v2.5/build"
+
 		ext := path.Ext(r.URL.Path)
 
 		if customUILocation != "" {
@@ -268,14 +254,29 @@ func Start() {
 		}
 
 		if ext == ".html" || ext == "" {
-			data, _ := uiBox.Find("index.html")
-			_, _ = w.Write(data)
+			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
+			if err != nil {
+				panic(err)
+			}
+
+			prefix := ""
+			if r.Header.Get("X-Forwarded-Prefix") != "" {
+				prefix = strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
+			}
+
+			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
+			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
+			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-			http.FileServer(uiBox).ServeHTTP(w, r)
+			uiRoot, err := fs.Sub(uiBox, uiRootDir)
+			if err != nil {
+				panic(error.Error(err))
+			}
+			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
 	})
 
@@ -286,34 +287,31 @@ func Start() {
 	displayAddress := displayHost + ":" + strconv.Itoa(c.GetPort())
 
 	address := c.GetHost() + ":" + strconv.Itoa(c.GetPort())
-	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
-		httpsServer := &http.Server{
-			Addr:      address,
-			Handler:   r,
-			TLSConfig: tlsConfig,
-		}
+	tlsConfig, err := makeTLSConfig(c)
+	if err != nil {
+		// assume we don't want to start with a broken TLS configuration
+		panic(fmt.Errorf("error loading TLS config: %s", err.Error()))
+	}
 
-		go func() {
-			printVersion()
-			printLatestVersion()
-			logger.Infof("stash is listening on " + address)
+	server := &http.Server{
+		Addr:      address,
+		Handler:   r,
+		TLSConfig: tlsConfig,
+	}
+
+	go func() {
+		printVersion()
+		printLatestVersion()
+		logger.Infof("stash is listening on " + address)
+
+		if tlsConfig != nil {
 			logger.Infof("stash is running at https://" + displayAddress + "/")
-			logger.Error(httpsServer.ListenAndServeTLS("", ""))
-		}()
-	} else {
-		server := &http.Server{
-			Addr:    address,
-			Handler: r,
-		}
-
-		go func() {
-			printVersion()
-			printLatestVersion()
-			logger.Infof("stash is listening on " + address)
+			logger.Error(server.ListenAndServeTLS("", ""))
+		} else {
 			logger.Infof("stash is running at http://" + displayAddress + "/")
 			logger.Error(server.ListenAndServe())
-		}()
-	}
+		}
+	}()
 }
 
 func printVersion() {
@@ -328,27 +326,44 @@ func GetVersion() (string, string, string) {
 	return version, githash, buildstamp
 }
 
-func makeTLSConfig() *tls.Config {
-	cert, err := ioutil.ReadFile(paths.GetSSLCert())
-	if err != nil {
-		return nil
+func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
+	c.InitTLS()
+	certFile, keyFile := c.GetTLSFiles()
+
+	if certFile == "" && keyFile == "" {
+		// assume http configuration
+		return nil, nil
 	}
 
-	key, err := ioutil.ReadFile(paths.GetSSLKey())
+	// ensure both files are present
+	if certFile == "" {
+		return nil, errors.New("SSL certificate file must be present if key file is present")
+	}
+
+	if keyFile == "" {
+		return nil, errors.New("SSL key file must be present if certificate file is present")
+	}
+
+	cert, err := ioutil.ReadFile(certFile)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("error reading SSL certificate file %s: %s", certFile, err.Error())
+	}
+
+	key, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		return nil, fmt.Errorf("error reading SSL key file %s: %s", keyFile, err.Error())
 	}
 
 	certs := make([]tls.Certificate, 1)
 	certs[0], err = tls.X509KeyPair(cert, key)
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("error parsing key pair: %s", err.Error())
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,
 	}
 
-	return tlsConfig
+	return tlsConfig, nil
 }
 
 type contextKey struct {
@@ -369,11 +384,22 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		} else {
 			scheme = "http"
 		}
-		baseURL := scheme + "://" + r.Host
+		prefix := ""
+		if r.Header.Get("X-Forwarded-Prefix") != "" {
+			prefix = strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
+		}
+
+		port := ""
+		forwardedPort := r.Header.Get("X-Forwarded-Port")
+		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" {
+			port = ":" + forwardedPort
+		}
+
+		baseURL := scheme + "://" + r.Host + port + prefix
 
 		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
-			baseURL = externalHost
+			baseURL = externalHost + prefix
 		}
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
