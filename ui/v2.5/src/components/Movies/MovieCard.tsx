@@ -1,7 +1,13 @@
 import React, { FunctionComponent } from "react";
-import { FormattedPlural } from "react-intl";
+import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { GridCard } from "src/components/Shared";
+import {
+  GridCard,
+  HoverPopover,
+  Icon,
+  TagLink,
+  TruncatedText,
+} from "src/components/Shared";
 import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
@@ -13,21 +19,50 @@ interface IProps {
 }
 
 export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
-  function maybeRenderSceneNumber() {
-    if (!props.sceneIndex) {
+  function maybeRenderSceneIndexPopoverButton() {
+    if (!props.sceneIndex) return;
+
+    return (
+      <div>
+        <Button className="minimal">
+          <span className="fa-icon">
+            <Icon icon="list" />
+          </span>
+          <span>{props.sceneIndex}</span>
+        </Button>
+      </div>
+    );
+  }
+
+  function maybeRenderScenesPopoverButton() {
+    if (props.movie.scenes.length === 0) return;
+
+    const popoverContent = props.movie.scenes.map((scene) => (
+      <TagLink key={scene.id} scene={scene} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="play-circle" />
+          <span>{props.movie.scenes.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderPopoverButtonGroup() {
+    if (props.sceneIndex || props.movie.scenes.length > 0) {
       return (
-        <span>
-          {props.movie.scene_count}&nbsp;
-          <FormattedPlural
-            value={props.movie.scene_count ?? 0}
-            one="scene"
-            other="scenes"
-          />
-        </span>
+        <>
+          <hr />
+          <ButtonGroup className="card-popovers">
+            {maybeRenderSceneIndexPopoverButton()}
+            {maybeRenderScenesPopoverButton()}
+          </ButtonGroup>
+        </>
       );
     }
-
-    return <span>Scene number: {props.sceneIndex}</span>;
   }
 
   return (
@@ -46,10 +81,18 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
           <RatingBanner rating={props.movie.rating} />
         </>
       }
-      details={maybeRenderSceneNumber()}
+      details={
+        <>
+          <span>{props.movie.date}</span>
+          <p>
+            <TruncatedText text={props.movie.synopsis} lineCount={3} />
+          </p>
+        </>
+      }
       selected={props.selected}
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}
+      popovers={maybeRenderPopoverButtonGroup()}
     />
   );
 };
