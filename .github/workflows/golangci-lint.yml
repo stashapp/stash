@@ -42,7 +42,7 @@ jobs:
           # working-directory: somedir
 
           # Optional: golangci-lint command line arguments.
-          args: --modules-download-mode=vendor
+          args: --modules-download-mode=vendor --timeout=3m
 
           # Optional: show only new issues if it's a pull request. The default value is `false`.
           # only-new-issues: true
