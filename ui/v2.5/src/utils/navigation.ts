@@ -71,6 +71,21 @@ const makePerformerGalleriesUrl = (
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
+const makePerformerMoviesUrl = (
+  performer: Partial<GQL.PerformerDataFragment>,
+  extraCriteria?: Criterion<CriterionValue>[]
+) => {
+  if (!performer.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Movies);
+  const criterion = new PerformersCriterion();
+  criterion.value = [
+    { id: performer.id, label: performer.name || `Performer ${performer.id}` },
+  ];
+  filter.criteria.push(criterion);
+  addExtraCriteria(filter.criteria, extraCriteria);
+  return `/movies?${filter.makeQueryParameters()}`;
+};
+
 const makePerformersCountryUrl = (
   performer: Partial<GQL.PerformerDataFragment>
 ) => {
@@ -226,6 +241,7 @@ export default {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
+  makePerformerMoviesUrl,
   makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeStudioImagesUrl,
