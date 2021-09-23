@@ -308,3 +308,24 @@ func (qb *movieQueryBuilder) GetBackImage(movieID int) ([]byte, error) {
 	query := `SELECT back_image from movies_images WHERE movie_id = ?`
 	return getImage(qb.tx, query, movieID)
 }
+
+func (qb *movieQueryBuilder) FindByPerformerID(performerID int) ([]*models.Movie, error) {
+	query := `SELECT DISTINCT movies.*
+FROM movies
+INNER JOIN movies_scenes ON movies.id = movies_scenes.movie_id
+INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
+WHERE performers_scenes.performer_id = ?
+`
+	args := []interface{}{performerID}
+	return qb.queryMovies(query, args)
+}
+
+func (qb *movieQueryBuilder) CountByPerformerID(performerID int) (int, error) {
+	query := `SELECT COUNT(DISTINCT movies_scenes.movie_id) AS count
+FROM movies_scenes
+INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
+WHERE performers_scenes.performer_id = ?
+`
+	args := []interface{}{performerID}
+	return qb.runCountQuery(query, args)
+}
