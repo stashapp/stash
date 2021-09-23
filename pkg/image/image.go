@@ -35,6 +35,18 @@ func GetSourceImage(i *models.Image) (image.Image, error) {
 	return srcImage, nil
 }
 
+func DecodeSourceImage(i *models.Image) (*image.Config, *string, error) {
+	f, err := openSourceImage(i.Path)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer f.Close()
+
+	config, format, err := image.DecodeConfig(f)
+
+	return &config, &format, err
+}
+
 func CalculateMD5(path string) (string, error) {
 	f, err := openSourceImage(path)
 	if err != nil {
@@ -154,15 +166,15 @@ func SetFileDetails(i *models.Image) error {
 		return err
 	}
 
-	src, _ := GetSourceImage(i)
+	config, _, err := DecodeSourceImage(i)
 
-	if src != nil {
+	if err == nil {
 		i.Width = sql.NullInt64{
-			Int64: int64(src.Bounds().Max.X),
+			Int64: int64(config.Width),
 			Valid: true,
 		}
 		i.Height = sql.NullInt64{
-			Int64: int64(src.Bounds().Max.Y),
+			Int64: int64(config.Height),
 			Valid: true,
 		}
 	}

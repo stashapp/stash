@@ -63,6 +63,8 @@ input ConfigGeneralInput {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Write image thumbnails to disk when generating on the fly"""
+  writeImageThumbnails: Boolean
   """Username"""
   username: String
   """Password"""
@@ -136,6 +138,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Write image thumbnails to disk when generating on the fly"""
+  writeImageThumbnails: Boolean!
   """API Key"""
   apiKey: String!
   """Username"""
