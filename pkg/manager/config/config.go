@@ -141,7 +141,7 @@ const FunscriptOffset = "funscript_offset"
 // Security
 const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
 const dangerousAllowPublicWithoutAuthDefault = "false"
-const securityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
+const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
 const securityTripwireAccessedFromPublicInternetDefault = "false"
 
 // DLNA options
@@ -857,7 +857,7 @@ func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
 func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() bool {
 	i.RLock()
 	defer i.RUnlock()
-	return viper.GetBool(securityTripwireAccessedFromPublicInternet)
+	return viper.GetBool(SecurityTripwireAccessedFromPublicInternet)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
@@ -1005,7 +1005,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	viper.SetDefault(Database, defaultDatabaseFilePath)
 
 	viper.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
-	viper.SetDefault(securityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
+	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))

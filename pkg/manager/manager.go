@@ -114,17 +114,6 @@ func Initialize() *singleton {
 			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 		}
 
-		// security check: Last run, Stash was publicly accessible to the internet without auth.
-		// Don't run again without manual intervention
-		if cfg.GetSecurityTripwireAccessedFromPublicInternet() {
-			logger.Error("Stash was accessed from the public internet, but it did not have authentication enabled. \n" +
-				"You must secure your network, then edit your config.yml's security_tripwire_accessed_from_public_internet to false and restart Stash. \n" +
-				"More information and workarounds are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
-				"Refusing to start. Exiting...")
-			os.Exit(1)
-			return
-		}
-
 		// if DLNA is enabled, start it now
 		if instance.Config.GetDLNADefaultEnabled() {
 			if err := instance.DLNAService.Start(nil); err != nil {

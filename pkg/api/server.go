@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -48,6 +47,15 @@ func allowUnauthenticated(r *http.Request) bool {
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := config.GetInstance()
+
+			if c.GetSecurityTripwireAccessedFromPublicInternet() {
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte("Stash has been accessed from the public internet, and is not serving any more content to protect your privacy. " +
+					"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
+				return
+			}
+
 			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
 			if err != nil {
 				if err != session.ErrUnauthorized {
@@ -65,7 +73,6 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				return
 			}
 
-			c := config.GetInstance()
 			ctx := r.Context()
 
 			if c.HasCredentials() {
@@ -106,15 +113,14 @@ func authenticateHandler() func(http.Handler) http.Handler {
 							"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
 							"Stash will not start again until you edit config.yml and change security_tripwire_accessed_from_public_internet to false. \n" +
 							"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
-							"Stash is shutting down to protect your privacy.")
+							"Stash is not answering any other requests to protect your privacy.")
 						c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
 						w.WriteHeader(http.StatusForbidden)
-						w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled." +
-							"This is extremely dangerous! The whole world can see your your stash page and browse your files!" +
-							"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet " +
-							"Stash is shutting down to protect your privacy."))
+						w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
+							"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
+							"Stash is not answering any other requests to protect your privacy. " +
+							"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet "))
 						manager.GetInstance().Shutdown()
-						os.Exit(1)
 						return
 					}
 				}
