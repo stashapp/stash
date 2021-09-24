@@ -102,25 +102,49 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				if !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
 					requestIPString := r.RemoteAddr[0:strings.LastIndex(r.RemoteAddr, ":")]
 					requestIP := net.ParseIP(requestIPString)
-					logger.Error(requestIP)
-
 					_, cgNatAddrSpace, _ := net.ParseCIDR("100.64.0.0/10")
-					if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
-						logger.Error("Stash has been accessed from the internet, without authentication. \n" +
-							"This is extremely dangerous! The whole world can see your stash page and browse your files! \n" +
-							"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
-							"Stash will not start again until you edit config.yml and change security_tripwire_accessed_from_public_internet to false. \n" +
-							"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
-							"Stash is not answering any other requests to protect your privacy.")
-						c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
-						c.Write()
-						w.WriteHeader(http.StatusForbidden)
-						w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
-							"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
-							"Stash is not answering any other requests to protect your privacy. " +
-							"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet "))
-						manager.GetInstance().Shutdown()
-						return
+
+					if r.Header.Get("X-FORWARDED-FOR") != "" {
+						// Requst was proxied
+						trustedProxies := c.GetTrustedProxies()
+						if trustedProxies == "" {
+							if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
+								securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
+								return
+							}
+						} else {
+							trustedProxies := strings.Split(trustedProxies, ", ")
+							if isIPTrustedProxy(requestIP, trustedProxies) {
+								// Safe to validate X-Forwarded-For
+								proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
+								// validate backwards, as only the last one is not attacker-controlled
+								for i := len(proxyChain) - 1; i >= 0; i-- {
+									ip := net.ParseIP(proxyChain[i])
+									if i == 0 {
+										//last entry is originating device, check if from the public internet
+										if !(ip.IsPrivate() || cgNatAddrSpace.Contains(ip)) {
+											securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
+											return
+										}
+									} else if !isIPTrustedProxy(ip, trustedProxies) {
+										logger.Warn([]byte("Rejected request from untrusted proxy in chain:" + ip.String()))
+										w.WriteHeader(http.StatusForbidden)
+										return
+									}
+								}
+							} else {
+								// Proxy not on safe proxy list
+								logger.Warn([]byte("Rejected request from untrusted proxy:" + requestIP.String()))
+								w.WriteHeader(http.StatusForbidden)
+								return
+							}
+						}
+					} else {
+						// request was not proxied
+						if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
+							securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
+							return
+						}
 					}
 				}
 			}
@@ -358,6 +382,31 @@ func printVersion() {
 		versionString = version + " (" + versionString + ")"
 	}
 	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
+}
+func isIPTrustedProxy(ip net.IP, trustedProxies []string) bool {
+	for _, v := range trustedProxies {
+		if ip.Equal(net.ParseIP(v)) {
+			return true
+		}
+	}
+	return false
+}
+
+func securityActivateTripwireAccessedFromInternetWithoutAuth(c *config.Instance, w http.ResponseWriter) {
+	logger.Error("Stash has been accessed from the internet, without authentication. \n" +
+		"This is extremely dangerous! The whole world can see your stash page and browse your files! \n" +
+		"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
+		"Stash will not start again until you edit config.yml and change security_tripwire_accessed_from_public_internet to false. \n" +
+		"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
+		"Stash is not answering any other requests to protect your privacy.")
+	c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
+	c.Write()
+	w.WriteHeader(http.StatusForbidden)
+	w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
+		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
+		"Stash is not answering any other requests to protect your privacy. " +
+		"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet "))
+	manager.GetInstance().Shutdown()
 }
 
 func GetVersion() (string, string, string) {

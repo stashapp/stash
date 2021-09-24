@@ -139,6 +139,8 @@ const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
 // Security
+const TrustedProxies = "trusted_proxies"
+const trustedProxiesDefault = ""
 const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
 const dangerousAllowPublicWithoutAuthDefault = "false"
 const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
@@ -844,6 +846,14 @@ func (i *Instance) GetFunscriptOffset() int {
 	return viper.GetInt(FunscriptOffset)
 }
 
+// GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
+// When empty, allow from any private network
+func (i *Instance) GetTrustedProxies() string {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetString(TrustedProxies)
+}
+
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
 // See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
 func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
@@ -1006,6 +1016,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	viper.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
 	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
+	viper.SetDefault(TrustedProxies, trustedProxiesDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
