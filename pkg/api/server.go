@@ -51,8 +51,8 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			if c.GetSecurityTripwireAccessedFromPublicInternet() {
 				w.WriteHeader(http.StatusForbidden)
-				w.Write([]byte("Stash has been accessed from the public internet, and is not serving any more content to protect your privacy. " +
-					"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
+				w.Write([]byte("Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
+					"More information and fixes are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
 				return
 			}
 
@@ -100,10 +100,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 				//authentication is not required
 				//security fix: traffic from the public internet with no auth is disallowed
 				if !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
-					requestIPString := r.Header.Get("X-FORWARDED-FOR")
-					if requestIPString == "" {
-						requestIPString = r.RemoteAddr[0:strings.LastIndex(r.RemoteAddr, ":")]
-					}
+					requestIPString := r.RemoteAddr[0:strings.LastIndex(r.RemoteAddr, ":")]
 					requestIP := net.ParseIP(requestIPString)
 					logger.Error(requestIP)
 
