@@ -18,6 +18,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
+  writeImageThumbnails
   apiKey
   username
   password

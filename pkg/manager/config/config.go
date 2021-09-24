@@ -84,6 +84,9 @@ const previewExcludeStartDefault = "0"
 const PreviewExcludeEnd = "preview_exclude_end"
 const previewExcludeEndDefault = "0"
 
+const WriteImageThumbnails = "write_image_thumbnails"
+const writeImageThumbnailsDefault = true
+
 const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
@@ -595,6 +598,14 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	return models.StreamingResolutionEnum(ret)
 }
 
+// IsWriteImageThumbnails returns true if image thumbnails should be written
+// to disk after generating on the fly.
+func (i *Instance) IsWriteImageThumbnails() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(WriteImageThumbnails)
+}
+
 func (i *Instance) GetAPIKey() string {
 	i.RLock()
 	defer i.RUnlock()
@@ -951,8 +962,7 @@ func (i *Instance) SetChecksumDefaultValues(defaultAlgorithm models.HashAlgorith
 	viper.SetDefault(CalculateMD5, usingMD5)
 }
 
-func (i *Instance) setDefaultValues() error {
-
+func (i *Instance) setDefaultValues(write bool) error {
 	// read data before write lock scope
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
@@ -968,6 +978,8 @@ func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(PreviewAudio, previewAudioDefault)
 	viper.SetDefault(SoundOnPreview, false)
 
+	viper.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
+
 	viper.SetDefault(Database, defaultDatabaseFilePath)
 
 	// Set generated to the metadata path for backwards compat
@@ -976,11 +988,24 @@ func (i *Instance) setDefaultValues() error {
 	// Set default scrapers and plugins paths
 	viper.SetDefault(ScrapersPath, defaultScrapersPath)
 	viper.SetDefault(PluginsPath, defaultPluginsPath)
-	return viper.WriteConfig()
+	if write {
+		return viper.WriteConfig()
+	}
+
+	return nil
 }
 
 // SetInitialConfig fills in missing required config fields
 func (i *Instance) SetInitialConfig() error {
+	return i.setInitialConfig(true)
+}
+
+// SetInitialMemoryConfig fills in missing required config fields without writing the configuration
+func (i *Instance) SetInitialMemoryConfig() error {
+	return i.setInitialConfig(false)
+}
+
+func (i *Instance) setInitialConfig(write bool) error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -994,7 +1019,7 @@ func (i *Instance) SetInitialConfig() error {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	return i.setDefaultValues()
+	return i.setDefaultValues(write)
 }
 
 func (i *Instance) FinalizeSetup() {
