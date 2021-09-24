@@ -99,15 +99,16 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			} else {
 				//authentication is not required
 				//security fix: traffic from the public internet with no auth is disallowed
-				if !c.GetDangerousAllowPublicWithoutAuth() {
+				if !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
 					requestIPString := r.Header.Get("X-FORWARDED-FOR")
 					if requestIPString == "" {
-						requestIPString = r.RemoteAddr
+						requestIPString = r.RemoteAddr[0:strings.LastIndex(r.RemoteAddr, ":")]
 					}
 					requestIP := net.ParseIP(requestIPString)
+					logger.Error(requestIP)
 
 					_, cgNatAddrSpace, _ := net.ParseCIDR("100.64.0.0/10")
-					if !requestIP.IsPrivate() && !cgNatAddrSpace.Contains(requestIP) {
+					if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
 						logger.Error("Stash has been accessed from the internet, without authentication. \n" +
 							"This is extremely dangerous! The whole world can see your stash page and browse your files! \n" +
 							"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
@@ -115,6 +116,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 							"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
 							"Stash is not answering any other requests to protect your privacy.")
 						c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
+						c.Write()
 						w.WriteHeader(http.StatusForbidden)
 						w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
 							"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
