@@ -108,11 +108,23 @@ func authenticateHandler() func(http.Handler) http.Handler {
 						// Requst was proxied
 						trustedProxies := c.GetTrustedProxies()
 						if trustedProxies == "" {
+							//validate proxies against local network only
 							if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
 								securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
 								return
+							} else {
+								// Safe to validate X-Forwarded-For
+								proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
+								for i := range proxyChain {
+									ip := net.ParseIP(proxyChain[i])
+									if !(ip.IsPrivate() || cgNatAddrSpace.Contains(ip)) {
+										securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
+										return
+									}
+								}
 							}
 						} else {
+							//validate proxies against trusted proxies list
 							trustedProxies := strings.Split(trustedProxies, ", ")
 							if isIPTrustedProxy(requestIP, trustedProxies) {
 								// Safe to validate X-Forwarded-For

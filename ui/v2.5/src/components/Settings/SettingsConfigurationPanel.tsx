@@ -110,7 +110,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
-  const [trustedProxies, setTrustedProxies] = useState<string | undefined>(undefined);
+  const [trustedProxies, setTrustedProxies] = useState<string | undefined>(
+    undefined
+  );
   const [logFile, setLogFile] = useState<string | undefined>();
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
@@ -991,19 +993,23 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group id="trusted-proxies">
-          <h6>{intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}</h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="text"
-            defaultValue={trustedProxies}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setTrustedProxies(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.auth.trusted_proxies_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <h6>
+          {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
+        </h6>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          type="text"
+          defaultValue={trustedProxies}
+          onInput={(e: React.FormEvent<HTMLInputElement>) =>
+            setTrustedProxies(e.currentTarget.value)
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.general.auth.trusted_proxies_desc",
+          })}
+        </Form.Text>
+      </Form.Group>
 
       <hr />
 
