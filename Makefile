@@ -149,7 +149,7 @@ lint:
 
 .PHONY: golangci-lint
 golangci-lint:
-	golangci-lint run --modules-download-mode=vendor --timeout=3m
+	golangci-lint run
 
 # runs unit tests - excluding integration tests
 .PHONY: test
