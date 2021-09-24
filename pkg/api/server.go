@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -37,8 +39,10 @@ var version string
 var buildstamp string
 var githash string
 
+const loginEndPoint = "/login"
+
 func allowUnauthenticated(r *http.Request) bool {
-	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
+	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == "/css"
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
@@ -64,25 +68,54 @@ func authenticateHandler() func(http.Handler) http.Handler {
 			c := config.GetInstance()
 			ctx := r.Context()
 
-			// handle redirect if no user and user is required
-			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
-				// if we don't have a userID, then redirect
-				// if graphql was requested, we just return a forbidden error
-				if r.URL.Path == "/graphql" {
-					w.Header().Add("WWW-Authenticate", `FormBased`)
-					w.WriteHeader(http.StatusUnauthorized)
+			if c.HasCredentials() {
+				// authentication is required
+				if userID == "" && !allowUnauthenticated(r) {
+					//authentication was not received, redirect
+					// if graphql was requested, we just return a forbidden error
+					if r.URL.Path == "/graphql" {
+						w.Header().Add("WWW-Authenticate", `FormBased`)
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+
+					// otherwise redirect to the login page
+					u := url.URL{
+						Path: "/login",
+					}
+					q := u.Query()
+					q.Set(returnURLParam, r.URL.Path)
+					u.RawQuery = q.Encode()
+					http.Redirect(w, r, u.String(), http.StatusFound)
 					return
 				}
+			} else {
+				//authentication is not required
+				//security fix: traffic from the public internet with no auth is disallowed
+				if !c.GetDangerousAllowPublicWithoutAuth() {
+					requestIPString := r.Header.Get("X-FORWARDED-FOR")
+					if requestIPString == "" {
+						requestIPString = r.RemoteAddr
+					}
+					requestIP := net.ParseIP(requestIPString)
 
-				// otherwise redirect to the login page
-				u := url.URL{
-					Path: "/login",
+					_, cgNatAddrSpace, _ := net.ParseCIDR("100.64.0.0/10")
+					if !requestIP.IsPrivate() && !cgNatAddrSpace.Contains(requestIP) {
+						logger.Error("Stash has been accessed from the internet, without authentication. \n" +
+							"This is extremely dangerous! The whole world can see your stash page and browse your files! \n" +
+							"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
+							"Stash will not start again until you edit config.yml and change security_tripwire_accessed_from_public_internet to false. \n" +
+							"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet")
+						c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
+						w.WriteHeader(http.StatusForbidden)
+						w.Write([]byte("You have attempted to access stash over the internet, and authentication is not enabled." +
+							"This is extremely dangerous! The whole world can see your your stash page and browse your files!" +
+							"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
+						manager.GetInstance().Shutdown()
+						os.Exit(1)
+						return
+					}
 				}
-				q := u.Query()
-				q.Set(returnURLParam, r.URL.Path)
-				u.RawQuery = q.Encode()
-				http.Redirect(w, r, u.String(), http.StatusFound)
-				return
 			}
 
 			ctx = session.SetCurrentUserID(ctx, userID)
@@ -93,8 +126,6 @@ func authenticateHandler() func(http.Handler) http.Handler {
 		})
 	}
 }
-
-const loginEndPoint = "/login"
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()

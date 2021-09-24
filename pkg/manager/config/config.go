@@ -138,6 +138,12 @@ const SlideshowDelay = "slideshow_delay"
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
+// Security
+const DangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
+const DangerousAllowPublicWithoutAuthDefault = "false"
+const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
+const SecurityTripwireAccessedFromPublicInternetDefault = "false"
+
 // DLNA options
 const DLNAServerName = "dlna.server_name"
 const DLNADefaultEnabled = "dlna.default_enabled"
@@ -838,6 +844,22 @@ func (i *Instance) GetFunscriptOffset() int {
 	return viper.GetInt(FunscriptOffset)
 }
 
+// GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
+// See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
+func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(DangerousAllowPublicWithoutAuth)
+}
+
+// GetSecurityTripwireAccessedFromPublicInternet only true if stash has been accessed from the public internet,
+// with no auth enabled, and DangerousAllowPublicWithoutAuth disabled
+func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(SecurityTripwireAccessedFromPublicInternet)
+}
+
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
 // "stash" will be used.
 func (i *Instance) GetDLNAServerName() string {
@@ -981,6 +1003,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 	viper.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 
 	viper.SetDefault(Database, defaultDatabaseFilePath)
+
+	viper.SetDefault(DangerousAllowPublicWithoutAuth, DangerousAllowPublicWithoutAuthDefault)
+	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, SecurityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
