@@ -3,6 +3,47 @@ run:
   timeout: 3m
   modules-download-mode: vendor
 
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: error
+    confidence: 0.8
+    error-code: 1
+    warning-code: 1
+    rules:
+      - name: blank-imports
+        disabled: true
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+        disabled: true
+      - name: if-return
+        disabled: true
+      - name: increment-decrement
+      - name: var-naming
+        disabled: true
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+        disabled: true
+      - name: indent-error-flow
+        disabled: true
+      - name: errorf
+      - name: empty-block
+        disabled: true
+      - name: superfluous-else
+      - name: unused-parameter
+        disabled: true
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
 linters:
   disable-all: true
   enable:
@@ -17,5 +58,7 @@ linters:
     - typecheck
     - unused
     - varcheck
-
+    # Linters added by the stash project
+    - gofmt
+    - revive
 
