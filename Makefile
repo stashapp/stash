@@ -9,7 +9,7 @@ endif
 ifdef IS_WIN
   SEPARATOR := &&
   SET := set
-else 
+else
   SEPARATOR := ;
   SET := export
 endif
@@ -24,7 +24,7 @@ endif
 
 export CGO_ENABLED = 1
 
-.PHONY: release pre-build 
+.PHONY: release pre-build
 
 release: generate ui build-release
 
@@ -103,13 +103,13 @@ cross-compile-pi: export CC := arm-linux-gnueabi-gcc
 cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
 
-cross-compile-all: 
-	make cross-compile-windows 
-	make cross-compile-osx-intel 
-	make cross-compile-osx-applesilicon 
-	make cross-compile-linux 
-	make cross-compile-linux-arm64v8 
-	make cross-compile-linux-arm32v7 
+cross-compile-all:
+	make cross-compile-windows
+	make cross-compile-osx-intel
+	make cross-compile-osx-applesilicon
+	make cross-compile-linux
+	make cross-compile-linux-arm64v8
+	make cross-compile-linux-arm32v7
 	make cross-compile-pi
 
 # Regenerates GraphQL files
@@ -147,9 +147,13 @@ vet:
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
 
+.PHONY: golangci-lint
+golangci-lint:
+	golangci-lint run --modules-download-mode=vendor --timeout=3m
+
 # runs unit tests - excluding integration tests
 .PHONY: test
-test: 
+test:
 	go test -mod=vendor ./...
 
 # runs all tests - including integration tests
@@ -162,7 +166,7 @@ it:
 generate-test-mocks:
 	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
 
-# installs UI dependencies. Run when first cloning repository, or if UI 
+# installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
 .PHONY: pre-ui
 pre-ui:
@@ -193,9 +197,9 @@ ui-validate:
 
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
-validate: ui-validate fmt-check vet lint it
+validate: ui-validate fmt-check vet lint golangci-lint it
 
 # locally builds and tags a 'stash/build' docker image
 .PHONY: docker-build
-docker-build: 
+docker-build:
 	docker build -t stash/build -f docker/build/x86_64/Dockerfile .
