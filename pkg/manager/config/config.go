@@ -139,10 +139,10 @@ const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
 // Security
-const DangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
-const DangerousAllowPublicWithoutAuthDefault = "false"
-const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
-const SecurityTripwireAccessedFromPublicInternetDefault = "false"
+const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
+const dangerousAllowPublicWithoutAuthDefault = "false"
+const securityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
+const securityTripwireAccessedFromPublicInternetDefault = "false"
 
 // DLNA options
 const DLNAServerName = "dlna.server_name"
@@ -849,7 +849,7 @@ func (i *Instance) GetFunscriptOffset() int {
 func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
 	i.RLock()
 	defer i.RUnlock()
-	return viper.GetBool(DangerousAllowPublicWithoutAuth)
+	return viper.GetBool(dangerousAllowPublicWithoutAuth)
 }
 
 // GetSecurityTripwireAccessedFromPublicInternet only true if stash has been accessed from the public internet,
@@ -857,7 +857,7 @@ func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
 func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() bool {
 	i.RLock()
 	defer i.RUnlock()
-	return viper.GetBool(SecurityTripwireAccessedFromPublicInternet)
+	return viper.GetBool(securityTripwireAccessedFromPublicInternet)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
@@ -1004,8 +1004,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	viper.SetDefault(Database, defaultDatabaseFilePath)
 
-	viper.SetDefault(DangerousAllowPublicWithoutAuth, DangerousAllowPublicWithoutAuthDefault)
-	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, SecurityTripwireAccessedFromPublicInternetDefault)
+	viper.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
+	viper.SetDefault(securityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))

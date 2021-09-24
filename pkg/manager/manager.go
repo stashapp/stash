@@ -122,6 +122,7 @@ func Initialize() *singleton {
 				"More information and workarounds are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
 				"Refusing to start. Exiting...")
 			os.Exit(1)
+			return
 		}
 
 		// if DLNA is enabled, start it now

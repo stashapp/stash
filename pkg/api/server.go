@@ -105,12 +105,14 @@ func authenticateHandler() func(http.Handler) http.Handler {
 							"This is extremely dangerous! The whole world can see your stash page and browse your files! \n" +
 							"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
 							"Stash will not start again until you edit config.yml and change security_tripwire_accessed_from_public_internet to false. \n" +
-							"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet")
+							"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
+							"Stash is shutting down to protect your privacy.")
 						c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
 						w.WriteHeader(http.StatusForbidden)
-						w.Write([]byte("You have attempted to access stash over the internet, and authentication is not enabled." +
+						w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled." +
 							"This is extremely dangerous! The whole world can see your your stash page and browse your files!" +
-							"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
+							"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet " +
+							"Stash is shutting down to protect your privacy."))
 						manager.GetInstance().Shutdown()
 						os.Exit(1)
 						return
