@@ -10,7 +10,7 @@ export interface IState {
   isLoading: boolean;
   showNavigation: boolean;
   initialIndex?: number;
-  pageCallback?: (direction: number) => boolean;
+  pageCallback?: (direction: number) => void;
   pageHeader?: string;
   slideshowEnabled: boolean;
   onClose?: () => void;

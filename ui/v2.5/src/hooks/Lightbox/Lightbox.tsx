@@ -49,7 +49,7 @@ interface IProps {
   showNavigation: boolean;
   slideshowEnabled?: boolean;
   pageHeader?: string;
-  pageCallback?: (direction: number) => boolean;
+  pageCallback?: (direction: number) => void;
   hide: () => void;
 }
 
@@ -89,6 +89,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const navRef = useRef<HTMLDivElement | null>(null);
   const clearIntervalCallback = useRef<() => void>();
   const resetIntervalCallback = useRef<() => void>();
+
+  const allowNavigation = images.length > 1 || pageCallback;
 
   const intl = useIntl();
   const config = useConfiguration();
@@ -236,13 +238,11 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (isSwitchingPage || index === -1) return;
 
       if (index === 0) {
+        // go to next page, or loop back if no callback is set
         if (pageCallback) {
-          // Check if calling page wants to swap page
-          const repage = pageCallback(-1);
-          if (repage) {
-            setIndex(-1);
-            setIsSwitchingPage(true);
-          }
+          pageCallback(-1);
+          setIndex(-1);
+          setIsSwitchingPage(true);
         } else setIndex(images.length - 1);
       } else setIndex((index ?? 0) - 1);
 
@@ -258,12 +258,11 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (isSwitchingPage) return;
 
       if (index === images.length - 1) {
+        // go to preview page, or loop back if no callback is set
         if (pageCallback) {
-          const repage = pageCallback(1);
-          if (repage) {
-            setIsSwitchingPage(true);
-            setIndex(0);
-          }
+          pageCallback(1);
+          setIsSwitchingPage(true);
+          setIndex(0);
         } else setIndex(0);
       } else setIndex((index ?? 0) + 1);
 
@@ -587,7 +586,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             </div>
           </div>
           <div className={CLASSNAME_DISPLAY}>
-            {images.length > 1 && (
+            {allowNavigation && (
               <Button
                 variant="link"
                 onClick={handleLeft}
@@ -623,7 +622,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               ))}
             </div>
 
-            {images.length > 1 && (
+            {allowNavigation && (
               <Button
                 variant="link"
                 onClick={handleRight}

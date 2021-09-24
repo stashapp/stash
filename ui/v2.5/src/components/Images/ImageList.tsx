@@ -55,7 +55,6 @@ const ImageWall: React.FC<IImageWallProps> = ({
           onChangePage(currentPage + 1);
         }
       }
-      return direction === -1 || direction === 1;
     },
     [onChangePage, currentPage, pageCount]
   );
@@ -67,7 +66,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   const showLightbox = useLightbox({
     images,
     showNavigation: false,
-    pageCallback: handleLightBoxPage,
+    pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
     pageHeader: `Page ${currentPage} / ${pageCount}`,
     slideshowEnabled: slideshowRunning,
     onClose: handleClose,
