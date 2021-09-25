@@ -3,6 +3,11 @@ run:
   timeout: 3m
   modules-download-mode: vendor
 
+issues:
+  # Rev at which the linter was introduced. Older bugs are still
+  # present, but should not be considered validation errors for now
+  new-from-rev: b14d5c56504dfcea2f5a7b86706b0ecdafd0b68c
+
 linters-settings:
   gofmt:
     simplify: false
