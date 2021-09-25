@@ -30,6 +30,178 @@ type ScanJob struct {
 	txnManager    models.TransactionManager
 	input         models.ScanMetadataInput
 	subscriptions *subscriptionManager
+	csManager     *checksumManager
+}
+
+type resultsCh chan int
+
+type checkType int
+
+const (
+	SceneTypeOSHash checkType = iota
+	SceneTypeMD5
+	ImageType
+	GalleryType
+)
+
+type checksumSource struct {
+	sourceCh resultsCh
+	model    checkType
+}
+
+type checksumRequest struct {
+	checksum string
+	source   checksumSource
+}
+
+type checksumManager struct {
+	reqCh  chan checksumRequest
+	stopCh chan struct{}
+	doneCh chan string
+
+	activeChecksums  map[string]struct{}
+	blockedChecksums map[string][]checksumSource
+	TxManager        models.TransactionManager
+}
+
+func NewChecksumRequestItem(m checkType, cs string) *checksumRequest {
+	resCh := make(resultsCh)
+	csReq := checksumRequest{
+		source: checksumSource{
+			model:    m,
+			sourceCh: resCh,
+		},
+		checksum: cs,
+	}
+
+	return &csReq
+}
+
+func (c *checksumManager) Init(t *models.TransactionManager) {
+	c.activeChecksums = make(map[string]struct{})
+	c.blockedChecksums = make(map[string][]checksumSource)
+
+	c.stopCh = make(chan struct{})
+	c.reqCh = make(chan checksumRequest)
+	c.doneCh = make(chan string)
+
+	c.TxManager = *t
+}
+
+// CheckDB retrieves the id of the entry that has the requested checksum
+// On error or if a checksum is not present 0 is returned as an id
+func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
+	switch {
+	case req.source.model == GalleryType:
+		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Gallery()
+			g, _ := qb.FindByChecksum(req.checksum)
+			if g != nil {
+				id = g.ID
+			}
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	case req.source.model == SceneTypeMD5:
+		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Scene()
+			g, _ := qb.FindByChecksum(req.checksum)
+			if g != nil {
+				id = g.ID
+			}
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	case req.source.model == SceneTypeOSHash:
+		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Scene()
+			g, _ := qb.FindByOSHash(req.checksum)
+			if g != nil {
+				id = g.ID
+			}
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	case req.source.model == ImageType:
+		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Image()
+			g, _ := qb.FindByChecksum(req.checksum)
+			if g != nil {
+				id = g.ID
+			}
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	}
+
+	return
+}
+
+// checksum Manager manages checksum requests only allowing one worker for each unique
+// checksum to be active
+func (c *checksumManager) Start() {
+	for {
+		select {
+		case <-c.stopCh:
+			logger.Debug("Checksum manager finished")
+			return
+		case r := <-c.reqCh: // receive checksum requests
+			if _, found := c.activeChecksums[r.checksum]; found {
+				// checksum already active
+				logger.Debugf("File already present in queue")
+				// add to blocked queue map
+				c.blockedChecksums[r.checksum] = append(c.blockedChecksums[r.checksum], r.source)
+				// worker that made the req is blocked since nothing was sent to his channel
+			} else {
+				// checksum is not active
+				// add to active checksum map
+				c.activeChecksums[r.checksum] = struct{}{}
+
+				//check DB and unblock worker
+				id := c.CheckDB(r)
+				r.source.sourceCh <- id
+			}
+		case cs := <-c.doneCh: // receive job done reports
+			// remove checksum from active map
+			delete(c.activeChecksums, cs)
+
+			// check blocked queue map
+			if _, found := c.blockedChecksums[cs]; found {
+				// if we have a blocked item
+
+				// remove it from the queue
+				r := checksumRequest{
+					checksum: cs,
+					source:   c.blockedChecksums[cs][0],
+				}
+				c.blockedChecksums[cs] = c.blockedChecksums[cs][1:]
+				if len(c.blockedChecksums[cs]) == 0 {
+					delete(c.blockedChecksums, cs)
+				}
+				// and unblock it
+				id := c.CheckDB(r)
+				r.source.sourceCh <- id
+			}
+
+		}
+	}
+
+}
+
+func (c *checksumManager) Stop() {
+	if l := len(c.blockedChecksums); l > 0 {
+		//shouldn't actually happen
+		logger.Errorf("Error while stoping...Found %d blocked scan items.", l)
+	}
+	c.stopCh <- struct{}{}
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
@@ -72,6 +244,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	var galleries []string
 
+	var checksumManager checksumManager
+	checksumManager.Init(&j.txnManager)
+	j.csManager = &checksumManager
+	go checksumManager.Start()
+
 	for _, sp := range paths {
 		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
 		if er != nil {
@@ -94,6 +271,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			wg.Add()
 			task := ScanTask{
 				TxnManager:           j.txnManager,
+				csManager:            j.csManager,
 				FilePath:             path,
 				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
 				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
@@ -130,6 +308,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
+	checksumManager.Stop()
 
 	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
 		logger.Warnf("couldn't empty temporary directory: %v", err)
@@ -213,6 +392,7 @@ func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (
 type ScanTask struct {
 	ctx                  context.Context
 	TxnManager           models.TransactionManager
+	csManager            *checksumManager
 	FilePath             string
 	UseFileMetadata      bool
 	StripFileExtension   bool
@@ -413,10 +593,20 @@ func (t *ScanTask) scanGallery() {
 		}
 
 		isNewGallery := false
+
+		cReq := NewChecksumRequestItem(GalleryType, checksum)
+		t.csManager.reqCh <- *cReq // send checksum request
+
+		gID := <-cReq.source.sourceCh // wait for response
+
+		defer func() { // signal checksum manager when done
+			t.csManager.doneCh <- checksum
+		}()
+
 		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 			qb := r.Gallery()
-			g, _ = qb.FindByChecksum(checksum)
-			if g != nil {
+			if gID != 0 {
+				g, _ = qb.Find(gID)
 				exists, _ := utils.FileExists(g.Path.String)
 				if !t.CaseSensitiveFs {
 					// #1426 - if file exists but is a case-insensitive match for the
@@ -763,20 +953,47 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
-	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		qb := r.Scene()
-		if checksum != "" {
-			s, _ = qb.FindByChecksum(checksum)
-		}
 
-		if s == nil {
-			s, _ = qb.FindByOSHash(oshash)
-		}
+	var resultMd5 int
+	var sceneId int
+	md5Req := NewChecksumRequestItem(SceneTypeMD5, checksum)
+	if checksum != "" {
+		t.csManager.reqCh <- *md5Req         // send checksum request
+		resultMd5 = <-md5Req.source.sourceCh // wait for response
 
-		return nil
-	})
-	if txnErr != nil {
-		logger.Warnf("error in read transaction: %v", txnErr)
+		defer func() { // signal checksum Manager when done
+			t.csManager.doneCh <- checksum
+		}()
+
+	} else {
+		close(md5Req.source.sourceCh)
+	}
+
+	oshReq := NewChecksumRequestItem(SceneTypeOSHash, oshash)
+
+	if resultMd5 != 0 { // found match from md5
+		sceneId = resultMd5
+		close(oshReq.source.sourceCh)
+	} else {
+		t.csManager.reqCh <- *oshReq          // send oshash request
+		resultOSH := <-oshReq.source.sourceCh // wait for response
+
+		defer func() { // signal checksum Manager when done
+			t.csManager.doneCh <- oshash
+		}()
+		sceneId = resultOSH
+	}
+
+	if sceneId != 0 {
+		txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Scene()
+			s, _ = qb.Find(sceneId)
+
+			return nil
+		})
+		if txnErr != nil {
+			logger.Warnf("error in read transaction: %v", txnErr)
+		}
 	}
 
 	sceneHash := oshash
@@ -1073,15 +1290,25 @@ func (t *ScanTask) scanImage() {
 			return
 		}
 
-		// check for scene by checksum and oshash - MD5 should be
-		// redundant, but check both
-		if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			var err error
-			i, err = r.Image().FindByChecksum(checksum)
-			return err
-		}); err != nil {
-			logger.Error(err.Error())
-			return
+		// check for scene by checksum
+		cReq := NewChecksumRequestItem(ImageType, checksum)
+		t.csManager.reqCh <- *cReq // send checksum request
+
+		imgID := <-cReq.source.sourceCh // wait for response
+
+		defer func() { // signal checksum Manager when done
+			t.csManager.doneCh <- checksum
+		}()
+
+		if imgID != 0 {
+			if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				var err error
+				i, err = r.Image().Find(imgID)
+				return err
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
 		}
 
 		if i != nil {

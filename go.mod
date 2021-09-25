@@ -51,7 +51,6 @@ require (
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
