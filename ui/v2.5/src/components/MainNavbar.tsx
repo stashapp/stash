@@ -199,18 +199,12 @@ export const MainNavbar: React.FC = () => {
 
   const { pathname } = location;
   const newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
-  const newButton = newPath ? (
-    <Link to={newPath}>
-      <Button variant="primary">
-        <FormattedMessage id="new" defaultMessage="New" />
-      </Button>
-    </Link>
-  ) : null;
 
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => setShowManual(!showManual));
     Mousetrap.bind("g z", () => goto("/settings"));
+
     menuItems.forEach((item) =>
       Mousetrap.bind(item.hotkey, () => goto(item.href))
     );
@@ -233,7 +227,11 @@ export const MainNavbar: React.FC = () => {
   function maybeRenderLogout() {
     if (SessionUtils.isLoggedIn()) {
       return (
-        <Button className="minimal logout-button" href="/logout">
+        <Button
+          className="minimal logout-button d-flex align-items-center"
+          href="/logout"
+          title="Log out"
+        >
           <Icon icon="sign-out-alt" />
         </Button>
       );
@@ -256,48 +254,70 @@ export const MainNavbar: React.FC = () => {
         onToggle={setExpanded}
         ref={navbarRef}
       >
-        <Navbar.Toggle className="mr-3" />
         <Navbar.Brand as="div" onClick={handleDismiss}>
           <Link to="/">
             <Button className="minimal brand-link d-inline-block">Stash</Button>
           </Link>
         </Navbar.Brand>
 
-        <Nav className="flex-row ml-auto order-xl-1">
-          {!!newButton && <div className="mr-2">{newButton}</div>}
+        <Nav className="navbar-buttons flex-row ml-auto order-xl-1">
+          {!!newPath && (
+            <div className="mr-2">
+              <Link to={newPath}>
+                <Button variant="primary">
+                  <FormattedMessage id="new" defaultMessage="New" />
+                </Button>
+              </Link>
+            </div>
+          )}
           <Nav.Link
             href="https://opencollective.com/stashapp"
             target="_blank"
             onClick={handleDismiss}
           >
-            <Button className="minimal donate" title="Donate">
+            <Button
+              className="minimal donate d-flex align-items-center h-100"
+              title="Donate"
+            >
               <Icon icon="heart" />
               <span>{intl.formatMessage(messages.donate)}</span>
             </Button>
           </Nav.Link>
           <NavLink exact to="/settings" onClick={handleDismiss}>
-            <Button className="minimal settings-button" title="Settings">
+            <Button
+              className="minimal d-flex align-items-center h-100"
+              title="Settings"
+            >
               <Icon icon="cog" />
             </Button>
           </NavLink>
           <Button
-            className="minimal help-button"
+            className="minimal help-button d-flex align-items-center"
             onClick={() => setShowManual(true)}
             title="Help"
           >
             <Icon icon="question-circle" />
           </Button>
           {maybeRenderLogout()}
+          <Navbar.Toggle className="nav-menu-toggle ml-sm-2" />
         </Nav>
 
-        <Navbar.Collapse>
+        <Navbar.Collapse className="bg-dark">
           <Fade in={!loading}>
-            <Nav className="mr-md-auto">
+            <Nav className="mr-md-auto flex-row flex-wrap flex-xl-nowrap justify-content-center pb-2 pb-xl-0">
               {menuItems.map(({ href, icon, message }) => (
-                <Nav.Link eventKey={href} as="div" key={href}>
+                <Nav.Link
+                  eventKey={href}
+                  as="div"
+                  key={href}
+                  className="col-4 col-sm-3 col-md-2 col-lg-auto"
+                >
                   <LinkContainer activeClassName="active" exact to={href}>
-                    <Button className="minimal w-100">
-                      <Icon {...{ icon }} />
+                    <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
+                      <Icon
+                        {...{ icon }}
+                        className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
+                      />
                       <span>{intl.formatMessage(message)}</span>
                     </Button>
                   </LinkContainer>
