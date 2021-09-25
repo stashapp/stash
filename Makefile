@@ -133,19 +133,8 @@ generate-stash-box-client:
 fmt:
 	go fmt ./...
 
-# Ensures that changed files have had gofmt run on them
-.PHONY: fmt-check
-fmt-check:
-	sh ./scripts/check-gofmt.sh
-
-# Runs go vet on the project's source code.
-.PHONY: vet
-vet:
-	go vet -mod=vendor ./...
-
 .PHONY: lint
-lint:
-	revive -config revive.toml -exclude ./vendor/...  ./...
+lint: golangci-lint
 
 .PHONY: golangci-lint
 golangci-lint:
@@ -197,7 +186,15 @@ ui-validate:
 
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
-validate: ui-validate fmt-check vet lint golangci-lint it
+validate: validate-frontend validate-backend
+
+# runs all of the frontend PR-acceptance steps
+.PHONY: validate-frontend
+validate-frontend: ui-validate
+
+# runs all of the backend PR-acceptance steps
+.PHONY: validate-backend
+validate-backend: lint it
 
 # locally builds and tags a 'stash/build' docker image
 .PHONY: docker-build

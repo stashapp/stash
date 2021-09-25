@@ -94,11 +94,8 @@ For issues not addressed there, there are a few options.
 ## Pre-requisites
 
 * [Go](https://golang.org/dl/)
-* Linters we use in the project:
-  * [Revive](https://github.com/mgechev/revive) - Configurable linter
-    * Go Install: `go get github.com/mgechev/revive`
-  * [GolangCI](https://golangci-lint.run/) - Metalinter bundling a number of linters; runs as part of CI
-    * To install, follow the [local installation instructions](https://golangci-lint.run/usage/install/#local-installation)
+* [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
+  * To install, follow the [local installation instructions](https://golangci-lint.run/usage/install/#local-installation)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
   * Run `yarn install --frozen-lockfile` in the `stash/ui/v2.5` folder (before running make generate for first time).
 
@@ -128,11 +125,9 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
 * `make fmt-ui` - Formats the UI source code
 * `make ui` - Builds the frontend
-* `make vet` - Run `go vet`
-* `make lint` - Run the linter
+* `make lint` - Run the meta-linter on the backend
 * `make golangci-lint` - Run the golangci meta-linter
 * `make fmt` - Run `go fmt`
-* `make fmt-check` - Ensure changed files are formatted correctly
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
 * `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash port can be changed from the default of `9999` with environment variable `REACT_APP_PLATFORM_PORT`.
