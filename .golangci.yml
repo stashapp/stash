@@ -4,6 +4,9 @@ run:
   modules-download-mode: vendor
 
 linters-settings:
+  gofmt:
+    simplify: false
+
   revive:
     ignore-generated-header: true
     severity: error
