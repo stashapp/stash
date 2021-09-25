@@ -79,10 +79,12 @@ export class ListFilterModel {
         }
       }
     }
-    this.sortDirection =
-      params.sortdir === "desc"
-        ? SortDirectionEnum.Desc
-        : SortDirectionEnum.Asc;
+    if (params.sortdir !== undefined) {
+      this.sortDirection =
+        params.sortdir === "desc"
+          ? SortDirectionEnum.Desc
+          : SortDirectionEnum.Asc;
+    }
     if (params.disp !== undefined) {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
