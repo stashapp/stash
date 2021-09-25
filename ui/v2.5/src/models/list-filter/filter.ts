@@ -102,9 +102,8 @@ export class ListFilterModel {
       }
     }
 
+    this.criteria = [];
     if (params.c !== undefined) {
-      this.criteria = [];
-
       let jsonParameters: string[];
       if (params.c instanceof Array) {
         jsonParameters = params.c;
