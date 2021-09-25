@@ -55,7 +55,7 @@ func getMatchingImages(name string, paths []string, imageReader models.ImageRead
 	filter.And = imagePathsFilter(paths)
 
 	pp := models.PerPageAll
-	images, _, err := imageReader.Query(&filter, &models.FindFilterType{
+	images, _, _, _, err := imageReader.Query(&filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 

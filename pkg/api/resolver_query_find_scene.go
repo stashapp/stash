@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/manager"
@@ -65,16 +66,22 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var scenes []*models.Scene
-		var total int
+		var count int
+		var duration float64
+		var filesize int
 		var err error
 
 		if len(sceneIDs) > 0 {
 			scenes, err = repo.Scene().FindMany(sceneIDs)
 			if err == nil {
-				total = len(scenes)
+				count = len(scenes)
+				//TODO loop and get duration, filesize
+				for i := range scenes {
+					fmt.Printf("i: %v\n", i)
+				}
 			}
 		} else {
-			scenes, total, err = repo.Scene().Query(sceneFilter, filter)
+			scenes, count, duration, filesize, err = repo.Scene().Query(sceneFilter, filter)
 		}
 
 		if err != nil {
@@ -82,8 +89,10 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:  total,
-			Scenes: scenes,
+			Count:           count,
+			Scenes:          scenes,
+			DurationSeconds: duration,
+			FilesizeBytes:   filesize,
 		}
 
 		return nil
@@ -114,14 +123,16 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			queryFilter.Q = nil
 		}
 
-		scenes, total, err := repo.Scene().Query(sceneFilter, queryFilter)
+		scenes, total, duration, filesize, err := repo.Scene().Query(sceneFilter, queryFilter)
 		if err != nil {
 			return err
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:  total,
-			Scenes: scenes,
+			Count:           total,
+			Scenes:          scenes,
+			DurationSeconds: duration,
+			FilesizeBytes:   filesize,
 		}
 
 		return nil

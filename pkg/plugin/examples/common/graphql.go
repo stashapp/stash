@@ -28,8 +28,10 @@ type TagDestroyInput struct {
 }
 
 type FindScenesResultType struct {
-	Count  graphql.Int
-	Scenes []Scene
+	Count           graphql.Int
+	DurationSeconds graphql.Float
+	FilesizeBytes   graphql.Int
+	Scenes          []Scene
 }
 
 type Tag struct {

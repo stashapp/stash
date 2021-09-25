@@ -68,7 +68,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockSceneReader.On("Query", expectedSceneFilter, expectedFindFilter).Return(scenes, len(scenes), nil).Once()
+	mockSceneReader.On("Query", expectedSceneFilter, expectedFindFilter).Return(scenes, len(scenes), 0, 0, nil).Once()
 
 	for i := range matchingPaths {
 		sceneID := i + 1
@@ -140,7 +140,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockImageReader.On("Query", expectedImageFilter, expectedFindFilter).Return(images, len(images), nil).Once()
+	mockImageReader.On("Query", expectedImageFilter, expectedFindFilter).Return(images, len(images), 0, 0, nil).Once()
 
 	for i := range matchingPaths {
 		imageID := i + 1

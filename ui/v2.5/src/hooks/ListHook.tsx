@@ -409,6 +409,11 @@ const RenderList = <
     return (
       <>
         {renderPagination()}
+        <PaginationIndex
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+        />
         {renderContent(result, filter, selectedIds, onChangePage, pages)}
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}

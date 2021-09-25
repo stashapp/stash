@@ -70,5 +70,7 @@ input ImagesDestroyInput {
 
 type FindImagesResultType {
   count: Int!
+  megapixels: Float!
+  filesizeBytes: Int!
   images: [Image!]!
 }

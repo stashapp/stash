@@ -1,6 +1,8 @@
 query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {
   findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {
     count
+    filesizeBytes
+    durationSeconds
     scenes {
       ...SlimSceneData
     }
@@ -10,6 +12,8 @@ query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene
 query FindScenesByPathRegex($filter: FindFilterType) {
   findScenesByPathRegex(filter: $filter) {
     count
+    filesizeBytes
+    durationSeconds
     scenes {
       ...SlimSceneData
     }

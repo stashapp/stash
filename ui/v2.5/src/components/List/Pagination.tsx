@@ -132,8 +132,10 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
   )}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
   return (
-    <span className="filter-container text-muted paginationIndex">
+    <span className="filter-container text-muted paginationIndex center-text">
       {indexText}
+      <br />
+      13Y 2M 3W - 205.2 TB
     </span>
   );
 };

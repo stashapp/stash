@@ -36,7 +36,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 		if pages <= 10 || (page-1)%(pages/10) == 0 {
 			thisPage := ((page - 1) * pageSize) + 1
 			findFilter.Page = &thisPage
-			scenes, _, err := r.Scene().Query(p.sceneFilter, findFilter)
+			scenes, _, _, _, err := r.Scene().Query(p.sceneFilter, findFilter)
 			if err != nil {
 				return nil, err
 			}
@@ -67,7 +67,7 @@ func (p *scenePager) getPageVideos(r models.ReaderRepository, page int, host str
 		Sort:    &sort,
 	}
 
-	scenes, _, err := r.Scene().Query(p.sceneFilter, findFilter)
+	scenes, _, _, _, err := r.Scene().Query(p.sceneFilter, findFilter)
 	if err != nil {
 		return nil, err
 	}

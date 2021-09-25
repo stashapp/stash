@@ -426,12 +426,12 @@ func (t *autoTagFilesTask) getCount(r models.ReaderRepository) (int, error) {
 		PerPage: &pp,
 	}
 
-	_, sceneCount, err := r.Scene().Query(t.makeSceneFilter(), findFilter)
+	_, sceneCount, _, _, err := r.Scene().Query(t.makeSceneFilter(), findFilter)
 	if err != nil {
 		return 0, err
 	}
 
-	_, imageCount, err := r.Image().Query(t.makeImageFilter(), findFilter)
+	_, imageCount, _, _, err := r.Image().Query(t.makeImageFilter(), findFilter)
 	if err != nil {
 		return 0, err
 	}
@@ -464,7 +464,7 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 
 	more := true
 	for more {
-		scenes, _, err := r.Scene().Query(sceneFilter, findFilter)
+		scenes, _, _, _, err := r.Scene().Query(sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}
@@ -512,7 +512,7 @@ func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
 
 	more := true
 	for more {
-		images, _, err := r.Image().Query(imageFilter, findFilter)
+		images, _, _, _, err := r.Image().Query(imageFilter, findFilter)
 		if err != nil {
 			return err
 		}

@@ -329,6 +329,58 @@ func (r *joinRepository) replace(id int, foreignIDs []int) error {
 	return nil
 }
 
+func (r *repository) getSceneSums(args []interface{}, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) (duration float64, filesize int) {
+	body := `SELECT SUM(duration) as duration, SUM(size) as size FROM scenes`
+	body = r.buildQueryBody(body, whereClauses, havingClauses)
+
+	withClause := ""
+	if len(withClauses) > 0 {
+		var recursive string
+		if recursiveWith {
+			recursive = " RECURSIVE "
+		}
+		withClause = "WITH " + recursive + strings.Join(withClauses, ", ") + " "
+	}
+	query := withClause + body
+
+	var result []struct {
+		Float float64 `db:"duration"`
+		Int   int     `db:"size"`
+	}
+
+	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
+		return 0, 0
+	}
+
+	return result[0].Float, result[0].Int
+}
+
+func (r *repository) getImageSums(args []interface{}, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) (megapixels float64, filesize int) {
+	body := `SELECT SUM(width*height)/1000000 as megapixels, SUM(size) as size FROM images`
+	body = r.buildQueryBody(body, whereClauses, havingClauses)
+
+	withClause := ""
+	if len(withClauses) > 0 {
+		var recursive string
+		if recursiveWith {
+			recursive = " RECURSIVE "
+		}
+		withClause = "WITH " + recursive + strings.Join(withClauses, ", ") + " "
+	}
+	query := withClause + body
+
+	var result []struct {
+		Float float64 `db:"megapixels"`
+		Int   int     `db:"size"`
+	}
+
+	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
+		return 0, 0
+	}
+
+	return result[0].Float, result[0].Int
+}
+
 type imageRepository struct {
 	repository
 	imageColumn string
