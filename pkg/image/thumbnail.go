@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -56,7 +57,8 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 		return buf.Bytes(), nil
 	}
 
-	if e.VipsPath != "" {
+	// vips has issues loading files from stdin on Windows
+	if e.VipsPath != "" && runtime.GOOS != "windows" {
 		return e.getVipsThumbnail(buf, maxSize)
 	} else {
 		return e.getFFMPEGThumbnail(buf, format, maxSize, img.Path)
