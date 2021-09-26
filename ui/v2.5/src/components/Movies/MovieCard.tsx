@@ -8,6 +8,7 @@ import {
   TagLink,
   TruncatedText,
 } from "src/components/Shared";
+import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
@@ -19,18 +20,16 @@ interface IProps {
 }
 
 export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
-  function maybeRenderSceneIndexPopoverButton() {
+  function maybeRenderSceneNumber() {
     if (!props.sceneIndex) return;
 
     return (
-      <div>
-        <Button className="minimal">
-          <span className="fa-icon">
-            <Icon icon="list" />
-          </span>
-          <span>{props.sceneIndex}</span>
-        </Button>
-      </div>
+      <>
+        <hr />
+        <span className="movie-scene-number">
+          <FormattedMessage id="scene" /> #{props.sceneIndex}
+        </span>
+      </>
     );
   }
 
@@ -55,9 +54,9 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
     if (props.sceneIndex || props.movie.scenes.length > 0) {
       return (
         <>
+          {maybeRenderSceneNumber()}
           <hr />
           <ButtonGroup className="card-popovers">
-            {maybeRenderSceneIndexPopoverButton()}
             {maybeRenderScenesPopoverButton()}
           </ButtonGroup>
         </>
