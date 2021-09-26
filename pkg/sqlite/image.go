@@ -293,7 +293,7 @@ func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilt
 		return nil, 0, 0, 0, err
 	}
 
-	megapixels, fileSize := query.repository.getImageSums(query.args, query.whereClauses, query.havingClauses, query.withClauses, query.recursiveWith)
+	megapixels, fileSize := query.repository.getImageSums(*query)
 
 	var images []*models.Image
 	for _, id := range idsResult {

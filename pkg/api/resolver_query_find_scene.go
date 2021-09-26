@@ -75,7 +75,6 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 			scenes, err = repo.Scene().FindMany(sceneIDs)
 			if err == nil {
 				count = len(scenes)
-				//TODO loop and get duration, filesize
 				for i := range scenes {
 					fmt.Printf("i: %v\n", i)
 				}

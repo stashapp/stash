@@ -429,7 +429,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		return nil, 0, 0, 0, err
 	}
 
-	duration, fileSize := query.repository.getSceneSums(query.args, query.whereClauses, query.havingClauses, query.withClauses, query.recursiveWith)
+	duration, fileSize := query.repository.getSceneSums(query)
 
 	var scenes []*models.Scene
 	for _, id := range idsResult {

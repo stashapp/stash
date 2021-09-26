@@ -58,6 +58,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
+import { TextUtils } from "src/utils";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -159,6 +160,7 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   useData: (filter: ListFilterModel) => T;
   getData: (data: T) => T2[];
   getCount: (data: T) => number;
+  getMetadataByline: (data: T) => string[];
 }
 
 interface IRenderListProps {
@@ -179,6 +181,7 @@ const RenderList = <
   useData,
   getCount,
   getData,
+  getMetadataByline,
   otherOperations,
   renderContent,
   zoomable,
@@ -203,6 +206,7 @@ const RenderList = <
 
   const result = useData(filter);
   const totalCount = getCount(result);
+  const metadataByline = getMetadataByline(result);
   const items = getData(result);
   const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
@@ -397,6 +401,7 @@ const RenderList = <
       itemsPerPage={filter.itemsPerPage}
       currentPage={filter.currentPage}
       totalItems={totalCount}
+      metadataByline={metadataByline}
       onChangePage={onChangePage}
     />
   );
@@ -413,12 +418,14 @@ const RenderList = <
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
           totalItems={totalCount}
+          metadataByline={metadataByline}
         />
         {renderContent(result, filter, selectedIds, onChangePage, pages)}
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
           totalItems={totalCount}
+          metadataByline={metadataByline}
         />
         {renderPagination()}
       </>
@@ -737,6 +744,11 @@ export const useScenesList = (
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
+    getMetadataByline: (result: FindScenesQueryResult) => 
+      [
+        TextUtils.secondsAsTimeString(result?.data?.findScenes?.durationSeconds, 3),
+        `${TextUtils.fileSize(result?.data?.findScenes?.filesizeBytes).size} ${TextUtils.formatFileSizeUnit(TextUtils.fileSize(result?.data?.findScenes?.filesizeBytes).unit)}`
+      ],
   });
 
 export const useSceneMarkersList = (
@@ -750,6 +762,7 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useImagesList = (
@@ -763,6 +776,11 @@ export const useImagesList = (
       result?.data?.findImages?.images ?? [],
     getCount: (result: FindImagesQueryResult) =>
       result?.data?.findImages?.count ?? 0,
+    getMetadataByline: (result: FindImagesQueryResult) => 
+      [
+        `${result?.data?.findImages?.megapixels} Megapixels`,
+        `${TextUtils.fileSize(result?.data?.findImages?.filesizeBytes).size} ${TextUtils.formatFileSizeUnit(TextUtils.fileSize(result?.data?.findImages?.filesizeBytes).unit)}`
+      ]
   });
 
 export const useGalleriesList = (
@@ -776,6 +794,7 @@ export const useGalleriesList = (
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useStudiosList = (
@@ -789,6 +808,7 @@ export const useStudiosList = (
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const usePerformersList = (
@@ -802,6 +822,7 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useMoviesList = (
@@ -815,6 +836,7 @@ export const useMoviesList = (
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useTagsList = (
@@ -828,6 +850,7 @@ export const useTagsList = (
       result?.data?.findTags?.tags ?? [],
     getCount: (result: FindTagsQueryResult) =>
       result?.data?.findTags?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const showWhenSelected = <T extends IQueryResult>(

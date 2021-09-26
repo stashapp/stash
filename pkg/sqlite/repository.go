@@ -329,17 +329,18 @@ func (r *joinRepository) replace(id int, foreignIDs []int) error {
 	return nil
 }
 
-func (r *repository) getSceneSums(args []interface{}, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) (duration float64, filesize int) {
+func (r *repository) getSceneSums(qb queryBuilder) (duration float64, filesize int) {
 	body := `SELECT SUM(duration) as duration, SUM(size) as size FROM scenes`
-	body = r.buildQueryBody(body, whereClauses, havingClauses)
+	body += qb.joins.toSQL()
+	body = r.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
 
 	withClause := ""
-	if len(withClauses) > 0 {
+	if len(qb.withClauses) > 0 {
 		var recursive string
-		if recursiveWith {
+		if qb.recursiveWith {
 			recursive = " RECURSIVE "
 		}
-		withClause = "WITH " + recursive + strings.Join(withClauses, ", ") + " "
+		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 	query := withClause + body
 
@@ -348,24 +349,35 @@ func (r *repository) getSceneSums(args []interface{}, whereClauses []string, hav
 		Int   int     `db:"size"`
 	}
 
-	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := r.tx.Select(&result, query, qb.args...); err != nil && err != sql.ErrNoRows {
 		return 0, 0
 	}
 
-	return result[0].Float, result[0].Int
+	if len(result) > 1 {
+		var duration float64
+		var filesize int
+		for i := range result {
+			duration += result[i].Float
+			filesize += result[i].Int
+		}
+		return duration, filesize
+	} else {
+		return result[0].Float, result[0].Int
+	}
 }
 
-func (r *repository) getImageSums(args []interface{}, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) (megapixels float64, filesize int) {
+func (r *repository) getImageSums(qb queryBuilder) (megapixels float64, filesize int) {
 	body := `SELECT SUM(width*height)/1000000 as megapixels, SUM(size) as size FROM images`
-	body = r.buildQueryBody(body, whereClauses, havingClauses)
+	body = r.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	body += qb.joins.toSQL()
 
 	withClause := ""
-	if len(withClauses) > 0 {
+	if len(qb.withClauses) > 0 {
 		var recursive string
-		if recursiveWith {
+		if qb.recursiveWith {
 			recursive = " RECURSIVE "
 		}
-		withClause = "WITH " + recursive + strings.Join(withClauses, ", ") + " "
+		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
 	}
 	query := withClause + body
 
@@ -374,11 +386,21 @@ func (r *repository) getImageSums(args []interface{}, whereClauses []string, hav
 		Int   int     `db:"size"`
 	}
 
-	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := r.tx.Select(&result, query, qb.args...); err != nil && err != sql.ErrNoRows {
 		return 0, 0
 	}
 
-	return result[0].Float, result[0].Int
+	if len(result) > 1 {
+		var megapixels float64
+		var filesize int
+		for i := range result {
+			megapixels += result[i].Float
+			filesize += result[i].Int
+		}
+		return megapixels, filesize
+	} else {
+		return result[0].Float, result[0].Int
+	}
 }
 
 type imageRepository struct {
