@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -177,7 +176,7 @@ func (t *ExportTask) generateDownload() error {
 	if err := utils.EnsureDir(instance.Paths.Generated.Downloads); err != nil {
 		return err
 	}
-	z, err := ioutil.TempFile(instance.Paths.Generated.Downloads, "export*.zip")
+	z, err := os.CreateTemp(instance.Paths.Generated.Downloads, "export*.zip")
 	if err != nil {
 		return err
 	}
