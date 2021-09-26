@@ -254,55 +254,7 @@ export const MainNavbar: React.FC = () => {
         onToggle={setExpanded}
         ref={navbarRef}
       >
-        <Navbar.Brand as="div" onClick={handleDismiss}>
-          <Link to="/">
-            <Button className="minimal brand-link d-inline-block">Stash</Button>
-          </Link>
-        </Navbar.Brand>
-
-        <Nav className="navbar-buttons flex-row ml-auto order-xl-1">
-          {!!newPath && (
-            <div className="mr-2">
-              <Link to={newPath}>
-                <Button variant="primary">
-                  <FormattedMessage id="new" defaultMessage="New" />
-                </Button>
-              </Link>
-            </div>
-          )}
-          <Nav.Link
-            href="https://opencollective.com/stashapp"
-            target="_blank"
-            onClick={handleDismiss}
-          >
-            <Button
-              className="minimal donate d-flex align-items-center h-100"
-              title="Donate"
-            >
-              <Icon icon="heart" />
-              <span>{intl.formatMessage(messages.donate)}</span>
-            </Button>
-          </Nav.Link>
-          <NavLink exact to="/settings" onClick={handleDismiss}>
-            <Button
-              className="minimal d-flex align-items-center h-100"
-              title="Settings"
-            >
-              <Icon icon="cog" />
-            </Button>
-          </NavLink>
-          <Button
-            className="minimal help-button d-flex align-items-center"
-            onClick={() => setShowManual(true)}
-            title="Help"
-          >
-            <Icon icon="question-circle" />
-          </Button>
-          {maybeRenderLogout()}
-          <Navbar.Toggle className="nav-menu-toggle ml-sm-2" />
-        </Nav>
-
-        <Navbar.Collapse className="bg-dark">
+        <Navbar.Collapse className="bg-dark order-sm-1">
           <Fade in={!loading}>
             <Nav className="mr-md-auto flex-row flex-wrap flex-xl-nowrap justify-content-center pb-2 pb-xl-0">
               {menuItems.map(({ href, icon, message }) => (
@@ -326,6 +278,58 @@ export const MainNavbar: React.FC = () => {
             </Nav>
           </Fade>
         </Navbar.Collapse>
+
+        <Navbar.Brand as="div" onClick={handleDismiss}>
+          <Link to="/">
+            <Button className="minimal brand-link d-inline-block">Stash</Button>
+          </Link>
+        </Navbar.Brand>
+
+        <Nav className="navbar-buttons flex-row ml-auto order-xl-2">
+          {!!newPath && (
+            <div className="mr-2">
+              <Link to={newPath}>
+                <Button variant="primary">
+                  <FormattedMessage id="new" defaultMessage="New" />
+                </Button>
+              </Link>
+            </div>
+          )}
+          <Nav.Link
+            href="https://opencollective.com/stashapp"
+            target="_blank"
+            onClick={handleDismiss}
+          >
+            <Button
+              className="minimal donate d-flex align-items-center h-100"
+              title="Donate"
+            >
+              <Icon icon="heart" />
+              <span className="d-none d-sm-inline">
+                {intl.formatMessage(messages.donate)}
+              </span>
+            </Button>
+          </Nav.Link>
+          <NavLink exact to="/settings" onClick={handleDismiss}>
+            <Button
+              className="minimal d-flex align-items-center h-100"
+              title="Settings"
+            >
+              <Icon icon="cog" />
+            </Button>
+          </NavLink>
+          <Button
+            className="minimal d-flex align-items-center"
+            onClick={() => setShowManual(true)}
+            title="Help"
+          >
+            <Icon icon="question-circle" />
+          </Button>
+          {maybeRenderLogout()}
+          <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
+            <Icon icon={expanded ? "times" : "bars"} />
+          </Navbar.Toggle>
+        </Nav>
       </Navbar>
     </>
   );

@@ -37,6 +37,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 4rem 0 0 0;
+
+  @include media-breakpoint-down(xs) {
+    @media (orientation: portrait) {
+      padding: 1rem 0 5rem;
+    }
+  }
 }
 
 code,
@@ -465,26 +471,20 @@ div.dropdown-menu {
 .top-nav {
   padding: 0.25rem 1rem;
 
-  .navbar-toggler {
-    @include media-breakpoint-down(xs) {
-      @media (orientation: portrait) {
-        bottom: 50px;
-        position: fixed;
-        right: 25px;
+  @include media-breakpoint-down(xs) {
+    @media (orientation: portrait) {
+      bottom: 0;
+      top: auto;
+    }
+  }
 
-        &::before {
-          background: #137cbd;
-          border-radius: 50%;
-          content: "";
-          left: 50%;
-          padding-top: 125%;
-          position: absolute;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: 125%;
-          z-index: -1;
-        }
-      }
+  .navbar-toggler {
+    padding: 0.5em 0;
+    text-align: center;
+    width: 3em;
+
+    svg {
+      margin: auto;
     }
   }
 
@@ -492,12 +492,6 @@ div.dropdown-menu {
     max-height: calc(100vh - 4rem);
 
     @include media-breakpoint-down(xs) {
-      @media (orientation: portrait) {
-        bottom: 0;
-        left: 0;
-        position: fixed;
-        z-index: -1;
-      }
       @media (orientation: landscape) {
         overflow-y: scroll;
       }
@@ -525,30 +519,26 @@ div.dropdown-menu {
   }
 
   @include media-breakpoint-down(lg) {
-    $vertical-padding: 8px;
+    .navbar-brand {
+      margin-left: -8px;
+    }
 
     .navbar-buttons {
-      margin-right: -$vertical-padding;
+      margin: 0 -8px;
     }
 
     .btn {
-      padding: 6px $vertical-padding;
-    }
-
-    .donate {
-      span {
-        display: none;
-      }
-
-      svg {
-        margin: 0;
-      }
+      padding: 6px 12px;
     }
   }
 }
 
 .donate svg {
   color: #ff7373;
+
+  @include media-breakpoint-down(xs) {
+    margin: 0;
+  }
 }
 
 .error-message {
