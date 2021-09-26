@@ -125,8 +125,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
 * `make fmt-ui` - Formats the UI source code
 * `make ui` - Builds the frontend
-* `make lint` - Run the meta-linter on the backend
-* `make golangci-lint` - Run the golangci meta-linter
+* `make lint` - Run the linter on the backend
 * `make fmt` - Run `go fmt`
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR

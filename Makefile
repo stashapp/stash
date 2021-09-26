@@ -134,10 +134,7 @@ fmt:
 	go fmt ./...
 
 .PHONY: lint
-lint: golangci-lint
-
-.PHONY: golangci-lint
-golangci-lint:
+lint:
 	golangci-lint run
 
 # runs unit tests - excluding integration tests
