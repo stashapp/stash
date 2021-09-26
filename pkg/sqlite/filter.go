@@ -193,6 +193,7 @@ func (f *filterBuilder) addWith(sql string, args ...interface{}) {
 }
 
 // addRecursiveWith adds a with clause and arguments to the filter, and sets it to recursive
+//nolint:unused
 func (f *filterBuilder) addRecursiveWith(sql string, args ...interface{}) {
 	if sql == "" {
 		return
