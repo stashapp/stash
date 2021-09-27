@@ -1,8 +1,8 @@
 package api
 
 import (
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -92,5 +92,5 @@ func getRandomPerformerImageUsingName(name, gender, customPath string) ([]byte, 
 	}
 	defer img.Close()
 
-	return ioutil.ReadAll(img)
+	return io.ReadAll(img)
 }
