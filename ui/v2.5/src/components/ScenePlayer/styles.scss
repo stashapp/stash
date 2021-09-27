@@ -16,9 +16,11 @@ $sceneTabWidth: 450px;
     outline: 0;
   }
 
+  /* stylelint-disable */
   .jw-video {
     object-fit: contain !important;
   }
+  /* stylelint-enable */
 
   .video-wrapper {
     height: 56.25vw;
