@@ -22,7 +22,7 @@ linters:
     - dogsled
     # - errorlint
     # - exhaustive
-    # - exportloopref
+    - exportloopref
     # - goconst
     # - gocritic
     # - goerr113
