@@ -227,6 +227,10 @@
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",
       "maximum_transcode_size_head": "Maximum transcode size",
+      "metadata_path": {
+        "heading": "Metadata Path",
+        "description": "Directory location used when performing a full export or import"
+      },
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",

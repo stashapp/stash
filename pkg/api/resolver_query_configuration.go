@@ -59,6 +59,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Stashes:                      config.GetStashPaths(),
 		DatabasePath:                 config.GetDatabasePath(),
 		GeneratedPath:                config.GetGeneratedPath(),
+		MetadataPath:                 config.GetMetadataPath(),
 		ConfigFilePath:               config.GetConfigFilePath(),
 		ScrapersPath:                 config.GetScrapersPath(),
 		CachePath:                    config.GetCachePath(),
