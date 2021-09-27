@@ -18,8 +18,24 @@ linters:
     - unused
     - varcheck
     # Linters added by the stash project
+    # - bodyclose
+    - dogsled
+    # - errorlint
+    # - exhaustive
+    # - exportloopref
+    # - goconst
+    # - gocritic
+    # - goerr113
     - gofmt
+    # - gosec
+    # - ifshort
+    - misspell
+    # - nakedret
+    # - noctx
+    # - paralleltest
     - revive
+    - rowserrcheck
+    - sqlclosecheck
 
 linters-settings:
   gofmt:
@@ -64,4 +80,3 @@ linters-settings:
         disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
-
