@@ -254,3 +254,26 @@ func (r *performerResolver) CreatedAt(ctx context.Context, obj *models.Performer
 func (r *performerResolver) UpdatedAt(ctx context.Context, obj *models.Performer) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
+
+func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Movie, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Movie().FindByPerformerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = repo.Movie().CountByPerformerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
