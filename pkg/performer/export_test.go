@@ -56,8 +56,8 @@ var deathDate = models.SQLiteDate{
 }
 
 var (
-	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
 )
 
 func createFullPerformer(id int, name string) *models.Performer {
