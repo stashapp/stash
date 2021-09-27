@@ -390,7 +390,24 @@ func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.Hier
 
 func galleryPerformerTagsCriterionHandler(qb *galleryQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
+				f.addJoin("performers_tags", "", "performers_galleries.performer_id = performers_tags.performer_id")
+
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (

@@ -436,18 +436,6 @@ func performerGalleryCountCriterionHandler(qb *performerQueryBuilder, count *mod
 func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if studios != nil {
-			var clauseCondition string
-
-			if studios.Modifier == models.CriterionModifierIncludes {
-				// return performers who appear in scenes/images/galleries with any of the given studios
-				clauseCondition = "NOT"
-			} else if studios.Modifier == models.CriterionModifierExcludes {
-				// exclude performers who appear in scenes/images/galleries with any of the given studios
-				clauseCondition = ""
-			} else {
-				return
-			}
-
 			formatMaps := []utils.StrFormatMap{
 				{
 					"primaryTable": sceneTable,
@@ -466,6 +454,40 @@ func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models
 				},
 			}
 
+			if studios.Modifier == models.CriterionModifierIsNull || studios.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if studios.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				var conditions []string
+				for _, c := range formatMaps {
+					f.addJoin(c["joinTable"].(string), "", fmt.Sprintf("%s.performer_id = performers.id", c["joinTable"]))
+					f.addJoin(c["primaryTable"].(string), "", fmt.Sprintf("%s.%s = %s.id", c["joinTable"], c["primaryFK"], c["primaryTable"]))
+
+					conditions = append(conditions, fmt.Sprintf("%s.studio_id IS NULL", c["primaryTable"]))
+				}
+
+				f.addWhere(fmt.Sprintf("%s (%s)", notClause, strings.Join(conditions, " AND ")))
+				return
+			}
+
+			if len(studios.Value) == 0 {
+				return
+			}
+
+			var clauseCondition string
+
+			if studios.Modifier == models.CriterionModifierIncludes {
+				// return performers who appear in scenes/images/galleries with any of the given studios
+				clauseCondition = "NOT"
+			} else if studios.Modifier == models.CriterionModifierExcludes {
+				// exclude performers who appear in scenes/images/galleries with any of the given studios
+				clauseCondition = ""
+			} else {
+				return
+			}
+
 			const derivedPerformerStudioTable = "performer_studio"
 			valuesClause := getHierarchicalValues(qb.tx, studios.Value, studioTable, "", "parent_id", studios.Depth)
 			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
@@ -479,7 +501,7 @@ func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models
 				unions = append(unions, utils.StrFormat(templStr, c))
 			}
 
-			f.addWith(fmt.Sprintf("%s AS (%s)", "performer_studio", strings.Join(unions, " UNION ")))
+			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
 
 			f.addJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
 			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))

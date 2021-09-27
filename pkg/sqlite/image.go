@@ -427,7 +427,24 @@ func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.Hierarch
 
 func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("performers_images", "", "images.id = performers_images.image_id")
+				f.addJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
+
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (

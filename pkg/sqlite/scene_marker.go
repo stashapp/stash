@@ -191,7 +191,22 @@ func sceneMarkerTagIDCriterionHandler(qb *sceneMarkerQueryBuilder, tagID *string
 
 func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
+
+				f.addWhere(fmt.Sprintf("%s (scene_markers.primary_tag_id IS NULL AND scene_markers_tags.tag_id IS NULL)", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
 			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`marker_tags AS (
@@ -211,7 +226,23 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 
 func sceneMarkerSceneTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
+
+				f.addWhere(fmt.Sprintf("scenes_tags.tag_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`scene_tags AS (
