@@ -87,8 +87,10 @@ var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+)
 
 func createFullScene(id int) models.Scene {
 	return models.Scene{
