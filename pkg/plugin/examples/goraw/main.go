@@ -5,7 +5,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 
@@ -23,7 +23,7 @@ func main() {
 	input := common.PluginInput{}
 
 	if len(os.Args) < 2 {
-		inData, _ := ioutil.ReadAll(os.Stdin)
+		inData, _ := io.ReadAll(os.Stdin)
 		log.Debugf("Raw input: %s", string(inData))
 		decodeErr := json.Unmarshal(inData, &input)
 

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -53,11 +52,11 @@ func TestDirExists(t *testing.T) {
 	const st = "stash_tmp"
 
 	tmp := os.TempDir()
-	tmpDir, err := ioutil.TempDir(tmp, st) // create a tmp dir in the system's tmp folder
+	tmpDir, err := os.MkdirTemp(tmp, st) // create a tmp dir in the system's tmp folder
 	if err == nil {
 		defer os.RemoveAll(tmpDir)
 
-		tmpFile, err := ioutil.TempFile(tmpDir, st)
+		tmpFile, err := os.CreateTemp(tmpDir, st)
 		if err != nil {
 			return
 		}
