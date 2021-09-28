@@ -168,17 +168,17 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			*createFullPerformer(performerID, performerName),
 			createFullJSONPerformer(performerName, image),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyPerformer(noImageID),
 			createEmptyJSONPerformer(),
 			false,
 		},
-		testScenario{
+		{
 			*createFullPerformer(errImageID, performerName),
 			nil,
 			true,
