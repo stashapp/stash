@@ -109,7 +109,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 						trustedProxies := c.GetTrustedProxies()
 						if trustedProxies == "" {
 							//validate proxies against local network only
-							if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
+							if !(requestIP.IsPrivate() || requestIP.IsLoopback() || cgNatAddrSpace.Contains(requestIP)) {
 								securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
 								return
 							} else {
@@ -117,7 +117,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 								proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
 								for i := range proxyChain {
 									ip := net.ParseIP(proxyChain[i])
-									if !(ip.IsPrivate() || cgNatAddrSpace.Contains(ip)) {
+									if !(ip.IsPrivate() || ip.IsLoopback() || cgNatAddrSpace.Contains(ip)) {
 										securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
 										return
 									}
@@ -134,7 +134,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 									ip := net.ParseIP(proxyChain[i])
 									if i == 0 {
 										//last entry is originating device, check if from the public internet
-										if !(ip.IsPrivate() || cgNatAddrSpace.Contains(ip)) {
+										if !(ip.IsPrivate() || ip.IsLoopback() || cgNatAddrSpace.Contains(ip)) {
 											securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
 											return
 										}
@@ -153,7 +153,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 						}
 					} else {
 						// request was not proxied
-						if !(requestIP.IsPrivate() || cgNatAddrSpace.Contains(requestIP)) {
+						if !(requestIP.IsPrivate() || requestIP.IsLoopback() || cgNatAddrSpace.Contains(requestIP)) {
 							securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
 							return
 						}
