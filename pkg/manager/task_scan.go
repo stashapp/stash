@@ -45,26 +45,27 @@ const (
 )
 
 type checksumSource struct {
-	sourceCh resultsCh
-	model    checkType
+	sourceCh resultsCh // channel to return results to
+	model    checkType // type of the checksum request
 }
 
 type checksumRequest struct {
-	checksum string
+	checksum string // checksum we need to check
 	source   checksumSource
 }
 
 type checksumManager struct {
-	reqCh  chan checksumRequest
-	stopCh chan struct{}
-	doneCh chan string
+	reqCh  chan checksumRequest // channel that the manager listens to for checksum requests
+	doneCh chan string          // channel that the manager listens to for job completion reports
 
-	activeChecksums  map[string]struct{}
-	blockedChecksums map[string][]checksumSource
+	activeChecksums  map[string]struct{}         // keep track of active requests by checksum
+	blockedChecksums map[string][]checksumSource // keep track of workers that are blocked due to duplicate checksum
 	TxManager        models.TransactionManager
 }
 
-func NewChecksumRequestItem(m checkType, cs string) *checksumRequest {
+// newChecksumRequestItem creates a new checksumRequestItem for a cs checksum of type m
+// initializing the result channel as needed
+func newChecksumRequestItem(m checkType, cs string) *checksumRequest {
 	resCh := make(resultsCh)
 	csReq := checksumRequest{
 		source: checksumSource{
@@ -77,11 +78,10 @@ func NewChecksumRequestItem(m checkType, cs string) *checksumRequest {
 	return &csReq
 }
 
-func (c *checksumManager) Init(t *models.TransactionManager) {
+func (c *checksumManager) init(t *models.TransactionManager) {
 	c.activeChecksums = make(map[string]struct{})
 	c.blockedChecksums = make(map[string][]checksumSource)
 
-	c.stopCh = make(chan struct{})
 	c.reqCh = make(chan checksumRequest)
 	c.doneCh = make(chan string)
 
@@ -90,10 +90,10 @@ func (c *checksumManager) Init(t *models.TransactionManager) {
 
 // CheckDB retrieves the id of the entry that has the requested checksum
 // On error or if a checksum is not present 0 is returned as an id
-func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
+func (c *checksumManager) checkDB(req checksumRequest) (id int, err error) {
 	switch {
 	case req.source.model == GalleryType:
-		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err = c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			qb := r.Gallery()
 			g, _ := qb.FindByChecksum(req.checksum)
 			if g != nil {
@@ -101,11 +101,10 @@ func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
 			}
 			return nil
 		}); err != nil {
-			logger.Error(err.Error())
 			return
 		}
 	case req.source.model == SceneTypeMD5:
-		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err = c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			qb := r.Scene()
 			g, _ := qb.FindByChecksum(req.checksum)
 			if g != nil {
@@ -113,11 +112,10 @@ func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
 			}
 			return nil
 		}); err != nil {
-			logger.Error(err.Error())
 			return
 		}
 	case req.source.model == SceneTypeOSHash:
-		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err = c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			qb := r.Scene()
 			g, _ := qb.FindByOSHash(req.checksum)
 			if g != nil {
@@ -125,11 +123,10 @@ func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
 			}
 			return nil
 		}); err != nil {
-			logger.Error(err.Error())
 			return
 		}
 	case req.source.model == ImageType:
-		if err := c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err = c.TxManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			qb := r.Image()
 			g, _ := qb.FindByChecksum(req.checksum)
 			if g != nil {
@@ -137,7 +134,6 @@ func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
 			}
 			return nil
 		}); err != nil {
-			logger.Error(err.Error())
 			return
 		}
 	}
@@ -147,16 +143,20 @@ func (c *checksumManager) CheckDB(req checksumRequest) (id int) {
 
 // checksum Manager manages checksum requests only allowing one worker for each unique
 // checksum to be active
-func (c *checksumManager) Start() {
+func (c *checksumManager) start(ctx context.Context) {
 	for {
 		select {
-		case <-c.stopCh:
+		case <-ctx.Done():
+			if l := len(c.blockedChecksums); l > 0 {
+				//shouldn't actually happen since the manager's cancelation happens after all tasks are finished (wg.Wait)
+				logger.Errorf("Error while stoping...Found %d blocked scan items.", l)
+			}
 			logger.Debug("Checksum manager finished")
 			return
 		case r := <-c.reqCh: // receive checksum requests
 			if _, found := c.activeChecksums[r.checksum]; found {
 				// checksum already active
-				logger.Debugf("File already present in queue")
+				logger.Debugf("File with checksum %s is already present in queue", r.checksum)
 				// add to blocked queue map
 				c.blockedChecksums[r.checksum] = append(c.blockedChecksums[r.checksum], r.source)
 				// worker that made the req is blocked since nothing was sent to his channel
@@ -166,7 +166,10 @@ func (c *checksumManager) Start() {
 				c.activeChecksums[r.checksum] = struct{}{}
 
 				//check DB and unblock worker
-				id := c.CheckDB(r)
+				id, err := c.checkDB(r)
+				if err != nil {
+					logger.Error(err)
+				}
 				r.source.sourceCh <- id
 			}
 		case cs := <-c.doneCh: // receive job done reports
@@ -187,21 +190,16 @@ func (c *checksumManager) Start() {
 					delete(c.blockedChecksums, cs)
 				}
 				// and unblock it
-				id := c.CheckDB(r)
+				id, err := c.checkDB(r)
+				if err != nil {
+					logger.Error(err)
+				}
 				r.source.sourceCh <- id
 			}
 
 		}
 	}
 
-}
-
-func (c *checksumManager) Stop() {
-	if l := len(c.blockedChecksums); l > 0 {
-		//shouldn't actually happen
-		logger.Errorf("Error while stoping...Found %d blocked scan items.", l)
-	}
-	c.stopCh <- struct{}{}
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
@@ -244,10 +242,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	var galleries []string
 
-	var checksumManager checksumManager
-	checksumManager.Init(&j.txnManager)
-	j.csManager = &checksumManager
-	go checksumManager.Start()
+	var csManager checksumManager
+	csManager.init(&j.txnManager)
+	j.csManager = &csManager
+	csCtx, csCancel := context.WithCancel(context.TODO())
+	go csManager.start(csCtx)
 
 	for _, sp := range paths {
 		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
@@ -318,7 +317,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
-	checksumManager.Stop()
+	csCancel() // all tasks are done, stop checksum manager
 
 	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
 		logger.Warnf("couldn't empty temporary directory: %v", err)
@@ -599,7 +598,7 @@ func (t *ScanTask) scanGallery() {
 
 		isNewGallery := false
 
-		cReq := NewChecksumRequestItem(GalleryType, checksum)
+		cReq := newChecksumRequestItem(GalleryType, checksum)
 		t.csManager.reqCh <- *cReq // send checksum request
 
 		gID := <-cReq.source.sourceCh // wait for response
@@ -956,7 +955,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	var resultMd5 int
 	var sceneId int
-	md5Req := NewChecksumRequestItem(SceneTypeMD5, checksum)
+	md5Req := newChecksumRequestItem(SceneTypeMD5, checksum)
 	if checksum != "" {
 		t.csManager.reqCh <- *md5Req         // send checksum request
 		resultMd5 = <-md5Req.source.sourceCh // wait for response
@@ -969,7 +968,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		close(md5Req.source.sourceCh)
 	}
 
-	oshReq := NewChecksumRequestItem(SceneTypeOSHash, oshash)
+	oshReq := newChecksumRequestItem(SceneTypeOSHash, oshash)
 
 	if resultMd5 != 0 { // found match from md5
 		sceneId = resultMd5
@@ -1286,7 +1285,7 @@ func (t *ScanTask) scanImage() {
 		}
 
 		// check for scene by checksum
-		cReq := NewChecksumRequestItem(ImageType, checksum)
+		cReq := newChecksumRequestItem(ImageType, checksum)
 		t.csManager.reqCh <- *cReq // send checksum request
 
 		imgID := <-cReq.source.sourceCh // wait for response
