@@ -59,7 +59,9 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
 			}
 		}
-		w.Write(data)
+		if n, err := w.Write(data); err != nil {
+			logger.Errorf("error writing thumbnail response. Wrote %v bytes: %v", n, err)
+		}
 	}
 }
 

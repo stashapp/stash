@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -443,12 +444,12 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 		return nil, errors.New("SSL key file must be present if certificate file is present")
 	}
 
-	cert, err := ioutil.ReadFile(certFile)
+	cert, err := os.ReadFile(certFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSL certificate file %s: %s", certFile, err.Error())
 	}
 
-	key, err := ioutil.ReadFile(keyFile)
+	key, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSL key file %s: %s", keyFile, err.Error())
 	}

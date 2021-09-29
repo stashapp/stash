@@ -8,10 +8,10 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.0.3
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.0
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/go-chi/chi v4.0.2+incompatible
+	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0

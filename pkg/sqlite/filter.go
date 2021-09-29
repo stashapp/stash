@@ -105,7 +105,7 @@ type filterBuilder struct {
 	err error
 }
 
-var errSubFilterAlreadySet error = errors.New(`sub-filter already set`)
+var errSubFilterAlreadySet = errors.New(`sub-filter already set`)
 
 // sub-filter operator values
 var (

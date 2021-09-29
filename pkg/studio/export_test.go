@@ -41,8 +41,10 @@ var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+)
 
 func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{

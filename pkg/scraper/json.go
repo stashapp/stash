@@ -2,7 +2,7 @@ package scraper
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"strings"
 
@@ -53,7 +53,7 @@ func (s *jsonScraper) loadURL(url string) (string, error) {
 		return "", err
 	}
 	logger.Infof("loadURL (%s)\n", url)
-	doc, err := ioutil.ReadAll(r)
+	doc, err := io.ReadAll(r)
 	if err != nil {
 		return "", err
 	}
