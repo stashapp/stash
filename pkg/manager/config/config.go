@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -800,7 +800,7 @@ func (i *Instance) GetCSS() string {
 		return ""
 	}
 
-	buf, err := ioutil.ReadFile(fn)
+	buf, err := os.ReadFile(fn)
 
 	if err != nil {
 		return ""
@@ -816,7 +816,7 @@ func (i *Instance) SetCSS(css string) {
 
 	buf := []byte(css)
 
-	if err := ioutil.WriteFile(fn, buf, 0777); err != nil {
+	if err := os.WriteFile(fn, buf, 0777); err != nil {
 		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
 	}
 }

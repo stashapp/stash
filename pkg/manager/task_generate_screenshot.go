@@ -3,7 +3,7 @@ package manager
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 
@@ -52,7 +52,7 @@ func (t *GenerateScreenshotTask) Start() {
 	}
 	defer f.Close()
 
-	coverImageData, err := ioutil.ReadAll(f)
+	coverImageData, err := io.ReadAll(f)
 	if err != nil {
 		logger.Errorf("Error reading screenshot: %s", err.Error())
 		return

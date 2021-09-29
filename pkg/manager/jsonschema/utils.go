@@ -2,8 +2,7 @@ package jsonschema
 
 import (
 	"bytes"
-
-	"io/ioutil"
+	"os"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -19,7 +18,7 @@ func marshalToFile(filePath string, j interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filePath, data, 0644)
+	return os.WriteFile(filePath, data, 0644)
 }
 
 func encode(j interface{}) ([]byte, error) {

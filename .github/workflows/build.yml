@@ -8,7 +8,7 @@ on:
   release:
     types: [ published ]
 
-concurrency: 
+concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
@@ -56,25 +56,27 @@ jobs:
       run: |
         mkdir -p .go-cache
         docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
-    
+
     - name: Pre-install
       run: docker exec -t build /bin/bash -c "make pre-ui"
 
     - name: Generate
       run: docker exec -t build /bin/bash -c "make generate"
-    
+
     - name: Validate UI
       # skip UI validation for pull requests if UI is unchanged
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
-      run: docker exec -t build /bin/bash -c "make ui-validate"
+      run: docker exec -t build /bin/bash -c "make validate-frontend"
 
-    # TODO: Replace with `make validate` once `revive` is bundled in COMPILER_IMAGE
+    # Static validation happens in the linter workflow in parallel to this workflow
+    # Run Dynamic validation here, to make sure we pass all the projects integration tests
+    #
     # create UI file so that the embed doesn't fail
-    - name: Validate
+    - name: Test Backend
       run: |
         mkdir -p ui/v2.5/build
         touch ui/v2.5/build/index.html
-        docker exec -t build /bin/bash -c "make fmt-check vet it"
+        docker exec -t build /bin/bash -c "make it"
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
@@ -102,7 +104,7 @@ jobs:
         sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
         echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
         echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
-    
+
     - name: Upload Windows binary
       # only upload binaries for pull requests
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
@@ -126,13 +128,13 @@ jobs:
       with:
         name: stash-linux
         path: dist/stash-linux
-        
+
     - name: Update latest_develop tag
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       run : git tag -f latest_develop; git push -f --tags
 
     - name: Development Release
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       uses: marvinpinto/action-automatic-releases@v1.1.2
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -148,7 +150,7 @@ jobs:
           dist/stash-linux-arm32v7
           dist/stash-pi
           CHECKSUMS_SHA1
-        
+
     - name: Master release
       if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
       uses: meeDamian/github-release@2.0
@@ -165,7 +167,7 @@ jobs:
           dist/stash-pi
           CHECKSUMS_SHA1
         gzip: false
-    
+
     - name: Development Docker
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       env:
@@ -173,7 +175,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64  
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap
@@ -187,7 +189,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
-        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64  
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
         docker info
         docker buildx create --name builder --use
         docker buildx inspect --bootstrap

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"sync"
 
@@ -79,7 +78,7 @@ func (t *rawPluginTask) Start() error {
 	go func() {
 		defer t.waitGroup.Done()
 		defer close(t.done)
-		stdoutData, _ := ioutil.ReadAll(stdout)
+		stdoutData, _ := io.ReadAll(stdout)
 		stdoutString := string(stdoutData)
 
 		output := t.getOutput(stdoutString)

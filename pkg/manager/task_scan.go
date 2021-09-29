@@ -260,6 +260,16 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				return stoppingErr
 			}
 
+			// #1756 - skip zero length files and directories
+			if info.IsDir() {
+				return nil
+			}
+
+			if info.Size() == 0 {
+				logger.Infof("Skipping zero-length file: %s", path)
+				return nil
+			}
+
 			if isGallery(path) {
 				galleries = append(galleries, path)
 			}
@@ -581,11 +591,6 @@ func (t *ScanTask) scanGallery() {
 		// scan the zip files if the gallery has no images
 		scanImages = scanImages || images == 0
 	} else {
-		// Ignore directories.
-		if isDir, _ := utils.DirExists(t.FilePath); isDir {
-			return
-		}
-
 		checksum, err := t.calculateChecksum()
 		if err != nil {
 			logger.Error(err.Error())
@@ -916,11 +921,6 @@ func (t *ScanTask) scanScene() *models.Scene {
 			}
 		}
 
-		return nil
-	}
-
-	// Ignore directories.
-	if isDir, _ := utils.DirExists(t.FilePath); isDir {
 		return nil
 	}
 
@@ -1276,11 +1276,6 @@ func (t *ScanTask) scanImage() {
 		// check for thumbnails
 		t.generateThumbnail(i)
 	} else {
-		// Ignore directories.
-		if isDir, _ := utils.DirExists(t.FilePath); isDir {
-			return
-		}
-
 		var checksum string
 
 		logger.Infof("%s not found.  Calculating checksum...", t.FilePath)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -45,7 +46,9 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(reader)
+	if _, err := buf.ReadFrom(reader); err != nil {
+		return nil, err
+	}
 
 	_, format, err := DecodeSourceImage(img)
 	if err != nil {
@@ -56,7 +59,8 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 		return buf.Bytes(), nil
 	}
 
-	if e.VipsPath != "" {
+	// vips has issues loading files from stdin on Windows
+	if e.VipsPath != "" && runtime.GOOS != "windows" {
 		return e.getVipsThumbnail(buf, maxSize)
 	} else {
 		return e.getFFMPEGThumbnail(buf, format, maxSize, img.Path)
