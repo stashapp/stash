@@ -1,22 +1,22 @@
 import React, { useContext, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
-import { Button, Form } from "react-bootstrap";
+import { Button, Card, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "./taggerContext";
+import { SceneScraperScene } from "./SceneScraperScene";
+import { SceneScraperStateContext } from "./context";
+import { SceneSearchResults } from "./SceneScraperSearchResult";
+import { SceneScraperModals } from "./modals";
 import Config from "./Config";
-import { TaggerScene } from "./TaggerScene";
-import { SceneTaggerModals } from "./sceneTaggerModals";
-import { SceneSearchResults } from "./StashSearchResult";
 
-interface ITaggerProps {
+interface IScraperProps {
   scenes: GQL.SlimSceneDataFragment[];
   queue?: SceneQueue;
 }
 
-export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
+export const SceneScraper: React.FC<IScraperProps> = ({ scenes, queue }) => {
   const {
     sources,
     setCurrentSource,
@@ -31,7 +31,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     multiError,
     submitFingerprints,
     pendingFingerprints,
-  } = useContext(TaggerStateContext);
+  } = useContext(SceneScraperStateContext);
 
   const [showConfig, setShowConfig] = useState(false);
   const [hideUnmatched, setHideUnmatched] = useState(false);
@@ -102,21 +102,21 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
       }
 
       return (
-        <TaggerScene
+        <SceneScraperScene
           key={scene.id}
           loading={loading}
           scene={scene}
           url={sceneLink}
           errorMessage={errorMessage}
           doSceneQuery={
-            currentSource?.supportSceneQuery
+            currentSource?.supportQuery
               ? async (v) => {
                   await doSceneQuery(scene.id, v);
                 }
               : undefined
           }
           scrapeSceneFragment={
-            currentSource?.supportSceneFragment
+            currentSource?.supportFragment
               ? async () => {
                   await doSceneFragmentScrape(scene.id);
                 }
@@ -126,7 +126,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
           {searchResult && searchResult.results?.length ? (
             <SceneSearchResults scenes={searchResult.results} target={scene} />
           ) : undefined}
-        </TaggerScene>
+        </SceneScraperScene>
       );
     });
   }
@@ -174,7 +174,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   }
 
   function renderFragmentScrapeButton() {
-    if (!currentSource?.supportSceneFragment) {
+    if (!currentSource?.supportFragment) {
       return;
     }
 
@@ -216,9 +216,9 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   }
 
   return (
-    <SceneTaggerModals>
-      <div className="tagger-container mx-md-auto">
-        <div className="tagger-container-header">
+    <SceneScraperModals>
+      <Card className="tagger-container">
+        <Card.Header className="tagger-container-header">
           <div className="d-flex justify-content-between align-items-center">
             {renderSourceSelector()}
             <div className="ml-auto d-flex">
@@ -229,9 +229,9 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
             </div>
           </div>
           <Config show={showConfig} />
-        </div>
-        <div>{renderScenes()}</div>
-      </div>
-    </SceneTaggerModals>
+        </Card.Header>
+        <Card.Body>{renderScenes()}</Card.Body>
+      </Card>
+    </SceneScraperModals>
   );
 };

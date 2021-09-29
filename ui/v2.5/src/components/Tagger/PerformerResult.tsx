@@ -6,7 +6,7 @@ import cx from "classnames";
 import { PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
-import { IStashBoxPerformer, filterPerformer } from "./utils";
+import { IStashBoxPerformer } from "./utils";
 
 import PerformerModal from "./PerformerModal";
 import { OptionalField } from "./IncludeButton";
@@ -85,25 +85,25 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     }
   };
 
-  const handlePerformerCreate = (
-    imageIndex: number,
-    excludedFields: string[]
-  ) => {
-    const selectedImage = performer.images[imageIndex];
-    const images = selectedImage ? [selectedImage] : [];
+  // const handlePerformerCreate = (
+  //   imageIndex: number,
+  //   excludedFields: string[]
+  // ) => {
+  //   const selectedImage = performer.images[imageIndex];
+  //   const images = selectedImage ? [selectedImage] : [];
 
-    setSelectedSource("create");
-    setPerformer({
-      type: "create",
-      data: {
-        ...filterPerformer(performer, excludedFields),
-        name: performer.name,
-        stash_id: performer.stash_id,
-        images,
-      },
-    });
-    showModal(false);
-  };
+  //   setSelectedSource("create");
+  //   setPerformer({
+  //     type: "create",
+  //     data: {
+  //       ...filterPerformer(performer, excludedFields),
+  //       name: performer.name,
+  //       stash_id: performer.stash_id,
+  //       images,
+  //     },
+  //   });
+  //   showModal(false);
+  // };
 
   const handlePerformerSkip = () => {
     setSelectedSource("skip");
@@ -147,7 +147,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         closeModal={() => showModal(false)}
         modalVisible={modalVisible}
         performer={performer}
-        handlePerformerCreate={handlePerformerCreate}
+        onSave={() => {}}
         icon="star"
         header="Create Performer"
         create

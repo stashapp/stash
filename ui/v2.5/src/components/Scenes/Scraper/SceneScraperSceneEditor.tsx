@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import cx from "classnames";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Badge, Button, Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -15,12 +14,12 @@ import {
 } from "src/components/Shared";
 import { FormUtils } from "src/utils";
 import { uniq } from "lodash";
-import { blobToBase64 } from "base64-blob";
+import { OptionalField } from "src/components/Tagger/IncludeButton";
 import { stringToGender } from "src/utils/gender";
-import { OptionalField } from "./IncludeButton";
-import { IScrapedScene, TaggerStateContext } from "./taggerContext";
-import { OperationButton } from "../Shared/OperationButton";
-import { SceneTaggerModalsState } from "./sceneTaggerModals";
+import { blobToBase64 } from "base64-blob";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { IScrapedScene, SceneScraperStateContext } from "./context";
+import { SceneScraperDialogsState } from "./modals";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -105,7 +104,7 @@ interface IStashSearchResultProps {
   isActive: boolean;
 }
 
-const StashSearchResult: React.FC<IStashSearchResultProps> = ({
+const SceneScraperSceneEditor: React.FC<IStashSearchResultProps> = ({
   scene,
   stashScene,
   index,
@@ -121,7 +120,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     resolveScene,
     currentSource,
     saveScene,
-  } = React.useContext(TaggerStateContext);
+  } = React.useContext(SceneScraperStateContext);
 
   const performers = useMemo(
     () =>
@@ -137,7 +136,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   const { createPerformerModal, createStudioModal } = React.useContext(
-    SceneTaggerModalsState
+    SceneScraperDialogsState
   );
 
   const getInitialTags = useCallback(() => {
@@ -208,6 +207,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       doResolveScene();
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
+
+  // function getExcludedFields() {
+  //   return Object.keys(excludedFields).filter((f) => excludedFields[f]);
+  // }
 
   const setExcludedField = (name: string, value: boolean) =>
     setExcludedFields({
@@ -427,7 +430,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const renderStudioField = () => (
     <div className="mt-2">
-      {/* <StudioResult studio={scene.studio} setStudio={setStudio} /> */}
       <div>
         <Form.Group controlId="studio" as={Row}>
           {FormUtils.renderLabel({
@@ -469,16 +471,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             title: `${intl.formatMessage({ id: "performers" })}:`,
           })}
           <Col sm={9} xl={12}>
-            {/* {performers.map(performer => (
-              <PerformerResult
-                performer={performer}
-                setPerformer={(data: PerformerOperation) =>
-                  {}
-                }
-                key={`${performer.name ?? performer.remote_site_id ?? ""}`}
-              />
-            ))} */}
-
             <PerformerSelect
               isMulti
               onSelect={(items) => {
@@ -553,7 +545,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   return (
     <>
-      <div className={isActive ? "col-lg-6" : ""}>
+      <div className="col-lg-6">
         <div className="row pl-3">
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
@@ -595,49 +587,4 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 };
 
-export interface ISceneSearchResults {
-  target: GQL.SlimSceneDataFragment;
-  scenes: GQL.ScrapedSceneDataFragment[];
-}
-
-export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
-  target,
-  scenes,
-}) => {
-  const [selectedResult, setSelectedResult] = useState<number | undefined>();
-
-  useEffect(() => {
-    if (!scenes) {
-      setSelectedResult(undefined);
-    }
-  }, [scenes]);
-
-  function getClassName(i: number) {
-    return cx("row mx-0 mt-2 search-result", {
-      "selected-result active": i === selectedResult,
-    });
-  }
-
-  return (
-    <ul className="pl-0 mt-3 mb-0">
-      {scenes.map((s, i) => (
-        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
-        <li
-          // eslint-disable-next-line react/no-array-index-key
-          key={i}
-          onClick={() => setSelectedResult(i)}
-          className={getClassName(i)}
-        >
-          <StashSearchResult
-            index={i}
-            isActive={i === selectedResult}
-            scene={s}
-            stashScene={target}
-          />
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-export default StashSearchResult;
+export default SceneScraperSceneEditor;

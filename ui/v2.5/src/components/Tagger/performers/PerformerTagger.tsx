@@ -18,11 +18,7 @@ import { Manual } from "src/components/Help/Manual";
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
-import {
-  IStashBoxPerformer,
-  selectPerformers,
-  filterPerformer,
-} from "../utils";
+import { IStashBoxPerformer, selectPerformers } from "../utils";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 
@@ -171,22 +167,16 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
-  const handlePerformerUpdate = async (
-    imageIndex: number,
-    excludedFields: string[]
-  ) => {
+  const handlePerformerUpdate = async (input: GQL.PerformerCreateInput) => {
     const performerData = modalPerformer;
     setModalPerformer(undefined);
     if (performerData?.id) {
-      const filteredData = filterPerformer(performerData, excludedFields);
-
-      const res = await updatePerformer({
-        ...filteredData,
-        image: excludedFields.includes("image")
-          ? undefined
-          : performerData.images[imageIndex],
+      const updateData: GQL.PerformerUpdateInput = {
         id: performerData.id,
-      });
+        ...input,
+      };
+
+      const res = await updatePerformer(updateData);
       if (!res.data?.performerUpdate)
         setError({
           ...error,
@@ -200,7 +190,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           },
         });
     }
-    setModalPerformer(undefined);
   };
 
   const renderPerformers = () =>
@@ -351,7 +340,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
               closeModal={() => setModalPerformer(undefined)}
               modalVisible={modalPerformer !== undefined}
               performer={modalPerformer}
-              handlePerformerCreate={handlePerformerUpdate}
+              onSave={handlePerformerUpdate}
               excludedPerformerFields={config.excludedPerformerFields}
               icon="tags"
               header="Update Performer"

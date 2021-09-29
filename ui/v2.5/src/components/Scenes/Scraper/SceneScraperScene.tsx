@@ -7,19 +7,19 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "./taggerContext";
-import { ScenePreview } from "../Scenes/SceneCard";
+import { ScenePreview } from "../SceneCard";
+import { SceneScraperStateContext } from "./context";
 
-interface ITaggerSceneDetails {
+interface IScraperSceneDetails {
   scene: GQL.SlimSceneDataFragment;
 }
 
-const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
+const ScraperSceneDetails: React.FC<IScraperSceneDetails> = ({ scene }) => {
   const [open, setOpen] = useState(false);
   const sorted = sortPerformers(scene.performers);
 
   return (
-    <div className="original-scene-details">
+    <div className="scene-details">
       <Collapse in={open}>
         <div className="row">
           <div className="col col-lg-6">
@@ -72,7 +72,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
   );
 };
 
-interface ITaggerScene {
+interface ISceneScraperSceneProps {
   scene: GQL.SlimSceneDataFragment;
   url: string;
   errorMessage?: string;
@@ -81,7 +81,9 @@ interface ITaggerScene {
   loading?: boolean;
 }
 
-export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
+export const SceneScraperScene: React.FC<
+  PropsWithChildren<ISceneScraperSceneProps>
+> = ({
   scene,
   url,
   loading,
@@ -90,7 +92,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   errorMessage,
   children,
 }) => {
-  const { config } = useContext(TaggerStateContext);
+  const { config } = useContext(SceneScraperStateContext);
   const [queryString, setQueryString] = useState<string>("");
   const [queryLoading, setQueryLoading] = useState(false);
 
@@ -215,7 +217,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
           ) : undefined}
           {maybeRenderStashLinks()}
         </div>
-        <TaggerSceneDetails scene={scene} />
+        <ScraperSceneDetails scene={scene} />
       </div>
       {children}
     </div>

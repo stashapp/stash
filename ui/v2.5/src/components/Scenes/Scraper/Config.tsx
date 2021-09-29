@@ -9,15 +9,15 @@ import {
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
-import { ParseMode, TagOperation } from "./constants";
-import { TaggerStateContext } from "./taggerContext";
+import { ParseMode, TagOperation } from "src/components/Tagger/constants";
+import { SceneScraperStateContext } from "./context";
 
 interface IConfigProps {
   show: boolean;
 }
 
 const Config: React.FC<IConfigProps> = ({ show }) => {
-  const { config, setConfig } = useContext(TaggerStateContext);
+  const { config, setConfig } = useContext(SceneScraperStateContext);
   const intl = useIntl();
   const blacklistRef = useRef<HTMLInputElement | null>(null);
 

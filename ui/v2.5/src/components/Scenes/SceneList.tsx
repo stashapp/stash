@@ -13,7 +13,7 @@ import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
-import Tagger from "src/components/Tagger";
+// import Tagger from "src/components/Tagger";
 import { SceneQueue } from "src/models/sceneQueue";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
@@ -22,6 +22,8 @@ import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
+import Tagger from "../Tagger";
+import { TaggerContext } from "../Tagger/taggerContext";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -253,5 +255,5 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  return listData.template;
+  return <TaggerContext>{listData.template}</TaggerContext>;
 };

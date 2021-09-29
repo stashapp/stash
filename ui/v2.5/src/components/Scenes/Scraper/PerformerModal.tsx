@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
@@ -12,43 +12,32 @@ import {
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { genderToString, stringToGender } from "src/utils/gender";
+import { SceneScraperStateContext } from "./context";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
   modalVisible: boolean;
   closeModal: () => void;
-  onSave: (input: GQL.PerformerCreateInput) => void;
-  excludedPerformerFields?: string[];
+  handlePerformerCreate: (input: GQL.PerformerCreateInput) => void;
   header: string;
   icon: IconName;
-  create?: boolean;
-  endpoint?: string;
 }
 
 const PerformerModal: React.FC<IPerformerModalProps> = ({
   modalVisible,
   performer,
-  onSave,
+  handlePerformerCreate,
   closeModal,
-  excludedPerformerFields = [],
   header,
   icon,
-  create = false,
-  endpoint,
 }) => {
+  const { currentSource } = useContext(SceneScraperStateContext);
   const intl = useIntl();
-
   const [imageIndex, setImageIndex] = useState(0);
   const [imageState, setImageState] = useState<
     "loading" | "error" | "loaded" | "empty"
   >("empty");
   const [loadDict, setLoadDict] = useState<Record<number, boolean>>({});
-  const [excluded, setExcluded] = useState<Record<string, boolean>>(
-    excludedPerformerFields.reduce(
-      (dict, field) => ({ ...dict, [field]: true }),
-      {}
-    )
-  );
 
   const images = performer.images ?? [];
 
@@ -70,31 +59,16 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
   };
   const handleError = () => setImageState("error");
 
-  const toggleField = (name: string) =>
-    setExcluded({
-      ...excluded,
-      [name]: !excluded[name],
-    });
-
   const renderField = (
-    name: string,
+    id: string,
     text: string | null | undefined,
     truncate: boolean = true
   ) =>
     text && (
       <div className="row no-gutters">
-        <div className="col-5 performer-create-modal-field" key={name}>
-          {!create && (
-            <Button
-              onClick={() => toggleField(name)}
-              variant="secondary"
-              className={excluded[name] ? "text-muted" : "text-success"}
-            >
-              <Icon icon={excluded[name] ? "times" : "check"} />
-            </Button>
-          )}
+        <div className="col-5 performer-create-modal-field" key={id}>
           <strong>
-            <FormattedMessage id={name} />:
+            <FormattedMessage id={id} />:
           </strong>
         </div>
         {truncate ? (
@@ -105,12 +79,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       </div>
     );
 
-  const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
-  const link = base
-    ? `${base}performers/${performer.remote_site_id}`
-    : undefined;
-
-  function onSaveClicked() {
+  function onSave() {
     if (!performer.name) {
       throw new Error("performer name must set");
     }
@@ -151,31 +120,29 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
     // stashid handling code
     const remoteSiteID = performer.remote_site_id;
-    if (remoteSiteID && endpoint) {
+    if (remoteSiteID && currentSource?.stashboxEndpoint) {
       performerData.stash_ids = [
         {
-          endpoint,
+          endpoint: currentSource.stashboxEndpoint,
           stash_id: remoteSiteID,
         },
       ];
     }
 
-    // handle exclusions
-    Object.keys(performerData).forEach((k) => {
-      if (excludedPerformerFields.includes(k) || excluded[k]) {
-        (performerData as Record<string, unknown>)[k] = undefined;
-      }
-    });
-
-    onSave(performerData);
+    handlePerformerCreate(performerData);
   }
+
+  const base = currentSource?.stashboxEndpoint?.match(/https?:\/\/.*?\//)?.[0];
+  const link = base
+    ? `${base}performers/${performer.remote_site_id}`
+    : undefined;
 
   return (
     <Modal
       show={modalVisible}
       accept={{
         text: intl.formatMessage({ id: "actions.save" }),
-        onClick: onSaveClicked,
+        onClick: onSave,
       }}
       cancel={{ onClick: () => closeModal(), variant: "secondary" }}
       onHide={() => closeModal()}
@@ -221,18 +188,6 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         {images.length > 0 && (
           <div className="col-5 image-selection">
             <div className="performer-image">
-              {!create && (
-                <Button
-                  onClick={() => toggleField("image")}
-                  variant="secondary"
-                  className={cx(
-                    "performer-image-exclude",
-                    excluded.image ? "text-muted" : "text-success"
-                  )}
-                >
-                  <Icon icon={excluded.image ? "times" : "check"} />
-                </Button>
-              )}
               <img
                 src={images[imageIndex]}
                 className={cx({ "d-none": imageState !== "loaded" })}
