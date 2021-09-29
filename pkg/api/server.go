@@ -51,8 +51,11 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			if c.GetSecurityTripwireAccessedFromPublicInternet() {
 				w.WriteHeader(http.StatusForbidden)
-				w.Write([]byte("Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
+				_, err := w.Write([]byte("Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
 					"More information and fixes are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
+				if err != nil {
+					logger.Error(err)
+				}
 				return
 			}
 
@@ -412,13 +415,22 @@ func securityActivateTripwireAccessedFromInternetWithoutAuth(c *config.Instance,
 		"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
 		"Stash is not answering any other requests to protect your privacy.")
 	c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
-	c.Write()
+	err := c.Write()
+	if err != nil {
+		logger.Error(err)
+	}
 	w.WriteHeader(http.StatusForbidden)
-	w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
+	_, err = w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
 		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
 		"Stash is not answering any other requests to protect your privacy. " +
 		"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet "))
-	manager.GetInstance().Shutdown()
+	if err != nil {
+		logger.Error(err)
+	}
+	err = manager.GetInstance().Shutdown()
+	if err != nil {
+		logger.Error(err)
+	}
 }
 
 func GetVersion() (string, string, string) {
