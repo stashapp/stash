@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -391,7 +392,8 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 			return t.ImportTag(tagJSON, pendingParent, false, r.Tag())
 		}); err != nil {
-			if parentError, ok := err.(tag.ParentTagNotExistError); ok {
+			var parentError tag.ParentTagNotExistError
+			if errors.As(err, &parentError) {
 				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
 				continue
 			}
@@ -433,7 +435,8 @@ func (t *ImportTask) ImportTag(tagJSON *jsonschema.Tag, pendingParent map[string
 
 	for _, childTagJSON := range pendingParent[tagJSON.Name] {
 		if err := t.ImportTag(childTagJSON, pendingParent, fail, readerWriter); err != nil {
-			if parentError, ok := err.(tag.ParentTagNotExistError); ok {
+			var parentError tag.ParentTagNotExistError
+			if errors.As(err, &parentError) {
 				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
 				continue
 			}

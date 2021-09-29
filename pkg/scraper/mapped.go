@@ -588,7 +588,8 @@ func (c *mappedScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) erro
 	// try unmarshalling into a string first
 	if err := unmarshal(&c.Selector); err != nil {
 		// if it's a type error then we try to unmarshall to the full object
-		if _, ok := err.(*yaml.TypeError); !ok {
+		var typeErr *yaml.TypeError
+		if !errors.As(err, &typeErr) {
 			return err
 		}
 
