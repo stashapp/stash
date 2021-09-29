@@ -240,7 +240,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 			return t.ImportStudio(studioJSON, pendingParent, r.Studio())
 		}); err != nil {
-			if err == studio.ErrParentStudioNotExist {
+			if errors.Is(err, studio.ErrParentStudioNotExist) {
 				// add to the pending parent list so that it is created after the parent
 				s := pendingParent[studioJSON.ParentStudio]
 				s = append(s, studioJSON)

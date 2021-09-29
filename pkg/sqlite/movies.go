@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -58,7 +59,7 @@ func (qb *movieQueryBuilder) Destroy(id int) error {
 func (qb *movieQueryBuilder) Find(id int) (*models.Movie, error) {
 	var ret models.Movie
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

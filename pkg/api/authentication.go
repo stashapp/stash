@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net"
 	"net/http"
 	"net/url"
@@ -39,7 +40,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
 			if err != nil {
-				if err != session.ErrUnauthorized {
+				if errors.Is(err, session.ErrUnauthorized) {
 					w.WriteHeader(http.StatusInternalServerError)
 					_, err = w.Write([]byte(err.Error()))
 					if err != nil {
