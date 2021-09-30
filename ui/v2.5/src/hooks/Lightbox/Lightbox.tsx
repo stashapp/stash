@@ -613,7 +613,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                       scrollMode={scrollMode}
                       onLeft={handleLeft}
                       onRight={handleRight}
-                      zoom={zoom}
+                      zoom={i === currentIndex ? zoom : 1}
                       setZoom={(v) => setZoom(v)}
                       resetPosition={resetPosition}
                     />
