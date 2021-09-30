@@ -276,7 +276,9 @@ export const LightboxImage: React.FC<IProps> = ({
 
   function onPointerDown(ev: React.PointerEvent<HTMLDivElement>) {
     // replace pointer event with the same id, if applicable
-    pointerCache.current = pointerCache.current.filter(e => e.pointerId !== ev.pointerId);
+    pointerCache.current = pointerCache.current.filter(
+      (e) => e.pointerId !== ev.pointerId
+    );
 
     pointerCache.current.push(ev);
     prevDiff.current = undefined;
