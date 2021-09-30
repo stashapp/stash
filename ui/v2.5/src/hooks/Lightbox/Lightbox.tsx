@@ -530,6 +530,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                     show={showOptions}
                     placement="bottom"
                     container={containerRef}
+                    rootClose
+                    onHide={() => setShowOptions(false)}
                   >
                     {({ placement, arrowProps, show: _show, ...props }) => (
                       <div
