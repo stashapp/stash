@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"testing"
@@ -381,7 +380,7 @@ func testTeardown(databaseFile string) {
 
 func runTests(m *testing.M) int {
 	// create the database file
-	f, err := ioutil.TempFile("", "*.sqlite")
+	f, err := os.CreateTemp("", "*.sqlite")
 	if err != nil {
 		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
 	}

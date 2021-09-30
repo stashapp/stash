@@ -9,7 +9,7 @@ endif
 ifdef IS_WIN
   SEPARATOR := &&
   SET := set
-else 
+else
   SEPARATOR := ;
   SET := export
 endif
@@ -23,9 +23,8 @@ ifdef OUTPUT
 endif
 
 export CGO_ENABLED = 1
-export GO111MODULE = on
 
-.PHONY: release pre-build install clean 
+.PHONY: release pre-build
 
 release: generate ui build-release
 
@@ -104,20 +103,14 @@ cross-compile-pi: export CC := arm-linux-gnueabi-gcc
 cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
 
-cross-compile-all: 
-	make cross-compile-windows 
-	make cross-compile-osx-intel 
-	make cross-compile-osx-applesilicon 
-	make cross-compile-linux 
-	make cross-compile-linux-arm64v8 
-	make cross-compile-linux-arm32v7 
+cross-compile-all:
+	make cross-compile-windows
+	make cross-compile-osx-intel
+	make cross-compile-osx-applesilicon
+	make cross-compile-linux
+	make cross-compile-linux-arm64v8
+	make cross-compile-linux-arm32v7
 	make cross-compile-pi
-
-install:
-	packr2 install
-
-clean:
-	packr2 clean
 
 # Regenerates GraphQL files
 generate: generate-backend generate-frontend
@@ -140,23 +133,13 @@ generate-stash-box-client:
 fmt:
 	go fmt ./...
 
-# Ensures that changed files have had gofmt run on them
-.PHONY: fmt-check
-fmt-check:
-	sh ./scripts/check-gofmt.sh
-
-# Runs go vet on the project's source code.
-.PHONY: vet
-vet:
-	go vet -mod=vendor ./...
-
 .PHONY: lint
 lint:
-	revive -config revive.toml -exclude ./vendor/...  ./...
+	golangci-lint run
 
 # runs unit tests - excluding integration tests
 .PHONY: test
-test: 
+test:
 	go test -mod=vendor ./...
 
 # runs all tests - including integration tests
@@ -169,22 +152,18 @@ it:
 generate-test-mocks:
 	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
 
-# installs UI dependencies. Run when first cloning repository, or if UI 
+# installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
 .PHONY: pre-ui
 pre-ui:
 	cd ui/v2.5 && yarn install --frozen-lockfile
 
-.PHONY: ui-only
-ui-only: pre-build
+.PHONY: ui
+ui: pre-build
 	$(SET) REACT_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
 	$(SET) REACT_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
 	$(SET) REACT_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
 	cd ui/v2.5 && yarn build
-
-.PHONY: ui
-ui: ui-only
-	packr2
 
 .PHONY: ui-start
 ui-start: pre-build
@@ -202,18 +181,19 @@ fmt-ui:
 ui-validate:
 	cd ui/v2.5 && yarn run validate
 
-# just repacks the packr files - use when updating migrations and packed files without 
-# rebuilding the UI
-.PHONY: packr
-packr:
-	$(SET) GO111MODULE=on
-	packr2
-
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
-validate: ui-validate fmt-check vet lint it
+validate: validate-frontend validate-backend
+
+# runs all of the frontend PR-acceptance steps
+.PHONY: validate-frontend
+validate-frontend: ui-validate
+
+# runs all of the backend PR-acceptance steps
+.PHONY: validate-backend
+validate-backend: lint it
 
 # locally builds and tags a 'stash/build' docker image
 .PHONY: docker-build
-docker-build: 
+docker-build:
 	docker build -t stash/build -f docker/build/x86_64/Dockerfile .

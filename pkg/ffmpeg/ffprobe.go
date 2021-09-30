@@ -273,8 +273,9 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	result.Duration = math.Round(duration*100) / 100
 	fileStat, err := os.Stat(filePath)
 	if err != nil {
-		logger.Errorf("Error statting file <%s>: %s", filePath, err.Error())
-		return nil, err
+		statErr := fmt.Errorf("error statting file <%s>: %w", filePath, err)
+		logger.Errorf("%v", statErr)
+		return nil, statErr
 	}
 	result.Size = fileStat.Size()
 	result.StartTime, _ = strconv.ParseFloat(probeJSON.Format.StartTime, 64)

@@ -83,11 +83,23 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				return stoppingErr
 			}
 
+			// #1756 - skip zero length files and directories
+			if info.IsDir() {
+				return nil
+			}
+
+			if info.Size() == 0 {
+				logger.Infof("Skipping zero-length file: %s", path)
+				return nil
+			}
+
 			if isGallery(path) {
 				galleries = append(galleries, path)
 			}
 
-			instance.Paths.Generated.EnsureTmpDir()
+			if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+				logger.Warnf("couldn't create temporary directory: %v", err)
+			}
 
 			wg.Add()
 			task := ScanTask{
@@ -101,13 +113,15 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
 				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+				GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
 				progress:             progress,
 				CaseSensitiveFs:      csFs,
 				ctx:                  ctx,
 			}
 
 			go func() {
-				task.Start(&wg)
+				task.Start()
+				wg.Done()
 				progress.Increment()
 			}()
 
@@ -126,7 +140,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	wg.Wait()
-	instance.Paths.Generated.EmptyTmpDir()
+
+	if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
+		logger.Warnf("couldn't empty temporary directory: %v", err)
+	}
+
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
@@ -214,14 +232,13 @@ type ScanTask struct {
 	GeneratePhash        bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
+	GenerateThumbnails   bool
 	zipGallery           *models.Gallery
 	progress             *job.Progress
 	CaseSensitiveFs      bool
 }
 
-func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *ScanTask) Start() {
 	var s *models.Scene
 
 	t.progress.ExecuteTask("Scanning "+t.FilePath, func() {
@@ -246,7 +263,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskSprite.Start(&iwg)
+				taskSprite.Start()
+				iwg.Done()
 			})
 		}
 
@@ -259,7 +277,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 					txnManager:          t.TxnManager,
 				}
-				taskPhash.Start(&iwg)
+				taskPhash.Start()
+				iwg.Done()
 			})
 		}
 
@@ -290,7 +309,8 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,
 				}
-				taskPreview.Start(wg)
+				taskPreview.Start()
+				iwg.Done()
 			})
 		}
 
@@ -391,11 +411,6 @@ func (t *ScanTask) scanGallery() {
 		// scan the zip files if the gallery has no images
 		scanImages = scanImages || images == 0
 	} else {
-		// Ignore directories.
-		if isDir, _ := utils.DirExists(t.FilePath); isDir {
-			return
-		}
-
 		checksum, err := t.calculateChecksum()
 		if err != nil {
 			logger.Error(err.Error())
@@ -719,11 +734,6 @@ func (t *ScanTask) scanScene() *models.Scene {
 		return nil
 	}
 
-	// Ignore directories.
-	if isDir, _ := utils.DirExists(t.FilePath); isDir {
-		return nil
-	}
-
 	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
 	if err != nil {
 		logger.Error(err.Error())
@@ -753,7 +763,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		qb := r.Scene()
 		if checksum != "" {
 			s, _ = qb.FindByChecksum(checksum)
@@ -765,6 +775,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error in read transaction: %v", txnErr)
+	}
 
 	sceneHash := oshash
 
@@ -963,9 +976,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		iwg := sizedwaitgroup.New(1)
-		iwg.Add()
-		subTask.Start(&iwg)
+		subTask.Start()
 		return nil
 	})
 	if err != nil {
@@ -1048,11 +1059,6 @@ func (t *ScanTask) scanImage() {
 		// check for thumbnails
 		t.generateThumbnail(i)
 	} else {
-		// Ignore directories.
-		if isDir, _ := utils.DirExists(t.FilePath); isDir {
-			return
-		}
-
 		var checksum string
 
 		logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
@@ -1266,20 +1272,26 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
+	if !t.GenerateThumbnails {
+		return
+	}
+
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
 		return
 	}
 
-	srcImage, err := image.GetSourceImage(i)
+	config, _, err := image.DecodeSourceImage(i)
 	if err != nil {
 		logger.Errorf("error reading image %s: %s", i.Path, err.Error())
 		return
 	}
 
-	if image.ThumbnailNeeded(srcImage, models.DefaultGthumbWidth) {
-		data, err := image.GetThumbnail(srcImage, models.DefaultGthumbWidth)
+	if config.Height > models.DefaultGthumbWidth || config.Width > models.DefaultGthumbWidth {
+		encoder := image.NewThumbnailEncoder(instance.FFMPEGPath)
+		data, err := encoder.GetThumbnail(i, models.DefaultGthumbWidth)
+
 		if err != nil {
 			logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
 			return
@@ -1320,7 +1332,7 @@ func (t *ScanTask) doesPathExist() bool {
 	gExt := config.GetGalleryExtensions()
 
 	ret := false
-	t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		if matchExtension(t.FilePath, gExt) {
 			gallery, _ := r.Gallery().FindByPath(t.FilePath)
 			if gallery != nil {
@@ -1340,6 +1352,9 @@ func (t *ScanTask) doesPathExist() bool {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error while executing read transaction: %v", txnErr)
+	}
 
 	return ret
 }

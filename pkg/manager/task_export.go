@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -126,7 +125,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 	paths.EnsureJSONDirs(t.baseDir)
 
-	t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		// include movie scenes and gallery images
 		if !t.full {
 			// only include movie scenes if includeDependencies is also set
@@ -154,6 +153,9 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 		return nil
 	})
+	if txnErr != nil {
+		logger.Warnf("error while running export transaction: %v", txnErr)
+	}
 
 	if err := t.json.saveMappings(t.Mappings); err != nil {
 		logger.Errorf("[mappings] failed to save json: %s", err.Error())
@@ -171,8 +173,10 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 func (t *ExportTask) generateDownload() error {
 	// zip the files and register a download link
-	utils.EnsureDir(instance.Paths.Generated.Downloads)
-	z, err := ioutil.TempFile(instance.Paths.Generated.Downloads, "export*.zip")
+	if err := utils.EnsureDir(instance.Paths.Generated.Downloads); err != nil {
+		return err
+	}
+	z, err := os.CreateTemp(instance.Paths.Generated.Downloads, "export*.zip")
 	if err != nil {
 		return err
 	}
@@ -202,15 +206,22 @@ func (t *ExportTask) zipFiles(w io.Writer) error {
 		return err
 	}
 
-	filepath.Walk(t.json.json.Tags, t.zipWalkFunc(u.json.Tags, z))
-	filepath.Walk(t.json.json.Galleries, t.zipWalkFunc(u.json.Galleries, z))
-	filepath.Walk(t.json.json.Performers, t.zipWalkFunc(u.json.Performers, z))
-	filepath.Walk(t.json.json.Studios, t.zipWalkFunc(u.json.Studios, z))
-	filepath.Walk(t.json.json.Movies, t.zipWalkFunc(u.json.Movies, z))
-	filepath.Walk(t.json.json.Scenes, t.zipWalkFunc(u.json.Scenes, z))
-	filepath.Walk(t.json.json.Images, t.zipWalkFunc(u.json.Images, z))
+	walkWarn(t.json.json.Tags, t.zipWalkFunc(u.json.Tags, z))
+	walkWarn(t.json.json.Galleries, t.zipWalkFunc(u.json.Galleries, z))
+	walkWarn(t.json.json.Performers, t.zipWalkFunc(u.json.Performers, z))
+	walkWarn(t.json.json.Studios, t.zipWalkFunc(u.json.Studios, z))
+	walkWarn(t.json.json.Movies, t.zipWalkFunc(u.json.Movies, z))
+	walkWarn(t.json.json.Scenes, t.zipWalkFunc(u.json.Scenes, z))
+	walkWarn(t.json.json.Images, t.zipWalkFunc(u.json.Images, z))
 
 	return nil
+}
+
+// like filepath.Walk but issue a warning on error
+func walkWarn(root string, fn filepath.WalkFunc) {
+	if err := filepath.Walk(root, fn); err != nil {
+		logger.Warnf("error walking structure %v: %v", root, err)
+	}
 }
 
 func (t *ExportTask) zipWalkFunc(outDir string, z *zip.Writer) filepath.WalkFunc {

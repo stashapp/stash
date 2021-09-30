@@ -1,6 +1,10 @@
 package models
 
-import "context"
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/logger"
+)
 
 type Transaction interface {
 	Begin() error
@@ -30,11 +34,15 @@ func WithTxn(txn Transaction, fn func(r Repository) error) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			txn.Rollback()
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back transaction: %v", err)
+			}
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			txn.Rollback()
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back transaction: %v", err)
+			}
 		} else {
 			// all good, commit
 			err = txn.Commit()
@@ -54,11 +62,15 @@ func WithROTxn(txn ReadTransaction, fn func(r ReaderRepository) error) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			txn.Rollback()
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back RO transaction: %v", err)
+			}
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			txn.Rollback()
+			if err := txn.Rollback(); err != nil {
+				logger.Warnf("error while trying to roll back RO transaction: %v", err)
+			}
 		} else {
 			// all good, commit
 			err = txn.Commit()

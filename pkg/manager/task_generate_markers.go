@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/remeh/sizedwaitgroup"
-
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -24,9 +22,7 @@ type GenerateMarkersTask struct {
 	Screenshot   bool
 }
 
-func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *GenerateMarkersTask) Start() {
 	if t.Scene != nil {
 		t.generateSceneMarkers()
 	}
@@ -82,7 +78,9 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 
 	// Make the folder for the scenes markers
 	markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
-	utils.EnsureDir(markersFolder)
+	if err := utils.EnsureDir(markersFolder); err != nil {
+		logger.Warnf("could not create the markers folder (%v): %v", markersFolder, err)
+	}
 
 	for i, sceneMarker := range sceneMarkers {
 		index := i + 1

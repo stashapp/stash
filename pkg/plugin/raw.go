@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"sync"
 
@@ -51,7 +50,9 @@ func (t *rawPluginTask) Start() error {
 		defer stdin.Close()
 
 		inBytes, _ := json.Marshal(t.input)
-		io.WriteString(stdin, string(inBytes))
+		if k, err := io.WriteString(stdin, string(inBytes)); err != nil {
+			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
+		}
 	}()
 
 	stderr, err := cmd.StderrPipe()
@@ -77,7 +78,7 @@ func (t *rawPluginTask) Start() error {
 	go func() {
 		defer t.waitGroup.Done()
 		defer close(t.done)
-		stdoutData, _ := ioutil.ReadAll(stdout)
+		stdoutData, _ := io.ReadAll(stdout)
 		stdoutString := string(stdoutData)
 
 		output := t.getOutput(stdoutString)

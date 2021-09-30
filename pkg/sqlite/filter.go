@@ -105,7 +105,7 @@ type filterBuilder struct {
 	err error
 }
 
-var errSubFilterAlreadySet error = errors.New(`sub-filter already set`)
+var errSubFilterAlreadySet = errors.New(`sub-filter already set`)
 
 // sub-filter operator values
 var (
@@ -193,6 +193,7 @@ func (f *filterBuilder) addWith(sql string, args ...interface{}) {
 }
 
 // addRecursiveWith adds a with clause and arguments to the filter, and sets it to recursive
+//nolint:unused
 func (f *filterBuilder) addRecursiveWith(sql string, args ...interface{}) {
 	if sql == "" {
 		return

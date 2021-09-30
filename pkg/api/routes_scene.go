@@ -59,7 +59,7 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 		// shouldn't happen, fallback to ffprobe
 		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 		if err != nil {
-			logger.Errorf("[transcode] error reading video file: %s", err.Error())
+			logger.Errorf("[transcode] error reading video file: %v", err)
 			return ffmpeg.Container("")
 		}
 
@@ -85,7 +85,9 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	container := getSceneFileContainer(scene)
 	if container != ffmpeg.Matroska {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("not an mkv file"))
+		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+			logger.Warnf("[stream] error writing to stream: %v", err)
+		}
 		return
 	}
 
@@ -105,7 +107,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 
 	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 	if err != nil {
-		logger.Errorf("[stream] error reading video file: %s", err.Error())
+		logger.Errorf("[stream] error reading video file: %v", err)
 		return
 	}
 
@@ -126,7 +128,9 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	rangeStr := requestByteRange.ToHeaderValue(int64(str.Len()))
 	w.Header().Set("Content-Range", rangeStr)
 
-	w.Write(ret)
+	if n, err := w.Write(ret); err != nil {
+		logger.Warnf("[stream] error writing stream (wrote %v bytes): %v", n, err)
+	}
 }
 
 func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
@@ -141,12 +145,15 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 	if err != nil {
-		logger.Errorf("[stream] error reading video file: %s", err.Error())
+		logger.Errorf("[stream] error reading video file: %v", err)
 		return
 	}
 
 	// start stream based on query param, if provided
-	r.ParseForm()
+	if err = r.ParseForm(); err != nil {
+		logger.Warnf("[stream] error parsing query form: %v", err)
+	}
+
 	startTime := r.Form.Get("start")
 	requestedSize := r.Form.Get("resolution")
 
@@ -168,9 +175,11 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	stream, err = encoder.GetTranscodeStream(options)
 
 	if err != nil {
-		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
+		logger.Errorf("[stream] error transcoding video file: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		if _, err := w.Write([]byte(err.Error())); err != nil {
+			logger.Warnf("[stream] error writing response: %v", err)
+		}
 		return
 	}
 
@@ -355,7 +364,7 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			qb := repo.Scene()
 			if sceneID == 0 {
 				// determine checksum/os by the length of the query param
@@ -370,6 +379,9 @@ func SceneCtx(next http.Handler) http.Handler {
 
 			return nil
 		})
+		if readTxnErr != nil {
+			logger.Warnf("error executing SceneCtx transaction: %v", readTxnErr)
+		}
 
 		if scene == nil {
 			http.Error(w, http.StatusText(404), 404)

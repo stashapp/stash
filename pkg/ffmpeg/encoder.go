@@ -2,7 +2,7 @@ package ffmpeg
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -63,7 +63,9 @@ func KillRunningEncoders(path string) {
 	for _, process := range processes {
 		// assume it worked, don't check for error
 		logger.Infof("Killing encoder process for file: %s", path)
-		process.Kill()
+		if err := process.Kill(); err != nil {
+			logger.Warnf("failed to kill process %v: %v", process.Pid, err)
+		}
 
 		// wait for the process to die before returning
 		// don't wait more than a few seconds
@@ -124,7 +126,7 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 		}
 	}
 
-	stdoutData, _ := ioutil.ReadAll(stdout)
+	stdoutData, _ := io.ReadAll(stdout)
 	stdoutString := string(stdoutData)
 
 	registerRunningEncoder(probeResult.Path, cmd.Process)

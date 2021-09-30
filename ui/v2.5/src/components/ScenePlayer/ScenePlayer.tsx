@@ -310,6 +310,7 @@ export class ScenePlayerImpl extends React.Component<
       height: "100%",
       cast: {},
       primary: "html5",
+      preload: "none",
       autostart:
         this.props.autoplay ||
         (this.props.config ? this.props.config.autostartVideo : false) ||
@@ -343,7 +344,7 @@ export class ScenePlayerImpl extends React.Component<
       <div id="jwplayer-container" className={className}>
         <ReactJWPlayer
           playerId={JWUtils.playerID}
-          playerScript="/jwplayer/jwplayer.js"
+          playerScript="jwplayer/jwplayer.js"
           customProps={this.state.config}
           onReady={this.onReady}
           onSeeked={this.onSeeked}
