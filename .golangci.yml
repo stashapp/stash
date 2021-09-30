@@ -23,7 +23,6 @@ linters:
     # - errorlint
     # - exhaustive
     - exportloopref
-    # - goconst
     # - gocritic
     # - goerr113
     - gofmt
