@@ -2,7 +2,6 @@ package ffmpeg
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -234,7 +233,7 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 
 	// stderr must be consumed or the process deadlocks
 	go func() {
-		stderrData, _ := ioutil.ReadAll(stderr)
+		stderrData, _ := io.ReadAll(stderr)
 		stderrString := string(stderrData)
 		if len(stderrString) > 0 {
 			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)

@@ -21,6 +21,7 @@ export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
   images: Criterion<CriterionValue>[];
   galleries: Criterion<CriterionValue>[];
+  movies: Criterion<CriterionValue>[];
 }
 
 interface IPerformerCardProps {
@@ -124,18 +125,32 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
+  function maybeRenderMoviesPopoverButton() {
+    if (!performer.movie_count) return;
+
+    return (
+      <PopoverCountButton
+        type="movie"
+        count={performer.movie_count}
+        url={NavUtils.makePerformerMoviesUrl(performer, extraCriteria?.movies)}
+      />
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       performer.scene_count ||
       performer.image_count ||
       performer.gallery_count ||
-      performer.tags.length > 0
+      performer.tags.length > 0 ||
+      performer.movie_count
     ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
+            {maybeRenderMoviesPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
             {maybeRenderTagPopoverButton()}

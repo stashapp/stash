@@ -89,13 +89,31 @@ export const StudioCard: React.FC<IProps> = ({
     );
   }
 
+  function maybeRenderMoviesPopoverButton() {
+    if (!studio.movie_count) return;
+
+    return (
+      <PopoverCountButton
+        type="movie"
+        count={studio.movie_count}
+        url={NavUtils.makeStudioMoviesUrl(studio)}
+      />
+    );
+  }
+
   function maybeRenderPopoverButtonGroup() {
-    if (studio.scene_count || studio.image_count || studio.gallery_count) {
+    if (
+      studio.scene_count ||
+      studio.image_count ||
+      studio.gallery_count ||
+      studio.movie_count
+    ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
             {maybeRenderScenesPopoverButton()}
+            {maybeRenderMoviesPopoverButton()}
             {maybeRenderImagesPopoverButton()}
             {maybeRenderGalleriesPopoverButton()}
           </ButtonGroup>

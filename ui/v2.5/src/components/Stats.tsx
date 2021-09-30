@@ -14,6 +14,11 @@ export const Stats: React.FC = () => {
   const scenesSize = TextUtils.fileSize(data.stats.scenes_size);
   const imagesSize = TextUtils.fileSize(data.stats.images_size);
 
+  const scenesDuration = TextUtils.secondsAsTimeString(
+    data.stats.scenes_duration,
+    3
+  );
+
   return (
     <div className="mt-5">
       <div className="col col-sm-8 m-sm-auto row stats">
@@ -48,9 +53,7 @@ export const Stats: React.FC = () => {
           </p>
         </div>
         <div className="stats-element">
-          <p className="title">
-            {` ${TextUtils.secondsAsTimeString(data.stats.scenes_duration, 3)}`}
-          </p>
+          <p className="title">{scenesDuration || "-"}</p>
           <p className="heading">
             <FormattedMessage id="stats.scenes_duration" />
           </p>

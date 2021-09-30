@@ -11,6 +11,10 @@ type MovieReader interface {
 	Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
 	GetFrontImage(movieID int) ([]byte, error)
 	GetBackImage(movieID int) ([]byte, error)
+	FindByPerformerID(performerID int) ([]*Movie, error)
+	CountByPerformerID(performerID int) (int, error)
+	FindByStudioID(studioID int) ([]*Movie, error)
+	CountByStudioID(studioID int) (int, error)
 }
 
 type MovieWriter interface {

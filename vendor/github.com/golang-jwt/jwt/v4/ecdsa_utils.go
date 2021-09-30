@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	ErrNotECPublicKey  = errors.New("Key is not a valid ECDSA public key")
-	ErrNotECPrivateKey = errors.New("Key is not a valid ECDSA private key")
+	ErrNotECPublicKey  = errors.New("key is not a valid ECDSA public key")
+	ErrNotECPrivateKey = errors.New("key is not a valid ECDSA private key")
 )
 
-// Parse PEM encoded Elliptic Curve Private Key Structure
+// ParseECPrivateKeyFromPEM parses a PEM encoded Elliptic Curve Private Key Structure
 func ParseECPrivateKeyFromPEM(key []byte) (*ecdsa.PrivateKey, error) {
 	var err error
 
@@ -25,7 +25,9 @@ func ParseECPrivateKeyFromPEM(key []byte) (*ecdsa.PrivateKey, error) {
 	// Parse the key
 	var parsedKey interface{}
 	if parsedKey, err = x509.ParseECPrivateKey(block.Bytes); err != nil {
-		return nil, err
+		if parsedKey, err = x509.ParsePKCS8PrivateKey(block.Bytes); err != nil {
+			return nil, err
+		}
 	}
 
 	var pkey *ecdsa.PrivateKey
@@ -37,7 +39,7 @@ func ParseECPrivateKeyFromPEM(key []byte) (*ecdsa.PrivateKey, error) {
 	return pkey, nil
 }
 
-// Parse PEM encoded PKCS1 or PKCS8 public key
+// ParseECPublicKeyFromPEM parses a PEM encoded PKCS1 or PKCS8 public key
 func ParseECPublicKeyFromPEM(key []byte) (*ecdsa.PublicKey, error) {
 	var err error
 

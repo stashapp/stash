@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -247,7 +246,7 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 		}
 		defer rc.Close()
 
-		data, err := ioutil.ReadAll(rc)
+		data, err := io.ReadAll(rc)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

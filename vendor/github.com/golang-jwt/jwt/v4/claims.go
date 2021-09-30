@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-// For a type to be a Claims object, it must just have a Valid method that determines
+// Claims must just have a Valid method that determines
 // if the token is invalid for any supported reason
 type Claims interface {
 	Valid() error
 }
 
-// Structured version of Claims Section, as referenced at
+// StandardClaims are a structured version of the Claims Section, as referenced at
 // https://tools.ietf.org/html/rfc7519#section-4.1
 // See examples for how to use this with your own claim types
 type StandardClaims struct {
@@ -25,8 +25,7 @@ type StandardClaims struct {
 	Subject   string `json:"sub,omitempty"`
 }
 
-// Validates time based claims "exp, iat, nbf".
-// There is no accounting for clock skew.
+// Valid validates time based claims "exp, iat, nbf". There is no accounting for clock skew.
 // As well, if any of the above claims are not in the token, it will still
 // be considered a valid claim.
 func (c StandardClaims) Valid() error {
@@ -35,18 +34,18 @@ func (c StandardClaims) Valid() error {
 
 	// The claims below are optional, by default, so if they are set to the
 	// default value in Go, let's not fail the verification for them.
-	if c.VerifyExpiresAt(now, false) == false {
+	if !c.VerifyExpiresAt(now, false) {
 		delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
 		vErr.Inner = fmt.Errorf("token is expired by %v", delta)
 		vErr.Errors |= ValidationErrorExpired
 	}
 
-	if c.VerifyIssuedAt(now, false) == false {
+	if !c.VerifyIssuedAt(now, false) {
 		vErr.Inner = fmt.Errorf("Token used before issued")
 		vErr.Errors |= ValidationErrorIssuedAt
 	}
 
-	if c.VerifyNotBefore(now, false) == false {
+	if !c.VerifyNotBefore(now, false) {
 		vErr.Inner = fmt.Errorf("token is not valid yet")
 		vErr.Errors |= ValidationErrorNotValidYet
 	}
@@ -58,31 +57,31 @@ func (c StandardClaims) Valid() error {
 	return vErr
 }
 
-// Compares the aud claim against cmp.
+// VerifyAudience compares the aud claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyAudience(cmp string, req bool) bool {
-	return verifyAud(c.Audience, cmp, req)
+	return verifyAud([]string{c.Audience}, cmp, req)
 }
 
-// Compares the exp claim against cmp.
+// VerifyExpiresAt compares the exp claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyExpiresAt(cmp int64, req bool) bool {
 	return verifyExp(c.ExpiresAt, cmp, req)
 }
 
-// Compares the iat claim against cmp.
+// VerifyIssuedAt compares the iat claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyIssuedAt(cmp int64, req bool) bool {
 	return verifyIat(c.IssuedAt, cmp, req)
 }
 
-// Compares the iss claim against cmp.
+// VerifyIssuer compares the iss claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyIssuer(cmp string, req bool) bool {
 	return verifyIss(c.Issuer, cmp, req)
 }
 
-// Compares the nbf claim against cmp.
+// VerifyNotBefore compares the nbf claim against cmp.
 // If required is false, this method will return true if the value matches or is unset
 func (c *StandardClaims) VerifyNotBefore(cmp int64, req bool) bool {
 	return verifyNbf(c.NotBefore, cmp, req)
@@ -90,15 +89,27 @@ func (c *StandardClaims) VerifyNotBefore(cmp int64, req bool) bool {
 
 // ----- helpers
 
-func verifyAud(aud string, cmp string, required bool) bool {
-	if aud == "" {
+func verifyAud(aud []string, cmp string, required bool) bool {
+	if len(aud) == 0 {
 		return !required
 	}
-	if subtle.ConstantTimeCompare([]byte(aud), []byte(cmp)) != 0 {
-		return true
-	} else {
-		return false
+	// use a var here to keep constant time compare when looping over a number of claims
+	result := false
+
+	var stringClaims string
+	for _, a := range aud {
+		if subtle.ConstantTimeCompare([]byte(a), []byte(cmp)) != 0 {
+			result = true
+		}
+		stringClaims = stringClaims + a
 	}
+
+	// case where "" is sent in one or many aud claims
+	if len(stringClaims) == 0 {
+		return !required
+	}
+
+	return result
 }
 
 func verifyExp(exp int64, now int64, required bool) bool {
