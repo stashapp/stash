@@ -98,6 +98,7 @@
   "career_length": "Career Length",
   "subsidiary_studios": "Subsidiary Studios",
   "sub_tags": "Sub-Tags",
+  "sub_tag_count": "Sub-Tag Count",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -545,6 +546,7 @@
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",
+  "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
@@ -589,6 +591,7 @@
   },
   "parent_studios": "Parent Studios",
   "parent_tags": "Parent Tags",
+  "parent_tag_count": "Parent Tag Count",
   "path": "Path",
   "performer": "Performer",
   "performer_count": "Performer Count",
