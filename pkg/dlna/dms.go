@@ -33,7 +33,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/pprof"
@@ -483,7 +482,7 @@ func (me *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
 			logger.Errorf("Could not notify %s: %s", _url.String(), err)
 			continue
 		}
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		if len(b) > 0 {
 			logger.Debug(string(b))
 		}

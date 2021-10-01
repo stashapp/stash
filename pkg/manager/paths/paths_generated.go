@@ -2,7 +2,7 @@ package paths
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -54,7 +54,7 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 	if err := gp.EnsureTmpDir(); err != nil {
 		logger.Warnf("Could not ensure existence of a temporary directory: %v", err)
 	}
-	ret, err := ioutil.TempDir(gp.Tmp, pattern)
+	ret, err := os.MkdirTemp(gp.Tmp, pattern)
 	if err != nil {
 		return "", err
 	}

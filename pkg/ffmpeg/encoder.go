@@ -2,7 +2,7 @@ package ffmpeg
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -126,7 +126,7 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 		}
 	}
 
-	stdoutData, _ := ioutil.ReadAll(stdout)
+	stdoutData, _ := io.ReadAll(stdout)
 	stdoutString := string(stdoutData)
 
 	registerRunningEncoder(probeResult.Path, cmd.Process)

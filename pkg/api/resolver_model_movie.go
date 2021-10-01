@@ -125,6 +125,18 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret 
 	return &res, err
 }
 
+func (r *movieResolver) Scenes(ctx context.Context, obj *models.Movie) (ret []*models.Scene, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		var err error
+		ret, err = repo.Scene().FindByMovieID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *movieResolver) CreatedAt(ctx context.Context, obj *models.Movie) (*time.Time, error) {
 	return &obj.CreatedAt.Timestamp, nil
 }

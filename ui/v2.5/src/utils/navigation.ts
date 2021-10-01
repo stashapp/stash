@@ -15,6 +15,7 @@ import {
   Criterion,
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
+import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -70,6 +71,21 @@ const makePerformerGalleriesUrl = (
   return `/galleries?${filter.makeQueryParameters()}`;
 };
 
+const makePerformerMoviesUrl = (
+  performer: Partial<GQL.PerformerDataFragment>,
+  extraCriteria?: Criterion<CriterionValue>[]
+) => {
+  if (!performer.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Movies);
+  const criterion = new PerformersCriterion();
+  criterion.value = [
+    { id: performer.id, label: performer.name || `Performer ${performer.id}` },
+  ];
+  filter.criteria.push(criterion);
+  addExtraCriteria(filter.criteria, extraCriteria);
+  return `/movies?${filter.makeQueryParameters()}`;
+};
+
 const makePerformersCountryUrl = (
   performer: Partial<GQL.PerformerDataFragment>
 ) => {
@@ -115,6 +131,18 @@ const makeStudioGalleriesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   };
   filter.criteria.push(criterion);
   return `/galleries?${filter.makeQueryParameters()}`;
+};
+
+const makeStudioMoviesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
+  if (!studio.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Movies);
+  const criterion = new StudiosCriterion();
+  criterion.value = {
+    items: [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/movies?${filter.makeQueryParameters()}`;
 };
 
 const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
@@ -206,14 +234,31 @@ const makeSceneMarkerUrl = (
   return `/scenes/${sceneMarker.scene.id}?t=${sceneMarker.seconds}`;
 };
 
+const makeGalleryImagesUrl = (
+  gallery: Partial<GQL.GalleryDataFragment | GQL.SlimGalleryDataFragment>,
+  extraCriteria?: Criterion<CriterionValue>[]
+) => {
+  if (!gallery.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Images);
+  const criterion = new GalleriesCriterion();
+  criterion.value = [
+    { id: gallery.id, label: gallery.title || `Gallery ${gallery.id}` },
+  ];
+  filter.criteria.push(criterion);
+  addExtraCriteria(filter.criteria, extraCriteria);
+  return `/images?${filter.makeQueryParameters()}`;
+};
+
 export default {
   makePerformerScenesUrl,
   makePerformerImagesUrl,
   makePerformerGalleriesUrl,
+  makePerformerMoviesUrl,
   makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeStudioImagesUrl,
   makeStudioGalleriesUrl,
+  makeStudioMoviesUrl,
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeTagPerformersUrl,
@@ -222,4 +267,5 @@ export default {
   makeSceneMarkerUrl,
   makeMovieScenesUrl,
   makeChildStudiosUrl,
+  makeGalleryImagesUrl,
 };
