@@ -2,6 +2,7 @@
 package main
 
 import (
+	"embed"
 	"os"
 	"os/signal"
 	"runtime/pprof"
@@ -15,9 +16,15 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+//go:embed ui/v2.5/build
+var uiBox embed.FS
+
+//go:embed ui/login
+var loginUIBox embed.FS
+
 func main() {
 	manager.Initialize()
-	api.Start()
+	api.Start(uiBox, loginUIBox)
 
 	// stop any profiling at exit
 	defer pprof.StopCPUProfile()

@@ -106,6 +106,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
+  const [writeImageThumbnails, setWriteImageThumbnails] = useState(true);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
@@ -157,6 +158,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
+    writeImageThumbnails,
     username,
     password,
     maxSessionAge,
@@ -203,6 +205,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
       );
+      setWriteImageThumbnails(conf.general.writeImageThumbnails);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
@@ -833,6 +836,30 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Text>
         </Form.Group>
       </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h4>{intl.formatMessage({ id: "images" })}</h4>
+
+        <Form.Group>
+          <Form.Check
+            id="write-image-thumbnails"
+            checked={writeImageThumbnails}
+            label={intl.formatMessage({
+              id: "config.ui.images.options.write_image_thumbnails.heading",
+            })}
+            onChange={() => setWriteImageThumbnails(!writeImageThumbnails)}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.images.options.write_image_thumbnails.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <hr />
 
       <Form.Group>
         <h4>{intl.formatMessage({ id: "performers" })}</h4>

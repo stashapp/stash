@@ -3,11 +3,13 @@ package api
 import (
 	"context"
 	"crypto/tls"
+	"embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -21,7 +23,6 @@ import (
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
@@ -35,11 +36,6 @@ import (
 var version string
 var buildstamp string
 var githash string
-
-var uiBox *packr.Box
-
-//var legacyUiBox *packr.Box
-var loginUIBox *packr.Box
 
 func allowUnauthenticated(r *http.Request) bool {
 	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
@@ -100,11 +96,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 const loginEndPoint = "/login"
 
-func Start() {
-	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
-	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
-	loginUIBox = packr.New("Login UI Box", "../../ui/login")
-
+func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -172,10 +164,10 @@ func Start() {
 	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 
 	// session handlers
-	r.Post(loginEndPoint, handleLogin)
-	r.Get("/logout", handleLogout)
+	r.Post(loginEndPoint, handleLogin(loginUIBox))
+	r.Get("/logout", handleLogout(loginUIBox))
 
-	r.Get(loginEndPoint, getLoginHandler)
+	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
 	r.Mount("/performer", performerRoutes{
 		txnManager: txnManager,
@@ -216,11 +208,14 @@ func Start() {
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data, _ := loginUIBox.Find("login.html")
-			_, _ = w.Write(data)
+			_, _ = w.Write(getLoginPage(loginUIBox))
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
-			http.FileServer(loginUIBox).ServeHTTP(w, r)
+			loginRoot, err := fs.Sub(loginUIBox, loginRootDir)
+			if err != nil {
+				panic(err)
+			}
+			http.FileServer(http.FS(loginRoot)).ServeHTTP(w, r)
 		}
 	})
 
@@ -245,6 +240,8 @@ func Start() {
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		const uiRootDir = "ui/v2.5/build"
+
 		ext := path.Ext(r.URL.Path)
 
 		if customUILocation != "" {
@@ -257,7 +254,10 @@ func Start() {
 		}
 
 		if ext == ".html" || ext == "" {
-			data, _ := uiBox.Find("index.html")
+			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
+			if err != nil {
+				panic(err)
+			}
 
 			prefix := ""
 			if r.Header.Get("X-Forwarded-Prefix") != "" {
@@ -272,7 +272,11 @@ func Start() {
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-			http.FileServer(uiBox).ServeHTTP(w, r)
+			uiRoot, err := fs.Sub(uiBox, uiRootDir)
+			if err != nil {
+				panic(error.Error(err))
+			}
+			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
 	})
 
@@ -340,12 +344,12 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 		return nil, errors.New("SSL key file must be present if certificate file is present")
 	}
 
-	cert, err := ioutil.ReadFile(certFile)
+	cert, err := os.ReadFile(certFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSL certificate file %s: %s", certFile, err.Error())
 	}
 
-	key, err := ioutil.ReadFile(keyFile)
+	key, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSL key file %s: %s", keyFile, err.Error())
 	}

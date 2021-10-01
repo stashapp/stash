@@ -48,7 +48,9 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	go func() {
 		defer stdin.Close()
 
-		io.WriteString(stdin, inString)
+		if n, err := io.WriteString(stdin, inString); err != nil {
+			logger.Warnf("failure to write full input to script (wrote %v bytes out of %v): %v", n, len(inString), err)
+		}
 	}()
 
 	stderr, err := cmd.StderrPipe()

@@ -39,8 +39,10 @@ const (
 	studioName = "studioName"
 )
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+)
 
 func createFullGallery(id int) models.Gallery {
 	return models.Gallery{

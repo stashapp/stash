@@ -2,10 +2,16 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { FormattedPlural } from "react-intl";
 import { useConfiguration } from "src/core/StashService";
-import { GridCard, HoverPopover, Icon, TagLink } from "src/components/Shared";
-import { TextUtils } from "src/utils";
+import {
+  GridCard,
+  HoverPopover,
+  Icon,
+  TagLink,
+  TruncatedText,
+} from "src/components/Shared";
+import { PopoverCountButton } from "src/components/Shared/PopoverCountButton";
+import { NavUtils, TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 
@@ -62,6 +68,18 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     return <PerformerPopoverButton performers={props.gallery.performers} />;
   }
 
+  function maybeRenderImagesPopoverButton() {
+    if (!props.gallery.image_count) return;
+
+    return (
+      <PopoverCountButton
+        type="image"
+        count={props.gallery.image_count}
+        url={NavUtils.makeGalleryImagesUrl(props.gallery)}
+      />
+    );
+  }
+
   function maybeRenderSceneStudioOverlay() {
     if (!props.gallery.studio) return;
 
@@ -99,12 +117,14 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       props.gallery.scenes.length > 0 ||
       props.gallery.performers.length > 0 ||
       props.gallery.tags.length > 0 ||
-      props.gallery.organized
+      props.gallery.organized ||
+      props.gallery.image_count > 0
     ) {
       return (
         <>
           <hr />
           <ButtonGroup className="card-popovers">
+            {maybeRenderImagesPopoverButton()}
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderScenePopoverButton()}
@@ -140,15 +160,10 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       overlays={maybeRenderSceneStudioOverlay()}
       details={
         <>
-          <span>
-            {props.gallery.image_count}&nbsp;
-            <FormattedPlural
-              value={props.gallery.image_count}
-              one="image"
-              other="images"
-            />
-            .
-          </span>
+          <span>{props.gallery.date}</span>
+          <p>
+            <TruncatedText text={props.gallery.details} lineCount={3} />
+          </p>
         </>
       }
       popovers={maybeRenderPopoverButtonGroup()}

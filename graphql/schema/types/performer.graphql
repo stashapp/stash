@@ -42,6 +42,8 @@ type Performer {
   weight: Int
   created_at: Time!
   updated_at: Time!
+  movie_count: Int
+  movies: [Movie!]!
 }
 
 input PerformerCreateInput {

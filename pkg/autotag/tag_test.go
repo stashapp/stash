@@ -29,6 +29,12 @@ var testTagCases = []testTagCase{
 		"",
 	},
 	{
+		`tag + name\`,
+		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		"",
+		"",
+	},
+	{
 		"tag name",
 		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*name(?:$|_|[^\w\d])`,
 		"alias name",
@@ -39,6 +45,12 @@ var testTagCases = []testTagCase{
 		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
 		"alias + name",
 		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+	},
+	{
+		`tag + name\`,
+		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`alias + name\`,
+		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
 	},
 }
 
