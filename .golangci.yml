@@ -26,6 +26,7 @@ linters:
     # - gocritic
     # - goerr113
     - gofmt
+    # - gomnd
     # - gosec
     # - ifshort
     - misspell
@@ -86,3 +87,7 @@ linters-settings:
         disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
+
+  rowserrcheck:
+    packages:
+      - github.com/jmoiron/sqlx
