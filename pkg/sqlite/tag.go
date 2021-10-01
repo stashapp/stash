@@ -543,20 +543,15 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 	if findFilter.Sort != nil {
 		switch *findFilter.Sort {
 		case "scenes_count":
-			query.join("scenes_tags", "", "scenes_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct scenes_tags.scene_id) " + direction
+			return getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 		case "scene_markers_count":
-			query.join("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct scene_markers_tags.scene_marker_id) " + direction
+			return getCountSort(tagTable, "scene_markers_tags", tagIDColumn, direction)
 		case "images_count":
-			query.join("images_tags", "", "images_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct images_tags.image_id) " + direction
+			return getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 		case "galleries_count":
-			query.join("galleries_tags", "", "galleries_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct galleries_tags.gallery_id) " + direction
+			return getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 		case "performers_count":
-			query.join("performers_tags", "", "performers_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct performers_tags.performer_id) " + direction
+			return getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
 		}
 	}
 
