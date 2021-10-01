@@ -151,6 +151,41 @@ func TestTagFindByNames(t *testing.T) {
 	})
 }
 
+func TestTagQuerySort(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Tag()
+
+		sortBy := "scenes_count"
+		dir := models.SortDirectionEnumDesc
+		findFilter := &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &dir,
+		}
+
+		tags := queryTags(t, sqb, nil, findFilter)
+		assert := assert.New(t)
+		assert.Equal(tagIDs[tagIdxWithScene], tags[0].ID)
+
+		sortBy = "scene_markers_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithMarker], tags[0].ID)
+
+		sortBy = "images_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithImage], tags[0].ID)
+
+		sortBy = "galleries_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithGallery], tags[0].ID)
+
+		sortBy = "performers_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithPerformer], tags[0].ID)
+
+		return nil
+	})
+}
+
 func TestTagQueryName(t *testing.T) {
 	const tagIdx = 1
 	tagName := getSceneStringValue(tagIdx, "Name")
