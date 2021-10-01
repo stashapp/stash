@@ -28,11 +28,11 @@ import (
 const scrapeGetTimeout = time.Second * 60
 const scrapeDefaultSleep = time.Second * 2
 
-func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
+func loadURL(ctx context.Context, url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
-		return urlFromCDP(url, *driverOptions, globalConfig)
+		return urlFromCDP(ctx, url, *driverOptions, globalConfig)
 	}
 
 	// get the page using http.Client
@@ -105,7 +105,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
+func urlFromCDP(ctx context.Context, url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
 
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("url shouldn't be fetched through CDP")
@@ -130,7 +130,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 			// if CDPPath is http(s) then we need to get the websocket URL
 			if isCDPPathHTTP(globalConfig) {
 				var err error
-				remote, err = getRemoteCDPWSAddress(remote)
+				remote, err = getRemoteCDPWSAddress(ctx, remote)
 				if err != nil {
 					return nil, err
 				}
@@ -218,8 +218,13 @@ func setCDPClicks(driverOptions scraperDriverOptions) chromedp.Tasks {
 }
 
 // getRemoteCDPWSAddress returns the complete remote address that is required to access the cdp instance
-func getRemoteCDPWSAddress(address string) (string, error) {
-	resp, err := http.Get(address)
+func getRemoteCDPWSAddress(ctx context.Context, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
