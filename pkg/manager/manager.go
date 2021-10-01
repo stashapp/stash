@@ -154,6 +154,8 @@ func initProfiling(cpuProfilePath string) {
 }
 
 func initFFMPEG() error {
+	ctx := context.TODO()
+
 	// only do this if we have a config file set
 	if instance.Config.GetConfigFile() != "" {
 		// use same directory as config path
@@ -166,7 +168,7 @@ func initFFMPEG() error {
 
 		if ffmpegPath == "" || ffprobePath == "" {
 			logger.Infof("couldn't find FFMPEG, attempting to download it")
-			if err := ffmpeg.Download(configDirectory); err != nil {
+			if err := ffmpeg.Download(ctx, configDirectory); err != nil {
 				msg := `Unable to locate / automatically download FFMPEG
 
 	Check the readme for download links.
