@@ -20,7 +20,7 @@ linters:
     # Linters added by the stash project
     # - bodyclose
     - dogsled
-    # - errorlint
+    - errorlint
     # - exhaustive
     - exportloopref
     # - gocritic
@@ -39,6 +39,13 @@ linters:
 linters-settings:
   gofmt:
     simplify: false
+
+  errorlint:
+    # Disable errorf because there are false positives, where you don't want to wrap
+    #  an error.
+    errorf: false
+    asserts: true
+    comparison: true
 
   revive:
     ignore-generated-header: true
