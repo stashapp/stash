@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -84,7 +85,7 @@ func (t *jsPluginTask) Start() error {
 		return fmt.Errorf("error adding util API: %w", err)
 	}
 
-	if err := js.AddGQLAPI(t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler); err != nil {
+	if err := js.AddGQLAPI(context.TODO(), t.vm, t.input.ServerConnection.SessionCookie, t.gqlHandler); err != nil {
 		return fmt.Errorf("error adding GraphQL API: %w", err)
 	}
 
