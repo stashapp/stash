@@ -18,6 +18,7 @@ $sceneTabWidth: 450px;
 
   /* stylelint-disable */
   .jw-video {
+    // #1764 - jwplayer sets object-fit: fit in the style. Need to override it.
     object-fit: contain !important;
   }
   /* stylelint-enable */
