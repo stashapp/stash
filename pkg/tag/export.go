@@ -18,14 +18,14 @@ func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 
 	aliases, err := reader.GetAliases(tag.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting tag aliases: %s", err.Error())
+		return nil, fmt.Errorf("error getting tag aliases: %v", err)
 	}
 
 	newTagJSON.Aliases = aliases
 
 	image, err := reader.GetImage(tag.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting tag image: %s", err.Error())
+		return nil, fmt.Errorf("error getting tag image: %v", err)
 	}
 
 	if len(image) > 0 {
@@ -34,7 +34,7 @@ func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 
 	parents, err := reader.FindByChildTagID(tag.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting parents: %s", err.Error())
+		return nil, fmt.Errorf("error getting parents: %v", err)
 	}
 
 	newTagJSON.Parents = GetNames(parents)
