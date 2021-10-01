@@ -42,23 +42,21 @@ const ImageWall: React.FC<IImageWallProps> = ({
   const handleLightBoxPage = useCallback(
     (direction: number) => {
       if (direction === -1) {
-        if (currentPage === 1) return false;
-        onChangePage(currentPage - 1);
-      } else {
-        if (currentPage === pageCount) {
-          // if the slideshow is running
-          // return to the first page
-          if (slideshowRunning) {
-            onChangePage(0);
-            return true;
-          }
-          return false;
+        if (currentPage === 1) {
+          onChangePage(pageCount);
+        } else {
+          onChangePage(currentPage - 1);
         }
-        onChangePage(currentPage + 1);
+      } else if (direction === 1) {
+        if (currentPage === pageCount) {
+          // return to the first page
+          onChangePage(1);
+        } else {
+          onChangePage(currentPage + 1);
+        }
       }
-      return direction === -1 || direction === 1;
     },
-    [onChangePage, currentPage, pageCount, slideshowRunning]
+    [onChangePage, currentPage, pageCount]
   );
 
   const handleClose = useCallback(() => {
@@ -68,7 +66,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   const showLightbox = useLightbox({
     images,
     showNavigation: false,
-    pageCallback: handleLightBoxPage,
+    pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
     pageHeader: `Page ${currentPage} / ${pageCount}`,
     slideshowEnabled: slideshowRunning,
     onClose: handleClose,

@@ -98,6 +98,7 @@
   "career_length": "Career Length",
   "subsidiary_studios": "Subsidiary Studios",
   "sub_tags": "Sub-Tags",
+  "sub_tag_count": "Sub-Tag Count",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -445,6 +446,27 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "lightbox": {
+      "delay": "Delay (Sec)",
+      "display_mode": {
+        "label": "Display Mode",
+        "original": "Original",
+        "fit_to_screen": "Fit to screen",
+        "fit_horizontally": "Fit horizontally"
+      },
+      "options": "Options",
+      "reset_zoom_on_nav": "Reset zoom level when changing image",
+      "scale_up": {
+        "label": "Scale up to fit",
+        "description": "Scale smaller images up to fill screen"
+      },
+      "scroll_mode": {
+        "label": "Scroll Mode",
+        "zoom": "Zoom",
+        "pan_y": "Pan Y",
+        "description": "Hold shift to temporarily use other mode."
+      }
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"
@@ -547,6 +569,7 @@
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",
+  "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
@@ -591,6 +614,7 @@
   },
   "parent_studios": "Parent Studios",
   "parent_tags": "Parent Tags",
+  "parent_tag_count": "Parent Tag Count",
   "path": "Path",
   "performer": "Performer",
   "performer_count": "Performer Count",
