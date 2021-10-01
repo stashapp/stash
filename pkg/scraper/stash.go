@@ -138,7 +138,7 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashPerformerImage(s.config.StashServer.URL, performerID, s.globalConfig)
+	ret.Image, err = getStashPerformerImage(context.TODO(), s.config.StashServer.URL, performerID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(scene *scrapedSceneStash)
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashSceneImage(s.config.StashServer.URL, scene.ID, s.globalConfig)
+	ret.Image, err = getStashSceneImage(context.TODO(), s.config.StashServer.URL, scene.ID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +251,7 @@ func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashSceneImage(s.config.StashServer.URL, q.FindScene.ID, s.globalConfig)
+	ret.Image, err = getStashSceneImage(context.TODO(), s.config.StashServer.URL, q.FindScene.ID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}

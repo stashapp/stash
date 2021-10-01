@@ -202,7 +202,7 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 		}
 
 		if ret != nil {
-			err = c.postScrapePerformer(ret)
+			err = c.postScrapePerformer(context.TODO(), ret)
 			if err != nil {
 				return nil, err
 			}
@@ -226,7 +226,7 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 			}
 
 			if ret != nil {
-				err = c.postScrapePerformer(ret)
+				err = c.postScrapePerformer(context.TODO(), ret)
 				if err != nil {
 					return nil, err
 				}
@@ -239,8 +239,8 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 	return nil, nil
 }
 
-func (c Cache) postScrapePerformer(ret *models.ScrapedPerformer) error {
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerformer) error {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
 		tags, err := postProcessTags(tqb, ret.Tags)
@@ -255,7 +255,7 @@ func (c Cache) postScrapePerformer(ret *models.ScrapedPerformer) error {
 	}
 
 	// post-process - set the image if applicable
-	if err := setPerformerImage(ret, c.globalConfig); err != nil {
+	if err := setPerformerImage(ctx, ret, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 	}
 
@@ -280,8 +280,8 @@ func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
 	return nil
 }
 
-func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) error {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		mqb := r.Movie()
 		tqb := r.Tag()
@@ -323,8 +323,8 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 	}
 
 	// post-process - set the image if applicable
-	if err := setSceneImage(ret, c.globalConfig); err != nil {
-		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+	if err := setSceneImage(ctx, ret, c.globalConfig); err != nil {
+		logger.Warnf("Could not set image using URL %s: %v", *ret.Image, err)
 	}
 
 	return nil
@@ -382,7 +382,7 @@ func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene,
 		}
 
 		if ret != nil {
-			err = c.postScrapeScene(ret)
+			err = c.postScrapeScene(context.TODO(), ret)
 			if err != nil {
 				return nil, err
 			}
@@ -419,7 +419,7 @@ func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneIn
 		}
 
 		if ret != nil {
-			err = c.postScrapeScene(ret)
+			err = c.postScrapeScene(context.TODO(), ret)
 			if err != nil {
 				return nil, err
 			}
@@ -443,7 +443,7 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 				return nil, err
 			}
 
-			err = c.postScrapeScene(ret)
+			err = c.postScrapeScene(context.TODO(), ret)
 			if err != nil {
 				return nil, err
 			}
@@ -551,10 +551,10 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 			}
 
 			// post-process - set the image if applicable
-			if err := setMovieFrontImage(ret, c.globalConfig); err != nil {
+			if err := setMovieFrontImage(context.TODO(), ret, c.globalConfig); err != nil {
 				logger.Warnf("Could not set front image using URL %s: %s", *ret.FrontImage, err.Error())
 			}
-			if err := setMovieBackImage(ret, c.globalConfig); err != nil {
+			if err := setMovieBackImage(context.TODO(), ret, c.globalConfig); err != nil {
 				logger.Warnf("Could not set back image using URL %s: %s", *ret.BackImage, err.Error())
 			}
 
