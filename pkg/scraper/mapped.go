@@ -576,7 +576,7 @@ type mappedScraperAttrConfig struct {
 
 	postProcessActions []postProcessAction
 
-	// deprecated: use PostProcess instead
+	// Deprecated: use PostProcess instead
 	ParseDate  string                   `yaml:"parseDate"`
 	Replace    mappedRegexConfigs       `yaml:"replace"`
 	SubScraper *mappedScraperAttrConfig `yaml:"subScraper"`
