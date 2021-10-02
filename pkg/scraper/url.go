@@ -62,7 +62,7 @@ func loadURL(ctx context.Context, url string, scraperConfig config, globalConfig
 		Jar: jar,
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
