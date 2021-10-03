@@ -61,6 +61,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Generated, input.GeneratedPath)
 	}
 
+	if input.MetadataPath != nil {
+		if *input.MetadataPath != "" {
+			if err := utils.EnsureDir(*input.MetadataPath); err != nil {
+				return makeConfigGeneralResult(), err
+			}
+		}
+		c.Set(config.Metadata, input.MetadataPath)
+	}
+
 	if input.CachePath != nil {
 		if *input.CachePath != "" {
 			if err := utils.EnsureDir(*input.CachePath); err != nil {

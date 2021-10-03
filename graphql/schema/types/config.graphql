@@ -39,6 +39,8 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to import/export files"""
+  metadataPath: String
   """Path to cache"""
   cachePath: String
   """Whether to calculate MD5 checksums for scene video files"""
@@ -110,6 +112,8 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Path to import/export files"""
+  metadataPath: String!
   """Path to the config file used"""
   configFilePath: String!
   """Path to scrapers"""

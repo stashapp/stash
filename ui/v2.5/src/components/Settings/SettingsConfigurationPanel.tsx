@@ -80,6 +80,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(
     undefined
   );
+  const [metadataPath, setMetadataPath] = useState<string | undefined>(
+    undefined
+  );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
   const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
@@ -145,6 +148,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     })),
     databasePath,
     generatedPath,
+    metadataPath,
     cachePath,
     calculateMD5,
     videoFileNamingAlgorithm:
@@ -191,6 +195,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setStashes(conf.general.stashes ?? []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
+      setMetadataPath(conf.general.metadataPath);
       setCachePath(conf.general.cachePath);
       setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
       setCalculateMD5(conf.general.calculateMD5);
@@ -419,6 +424,24 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Text className="text-muted">
             {intl.formatMessage({
               id: "config.general.generated_files_location",
+            })}
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="metadata-path">
+          <h6>
+            <FormattedMessage id="config.general.metadata_path.heading" />
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={metadataPath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setMetadataPath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.general.metadata_path.description",
             })}
           </Form.Text>
         </Form.Group>
