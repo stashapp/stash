@@ -223,6 +223,7 @@ func getRemoteCDPWSAddress(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	var result map[string]interface{}
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary

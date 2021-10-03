@@ -251,7 +251,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 		// Start measuring how long the generate has taken. (consider moving this up)
 		start := time.Now()
 		if err = instance.Paths.Generated.EnsureTmpDir(); err != nil {
-			logger.Warnf("could not create temprary directory: %v", err)
+			logger.Warnf("could not create temporary directory: %v", err)
 		}
 
 		for _, scene := range scenes {

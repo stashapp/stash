@@ -119,32 +119,32 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			createFullStudio(studioID, parentStudioID),
 			createFullJSONStudio(parentStudioName, image, []string{"alias"}),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyStudio(noImageID),
 			createEmptyJSONStudio(),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errImageID, parentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(missingParentStudioID, missingStudioID),
 			createFullJSONStudio("", image, nil),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errStudioID, errParentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(errAliasID, parentStudioID),
 			nil,
 			true,

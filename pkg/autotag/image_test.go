@@ -12,6 +12,8 @@ import (
 const imageExt = "jpg"
 
 func TestImagePerformers(t *testing.T) {
+	t.Parallel()
+
 	const imageID = 1
 	const performerName = "performer name"
 	const performerID = 2
@@ -55,6 +57,8 @@ func TestImagePerformers(t *testing.T) {
 }
 
 func TestImageStudios(t *testing.T) {
+	t.Parallel()
+
 	const imageID = 1
 	const studioName = "studio name"
 	const studioID = 2
@@ -124,6 +128,8 @@ func TestImageStudios(t *testing.T) {
 }
 
 func TestImageTags(t *testing.T) {
+	t.Parallel()
+
 	const imageID = 1
 	const tagName = "tag name"
 	const tagID = 2
