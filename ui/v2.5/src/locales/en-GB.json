@@ -614,6 +614,7 @@
     "next": "Next",
     "previous": "Previous"
   },
+  "parent_of": "Parent of",
   "parent_studios": "Parent Studios",
   "parent_tags": "Parent Tags",
   "parent_tag_count": "Parent Tag Count",
@@ -643,6 +644,7 @@
   },
   "seconds": "Seconds",
   "settings": "Settings",
+  "sub_tag_of": "Sub-tag of",
   "stash_id": "Stash ID",
   "status": "Status: {statusText}",
   "studio": "Studio",
