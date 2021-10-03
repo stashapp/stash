@@ -140,11 +140,10 @@ const FunscriptOffset = "funscript_offset"
 
 // Security
 const TrustedProxies = "trusted_proxies"
-const trustedProxiesDefault = ""
 const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
 const dangerousAllowPublicWithoutAuthDefault = "false"
 const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
-const securityTripwireAccessedFromPublicInternetDefault = "false"
+const securityTripwireAccessedFromPublicInternetDefault = ""
 
 // DLNA options
 const DLNAServerName = "dlna.server_name"
@@ -848,10 +847,10 @@ func (i *Instance) GetFunscriptOffset() int {
 
 // GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
 // When empty, allow from any private network
-func (i *Instance) GetTrustedProxies() string {
+func (i *Instance) GetTrustedProxies() []string {
 	i.RLock()
 	defer i.RUnlock()
-	return viper.GetString(TrustedProxies)
+	return viper.GetStringSlice(TrustedProxies)
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
@@ -862,12 +861,13 @@ func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
 	return viper.GetBool(dangerousAllowPublicWithoutAuth)
 }
 
-// GetSecurityTripwireAccessedFromPublicInternet only true if stash has been accessed from the public internet,
-// with no auth enabled, and DangerousAllowPublicWithoutAuth disabled
-func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() bool {
+// GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
+// has been accessed from the public internet, with no auth enabled, and
+// DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
+func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() string {
 	i.RLock()
 	defer i.RUnlock()
-	return viper.GetBool(SecurityTripwireAccessedFromPublicInternet)
+	return viper.GetString(SecurityTripwireAccessedFromPublicInternet)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
@@ -962,6 +962,14 @@ func (i *Instance) GetMaxUploadSize() int64 {
 	return ret << 20
 }
 
+// ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
+// config field to the provided IP address to indicate that stash has been accessed
+// from this public IP without authentication.
+func (i *Instance) ActivatePublicAccessTripwire(requestIP string) error {
+	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
+	return i.Write()
+}
+
 func (i *Instance) Validate() error {
 	i.RLock()
 	defer i.RUnlock()
@@ -1016,7 +1024,6 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	viper.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
 	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
-	viper.SetDefault(TrustedProxies, trustedProxiesDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))

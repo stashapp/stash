@@ -13,6 +13,7 @@ import StashBoxConfiguration, {
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
+import { StringListInput } from "../Shared/StringListInput";
 
 interface IExclusionPatternsProps {
   excludes: string[];
@@ -110,7 +111,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
-  const [trustedProxies, setTrustedProxies] = useState<string | undefined>(
+  const [trustedProxies, setTrustedProxies] = useState<string[] | undefined>(
     undefined
   );
   const [logFile, setLogFile] = useState<string | undefined>();
@@ -213,7 +214,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
-      setTrustedProxies(conf.general.trustedProxies);
+      setTrustedProxies(conf.general.trustedProxies ?? undefined);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
@@ -996,13 +997,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <h6>
           {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
         </h6>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          type="text"
-          defaultValue={trustedProxies}
-          onInput={(e: React.FormEvent<HTMLInputElement>) =>
-            setTrustedProxies(e.currentTarget.value)
-          }
+        <StringListInput
+          value={trustedProxies ?? []}
+          setValue={(value) => setTrustedProxies(value)}
+          defaultNewValue=""
         />
         <Form.Text className="text-muted">
           {intl.formatMessage({

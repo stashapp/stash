@@ -7,9 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"runtime/debug"
@@ -30,148 +28,12 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 var version string
 var buildstamp string
 var githash string
-
-const loginEndPoint = "/login"
-
-func allowUnauthenticated(r *http.Request) bool {
-	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == "/css"
-}
-
-func authenticateHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c := config.GetInstance()
-
-			if c.GetSecurityTripwireAccessedFromPublicInternet() {
-				w.WriteHeader(http.StatusForbidden)
-				_, err := w.Write([]byte("Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
-					"More information and fixes are available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet"))
-				if err != nil {
-					logger.Error(err)
-				}
-				return
-			}
-
-			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
-			if err != nil {
-				if err != session.ErrUnauthorized {
-					w.WriteHeader(http.StatusInternalServerError)
-					_, err = w.Write([]byte(err.Error()))
-					if err != nil {
-						logger.Error(err)
-					}
-					return
-				}
-
-				// unauthorized error
-				w.Header().Add("WWW-Authenticate", `FormBased`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			ctx := r.Context()
-
-			if c.HasCredentials() {
-				// authentication is required
-				if userID == "" && !allowUnauthenticated(r) {
-					//authentication was not received, redirect
-					// if graphql was requested, we just return a forbidden error
-					if r.URL.Path == "/graphql" {
-						w.Header().Add("WWW-Authenticate", `FormBased`)
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
-
-					// otherwise redirect to the login page
-					u := url.URL{
-						Path: "/login",
-					}
-					q := u.Query()
-					q.Set(returnURLParam, r.URL.Path)
-					u.RawQuery = q.Encode()
-					http.Redirect(w, r, u.String(), http.StatusFound)
-					return
-				}
-			} else {
-				//authentication is not required
-				//security fix: traffic from the public internet with no auth is disallowed
-				if !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
-					requestIPString := r.RemoteAddr[0:strings.LastIndex(r.RemoteAddr, ":")]
-					requestIP := net.ParseIP(requestIPString)
-					_, cgNatAddrSpace, _ := net.ParseCIDR("100.64.0.0/10")
-
-					if r.Header.Get("X-FORWARDED-FOR") != "" {
-						// Requst was proxied
-						trustedProxies := c.GetTrustedProxies()
-						if trustedProxies == "" {
-							//validate proxies against local network only
-							if !(requestIP.IsPrivate() || requestIP.IsLoopback() || cgNatAddrSpace.Contains(requestIP)) {
-								securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
-								return
-							} else {
-								// Safe to validate X-Forwarded-For
-								proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
-								for i := range proxyChain {
-									ip := net.ParseIP(proxyChain[i])
-									if !(ip.IsPrivate() || ip.IsLoopback() || cgNatAddrSpace.Contains(ip)) {
-										securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
-										return
-									}
-								}
-							}
-						} else {
-							//validate proxies against trusted proxies list
-							trustedProxies := strings.Split(trustedProxies, ", ")
-							if isIPTrustedProxy(requestIP, trustedProxies) {
-								// Safe to validate X-Forwarded-For
-								proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
-								// validate backwards, as only the last one is not attacker-controlled
-								for i := len(proxyChain) - 1; i >= 0; i-- {
-									ip := net.ParseIP(proxyChain[i])
-									if i == 0 {
-										//last entry is originating device, check if from the public internet
-										if !(ip.IsPrivate() || ip.IsLoopback() || cgNatAddrSpace.Contains(ip)) {
-											securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
-											return
-										}
-									} else if !isIPTrustedProxy(ip, trustedProxies) {
-										logger.Warn([]byte("Rejected request from untrusted proxy in chain:" + ip.String()))
-										w.WriteHeader(http.StatusForbidden)
-										return
-									}
-								}
-							} else {
-								// Proxy not on safe proxy list
-								logger.Warn([]byte("Rejected request from untrusted proxy:" + requestIP.String()))
-								w.WriteHeader(http.StatusForbidden)
-								return
-							}
-						}
-					} else {
-						// request was not proxied
-						if !(requestIP.IsPrivate() || requestIP.IsLoopback() || cgNatAddrSpace.Contains(requestIP)) {
-							securityActivateTripwireAccessedFromInternetWithoutAuth(c, w)
-							return
-						}
-					}
-				}
-			}
-
-			ctx = session.SetCurrentUserID(ctx, userID)
-
-			r = r.WithContext(ctx)
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
@@ -351,7 +213,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 			uiRoot, err := fs.Sub(uiBox, uiRootDir)
 			if err != nil {
-				panic(error.Error(err))
+				panic(err)
 			}
 			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
@@ -397,40 +259,6 @@ func printVersion() {
 		versionString = version + " (" + versionString + ")"
 	}
 	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
-}
-func isIPTrustedProxy(ip net.IP, trustedProxies []string) bool {
-	for _, v := range trustedProxies {
-		if ip.Equal(net.ParseIP(v)) {
-			return true
-		}
-	}
-	return false
-}
-
-func securityActivateTripwireAccessedFromInternetWithoutAuth(c *config.Instance, w http.ResponseWriter) {
-	logger.Error("Stash has been accessed from the internet, without authentication. \n" +
-		"This is extremely dangerous! The whole world can see your stash page and browse your files! \n" +
-		"You probably forwarded a port from your router. At the very least, add a password to stash in the settings. \n" +
-		"Stash will not start again until you edit config.yml and change security_tripwire_accessed_from_public_internet to false. \n" +
-		"More information is available at https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet \n" +
-		"Stash is not answering any other requests to protect your privacy.")
-	c.Set(config.SecurityTripwireAccessedFromPublicInternet, true)
-	err := c.Write()
-	if err != nil {
-		logger.Error(err)
-	}
-	w.WriteHeader(http.StatusForbidden)
-	_, err = w.Write([]byte("You have attempted to access Stash over the internet, and authentication is not enabled. " +
-		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
-		"Stash is not answering any other requests to protect your privacy. " +
-		"Please read the log entry or visit https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet "))
-	if err != nil {
-		logger.Error(err)
-	}
-	err = manager.GetInstance().Shutdown()
-	if err != nil {
-		logger.Error(err)
-	}
 }
 
 func GetVersion() (string, string, string) {
