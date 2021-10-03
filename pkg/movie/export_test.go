@@ -44,18 +44,24 @@ const url = "url"
 
 const studioName = "studio"
 
-const frontImage = "ZnJvbnRJbWFnZUJ5dGVz"
-const backImage = "YmFja0ltYWdlQnl0ZXM="
+const (
+	frontImage = "ZnJvbnRJbWFnZUJ5dGVz"
+	backImage  = "YmFja0ltYWdlQnl0ZXM="
+)
 
-var frontImageBytes = []byte("frontImageBytes")
-var backImageBytes = []byte("backImageBytes")
+var (
+	frontImageBytes = []byte("frontImageBytes")
+	backImageBytes  = []byte("backImageBytes")
+)
 
 var studio models.Studio = models.Studio{
 	Name: models.NullString(studioName),
 }
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+)
 
 func createFullMovie(id int, studioID int) models.Movie {
 	return models.Movie{

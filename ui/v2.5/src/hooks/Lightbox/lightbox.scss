@@ -30,6 +30,10 @@
       display: flex;
       flex: 1;
       justify-content: center;
+
+      @media (max-width: 575px) {
+        display: none;
+      }
     }
 
     &-indicator {
@@ -40,7 +44,7 @@
       text-align: center;
     }
 
-    &-delay {
+    &-options {
       display: flex;
       flex-direction: column;
       margin-left: 100px;
@@ -52,16 +56,6 @@
 
       &-inline {
         display: none;
-      }
-
-      @media screen and (min-width: 1300px) {
-        &-icon {
-          display: none;
-        }
-
-        &-inline {
-          display: flex;
-        }
       }
     }
 
@@ -103,7 +97,6 @@
 
       picture {
         display: flex;
-        height: 100%;
         margin: auto;
         position: relative;
 
@@ -116,9 +109,7 @@
       }
 
       img {
-        margin: auto;
-        max-height: 100%;
-        max-width: 100%;
+        cursor: pointer;
         object-fit: contain;
       }
     }

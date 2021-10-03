@@ -20,6 +20,8 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
     criterion.criterionOption.type !== "tags" &&
     criterion.criterionOption.type !== "sceneTags" &&
     criterion.criterionOption.type !== "performerTags" &&
+    criterion.criterionOption.type !== "parentTags" &&
+    criterion.criterionOption.type !== "childTags" &&
     criterion.criterionOption.type !== "movies"
   )
     return null;

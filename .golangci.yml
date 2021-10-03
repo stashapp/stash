@@ -3,10 +3,23 @@ run:
   timeout: 3m
   modules-download-mode: vendor
 
-issues:
-  # Rev at which the linter was introduced. Older bugs are still
-  # present, but should not be considered validation errors for now
-  new-from-rev: b14d5c56504dfcea2f5a7b86706b0ecdafd0b68c
+linters:
+  disable-all: true
+  enable:
+    # Default set of linters from golangci-lint
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # Linters added by the stash project
+    - gofmt
+    - revive
 
 linters-settings:
   gofmt:
@@ -51,22 +64,4 @@ linters-settings:
         disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
-
-linters:
-  disable-all: true
-  enable:
-    # Default set of linters from golangci-lint
-    - deadcode
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - structcheck
-    - typecheck
-    - unused
-    - varcheck
-    # Linters added by the stash project
-    - gofmt
-    - revive
 

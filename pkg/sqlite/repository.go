@@ -238,8 +238,8 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
-	body = body + " GROUP BY " + r.tableName + ".id "
 	if len(havingClauses) > 0 {
+		body = body + " GROUP BY " + r.tableName + ".id "
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
 
