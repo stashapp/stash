@@ -199,7 +199,7 @@ func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) 
 	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if studioFilter.StashID != nil {
 			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
-			stringCriterionHandler(studioFilter.StashID, "scene_stash_ids.stash_id")(f)
+			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(f)
 		}
 	}))
 
