@@ -503,7 +503,9 @@ div.dropdown-menu {
   }
 
   .fa-icon {
-    margin-left: 0;
+    @include media-breakpoint-down(lg) {
+      margin: 0;
+    }
 
     &.nav-menu-icon {
       @include media-breakpoint-down(lg) {
