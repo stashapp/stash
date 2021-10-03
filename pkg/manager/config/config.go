@@ -680,13 +680,10 @@ func (i *Instance) ValidateCredentials(username string, password string) bool {
 	return username == authUser && err == nil
 }
 
+var stashBoxRe = regexp.MustCompile("^http.*graphql$")
+
 func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
-
-	re, err := regexp.Compile("^http.*graphql$")
-	if err != nil {
-		return errors.New("failure to generate regular expression")
-	}
 
 	for _, box := range boxes {
 		if box.APIKey == "" {
@@ -695,7 +692,7 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 		} else if box.Endpoint == "" {
 			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint cannot be blank")
-		} else if !re.Match([]byte(box.Endpoint)) {
+		} else if !stashBoxRe.Match([]byte(box.Endpoint)) {
 			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
