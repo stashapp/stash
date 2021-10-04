@@ -60,7 +60,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 					securityActivateTripwireAccessedFromInternetWithoutAuth(c, err, w)
 					return
 				case session.UntrustedProxyError:
-					logger.Warnf("Rejected request from untrusted proxy: %s" + net.IP(err).String())
+					logger.Warnf("Rejected request from untrusted proxy: %s", net.IP(err).String())
 					w.WriteHeader(http.StatusForbidden)
 					return
 				default:
