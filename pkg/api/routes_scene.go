@@ -298,6 +298,12 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	if sceneMarker == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 	http.ServeFile(w, r, filepath)
 }
@@ -315,6 +321,12 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	if sceneMarker == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
@@ -342,6 +354,12 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	if sceneMarker == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
