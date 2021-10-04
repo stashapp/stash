@@ -146,6 +146,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.MaxSessionAge, *input.MaxSessionAge)
 	}
 
+	if input.TrustedProxies != nil {
+		c.Set(config.TrustedProxies, input.TrustedProxies)
+	}
+
 	if input.LogFile != nil {
 		c.Set(config.LogFile, input.LogFile)
 	}

@@ -13,6 +13,7 @@ import StashBoxConfiguration, {
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
+import { StringListInput } from "../Shared/StringListInput";
 
 interface IExclusionPatternsProps {
   excludes: string[];
@@ -113,6 +114,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
+  const [trustedProxies, setTrustedProxies] = useState<string[] | undefined>(
+    undefined
+  );
   const [logFile, setLogFile] = useState<string | undefined>();
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
@@ -166,6 +170,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     username,
     password,
     maxSessionAge,
+    trustedProxies,
     logFile,
     logOut,
     logLevel,
@@ -214,6 +219,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
+      setTrustedProxies(conf.general.trustedProxies ?? undefined);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
@@ -1008,6 +1014,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
+      </Form.Group>
+
+      <Form.Group id="trusted-proxies">
+        <h6>
+          {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
+        </h6>
+        <StringListInput
+          value={trustedProxies ?? []}
+          setValue={(value) => setTrustedProxies(value)}
+          defaultNewValue=""
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.general.auth.trusted_proxies_desc",
+          })}
+        </Form.Text>
       </Form.Group>
 
       <hr />
