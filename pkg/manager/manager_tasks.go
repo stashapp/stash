@@ -237,7 +237,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 
-		overwrite := utils.IsTrue(input.Overwrite)
+		overwrite := input.Overwrite
 
 		generatePreviewOptions := input.PreviewOptions
 		if generatePreviewOptions == nil {
@@ -267,7 +267,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				continue
 			}
 
-			if utils.IsTrue(input.Sprites) {
+			if input.Sprites {
 				task := GenerateSpriteTask{
 					Scene:               *scene,
 					Overwrite:           overwrite,
@@ -280,10 +280,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if utils.IsTrue(input.Previews) {
+			if input.Previews {
 				task := GeneratePreviewTask{
 					Scene:               *scene,
-					ImagePreview:        utils.IsTrue(input.ImagePreviews),
+					ImagePreview:        input.ImagePreviews,
 					Options:             *generatePreviewOptions,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
@@ -295,15 +295,15 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if utils.IsTrue(input.Markers) {
+			if input.Markers {
 				wg.Add()
 				task := GenerateMarkersTask{
 					TxnManager:          s.TxnManager,
 					Scene:               scene,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
-					ImagePreview:        utils.IsTrue(input.MarkerImagePreviews),
-					Screenshot:          utils.IsTrue(input.MarkerScreenshots),
+					ImagePreview:        input.MarkerImagePreviews,
+					Screenshot:          input.MarkerScreenshots,
 				}
 				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
 					task.Start()
@@ -311,7 +311,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if utils.IsTrue(input.Transcodes) {
+			if input.Transcodes {
 				wg.Add()
 				task := GenerateTranscodeTask{
 					Scene:               *scene,
@@ -324,7 +324,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if utils.IsTrue(input.Phashes) {
+			if input.Phashes {
 				task := GeneratePhashTask{
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,
@@ -644,12 +644,12 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	}()
 
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-	overwrite := utils.IsTrue(input.Overwrite)
+	overwrite := input.Overwrite
 
 	logger.Infof("Counting content to generate...")
 	for _, scene := range scenes {
 		if scene != nil {
-			if utils.IsTrue(input.Sprites) {
+			if input.Sprites {
 				task := GenerateSpriteTask{
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,
@@ -660,10 +660,10 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 
-			if utils.IsTrue(input.Previews) {
+			if input.Previews {
 				task := GeneratePreviewTask{
 					Scene:               *scene,
-					ImagePreview:        utils.IsTrue(input.ImagePreviews),
+					ImagePreview:        input.ImagePreviews,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 
@@ -672,12 +672,12 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 					totals.previews++
 				}
 
-				if utils.IsTrue(input.ImagePreviews) && (overwrite || !task.doesImagePreviewExist(sceneHash)) {
+				if input.ImagePreviews && (overwrite || !task.doesImagePreviewExist(sceneHash)) {
 					totals.imagePreviews++
 				}
 			}
 
-			if utils.IsTrue(input.Markers) {
+			if input.Markers {
 				task := GenerateMarkersTask{
 					TxnManager:          s.TxnManager,
 					Scene:               scene,
@@ -687,7 +687,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				totals.markers += int64(task.isMarkerNeeded())
 			}
 
-			if utils.IsTrue(input.Transcodes) {
+			if input.Transcodes {
 				task := GenerateTranscodeTask{
 					Scene:               *scene,
 					Overwrite:           overwrite,
@@ -698,7 +698,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 
-			if utils.IsTrue(input.Phashes) {
+			if input.Phashes {
 				task := GeneratePhashTask{
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,
