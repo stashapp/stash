@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -173,6 +172,15 @@ type MissingConfigError struct {
 
 func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
+}
+
+// StashBoxError represents configuration errors of Stash-Box
+type StashBoxError struct {
+	msg string
+}
+
+func (s *StashBoxError) Error() string {
+	return "Stash-box: " + s.msg
 }
 
 type Instance struct {
@@ -686,18 +694,15 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
 	for _, box := range boxes {
-		if box.APIKey == "" {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box API Key cannot be blank")
-		} else if box.Endpoint == "" {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box Endpoint cannot be blank")
-		} else if !stashBoxRe.Match([]byte(box.Endpoint)) {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box Endpoint is invalid")
-		} else if isMulti && box.Name == "" {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box Name cannot be blank")
+		switch {
+		case box.APIKey == "":
+			return &StashBoxError{msg: "API Key cannot be blank"}
+		case box.Endpoint == "":
+			return &StashBoxError{msg: "endpoint cannot be blank"}
+		case !stashBoxRe.Match([]byte(box.Endpoint)):
+			return &StashBoxError{msg: "enpoint is invalid"}
+		case isMulti && box.Name == "":
+			return &StashBoxError{msg: "name cannot be blank"}
 		}
 	}
 	return nil
