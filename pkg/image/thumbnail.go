@@ -2,6 +2,7 @@ package image
 
 import (
 	"bytes"
+	"errors"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -12,6 +13,8 @@ import (
 
 var vipsPath string
 var once sync.Once
+
+var ErrUnsupportedFormat = errors.New("unsupported image format")
 
 type ThumbnailEncoder struct {
 	ffmpeg ffmpeg.Encoder
