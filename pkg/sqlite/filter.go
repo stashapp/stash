@@ -210,10 +210,8 @@ func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) strin
 		var op string
 		if len(ret) > 0 {
 			op = " " + f.subFilterOp + " "
-		} else {
-			if f.subFilterOp == notOp {
-				op = "NOT "
-			}
+		} else if f.subFilterOp == notOp {
+			op = "NOT "
 		}
 
 		ret += op + "(" + subFilterClause + ")"

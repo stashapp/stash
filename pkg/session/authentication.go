@@ -70,12 +70,10 @@ func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
 					return UntrustedProxyError(requestIP)
 				}
 			}
-		} else {
-			// request was not proxied
-			if !isLocalIP(requestIP) {
-				return ExternalAccessError(requestIP)
-			}
+		} else if !isLocalIP(requestIP) { // request was not proxied
+			return ExternalAccessError(requestIP)
 		}
+
 	}
 
 	return nil
