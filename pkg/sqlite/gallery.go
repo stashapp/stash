@@ -418,13 +418,14 @@ func galleryAverageResolutionCriterionHandler(qb *galleryQueryBuilder, resolutio
 
 			const widthHeight = "avg(MIN(images.width, images.height))"
 
-			if resolution.Modifier == models.CriterionModifierEquals {
+			switch resolution.Modifier {
+			case models.CriterionModifierEquals:
 				f.addHaving(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierNotEquals {
+			case models.CriterionModifierNotEquals:
 				f.addHaving(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierLessThan {
+			case models.CriterionModifierLessThan:
 				f.addHaving(fmt.Sprintf("%s < %d", widthHeight, min))
-			} else if resolution.Modifier == models.CriterionModifierGreaterThan {
+			case models.CriterionModifierGreaterThan:
 				f.addHaving(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
 		}

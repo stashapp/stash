@@ -434,16 +434,18 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCrit
 
 			whereClause := ""
 			havingClause := ""
-			if criterion.Modifier == models.CriterionModifierIncludes {
+
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
 				// includes any of the provided ids
 				m.addJoinTable(f)
 				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+			case models.CriterionModifierIncludesAll:
 				// includes all of the provided ids
 				m.addJoinTable(f)
 				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
 				havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
-			} else if criterion.Modifier == models.CriterionModifierExcludes {
+			case models.CriterionModifierExcludes:
 				// excludes all of the provided ids
 				// need to use actual join table name for this
 				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
@@ -618,12 +620,13 @@ WHERE id in {inBinding}
 }
 
 func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
-	if criterion.Modifier == models.CriterionModifierIncludes {
+	switch criterion.Modifier {
+	case models.CriterionModifierIncludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
-	} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+	case models.CriterionModifierIncludesAll:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
 		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
-	} else if criterion.Modifier == models.CriterionModifierExcludes {
+	case models.CriterionModifierExcludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NULL", table, idColumn))
 	}
 }

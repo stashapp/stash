@@ -479,11 +479,12 @@ func formatCareerLength(start, end *int) *string {
 	}
 
 	var ret string
-	if end == nil {
+	switch {
+	case end == nil:
 		ret = fmt.Sprintf("%d -", *start)
-	} else if start == nil {
+	case start == nil:
 		ret = fmt.Sprintf("- %d", *end)
-	} else {
+	default:
 		ret = fmt.Sprintf("%d - %d", *start, *end)
 	}
 
