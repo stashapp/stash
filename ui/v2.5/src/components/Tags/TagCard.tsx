@@ -75,6 +75,7 @@ export const TagCard: React.FC<IProps> = ({
 
     return (
       <PopoverCountButton
+        className="scene-count"
         type="scene"
         count={tag.scene_count}
         url={NavUtils.makeTagScenesUrl(tag)}
@@ -86,7 +87,7 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.scene_marker_count) return;
 
     return (
-      <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
+      <Link className="marker-count" to={NavUtils.makeTagSceneMarkersUrl(tag)}>
         <Button className="minimal">
           <Icon icon="map-marker-alt" />
           <span>{tag.scene_marker_count}</span>
@@ -100,6 +101,7 @@ export const TagCard: React.FC<IProps> = ({
 
     return (
       <PopoverCountButton
+        className="image-count"
         type="image"
         count={tag.image_count}
         url={NavUtils.makeTagImagesUrl(tag)}
@@ -112,6 +114,7 @@ export const TagCard: React.FC<IProps> = ({
 
     return (
       <PopoverCountButton
+        className="gallery-count"
         type="gallery"
         count={tag.gallery_count}
         url={NavUtils.makeTagGalleriesUrl(tag)}
@@ -123,7 +126,7 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.performer_count) return;
 
     return (
-      <Link to={NavUtils.makeTagPerformersUrl(tag)}>
+      <Link className="performer-count" to={NavUtils.makeTagPerformersUrl(tag)}>
         <Button className="minimal">
           <Icon icon="user" />
           <span>{tag.performer_count}</span>
