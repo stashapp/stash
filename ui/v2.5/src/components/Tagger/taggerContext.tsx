@@ -285,8 +285,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
     const results = await queryScrapeScene(currentSource.sourceInput, sceneID);
     let newResult: ISceneQueryResult;
-    // scenes are already resolved if they come from stash-box
-    const resolved = currentSource.sourceInput.stash_box_index !== undefined;
 
     if (results.error) {
       newResult = { error: results.error.message };
@@ -296,7 +294,8 @@ export const TaggerContext: React.FC = ({ children }) => {
       newResult = {
         results: results.data.scrapeSingleScene.map((r) => ({
           ...r,
-          resolved,
+          // scenes are already resolved if they are scraped via fragment
+          resolved: true,
         })),
       };
     }
