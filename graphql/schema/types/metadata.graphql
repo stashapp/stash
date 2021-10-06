@@ -1,15 +1,15 @@
 scalar Upload
 
 input GenerateMetadataInput {
-  sprites: Boolean! = false
-  previews: Boolean! = false
-  imagePreviews: Boolean! = false
+  sprites: Boolean!
+  previews: Boolean!
+  imagePreviews: Boolean!
   previewOptions: GeneratePreviewOptionsInput
-  markers: Boolean! = false
-  markerImagePreviews: Boolean! = false
-  markerScreenshots: Boolean! = false
-  transcodes: Boolean! = false
-  phashes: Boolean! = false
+  markers: Boolean!
+  markerImagePreviews: Boolean!
+  markerScreenshots: Boolean!
+  transcodes: Boolean!
+  phashes: Boolean!
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
@@ -17,7 +17,7 @@ input GenerateMetadataInput {
   markerIDs: [ID!]
 
   """overwrite existing media"""
-  overwrite: Boolean! = false
+  overwrite: Boolean
 }
 
 input GeneratePreviewOptionsInput {
