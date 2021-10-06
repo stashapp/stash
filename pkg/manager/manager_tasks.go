@@ -237,7 +237,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 
-		overwrite := input.Overwrite
+		overwrite := false
+		if input.Overwrite != nil {
+			overwrite = *input.Overwrite
+		}
 
 		generatePreviewOptions := input.PreviewOptions
 		if generatePreviewOptions == nil {
@@ -644,7 +647,10 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	}()
 
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-	overwrite := input.Overwrite
+	overwrite := false
+	if input.Overwrite != nil {
+		overwrite = *input.Overwrite
+	}
 
 	logger.Infof("Counting content to generate...")
 	for _, scene := range scenes {
