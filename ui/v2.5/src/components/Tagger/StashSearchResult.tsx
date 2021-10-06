@@ -7,7 +7,6 @@ import * as GQL from "src/core/generated-graphql";
 import {
   Icon,
   LoadingIndicator,
-  PerformerSelect,
   StudioSelect,
   SuccessIcon,
   TagSelect,
@@ -21,6 +20,7 @@ import { OptionalField } from "./IncludeButton";
 import { IScrapedScene, TaggerStateContext } from "./taggerContext";
 import { OperationButton } from "../Shared/OperationButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
+import PerformerResult from "./PerformerResult";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -162,8 +162,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   }, [stashScene, scene, config]);
 
   const getInitialPerformers = useCallback(() => {
-    // default to override existing
-    return performers.filter((t) => t.stored_id).map((t) => t.stored_id!) ?? [];
+    return performers.map((p) => p.stored_id ?? undefined);
   }, [performers]);
 
   const getInitialStudio = useCallback(() => {
@@ -175,9 +174,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     {}
   );
   const [tagIDs, setTagIDs] = useState<string[]>(getInitialTags());
-  const [performerIDs, setPerformerIDs] = useState<string[]>(
+
+  // map of original performer to id
+  const [performerIDs, setPerformerIDs] = useState<(string | undefined)[]>(
     getInitialPerformers()
   );
+
   const [studioID, setStudioID] = useState<string | undefined>(
     getInitialStudio()
   );
@@ -244,15 +246,19 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       }
     }
 
+    const filteredPerformerIDs = performerIDs.filter(
+      (id) => id !== undefined
+    ) as string[];
+
     const sceneCreateInput: GQL.SceneUpdateInput = {
       id: stashScene.id ?? "",
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
       performer_ids:
-        performerIDs.length === 0
+        filteredPerformerIDs.length === 0
           ? stashScene.performers.map((p) => p.id)
-          : performerIDs,
+          : filteredPerformerIDs,
       studio_id: studioID,
       cover_image: resolveField("cover_image", undefined, imgData),
       url: resolveField("url", stashScene.url, scene.url),
@@ -461,6 +467,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     </div>
   );
 
+  function setPerformerID(performerIndex: number, id: string | undefined) {
+    const newPerformerIDs = [...performerIDs];
+    newPerformerIDs[performerIndex] = id;
+    setPerformerIDs(newPerformerIDs);
+  }
+
   const renderPerformerField = () => (
     <div className="mt-2">
       <div>
@@ -469,27 +481,28 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             title: `${intl.formatMessage({ id: "performers" })}:`,
           })}
           <Col sm={9} xl={12}>
-            {/* {performers.map(performer => (
+            {performers.map((performer, performerIndex) => (
               <PerformerResult
                 performer={performer}
-                setPerformer={(data: PerformerOperation) =>
-                  {}
-                }
+                selectedID={performerIDs[performerIndex]}
+                setSelectedID={(id) => setPerformerID(performerIndex, id)}
+                onCreate={() => showPerformerModal(performer)}
+                endpoint={currentSource?.stashboxEndpoint}
                 key={`${performer.name ?? performer.remote_site_id ?? ""}`}
               />
-            ))} */}
+            ))}
 
-            <PerformerSelect
+            {/* <PerformerSelect
               isMulti
               onSelect={(items) => {
                 setPerformerIDs(items.map((i) => i.id));
               }}
               ids={performerIDs}
-            />
+            /> */}
           </Col>
         </Form.Group>
       </div>
-      {performers
+      {/* {performers
         ?.filter((p) => !p.stored_id)
         .map((p) => (
           <Badge
@@ -505,7 +518,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               <Icon className="fa-fw" icon="plus" />
             </Button>
           </Badge>
-        ))}
+        ))} */}
     </div>
   );
 
