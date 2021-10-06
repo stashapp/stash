@@ -649,13 +649,13 @@ func (qb *tagQueryBuilder) Merge(source []int, destination int) error {
 		"performers_tags":    "performer_id",
 	}
 
-	tagArgs := append(args, destination)
+	args = append(args, destination)
 	for table, idColumn := range tagTables {
 		_, err := qb.tx.Exec(`UPDATE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
-			tagArgs...,
+			args...,
 		)
 		if err != nil {
 			return err
