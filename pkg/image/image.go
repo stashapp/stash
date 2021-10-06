@@ -13,12 +13,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	_ "golang.org/x/image/webp"
 )
-
-const zipSeparator = "\x00"
 
 func GetSourceImage(i *models.Image) (image.Image, error) {
 	f, err := openSourceImage(i.Path)
@@ -55,17 +54,6 @@ func FileExists(path string) bool {
 	return true
 }
 
-func ZipFilename(zipFilename, filenameInZip string) string {
-	return zipFilename + zipSeparator + filenameInZip
-}
-
-// IsZipPath returns true if the path includes the zip separator byte,
-// indicating it is within a zip file.
-// TODO - this should be moved to utils
-func IsZipPath(p string) bool {
-	return strings.Contains(p, zipSeparator)
-}
-
 type imageReadCloser struct {
 	src io.ReadCloser
 	zrc *zip.ReadCloser
@@ -90,7 +78,7 @@ func (i *imageReadCloser) Close() error {
 
 func openSourceImage(path string) (io.ReadCloser, error) {
 	// may need to read from a zip file
-	zipFilename, filename := getFilePath(path)
+	zipFilename, filename := file.ZipFilePath(path)
 	if zipFilename != "" {
 		r, err := zip.OpenReader(zipFilename)
 		if err != nil {
@@ -120,17 +108,6 @@ func openSourceImage(path string) (io.ReadCloser, error) {
 	}
 
 	return os.Open(filename)
-}
-
-func getFilePath(path string) (zipFilename, filename string) {
-	nullIndex := strings.Index(path, zipSeparator)
-	if nullIndex != -1 {
-		zipFilename = path[0:nullIndex]
-		filename = path[nullIndex+1:]
-	} else {
-		filename = path
-	}
-	return
 }
 
 // GetFileDetails returns a pointer to an Image object with the
@@ -191,7 +168,7 @@ func GetFileModTime(path string) (time.Time, error) {
 
 func stat(path string) (os.FileInfo, error) {
 	// may need to read from a zip file
-	zipFilename, filename := getFilePath(path)
+	zipFilename, filename := file.ZipFilePath(path)
 	if zipFilename != "" {
 		r, err := zip.OpenReader(zipFilename)
 		if err != nil {
@@ -212,16 +189,8 @@ func stat(path string) (os.FileInfo, error) {
 	return os.Stat(filename)
 }
 
-// PathDisplayName converts an image path for display. It translates the zip
-// file separator character into '/', since this character is also used for
-// path separators within zip files. It returns the original provided path
-// if it does not contain the zip file separator character.
-func PathDisplayName(path string) string {
-	return strings.Replace(path, zipSeparator, "/", -1)
-}
-
 func Serve(w http.ResponseWriter, r *http.Request, path string) {
-	zipFilename, _ := getFilePath(path)
+	zipFilename, _ := file.ZipFilePath(path)
 	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
 	if zipFilename == "" {
 		http.ServeFile(w, r, path)
@@ -245,7 +214,7 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 }
 
 func IsCover(img *models.Image) bool {
-	_, fn := getFilePath(img.Path)
+	_, fn := file.ZipFilePath(img.Path)
 	return strings.HasSuffix(fn, "cover.jpg")
 }
 
@@ -254,13 +223,13 @@ func GetTitle(s *models.Image) string {
 		return s.Title.String
 	}
 
-	_, fn := getFilePath(s.Path)
+	_, fn := file.ZipFilePath(s.Path)
 	return filepath.Base(fn)
 }
 
 // GetFilename gets the base name of the image file
 // If stripExt is set the file extension is omitted from the name
 func GetFilename(s *models.Image, stripExt bool) string {
-	_, fn := getFilePath(s.Path)
+	_, fn := file.ZipFilePath(s.Path)
 	return utils.GetNameFromPath(fn, stripExt)
 }

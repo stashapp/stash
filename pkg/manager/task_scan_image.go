@@ -3,9 +3,7 @@ package manager
 import (
 	"context"
 	"database/sql"
-	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -31,186 +29,62 @@ func (t *ScanTask) scanImage() {
 		return
 	}
 
-	scanner := file.Scanner{
-		Hasher:       &file.FSHasher{},
-		CalculateMD5: true,
+	scanner := image.Scanner{
+		Scanner:            image.FileScanner(&file.FSHasher{}),
+		StripFileExtension: t.StripFileExtension,
+		Ctx:                t.ctx,
+		TxnManager:         t.TxnManager,
+		Paths:              GetInstance().Paths,
+		PluginCache:        instance.PluginCache,
 	}
 
+	var err error
 	if i != nil {
-		scanned, err := scanner.ScanExisting(i, t.file)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		i, err = t.scanImageExisting(i, scanned)
+		i, err = scanner.ScanExisting(i, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
 	} else {
-		file, err := scanner.ScanNew(t.file)
+		i, err = scanner.ScanNew(t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
 
-		i, err = t.scanImageNew(file)
-		if err != nil {
-			logger.Error(err.Error())
-			return
+		if i != nil {
+			if t.zipGallery != nil {
+				// associate with gallery
+				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+					return gallery.AddImage(r.Gallery(), t.zipGallery.ID, i.ID)
+				}); err != nil {
+					logger.Error(err.Error())
+					return
+				}
+			} else if config.GetInstance().GetCreateGalleriesFromFolders() {
+				// create gallery from folder or associate with existing gallery
+				logger.Infof("Associating image %s with folder gallery", i.Path)
+				var galleryID int
+				var isNewGallery bool
+				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+					var err error
+					galleryID, isNewGallery, err = t.associateImageWithFolderGallery(i.ID, r.Gallery())
+					return err
+				}); err != nil {
+					logger.Error(err.Error())
+					return
+				}
+
+				if isNewGallery {
+					GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
+				}
+			}
 		}
 	}
 
 	if i != nil {
 		t.generateThumbnail(i)
 	}
-}
-
-func (t *ScanTask) scanImageExisting(i *models.Image, scanned *file.Scanned) (retImage *models.Image, err error) {
-	path := t.file.Path()
-	oldChecksum := i.Checksum
-	changed := false
-
-	if scanned.ContentsChanged() {
-		logger.Infof("%s has been updated: rescanning", path)
-
-		// regenerate the file details as well
-		if err := image.SetFileDetails(i); err != nil {
-			return nil, err
-		}
-
-		changed = true
-	} else if scanned.FileUpdated() {
-		logger.Infof("Updated scene file %s", path)
-
-		changed = true
-	}
-
-	if changed {
-		i.SetFile(*scanned.New)
-		i.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
-
-		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			var err error
-			retImage, err = r.Image().UpdateFull(*i)
-			return err
-		}); err != nil {
-			return nil, err
-		}
-
-		// remove the old thumbnail if the checksum changed - we'll regenerate it
-		if oldChecksum != scanned.New.Checksum {
-			err = os.Remove(GetInstance().Paths.Generated.GetThumbnailPath(oldChecksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
-			if err != nil {
-				logger.Errorf("Error deleting thumbnail image: %s", err)
-			}
-		}
-
-		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retImage.ID, plugin.ImageUpdatePost, nil, nil)
-	}
-
-	return
-}
-
-func (t *ScanTask) scanImageNew(file *models.File) (retImage *models.Image, err error) {
-	path := t.file.Path()
-	checksum := file.Checksum
-
-	// check for image by checksum
-	var existingImage *models.Image
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		var err error
-		existingImage, err = r.Image().FindByChecksum(checksum)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	if existingImage != nil {
-		exists := image.FileExists(existingImage.Path)
-		if !t.CaseSensitiveFs {
-			// #1426 - if file exists but is a case-insensitive match for the
-			// original filename, then treat it as a move
-			if exists && strings.EqualFold(path, existingImage.Path) {
-				exists = false
-			}
-		}
-
-		if exists {
-			logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(path), image.PathDisplayName(existingImage.Path))
-			return nil, nil
-		} else {
-			logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(path))
-			imagePartial := models.ImagePartial{
-				ID:   existingImage.ID,
-				Path: &path,
-			}
-
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				retImage, err = r.Image().Update(imagePartial)
-				return err
-			}); err != nil {
-				return nil, err
-			}
-
-			GetInstance().PluginCache.ExecutePostHooks(t.ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
-		}
-	} else {
-		logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(path))
-		currentTime := time.Now()
-		newImage := models.Image{
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		}
-		newImage.SetFile(*file)
-		newImage.Title.String = image.GetFilename(&newImage, t.StripFileExtension)
-		newImage.Title.Valid = true
-
-		if err := image.SetFileDetails(&newImage); err != nil {
-			logger.Error(err.Error())
-			return nil, err
-		}
-
-		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			var err error
-			retImage, err = r.Image().Create(newImage)
-			return err
-		}); err != nil {
-			return nil, err
-		}
-
-		GetInstance().PluginCache.ExecutePostHooks(t.ctx, retImage.ID, plugin.ImageCreatePost, nil, nil)
-	}
-
-	if retImage != nil {
-		if t.zipGallery != nil {
-			// associate with gallery
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				return gallery.AddImage(r.Gallery(), t.zipGallery.ID, retImage.ID)
-			}); err != nil {
-				return nil, err
-			}
-		} else if config.GetInstance().GetCreateGalleriesFromFolders() {
-			// create gallery from folder or associate with existing gallery
-			logger.Infof("Associating image %s with folder gallery", retImage.Path)
-			var galleryID int
-			var isNewGallery bool
-			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				var err error
-				galleryID, isNewGallery, err = t.associateImageWithFolderGallery(retImage.ID, r.Gallery())
-				return err
-			}); err != nil {
-				return nil, err
-			}
-
-			if isNewGallery {
-				GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
-			}
-		}
-	}
-
-	return
 }
 
 func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) (galleryID int, isNew bool, err error) {

@@ -11,7 +11,6 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -343,7 +342,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
 	// don't scan zip images directly
-	if image.IsZipPath(s.Path) {
+	if file.IsZipPath(s.Path) {
 		logger.Warnf("Cannot rescan zip image %s. Rescan zip gallery instead.", s.Path)
 		return nil
 	}
