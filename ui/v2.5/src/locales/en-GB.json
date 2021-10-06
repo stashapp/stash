@@ -327,6 +327,13 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "editing": {
+        "disable_dropdown_create": {
+          "heading": "Disable dropdown create",
+          "description": "Remove the ability to create new objects from the dropdown selectors"
+        },
+        "heading": "Editing"
+      },
       "handy_connection_key": {
         "description": "Handy connection key to use for interactive scenes.",
         "heading": "Handy Connection Key"
