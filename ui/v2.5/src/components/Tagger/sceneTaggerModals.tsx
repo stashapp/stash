@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import * as GQL from "src/core/generated-graphql";
 import PerformerModal from "./PerformerModal";
 import StudioModal from "./StudioModal";
-import { TaggerStateContext } from "./taggerContext";
+import { TaggerStateContext } from "./context";
 
 type PerformerModalCallback = (toCreate?: GQL.PerformerCreateInput) => void;
 type StudioModalCallback = (toCreate?: GQL.StudioCreateInput) => void;

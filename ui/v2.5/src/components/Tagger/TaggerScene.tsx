@@ -7,7 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "./taggerContext";
+import { TaggerStateContext } from "./context";
 import { ScenePreview } from "../Scenes/SceneCard";
 
 interface ITaggerSceneDetails {

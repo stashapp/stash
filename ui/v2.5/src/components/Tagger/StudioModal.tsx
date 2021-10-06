@@ -4,7 +4,7 @@ import { IconName } from "@fortawesome/fontawesome-svg-core";
 
 import { Icon, Modal, TruncatedText } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { TaggerStateContext } from "./taggerContext";
+import { TaggerStateContext } from "./context";
 
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;

@@ -16,7 +16,7 @@ import { uniq } from "lodash";
 import { blobToBase64 } from "base64-blob";
 import { stringToGender } from "src/utils/gender";
 import { OptionalField } from "./IncludeButton";
-import { IScrapedScene, TaggerStateContext } from "./taggerContext";
+import { IScrapedScene, TaggerStateContext } from "./context";
 import { OperationButton } from "../Shared/OperationButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";

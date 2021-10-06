@@ -40,10 +40,7 @@ export const OptionalField: React.FC<IOptionalField> = ({
 }) => {
   return (
     <div className={`optional-field ${!exclude ? "included" : "excluded"}`}>
-      <IncludeExcludeButton
-        exclude={exclude}
-        setExclude={setExclude}
-      />
+      <IncludeExcludeButton exclude={exclude} setExclude={setExclude} />
       {title && <span className="optional-field-title">{title}</span>}
       <div className="optional-field-content">{children}</div>
     </div>
