@@ -1,15 +1,15 @@
 scalar Upload
 
 input GenerateMetadataInput {
-  sprites: Boolean!
-  previews: Boolean!
-  imagePreviews: Boolean!
+  sprites: Boolean
+  previews: Boolean
+  imagePreviews: Boolean
   previewOptions: GeneratePreviewOptionsInput
-  markers: Boolean!
-  markerImagePreviews: Boolean!
-  markerScreenshots: Boolean!
-  transcodes: Boolean!
-  phashes: Boolean!
+  markers: Boolean
+  markerImagePreviews: Boolean
+  markerScreenshots: Boolean
+  transcodes: Boolean
+  phashes: Boolean
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
