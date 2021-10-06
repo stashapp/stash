@@ -18,6 +18,7 @@ import (
 type Scanner struct {
 	file.Scanner
 
+	ImageExtensions    []string
 	StripFileExtension bool
 	Ctx                context.Context
 	CaseSensitiveFs    bool
@@ -33,13 +34,13 @@ func FileScanner(hasher file.Hasher) file.Scanner {
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (scanImages bool, err error) {
+func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
 	scanned, err := scanner.Scanner.ScanExisting(existing, file)
 	if err != nil {
-		return false, err
+		return nil, false, err
 	}
 
-	g := existing.(*models.Gallery)
+	retGallery = existing.(*models.Gallery)
 
 	path := scanned.New.Path
 
@@ -48,14 +49,12 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	if scanned.ContentsChanged() {
 		logger.Infof("%s has been updated: rescanning", path)
 
-		// TODO - do stuff here?
-
-		g.SetFile(*scanned.New)
+		retGallery.SetFile(*scanned.New)
 		changed = true
 	} else if scanned.FileUpdated() {
 		logger.Infof("Updated gallery file %s", path)
 
-		g.SetFile(*scanned.New)
+		retGallery.SetFile(*scanned.New)
 		changed = true
 	}
 
@@ -63,19 +62,19 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		scanImages = true
 		logger.Infof("%s has been updated: rescanning", path)
 
-		g.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		retGallery.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 
 			// TODO - ensure no clashes of hashes
 
-			_, err = r.Gallery().Update(*g)
+			retGallery, err = r.Gallery().Update(*retGallery)
 			return err
 		}); err != nil {
-			return false, err
+			return nil, false, err
 		}
 
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retGallery.ID, plugin.GalleryUpdatePost, nil, nil)
 	}
 
 	return
@@ -124,7 +123,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 			}
 		} else {
 			// don't create gallery if it has no images
-			if countImagesInZip(path) > 0 {
+			if scanner.hasImages(path) {
 				currentTime := time.Now()
 
 				g = &models.Gallery{
@@ -173,10 +172,15 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 	return
 }
 
-func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
+func (scanner *Scanner) isImage(pathname string) bool {
+	return utils.MatchExtension(pathname, scanner.ImageExtensions)
+}
+
+func (scanner *Scanner) hasImages(path string) bool {
 	readCloser, err := zip.OpenReader(path)
 	if err != nil {
-		return err
+		logger.Warnf("Error while walking gallery zip: %v", err)
+		return false
 	}
 	defer readCloser.Close()
 
@@ -189,29 +193,12 @@ func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
 			continue
 		}
 
-		// TODO - fix
-		// if !isImage(file.Name) {
-		// 	continue
-		// }
-
-		err := walkFunc(file)
-		if err != nil {
-			return err
+		if !scanner.isImage(file.Name) {
+			continue
 		}
+
+		return true
 	}
 
-	return nil
-}
-
-func countImagesInZip(path string) int {
-	ret := 0
-	err := walkGalleryZip(path, func(file *zip.File) error {
-		ret++
-		return nil
-	})
-	if err != nil {
-		logger.Warnf("Error while walking gallery zip: %v", err)
-	}
-
-	return ret
+	return false
 }

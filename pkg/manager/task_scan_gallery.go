@@ -3,19 +3,16 @@ package manager
 import (
 	"archive/zip"
 	"context"
-	"database/sql"
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (t *ScanTask) scanGallery() {
@@ -41,19 +38,20 @@ func (t *ScanTask) scanGallery() {
 		return
 	}
 
-	scanner := file.Scanner{
-		Hasher:       &file.FSHasher{},
-		CalculateMD5: true,
+	scanner := gallery.Scanner{
+		Scanner:            gallery.FileScanner(&file.FSHasher{}),
+		ImageExtensions:    instance.Config.GetImageExtensions(),
+		StripFileExtension: t.StripFileExtension,
+		Ctx:                t.ctx,
+		CaseSensitiveFs:    t.CaseSensitiveFs,
+		TxnManager:         t.TxnManager,
+		Paths:              instance.Paths,
+		PluginCache:        instance.PluginCache,
 	}
 
+	var err error
 	if g != nil {
-		scanned, err := scanner.ScanExisting(g, t.file)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		g, scanImages, err = t.scanGalleryExisting(g, scanned)
+		g, scanImages, err = scanner.ScanExisting(g, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
@@ -62,12 +60,7 @@ func (t *ScanTask) scanGallery() {
 		// scan the zip files if the gallery has no images
 		scanImages = scanImages || images == 0
 	} else {
-		file, err := scanner.ScanNew(t.file)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-
-		g, scanImages, err = t.scanGalleryNew(file)
+		g, scanImages, err = scanner.ScanNew(t.file)
 		if err != nil {
 			logger.Error(err.Error())
 		}
@@ -81,131 +74,6 @@ func (t *ScanTask) scanGallery() {
 			t.regenerateZipImages(g)
 		}
 	}
-}
-
-func (t *ScanTask) scanGalleryExisting(g *models.Gallery, scanned *file.Scanned) (ret *models.Gallery, scanImages bool, err error) {
-	path := t.file.Path()
-	changed := false
-
-	if scanned.ContentsChanged() {
-		logger.Infof("%s has been updated: rescanning", path)
-
-		// TODO - do stuff here?
-
-		g.SetFile(*scanned.New)
-		changed = true
-	} else if scanned.FileUpdated() {
-		logger.Infof("Updated gallery file %s", path)
-
-		g.SetFile(*scanned.New)
-		changed = true
-	}
-
-	if changed {
-		scanImages = true
-		logger.Infof("%s has been updated: rescanning", path)
-
-		g.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
-
-		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-
-			// TODO - ensure no clashes of hashes
-
-			_, err = r.Gallery().Update(*g)
-			return err
-		}); err != nil {
-			return nil, false, err
-		}
-
-		GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
-	}
-
-	return
-}
-
-func (t *ScanTask) scanGalleryNew(file *models.File) (g *models.Gallery, scanImages bool, err error) {
-	path := t.file.Path()
-	isNewGallery := false
-	isUpdatedGallery := false
-
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		qb := r.Gallery()
-
-		checksum := file.Checksum
-
-		g, _ = qb.FindByChecksum(checksum)
-		if g != nil {
-			exists, _ := utils.FileExists(g.Path.String)
-			if !t.CaseSensitiveFs {
-				// #1426 - if file exists but is a case-insensitive match for the
-				// original filename, then treat it as a move
-				if exists && strings.EqualFold(path, g.Path.String) {
-					exists = false
-				}
-			}
-
-			if exists {
-				logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
-			} else {
-				logger.Infof("%s already exists.  Updating path...", path)
-				g.Path = sql.NullString{
-					String: path,
-					Valid:  true,
-				}
-				g, err = qb.Update(*g)
-				if err != nil {
-					return err
-				}
-
-				isUpdatedGallery = true
-			}
-		} else {
-			// don't create gallery if it has no images
-			if countImagesInZip(path) > 0 {
-				currentTime := time.Now()
-
-				newGallery := models.Gallery{
-					Zip: true,
-					Title: sql.NullString{
-						String: utils.GetNameFromPath(path, t.StripFileExtension),
-						Valid:  true,
-					},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-				}
-
-				g.SetFile(*file)
-
-				// only warn when creating the gallery
-				ok, err := utils.IsZipFileUncompressed(path)
-				if err == nil && !ok {
-					logger.Warnf("%s is using above store (0) level compression.", path)
-				}
-
-				logger.Infof("%s doesn't exist.  Creating new item...", path)
-				g, err = qb.Create(newGallery)
-				if err != nil {
-					return err
-				}
-
-				scanImages = true
-				isNewGallery = true
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, false, err
-	}
-
-	if isNewGallery {
-		GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
-	} else if isUpdatedGallery {
-		GetInstance().PluginCache.ExecutePostHooks(t.ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
-	}
-
-	scanImages = isNewGallery
-	return
 }
 
 // associates a gallery to a scene with the same basename
