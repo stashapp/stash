@@ -26,5 +26,5 @@ func (s File) GetHash(hashAlgorithm HashAlgorithm) string {
 }
 
 func (s File) Equal(o File) bool {
-	return s.Path == o.Path && s.Checksum == o.Checksum && s.OSHash == o.OSHash && s.Size == o.Size && s.FileModTime == o.FileModTime
+	return s.Path == o.Path && s.Checksum == o.Checksum && s.OSHash == o.OSHash && s.Size == o.Size && s.FileModTime.Equal(o.FileModTime)
 }

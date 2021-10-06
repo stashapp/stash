@@ -37,7 +37,7 @@ func (s Scanned) FileUpdated() bool {
 		return false
 	}
 
-	return s.Old.Equal(*s.New)
+	return !s.Old.Equal(*s.New)
 }
 
 // ContentsChanged returns true if both old and new files are present and the file content is different.
