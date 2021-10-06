@@ -2,7 +2,6 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration } from "src/core/StashService";
 import {
   GridCard,
   HoverPopover,
@@ -12,6 +11,7 @@ import {
 } from "src/components/Shared";
 import { PopoverCountButton } from "src/components/Shared/PopoverCountButton";
 import { NavUtils, TextUtils } from "src/utils";
+import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 
@@ -24,9 +24,8 @@ interface IProps {
 }
 
 export const GalleryCard: React.FC<IProps> = (props) => {
-  const config = useConfiguration();
-  const showStudioAsText =
-    config?.data?.configuration.interface.showStudioAsText ?? false;
+  const { configuration } = React.useContext(ConfigurationContext);
+  const showStudioAsText = configuration?.interface.showStudioAsText ?? false;
 
   function maybeRenderScenePopoverButton() {
     if (props.gallery.scenes.length === 0) return;
