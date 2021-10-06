@@ -77,6 +77,16 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				return stoppingErr
 			}
 
+			// #1756 - skip zero length files and directories
+			if info.IsDir() {
+				return nil
+			}
+
+			if info.Size() == 0 {
+				logger.Infof("Skipping zero-length file: %s", path)
+				return nil
+			}
+
 			if isGallery(path) {
 				galleries = append(galleries, path)
 			}
@@ -97,6 +107,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
 				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
 				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+				GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
 				progress:             progress,
 				CaseSensitiveFs:      csFs,
 				ctx:                  ctx,
@@ -216,6 +227,7 @@ type ScanTask struct {
 	GeneratePhash        bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
+	GenerateThumbnails   bool
 	zipGallery           *models.Gallery
 	progress             *job.Progress
 	CaseSensitiveFs      bool

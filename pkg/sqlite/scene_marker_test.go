@@ -68,6 +68,21 @@ func TestMarkerCountByTagID(t *testing.T) {
 	})
 }
 
+func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sort := "scenes_updated_at"
+		_, _, err := r.SceneMarker().Query(nil, &models.FindFilterType{
+			Sort: &sort,
+		})
+
+		if err != nil {
+			t.Errorf("Error querying scene markers: %s", err.Error())
+		}
+
+		return nil
+	})
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find

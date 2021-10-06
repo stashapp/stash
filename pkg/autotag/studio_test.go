@@ -29,6 +29,12 @@ var testStudioCases = []testStudioCase{
 		"",
 	},
 	{
+		`studio + name\`,
+		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		"",
+		"",
+	},
+	{
 		"studio name",
 		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
 		"alias name",
@@ -40,9 +46,17 @@ var testStudioCases = []testStudioCase{
 		"alias + name",
 		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
 	},
+	{
+		`studio + name\`,
+		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`alias + name\`,
+		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+	},
 }
 
 func TestStudioScenes(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testStudioCases {
 		testStudioScenes(t, p)
 	}
@@ -133,6 +147,8 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 }
 
 func TestStudioImages(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testStudioCases {
 		testStudioImages(t, p)
 	}
@@ -222,6 +238,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 }
 
 func TestStudioGalleries(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testStudioCases {
 		testStudioGalleries(t, p)
 	}

@@ -2,7 +2,6 @@ package ffmpeg
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -32,7 +31,9 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 	notify := r.Context().Done()
 	go func() {
 		<-notify
-		s.Process.Kill()
+		if err := s.Process.Kill(); err != nil {
+			logger.Warnf("unable to kill os process %v: %v", s.Process.Pid, err)
+		}
 	}()
 
 	_, err := io.Copy(w, s.Stdout)
@@ -232,7 +233,7 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 
 	// stderr must be consumed or the process deadlocks
 	go func() {
-		stderrData, _ := ioutil.ReadAll(stderr)
+		stderrData, _ := io.ReadAll(stderr)
 		stderrString := string(stderrData)
 		if len(stderrString) > 0 {
 			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)

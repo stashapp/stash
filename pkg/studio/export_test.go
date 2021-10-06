@@ -41,8 +41,10 @@ var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+)
 
 func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{
@@ -117,32 +119,32 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			createFullStudio(studioID, parentStudioID),
 			createFullJSONStudio(parentStudioName, image, []string{"alias"}),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyStudio(noImageID),
 			createEmptyJSONStudio(),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errImageID, parentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(missingParentStudioID, missingStudioID),
 			createFullJSONStudio("", image, nil),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errStudioID, errParentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(errAliasID, parentStudioID),
 			nil,
 			true,

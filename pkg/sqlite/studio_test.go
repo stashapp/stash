@@ -828,6 +828,89 @@ func TestStudioUpdateAlias(t *testing.T) {
 	}
 }
 
+// TestStudioQueryFast does a quick test for major errors, no result verification
+func TestStudioQueryFast(t *testing.T) {
+
+	tsString := "test"
+	tsInt := 1
+
+	testStringCriterion := models.StringCriterionInput{
+		Value:    tsString,
+		Modifier: models.CriterionModifierEquals,
+	}
+	testIncludesMultiCriterion := models.MultiCriterionInput{
+		Value:    []string{tsString},
+		Modifier: models.CriterionModifierIncludes,
+	}
+	testIntCriterion := models.IntCriterionInput{
+		Value:    tsInt,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	nameFilter := models.StudioFilterType{
+		Name: &testStringCriterion,
+	}
+	aliasesFilter := models.StudioFilterType{
+		Aliases: &testStringCriterion,
+	}
+	stashIDFilter := models.StudioFilterType{
+		StashID: &testStringCriterion,
+	}
+	urlFilter := models.StudioFilterType{
+		URL: &testStringCriterion,
+	}
+	ratingFilter := models.StudioFilterType{
+		Rating: &testIntCriterion,
+	}
+	sceneCountFilter := models.StudioFilterType{
+		SceneCount: &testIntCriterion,
+	}
+	imageCountFilter := models.StudioFilterType{
+		SceneCount: &testIntCriterion,
+	}
+	parentsFilter := models.StudioFilterType{
+		Parents: &testIncludesMultiCriterion,
+	}
+
+	filters := []models.StudioFilterType{nameFilter, aliasesFilter, stashIDFilter, urlFilter, ratingFilter, sceneCountFilter, imageCountFilter, parentsFilter}
+
+	missingStrings := []string{"image", "stash_id", "details"}
+
+	for _, m := range missingStrings {
+		filters = append(filters, models.StudioFilterType{
+			IsMissing: &m,
+		})
+	}
+
+	sortbyStrings := []string{"scenes_count", "images_count", "galleries_count", "created_at", "updated_at", "name", "random_26819649", "rating"}
+
+	var findFilters []models.FindFilterType
+
+	for _, sb := range sortbyStrings {
+		findFilters = append(findFilters, models.FindFilterType{
+			Q:       &tsString,
+			Page:    &tsInt,
+			PerPage: &tsInt,
+			Sort:    &sb,
+		})
+
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		for _, f := range filters {
+			for _, ff := range findFilters {
+				_, _, err := sqb.Query(&f, &ff)
+				if err != nil {
+					t.Errorf("Error querying studio: %s", err.Error())
+				}
+			}
+		}
+
+		return nil
+	})
+}
+
 // TODO Create
 // TODO Update
 // TODO Destroy

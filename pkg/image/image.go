@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	_ "golang.org/x/image/webp"
@@ -32,6 +32,18 @@ func GetSourceImage(i *models.Image) (image.Image, error) {
 	}
 
 	return srcImage, nil
+}
+
+func DecodeSourceImage(i *models.Image) (*image.Config, *string, error) {
+	f, err := openSourceImage(i.Path)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer f.Close()
+
+	config, format, err := image.DecodeConfig(f)
+
+	return &config, &format, err
 }
 
 func CalculateMD5(path string) (string, error) {
@@ -131,15 +143,15 @@ func SetFileDetails(i *models.Image) error {
 		return err
 	}
 
-	src, _ := GetSourceImage(i)
+	config, _, err := DecodeSourceImage(i)
 
-	if src != nil {
+	if err == nil {
 		i.Width = sql.NullInt64{
-			Int64: int64(src.Bounds().Max.X),
+			Int64: int64(config.Width),
 			Valid: true,
 		}
 		i.Height = sql.NullInt64{
-			Int64: int64(src.Bounds().Max.Y),
+			Int64: int64(config.Height),
 			Valid: true,
 		}
 	}
@@ -203,13 +215,15 @@ func Serve(w http.ResponseWriter, r *http.Request, path string) {
 		}
 		defer rc.Close()
 
-		data, err := ioutil.ReadAll(rc)
+		data, err := io.ReadAll(rc)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Write(data)
+		if k, err := w.Write(data); err != nil {
+			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
+		}
 	}
 }
 

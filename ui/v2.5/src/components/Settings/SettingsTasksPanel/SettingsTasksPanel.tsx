@@ -46,6 +46,9 @@ export const SettingsTasksPanel: React.FC = () => {
   const [scanGeneratePhashes, setScanGeneratePhashes] = useState<boolean>(
     false
   );
+  const [scanGenerateThumbnails, setScanGenerateThumbnails] = useState<boolean>(
+    false
+  );
   const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
   const [
     scanGenerateImagePreviews,
@@ -161,6 +164,7 @@ export const SettingsTasksPanel: React.FC = () => {
         scanGenerateImagePreviews,
         scanGenerateSprites,
         scanGeneratePhashes,
+        scanGenerateThumbnails,
       });
       Toast.success({
         content: intl.formatMessage(
@@ -402,6 +406,14 @@ export const SettingsTasksPanel: React.FC = () => {
             id: "config.tasks.generate_phashes_during_scan",
           })}
           onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
+        />
+        <Form.Check
+          id="scan-generate-thumbnails"
+          checked={scanGenerateThumbnails}
+          label={intl.formatMessage({
+            id: "config.tasks.generate_thumbnails_during_scan",
+          })}
+          onChange={() => setScanGenerateThumbnails(!scanGenerateThumbnails)}
         />
       </Form.Group>
       <Form.Group>

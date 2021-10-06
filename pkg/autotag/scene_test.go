@@ -145,6 +145,8 @@ func generateTestTable(testName, ext string) []pathTestTable {
 }
 
 func TestScenePerformers(t *testing.T) {
+	t.Parallel()
+
 	const sceneID = 1
 	const performerName = "performer name"
 	const performerID = 2
@@ -188,6 +190,8 @@ func TestScenePerformers(t *testing.T) {
 }
 
 func TestSceneStudios(t *testing.T) {
+	t.Parallel()
+
 	const sceneID = 1
 	const studioName = "studio name"
 	const studioID = 2
@@ -257,6 +261,8 @@ func TestSceneStudios(t *testing.T) {
 }
 
 func TestSceneTags(t *testing.T) {
+	t.Parallel()
+
 	const sceneID = 1
 	const tagName = "tag name"
 	const tagID = 2

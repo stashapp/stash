@@ -6,6 +6,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   }
   databasePath
   generatedPath
+  metadataPath
   cachePath
   calculateMD5
   videoFileNamingAlgorithm
@@ -18,10 +19,12 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
+  writeImageThumbnails
   apiKey
   username
   password
   maxSessionAge
+  trustedProxies
   logFile
   logOut
   logLevel

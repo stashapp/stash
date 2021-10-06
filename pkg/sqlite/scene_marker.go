@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -159,7 +160,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 
 	query.addFilter(filter)
 
-	query.sortAndPagination = qb.getSceneMarkerSort(findFilter) + getPagination(findFilter)
+	query.sortAndPagination = qb.getSceneMarkerSort(&query, findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -246,13 +247,15 @@ func sceneMarkerPerformersCriterionHandler(qb *sceneMarkerQueryBuilder, performe
 	}
 }
 
-func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFilterType) string {
+func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
 	tableName := "scene_markers"
 	if sort == "scenes_updated_at" {
+		// ensure scene table is joined
+		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
 		sort = "updated_at"
-		tableName = "scene"
+		tableName = "scenes"
 	}
 	return getSort(sort, direction, tableName)
 }

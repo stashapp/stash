@@ -9,6 +9,8 @@ import (
 )
 
 func TestPerformerScenes(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		performerName string
 		expectedRegex string
@@ -22,6 +24,10 @@ func TestPerformerScenes(t *testing.T) {
 		{
 			"performer + name",
 			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		},
+		{
+			`performer + name\`,
+			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
 		},
 	}
 
@@ -81,6 +87,8 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 }
 
 func TestPerformerImages(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		performerName string
 		expectedRegex string
@@ -153,6 +161,8 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 }
 
 func TestPerformerGalleries(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		performerName string
 		expectedRegex string

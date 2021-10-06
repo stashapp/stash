@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -174,8 +173,10 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 func (t *ExportTask) generateDownload() error {
 	// zip the files and register a download link
-	utils.EnsureDir(instance.Paths.Generated.Downloads)
-	z, err := ioutil.TempFile(instance.Paths.Generated.Downloads, "export*.zip")
+	if err := utils.EnsureDir(instance.Paths.Generated.Downloads); err != nil {
+		return err
+	}
+	z, err := os.CreateTemp(instance.Paths.Generated.Downloads, "export*.zip")
 	if err != nil {
 		return err
 	}

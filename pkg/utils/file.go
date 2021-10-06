@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/user"
@@ -108,10 +107,10 @@ func EmptyDir(path string) error {
 // ListDir will return the contents of a given directory path as a string slice
 func ListDir(path string) ([]string, error) {
 	var dirPaths []string
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		path = filepath.Dir(path)
-		files, err = ioutil.ReadDir(path)
+		files, err = os.ReadDir(path)
 		if err != nil {
 			return dirPaths, err
 		}
@@ -196,7 +195,7 @@ func WriteFile(path string, file []byte) error {
 		return fmt.Errorf("cannot ensure path %s", pathErr)
 	}
 
-	err := ioutil.WriteFile(path, file, 0755)
+	err := os.WriteFile(path, file, 0755)
 	if err != nil {
 		return fmt.Errorf("write error for thumbnail %s: %s ", path, err)
 	}

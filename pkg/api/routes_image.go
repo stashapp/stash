@@ -33,15 +33,35 @@ func (rs imageRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
-	image := r.Context().Value(imageKey).(*models.Image)
-	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
+	img := r.Context().Value(imageKey).(*models.Image)
+	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
 
-	// if the thumbnail doesn't exist, fall back to the original file
+	w.Header().Add("Cache-Control", "max-age=604800000")
+
+	// if the thumbnail doesn't exist, encode on the fly
 	exists, _ := utils.FileExists(filepath)
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		rs.Image(w, r)
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEGPath)
+		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
+		if err != nil {
+			logger.Errorf("error generating thumbnail for image: %s", err.Error())
+
+			// backwards compatibility - fallback to original image instead
+			rs.Image(w, r)
+			return
+		}
+
+		// write the generated thumbnail to disk if enabled
+		if manager.GetInstance().Config.IsWriteImageThumbnails() {
+			if err := utils.WriteFile(filepath, data); err != nil {
+				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
+			}
+		}
+		if n, err := w.Write(data); err != nil {
+			logger.Errorf("error writing thumbnail response. Wrote %v bytes: %v", n, err)
+		}
 	}
 }
 

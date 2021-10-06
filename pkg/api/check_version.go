@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"runtime"
@@ -129,7 +129,7 @@ func makeGithubRequest(url string, output interface{}) error {
 
 	defer response.Body.Close()
 
-	data, err := ioutil.ReadAll(response.Body)
+	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API read response failed: %s", err)
