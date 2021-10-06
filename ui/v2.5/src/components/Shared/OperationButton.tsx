@@ -1,22 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button, ButtonProps } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/Shared";
 
 interface IOperationButton extends ButtonProps {
   operation?: () => Promise<void>;
   loading?: boolean;
+  hideChildrenWhenLoading?: boolean;
   setLoading?: (v: boolean) => void;
 }
 
 export const OperationButton: React.FC<IOperationButton> = (props) => {
   const [internalLoading, setInternalLoading] = useState(false);
+  const mounted = useRef(false);
 
   const {
     operation,
     loading: externalLoading,
+    hideChildrenWhenLoading = false,
     setLoading: setExternalLoading,
     ...withoutExtras
   } = props;
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const setLoading = setExternalLoading || setInternalLoading;
   const loading =
@@ -26,7 +36,10 @@ export const OperationButton: React.FC<IOperationButton> = (props) => {
     if (operation) {
       setLoading(true);
       await operation();
-      setLoading(false);
+
+      if (mounted.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -37,7 +50,7 @@ export const OperationButton: React.FC<IOperationButton> = (props) => {
           <LoadingIndicator message="" inline small />
         </span>
       )}
-      {props.children}
+      {(!loading || !hideChildrenWhenLoading) && props.children}
     </Button>
   );
 };

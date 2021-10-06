@@ -3,17 +3,19 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
-import { PerformerSelect } from "src/components/Shared";
+import { Icon, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
 
 import { OptionalField } from "./IncludeButton";
+import { OperationButton } from "../Shared/OperationButton";
 
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformer;
   selectedID: string | undefined;
   setSelectedID: (id: string | undefined) => void;
   onCreate: () => void;
+  onLink?: () => Promise<void>;
   endpoint?: string;
 }
 
@@ -22,6 +24,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   selectedID,
   setSelectedID,
   onCreate,
+  onLink,
   endpoint,
 }) => {
   const {
@@ -77,6 +80,21 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     );
   }
 
+  function maybeRenderLinkButton() {
+    if (endpoint && onLink) {
+      return (
+        <OperationButton
+          variant="secondary"
+          disabled={selectedID === undefined}
+          operation={onLink}
+          hideChildrenWhenLoading
+        >
+          <Icon icon="save" />
+        </OperationButton>
+      );
+    }
+  }
+
   const selectedSource = !selectedID ? "skip" : "existing";
 
   return (
@@ -103,6 +121,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           })}
           isClearable={false}
         />
+        {maybeRenderLinkButton()}
       </ButtonGroup>
     </div>
   );

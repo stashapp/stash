@@ -6,6 +6,8 @@ import {
 } from "src/components/Tagger/constants";
 import * as GQL from "src/core/generated-graphql";
 import {
+  queryFindPerformer,
+  queryFindStudio,
   queryScrapeScene,
   queryScrapeSceneQuery,
   queryScrapeSceneQueryFragment,
@@ -13,8 +15,10 @@ import {
   useConfiguration,
   useListSceneScrapers,
   usePerformerCreate,
+  usePerformerUpdate,
   useSceneUpdate,
   useStudioCreate,
+  useStudioUpdate,
   useTagCreate,
 } from "src/core/StashService";
 import { useLocalForage, useToast } from "src/hooks";
@@ -38,9 +42,14 @@ export interface ITaggerContextState {
   createNewPerformer: (
     toCreate: GQL.PerformerCreateInput
   ) => Promise<string | undefined>;
+  linkPerformer: (
+    performer: GQL.ScrapedPerformer,
+    performerID: string
+  ) => Promise<void>;
   createNewStudio: (
     toCreate: GQL.StudioCreateInput
   ) => Promise<string | undefined>;
+  linkStudio: (studio: GQL.ScrapedStudio, studioID: string) => Promise<void>;
   resolveScene: (
     sceneID: string,
     index: number,
@@ -71,7 +80,9 @@ export const TaggerStateContext = React.createContext<ITaggerContextState>({
   stopMultiScrape: () => {},
   createNewTag: dummyValFn,
   createNewPerformer: dummyValFn,
+  linkPerformer: dummyFn,
   createNewStudio: dummyValFn,
+  linkStudio: dummyFn,
   resolveScene: dummyFn,
   submitFingerprints: dummyFn,
   pendingFingerprints: [],
@@ -108,7 +119,9 @@ export const TaggerContext: React.FC = ({ children }) => {
   const Toast = useToast();
   const [createTag] = useTagCreate();
   const [createPerformer] = usePerformerCreate();
+  const [updatePerformer] = usePerformerUpdate();
   const [createStudio] = useStudioCreate();
+  const [updateStudio] = useStudioUpdate();
   const [updateScene] = useSceneUpdate();
 
   useEffect(() => {
@@ -553,6 +566,69 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
   }
 
+  async function linkPerformer(
+    performer: GQL.ScrapedPerformer,
+    performerID: string
+  ) {
+    if (!performer.remote_site_id || !currentSource?.stashboxEndpoint) return;
+
+    try {
+      const queryResult = await queryFindPerformer(performerID);
+      if (queryResult.data.findPerformer) {
+        const target = queryResult.data.findPerformer;
+
+        const stashIDs: GQL.StashIdInput[] = target.stash_ids.map((e) => {
+          return {
+            endpoint: e.endpoint,
+            stash_id: e.stash_id,
+          };
+        });
+
+        stashIDs.push({
+          stash_id: performer.remote_site_id,
+          endpoint: currentSource?.stashboxEndpoint,
+        });
+
+        await updatePerformer({
+          variables: {
+            input: {
+              id: performerID,
+              stash_ids: stashIDs,
+            },
+          },
+        });
+
+        const newSearchResults = mapResults((r) => {
+          if (!r.performers) {
+            return r;
+          }
+
+          return {
+            ...r,
+            performers: r.performers.map((p) => {
+              if (p.remote_site_id === performer.remote_site_id) {
+                return {
+                  ...p,
+                  stored_id: performerID,
+                };
+              }
+
+              return p;
+            }),
+          };
+        });
+
+        setSearchResults(newSearchResults);
+
+        Toast.success({
+          content: <span>Added stash-id to performer</span>,
+        });
+      }
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   async function createNewStudio(toCreate: GQL.StudioCreateInput) {
     try {
       const result = await createStudio({
@@ -596,6 +672,63 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
   }
 
+  async function linkStudio(studio: GQL.ScrapedStudio, studioID: string) {
+    if (!studio.remote_site_id || !currentSource?.stashboxEndpoint) return;
+
+    try {
+      const queryResult = await queryFindStudio(studioID);
+      if (queryResult.data.findStudio) {
+        const target = queryResult.data.findStudio;
+
+        const stashIDs: GQL.StashIdInput[] = target.stash_ids.map((e) => {
+          return {
+            endpoint: e.endpoint,
+            stash_id: e.stash_id,
+          };
+        });
+
+        stashIDs.push({
+          stash_id: studio.remote_site_id,
+          endpoint: currentSource?.stashboxEndpoint,
+        });
+
+        await updateStudio({
+          variables: {
+            input: {
+              id: studioID,
+              stash_ids: stashIDs,
+            },
+          },
+        });
+
+        const newSearchResults = mapResults((r) => {
+          if (!r.studio) {
+            return r;
+          }
+
+          return {
+            ...r,
+            studio:
+              r.remote_site_id === studio.remote_site_id
+                ? {
+                    ...r.studio,
+                    stored_id: studioID,
+                  }
+                : r.studio,
+          };
+        });
+
+        setSearchResults(newSearchResults);
+
+        Toast.success({
+          content: <span>Added stash-id to studio</span>,
+        });
+      }
+    } catch (e) {
+      Toast.error(e);
+    }
+  }
+
   return (
     <TaggerStateContext.Provider
       value={{
@@ -616,7 +749,9 @@ export const TaggerContext: React.FC = ({ children }) => {
         stopMultiScrape,
         createNewTag,
         createNewPerformer,
+        linkPerformer,
         createNewStudio,
+        linkStudio,
         resolveScene,
         saveScene,
         submitFingerprints,

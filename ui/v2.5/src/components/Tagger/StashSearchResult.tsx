@@ -7,7 +7,6 @@ import * as GQL from "src/core/generated-graphql";
 import {
   Icon,
   LoadingIndicator,
-  StudioSelect,
   SuccessIcon,
   TagSelect,
   TruncatedText,
@@ -21,6 +20,7 @@ import { IScrapedScene, TaggerStateContext } from "./taggerContext";
 import { OperationButton } from "../Shared/OperationButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
+import StudioResult from "./StudioResult";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -117,7 +117,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     config,
     createNewTag,
     createNewPerformer,
+    linkPerformer,
     createNewStudio,
+    linkStudio,
     resolveScene,
     currentSource,
     saveScene,
@@ -431,41 +433,24 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
-  const renderStudioField = () => (
-    <div className="mt-2">
-      {/* <StudioResult studio={scene.studio} setStudio={setStudio} /> */}
-      <div>
-        <Form.Group controlId="studio" as={Row}>
-          {FormUtils.renderLabel({
-            title: `${intl.formatMessage({ id: "studio" })}:`,
-          })}
-          <Col sm={9} xl={12}>
-            <StudioSelect
-              onSelect={(items) => {
-                setStudioID(items[0]?.id);
-              }}
-              ids={studioID ? [studioID] : []}
-            />
-          </Col>
-        </Form.Group>
-      </div>
-      {scene.studio && !scene.studio.stored_id && (
-        <Badge
-          className="tag-item"
-          variant="secondary"
-          key={scene.studio.name}
-          onClick={() => {
-            showStudioModal(scene.studio!);
-          }}
-        >
-          {scene.studio.name}
-          <Button className="minimal ml-2">
-            <Icon className="fa-fw" icon="plus" />
-          </Button>
-        </Badge>
-      )}
-    </div>
-  );
+  const maybeRenderStudioField = () => {
+    if (scene.studio) {
+      return (
+        <div className="mt-2">
+          <StudioResult
+            studio={scene.studio}
+            selectedID={studioID}
+            setSelectedID={(id) => setStudioID(id)}
+            onCreate={() => showStudioModal(scene.studio!)}
+            endpoint={currentSource?.stashboxEndpoint}
+            onLink={async () => {
+              await linkStudio(scene.studio!, studioID!);
+            }}
+          />
+        </div>
+      );
+    }
+  };
 
   function setPerformerID(performerIndex: number, id: string | undefined) {
     const newPerformerIDs = [...performerIDs];
@@ -476,49 +461,22 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const renderPerformerField = () => (
     <div className="mt-2">
       <div>
-        <Form.Group controlId="performers" as={Row}>
-          {FormUtils.renderLabel({
-            title: `${intl.formatMessage({ id: "performers" })}:`,
-          })}
-          <Col sm={9} xl={12}>
-            {performers.map((performer, performerIndex) => (
-              <PerformerResult
-                performer={performer}
-                selectedID={performerIDs[performerIndex]}
-                setSelectedID={(id) => setPerformerID(performerIndex, id)}
-                onCreate={() => showPerformerModal(performer)}
-                endpoint={currentSource?.stashboxEndpoint}
-                key={`${performer.name ?? performer.remote_site_id ?? ""}`}
-              />
-            ))}
-
-            {/* <PerformerSelect
-              isMulti
-              onSelect={(items) => {
-                setPerformerIDs(items.map((i) => i.id));
+        <Form.Group controlId="performers">
+          {performers.map((performer, performerIndex) => (
+            <PerformerResult
+              performer={performer}
+              selectedID={performerIDs[performerIndex]}
+              setSelectedID={(id) => setPerformerID(performerIndex, id)}
+              onCreate={() => showPerformerModal(performer)}
+              onLink={async () => {
+                await linkPerformer(performer, performerIDs[performerIndex]!);
               }}
-              ids={performerIDs}
-            /> */}
-          </Col>
+              endpoint={currentSource?.stashboxEndpoint}
+              key={`${performer.name ?? performer.remote_site_id ?? ""}`}
+            />
+          ))}
         </Form.Group>
       </div>
-      {/* {performers
-        ?.filter((p) => !p.stored_id)
-        .map((p) => (
-          <Badge
-            className="tag-item"
-            variant="secondary"
-            key={p.name}
-            onClick={() => {
-              showPerformerModal(p);
-            }}
-          >
-            {p.name}
-            <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon="plus" />
-            </Button>
-          </Badge>
-        ))} */}
     </div>
   );
 
@@ -593,7 +551,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       </div>
       {isActive && (
         <div className="col-lg-6">
-          {renderStudioField()}
+          {maybeRenderStudioField()}
           {renderPerformerField()}
           {renderTagsField()}
 
