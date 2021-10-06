@@ -65,7 +65,7 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 	}
 
 	config := config.GetInstance()
-	if !matchExtension(s.Path, config.GetVideoExtensions()) {
+	if !utils.MatchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Cleaning: \"%s\"", s.Path)
 		return true
 	}
@@ -96,7 +96,7 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 	}
 
 	config := config.GetInstance()
-	if !matchExtension(path, config.GetGalleryExtensions()) {
+	if !utils.MatchExtension(path, config.GetGalleryExtensions()) {
 		logger.Infof("File extension does not match gallery extensions. Cleaning: \"%s\"", path)
 		return true
 	}
@@ -126,7 +126,7 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 	}
 
 	config := config.GetInstance()
-	if !matchExtension(s.Path, config.GetImageExtensions()) {
+	if !utils.MatchExtension(s.Path, config.GetImageExtensions()) {
 		logger.Infof("File extension does not match image extensions. Cleaning: \"%s\"", s.Path)
 		return true
 	}

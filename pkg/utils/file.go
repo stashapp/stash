@@ -357,3 +357,16 @@ func FindInPaths(paths []string, baseName string) string {
 
 	return ""
 }
+
+// MatchExtension returns true if the extension of the provided path
+// matches any of the provided extensions.
+func MatchExtension(path string, extensions []string) bool {
+	ext := filepath.Ext(path)
+	for _, e := range extensions {
+		if strings.EqualFold(ext, "."+e) {
+			return true
+		}
+	}
+
+	return false
+}

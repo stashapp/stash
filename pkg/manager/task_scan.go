@@ -308,17 +308,17 @@ func (t *ScanTask) doesPathExist() bool {
 	path := t.file.Path()
 	ret := false
 	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		if matchExtension(path, gExt) {
+		if utils.MatchExtension(path, gExt) {
 			gallery, _ := r.Gallery().FindByPath(path)
 			if gallery != nil {
 				ret = true
 			}
-		} else if matchExtension(path, vidExt) {
+		} else if utils.MatchExtension(path, vidExt) {
 			s, _ := r.Scene().FindByPath(path)
 			if s != nil {
 				ret = true
 			}
-		} else if matchExtension(path, imgExt) {
+		} else if utils.MatchExtension(path, imgExt) {
 			i, _ := r.Image().FindByPath(path)
 			if i != nil {
 				ret = true
@@ -372,12 +372,12 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			return nil
 		}
 
-		if !s.ExcludeVideo && matchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
+		if !s.ExcludeVideo && utils.MatchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
 			return f(path, info, err)
 		}
 
 		if !s.ExcludeImage {
-			if (matchExtension(path, imgExt) || matchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
+			if (utils.MatchExtension(path, imgExt) || utils.MatchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
 		}
