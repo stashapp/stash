@@ -64,6 +64,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	var galleries []string
 
+	mutexManager := utils.NewMutexManager()
+
 	for _, sp := range paths {
 		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
 		if er != nil {
@@ -98,6 +100,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				progress:             progress,
 				CaseSensitiveFs:      csFs,
 				ctx:                  ctx,
+				mutexManager:         mutexManager,
 			}
 
 			go func() {
@@ -216,6 +219,8 @@ type ScanTask struct {
 	zipGallery           *models.Gallery
 	progress             *job.Progress
 	CaseSensitiveFs      bool
+
+	mutexManager *utils.MutexManager
 }
 
 func (t *ScanTask) Start() {

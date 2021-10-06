@@ -37,6 +37,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		Screenshotter:       &instance.FFMPEG,
 		VideoFileCreator:    &instance.FFProbe,
 		PluginCache:         instance.PluginCache,
+		MutexManager:        t.mutexManager,
 	}
 
 	if s != nil {

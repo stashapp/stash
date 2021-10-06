@@ -19,6 +19,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+const mutexType = "scene"
+
 type videoFileCreator interface {
 	NewVideoFile(path string, stripFileExtension bool) (*ffmpeg.VideoFile, error)
 }
@@ -37,6 +39,7 @@ type Scanner struct {
 	Screenshotter    screenshotter
 	VideoFileCreator videoFileCreator
 	PluginCache      *plugin.Cache
+	MutexManager     *utils.MutexManager
 }
 
 func FileScanner(hasher file.Hasher, fileNamingAlgorithm models.HashAlgorithm, calculateMD5 bool) file.Scanner {
@@ -99,7 +102,17 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	}
 
 	if changed {
+		// we are operating on a checksum now, so grab a mutex on the checksum
+		done := make(chan struct{})
+		if scanned.New.Checksum != "" {
+			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
+		}
+		if scanned.New.OSHash != "" {
+			scanner.MutexManager.Claim(mutexType, scanned.New.OSHash, done)
+		}
+
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			defer close(done)
 			qb := r.Scene()
 
 			// ensure no clashes of hashes
@@ -150,6 +163,16 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 	path := file.Path()
 	checksum := scanned.Checksum
 	oshash := scanned.OSHash
+
+	// grab a mutex on the checksum and oshash
+	done := make(chan struct{})
+	if checksum != "" {
+		scanner.MutexManager.Claim(mutexType, checksum, done)
+	}
+	if oshash != "" {
+		scanner.MutexManager.Claim(mutexType, oshash, done)
+	}
+	defer close(done)
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both

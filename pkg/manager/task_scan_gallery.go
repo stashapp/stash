@@ -47,6 +47,7 @@ func (t *ScanTask) scanGallery() {
 		TxnManager:         t.TxnManager,
 		Paths:              instance.Paths,
 		PluginCache:        instance.PluginCache,
+		MutexManager:       t.mutexManager,
 	}
 
 	var err error

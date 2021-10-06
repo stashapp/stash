@@ -36,6 +36,7 @@ func (t *ScanTask) scanImage() {
 		TxnManager:         t.TxnManager,
 		Paths:              GetInstance().Paths,
 		PluginCache:        instance.PluginCache,
+		MutexManager:       t.mutexManager,
 	}
 
 	var err error

@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -11,7 +12,10 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/utils"
 )
+
+const mutexType = "image"
 
 type Scanner struct {
 	file.Scanner
@@ -23,6 +27,7 @@ type Scanner struct {
 	TxnManager      models.TransactionManager
 	Paths           *paths.Paths
 	PluginCache     *plugin.Cache
+	MutexManager    *utils.MutexManager
 }
 
 func FileScanner(hasher file.Hasher) file.Scanner {
@@ -63,8 +68,23 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		i.SetFile(*scanned.New)
 		i.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
+		// we are operating on a checksum now, so grab a mutex on the checksum
+		done := make(chan struct{})
+		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
+
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			// free the mutex once transaction is complete
+			defer close(done)
 			var err error
+
+			// ensure no clashes of hashes
+			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
+				dupe, _ := r.Image().FindByChecksum(i.Checksum)
+				if dupe != nil {
+					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path)
+				}
+			}
+
 			retImage, err = r.Image().UpdateFull(*i)
 			return err
 		}); err != nil {
@@ -94,6 +114,11 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 
 	path := f.Path()
 	checksum := scanned.Checksum
+
+	// grab a mutex on the checksum
+	done := make(chan struct{})
+	scanner.MutexManager.Claim(mutexType, checksum, done)
+	defer close(done)
 
 	// check for image by checksum
 	var existingImage *models.Image
