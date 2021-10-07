@@ -104,11 +104,11 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	if changed {
 		// we are operating on a checksum now, so grab a mutex on the checksum
 		done := make(chan struct{})
-		if scanned.New.Checksum != "" {
-			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
-		}
 		if scanned.New.OSHash != "" {
 			scanner.MutexManager.Claim(mutexType, scanned.New.OSHash, done)
+		}
+		if scanned.New.Checksum != "" {
+			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 		}
 
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -166,12 +166,13 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 	// grab a mutex on the checksum and oshash
 	done := make(chan struct{})
-	if checksum != "" {
-		scanner.MutexManager.Claim(mutexType, checksum, done)
-	}
 	if oshash != "" {
 		scanner.MutexManager.Claim(mutexType, oshash, done)
 	}
+	if checksum != "" {
+		scanner.MutexManager.Claim(mutexType, checksum, done)
+	}
+
 	defer close(done)
 
 	// check for scene by checksum and oshash - MD5 should be
