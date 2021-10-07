@@ -1,4 +1,4 @@
-package scraper
+package match
 
 import (
 	"strconv"
@@ -8,9 +8,9 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-// MatchScrapedPerformer matches the provided performer with the
+// ScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func MatchScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
+func ScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
 	if p.Name == nil {
 		return nil
 	}
@@ -31,9 +31,9 @@ func MatchScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer
 	return nil
 }
 
-// MatchScrapedStudio matches the provided studio with the studios
+// ScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func MatchScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
+func ScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
 	st, err := studio.ByName(qb, s.Name)
 
 	if err != nil {
@@ -58,9 +58,9 @@ func MatchScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
 	return nil
 }
 
-// MatchScrapedMovie matches the provided movie with the movies
+// ScrapedMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
-func MatchScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
+func ScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
 	if m.Name == nil {
 		return nil
 	}
@@ -81,9 +81,9 @@ func MatchScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
 	return nil
 }
 
-// MatchScrapedTag matches the provided tag with the tags
+// ScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func MatchScrapedTag(qb models.TagReader, s *models.ScrapedTag) error {
+func ScrapedTag(qb models.TagReader, s *models.ScrapedTag) error {
 	t, err := tag.ByName(qb, s.Name)
 
 	if err != nil {

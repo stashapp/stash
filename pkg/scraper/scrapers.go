@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	stash_config "github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -291,13 +292,13 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 				return err
 			}
 
-			if err := MatchScrapedPerformer(pqb, p); err != nil {
+			if err := match.ScrapedPerformer(pqb, p); err != nil {
 				return err
 			}
 		}
 
 		for _, p := range ret.Movies {
-			err := MatchScrapedMovie(mqb, p)
+			err := match.ScrapedMovie(mqb, p)
 			if err != nil {
 				return err
 			}
@@ -310,7 +311,7 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := MatchScrapedStudio(sqb, ret.Studio)
+			err := match.ScrapedStudio(sqb, ret.Studio)
 			if err != nil {
 				return err
 			}
@@ -336,7 +337,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			err := MatchScrapedPerformer(pqb, p)
+			err := match.ScrapedPerformer(pqb, p)
 			if err != nil {
 				return err
 			}
@@ -349,7 +350,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := MatchScrapedStudio(sqb, ret.Studio)
+			err := match.ScrapedStudio(sqb, ret.Studio)
 			if err != nil {
 				return err
 			}
@@ -543,7 +544,7 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 
 			if ret.Studio != nil {
 				if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-					return MatchScrapedStudio(r.Studio(), ret.Studio)
+					return match.ScrapedStudio(r.Studio(), ret.Studio)
 				}); err != nil {
 					return nil, err
 				}
@@ -589,7 +590,7 @@ ScrapeTag:
 			}
 		}
 
-		err := MatchScrapedTag(tqb, t)
+		err := match.ScrapedTag(tqb, t)
 		if err != nil {
 			return nil, err
 		}

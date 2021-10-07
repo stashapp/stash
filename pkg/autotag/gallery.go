@@ -1,77 +1,9 @@
 package autotag
 
 import (
-	"fmt"
-	"path/filepath"
-	"strings"
-
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-func galleryPathsFilter(paths []string) *models.GalleryFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.GalleryFilterType
-	var or *models.GalleryFilterType
-	for _, p := range paths {
-		newOr := &models.GalleryFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p = p + sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
-func getMatchingGalleries(name string, paths []string, galleryReader models.GalleryReader) ([]*models.Gallery, error) {
-	regex := getPathQueryRegex(name)
-	organized := false
-	filter := models.GalleryFilterType{
-		Path: &models.StringCriterionInput{
-			Value:    "(?i)" + regex,
-			Modifier: models.CriterionModifierMatchesRegex,
-		},
-		Organized: &organized,
-	}
-
-	filter.And = galleryPathsFilter(paths)
-
-	pp := models.PerPageAll
-	gallerys, _, err := galleryReader.Query(&filter, &models.FindFilterType{
-		PerPage: &pp,
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("error querying gallerys with regex '%s': %s", regex, err.Error())
-	}
-
-	var ret []*models.Gallery
-	for _, p := range gallerys {
-		if nameMatchesPath(name, p.Path.String) {
-			ret = append(ret, p)
-		}
-	}
-
-	return ret, nil
-}
 
 func getGalleryFileTagger(s *models.Gallery) tagger {
 	return tagger{
