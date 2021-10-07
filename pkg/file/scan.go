@@ -131,13 +131,16 @@ func (o Scanner) generateHashes(f *models.File, file SourceFile, regenerate bool
 		var oshash string
 		oshash, err = o.Hasher.OSHash(seekSrc, file.FileInfo().Size())
 		if err != nil {
-			return
+			return false, fmt.Errorf("error generating oshash for %s: %w", file.Path(), err)
 		}
 
 		f.OSHash = oshash
 
 		// reset reader to start of file
-		seekSrc.Seek(0, io.SeekStart)
+		_, err = seekSrc.Seek(0, io.SeekStart)
+		if err != nil {
+			return false, fmt.Errorf("error seeking to start of file in %s: %w", file.Path(), err)
+		}
 	}
 
 	// always generate if MD5 is nil

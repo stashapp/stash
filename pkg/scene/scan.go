@@ -177,7 +177,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
 	var s *models.Scene
-	scanner.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := scanner.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		qb := r.Scene()
 		if checksum != "" {
 			s, _ = qb.FindByChecksum(checksum)
@@ -188,7 +188,9 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return nil, err
+	}
 
 	sceneHash := oshash
 

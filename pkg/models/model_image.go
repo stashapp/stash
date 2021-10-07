@@ -86,12 +86,12 @@ func (i *Image) SetFile(f File) {
 
 // GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
-func (s Image) GetTitle() string {
-	if s.Title.String != "" {
-		return s.Title.String
+func (i *Image) GetTitle() string {
+	if i.Title.String != "" {
+		return i.Title.String
 	}
 
-	return filepath.Base(s.Path)
+	return filepath.Base(i.Path)
 }
 
 // ImageFileType represents the file metadata for an image.
