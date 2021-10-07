@@ -11,7 +11,7 @@ import (
 // ScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
 func ScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer) error {
-	if p.Name == nil {
+	if p.StoredID != nil || p.Name == nil {
 		return nil
 	}
 
@@ -34,6 +34,10 @@ func ScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer) err
 // ScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
 func ScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
+	if s.StoredID != nil {
+		return nil
+	}
+
 	st, err := studio.ByName(qb, s.Name)
 
 	if err != nil {
@@ -61,7 +65,7 @@ func ScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio) error {
 // ScrapedMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
 func ScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
-	if m.Name == nil {
+	if m.StoredID != nil || m.Name == nil {
 		return nil
 	}
 
@@ -84,6 +88,10 @@ func ScrapedMovie(qb models.MovieReader, m *models.ScrapedMovie) error {
 // ScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
 func ScrapedTag(qb models.TagReader, s *models.ScrapedTag) error {
+	if s.StoredID != nil {
+		return nil
+	}
+
 	t, err := tag.ByName(qb, s.Name)
 
 	if err != nil {

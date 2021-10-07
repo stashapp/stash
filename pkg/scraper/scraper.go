@@ -12,21 +12,11 @@ type performerScraper interface {
 	scrapeByURL(url string) (*models.ScrapedPerformer, error)
 }
 
-type performerScraperMatcher interface {
-	performerScraper
-	urlMatcher
-}
-
 type sceneScraper interface {
 	scrapeByName(name string) ([]*models.ScrapedScene, error)
 	scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error)
 	scrapeByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
 	scrapeByURL(url string) (*models.ScrapedScene, error)
-}
-
-type sceneScraperMatcher interface {
-	sceneScraper
-	urlMatcher
 }
 
 type galleryScraper interface {
@@ -35,26 +25,27 @@ type galleryScraper interface {
 	scrapeByURL(url string) (*models.ScrapedGallery, error)
 }
 
-type galleryScraperMatcher interface {
-	galleryScraper
-	urlMatcher
-}
-
 type movieScraper interface {
 	scrapeByURL(url string) (*models.ScrapedMovie, error)
 }
 
-type movieScraperMatcher interface {
-	movieScraper
-	urlMatcher
+type scraper struct {
+	ID   string
+	Spec *models.Scraper
+
+	Performer performerScraper
+	Scene     sceneScraper
+	Gallery   galleryScraper
+	Movie     movieScraper
 }
 
-type scraperImpl interface {
-	ID() string
-	ScraperSpec() *models.Scraper
+func matchesURL(maybeURLMatcher interface{}, url string) bool {
+	if maybeURLMatcher != nil {
+		matcher, ok := maybeURLMatcher.(urlMatcher)
+		if ok {
+			return matcher.matchesURL(url)
+		}
+	}
 
-	Performer() performerScraperMatcher
-	Scene() sceneScraperMatcher
-	Gallery() galleryScraperMatcher
-	Movie() movieScraperMatcher
+	return false
 }

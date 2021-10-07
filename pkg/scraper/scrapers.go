@@ -33,7 +33,7 @@ func isCDPPathWS(c GlobalConfig) bool {
 
 // Cache stores scraper details.
 type Cache struct {
-	scrapers     []scraperImpl
+	scrapers     []scraper
 	globalConfig GlobalConfig
 	txnManager   models.TransactionManager
 }
@@ -57,9 +57,9 @@ func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (
 	}, nil
 }
 
-func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManager) ([]scraperImpl, error) {
+func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManager) ([]scraper, error) {
 	path := globalConfig.GetScrapersPath()
-	scrapers := make([]scraperImpl, 0)
+	scrapers := make([]scraper, 0)
 
 	logger.Debugf("Reading scraper configs from %s", path)
 	scraperFiles := []string{}
@@ -76,7 +76,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 	}
 
 	// add built-in freeones scraper
-	scrapers = append(scrapers, getFreeonesScraper(txnManager, globalConfig))
+	scrapers = append(scrapers, getFreeonesScraper(txnManager, globalConfig), getAutoTagScraper(txnManager, globalConfig))
 
 	for _, file := range scraperFiles {
 		c, err := loadConfigFromYAMLFile(file)
@@ -117,8 +117,8 @@ func (c Cache) ListPerformerScrapers() []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
 		// filter on type
-		if s.Performer() != nil {
-			ret = append(ret, s.ScraperSpec())
+		if s.Performer != nil {
+			ret = append(ret, s.Spec)
 		}
 	}
 
@@ -131,8 +131,8 @@ func (c Cache) ListSceneScrapers() []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
 		// filter on type
-		if s.Scene() != nil {
-			ret = append(ret, s.ScraperSpec())
+		if s.Scene != nil {
+			ret = append(ret, s.Spec)
 		}
 	}
 
@@ -145,8 +145,8 @@ func (c Cache) ListGalleryScrapers() []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
 		// filter on type
-		if s.Gallery() != nil {
-			ret = append(ret, s.ScraperSpec())
+		if s.Gallery != nil {
+			ret = append(ret, s.Spec)
 		}
 	}
 
@@ -159,18 +159,18 @@ func (c Cache) ListMovieScrapers() []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
 		// filter on type
-		if s.Movie() != nil {
-			ret = append(ret, s.ScraperSpec())
+		if s.Movie != nil {
+			ret = append(ret, s.Spec)
 		}
 	}
 
 	return ret
 }
 
-func (c Cache) findScraper(scraperID string) scraperImpl {
+func (c Cache) findScraper(scraperID string) *scraper {
 	for _, s := range c.scrapers {
-		if s.ID() == scraperID {
-			return s
+		if s.ID == scraperID {
+			return &s
 		}
 	}
 
@@ -183,8 +183,8 @@ func (c Cache) findScraper(scraperID string) scraperImpl {
 func (c Cache) ScrapePerformerList(scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s != nil && s.Performer() != nil {
-		return s.Performer().scrapeByName(query)
+	if s != nil && s.Performer != nil {
+		return s.Performer.scrapeByName(query)
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
@@ -195,8 +195,8 @@ func (c Cache) ScrapePerformerList(scraperID string, query string) ([]*models.Sc
 func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s != nil && s.Performer() != nil {
-		ret, err := s.Performer().scrapeByFragment(scrapedPerformer)
+	if s != nil && s.Performer != nil {
+		ret, err := s.Performer.scrapeByFragment(scrapedPerformer)
 		if err != nil {
 			return nil, err
 		}
@@ -219,8 +219,8 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 // the URL, then nil is returned.
 func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 	for _, s := range c.scrapers {
-		if s.Performer() != nil && s.Performer().matchesURL(url) {
-			ret, err := s.Performer().scrapeByURL(url)
+		if matchesURL(s.Performer, url) {
+			ret, err := s.Performer.scrapeByURL(url)
 			if err != nil {
 				return nil, err
 			}
@@ -368,14 +368,14 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s != nil && s.Scene() != nil {
+	if s != nil && s.Scene != nil {
 		// get scene from id
 		scene, err := getScene(sceneID, c.txnManager)
 		if err != nil {
 			return nil, err
 		}
 
-		ret, err := s.Scene().scrapeByScene(scene)
+		ret, err := s.Scene.scrapeByScene(scene)
 
 		if err != nil {
 			return nil, err
@@ -400,8 +400,8 @@ func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene,
 func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.ScrapedScene, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s != nil && s.Scene() != nil {
-		return s.Scene().scrapeByName(query)
+	if s != nil && s.Scene != nil {
+		return s.Scene.scrapeByName(query)
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
@@ -411,8 +411,8 @@ func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.Scrap
 func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s != nil && s.Scene() != nil {
-		ret, err := s.Scene().scrapeByFragment(scene)
+	if s != nil && s.Scene != nil {
+		ret, err := s.Scene.scrapeByFragment(scene)
 
 		if err != nil {
 			return nil, err
@@ -436,8 +436,8 @@ func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneIn
 // the URL, then nil is returned.
 func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 	for _, s := range c.scrapers {
-		if s.Scene() != nil && s.Scene().matchesURL(url) {
-			ret, err := s.Scene().scrapeByURL(url)
+		if matchesURL(s.Scene, url) {
+			ret, err := s.Scene.scrapeByURL(url)
 
 			if err != nil {
 				return nil, err
@@ -458,14 +458,14 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 // ScrapeGallery uses the scraper with the provided ID to scrape a gallery using existing data.
 func (c Cache) ScrapeGallery(scraperID string, galleryID int) (*models.ScrapedGallery, error) {
 	s := c.findScraper(scraperID)
-	if s != nil && s.Gallery() != nil {
+	if s != nil && s.Gallery != nil {
 		// get gallery from id
 		gallery, err := getGallery(galleryID, c.txnManager)
 		if err != nil {
 			return nil, err
 		}
 
-		ret, err := s.Gallery().scrapeByGallery(gallery)
+		ret, err := s.Gallery.scrapeByGallery(gallery)
 
 		if err != nil {
 			return nil, err
@@ -487,8 +487,8 @@ func (c Cache) ScrapeGallery(scraperID string, galleryID int) (*models.ScrapedGa
 // ScrapeGalleryFragment uses the scraper with the provided ID to scrape a gallery.
 func (c Cache) ScrapeGalleryFragment(scraperID string, gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
 	s := c.findScraper(scraperID)
-	if s != nil && s.Gallery() != nil {
-		ret, err := s.Gallery().scrapeByFragment(gallery)
+	if s != nil && s.Gallery != nil {
+		ret, err := s.Gallery.scrapeByFragment(gallery)
 
 		if err != nil {
 			return nil, err
@@ -512,8 +512,8 @@ func (c Cache) ScrapeGalleryFragment(scraperID string, gallery models.ScrapedGal
 // the URL, then nil is returned.
 func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 	for _, s := range c.scrapers {
-		if s.Gallery() != nil && s.Gallery().matchesURL(url) {
-			ret, err := s.Gallery().scrapeByURL(url)
+		if matchesURL(s.Gallery, url) {
+			ret, err := s.Gallery.scrapeByURL(url)
 
 			if err != nil {
 				return nil, err
@@ -536,8 +536,8 @@ func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 // the URL, then nil is returned.
 func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 	for _, s := range c.scrapers {
-		if s.Movie() != nil && s.Movie().matchesURL(url) {
-			ret, err := s.Movie().scrapeByURL(url)
+		if s.Movie != nil && matchesURL(s.Movie, url) {
+			ret, err := s.Movie.scrapeByURL(url)
 			if err != nil {
 				return nil, err
 			}

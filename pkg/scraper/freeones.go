@@ -123,7 +123,7 @@ xPathScrapers:
 # Last updated April 13, 2021
 `
 
-func getFreeonesScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraperImpl {
+func getFreeonesScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	yml := freeonesScraperConfig
 
 	c, err := loadConfigFromYAML(FreeonesScraperID, strings.NewReader(yml))

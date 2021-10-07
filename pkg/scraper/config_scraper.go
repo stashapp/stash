@@ -179,59 +179,38 @@ type configScraper struct {
 	config       config
 	txnManager   models.TransactionManager
 	globalConfig GlobalConfig
-
-	performer *configPerformerScraper
-	scene     *configSceneScraper
-	gallery   *configGalleryScraper
-	movie     *configMovieScraper
 }
 
-func createScraperFromConfig(c config, txnManager models.TransactionManager, globalConfig GlobalConfig) configScraper {
-	ret := configScraper{
+func createScraperFromConfig(c config, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
+	base := configScraper{
 		config:       c,
 		txnManager:   txnManager,
 		globalConfig: globalConfig,
 	}
 
+	ret := scraper{
+		ID:   c.ID,
+		Spec: configScraperSpec(c),
+	}
+
 	// only set fields if supported
 	if c.supportsPerformers() {
-		ret.performer = &configPerformerScraper{&ret}
+		ret.Performer = &configPerformerScraper{&base}
 	}
 	if c.supportsGalleries() {
-		ret.gallery = &configGalleryScraper{&ret}
+		ret.Gallery = &configGalleryScraper{&base}
 	}
 	if c.supportsMovies() {
-		ret.movie = &configMovieScraper{&ret}
+		ret.Movie = &configMovieScraper{&base}
 	}
 	if c.supportsScenes() {
-		ret.scene = &configSceneScraper{&ret}
+		ret.Scene = &configSceneScraper{&base}
 	}
 
 	return ret
 }
 
-func (s configScraper) ID() string {
-	return s.config.ID
-}
-
-func (s configScraper) Performer() performerScraperMatcher {
-	return s.performer
-}
-
-func (s configScraper) Scene() sceneScraperMatcher {
-	return s.scene
-}
-
-func (s configScraper) Gallery() galleryScraperMatcher {
-	return s.gallery
-}
-
-func (s configScraper) Movie() movieScraperMatcher {
-	return s.movie
-}
-
-func (s configScraper) ScraperSpec() *models.Scraper {
-	c := s.config
+func configScraperSpec(c config) *models.Scraper {
 	ret := models.Scraper{
 		ID:   c.ID,
 		Name: c.Name,
