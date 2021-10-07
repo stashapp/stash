@@ -133,20 +133,26 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
+	if !t.GenerateThumbnails {
+		return
+	}
+
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
 		return
 	}
 
-	srcImage, err := image.GetSourceImage(i)
+	config, _, err := image.DecodeSourceImage(i)
 	if err != nil {
 		logger.Errorf("error reading image %s: %s", i.Path, err.Error())
 		return
 	}
 
-	if image.ThumbnailNeeded(srcImage, models.DefaultGthumbWidth) {
-		data, err := image.GetThumbnail(srcImage, models.DefaultGthumbWidth)
+	if config.Height > models.DefaultGthumbWidth || config.Width > models.DefaultGthumbWidth {
+		encoder := image.NewThumbnailEncoder(instance.FFMPEG)
+		data, err := encoder.GetThumbnail(i, models.DefaultGthumbWidth)
+
 		if err != nil {
 			logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
 			return

@@ -133,19 +133,25 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 	return stdoutString, nil
 }
 
-func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
+func (e *Encoder) run(sourcePath string, args []string, stdin io.Reader) (string, error) {
 	cmd := exec.Command(string(*e), args...)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Stdin = stdin
 
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}
 
-	registerRunningEncoder(probeResult.Path, cmd.Process)
-	err := waitAndDeregister(probeResult.Path, cmd)
+	var err error
+	if sourcePath != "" {
+		registerRunningEncoder(sourcePath, cmd.Process)
+		err = waitAndDeregister(sourcePath, cmd)
+	} else {
+		err = cmd.Wait()
+	}
 
 	if err != nil {
 		// error message should be in the stderr stream
