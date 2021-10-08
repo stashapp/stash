@@ -67,22 +67,23 @@ input AutoTagMetadataInput {
   tags: [String!]
 }
 
-enum FieldStrategy {
+enum IdentifyFieldStrategy {
   IGNORE
   """For multi-value fields, merge with existing. For single-value fields, ignore if already set"""
   MERGE
   OVERWRITE
 }
 
-input IdentifyTagFieldStrategy {
+input IdentifyFieldOptions {
   field: String!
-  strategy: FieldStrategy!
+  strategy: IdentifyFieldStrategy!
   """creates missing objects if needed - only applicable for performers, tags and studios"""
   createMissing: Boolean
 }
 
 input IdentifyMetadataOptionsInput {
-  fieldStrategies: [IdentifyTagFieldStrategy!]
+  """any fields missing from here are defaulted to MERGE and createMissing false"""
+  fieldOptions: [IdentifyFieldOptions!]
   """defaults to true if not provided"""
   setCoverImage: Boolean
   setOrganized: Boolean

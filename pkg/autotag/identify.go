@@ -191,7 +191,7 @@ func (t *IdentifySceneTask) modifyScene(r models.Repository, options modifyScene
 
 func (t *IdentifySceneTask) setSceneFields(partial *models.ScenePartial, input modifySceneOptions) {
 	scraped := input.scraped
-	fieldStrategies := input.fieldStrategies
+	fieldStrategies := input.fieldOptions
 	target := input.scene
 
 	if scraped.Title != nil {
@@ -233,7 +233,7 @@ func (t *IdentifySceneTask) setSceneFields(partial *models.ScenePartial, input m
 
 func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input modifySceneOptions) error {
 	scraped := input.scraped
-	fieldStrategy := input.fieldStrategies["studio"]
+	fieldStrategy := input.fieldOptions["studio"]
 	target := input.scene
 	r := input.repo
 
@@ -298,7 +298,7 @@ func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
 
 func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]int, error) {
 	scraped := input.scraped
-	fieldStrategy := input.fieldStrategies["performers"]
+	fieldStrategy := input.fieldOptions["performers"]
 	target := input.scene
 	r := input.repo
 
@@ -308,7 +308,7 @@ func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]in
 	}
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := models.FieldStrategyMerge
+	strategy := models.IdentifyFieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
@@ -325,7 +325,7 @@ func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]in
 	if len(scraped.Performers) > 0 {
 		var err error
 
-		if strategy == models.FieldStrategyMerge {
+		if strategy == models.IdentifyFieldStrategyMerge {
 			// add to existing
 			performerIDs, err = r.Scene().GetPerformerIDs(target.ID)
 			if err != nil {
@@ -434,7 +434,7 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 
 func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, error) {
 	scraped := input.scraped
-	fieldStrategy := input.fieldStrategies["tags"]
+	fieldStrategy := input.fieldOptions["tags"]
 	target := input.scene
 	r := input.repo
 
@@ -444,7 +444,7 @@ func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, err
 	}
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := models.FieldStrategyMerge
+	strategy := models.IdentifyFieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
@@ -453,7 +453,7 @@ func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, err
 	if len(scraped.Tags) > 0 {
 		var err error
 
-		if strategy == models.FieldStrategyMerge {
+		if strategy == models.IdentifyFieldStrategyMerge {
 			// add to existing
 			tagIDs, err = r.Scene().GetTagIDs(target.ID)
 			if err != nil {
@@ -491,7 +491,7 @@ func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, err
 
 func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models.StashID, error) {
 	scraped := input.scraped
-	fieldStrategy := input.fieldStrategies["stash_ids"]
+	fieldStrategy := input.fieldOptions["stash_ids"]
 	target := input.scene
 	r := input.repo
 
@@ -502,7 +502,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 		return nil, nil
 	}
 
-	strategy := models.FieldStrategyMerge
+	strategy := models.IdentifyFieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
@@ -511,7 +511,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 	if scraped.RemoteSiteID != nil {
 		var err error
 
-		if strategy == models.FieldStrategyMerge {
+		if strategy == models.IdentifyFieldStrategyMerge {
 			// add to existing
 			var stashIDPtrs []*models.StashID
 			stashIDPtrs, err = r.Scene().GetStashIDs(target.ID)
@@ -546,7 +546,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 
 func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, error) {
 	scraped := input.scraped
-	fieldStrategy := input.fieldStrategies["cover_image"]
+	fieldStrategy := input.fieldOptions["cover_image"]
 
 	// just check if ignored
 	if !t.shouldSetSingleValueField(fieldStrategy, false) {
@@ -561,28 +561,28 @@ func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, err
 	return nil, nil
 }
 
-func (t *IdentifySceneTask) shouldSetSingleValueField(strategy *models.IdentifyTagFieldStrategy, hasExistingValue bool) bool {
+func (t *IdentifySceneTask) shouldSetSingleValueField(strategy *models.IdentifyFieldOptions, hasExistingValue bool) bool {
 	// if unset then default to MERGE
-	fs := models.FieldStrategyMerge
+	fs := models.IdentifyFieldStrategyMerge
 
 	if strategy != nil && strategy.Strategy.IsValid() {
 		fs = strategy.Strategy
 	}
 
-	if fs == models.FieldStrategyIgnore {
+	if fs == models.IdentifyFieldStrategyIgnore {
 		return false
 	}
 
-	return !hasExistingValue || fs == models.FieldStrategyOverwrite
+	return !hasExistingValue || fs == models.IdentifyFieldStrategyOverwrite
 }
 
 type modifySceneOptions struct {
-	scene           *models.Scene
-	scraped         *models.ScrapedScene
-	stashBox        *models.StashBox
-	fieldStrategies map[string]*models.IdentifyTagFieldStrategy
-	options         []models.IdentifyMetadataOptionsInput
-	repo            models.Repository
+	scene        *models.Scene
+	scraped      *models.ScrapedScene
+	stashBox     *models.StashBox
+	fieldOptions map[string]*models.IdentifyFieldOptions
+	options      []models.IdentifyMetadataOptionsInput
+	repo         models.Repository
 }
 
 func (o *modifySceneOptions) setOptions(source models.IdentifySourceInput, defaultOptions *models.IdentifyMetadataOptionsInput) {
@@ -601,14 +601,14 @@ func (o *modifySceneOptions) setOptions(source models.IdentifySourceInput, defau
 
 func (o *modifySceneOptions) setFieldStrategies() {
 	// prefer source-specific field strategies, then the defaults
-	ret := make(map[string]*models.IdentifyTagFieldStrategy)
+	ret := make(map[string]*models.IdentifyFieldOptions)
 	for _, oo := range o.options {
-		for _, f := range oo.FieldStrategies {
+		for _, f := range oo.FieldOptions {
 			if _, found := ret[f.Field]; !found {
 				ret[f.Field] = f
 			}
 		}
 	}
 
-	o.fieldStrategies = ret
+	o.fieldOptions = ret
 }
