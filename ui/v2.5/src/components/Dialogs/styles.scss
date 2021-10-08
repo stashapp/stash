@@ -1,0 +1,21 @@
+.scraper-source-list {
+  .list-group-item {
+    background-color: $textfield-bg;
+    padding: 0.25em;
+
+    .drag-handle:hover,
+    .drag-handle:active,
+    .drag-handle:focus,
+    .drag-handle:focus:active {
+      background-color: initial;
+      border-color: initial;
+      box-shadow: initial;
+    }
+  }
+}
+
+.scraper-sources {
+  .add-scraper-source-button {
+    margin-right: 0.25em;
+  }
+}

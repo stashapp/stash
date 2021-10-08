@@ -39,6 +39,7 @@
     "generate_thumb_from_current": "Generate thumbnail from current",
     "hash_migration": "hash migration",
     "hide": "Hide",
+    "identify": "Identify",
     "import": "Import…",
     "import_from_file": "Import from file",
     "merge": "Merge",
@@ -291,6 +292,15 @@
       "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
       "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
       "generated_content": "Generated Content",
+      "identify": {
+        "heading": "Identify",
+        "description": "Automatically set scene metadata using stash-box and scraper sources.",
+        "default_options": "Default Options",
+        "include_male_performers": "Include male performers",
+        "set_cover_images": "Set cover images",
+        "set_organized": "Set organized flag",
+        "sources": "Sources"
+      },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
       "job_queue": "Job Queue",

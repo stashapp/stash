@@ -16,6 +16,7 @@ import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
 import { downloadFile } from "src/utils";
+import IdentifyDialog from "src/components/Dialogs/IdentifyDialog";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
@@ -27,13 +28,18 @@ type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
 export const SettingsTasksPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
-  const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
-  const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
-  const [isScanDialogOpen, setIsScanDialogOpen] = useState<boolean>(false);
-  const [isAutoTagDialogOpen, setIsAutoTagDialogOpen] = useState<boolean>(
-    false
-  );
+  const [dialogOpen, setDialogOpenState] = useState({
+    importAlert: false,
+    cleanAlert: false,
+    import: false,
+    clean: false,
+    scan: false,
+    autoTag: false,
+    identify: false,
+  });
+
+  type DialogOpenState = typeof dialogOpen;
+
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [stripFileExtension, setStripFileExtension] = useState<boolean>(false);
@@ -61,8 +67,14 @@ export const SettingsTasksPanel: React.FC = () => {
 
   const plugins = usePlugins();
 
+  function setDialogOpen(s: Partial<DialogOpenState>) {
+    setDialogOpenState((v) => {
+      return { ...v, ...s };
+    });
+  }
+
   async function onImport() {
-    setIsImportAlertOpen(false);
+    setDialogOpen({ importAlert: false });
     try {
       await mutateMetadataImport();
       Toast.success({
@@ -79,14 +91,14 @@ export const SettingsTasksPanel: React.FC = () => {
   function renderImportAlert() {
     return (
       <Modal
-        show={isImportAlertOpen}
+        show={dialogOpen.importAlert}
         icon="trash-alt"
         accept={{
           text: intl.formatMessage({ id: "actions.import" }),
           variant: "danger",
           onClick: onImport,
         }}
-        cancel={{ onClick: () => setIsImportAlertOpen(false) }}
+        cancel={{ onClick: () => setDialogOpen({ importAlert: false }) }}
       >
         <p>{intl.formatMessage({ id: "actions.tasks.import_warning" })}</p>
       </Modal>
@@ -94,7 +106,7 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   function onClean() {
-    setIsCleanAlertOpen(false);
+    setDialogOpen({ cleanAlert: false });
     mutateMetadataClean({
       dryRun: cleanDryRun,
     });
@@ -116,14 +128,14 @@ export const SettingsTasksPanel: React.FC = () => {
 
     return (
       <Modal
-        show={isCleanAlertOpen}
+        show={dialogOpen.cleanAlert}
         icon="trash-alt"
         accept={{
           text: intl.formatMessage({ id: "actions.clean" }),
           variant: "danger",
           onClick: onClean,
         }}
-        cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
+        cancel={{ onClick: () => setDialogOpen({ cleanAlert: false }) }}
       >
         {msg}
       </Modal>
@@ -131,15 +143,15 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   function renderImportDialog() {
-    if (!isImportDialogOpen) {
+    if (!dialogOpen.import) {
       return;
     }
 
-    return <ImportDialog onClose={() => setIsImportDialogOpen(false)} />;
+    return <ImportDialog onClose={() => setDialogOpen({ import: false })} />;
   }
 
   function renderScanDialog() {
-    if (!isScanDialogOpen) {
+    if (!dialogOpen.scan) {
       return;
     }
 
@@ -151,7 +163,7 @@ export const SettingsTasksPanel: React.FC = () => {
       onScan(paths);
     }
 
-    setIsScanDialogOpen(false);
+    setDialogOpen({ scan: false });
   }
 
   async function onScan(paths?: string[]) {
@@ -178,11 +190,19 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   function renderAutoTagDialog() {
-    if (!isAutoTagDialogOpen) {
+    if (!dialogOpen.autoTag) {
       return;
     }
 
     return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+  }
+
+  function maybeRenderIdentifyDialog() {
+    if (!dialogOpen.identify) return;
+
+    return (
+      <IdentifyDialog onClose={() => setDialogOpen({ identify: false })} />
+    );
   }
 
   function onAutoTagDialogClosed(paths?: string[]) {
@@ -190,7 +210,7 @@ export const SettingsTasksPanel: React.FC = () => {
       onAutoTag(paths);
     }
 
-    setIsAutoTagDialogOpen(false);
+    setDialogOpen({ autoTag: false });
   }
 
   function getAutoTagInput(paths?: string[]) {
@@ -343,6 +363,7 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderImportDialog()}
       {renderScanDialog()}
       {renderAutoTagDialog()}
+      {maybeRenderIdentifyDialog()}
 
       <h4>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h4>
 
@@ -350,138 +371,159 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
 
-      <h5>{intl.formatMessage({ id: "library" })}</h5>
       <Form.Group>
-        <Form.Check
-          id="use-file-metadata"
-          checked={useFileMetadata}
-          label={intl.formatMessage({
-            id: "config.tasks.set_name_date_details_from_metadata_if_present",
-          })}
-          onChange={() => setUseFileMetadata(!useFileMetadata)}
-        />
-        <Form.Check
-          id="strip-file-extension"
-          checked={stripFileExtension}
-          label={intl.formatMessage({
-            id: "config.tasks.dont_include_file_extension_as_part_of_the_title",
-          })}
-          onChange={() => setStripFileExtension(!stripFileExtension)}
-        />
-        <Form.Check
-          id="scan-generate-previews"
-          checked={scanGeneratePreviews}
-          label={intl.formatMessage({
-            id: "config.tasks.generate_video_previews_during_scan",
-          })}
-          onChange={() => setScanGeneratePreviews(!scanGeneratePreviews)}
-        />
-        <div className="d-flex flex-row">
-          <div>↳</div>
+        <h5>{intl.formatMessage({ id: "library" })}</h5>
+        <Form.Group>
+          <h6>{intl.formatMessage({ id: "actions.scan" })}</h6>
           <Form.Check
-            id="scan-generate-image-previews"
-            checked={scanGenerateImagePreviews}
-            disabled={!scanGeneratePreviews}
+            id="use-file-metadata"
+            checked={useFileMetadata}
             label={intl.formatMessage({
-              id: "config.tasks.generate_previews_during_scan",
+              id: "config.tasks.set_name_date_details_from_metadata_if_present",
             })}
-            onChange={() =>
-              setScanGenerateImagePreviews(!scanGenerateImagePreviews)
-            }
-            className="ml-2 flex-grow"
+            onChange={() => setUseFileMetadata(!useFileMetadata)}
           />
-        </div>
-        <Form.Check
-          id="scan-generate-sprites"
-          checked={scanGenerateSprites}
-          label={intl.formatMessage({
-            id: "config.tasks.generate_sprites_during_scan",
-          })}
-          onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
-        />
-        <Form.Check
-          id="scan-generate-phashes"
-          checked={scanGeneratePhashes}
-          label={intl.formatMessage({
-            id: "config.tasks.generate_phashes_during_scan",
-          })}
-          onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
-        />
-        <Form.Check
-          id="scan-generate-thumbnails"
-          checked={scanGenerateThumbnails}
-          label={intl.formatMessage({
-            id: "config.tasks.generate_thumbnails_during_scan",
-          })}
-          onChange={() => setScanGenerateThumbnails(!scanGenerateThumbnails)}
-        />
-      </Form.Group>
-      <Form.Group>
-        <Button
-          className="mr-2"
-          variant="secondary"
-          type="submit"
-          onClick={() => onScan()}
-        >
-          <FormattedMessage id="actions.scan" />
-        </Button>
-        <Button
-          variant="secondary"
-          type="submit"
-          onClick={() => setIsScanDialogOpen(true)}
-        >
-          <FormattedMessage id="actions.selective_scan" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
-        </Form.Text>
-      </Form.Group>
+          <Form.Check
+            id="strip-file-extension"
+            checked={stripFileExtension}
+            label={intl.formatMessage({
+              id:
+                "config.tasks.dont_include_file_extension_as_part_of_the_title",
+            })}
+            onChange={() => setStripFileExtension(!stripFileExtension)}
+          />
+          <Form.Check
+            id="scan-generate-previews"
+            checked={scanGeneratePreviews}
+            label={intl.formatMessage({
+              id: "config.tasks.generate_video_previews_during_scan",
+            })}
+            onChange={() => setScanGeneratePreviews(!scanGeneratePreviews)}
+          />
+          <div className="d-flex flex-row">
+            <div>↳</div>
+            <Form.Check
+              id="scan-generate-image-previews"
+              checked={scanGenerateImagePreviews}
+              disabled={!scanGeneratePreviews}
+              label={intl.formatMessage({
+                id: "config.tasks.generate_previews_during_scan",
+              })}
+              onChange={() =>
+                setScanGenerateImagePreviews(!scanGenerateImagePreviews)
+              }
+              className="ml-2 flex-grow"
+            />
+          </div>
+          <Form.Check
+            id="scan-generate-sprites"
+            checked={scanGenerateSprites}
+            label={intl.formatMessage({
+              id: "config.tasks.generate_sprites_during_scan",
+            })}
+            onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
+          />
+          <Form.Check
+            id="scan-generate-phashes"
+            checked={scanGeneratePhashes}
+            label={intl.formatMessage({
+              id: "config.tasks.generate_phashes_during_scan",
+            })}
+            onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
+          />
+          <Form.Check
+            id="scan-generate-thumbnails"
+            checked={scanGenerateThumbnails}
+            label={intl.formatMessage({
+              id: "config.tasks.generate_thumbnails_during_scan",
+            })}
+            onChange={() => setScanGenerateThumbnails(!scanGenerateThumbnails)}
+          />
+        </Form.Group>
+        <Form.Group>
+          <Button
+            className="mr-2"
+            variant="secondary"
+            type="submit"
+            onClick={() => onScan()}
+          >
+            <FormattedMessage id="actions.scan" />
+          </Button>
+          <Button
+            variant="secondary"
+            type="submit"
+            onClick={() => setDialogOpen({ scan: true })}
+          >
+            <FormattedMessage id="actions.selective_scan" />
+          </Button>
+          <Form.Text className="text-muted">
+            {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
+          </Form.Text>
+        </Form.Group>
 
-      <hr />
+        <Form.Group>
+          <h6>
+            <FormattedMessage id="config.tasks.identify.heading" />
+          </h6>
+          <Button
+            className="mr-2"
+            variant="secondary"
+            type="submit"
+            onClick={() => setDialogOpen({ identify: true })}
+          >
+            <FormattedMessage id="actions.identify" />…
+          </Button>
+          <Form.Text className="text-muted">
+            <FormattedMessage id="config.tasks.identify.description" />
+          </Form.Text>
+        </Form.Group>
 
-      <h5>{intl.formatMessage({ id: "config.tasks.auto_tagging" })}</h5>
+        <Form.Group>
+          <h6>{intl.formatMessage({ id: "config.tasks.auto_tagging" })}</h6>
 
-      <Form.Group>
-        <Form.Check
-          id="autotag-performers"
-          checked={autoTagPerformers}
-          label={intl.formatMessage({ id: "performers" })}
-          onChange={() => setAutoTagPerformers(!autoTagPerformers)}
-        />
-        <Form.Check
-          id="autotag-studios"
-          checked={autoTagStudios}
-          label={intl.formatMessage({ id: "studios" })}
-          onChange={() => setAutoTagStudios(!autoTagStudios)}
-        />
-        <Form.Check
-          id="autotag-tags"
-          checked={autoTagTags}
-          label={intl.formatMessage({ id: "tags" })}
-          onChange={() => setAutoTagTags(!autoTagTags)}
-        />
-      </Form.Group>
-      <Form.Group>
-        <Button
-          variant="secondary"
-          type="submit"
-          className="mr-2"
-          onClick={() => onAutoTag()}
-        >
-          <FormattedMessage id="actions.auto_tag" />
-        </Button>
-        <Button
-          variant="secondary"
-          type="submit"
-          onClick={() => setIsAutoTagDialogOpen(true)}
-        >
-          <FormattedMessage id="actions.selective_auto_tag" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.tasks.auto_tag_based_on_filenames",
-          })}
-        </Form.Text>
+          <Form.Group>
+            <Form.Check
+              id="autotag-performers"
+              checked={autoTagPerformers}
+              label={intl.formatMessage({ id: "performers" })}
+              onChange={() => setAutoTagPerformers(!autoTagPerformers)}
+            />
+            <Form.Check
+              id="autotag-studios"
+              checked={autoTagStudios}
+              label={intl.formatMessage({ id: "studios" })}
+              onChange={() => setAutoTagStudios(!autoTagStudios)}
+            />
+            <Form.Check
+              id="autotag-tags"
+              checked={autoTagTags}
+              label={intl.formatMessage({ id: "tags" })}
+              onChange={() => setAutoTagTags(!autoTagTags)}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Button
+              variant="secondary"
+              type="submit"
+              className="mr-2"
+              onClick={() => onAutoTag()}
+            >
+              <FormattedMessage id="actions.auto_tag" />
+            </Button>
+            <Button
+              variant="secondary"
+              type="submit"
+              onClick={() => setDialogOpen({ autoTag: true })}
+            >
+              <FormattedMessage id="actions.selective_auto_tag" />
+            </Button>
+            <Form.Text className="text-muted">
+              {intl.formatMessage({
+                id: "config.tasks.auto_tag_based_on_filenames",
+              })}
+            </Form.Text>
+          </Form.Group>
+        </Form.Group>
       </Form.Group>
 
       <hr />
@@ -503,7 +545,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="clean"
           variant="danger"
-          onClick={() => setIsCleanAlertOpen(true)}
+          onClick={() => setDialogOpen({ cleanAlert: true })}
         >
           <FormattedMessage id="actions.clean" />
         </Button>
@@ -533,7 +575,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="import"
           variant="danger"
-          onClick={() => setIsImportAlertOpen(true)}
+          onClick={() => setDialogOpen({ importAlert: true })}
         >
           <FormattedMessage id="actions.full_import" />
         </Button>
@@ -546,7 +588,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="partial-import"
           variant="danger"
-          onClick={() => setIsImportDialogOpen(true)}
+          onClick={() => setDialogOpen({ import: true })}
         >
           <FormattedMessage id="actions.import_from_file" />
         </Button>
