@@ -67,6 +67,45 @@ input AutoTagMetadataInput {
   tags: [String!]
 }
 
+enum FieldStrategy {
+  IGNORE
+  """For multi-value fields, merge with existing. For single-value fields, ignore if already set"""
+  MERGE
+  OVERWRITE
+}
+
+input IdentifyTagFieldStrategy {
+  field: String!
+  strategy: FieldStrategy!
+  """creates missing objects if needed - only applicable for performers, tags and studios"""
+  createMissing: Boolean
+}
+
+input IdentifyMetadataOptionsInput {
+  fieldStrategies: [IdentifyTagFieldStrategy!]
+  """defaults to true if not provided"""
+  setCoverImage: Boolean
+  setOrganized: Boolean
+  """defaults to true if not provided"""
+  includeMalePerformers: Boolean
+}
+
+input IdentifySourceInput {
+  source: ScraperSourceInput!
+  """Options defined for a source override the defaults"""
+  options: IdentifyMetadataOptionsInput
+}
+
+input IdentifyMetadataInput {
+  """An ordered list of sources to identify items with. Only the first source that finds a match is used."""
+  sources: [IdentifySourceInput!]!
+  """Options defined here override the configured defaults"""
+  options: IdentifyMetadataOptionsInput
+
+  """scene ids to identify"""
+  sceneIDs: [ID!]
+}
+
 input ExportObjectTypeInput {
   ids: [String!]
   all: Boolean

@@ -460,10 +460,10 @@ func (i *Instance) GetScraperExcludeTagPatterns() []string {
 	return ret
 }
 
-func (i *Instance) GetStashBoxes() []*models.StashBox {
+func (i *Instance) GetStashBoxes() models.StashBoxes {
 	i.RLock()
 	defer i.RUnlock()
-	var boxes []*models.StashBox
+	var boxes models.StashBoxes
 	if err := viper.UnmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
