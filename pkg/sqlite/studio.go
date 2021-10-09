@@ -134,10 +134,9 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 	var args []interface{}
 
 	//always include names that begin with a single character
-	whereClauses = append(whereClauses, "studios.name regexp ?")
-	args = append(args, "^[\\w][.\\-_ ]")
-	whereClauses = append(whereClauses, "studio_aliases.alias regexp ?")
-	args = append(args, "^[\\w][.\\-_ ]")
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "studios.name regexp ? OR COALESCE(studio_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		ww := w + "%"

@@ -236,10 +236,9 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	var args []interface{}
 
 	//always include names that begin with a single character
-	whereClauses = append(whereClauses, "tags.name regexp ?")
-	args = append(args, "^[\\w][.\\-_ ]")
-	whereClauses = append(whereClauses, "tag_aliases.alias regexp ?")
-	args = append(args, "^[\\w][.\\-_ ]")
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "tags.name regexp ? OR COALESCE(tag_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		ww := w + "%"
