@@ -188,6 +188,7 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 	for _, w := range words {
 		whereClauses = append(whereClauses, "name like ?")
 		args = append(args, w+"%")
+		// TODO - commented out until alias matching works both ways
 		// whereClauses = append(whereClauses, "aliases like ?")
 		// args = append(args, w+"%")
 	}
