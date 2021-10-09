@@ -147,7 +147,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			prefix := utils.GetProxyPrefix(r.Header)
+			prefix := getProxyPrefix(r.Header)
 
 			data := getLoginPage(loginUIBox)
 			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
@@ -202,7 +202,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 				panic(err)
 			}
 
-			prefix := utils.GetProxyPrefix(r.Header)
+			prefix := getProxyPrefix(r.Header)
 			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
 			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
 			_, _ = w.Write([]byte(baseURLIndex))
@@ -323,7 +323,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		} else {
 			scheme = "http"
 		}
-		prefix := utils.GetProxyPrefix(r.Header)
+		prefix := getProxyPrefix(r.Header)
 
 		port := ""
 		forwardedPort := r.Header.Get("X-Forwarded-Port")
@@ -343,4 +343,13 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
+}
+
+func getProxyPrefix(headers http.Header) string {
+	prefix := ""
+	if headers.Get("X-Forwarded-Prefix") != "" {
+		prefix = strings.TrimRight(headers.Get("X-Forwarded-Prefix"), "/")
+	}
+
+	return prefix
 }

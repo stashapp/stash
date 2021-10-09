@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const loginEndPoint = "/login"
@@ -84,7 +83,7 @@ func authenticateHandler() func(http.Handler) http.Handler {
 						return
 					}
 
-					prefix := utils.GetProxyPrefix(r.Header)
+					prefix := getProxyPrefix(r.Header)
 
 					// otherwise redirect to the login page
 					u := url.URL{
