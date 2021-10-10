@@ -55,6 +55,8 @@ var testStudioCases = []testStudioCase{
 }
 
 func TestStudioScenes(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testStudioCases {
 		testStudioScenes(t, p)
 	}
@@ -145,6 +147,8 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 }
 
 func TestStudioImages(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testStudioCases {
 		testStudioImages(t, p)
 	}
@@ -234,6 +238,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 }
 
 func TestStudioGalleries(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testStudioCases {
 		testStudioGalleries(t, p)
 	}

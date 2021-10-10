@@ -39,6 +39,8 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to import/export files"""
+  metadataPath: String
   """Path to cache"""
   cachePath: String
   """Whether to calculate MD5 checksums for scene video files"""
@@ -71,6 +73,8 @@ input ConfigGeneralInput {
   password: String
   """Maximum session cookie age"""
   maxSessionAge: Int
+  """Comma separated list of proxies to allow traffic from"""
+  trustedProxies: [String!]
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -110,6 +114,8 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Path to import/export files"""
+  metadataPath: String!
   """Path to the config file used"""
   configFilePath: String!
   """Path to scrapers"""
@@ -148,6 +154,8 @@ type ConfigGeneralResult {
   password: String!
   """Maximum session cookie age"""
   maxSessionAge: Int!
+  """Comma separated list of proxies to allow traffic from"""
+  trustedProxies: [String!]!
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""

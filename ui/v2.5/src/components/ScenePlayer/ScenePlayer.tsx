@@ -310,6 +310,7 @@ export class ScenePlayerImpl extends React.Component<
       height: "100%",
       cast: {},
       primary: "html5",
+      preload: "none",
       autostart:
         this.props.autoplay ||
         (this.props.config ? this.props.config.autostartVideo : false) ||

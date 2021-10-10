@@ -112,6 +112,7 @@ func DetectLogLevel(line string) (*PluginLogLevel, string) {
 	var level *PluginLogLevel
 	for _, l := range validLevels {
 		if l.char == char {
+			l := l // Make a copy of the loop variable
 			level = &l
 			break
 		}

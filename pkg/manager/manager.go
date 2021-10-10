@@ -97,6 +97,8 @@ func Initialize() *singleton {
 					panic(err)
 				}
 			}
+
+			initSecurity(cfg)
 		} else {
 			cfgFile := cfg.GetConfigFile()
 			if cfgFile != "" {
@@ -123,6 +125,12 @@ func Initialize() *singleton {
 	})
 
 	return instance
+}
+
+func initSecurity(cfg *config.Instance) {
+	if err := session.CheckExternalAccessTripwire(cfg); err != nil {
+		session.LogExternalAccessError(*err)
+	}
 }
 
 func initProfiling(cpuProfilePath string) {

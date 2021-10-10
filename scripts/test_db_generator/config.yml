@@ -1,10 +1,10 @@
 database: generated.sqlite
 scenes: 30000
-images: 150000
+images: 4000000
 galleries: 1500
-markers: 300
+markers: 3000
 performers: 10000
-studios: 500
+studios: 1500
 tags: 1500
 naming:
   scenes: scene.txt

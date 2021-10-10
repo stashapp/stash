@@ -36,7 +36,11 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="scene-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="play-circle" />
           <span>{props.gallery.scenes.length}</span>
@@ -53,7 +57,11 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="tag-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="tag" />
           <span>{props.gallery.tags.length}</span>
@@ -73,6 +81,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
 
     return (
       <PopoverCountButton
+        className="image-count"
         type="image"
         count={props.gallery.image_count}
         url={NavUtils.makeGalleryImagesUrl(props.gallery)}

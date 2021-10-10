@@ -23,6 +23,8 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     criterion.criterionOption.type !== "tags" &&
     criterion.criterionOption.type !== "sceneTags" &&
     criterion.criterionOption.type !== "performerTags" &&
+    criterion.criterionOption.type !== "parentTags" &&
+    criterion.criterionOption.type !== "childTags" &&
     criterion.criterionOption.type !== "movies"
   )
     return null;
@@ -53,6 +55,8 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     const optionType =
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
+        : criterion.criterionOption.type === "childTags"
+        ? "include_parent_tags"
         : "include_sub_tags";
     return {
       id: optionType,

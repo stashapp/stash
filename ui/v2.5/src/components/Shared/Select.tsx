@@ -40,6 +40,8 @@ interface ITypeProps {
     | "tags"
     | "sceneTags"
     | "performerTags"
+    | "parentTags"
+    | "childTags"
     | "movies";
 }
 interface IFilterProps {

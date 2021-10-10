@@ -49,7 +49,7 @@ export const Studio: React.FC = () => {
   // Studio state
   const [image, setImage] = useState<string | null>();
 
-  const { data, error } = useFindStudio(id);
+  const { data, loading: studioLoading, error } = useFindStudio(id);
   const studio = data?.findStudio;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -198,7 +198,7 @@ export const Studio: React.FC = () => {
     }
   };
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || studioLoading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (!studio?.id && !isNew)
     return <ErrorMessage error={`No studio found with id ${id}.`} />;
