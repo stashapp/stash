@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,33 +17,40 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+const scanQueueSize = 200000
+
 type ScanJob struct {
 	txnManager    models.TransactionManager
 	input         models.ScanMetadataInput
 	subscriptions *subscriptionManager
 }
 
+type scanFile struct {
+	path            string
+	info            os.FileInfo
+	caseSensitiveFs bool
+}
+
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	input := j.input
 	paths := getScanPaths(input.Paths)
-
-	var total *int
-	var newFiles *int
-	progress.ExecuteTask("Counting files to scan...", func() {
-		total, newFiles = j.neededScan(ctx, paths)
-	})
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
 		return
 	}
 
-	if total == nil || newFiles == nil {
-		logger.Infof("Taking too long to count content. Skipping...")
-		logger.Infof("Starting scan")
-	} else {
-		logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
-	}
+	logger.Info("Starting scan")
+
+	fileQueue := make(chan scanFile, scanQueueSize)
+	go func() {
+		total, newFiles := j.queueFiles(ctx, paths, fileQueue)
+
+		if !job.IsCancelled(ctx) {
+			progress.SetTotal(total)
+			logger.Infof("Finished counting files. Total files to scan: %d, %d new files found", total, newFiles)
+		}
+	}()
 
 	start := time.Now()
 	config := config.GetInstance()
@@ -52,86 +58,52 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 	wg := sizedwaitgroup.New(parallelTasks)
 
-	if total != nil {
-		progress.SetTotal(*total)
-	}
-
 	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 	calculateMD5 := config.IsCalculateMD5()
 
-	stoppingErr := errors.New("stopping")
 	var err error
 
 	var galleries []string
 
 	mutexManager := utils.NewMutexManager()
 
-	for _, sp := range paths {
-		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
-		if er != nil {
-			logger.Warnf("Cannot determine fs case sensitivity: %s", er.Error())
-		}
-
-		err = walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
-			if job.IsCancelled(ctx) {
-				return stoppingErr
-			}
-
-			// #1756 - skip zero length files and directories
-			if info.IsDir() {
-				return nil
-			}
-
-			if info.Size() == 0 {
-				logger.Infof("Skipping zero-length file: %s", path)
-				return nil
-			}
-
-			if isGallery(path) {
-				galleries = append(galleries, path)
-			}
-
-			if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
-				logger.Warnf("couldn't create temporary directory: %v", err)
-			}
-
-			wg.Add()
-			task := ScanTask{
-				TxnManager:           j.txnManager,
-				file:                 file.FSFile(path, info),
-				UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
-				StripFileExtension:   utils.IsTrue(input.StripFileExtension),
-				fileNamingAlgorithm:  fileNamingAlgo,
-				calculateMD5:         calculateMD5,
-				GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
-				GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
-				GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
-				GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
-				GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
-				progress:             progress,
-				CaseSensitiveFs:      csFs,
-				ctx:                  ctx,
-				mutexManager:         mutexManager,
-			}
-
-			go func() {
-				task.Start()
-				wg.Done()
-				progress.Increment()
-			}()
-
-			return nil
-		})
-
-		if err == stoppingErr {
-			logger.Info("Stopping due to user request")
+	for f := range fileQueue {
+		if job.IsCancelled(ctx) {
 			break
 		}
 
-		if err != nil {
-			logger.Errorf("Error encountered scanning files: %s", err.Error())
-			break
+		if isGallery(f.path) {
+			galleries = append(galleries, f.path)
 		}
+
+		if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
+			logger.Warnf("couldn't create temporary directory: %v", err)
+		}
+
+		wg.Add()
+		task := ScanTask{
+			TxnManager:           j.txnManager,
+			file:                 file.FSFile(f.path, f.info),
+			UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
+			StripFileExtension:   utils.IsTrue(input.StripFileExtension),
+			fileNamingAlgorithm:  fileNamingAlgo,
+			calculateMD5:         calculateMD5,
+			GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
+			GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
+			GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
+			GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
+			GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
+			progress:             progress,
+			CaseSensitiveFs:      f.caseSensitiveFs,
+			ctx:                  ctx,
+			mutexManager:         mutexManager,
+		}
+
+		go func() {
+			task.Start()
+			wg.Done()
+			progress.Increment()
+		}()
 	}
 
 	wg.Wait()
@@ -143,7 +115,12 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
 
-	if job.IsCancelled(ctx) || err != nil {
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
+		return
+	}
+
+	if err != nil {
 		return
 	}
 
@@ -165,54 +142,86 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.subscriptions.notify()
 }
 
-func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (total *int, newFiles *int) {
-	const timeout = 90 * time.Second
-
-	// create a control channel through which to signal the counting loop when the timeout is reached
-	chTimeout := time.After(timeout)
-
-	logger.Infof("Counting files to scan...")
-
-	t := 0
-	n := 0
-
-	timeoutErr := errors.New("timed out")
+func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile) (total int, newFiles int) {
+	defer close(scanQueue)
 
 	for _, sp := range paths {
+		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
+		if er != nil {
+			logger.Warnf("Cannot determine fs case sensitivity: %s", er.Error())
+		}
+
 		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
-			t++
-			task := ScanTask{file: file.FSFile(path, info), TxnManager: j.txnManager}
-			if !task.doesPathExist() {
-				n++
-			}
-
-			//check for timeout
-			select {
-			case <-chTimeout:
-				return timeoutErr
-			default:
-			}
-
 			// check stop
 			if job.IsCancelled(ctx) {
-				return timeoutErr
+				return context.Canceled
+			}
+
+			// #1756 - skip zero length files and directories
+			if info.IsDir() {
+				return nil
+			}
+
+			if info.Size() == 0 {
+				logger.Infof("Skipping zero-length file: %s", path)
+				return nil
+			}
+
+			total++
+			if !j.doesPathExist(path) {
+				newFiles++
+			}
+
+			scanQueue <- scanFile{
+				path:            path,
+				info:            info,
+				caseSensitiveFs: csFs,
 			}
 
 			return nil
 		})
 
-		if err == timeoutErr {
-			// timeout should return nil counts
-			return nil, nil
-		}
-
-		if err != nil {
-			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
-			return nil, nil
+		if err != nil && err != context.Canceled {
+			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+			return
 		}
 	}
 
-	return &t, &n
+	return
+}
+
+func (j *ScanJob) doesPathExist(path string) bool {
+	config := config.GetInstance()
+	vidExt := config.GetVideoExtensions()
+	imgExt := config.GetImageExtensions()
+	gExt := config.GetGalleryExtensions()
+
+	ret := false
+	txnErr := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if utils.MatchExtension(path, gExt) {
+			gallery, _ := r.Gallery().FindByPath(path)
+			if gallery != nil {
+				ret = true
+			}
+		} else if utils.MatchExtension(path, vidExt) {
+			s, _ := r.Scene().FindByPath(path)
+			if s != nil {
+				ret = true
+			}
+		} else if utils.MatchExtension(path, imgExt) {
+			i, _ := r.Image().FindByPath(path)
+			if i != nil {
+				ret = true
+			}
+		}
+
+		return nil
+	})
+	if txnErr != nil {
+		logger.Warnf("error checking if file exists in database: %v", txnErr)
+	}
+
+	return ret
 }
 
 type ScanTask struct {
@@ -313,41 +322,6 @@ func (t *ScanTask) Start() {
 
 		iwg.Wait()
 	}
-}
-
-func (t *ScanTask) doesPathExist() bool {
-	config := config.GetInstance()
-	vidExt := config.GetVideoExtensions()
-	imgExt := config.GetImageExtensions()
-	gExt := config.GetGalleryExtensions()
-
-	path := t.file.Path()
-	ret := false
-	txnErr := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		if utils.MatchExtension(path, gExt) {
-			gallery, _ := r.Gallery().FindByPath(path)
-			if gallery != nil {
-				ret = true
-			}
-		} else if utils.MatchExtension(path, vidExt) {
-			s, _ := r.Scene().FindByPath(path)
-			if s != nil {
-				ret = true
-			}
-		} else if utils.MatchExtension(path, imgExt) {
-			i, _ := r.Image().FindByPath(path)
-			if i != nil {
-				ret = true
-			}
-		}
-
-		return nil
-	})
-	if txnErr != nil {
-		logger.Warnf("error while executing read transaction: %v", txnErr)
-	}
-
-	return ret
 }
 
 func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
