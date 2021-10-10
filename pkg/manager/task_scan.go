@@ -40,11 +40,15 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		return
 	}
 
-	logger.Info("Starting scan")
+	start := time.Now()
+	config := config.GetInstance()
+	parallelTasks := config.GetParallelTasksWithAutoDetection()
+
+	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 
 	fileQueue := make(chan scanFile, scanQueueSize)
 	go func() {
-		total, newFiles := j.queueFiles(ctx, paths, fileQueue)
+		total, newFiles := j.queueFiles(ctx, paths, fileQueue, parallelTasks)
 
 		if !job.IsCancelled(ctx) {
 			progress.SetTotal(total)
@@ -52,10 +56,6 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 	}()
 
-	start := time.Now()
-	config := config.GetInstance()
-	parallelTasks := config.GetParallelTasksWithAutoDetection()
-	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 	wg := sizedwaitgroup.New(parallelTasks)
 
 	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
@@ -142,8 +142,10 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.subscriptions.notify()
 }
 
-func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile) (total int, newFiles int) {
+func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile, parallelTasks int) (total int, newFiles int) {
 	defer close(scanQueue)
+
+	wg := sizedwaitgroup.New(parallelTasks)
 
 	for _, sp := range paths {
 		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
@@ -157,29 +159,37 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 				return context.Canceled
 			}
 
-			// #1756 - skip zero length files and directories
-			if info.IsDir() {
-				return nil
-			}
+			wg.Add()
 
-			if info.Size() == 0 {
-				logger.Infof("Skipping zero-length file: %s", path)
-				return nil
-			}
+			go func() {
+				defer wg.Done()
 
-			total++
-			if !j.doesPathExist(path) {
-				newFiles++
-			}
+				// #1756 - skip zero length files and directories
+				if info.IsDir() {
+					return
+				}
 
-			scanQueue <- scanFile{
-				path:            path,
-				info:            info,
-				caseSensitiveFs: csFs,
-			}
+				if info.Size() == 0 {
+					logger.Infof("Skipping zero-length file: %s", path)
+					return
+				}
+
+				total++
+				if !j.doesPathExist(path) {
+					newFiles++
+				}
+
+				scanQueue <- scanFile{
+					path:            path,
+					info:            info,
+					caseSensitiveFs: csFs,
+				}
+			}()
 
 			return nil
 		})
+
+		wg.Wait()
 
 		if err != nil && err != context.Canceled {
 			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
