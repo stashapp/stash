@@ -12,17 +12,19 @@ func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult
 	return makeConfigResult(), nil
 }
 
-func (r *queryResolver) Directory(ctx context.Context, path *string) (*models.Directory, error) {
+func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*models.Directory, error) {
 
 	directory := &models.Directory{}
 	var err error
+
+	col := newCollator(locale)
 
 	var dirPath = ""
 	if path != nil {
 		dirPath = *path
 	}
 	currentDir := utils.GetDir(dirPath)
-	directories, err := utils.ListDir(currentDir)
+	directories, err := utils.ListDir(col, currentDir)
 	if err != nil {
 		return directory, err
 	}
