@@ -22,6 +22,11 @@ type cleanJob struct {
 }
 
 func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
+	logger.Infof("Starting cleaning of tracked files")
+	if j.input.DryRun {
+		logger.Infof("Running in Dry Mode")
+	}
+
 	if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		total, err := j.getCount(r)
 		if err != nil {
@@ -82,6 +87,8 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	sort := "path"
+	findFilter.Sort = &sort
 
 	var toDelete []int
 
@@ -142,6 +149,8 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	sort := "path"
+	findFilter.Sort = &sort
 
 	var toDelete []int
 
