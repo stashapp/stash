@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
@@ -92,7 +91,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +108,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
 
 	if !driverOptions.UseCDP {
-		return nil, fmt.Errorf("Url shouldn't be feetched through CDP")
+		return nil, fmt.Errorf("url shouldn't be fetched through CDP")
 	}
 
 	sleepDuration := scrapeDefaultSleep
@@ -140,7 +139,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 			act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
 		} else {
 			// use a temporary user directory for chrome
-			dir, err := ioutil.TempDir("", "stash-chromedp")
+			dir, err := os.MkdirTemp("", "stash-chromedp")
 			if err != nil {
 				return nil, err
 			}
@@ -224,6 +223,7 @@ func getRemoteCDPWSAddress(address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
 	var result map[string]interface{}
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -233,17 +233,6 @@ func getRemoteCDPWSAddress(address string) (string, error) {
 	remote := result["webSocketDebuggerUrl"].(string)
 	logger.Debugf("Remote cdp instance found %s", remote)
 	return remote, err
-}
-
-func cdpNetwork(enable bool) chromedp.Action {
-	return chromedp.ActionFunc(func(ctx context.Context) error {
-		if enable {
-			network.Enable().Do(ctx)
-		} else {
-			network.Disable().Do(ctx)
-		}
-		return nil
-	})
 }
 
 func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {

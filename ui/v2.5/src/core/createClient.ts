@@ -68,10 +68,27 @@ const typePolicies: TypePolicies = {
       },
     },
   },
+
+  Tag: {
+    fields: {
+      parents: {
+        merge: false,
+      },
+      children: {
+        merge: false,
+      },
+    },
+  },
+};
+
+export const getBaseURL = () => {
+  const baseURL = window.STASH_BASE_URL;
+  if (baseURL === "%BASE_URL%") return "/";
+  return baseURL;
 };
 
 export const getPlatformURL = (ws?: boolean) => {
-  const platformUrl = new URL(window.location.origin);
+  const platformUrl = new URL(window.location.origin + getBaseURL());
 
   if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
     platformUrl.port = process.env.REACT_APP_PLATFORM_PORT ?? "9999";
@@ -96,8 +113,8 @@ export const createClient = () => {
     wsPlatformUrl.protocol = "wss:";
   }
 
-  const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
-  const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
+  const url = `${platformUrl.toString()}graphql`;
+  const wsUrl = `${wsPlatformUrl.toString()}graphql`;
 
   const httpLink = createUploadLink({
     uri: url,
@@ -114,7 +131,10 @@ export const createClient = () => {
     // handle unauthorized error by redirecting to the login page
     if (networkError && (networkError as ServerError).statusCode === 401) {
       // redirect to login page
-      const newURL = new URL("/login", window.location.toString());
+      const newURL = new URL(
+        `${window.STASH_BASE_URL}login`,
+        window.location.toString()
+      );
       newURL.searchParams.append("returnURL", window.location.href);
       window.location.href = newURL.toString();
     }

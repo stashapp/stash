@@ -139,7 +139,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="tag-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="tag" />
           <span>{props.scene.tags.length}</span>
@@ -181,7 +185,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       <HoverPopover
         placement="bottom"
         content={popoverContent}
-        className="tag-tooltip"
+        className="movie-count tag-tooltip"
       >
         <Button className="minimal">
           <Icon icon="film" />
@@ -200,7 +204,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     });
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="marker-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="map-marker-alt" />
           <span>{props.scene.scene_markers.length}</span>
@@ -212,7 +220,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOCounter() {
     if (props.scene.o_counter) {
       return (
-        <div>
+        <div className="o-counter">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />
@@ -232,7 +240,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="gallery-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="images" />
           <span>{props.scene.galleries.length}</span>
@@ -244,7 +256,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOrganized() {
     if (props.scene.organized) {
       return (
-        <div>
+        <div className="organized">
           <Button className="minimal">
             <Icon icon="box" />
           </Button>

@@ -1,6 +1,5 @@
 # Stash
 
-[![Build Status](https://travis-ci.org/stashapp/stash.svg?branch=master)](https://travis-ci.org/stashapp/stash)
 [![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 
@@ -68,6 +67,10 @@ This command would need customizing for your environment.  [This link](https://s
 
 Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the same directory as the `config.yml` file, or the `~/.stash` directory.  Stash detects these and starts up using HTTPS rather than HTTP.
 
+## Basepath rewriting
+
+The basepath defaults to `/`. When running stash via a reverse proxy in a subpath, the basepath can be changed by having the reverse proxy pass `X-Forwarded-Prefix` (and optionally `X-Forwarded-Port`) headers. When detects these headers, it alters the basepath URL of the UI.
+
 # Customization
 
 ## Themes and CSS Customization
@@ -90,13 +93,10 @@ For issues not addressed there, there are a few options.
 ## Pre-requisites
 
 * [Go](https://golang.org/dl/)
-* [Revive](https://github.com/mgechev/revive) - Configurable linter
-    * Go Install: `go get github.com/mgechev/revive`
-* [Packr2](https://github.com/gobuffalo/packr/) - Static asset bundler
-    * Go Install: `go get github.com/gobuffalo/packr/v2/packr2`
-    * [Binary Download](https://github.com/gobuffalo/packr/releases)
+* [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
+  * To install, follow the [local installation instructions](https://golangci-lint.run/usage/install/#local-installation)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
-    * Run `yarn install --frozen-lockfile` in the `stash/ui/v2.5` folder (before running make generate for first time).
+  * Run `yarn install --frozen-lockfile` in the `stash/ui/v2.5` folder (before running make generate for first time).
 
 NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
 
@@ -112,8 +112,7 @@ TODO
 2. Download and install [MingW](https://sourceforge.net/projects/mingw-w64/)
 3. Search for "advanced system settings" and open the system properties dialog.
     1. Click the `Environment Variables` button
-    2. Add `GO111MODULE=on`
-    3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+    2. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
 
 NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
@@ -121,21 +120,19 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 * `make generate` - Generate Go and UI GraphQL files
 * `make build` - Builds the binary (make sure to build the UI as well... see below)
+* `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
-* `make fmt-ui` - Formats the UI source code.
-* `make ui` - Builds the frontend and the packr2 files
-* `make packr` - Generate packr2 files (sub-target of `ui`. Use to regenerate packr2 files without rebuilding UI)
-* `make vet` - Run `go vet`
-* `make lint` - Run the linter
+* `make fmt-ui` - Formats the UI source code
+* `make ui` - Builds the frontend
+* `make lint` - Run the linter on the backend
 * `make fmt` - Run `go fmt`
-* `make fmt-check` - Ensure changed files are formatted correctly
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
 * `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash port can be changed from the default of `9999` with environment variable `REACT_APP_PLATFORM_PORT`.
 
 ## Building a release
 
-1. Run `make generate` to create generated files 
+1. Run `make generate` to create generated files
 2. Run `make ui` to compile the frontend
 3. Run `make build` to build the executable for your current platform
 
@@ -151,7 +148,7 @@ command to open a bash shell to the container to poke around:
 
 Stash can be profiled using the `--cpuprofile <output profile filename>` command line flag.
 
-The resulting file can then be used with pprof as follows: 
+The resulting file can then be used with pprof as follows:
 
 `go tool pprof <path to binary> <path to profile filename>`
 

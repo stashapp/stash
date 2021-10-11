@@ -79,19 +79,19 @@ export class ListFilterModel {
         }
       }
     }
-    this.sortDirection =
-      params.sortdir === "desc"
-        ? SortDirectionEnum.Desc
-        : SortDirectionEnum.Asc;
+    if (params.sortdir !== undefined) {
+      this.sortDirection =
+        params.sortdir === "desc"
+          ? SortDirectionEnum.Desc
+          : SortDirectionEnum.Asc;
+    }
     if (params.disp !== undefined) {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
       this.searchTerm = params.q.trim();
     }
-    if (params.p) {
-      this.currentPage = Number.parseInt(params.p, 10);
-    }
+    this.currentPage = params.p ? Number.parseInt(params.p, 10) : 1;
     if (params.perPage) this.itemsPerPage = Number.parseInt(params.perPage, 10);
     if (params.z !== undefined) {
       const zoomIndex = Number.parseInt(params.z, 10);
@@ -100,9 +100,8 @@ export class ListFilterModel {
       }
     }
 
+    this.criteria = [];
     if (params.c !== undefined) {
-      this.criteria = [];
-
       let jsonParameters: string[];
       if (params.c instanceof Array) {
         jsonParameters = params.c;
@@ -116,7 +115,7 @@ export class ListFilterModel {
           const criterion = makeCriteria(encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
-            criterion.value = encodedCriterion.value;
+            criterion.decodeValue(encodedCriterion.value);
             criterion.modifier = encodedCriterion.modifier;
             this.criteria.push(criterion);
           }

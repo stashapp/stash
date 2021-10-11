@@ -78,7 +78,7 @@ func (qb *tagQueryBuilder) Destroy(id int) error {
 	}
 
 	if primaryMarkers > 0 {
-		return errors.New("Cannot delete tag used as a primary tag in scene markers")
+		return errors.New("cannot delete tag used as a primary tag in scene markers")
 	}
 
 	return qb.destroyExisting([]int{id})
@@ -196,6 +196,28 @@ func (qb *tagQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.T
 	return qb.queryTags(query, args)
 }
 
+func (qb *tagQueryBuilder) FindByParentTagID(parentID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		INNER JOIN tags_relations ON tags_relations.child_id = tags.id
+		WHERE tags_relations.parent_id = ?
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{parentID}
+	return qb.queryTags(query, args)
+}
+
+func (qb *tagQueryBuilder) FindByChildTagID(parentID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		INNER JOIN tags_relations ON tags_relations.parent_id = tags.id
+		WHERE tags_relations.child_id = ?
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{parentID}
+	return qb.queryTags(query, args)
+}
+
 func (qb *tagQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
@@ -280,6 +302,10 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 	query.handleCriterion(tagGalleryCountCriterionHandler(qb, tagFilter.GalleryCount))
 	query.handleCriterion(tagPerformerCountCriterionHandler(qb, tagFilter.PerformerCount))
 	query.handleCriterion(tagMarkerCountCriterionHandler(qb, tagFilter.MarkerCount))
+	query.handleCriterion(tagParentsCriterionHandler(qb, tagFilter.Parents))
+	query.handleCriterion(tagChildrenCriterionHandler(qb, tagFilter.Children))
+	query.handleCriterion(tagParentCountCriterionHandler(qb, tagFilter.ParentCount))
+	query.handleCriterion(tagChildCountCriterionHandler(qb, tagFilter.ChildCount))
 
 	return query
 }
@@ -411,6 +437,94 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 	}
 }
 
+func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if tags != nil && len(tags.Value) > 0 {
+			var args []interface{}
+			for _, val := range tags.Value {
+				args = append(args, val)
+			}
+
+			depthVal := 0
+			if tags.Depth != nil {
+				depthVal = *tags.Depth
+			}
+
+			var depthCondition string
+			if depthVal != -1 {
+				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+			}
+
+			query := `parents AS (
+	SELECT parent_id AS root_id, child_id AS item_id, 0 AS depth FROM tags_relations WHERE parent_id IN` + getInBinding(len(tags.Value)) + `
+	UNION
+	SELECT root_id, child_id, depth + 1 FROM tags_relations INNER JOIN parents ON item_id = parent_id ` + depthCondition + `
+)`
+
+			f.addRecursiveWith(query, args...)
+
+			f.addJoin("parents", "", "parents.item_id = tags.id")
+
+			addHierarchicalConditionClauses(f, tags, "parents", "root_id")
+		}
+	}
+}
+
+func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if tags != nil && len(tags.Value) > 0 {
+			var args []interface{}
+			for _, val := range tags.Value {
+				args = append(args, val)
+			}
+
+			depthVal := 0
+			if tags.Depth != nil {
+				depthVal = *tags.Depth
+			}
+
+			var depthCondition string
+			if depthVal != -1 {
+				depthCondition = fmt.Sprintf("WHERE depth < %d", depthVal)
+			}
+
+			query := `children AS (
+	SELECT child_id AS root_id, parent_id AS item_id, 0 AS depth FROM tags_relations WHERE child_id IN` + getInBinding(len(tags.Value)) + `
+	UNION
+	SELECT root_id, parent_id, depth + 1 FROM tags_relations INNER JOIN children ON item_id = child_id ` + depthCondition + `
+)`
+
+			f.addRecursiveWith(query, args...)
+
+			f.addJoin("children", "", "children.item_id = tags.id")
+
+			addHierarchicalConditionClauses(f, tags, "children", "root_id")
+		}
+	}
+}
+
+func tagParentCountCriterionHandler(qb *tagQueryBuilder, parentCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if parentCount != nil {
+			f.addJoin("tags_relations", "parents_count", "parents_count.child_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct parents_count.parent_id)", *parentCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func tagChildCountCriterionHandler(qb *tagQueryBuilder, childCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if childCount != nil {
+			f.addJoin("tags_relations", "children_count", "children_count.parent_id = tags.id")
+			clause, args := getIntCriterionWhereClause("count(distinct children_count.child_id)", *childCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
 func (qb *tagQueryBuilder) getDefaultTagSort() string {
 	return getSort("name", "ASC", "tags")
 }
@@ -429,20 +543,15 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 	if findFilter.Sort != nil {
 		switch *findFilter.Sort {
 		case "scenes_count":
-			query.join("scenes_tags", "", "scenes_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct scenes_tags.scene_id) " + direction
+			return getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 		case "scene_markers_count":
-			query.join("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct scene_markers_tags.scene_marker_id) " + direction
+			return getCountSort(tagTable, "scene_markers_tags", tagIDColumn, direction)
 		case "images_count":
-			query.join("images_tags", "", "images_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct images_tags.image_id) " + direction
+			return getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 		case "galleries_count":
-			query.join("galleries_tags", "", "galleries_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct galleries_tags.gallery_id) " + direction
+			return getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 		case "performers_count":
-			query.join("performers_tags", "", "performers_tags.tag_id = tags.id")
-			return " ORDER BY COUNT(distinct performers_tags.performer_id) " + direction
+			return getCountSort(tagTable, performersTagsTable, tagIDColumn, direction)
 		}
 	}
 
@@ -571,4 +680,116 @@ AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idCo
 	}
 
 	return nil
+}
+
+func (qb *tagQueryBuilder) UpdateParentTags(tagID int, parentIDs []int) error {
+	tx := qb.tx
+	if _, err := tx.Exec("DELETE FROM tags_relations WHERE child_id = ?", tagID); err != nil {
+		return err
+	}
+
+	if len(parentIDs) > 0 {
+		var args []interface{}
+		var values []string
+		for _, parentID := range parentIDs {
+			values = append(values, "(? , ?)")
+			args = append(args, parentID, tagID)
+		}
+
+		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
+		if _, err := tx.Exec(query, args...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (qb *tagQueryBuilder) UpdateChildTags(tagID int, childIDs []int) error {
+	tx := qb.tx
+	if _, err := tx.Exec("DELETE FROM tags_relations WHERE parent_id = ?", tagID); err != nil {
+		return err
+	}
+
+	if len(childIDs) > 0 {
+		var args []interface{}
+		var values []string
+		for _, childID := range childIDs {
+			values = append(values, "(? , ?)")
+			args = append(args, tagID, childID)
+		}
+
+		query := "INSERT INTO tags_relations (parent_id, child_id) VALUES " + strings.Join(values, ", ")
+		if _, err := tx.Exec(query, args...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+	inBinding := getInBinding(len(excludeIDs) + 1)
+
+	query := `WITH RECURSIVE
+parents AS (
+	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+),
+children AS (
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+)
+SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+UNION
+SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+`
+
+	var ret models.Tags
+	excludeArgs := []interface{}{tagID}
+	for _, excludeID := range excludeIDs {
+		excludeArgs = append(excludeArgs, excludeID)
+	}
+	args := []interface{}{tagID}
+	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
+	if err := qb.query(query, args, &ret); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+	inBinding := getInBinding(len(excludeIDs) + 1)
+
+	query := `WITH RECURSIVE
+children AS (
+	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+),
+parents AS (
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+	UNION
+	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+)
+SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+UNION
+SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+`
+
+	var ret models.Tags
+	excludeArgs := []interface{}{tagID}
+	for _, excludeID := range excludeIDs {
+		excludeArgs = append(excludeArgs, excludeID)
+	}
+	args := []interface{}{tagID}
+	args = append(args, append(append(excludeArgs, excludeArgs...), excludeArgs...)...)
+	if err := qb.query(query, args, &ret); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

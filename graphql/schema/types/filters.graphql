@@ -72,7 +72,7 @@ input PerformerFilterType {
   """Filter to only include performers missing this property"""
   is_missing: String
   """Filter to only include performers with these tags"""
-  tags: MultiCriterionInput
+  tags: HierarchicalMultiCriterionInput
   """Filter by tag count"""
   tag_count: IntCriterionInput
   """Filter by scene count"""
@@ -99,11 +99,11 @@ input PerformerFilterType {
 
 input SceneMarkerFilterType {
   """Filter to only include scene markers with this tag"""
-  tag_id: ID
+  tag_id: ID @deprecated(reason: "use tags filter instead")
   """Filter to only include scene markers with these tags"""
-  tags: MultiCriterionInput
+  tags: HierarchicalMultiCriterionInput
   """Filter to only include scene markers attached to a scene with these tags"""
-  scene_tags: MultiCriterionInput
+  scene_tags: HierarchicalMultiCriterionInput
   """Filter to only include scene markers with these performers"""
   performers: MultiCriterionInput
 }
@@ -143,11 +143,11 @@ input SceneFilterType {
   """Filter to only include scenes with this movie"""
   movies: MultiCriterionInput
   """Filter to only include scenes with these tags"""
-  tags: MultiCriterionInput
+  tags: HierarchicalMultiCriterionInput
   """Filter by tag count"""
   tag_count: IntCriterionInput
   """Filter to only include scenes with performers with these tags"""
-  performer_tags: MultiCriterionInput
+  performer_tags: HierarchicalMultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
   """Filter by performer count"""
@@ -176,9 +176,15 @@ input MovieFilterType {
   is_missing: String
   """Filter by url"""
   url: StringCriterionInput
+  """Filter to only include movies where performer appears in a scene"""
+  performers: MultiCriterionInput
 }
 
 input StudioFilterType {
+  AND: StudioFilterType
+  OR: StudioFilterType
+  NOT: StudioFilterType
+
   name: StringCriterionInput
   details: StringCriterionInput
   """Filter to only include studios with this parent studio"""
@@ -197,6 +203,8 @@ input StudioFilterType {
   gallery_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by studio aliases"""
+  aliases: StringCriterionInput
 }
 
 input GalleryFilterType {
@@ -224,11 +232,11 @@ input GalleryFilterType {
   """Filter to only include galleries with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include galleries with these tags"""
-  tags: MultiCriterionInput
+  tags: HierarchicalMultiCriterionInput
   """Filter by tag count"""
   tag_count: IntCriterionInput
   """Filter to only include galleries with performers with these tags"""
-  performer_tags: MultiCriterionInput
+  performer_tags: HierarchicalMultiCriterionInput
   """Filter to only include galleries with these performers"""
   performers: MultiCriterionInput
   """Filter by performer count"""
@@ -267,6 +275,18 @@ input TagFilterType {
 
   """Filter by number of markers with this tag"""
   marker_count: IntCriterionInput
+
+  """Filter by parent tags"""
+  parents: HierarchicalMultiCriterionInput
+
+  """Filter by child tags"""
+  children: HierarchicalMultiCriterionInput
+
+  """Filter by number of parent tags the tag has"""
+  parent_count: IntCriterionInput
+
+  """Filter by number f child tags the tag has"""
+  child_count: IntCriterionInput
 }
 
 input ImageFilterType {
@@ -293,11 +313,11 @@ input ImageFilterType {
   """Filter to only include images with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include images with these tags"""
-  tags: MultiCriterionInput
+  tags: HierarchicalMultiCriterionInput
   """Filter by tag count"""
   tag_count: IntCriterionInput
   """Filter to only include images with performers with these tags"""
-  performer_tags: MultiCriterionInput
+  performer_tags: HierarchicalMultiCriterionInput
   """Filter to only include images with these performers"""
   performers: MultiCriterionInput
   """Filter by performer count"""
@@ -357,7 +377,7 @@ input GenderCriterionInput {
 input HierarchicalMultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
-  depth: Int!
+  depth: Int
 }
 
 enum FilterMode {

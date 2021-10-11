@@ -1,4 +1,4 @@
-// uild ignore
+// +build ignore
 
 package main
 
@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -19,7 +21,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const batchSize = 1000
+const batchSize = 50000
 
 // create an example database by generating a number of scenes, markers,
 // performers, studios and tags, and associating between them all
@@ -40,15 +42,19 @@ var txnManager models.TransactionManager
 var c *config
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	var err error
 	c, err = loadConfig()
 	if err != nil {
-		panic(err)
+		log.Fatalf("couldn't load configuration: %v", err)
 	}
 
 	initNaming(*c)
 
-	database.Initialize(c.Database)
+	if err = database.Initialize(c.Database); err != nil {
+		log.Fatalf("couldn't initialize database: %v", err)
+	}
 	populateDB()
 }
 
@@ -78,6 +84,7 @@ func populateDB() {
 	makeScenes(c.Scenes)
 	makeImages(c.Images)
 	makeGalleries(c.Galleries)
+	makeMarkers(c.Markers)
 }
 
 func withTxn(f func(r models.Repository) error) error {
@@ -109,8 +116,25 @@ func makeTags(n int) {
 					Name: name,
 				}
 
-				_, err := r.Tag().Create(tag)
-				return err
+				created, err := r.Tag().Create(tag)
+				if err != nil {
+					return err
+				}
+
+				if rand.Intn(100) > 5 {
+					t, _, err := r.Tag().Query(nil, getRandomFilter(1))
+					if err != nil {
+						return err
+					}
+
+					if len(t) > 0 && t[0].ID != created.ID {
+						if err := r.Tag().UpdateParentTags(created.ID, []int{t[0].ID}); err != nil {
+							return err
+						}
+					}
+				}
+
+				return nil
 			})
 		}); err != nil {
 			panic(err)
@@ -181,7 +205,6 @@ func makePerformers(n int) {
 
 func makeScenes(n int) {
 	logger.Infof("creating %d scenes...", n)
-	rand.Seed(533)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -256,7 +279,6 @@ func generateScene(i int) models.Scene {
 
 func makeImages(n int) {
 	logger.Infof("creating %d images...", n)
-	rand.Seed(1293)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -298,7 +320,6 @@ func generateImage(i int) models.Image {
 
 func makeGalleries(n int) {
 	logger.Infof("creating %d galleries...", n)
-	rand.Seed(92113)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -339,8 +360,48 @@ func generateGallery(i int) models.Gallery {
 	}
 }
 
+func makeMarkers(n int) {
+	logger.Infof("creating %d markers...", n)
+	for i := 0; i < n; {
+		// do in batches of 1000
+		batch := i + batchSize
+		if err := withTxn(func(r models.Repository) error {
+			for ; i < batch && i < n; i++ {
+				marker := generateMarker(i)
+				marker.SceneID = models.NullInt64(int64(getRandomScene()))
+				marker.PrimaryTagID = getRandomTags(r, 1, 1)[0]
+
+				created, err := r.SceneMarker().Create(marker)
+				if err != nil {
+					return err
+				}
+
+				tags := getRandomTags(r, 0, 5)
+				// remove primary tag
+				tags = utils.IntExclude(tags, []int{marker.PrimaryTagID})
+				if err := r.SceneMarker().UpdateTags(created.ID, tags); err != nil {
+					return err
+				}
+			}
+
+			logger.Infof("... created %d markers", i)
+
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+	}
+}
+
+func generateMarker(i int) models.SceneMarker {
+	return models.SceneMarker{
+		Title: names[c.Naming.Scenes].generateName(rand.Intn(7) + 1),
+	}
+}
+
 func getRandomFilter(n int) *models.FindFilterType {
-	sortBy := "random"
+	seed := math.Floor(rand.Float64() * math.Pow10(8))
+	sortBy := fmt.Sprintf("random_%.f", seed)
 	return &models.FindFilterType{
 		Sort:    &sortBy,
 		PerPage: &n,
@@ -365,7 +426,7 @@ func getRandomStudioID(r models.Repository) sql.NullInt64 {
 
 func makeSceneRelationships(r models.Repository, id int) {
 	// add tags
-	tagIDs := getRandomTags(r)
+	tagIDs := getRandomTags(r, 0, 15)
 	if len(tagIDs) > 0 {
 		if err := r.Scene().UpdateTags(id, tagIDs); err != nil {
 			panic(err)
@@ -382,26 +443,33 @@ func makeSceneRelationships(r models.Repository, id int) {
 }
 
 func makeImageRelationships(r models.Repository, id int) {
+	// there are typically many more images. For performance reasons
+	// only a small proportion should have tags/performers
+
 	// add tags
-	tagIDs := getRandomTags(r)
-	if len(tagIDs) > 0 {
-		if err := r.Image().UpdateTags(id, tagIDs); err != nil {
-			panic(err)
+	if rand.Intn(100) == 0 {
+		tagIDs := getRandomTags(r, 1, 15)
+		if len(tagIDs) > 0 {
+			if err := r.Image().UpdateTags(id, tagIDs); err != nil {
+				panic(err)
+			}
 		}
 	}
 
 	// add performers
-	performerIDs := getRandomPerformers(r)
-	if len(tagIDs) > 0 {
-		if err := r.Image().UpdatePerformers(id, performerIDs); err != nil {
-			panic(err)
+	if rand.Intn(100) <= 1 {
+		performerIDs := getRandomPerformers(r)
+		if len(performerIDs) > 0 {
+			if err := r.Image().UpdatePerformers(id, performerIDs); err != nil {
+				panic(err)
+			}
 		}
 	}
 }
 
 func makeGalleryRelationships(r models.Repository, id int) {
 	// add tags
-	tagIDs := getRandomTags(r)
+	tagIDs := getRandomTags(r, 0, 15)
 	if len(tagIDs) > 0 {
 		if err := r.Gallery().UpdateTags(id, tagIDs); err != nil {
 			panic(err)
@@ -447,8 +515,17 @@ func getRandomPerformers(r models.Repository) []int {
 	return ret
 }
 
-func getRandomTags(r models.Repository) []int {
-	n := rand.Intn(15)
+func getRandomScene() int {
+	return rand.Intn(c.Scenes) + 1
+}
+
+func getRandomTags(r models.Repository, min, max int) []int {
+	var n int
+	if min == max {
+		n = min
+	} else {
+		n = rand.Intn(max-min) + min
+	}
 
 	var ret []int
 	// if n > 0 {

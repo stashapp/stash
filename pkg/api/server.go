@@ -3,11 +3,12 @@ package api
 import (
 	"context"
 	"crypto/tls"
+	"embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"net/http"
-	"net/url"
+	"os"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -21,14 +22,12 @@ import (
 	gqlPlayground "github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -36,85 +35,7 @@ var version string
 var buildstamp string
 var githash string
 
-var uiBox *packr.Box
-
-//var legacyUiBox *packr.Box
-var loginUIBox *packr.Box
-
-func allowUnauthenticated(r *http.Request) bool {
-	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
-}
-
-func authenticateHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
-			if err != nil {
-				if err != session.ErrUnauthorized {
-					w.WriteHeader(http.StatusInternalServerError)
-					_, err = w.Write([]byte(err.Error()))
-					if err != nil {
-						logger.Error(err)
-					}
-					return
-				}
-
-				// unauthorized error
-				w.Header().Add("WWW-Authenticate", `FormBased`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			c := config.GetInstance()
-			ctx := r.Context()
-
-			// handle redirect if no user and user is required
-			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
-				// if we don't have a userID, then redirect
-				// if graphql was requested, we just return a forbidden error
-				if r.URL.Path == "/graphql" {
-					w.Header().Add("WWW-Authenticate", `FormBased`)
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				// otherwise redirect to the login page
-				u := url.URL{
-					Path: "/login",
-				}
-				q := u.Query()
-				q.Set(returnURLParam, r.URL.Path)
-				u.RawQuery = q.Encode()
-				http.Redirect(w, r, u.String(), http.StatusFound)
-				return
-			}
-
-			ctx = session.SetCurrentUserID(ctx, userID)
-
-			r = r.WithContext(ctx)
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func visitedPluginHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// get the visited plugins and set them in the context
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-const loginEndPoint = "/login"
-
-func Start() {
-	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
-	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
-	loginUIBox = packr.New("Login UI Box", "../../ui/login")
-
+func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -182,10 +103,10 @@ func Start() {
 	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
 
 	// session handlers
-	r.Post(loginEndPoint, handleLogin)
-	r.Get("/logout", handleLogout)
+	r.Post(loginEndPoint, handleLogin(loginUIBox))
+	r.Get("/logout", handleLogout(loginUIBox))
 
-	r.Get(loginEndPoint, getLoginHandler)
+	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
 	r.Mount("/performer", performerRoutes{
 		txnManager: txnManager,
@@ -226,11 +147,18 @@ func Start() {
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data, _ := loginUIBox.Find("login.html")
-			_, _ = w.Write(data)
+			prefix := getProxyPrefix(r.Header)
+
+			data := getLoginPage(loginUIBox)
+			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
+			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
-			http.FileServer(loginUIBox).ServeHTTP(w, r)
+			loginRoot, err := fs.Sub(loginUIBox, loginRootDir)
+			if err != nil {
+				panic(err)
+			}
+			http.FileServer(http.FS(loginRoot)).ServeHTTP(w, r)
 		}
 	})
 
@@ -255,6 +183,8 @@ func Start() {
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		const uiRootDir = "ui/v2.5/build"
+
 		ext := path.Ext(r.URL.Path)
 
 		if customUILocation != "" {
@@ -267,14 +197,25 @@ func Start() {
 		}
 
 		if ext == ".html" || ext == "" {
-			data, _ := uiBox.Find("index.html")
-			_, _ = w.Write(data)
+			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
+			if err != nil {
+				panic(err)
+			}
+
+			prefix := getProxyPrefix(r.Header)
+			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
+			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
+			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-			http.FileServer(uiBox).ServeHTTP(w, r)
+			uiRoot, err := fs.Sub(uiBox, uiRootDir)
+			if err != nil {
+				panic(err)
+			}
+			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
 	})
 
@@ -342,12 +283,12 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 		return nil, errors.New("SSL key file must be present if certificate file is present")
 	}
 
-	cert, err := ioutil.ReadFile(certFile)
+	cert, err := os.ReadFile(certFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSL certificate file %s: %s", certFile, err.Error())
 	}
 
-	key, err := ioutil.ReadFile(keyFile)
+	key, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading SSL key file %s: %s", keyFile, err.Error())
 	}
@@ -382,11 +323,19 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		} else {
 			scheme = "http"
 		}
-		baseURL := scheme + "://" + r.Host
+		prefix := getProxyPrefix(r.Header)
+
+		port := ""
+		forwardedPort := r.Header.Get("X-Forwarded-Port")
+		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" {
+			port = ":" + forwardedPort
+		}
+
+		baseURL := scheme + "://" + r.Host + port + prefix
 
 		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
-			baseURL = externalHost
+			baseURL = externalHost + prefix
 		}
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
@@ -394,4 +343,13 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
+}
+
+func getProxyPrefix(headers http.Header) string {
+	prefix := ""
+	if headers.Get("X-Forwarded-Prefix") != "" {
+		prefix = strings.TrimRight(headers.Get("X-Forwarded-Prefix"), "/")
+	}
+
+	return prefix
 }

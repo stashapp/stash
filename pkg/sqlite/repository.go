@@ -238,20 +238,24 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
-	body = body + " GROUP BY " + r.tableName + ".id "
 	if len(havingClauses) > 0 {
+		body = body + " GROUP BY " + r.tableName + ".id "
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
 
 	return body
 }
 
-func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string) ([]int, int, error) {
+func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string, withClauses []string, recursiveWith bool) ([]int, int, error) {
 	body = r.buildQueryBody(body, whereClauses, havingClauses)
 
 	withClause := ""
 	if len(withClauses) > 0 {
-		withClause = "WITH " + strings.Join(withClauses, ", ") + " "
+		var recursive string
+		if recursiveWith {
+			recursive = " RECURSIVE "
+		}
+		withClause = "WITH " + recursive + strings.Join(withClauses, ", ") + " "
 	}
 
 	countQuery := withClause + r.buildCountQuery(body)
@@ -269,10 +273,10 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	idsResult, idsErr = r.runIdsQuery(idsQuery, args)
 
 	if countErr != nil {
-		return nil, 0, fmt.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
+		return nil, 0, fmt.Errorf("error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
 	}
 	if idsErr != nil {
-		return nil, 0, fmt.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
+		return nil, 0, fmt.Errorf("error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
 	}
 
 	return idsResult, countResult, nil

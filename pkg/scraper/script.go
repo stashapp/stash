@@ -1,9 +1,9 @@
 package scraper
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -48,7 +48,9 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	go func() {
 		defer stdin.Close()
 
-		io.WriteString(stdin, inString)
+		if n, err := io.WriteString(stdin, inString); err != nil {
+			logger.Warnf("failure to write full input to script (wrote %v bytes out of %v): %v", n, len(inString), err)
+		}
 	}()
 
 	stderr, err := cmd.StderrPipe()
@@ -63,15 +65,10 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 
 	if err = cmd.Start(); err != nil {
 		logger.Error("Error running scraper script: " + err.Error())
-		return errors.New("Error running scraper script")
+		return errors.New("error running scraper script")
 	}
 
-	scanner := bufio.NewScanner(stderr)
-	go func() { // log errors from stderr pipe
-		for scanner.Scan() {
-			logger.Errorf("scraper: %s", scanner.Text())
-		}
-	}()
+	go handleScraperStderr(s.config.Name, stderr)
 
 	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
 
@@ -86,7 +83,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	logger.Debugf("Scraper script finished")
 
 	if err != nil {
-		return errors.New("Error running scraper script")
+		return errors.New("error running scraper script")
 	}
 
 	return nil
@@ -134,7 +131,39 @@ func (s *scriptScraper) scrapePerformerByURL(url string) (*models.ScrapedPerform
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+	inString, err := json.Marshal(sceneToUpdateInput(scene))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret models.ScrapedScene
+
+	err = s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}
+
+func (s *scriptScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+	inString := `{"name": "` + name + `"}`
+
+	var scenes []models.ScrapedScene
+
+	err := s.runScraperScript(inString, &scenes)
+
+	// convert to pointers
+	var ret []*models.ScrapedScene
+	if err == nil {
+		for i := 0; i < len(scenes); i++ {
+			ret = append(ret, &scenes[i])
+		}
+	}
+
+	return ret, err
+}
+
+func (s *scriptScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(scene)
 
 	if err != nil {
@@ -148,7 +177,21 @@ func (s *scriptScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*m
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+func (s *scriptScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+	inString, err := json.Marshal(galleryToUpdateInput(gallery))
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret models.ScrapedGallery
+
+	err = s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}
+
+func (s *scriptScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
 	inString, err := json.Marshal(gallery)
 
 	if err != nil {
@@ -206,4 +249,14 @@ func findPythonExecutable() (string, error) {
 	}
 
 	return "python3", nil
+}
+
+func handleScraperStderr(name string, scraperOutputReader io.ReadCloser) {
+	const scraperPrefix = "[Scrape / %s] "
+
+	lgr := logger.PluginLogger{
+		Prefix:          fmt.Sprintf(scraperPrefix, name),
+		DefaultLogLevel: &logger.ErrorLevel,
+	}
+	lgr.HandlePluginStdErr(scraperOutputReader)
 }

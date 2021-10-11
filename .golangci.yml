@@ -1,0 +1,82 @@
+# options for analysis running
+run:
+  timeout: 3m
+  modules-download-mode: vendor
+
+linters:
+  disable-all: true
+  enable:
+    # Default set of linters from golangci-lint
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # Linters added by the stash project
+    # - bodyclose
+    - dogsled
+    # - errorlint
+    # - exhaustive
+    - exportloopref
+    # - goconst
+    # - gocritic
+    # - goerr113
+    - gofmt
+    # - gosec
+    # - ifshort
+    - misspell
+    # - nakedret
+    # - noctx
+    # - paralleltest
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+
+linters-settings:
+  gofmt:
+    simplify: false
+
+  revive:
+    ignore-generated-header: true
+    severity: error
+    confidence: 0.8
+    error-code: 1
+    warning-code: 1
+    rules:
+      - name: blank-imports
+        disabled: true
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+        disabled: true
+      - name: if-return
+        disabled: true
+      - name: increment-decrement
+      - name: var-naming
+        disabled: true
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+        disabled: true
+      - name: indent-error-flow
+        disabled: true
+      - name: errorf
+      - name: empty-block
+        disabled: true
+      - name: superfluous-else
+      - name: unused-parameter
+        disabled: true
+      - name: unreachable-code
+      - name: redefines-builtin-id

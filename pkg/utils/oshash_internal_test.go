@@ -12,7 +12,7 @@ func TestOshashEmpty(t *testing.T) {
 	want := "0000000000000000"
 	got, err := oshash(size, head, tail)
 	if err != nil {
-		t.Errorf("TestOshashEmpty: Error from oshash: %w", err)
+		t.Errorf("TestOshashEmpty: Error from oshash: %v", err)
 	}
 	if got != want {
 		t.Errorf("TestOshashEmpty: oshash(0, 0, 0) = %q; want %q", got, want)

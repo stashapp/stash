@@ -11,20 +11,18 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const invalidImage = "aW1hZ2VCeXRlcw&&"
-
 const (
 	path = "path"
 
-	imageNameErr      = "imageNameErr"
-	existingImageName = "existingImageName"
+	imageNameErr = "imageNameErr"
+	// existingImageName = "existingImageName"
 
 	existingImageID     = 100
 	existingStudioID    = 101
 	existingGalleryID   = 102
 	existingPerformerID = 103
-	existingMovieID     = 104
-	existingTagID       = 105
+	// existingMovieID     = 104
+	existingTagID = 105
 
 	existingStudioName = "existingStudioName"
 	existingStudioErr  = "existingStudioErr"

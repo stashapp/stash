@@ -9,7 +9,7 @@ endif
 ifdef IS_WIN
   SEPARATOR := &&
   SET := set
-else 
+else
   SEPARATOR := ;
   SET := export
 endif
@@ -23,9 +23,8 @@ ifdef OUTPUT
 endif
 
 export CGO_ENABLED = 1
-export GO111MODULE = on
 
-.PHONY: release pre-build install clean 
+.PHONY: release pre-build
 
 release: generate ui build-release
 
@@ -44,14 +43,15 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
-# consider -trimpath in go build if we move to go 1.13+
 build-release: EXTRA_LDFLAGS := -s -w
+build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
 build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release-static: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 
 # cross-compile- targets should be run within the compiler docker container
@@ -62,13 +62,21 @@ cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: build-release-static
 
-cross-compile-osx: export GOOS := darwin
-cross-compile-osx: export GOARCH := amd64
-cross-compile-osx: export CC := o64-clang
-cross-compile-osx: export CXX := o64-clang++
-cross-compile-osx: OUTPUT := -o dist/stash-osx
+cross-compile-osx-intel: export GOOS := darwin
+cross-compile-osx-intel: export GOARCH := amd64
+cross-compile-osx-intel: export CC := o64-clang
+cross-compile-osx-intel: export CXX := o64-clang++
+cross-compile-osx-intel: OUTPUT := -o dist/stash-osx
 # can't use static build for OSX
-cross-compile-osx: build-release
+cross-compile-osx-intel: build-release
+
+cross-compile-osx-applesilicon: export GOOS := darwin
+cross-compile-osx-applesilicon: export GOARCH := arm64
+cross-compile-osx-applesilicon: export CC := oa64e-clang
+cross-compile-osx-applesilicon: export CXX := oa64e-clang++
+cross-compile-osx-applesilicon: OUTPUT := -o dist/stash-osx-applesilicon
+# can't use static build for OSX
+cross-compile-osx-applesilicon: build-release
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
@@ -95,19 +103,25 @@ cross-compile-pi: export CC := arm-linux-gnueabi-gcc
 cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
 
-cross-compile-all: cross-compile-windows cross-compile-osx cross-compile-linux cross-compile-linux-arm64v8 cross-compile-linux-arm32v7 cross-compile-pi
-
-install:
-	packr2 install
-
-clean:
-	packr2 clean
+cross-compile-all:
+	make cross-compile-windows
+	make cross-compile-osx-intel
+	make cross-compile-osx-applesilicon
+	make cross-compile-linux
+	make cross-compile-linux-arm64v8
+	make cross-compile-linux-arm32v7
+	make cross-compile-pi
 
 # Regenerates GraphQL files
-.PHONY: generate
-generate:
-	go generate -mod=vendor
+generate: generate-backend generate-frontend
+
+.PHONY: generate-frontend
+generate-frontend:
 	cd ui/v2.5 && yarn run gqlgen
+
+.PHONY: generate-backend
+generate-backend:
+	go generate -mod=vendor
 
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client
@@ -119,23 +133,13 @@ generate-stash-box-client:
 fmt:
 	go fmt ./...
 
-# Ensures that changed files have had gofmt run on them
-.PHONY: fmt-check
-fmt-check:
-	sh ./scripts/check-gofmt.sh
-
-# Runs go vet on the project's source code.
-.PHONY: vet
-vet:
-	go vet -mod=vendor ./...
-
 .PHONY: lint
 lint:
-	revive -config revive.toml -exclude ./vendor/...  ./...
+	golangci-lint run
 
 # runs unit tests - excluding integration tests
 .PHONY: test
-test: 
+test:
 	go test -mod=vendor ./...
 
 # runs all tests - including integration tests
@@ -148,22 +152,18 @@ it:
 generate-test-mocks:
 	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
 
-# installs UI dependencies. Run when first cloning repository, or if UI 
+# installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
 .PHONY: pre-ui
 pre-ui:
 	cd ui/v2.5 && yarn install --frozen-lockfile
 
-.PHONY: ui-only
-ui-only: pre-build
+.PHONY: ui
+ui: pre-build
 	$(SET) REACT_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
 	$(SET) REACT_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
 	$(SET) REACT_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
 	cd ui/v2.5 && yarn build
-
-.PHONY: ui
-ui: ui-only
-	packr2
 
 .PHONY: ui-start
 ui-start: pre-build
@@ -181,12 +181,19 @@ fmt-ui:
 ui-validate:
 	cd ui/v2.5 && yarn run validate
 
-# just repacks the packr files - use when updating migrations and packed files without 
-# rebuilding the UI
-.PHONY: packr
-packr:
-	packr2
-
 # runs all of the tests and checks required for a PR to be accepted
 .PHONY: validate
-validate: ui-validate fmt-check vet lint it
+validate: validate-frontend validate-backend
+
+# runs all of the frontend PR-acceptance steps
+.PHONY: validate-frontend
+validate-frontend: ui-validate
+
+# runs all of the backend PR-acceptance steps
+.PHONY: validate-backend
+validate-backend: lint it
+
+# locally builds and tags a 'stash/build' docker image
+.PHONY: docker-build
+docker-build:
+	docker build -t stash/build -f docker/build/x86_64/Dockerfile .

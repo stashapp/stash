@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -7,7 +8,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"testing"
@@ -151,6 +151,11 @@ const (
 	tagIdxWithGallery
 	tagIdx1WithGallery
 	tagIdx2WithGallery
+	tagIdxWithChildTag
+	tagIdxWithParentTag
+	tagIdxWithGrandChild
+	tagIdxWithParentAndChild
+	tagIdxWithGrandParent
 	// new indexes above
 	// tags with dup names start from the end
 	tagIdx1WithDupName
@@ -345,6 +350,14 @@ var (
 	}
 )
 
+var (
+	tagParentLinks = [][2]int{
+		{tagIdxWithChildTag, tagIdxWithParentTag},
+		{tagIdxWithGrandChild, tagIdxWithParentAndChild},
+		{tagIdxWithParentAndChild, tagIdxWithGrandParent},
+	}
+)
+
 func TestMain(m *testing.M) {
 	ret := runTests(m)
 	os.Exit(ret)
@@ -380,7 +393,7 @@ func testTeardown(databaseFile string) {
 
 func runTests(m *testing.M) int {
 	// create the database file
-	f, err := ioutil.TempFile("", "*.sqlite")
+	f, err := os.CreateTemp("", "*.sqlite")
 	if err != nil {
 		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
 	}
@@ -497,6 +510,10 @@ func populateDB() error {
 
 		if err := linkGalleryStudios(r.Gallery()); err != nil {
 			return fmt.Errorf("error linking gallery studios: %s", err.Error())
+		}
+
+		if err := linkTagsParent(r.Tag()); err != nil {
+			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
 		if err := createMarker(r.SceneMarker(), sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
@@ -865,6 +882,22 @@ func getTagPerformerCount(id int) int {
 	return 0
 }
 
+func getTagParentCount(id int) int {
+	if id == tagIDs[tagIdxWithParentTag] || id == tagIDs[tagIdxWithGrandParent] || id == tagIDs[tagIdxWithParentAndChild] {
+		return 1
+	}
+
+	return 0
+}
+
+func getTagChildCount(id int) int {
+	if id == tagIDs[tagIdxWithChildTag] || id == tagIDs[tagIdxWithGrandChild] || id == tagIDs[tagIdxWithParentAndChild] {
+		return 1
+	}
+
+	return 0
+}
+
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -960,6 +993,12 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 
 		if err != nil {
 			return err
+		}
+
+		// add alias
+		alias := getStudioStringValue(i, "Alias")
+		if err := sqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+			return fmt.Errorf("error setting studio alias: %s", err.Error())
 		}
 
 		studioIDs = append(studioIDs, created.ID)
@@ -1222,6 +1261,25 @@ func linkStudiosParent(qb models.StudioWriter) error {
 		_, err := qb.Update(studio)
 
 		return err
+	})
+}
+
+func linkTagsParent(qb models.TagReaderWriter) error {
+	return doLinks(tagParentLinks, func(parentIndex, childIndex int) error {
+		tagID := tagIDs[childIndex]
+		parentTags, err := qb.FindByChildTagID(tagID)
+		if err != nil {
+			return err
+		}
+
+		var parentIDs []int
+		for _, parentTag := range parentTags {
+			parentIDs = append(parentIDs, parentTag.ID)
+		}
+
+		parentIDs = append(parentIDs, tagIDs[parentIndex])
+
+		return qb.UpdateParentTags(tagID, parentIDs)
 	})
 }
 

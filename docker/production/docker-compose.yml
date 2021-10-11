@@ -4,9 +4,13 @@ version: '3.4'
 services:
   stash:
     image: stashapp/stash:latest
+    container_name: stash
     restart: unless-stopped
+    ## the container's port must be the same with the STASH_PORT in the environment section
     ports:
       - "9999:9999"
+    ## If you intend to use stash's DLNA functionality uncomment the below network mode and comment out the above ports section
+    # network_mode: host
     logging:
       driver: "json-file"
       options:
@@ -17,12 +21,14 @@ services:
       - STASH_GENERATED=/generated/
       - STASH_METADATA=/metadata/
       - STASH_CACHE=/cache/
+      ## Adjust below to change default port (9999)
+      - STASH_PORT=9999
     volumes:
       - /etc/localtime:/etc/localtime:ro
       ## Adjust below paths (the left part) to your liking.
       ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
       
-      ## Keep configs here.
+      ## Keep configs, scrapers, and plugins here.
       - ./config:/root/.stash
       ## Point this at your collection.
       - ./data:/data

@@ -1,0 +1,60 @@
+name: Lint (golangci-lint)
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - develop
+  pull_request:
+
+env:
+  COMPILER_IMAGE: stashapp/compiler:5
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Checkout
+        run: git fetch --prune --unshallow --tags
+
+      - name: Pull compiler image
+        run: docker pull $COMPILER_IMAGE
+
+      - name: Start build container
+        run: |
+          mkdir -p .go-cache
+          docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
+
+      - name: Generate Backend
+        run: docker exec -t build /bin/bash -c "make generate-backend"
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.42.1
+
+          # Optional: working directory, useful for monorepos
+          # working-directory: somedir
+
+          # Optional: golangci-lint command line arguments.
+          args: --modules-download-mode=vendor --timeout=3m
+
+          # Optional: show only new issues if it's a pull request. The default value is `false`.
+          # only-new-issues: true
+
+          # Optional: if set to true then the action will use pre-installed Go.
+          # skip-go-installation: true
+
+          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
+          # skip-pkg-cache: true
+
+          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
+          # skip-build-cache: true
+
+      - name: Cleanup build container
+        run: docker rm -f -v build

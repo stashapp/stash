@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -5,6 +6,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -144,6 +146,41 @@ func TestTagFindByNames(t *testing.T) {
 		assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
 		assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
 		assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
+
+		return nil
+	})
+}
+
+func TestTagQuerySort(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Tag()
+
+		sortBy := "scenes_count"
+		dir := models.SortDirectionEnumDesc
+		findFilter := &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &dir,
+		}
+
+		tags := queryTags(t, sqb, nil, findFilter)
+		assert := assert.New(t)
+		assert.Equal(tagIDs[tagIdxWithScene], tags[0].ID)
+
+		sortBy = "scene_markers_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithMarker], tags[0].ID)
+
+		sortBy = "images_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithImage], tags[0].ID)
+
+		sortBy = "galleries_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithGallery], tags[0].ID)
+
+		sortBy = "performers_count"
+		tags = queryTags(t, sqb, nil, findFilter)
+		assert.Equal(tagIDs[tagIdxWithPerformer], tags[0].ID)
 
 		return nil
 	})
@@ -483,6 +520,198 @@ func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriteri
 				Valid: true,
 			}, imageCountCriterion)
 		}
+
+		return nil
+	})
+}
+
+func TestTagQueryParentCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagParentCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagParentCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagParentCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagParentCount(t, countCriterion)
+}
+
+func verifyTagParentCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			ParentCount: &sceneCountCriterion,
+		}
+
+		tags := queryTags(t, qb, &tagFilter, nil)
+
+		if len(tags) == 0 {
+			t.Error("Expected at least one tag")
+		}
+
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagParentCount(tag.ID)),
+				Valid: true,
+			}, sceneCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestTagQueryChildCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagChildCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagChildCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagChildCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagChildCount(t, countCriterion)
+}
+
+func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			ChildCount: &sceneCountCriterion,
+		}
+
+		tags := queryTags(t, qb, &tagFilter, nil)
+
+		if len(tags) == 0 {
+			t.Error("Expected at least one tag")
+		}
+
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagChildCount(tag.ID)),
+				Valid: true,
+			}, sceneCountCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestTagQueryParent(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Tag()
+		tagCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithChildTag]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		tagFilter := models.TagFilterType{
+			Parents: &tagCriterion,
+		}
+
+		tags := queryTags(t, sqb, &tagFilter, nil)
+
+		assert.Len(t, tags, 1)
+
+		// ensure id is correct
+		assert.Equal(t, sceneIDs[tagIdxWithParentTag], tags[0].ID)
+
+		tagCriterion.Modifier = models.CriterionModifierExcludes
+
+		q := getTagStringValue(tagIdxWithParentTag, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 0)
+
+		depth := -1
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithGrandChild]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    &depth,
+		}
+
+		tags = queryTags(t, sqb, &tagFilter, nil)
+		assert.Len(t, tags, 2)
+
+		depth = 1
+
+		tags = queryTags(t, sqb, &tagFilter, nil)
+		assert.Len(t, tags, 2)
+
+		return nil
+	})
+}
+
+func TestTagQueryChild(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Tag()
+		tagCriterion := models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithParentTag]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		tagFilter := models.TagFilterType{
+			Children: &tagCriterion,
+		}
+
+		tags := queryTags(t, sqb, &tagFilter, nil)
+
+		assert.Len(t, tags, 1)
+
+		// ensure id is correct
+		assert.Equal(t, sceneIDs[tagIdxWithChildTag], tags[0].ID)
+
+		tagCriterion.Modifier = models.CriterionModifierExcludes
+
+		q := getTagStringValue(tagIdxWithChildTag, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 0)
+
+		depth := -1
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithGrandParent]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+			Depth:    &depth,
+		}
+
+		tags = queryTags(t, sqb, &tagFilter, nil)
+		assert.Len(t, tags, 2)
+
+		depth = 1
+
+		tags = queryTags(t, sqb, &tagFilter, nil)
+		assert.Len(t, tags, 2)
 
 		return nil
 	})

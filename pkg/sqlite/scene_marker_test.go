@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package sqlite_test
@@ -62,6 +63,21 @@ func TestMarkerCountByTagID(t *testing.T) {
 		}
 
 		assert.Equal(t, 0, markerCount)
+
+		return nil
+	})
+}
+
+func TestMarkerQuerySortBySceneUpdated(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sort := "scenes_updated_at"
+		_, _, err := r.SceneMarker().Query(nil, &models.FindFilterType{
+			Sort: &sort,
+		})
+
+		if err != nil {
+			t.Errorf("Error querying scene markers: %s", err.Error())
+		}
 
 		return nil
 	})

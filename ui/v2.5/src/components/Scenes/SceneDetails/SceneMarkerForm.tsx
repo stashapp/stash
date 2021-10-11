@@ -68,30 +68,26 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       .catch((err) => Toast.error(err));
   };
   const renderTitleField = (fieldProps: FieldProps<string>) => (
-    <div className="col-10 col-xl-12">
-      <MarkerTitleSuggest
-        initialMarkerTitle={fieldProps.field.value}
-        onChange={(query: string) =>
-          fieldProps.form.setFieldValue("title", query)
-        }
-      />
-    </div>
+    <MarkerTitleSuggest
+      initialMarkerTitle={fieldProps.field.value}
+      onChange={(query: string) =>
+        fieldProps.form.setFieldValue("title", query)
+      }
+    />
   );
 
   const renderSecondsField = (fieldProps: FieldProps<string>) => (
-    <div className="col-3 col-xl-12">
-      <DurationInput
-        onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
-        onReset={() =>
-          fieldProps.form.setFieldValue(
-            "seconds",
-            Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
-          )
-        }
-        numericValue={Number.parseInt(fieldProps.field.value ?? "0", 10)}
-        mandatory
-      />
-    </div>
+    <DurationInput
+      onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
+      onReset={() =>
+        fieldProps.form.setFieldValue(
+          "seconds",
+          Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
+        )
+      }
+      numericValue={Number.parseInt(fieldProps.field.value ?? "0", 10)}
+      mandatory
+    />
   );
 
   const renderPrimaryTagField = (fieldProps: FieldProps<string>) => (
@@ -100,7 +96,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         fieldProps.form.setFieldValue("primaryTagId", tags[0]?.id)
       }
       ids={fieldProps.field.value ? [fieldProps.field.value] : []}
-      noSelectionString="Select or create tag..."
+      noSelectionString="Select/create tag..."
     />
   );
 
@@ -114,7 +110,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         )
       }
       ids={fieldProps.field.value}
-      noSelectionString="Select or create tags..."
+      noSelectionString="Select/create tags..."
     />
   );
 
@@ -133,28 +129,48 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       <FormikForm>
         <div>
           <Form.Group className="row">
-            <Form.Label htmlFor="title" className="col-2 col-xl-12">
-              Scene Marker Title
+            <Form.Label
+              htmlFor="title"
+              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
+            >
+              Marker Title
             </Form.Label>
-            <Field name="title">{renderTitleField}</Field>
+            <div className="col-sm-9 col-md-10 col-xl-12">
+              <Field name="title">{renderTitleField}</Field>
+            </div>
           </Form.Group>
           <Form.Group className="row">
-            <Form.Label htmlFor="primaryTagId" className="col-2 col-xl-12">
+            <Form.Label
+              htmlFor="primaryTagId"
+              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
+            >
               Primary Tag
             </Form.Label>
-            <div className="col-6 col-xl-12">
+            <div className="col-sm-4 col-md-6 col-xl-12 mb-3 mb-sm-0 mb-xl-3">
               <Field name="primaryTagId">{renderPrimaryTagField}</Field>
             </div>
-            <Form.Label htmlFor="seconds" className="col-1 col-xl-12 mt-2">
-              Time
-            </Form.Label>
-            <Field name="seconds">{renderSecondsField}</Field>
+            <div className="col-sm-5 col-md-4 col-xl-12">
+              <div className="row">
+                <Form.Label
+                  htmlFor="seconds"
+                  className="col-sm-4 col-md-4 col-xl-12 col-form-label text-sm-right text-xl-left"
+                >
+                  Time
+                </Form.Label>
+                <div className="col-sm-8 col-xl-12">
+                  <Field name="seconds">{renderSecondsField}</Field>
+                </div>
+              </div>
+            </div>
           </Form.Group>
           <Form.Group className="row">
-            <Form.Label htmlFor="tagIds" className="col-2 col-xl-12">
+            <Form.Label
+              htmlFor="tagIds"
+              className="col-sm-3 col-md-2 col-xl-12 col-form-label"
+            >
               Tags
             </Form.Label>
-            <div className="col-10 col-xl-12">
+            <div className="col-sm-9 col-md-10 col-xl-12">
               <Field name="tagIds">{renderTagsField}</Field>
             </div>
           </Form.Group>

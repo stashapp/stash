@@ -18,6 +18,7 @@ const (
 	errImageID            = 3
 	missingParentStudioID = 4
 	errStudioID           = 5
+	errAliasID            = 6
 
 	parentStudioID    = 10
 	missingStudioID   = 11
@@ -40,8 +41,10 @@ var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+)
 
 func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{
@@ -77,7 +80,7 @@ func createEmptyStudio(id int) models.Studio {
 	}
 }
 
-func createFullJSONStudio(parentStudio, image string) *jsonschema.Studio {
+func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonschema.Studio {
 	return &jsonschema.Studio{
 		Name:    studioName,
 		URL:     url,
@@ -91,6 +94,7 @@ func createFullJSONStudio(parentStudio, image string) *jsonschema.Studio {
 		ParentStudio: parentStudio,
 		Image:        image,
 		Rating:       rating,
+		Aliases:      aliases,
 	}
 }
 
@@ -115,28 +119,33 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			createFullStudio(studioID, parentStudioID),
-			createFullJSONStudio(parentStudioName, image),
+			createFullJSONStudio(parentStudioName, image, []string{"alias"}),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyStudio(noImageID),
 			createEmptyJSONStudio(),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errImageID, parentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(missingParentStudioID, missingStudioID),
-			createFullJSONStudio("", image),
+			createFullJSONStudio("", image, nil),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errStudioID, errParentStudioID),
+			nil,
+			true,
+		},
+		{
+			createFullStudio(errAliasID, parentStudioID),
 			nil,
 			true,
 		},
@@ -155,12 +164,21 @@ func TestToJSON(t *testing.T) {
 	mockStudioReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
 	mockStudioReader.On("GetImage", missingParentStudioID).Return(imageBytes, nil).Maybe()
 	mockStudioReader.On("GetImage", errStudioID).Return(imageBytes, nil).Maybe()
+	mockStudioReader.On("GetImage", errAliasID).Return(imageBytes, nil).Maybe()
 
 	parentStudioErr := errors.New("error getting parent studio")
 
 	mockStudioReader.On("Find", parentStudioID).Return(&parentStudio, nil)
 	mockStudioReader.On("Find", missingStudioID).Return(nil, nil)
 	mockStudioReader.On("Find", errParentStudioID).Return(nil, parentStudioErr)
+
+	aliasErr := errors.New("error getting aliases")
+
+	mockStudioReader.On("GetAliases", studioID).Return([]string{"alias"}, nil).Once()
+	mockStudioReader.On("GetAliases", noImageID).Return(nil, nil).Once()
+	mockStudioReader.On("GetAliases", errImageID).Return(nil, nil).Once()
+	mockStudioReader.On("GetAliases", missingParentStudioID).Return(nil, nil).Once()
+	mockStudioReader.On("GetAliases", errAliasID).Return(nil, aliasErr).Once()
 
 	for i, s := range scenarios {
 		studio := s.input

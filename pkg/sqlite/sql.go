@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -148,32 +147,6 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func getCriterionModifierBinding(criterionModifier models.CriterionModifier, value interface{}) (string, int) {
-	var length int
-	switch x := value.(type) {
-	case []string:
-		length = len(x)
-	case []int:
-		length = len(x)
-	default:
-		length = 1
-	}
-	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
-		switch modifier {
-		case "EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN", "IS_NULL", "NOT_NULL", "BETWEEN", "NOT_BETWEEN":
-			return getSimpleCriterionClause(criterionModifier, "?")
-		case "INCLUDES":
-			return "IN " + getInBinding(length), length // TODO?
-		case "EXCLUDES":
-			return "NOT IN " + getInBinding(length), length // TODO?
-		default:
-			logger.Errorf("todo")
-			return "= ?", 1 // TODO
-		}
-	}
-	return "= ?", 1 // TODO
-}
-
 func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs string) (string, int) {
 	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
 		switch modifier {
@@ -209,20 +182,16 @@ func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (
 	switch input.Modifier {
 	case "EQUALS", "NOT_EQUALS":
 		args = []interface{}{input.Value}
-		break
 	case "LESS_THAN":
 		args = []interface{}{input.Value}
-		break
 	case "GREATER_THAN":
 		args = []interface{}{input.Value}
-		break
 	case "BETWEEN", "NOT_BETWEEN":
 		upper := 0
 		if input.Value2 != nil {
 			upper = *input.Value2
 		}
 		args = []interface{}{input.Value, upper}
-		break
 	}
 
 	return column + " " + binding, args
@@ -242,7 +211,7 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 	} else if criterion.Modifier == models.CriterionModifierExcludes {
 		// excludes all of the provided ids
 		if joinTable != "" {
-			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+			whereClause = primaryTable + ".id not in (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
 		} else {
 			whereClause = "not exists (select s.id from " + primaryTable + " as s where s.id = " + primaryTable + ".id and s." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
 		}
@@ -254,12 +223,6 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
 	return getIntCriterionWhereClause(lhs, criterion)
-}
-
-func ensureTx(tx *sqlx.Tx) {
-	if tx == nil {
-		panic("must use a transaction")
-	}
 }
 
 func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {

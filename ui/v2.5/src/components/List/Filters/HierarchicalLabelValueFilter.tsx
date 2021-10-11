@@ -1,6 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { defineMessages, useIntl } from "react-intl";
+import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { FilterSelect, ValidTypes } from "../../Shared";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import { IHierarchicalLabelValue } from "../../../models/list-filter/types";
@@ -23,6 +23,8 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     criterion.criterionOption.type !== "tags" &&
     criterion.criterionOption.type !== "sceneTags" &&
     criterion.criterionOption.type !== "performerTags" &&
+    criterion.criterionOption.type !== "parentTags" &&
+    criterion.criterionOption.type !== "childTags" &&
     criterion.criterionOption.type !== "movies"
   )
     return null;
@@ -49,6 +51,18 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     onValueChanged(value);
   }
 
+  function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
+    const optionType =
+      criterion.criterionOption.type === "studios"
+        ? "include_sub_studios"
+        : criterion.criterionOption.type === "childTags"
+        ? "include_parent_tags"
+        : "include_sub_tags";
+    return {
+      id: optionType,
+    };
+  }
+
   return (
     <>
       <Form.Group>
@@ -63,7 +77,7 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
       <Form.Group>
         <Form.Check
           checked={criterion.value.depth !== 0}
-          label={intl.formatMessage({ id: "include_child_studios" })}
+          label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
           onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
         />
       </Form.Group>

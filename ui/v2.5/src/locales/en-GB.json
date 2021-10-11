@@ -61,6 +61,7 @@
     "save_filter": "Save filter",
     "scan": "Scan",
     "scrape_with": "Scrape with…",
+    "scrape_query": "Scrape query",
     "search": "Search",
     "select_all": "Select All",
     "select_none": "Select None",
@@ -95,7 +96,9 @@
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
   "career_length": "Career Length",
-  "child_studios": "Child Studios",
+  "subsidiary_studios": "Subsidiary Studios",
+  "sub_tags": "Sub-Tags",
+  "sub_tag_count": "Sub-Tag Count",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -190,6 +193,8 @@
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
+        "trusted_proxies": "Trusted proxies",
+        "trusted_proxies_desc": "List of proxies that are allowed to proxy traffic into stash. Leave empty to allow from private network.",
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
@@ -225,6 +230,10 @@
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",
       "maximum_transcode_size_head": "Maximum transcode size",
+      "metadata_path": {
+        "heading": "Metadata Path",
+        "description": "Directory location used when performing a full export or import"
+      },
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
@@ -235,7 +244,9 @@
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
-      "video_head": "Video"
+      "video_head": "Video",
+      "include_audio_head": "Include audio",
+      "include_audio_desc": "Includes audio stream when generating previews."
     },
     "logs": {
       "log_level": "Log Level"
@@ -278,6 +289,7 @@
       "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
       "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
+      "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
       "generated_content": "Generated Content",
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
@@ -322,6 +334,14 @@
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
+      },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "heading": "Write image thumbnails",
+            "description": "Write image thumbnails to disk when generated on-the-fly"
+          }
+        }
       },
       "language": {
         "heading": "Language"
@@ -430,6 +450,27 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "lightbox": {
+      "delay": "Delay (Sec)",
+      "display_mode": {
+        "label": "Display Mode",
+        "original": "Original",
+        "fit_to_screen": "Fit to screen",
+        "fit_horizontally": "Fit horizontally"
+      },
+      "options": "Options",
+      "reset_zoom_on_nav": "Reset zoom level when changing image",
+      "scale_up": {
+        "label": "Scale up to fit",
+        "description": "Scale smaller images up to fill screen"
+      },
+      "scroll_mode": {
+        "label": "Scroll Mode",
+        "zoom": "Zoom",
+        "pan_y": "Pan Y",
+        "description": "Hold shift to temporarily use other mode."
+      }
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"
@@ -438,6 +479,8 @@
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "markers": "Markers (20 second videos which begin at the given timecode)",
+      "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
+      "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -455,6 +498,8 @@
       "transcodes": "Transcodes (MP4 conversions of unsupported video formats)",
       "video_previews": "Previews (video previews which play when hovering over a scene)"
     },
+    "scenes_found": "{count} scenes found",
+    "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
@@ -528,8 +573,9 @@
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",
-  "images-size": "Images size",
-  "include_child_studios": "Include child studios",
+  "include_parent_tags": "Include parent tags",
+  "include_sub_studios": "Include subsidiary studios",
+  "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
   "interactive": "Interactive",
   "isMissing": "Is Missing",
@@ -570,7 +616,10 @@
     "next": "Next",
     "previous": "Previous"
   },
+  "parent_of": "Parent of",
   "parent_studios": "Parent Studios",
+  "parent_tags": "Parent Tags",
+  "parent_tag_count": "Parent Tag Count",
   "path": "Path",
   "performer": "Performer",
   "performer_count": "Performer Count",
@@ -586,8 +635,6 @@
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
-  "scenes-duration": "Scenes duration",
-  "scenes-size": "Scenes size",
   "scenes_updated_at": "Scene Updated At",
   "sceneTagger": "Scene Tagger",
   "sceneTags": "Scene Tags",
@@ -599,6 +646,7 @@
   },
   "seconds": "Seconds",
   "settings": "Settings",
+  "sub_tag_of": "Sub-tag of",
   "stash_id": "Stash ID",
   "status": "Status: {statusText}",
   "studio": "Studio",
@@ -630,5 +678,10 @@
   "updated_at": "Updated At",
   "url": "URL",
   "weight": "Weight",
-  "years_old": "years old"
+  "years_old": "years old",
+  "stats": {
+    "image_size": "Images size",
+    "scenes_size": "Scenes size",
+    "scenes_duration": "Scenes duration"
+  }
 }

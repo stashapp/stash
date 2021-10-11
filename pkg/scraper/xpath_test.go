@@ -53,9 +53,9 @@ const htmlDoc1 = `
 								<b>Country of Origin:</b>
 							</td>
 							<td class="paramvalue">
-								
+
 								<span class="country-us">
-								
+
 									United States
 								<span>
 							</span></span></td>
@@ -593,7 +593,7 @@ func makeSceneXPathConfig() mappedScraper {
 	return scraper
 }
 
-func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedSceneTag) {
+func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedTag) {
 	t.Helper()
 
 	i := 0
@@ -614,7 +614,7 @@ func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.Sc
 	}
 }
 
-func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedSceneMovie) {
+func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedMovie) {
 	t.Helper()
 
 	i := 0
@@ -625,7 +625,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 			expectedMovie = expectedMovieNames[i]
 		}
 		if i < len(actualMovies) {
-			actualMovie = actualMovies[i].Name
+			actualMovie = *actualMovies[i].Name
 		}
 
 		if expectedMovie != actualMovie {
@@ -635,7 +635,7 @@ func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*mod
 	}
 }
 
-func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedScenePerformer) {
+func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []string, actualPerformers []*models.ScrapedPerformer) {
 	t.Helper()
 
 	i := 0
@@ -651,7 +651,7 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 			expectedURL = expectedURLs[i]
 		}
 		if i < len(actualPerformers) {
-			actualName = actualPerformers[i].Name
+			actualName = *actualPerformers[i].Name
 			if actualPerformers[i].URL != nil {
 				actualURL = *actualPerformers[i].URL
 			}
@@ -661,7 +661,7 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 			t.Errorf("Expected performer name %s, got %s", expectedName, actualName)
 		}
 		if expectedURL != actualURL {
-			t.Errorf("Expected perfromer URL %s, got %s", expectedName, actualName)
+			t.Errorf("Expected performer URL %s, got %s", expectedName, actualName)
 		}
 		i++
 	}
@@ -741,7 +741,7 @@ func TestLoadXPathScraperFromYAML(t *testing.T) {
 	const yamlStr = `name: Test
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - test.com
     scraper: performerScraper
 xPathScrapers:
@@ -755,11 +755,11 @@ xPathScrapers:
         postProcess:
           - parseDate: January 2, 2006
       Tags:
-        Name: //tags  
+        Name: //tags
       Movies:
-        Name: //movies  
+        Name: //movies
       Performers:
-        Name: //performers  
+        Name: //performers
       Studio:
         Name: //studio
 `
@@ -848,13 +848,13 @@ func TestSubScrape(t *testing.T) {
 	yamlStr := `name: Test
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - ` + ts.URL + `
     scraper: performerScraper
 xPathScrapers:
   performerScraper:
     performer:
-      Name: 
+      Name:
         selector: //div/a/@href
         postProcess:
           - replace:

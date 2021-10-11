@@ -61,6 +61,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Generated, input.GeneratedPath)
 	}
 
+	if input.MetadataPath != nil {
+		if *input.MetadataPath != "" {
+			if err := utils.EnsureDir(*input.MetadataPath); err != nil {
+				return makeConfigGeneralResult(), err
+			}
+		}
+		c.Set(config.Metadata, input.MetadataPath)
+	}
+
 	if input.CachePath != nil {
 		if *input.CachePath != "" {
 			if err := utils.EnsureDir(*input.CachePath); err != nil {
@@ -115,6 +124,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
 
+	if input.WriteImageThumbnails != nil {
+		c.Set(config.WriteImageThumbnails, *input.WriteImageThumbnails)
+	}
+
 	if input.Username != nil {
 		c.Set(config.Username, input.Username)
 	}
@@ -131,6 +144,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	if input.MaxSessionAge != nil {
 		c.Set(config.MaxSessionAge, *input.MaxSessionAge)
+	}
+
+	if input.TrustedProxies != nil {
+		c.Set(config.TrustedProxies, input.TrustedProxies)
 	}
 
 	if input.LogFile != nil {
@@ -289,7 +306,9 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 		if !*input.Enabled && dlnaService.IsRunning() {
 			dlnaService.Stop(nil)
 		} else if *input.Enabled && !dlnaService.IsRunning() {
-			dlnaService.Start(nil)
+			if err := dlnaService.Start(nil); err != nil {
+				logger.Warnf("error starting DLNA service: %v", err)
+			}
 		}
 	}
 

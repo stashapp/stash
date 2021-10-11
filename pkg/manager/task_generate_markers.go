@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/remeh/sizedwaitgroup"
-
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -19,11 +17,12 @@ type GenerateMarkersTask struct {
 	Marker              *models.SceneMarker
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
+
+	ImagePreview bool
+	Screenshot   bool
 }
 
-func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
-
+func (t *GenerateMarkersTask) Start() {
 	if t.Scene != nil {
 		t.generateSceneMarkers()
 	}
@@ -79,7 +78,9 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 
 	// Make the folder for the scenes markers
 	markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
-	utils.EnsureDir(markersFolder)
+	if err := utils.EnsureDir(markersFolder); err != nil {
+		logger.Warnf("could not create the markers folder (%v): %v", markersFolder, err)
+	}
 
 	for i, sceneMarker := range sceneMarkers {
 		index := i + 1
@@ -94,7 +95,8 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 	seconds := int(sceneMarker.Seconds)
 
 	videoExists := t.videoExists(sceneHash, seconds)
-	imageExists := t.imageExists(sceneHash, seconds)
+	imageExists := !t.ImagePreview || t.imageExists(sceneHash, seconds)
+	screenshotExists := !t.Screenshot || t.screenshotExists(sceneHash, seconds)
 
 	baseFilename := strconv.Itoa(seconds)
 
@@ -119,7 +121,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		}
 	}
 
-	if t.Overwrite || !imageExists {
+	if t.ImagePreview && (t.Overwrite || !imageExists) {
 		imageFilename := baseFilename + ".webp"
 		imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneHash, seconds)
 
@@ -129,6 +131,24 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		} else {
 			_ = utils.SafeMove(options.OutputPath, imagePath)
 			logger.Debug("created marker image: ", imagePath)
+		}
+	}
+
+	if t.Screenshot && (t.Overwrite || !screenshotExists) {
+		screenshotFilename := baseFilename + ".jpg"
+		screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneHash, seconds)
+
+		screenshotOptions := ffmpeg.ScreenshotOptions{
+			OutputPath: instance.Paths.Generated.GetTmpPath(screenshotFilename), // tmp output in case the process ends abruptly
+			Quality:    2,
+			Width:      videoFile.Width,
+			Time:       float64(seconds),
+		}
+		if err := encoder.Screenshot(*videoFile, screenshotOptions); err != nil {
+			logger.Errorf("[generator] failed to generate marker screenshot: %s", err)
+		} else {
+			_ = utils.SafeMove(screenshotOptions.OutputPath, screenshotPath)
+			logger.Debug("created marker screenshot: ", screenshotPath)
 		}
 	}
 }
@@ -166,12 +186,11 @@ func (t *GenerateMarkersTask) markerExists(sceneChecksum string, seconds int) bo
 		return false
 	}
 
-	videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneChecksum, seconds)
-	imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneChecksum, seconds)
-	videoExists, _ := utils.FileExists(videoPath)
-	imageExists, _ := utils.FileExists(imagePath)
+	videoExists := t.videoExists(sceneChecksum, seconds)
+	imageExists := !t.ImagePreview || t.imageExists(sceneChecksum, seconds)
+	screenshotExists := !t.Screenshot || t.screenshotExists(sceneChecksum, seconds)
 
-	return videoExists && imageExists
+	return videoExists && imageExists && screenshotExists
 }
 
 func (t *GenerateMarkersTask) videoExists(sceneChecksum string, seconds int) bool {
@@ -194,4 +213,15 @@ func (t *GenerateMarkersTask) imageExists(sceneChecksum string, seconds int) boo
 	imageExists, _ := utils.FileExists(imagePath)
 
 	return imageExists
+}
+
+func (t *GenerateMarkersTask) screenshotExists(sceneChecksum string, seconds int) bool {
+	if sceneChecksum == "" {
+		return false
+	}
+
+	screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneChecksum, seconds)
+	screenshotExists, _ := utils.FileExists(screenshotPath)
+
+	return screenshotExists
 }

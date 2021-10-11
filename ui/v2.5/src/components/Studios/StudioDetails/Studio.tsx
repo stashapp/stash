@@ -28,6 +28,7 @@ import { StudioChildrenPanel } from "./StudioChildrenPanel";
 import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
+import { StudioMoviesPanel } from "./StudioMoviesPanel";
 
 interface IStudioParams {
   id?: string;
@@ -48,7 +49,7 @@ export const Studio: React.FC = () => {
   // Studio state
   const [image, setImage] = useState<string | null>();
 
-  const { data, error } = useFindStudio(id);
+  const { data, loading: studioLoading, error } = useFindStudio(id);
   const studio = data?.findStudio;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -186,7 +187,8 @@ export const Studio: React.FC = () => {
     tab === "childstudios" ||
     tab === "images" ||
     tab === "galleries" ||
-    tab === "performers"
+    tab === "performers" ||
+    tab === "movies"
       ? tab
       : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
@@ -196,7 +198,7 @@ export const Studio: React.FC = () => {
     }
   };
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || studioLoading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (!studio?.id && !isNew)
     return <ErrorMessage error={`No studio found with id ${id}.`} />;
@@ -276,9 +278,12 @@ export const Studio: React.FC = () => {
             >
               <StudioPerformersPanel studio={studio} />
             </Tab>
+            <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+              <StudioMoviesPanel studio={studio} />
+            </Tab>
             <Tab
               eventKey="childstudios"
-              title={intl.formatMessage({ id: "child_studios" })}
+              title={intl.formatMessage({ id: "subsidiary_studios" })}
             >
               <StudioChildrenPanel studio={studio} />
             </Tab>

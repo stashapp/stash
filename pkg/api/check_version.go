@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"runtime"
@@ -29,6 +29,7 @@ var ErrNoVersion = errors.New("no stash version")
 var stashReleases = func() map[string]string {
 	return map[string]string{
 		"darwin/amd64":  "stash-osx",
+		"darwin/arm64":  "stash-osx-applesilicon",
 		"linux/amd64":   "stash-linux",
 		"windows/amd64": "stash-win.exe",
 		"linux/arm":     "stash-pi",
@@ -117,23 +118,26 @@ func makeGithubRequest(url string, output interface{}) error {
 	response, err := client.Do(req)
 
 	if err != nil {
+		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API request failed: %s", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
+		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API request failed: %s", response.Status)
 	}
 
 	defer response.Body.Close()
 
-	data, err := ioutil.ReadAll(response.Body)
+	data, err := io.ReadAll(response.Body)
 	if err != nil {
+		//lint:ignore ST1005 Github is a proper capitalized noun
 		return fmt.Errorf("Github API read response failed: %s", err)
 	}
 
 	err = json.Unmarshal(data, output)
 	if err != nil {
-		return fmt.Errorf("Unmarshalling Github API response failed: %s", err)
+		return fmt.Errorf("unmarshalling Github API response failed: %s", err)
 	}
 
 	return nil
@@ -196,7 +200,7 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 	}
 
 	if latestVersion == "" {
-		return "", "", fmt.Errorf("No version found for \"%s\"", version)
+		return "", "", fmt.Errorf("no version found for \"%s\"", version)
 	}
 	return latestVersion, latestRelease, nil
 }

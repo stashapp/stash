@@ -145,6 +145,8 @@ func generateTestTable(testName, ext string) []pathTestTable {
 }
 
 func TestScenePerformers(t *testing.T) {
+	t.Parallel()
+
 	const sceneID = 1
 	const performerName = "performer name"
 	const performerID = 2
@@ -188,6 +190,8 @@ func TestScenePerformers(t *testing.T) {
 }
 
 func TestSceneStudios(t *testing.T) {
+	t.Parallel()
+
 	const sceneID = 1
 	const studioName = "studio name"
 	const studioID = 2
@@ -207,12 +211,7 @@ func TestSceneStudios(t *testing.T) {
 
 	assert := assert.New(t)
 
-	for _, test := range testTables {
-		mockStudioReader := &mocks.StudioReaderWriter{}
-		mockSceneReader := &mocks.SceneReaderWriter{}
-
-		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
-
+	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
 			mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()
 			expectedStudioID := models.NullInt64(studioID)
@@ -232,9 +231,38 @@ func TestSceneStudios(t *testing.T) {
 		mockStudioReader.AssertExpectations(t)
 		mockSceneReader.AssertExpectations(t)
 	}
+
+	for _, test := range testTables {
+		mockStudioReader := &mocks.StudioReaderWriter{}
+		mockSceneReader := &mocks.SceneReaderWriter{}
+
+		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+
+		doTest(mockStudioReader, mockSceneReader, test)
+	}
+
+	const unmatchedName = "unmatched"
+	studio.Name.String = unmatchedName
+
+	// test against aliases
+	for _, test := range testTables {
+		mockStudioReader := &mocks.StudioReaderWriter{}
+		mockSceneReader := &mocks.SceneReaderWriter{}
+
+		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", studioID).Return([]string{
+			studioName,
+		}, nil).Once()
+		mockStudioReader.On("GetAliases", reversedStudioID).Return([]string{}, nil).Once()
+
+		doTest(mockStudioReader, mockSceneReader, test)
+	}
 }
 
 func TestSceneTags(t *testing.T) {
+	t.Parallel()
+
 	const sceneID = 1
 	const tagName = "tag name"
 	const tagID = 2
@@ -254,12 +282,7 @@ func TestSceneTags(t *testing.T) {
 
 	assert := assert.New(t)
 
-	for _, test := range testTables {
-		mockTagReader := &mocks.TagReaderWriter{}
-		mockSceneReader := &mocks.SceneReaderWriter{}
-
-		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
-
+	doTest := func(mockTagReader *mocks.TagReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
 			mockSceneReader.On("GetTagIDs", sceneID).Return(nil, nil).Once()
 			mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
@@ -274,5 +297,32 @@ func TestSceneTags(t *testing.T) {
 		assert.Nil(err)
 		mockTagReader.AssertExpectations(t)
 		mockSceneReader.AssertExpectations(t)
+	}
+
+	for _, test := range testTables {
+		mockTagReader := &mocks.TagReaderWriter{}
+		mockSceneReader := &mocks.SceneReaderWriter{}
+
+		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+
+		doTest(mockTagReader, mockSceneReader, test)
+	}
+
+	const unmatchedName = "unmatched"
+	tag.Name = unmatchedName
+
+	// test against aliases
+	for _, test := range testTables {
+		mockTagReader := &mocks.TagReaderWriter{}
+		mockSceneReader := &mocks.SceneReaderWriter{}
+
+		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", tagID).Return([]string{
+			tagName,
+		}, nil).Once()
+		mockTagReader.On("GetAliases", reversedTagID).Return([]string{}, nil).Once()
+
+		doTest(mockTagReader, mockSceneReader, test)
 	}
 }

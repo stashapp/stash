@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	galleryNameErr      = "galleryNameErr"
-	existingGalleryName = "existingGalleryName"
+	galleryNameErr = "galleryNameErr"
+	// existingGalleryName = "existingGalleryName"
 
 	existingGalleryID   = 100
 	existingStudioID    = 101
@@ -39,8 +39,10 @@ const (
 	errChecksum     = "errChecksum"
 )
 
-var createdAt time.Time = time.Date(2001, time.January, 2, 1, 2, 3, 4, time.Local)
-var updatedAt time.Time = time.Date(2002, time.January, 2, 1, 2, 3, 4, time.Local)
+var (
+	createdAt = time.Date(2001, time.January, 2, 1, 2, 3, 4, time.Local)
+	updatedAt = time.Date(2002, time.January, 2, 1, 2, 3, 4, time.Local)
+)
 
 func TestImporterName(t *testing.T) {
 	i := Importer{

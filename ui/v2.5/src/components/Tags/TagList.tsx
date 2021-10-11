@@ -24,6 +24,7 @@ import { NavUtils } from "src/utils";
 import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { tagRelationHook } from "../../core/tags";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -138,6 +139,15 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       singularEntity={intl.formatMessage({ id: "tag" })}
       pluralEntity={intl.formatMessage({ id: "tags" })}
       destroyMutation={useTagsDestroy}
+      onDeleted={() => {
+        selectedTags.forEach((t) =>
+          tagRelationHook(
+            t,
+            { parents: t.parents ?? [], children: t.children ?? [] },
+            { parents: [], children: [] }
+          )
+        );
+      }}
     />
   );
 
@@ -175,7 +185,15 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
 
   async function onDelete() {
     try {
+      const oldRelations = {
+        parents: deletingTag?.parents ?? [],
+        children: deletingTag?.children ?? [],
+      };
       await deleteTag();
+      tagRelationHook(deletingTag as GQL.TagDataFragment, oldRelations, {
+        parents: [],
+        children: [],
+      });
       Toast.success({
         content: intl.formatMessage(
           { id: "toast.delete_past_tense" },

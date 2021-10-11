@@ -23,8 +23,8 @@ const (
 	missingStudioID = 5
 	errStudioID     = 6
 
-	noGalleryID  = 7
-	errGalleryID = 8
+	// noGalleryID  = 7
+	// errGalleryID = 8
 
 	noTagsID  = 11
 	errTagsID = 12
@@ -64,8 +64,8 @@ const (
 )
 
 const (
-	studioName      = "studioName"
-	galleryChecksum = "galleryChecksum"
+	studioName = "studioName"
+	// galleryChecksum = "galleryChecksum"
 
 	validMovie1  = 1
 	validMovie2  = 2
@@ -87,8 +87,10 @@ var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+)
 
 func createFullScene(id int) models.Scene {
 	return models.Scene{
@@ -291,24 +293,6 @@ func TestGetStudioName(t *testing.T) {
 	}
 
 	mockStudioReader.AssertExpectations(t)
-}
-
-var getGalleryChecksumScenarios = []stringTestScenario{
-	{
-		createEmptyScene(sceneID),
-		galleryChecksum,
-		false,
-	},
-	{
-		createEmptyScene(noGalleryID),
-		"",
-		false,
-	},
-	{
-		createEmptyScene(errGalleryID),
-		"",
-		true,
-	},
 }
 
 type stringSliceTestScenario struct {

@@ -2,7 +2,8 @@ package api
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -105,8 +106,10 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.Back
 	mgr := manager.GetInstance()
 	var backupPath string
 	if download {
-		utils.EnsureDir(mgr.Paths.Generated.Downloads)
-		f, err := ioutil.TempFile(mgr.Paths.Generated.Downloads, "backup*.sqlite")
+		if err := utils.EnsureDir(mgr.Paths.Generated.Downloads); err != nil {
+			return nil, fmt.Errorf("could not create backup directory %v: %w", mgr.Paths.Generated.Downloads, err)
+		}
+		f, err := os.CreateTemp(mgr.Paths.Generated.Downloads, "backup*.sqlite")
 		if err != nil {
 			return nil, err
 		}

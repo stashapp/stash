@@ -95,7 +95,7 @@ export interface ITaggerScene {
   tagScene: (scene: Partial<GQL.SlimSceneDataFragment>) => void;
   endpoint: string;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
-  createNewTag: (toCreate: GQL.ScrapedSceneTag) => void;
+  createNewTag: (toCreate: GQL.ScrapedTag) => void;
 }
 
 export const TaggerScene: React.FC<ITaggerScene> = ({

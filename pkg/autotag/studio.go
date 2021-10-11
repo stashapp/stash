@@ -2,7 +2,6 @@ package autotag
 
 import (
 	"database/sql"
-
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -16,7 +15,26 @@ func getMatchingStudios(path string, reader models.StudioReader) ([]*models.Stud
 
 	var ret []*models.Studio
 	for _, c := range candidates {
+		matches := false
 		if nameMatchesPath(c.Name.String, path) {
+			matches = true
+		}
+
+		if !matches {
+			aliases, err := reader.GetAliases(c.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, alias := range aliases {
+				if nameMatchesPath(alias, path) {
+					matches = true
+					break
+				}
+			}
+		}
+
+		if matches {
 			ret = append(ret, c)
 		}
 	}
@@ -96,37 +114,65 @@ func addGalleryStudio(galleryWriter models.GalleryReaderWriter, galleryID, studi
 	return true, nil
 }
 
-func getStudioTagger(p *models.Studio) tagger {
-	return tagger{
+func getStudioTagger(p *models.Studio, aliases []string) []tagger {
+	ret := []tagger{{
 		ID:   p.ID,
 		Type: "studio",
 		Name: p.Name.String,
+	}}
+
+	for _, a := range aliases {
+		ret = append(ret, tagger{
+			ID:   p.ID,
+			Type: "studio",
+			Name: a,
+		})
 	}
+
+	return ret
 }
 
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
-func StudioScenes(p *models.Studio, paths []string, rw models.SceneReaderWriter) error {
-	t := getStudioTagger(p)
+func StudioScenes(p *models.Studio, paths []string, aliases []string, rw models.SceneReaderWriter) error {
+	t := getStudioTagger(p, aliases)
 
-	return t.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
-		return addSceneStudio(rw, otherID, subjectID)
-	})
+	for _, tt := range t {
+		if err := tt.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
+			return addSceneStudio(rw, otherID, subjectID)
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.
-func StudioImages(p *models.Studio, paths []string, rw models.ImageReaderWriter) error {
-	t := getStudioTagger(p)
+func StudioImages(p *models.Studio, paths []string, aliases []string, rw models.ImageReaderWriter) error {
+	t := getStudioTagger(p, aliases)
 
-	return t.tagImages(paths, rw, func(subjectID, otherID int) (bool, error) {
-		return addImageStudio(rw, otherID, subjectID)
-	})
+	for _, tt := range t {
+		if err := tt.tagImages(paths, rw, func(subjectID, otherID int) (bool, error) {
+			return addImageStudio(rw, otherID, subjectID)
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.
-func StudioGalleries(p *models.Studio, paths []string, rw models.GalleryReaderWriter) error {
-	t := getStudioTagger(p)
+func StudioGalleries(p *models.Studio, paths []string, aliases []string, rw models.GalleryReaderWriter) error {
+	t := getStudioTagger(p, aliases)
 
-	return t.tagGalleries(paths, rw, func(subjectID, otherID int) (bool, error) {
-		return addGalleryStudio(rw, otherID, subjectID)
-	})
+	for _, tt := range t {
+		if err := tt.tagGalleries(paths, rw, func(subjectID, otherID int) (bool, error) {
+			return addGalleryStudio(rw, otherID, subjectID)
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

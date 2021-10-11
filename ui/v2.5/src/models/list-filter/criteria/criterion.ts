@@ -99,6 +99,10 @@ export abstract class Criterion<V extends CriterionValue> {
     return this.value;
   }
 
+  public decodeValue(value: V) {
+    this.value = value;
+  }
+
   public toJSON() {
     const encodedCriterion = {
       type: this.criterionOption.type,
@@ -409,6 +413,15 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
       }),
       depth: this.value.depth,
     };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public decodeValue(value: any) {
+    if (Array.isArray(value)) {
+      this.value.items = value;
+    } else {
+      this.value = value;
+    }
   }
 
   protected toCriterionInput(): HierarchicalMultiCriterionInput {

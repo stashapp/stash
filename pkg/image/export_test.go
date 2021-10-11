@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	imageID    = 1
-	noImageID  = 2
+	imageID = 1
+	// noImageID  = 2
 	errImageID = 3
 
 	studioID        = 4
@@ -24,17 +24,17 @@ const (
 	// noGalleryID  = 7
 	// errGalleryID = 8
 
-	noTagsID  = 11
+	// noTagsID  = 11
 	errTagsID = 12
 
-	noMoviesID     = 13
-	errMoviesID    = 14
-	errFindMovieID = 15
+	// noMoviesID     = 13
+	// errMoviesID    = 14
+	// errFindMovieID = 15
 
-	noMarkersID         = 16
-	errMarkersID        = 17
-	errFindPrimaryTagID = 18
-	errFindByMarkerID   = 19
+	// noMarkersID         = 16
+	// errMarkersID        = 17
+	// errFindPrimaryTagID = 18
+	// errFindByMarkerID   = 19
 )
 
 const (
@@ -53,13 +53,10 @@ const (
 	//galleryChecksum = "galleryChecksum"
 )
 
-var names = []string{
-	"name1",
-	"name2",
-}
-
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+)
 
 func createFullImage(id int) models.Image {
 	return models.Image{
@@ -81,18 +78,6 @@ func createFullImage(id int) models.Image {
 	}
 }
 
-func createEmptyImage(id int) models.Image {
-	return models.Image{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
-	}
-}
-
 func createFullJSONImage() *jsonschema.Image {
 	return &jsonschema.Image{
 		Title:     title,
@@ -105,18 +90,6 @@ func createFullJSONImage() *jsonschema.Image {
 			Size:   size,
 			Width:  width,
 		},
-		CreatedAt: models.JSONTime{
-			Time: createTime,
-		},
-		UpdatedAt: models.JSONTime{
-			Time: updateTime,
-		},
-	}
-}
-
-func createEmptyJSONImage() *jsonschema.Image {
-	return &jsonschema.Image{
-		File: &jsonschema.ImageFile{},
 		CreatedAt: models.JSONTime{
 			Time: createTime,
 		},

@@ -39,6 +39,8 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to import/export files"""
+  metadataPath: String
   """Path to cache"""
   cachePath: String
   """Whether to calculate MD5 checksums for scene video files"""
@@ -63,12 +65,16 @@ input ConfigGeneralInput {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Write image thumbnails to disk when generating on the fly"""
+  writeImageThumbnails: Boolean
   """Username"""
   username: String
   """Password"""
   password: String
   """Maximum session cookie age"""
   maxSessionAge: Int
+  """Comma separated list of proxies to allow traffic from"""
+  trustedProxies: [String!]
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -108,6 +114,8 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Path to import/export files"""
+  metadataPath: String!
   """Path to the config file used"""
   configFilePath: String!
   """Path to scrapers"""
@@ -136,6 +144,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Write image thumbnails to disk when generating on the fly"""
+  writeImageThumbnails: Boolean!
   """API Key"""
   apiKey: String!
   """Username"""
@@ -144,6 +154,8 @@ type ConfigGeneralResult {
   password: String!
   """Maximum session cookie age"""
   maxSessionAge: Int!
+  """Comma separated list of proxies to allow traffic from"""
+  trustedProxies: [String!]!
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""

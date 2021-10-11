@@ -3,9 +3,8 @@ package manager
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -20,9 +19,7 @@ type GenerateScreenshotTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (t *GenerateScreenshotTask) Start() {
 	scenePath := t.Scene.Path
 	probeResult, err := ffmpeg.NewVideoFile(instance.FFProbePath, scenePath, false)
 
@@ -55,7 +52,7 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 	}
 	defer f.Close()
 
-	coverImageData, err := ioutil.ReadAll(f)
+	coverImageData, err := io.ReadAll(f)
 	if err != nil {
 		logger.Errorf("Error reading screenshot: %s", err.Error())
 		return
@@ -70,18 +67,18 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 		}
 
 		if err := SetSceneScreenshot(checksum, coverImageData); err != nil {
-			return fmt.Errorf("Error writing screenshot: %s", err.Error())
+			return fmt.Errorf("error writing screenshot: %v", err)
 		}
 
 		// update the scene cover table
 		if err := qb.UpdateCover(t.Scene.ID, coverImageData); err != nil {
-			return fmt.Errorf("Error setting screenshot: %s", err.Error())
+			return fmt.Errorf("error setting screenshot: %v", err)
 		}
 
 		// update the scene with the update date
 		_, err = qb.Update(updatedScene)
 		if err != nil {
-			return fmt.Errorf("Error updating scene: %s", err.Error())
+			return fmt.Errorf("error updating scene: %v", err)
 		}
 
 		return nil

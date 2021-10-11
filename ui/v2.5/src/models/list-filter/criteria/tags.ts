@@ -1,6 +1,9 @@
-import { ILabeledIdCriterion, ILabeledIdCriterionOption } from "./criterion";
+import {
+  IHierarchicalLabeledIdCriterion,
+  ILabeledIdCriterionOption,
+} from "./criterion";
 
-export class TagsCriterion extends ILabeledIdCriterion {}
+export class TagsCriterion extends IHierarchicalLabeledIdCriterion {}
 
 export const TagsCriterionOption = new ILabeledIdCriterionOption(
   "tags",
@@ -18,5 +21,17 @@ export const PerformerTagsCriterionOption = new ILabeledIdCriterionOption(
   "performerTags",
   "performerTags",
   "performer_tags",
+  true
+);
+export const ParentTagsCriterionOption = new ILabeledIdCriterionOption(
+  "parent_tags",
+  "parentTags",
+  "parents",
+  true
+);
+export const ChildTagsCriterionOption = new ILabeledIdCriterionOption(
+  "sub_tags",
+  "childTags",
+  "children",
   true
 );

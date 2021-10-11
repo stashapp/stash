@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -16,6 +16,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -83,6 +84,9 @@ const previewExcludeStartDefault = "0"
 const PreviewExcludeEnd = "preview_exclude_end"
 const previewExcludeEndDefault = "0"
 
+const WriteImageThumbnails = "write_image_thumbnails"
+const writeImageThumbnailsDefault = true
+
 const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
@@ -133,6 +137,13 @@ const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
+
+// Security
+const TrustedProxies = "trusted_proxies"
+const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
+const dangerousAllowPublicWithoutAuthDefault = "false"
+const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
+const securityTripwireAccessedFromPublicInternetDefault = ""
 
 // DLNA options
 const DLNAServerName = "dlna.server_name"
@@ -453,7 +464,10 @@ func (i *Instance) GetStashBoxes() []*models.StashBox {
 	i.RLock()
 	defer i.RUnlock()
 	var boxes []*models.StashBox
-	viper.UnmarshalKey(StashBoxes, &boxes)
+	if err := viper.UnmarshalKey(StashBoxes, &boxes); err != nil {
+		logger.Warnf("error in unmarshalkey: %v", err)
+	}
+
 	return boxes
 }
 
@@ -591,6 +605,14 @@ func (i *Instance) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 	return models.StreamingResolutionEnum(ret)
 }
 
+// IsWriteImageThumbnails returns true if image thumbnails should be written
+// to disk after generating on the fly.
+func (i *Instance) IsWriteImageThumbnails() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(WriteImageThumbnails)
+}
+
 func (i *Instance) GetAPIKey() string {
 	i.RLock()
 	defer i.RUnlock()
@@ -656,17 +678,21 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 
 	re, err := regexp.Compile("^http.*graphql$")
 	if err != nil {
-		return errors.New("Failure to generate regular expression")
+		return errors.New("failure to generate regular expression")
 	}
 
 	for _, box := range boxes {
 		if box.APIKey == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box API Key cannot be blank")
 		} else if box.Endpoint == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint cannot be blank")
 		} else if !re.Match([]byte(box.Endpoint)) {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
+			//lint:ignore ST1005 Stash-box is a name
 			return errors.New("Stash-box Name cannot be blank")
 		}
 	}
@@ -781,7 +807,7 @@ func (i *Instance) GetCSS() string {
 		return ""
 	}
 
-	buf, err := ioutil.ReadFile(fn)
+	buf, err := os.ReadFile(fn)
 
 	if err != nil {
 		return ""
@@ -797,7 +823,9 @@ func (i *Instance) SetCSS(css string) {
 
 	buf := []byte(css)
 
-	ioutil.WriteFile(fn, buf, 0777)
+	if err := os.WriteFile(fn, buf, 0777); err != nil {
+		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
+	}
 }
 
 func (i *Instance) GetCSSEnabled() bool {
@@ -815,6 +843,31 @@ func (i *Instance) GetHandyKey() string {
 func (i *Instance) GetFunscriptOffset() int {
 	viper.SetDefault(FunscriptOffset, 0)
 	return viper.GetInt(FunscriptOffset)
+}
+
+// GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
+// When empty, allow from any private network
+func (i *Instance) GetTrustedProxies() []string {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetStringSlice(TrustedProxies)
+}
+
+// GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
+// See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
+func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(dangerousAllowPublicWithoutAuth)
+}
+
+// GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
+// has been accessed from the public internet, with no auth enabled, and
+// DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
+func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() string {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetString(SecurityTripwireAccessedFromPublicInternet)
 }
 
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
@@ -909,6 +962,14 @@ func (i *Instance) GetMaxUploadSize() int64 {
 	return ret << 20
 }
 
+// ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
+// config field to the provided IP address to indicate that stash has been accessed
+// from this public IP without authentication.
+func (i *Instance) ActivatePublicAccessTripwire(requestIP string) error {
+	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
+	return i.Write()
+}
+
 func (i *Instance) Validate() error {
 	i.RLock()
 	defer i.RUnlock()
@@ -941,8 +1002,7 @@ func (i *Instance) SetChecksumDefaultValues(defaultAlgorithm models.HashAlgorith
 	viper.SetDefault(CalculateMD5, usingMD5)
 }
 
-func (i *Instance) setDefaultValues() error {
-
+func (i *Instance) setDefaultValues(write bool) error {
 	// read data before write lock scope
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
@@ -958,7 +1018,12 @@ func (i *Instance) setDefaultValues() error {
 	viper.SetDefault(PreviewAudio, previewAudioDefault)
 	viper.SetDefault(SoundOnPreview, false)
 
+	viper.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
+
 	viper.SetDefault(Database, defaultDatabaseFilePath)
+
+	viper.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
+	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
@@ -966,11 +1031,24 @@ func (i *Instance) setDefaultValues() error {
 	// Set default scrapers and plugins paths
 	viper.SetDefault(ScrapersPath, defaultScrapersPath)
 	viper.SetDefault(PluginsPath, defaultPluginsPath)
-	return viper.WriteConfig()
+	if write {
+		return viper.WriteConfig()
+	}
+
+	return nil
 }
 
 // SetInitialConfig fills in missing required config fields
 func (i *Instance) SetInitialConfig() error {
+	return i.setInitialConfig(true)
+}
+
+// SetInitialMemoryConfig fills in missing required config fields without writing the configuration
+func (i *Instance) SetInitialMemoryConfig() error {
+	return i.setInitialConfig(false)
+}
+
+func (i *Instance) setInitialConfig(write bool) error {
 	// generate some api keys
 	const apiKeyLength = 32
 
@@ -984,7 +1062,7 @@ func (i *Instance) SetInitialConfig() error {
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 
-	return i.setDefaultValues()
+	return i.setDefaultValues(write)
 }
 
 func (i *Instance) FinalizeSetup() {

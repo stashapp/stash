@@ -14,6 +14,11 @@ export const Stats: React.FC = () => {
   const scenesSize = TextUtils.fileSize(data.stats.scenes_size);
   const imagesSize = TextUtils.fileSize(data.stats.images_size);
 
+  const scenesDuration = TextUtils.secondsAsTimeString(
+    data.stats.scenes_duration,
+    3
+  );
+
   return (
     <div className="mt-5">
       <div className="col col-sm-8 m-sm-auto row stats">
@@ -28,7 +33,7 @@ export const Stats: React.FC = () => {
             {` ${TextUtils.formatFileSizeUnit(scenesSize.unit)}`}
           </p>
           <p className="heading">
-            <FormattedMessage id="scenes-size" defaultMessage="Scenes size" />
+            <FormattedMessage id="stats.scenes_size" />
           </p>
         </div>
         <div className="stats-element">
@@ -36,7 +41,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.scene_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="scenes" defaultMessage="Scenes" />
+            <FormattedMessage id="scenes" />
           </p>
         </div>
         <div className="stats-element">
@@ -48,14 +53,9 @@ export const Stats: React.FC = () => {
           </p>
         </div>
         <div className="stats-element">
-          <p className="title">
-            {` ${TextUtils.secondsAsTimeString(data.stats.scenes_duration, 3)}`}
-          </p>
+          <p className="title">{scenesDuration || "-"}</p>
           <p className="heading">
-            <FormattedMessage
-              id="scenes-duration"
-              defaultMessage="Scenes duration"
-            />
+            <FormattedMessage id="stats.scenes_duration" />
           </p>
         </div>
         <div className="stats-element">
@@ -79,7 +79,7 @@ export const Stats: React.FC = () => {
             {` ${TextUtils.formatFileSizeUnit(imagesSize.unit)}`}
           </p>
           <p className="heading">
-            <FormattedMessage id="images-size" defaultMessage="Images size" />
+            <FormattedMessage id="stats.image_size" />
           </p>
         </div>
         <div className="stats-element">

@@ -30,7 +30,11 @@ export const PerformerPopoverButton: React.FC<IProps> = ({ performers }) => {
   ));
 
   return (
-    <HoverPopover placement="bottom" content={popoverContent}>
+    <HoverPopover
+      className="performer-count"
+      placement="bottom"
+      content={popoverContent}
+    >
       <Button className="minimal">
         <Icon icon="user" />
         <span>{performers.length}</span>

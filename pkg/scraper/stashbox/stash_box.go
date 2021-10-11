@@ -3,7 +3,7 @@ package stashbox
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -66,8 +66,79 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 }
 
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
-// scene's MD5/OSHASH checksum, or PHash
-func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
+// scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
+// as the input slice.
+func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models.ScrapedScene, error) {
+	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	var fingerprints []string
+	// map fingerprints to their scene index
+	fpToScene := make(map[string][]int)
+
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Scene()
+
+		for index, sceneID := range ids {
+			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
+			}
+
+			if scene == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+
+			if scene.Checksum.Valid {
+				fingerprints = append(fingerprints, scene.Checksum.String)
+				fpToScene[scene.Checksum.String] = append(fpToScene[scene.Checksum.String], index)
+			}
+
+			if scene.OSHash.Valid {
+				fingerprints = append(fingerprints, scene.OSHash.String)
+				fpToScene[scene.OSHash.String] = append(fpToScene[scene.OSHash.String], index)
+			}
+
+			if scene.Phash.Valid {
+				phashStr := utils.PhashToString(scene.Phash.Int64)
+				fingerprints = append(fingerprints, phashStr)
+				fpToScene[phashStr] = append(fpToScene[phashStr], index)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	allScenes, err := c.findStashBoxScenesByFingerprints(fingerprints)
+	if err != nil {
+		return nil, err
+	}
+
+	// set the matched scenes back in their original order
+	ret := make([][]*models.ScrapedScene, len(sceneIDs))
+	for _, s := range allScenes {
+		var addedTo []int
+		for _, fp := range s.Fingerprints {
+			sceneIndexes := fpToScene[fp.Hash]
+			for _, index := range sceneIndexes {
+				if !utils.IntInclude(addedTo, index) {
+					addedTo = append(addedTo, index)
+					ret[index] = append(ret[index], s)
+				}
+			}
+		}
+	}
+
+	return ret, nil
+}
+
+// FindStashBoxScenesByFingerprintsFlat queries stash-box for scenes using every
+// scene's MD5/OSHASH checksum, or PHash, and returns results a flat slice.
+func (c Client) FindStashBoxScenesByFingerprintsFlat(sceneIDs []string) ([]*models.ScrapedScene, error) {
 	ids, err := utils.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
@@ -97,7 +168,8 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.S
 			}
 
 			if scene.Phash.Valid {
-				fingerprints = append(fingerprints, utils.PhashToString(scene.Phash.Int64))
+				phashStr := utils.PhashToString(scene.Phash.Int64)
+				fingerprints = append(fingerprints, phashStr)
 			}
 		}
 
@@ -237,10 +309,18 @@ func (c Client) QueryStashBoxPerformer(queryStr string) ([]*models.StashBoxPerfo
 			Results: performers,
 		},
 	}
+
+	// set the deprecated image field
+	for _, p := range res[0].Results {
+		if len(p.Images) > 0 {
+			p.Image = &p.Images[0]
+		}
+	}
+
 	return res, err
 }
 
-func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedScenePerformer, error) {
+func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(context.TODO(), queryStr)
 	if err != nil {
 		return nil, err
@@ -248,7 +328,7 @@ func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedSceneP
 
 	performerFragments := performers.SearchPerformer
 
-	var ret []*models.ScrapedScenePerformer
+	var ret []*models.ScrapedPerformer
 	for _, fragment := range performerFragments {
 		performer := performerFragmentToScrapedScenePerformer(*fragment)
 		ret = append(ret, performer)
@@ -290,6 +370,50 @@ func (c Client) FindStashBoxPerformersByNames(performerIDs []string) ([]*models.
 	}
 
 	return c.findStashBoxPerformersByNames(performers)
+}
+
+func (c Client) FindStashBoxPerformersByPerformerNames(performerIDs []string) ([][]*models.ScrapedPerformer, error) {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	var performers []*models.Performer
+
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Performer()
+
+		for _, performerID := range ids {
+			performer, err := qb.Find(performerID)
+			if err != nil {
+				return err
+			}
+
+			if performer == nil {
+				return fmt.Errorf("performer with id %d not found", performerID)
+			}
+
+			if performer.Name.Valid {
+				performers = append(performers, performer)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	results, err := c.findStashBoxPerformersByNames(performers)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret [][]*models.ScrapedPerformer
+	for _, r := range results {
+		ret = append(ret, r.Results)
+	}
+
+	return ret, nil
 }
 
 func (c Client) findStashBoxPerformersByNames(performers []*models.Performer) ([]*models.StashBoxPerformerQueryResult, error) {
@@ -398,7 +522,7 @@ func fetchImage(url string) (*string, error) {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -413,14 +537,14 @@ func fetchImage(url string) (*string, error) {
 	return &img, nil
 }
 
-func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
+func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedPerformer {
 	id := p.ID
 	images := []string{}
 	for _, image := range p.Images {
 		images = append(images, image.URL)
 	}
-	sp := &models.ScrapedScenePerformer{
-		Name:         p.Name,
+	sp := &models.ScrapedPerformer{
+		Name:         &p.Name,
 		Country:      p.Country,
 		Measurements: formatMeasurements(p.Measurements),
 		CareerLength: formatCareerLength(p.CareerStartYear, p.CareerEndYear),
@@ -430,8 +554,11 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		RemoteSiteID: &id,
 		Images:       images,
 		// TODO - tags not currently supported
-		// TODO - Image - should be returned as a set of URLs. Will need a
 		// graphql schema change to accommodate this. Leave off for now.
+	}
+
+	if len(sp.Images) > 0 {
+		sp.Image = &sp.Images[0]
 	}
 
 	if p.Height != nil && *p.Height > 0 {
@@ -511,13 +638,13 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 
 		if s.Studio != nil {
 			studioID := s.Studio.ID
-			ss.Studio = &models.ScrapedSceneStudio{
+			ss.Studio = &models.ScrapedStudio{
 				Name:         s.Studio.Name,
 				URL:          findURL(s.Studio.Urls, "HOME"),
 				RemoteSiteID: &studioID,
 			}
 
-			err := scraper.MatchScrapedSceneStudio(r.Studio(), ss.Studio)
+			err := scraper.MatchScrapedStudio(r.Studio(), ss.Studio)
 			if err != nil {
 				return err
 			}
@@ -526,7 +653,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := scraper.MatchScrapedScenePerformer(pqb, sp)
+			err := scraper.MatchScrapedPerformer(pqb, sp)
 			if err != nil {
 				return err
 			}
@@ -535,11 +662,11 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 		}
 
 		for _, t := range s.Tags {
-			st := &models.ScrapedSceneTag{
+			st := &models.ScrapedTag{
 				Name: t.Name,
 			}
 
-			err := scraper.MatchScrapedSceneTag(tqb, st)
+			err := scraper.MatchScrapedTag(tqb, st)
 			if err != nil {
 				return err
 			}
@@ -555,7 +682,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 	return ss, nil
 }
 
-func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedScenePerformer, error) {
+func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedPerformer, error) {
 	performer, err := c.client.FindPerformerByID(context.TODO(), id)
 	if err != nil {
 		return nil, err
@@ -565,13 +692,13 @@ func (c Client) FindStashBoxPerformerByID(id string) (*models.ScrapedScenePerfor
 	return ret, nil
 }
 
-func (c Client) FindStashBoxPerformerByName(name string) (*models.ScrapedScenePerformer, error) {
+func (c Client) FindStashBoxPerformerByName(name string) (*models.ScrapedPerformer, error) {
 	performers, err := c.client.SearchPerformer(context.TODO(), name)
 	if err != nil {
 		return nil, err
 	}
 
-	var ret *models.ScrapedScenePerformer
+	var ret *models.ScrapedPerformer
 	for _, performer := range performers.SearchPerformer {
 		if strings.EqualFold(performer.Name, name) {
 			ret = performerFragmentToScrapedScenePerformer(*performer)

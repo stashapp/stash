@@ -91,7 +91,7 @@
   "birthdate": "Data de nascimento",
   "bitrate": "Taxa de bits",
   "career_length": "Duração da carreira",
-  "child_studios": "Estúdios filhos",
+  "subsidiary_studios": "Estúdios filhos",
   "component_tagger": {
     "config": {
       "active_instance": "Ativar stash-box:",
@@ -500,8 +500,7 @@
   "image": "Imagem",
   "image_count": "Contagem de imagem",
   "images": "Imagens",
-  "images-size": "Tamanho das imagens",
-  "include_child_studios": "Incluem estúdios filho",
+  "include_sub_studios": "Incluem estúdios filho",
   "instagram": "Instagram",
   "interactive": "Interativo",
   "isMissing": "Está faltando",
@@ -557,7 +556,6 @@
   "scene_count": "Contagem de cena",
   "scene_id": "Cena ID",
   "scenes": "Cenas",
-  "scenes-size": "Tamanho de cenas",
   "scenes_updated_at": "Cena atualizada em",
   "sceneTagger": "Tagger de cena",
   "sceneTags": "Tags de cena",
@@ -600,5 +598,9 @@
   "updated_at": "Atualizado em",
   "url": "URL",
   "weight": "Peso",
-  "years_old": "anos"
+  "years_old": "anos",
+  "stats": {
+    "image_size": "Tamanho das imagens",
+    "scenes_size": "Tamanho de cenas"
+  }
 }

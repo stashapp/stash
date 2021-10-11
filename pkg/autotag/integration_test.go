@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package autotag
@@ -6,7 +7,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -43,7 +43,7 @@ func testTeardown(databaseFile string) {
 
 func runTests(m *testing.M) int {
 	// create the database file
-	f, err := ioutil.TempFile("", "*.sqlite")
+	f, err := os.CreateTemp("", "*.sqlite")
 	if err != nil {
 		panic(fmt.Sprintf("Could not create temporary file: %s", err.Error()))
 	}
@@ -408,7 +408,12 @@ func TestParseStudioScenes(t *testing.T) {
 
 	for _, s := range studios {
 		if err := withTxn(func(r models.Repository) error {
-			return StudioScenes(s, nil, r.Scene())
+			aliases, err := r.Studio().GetAliases(s.ID)
+			if err != nil {
+				return err
+			}
+
+			return StudioScenes(s, nil, aliases, r.Scene())
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -558,7 +563,12 @@ func TestParseStudioImages(t *testing.T) {
 
 	for _, s := range studios {
 		if err := withTxn(func(r models.Repository) error {
-			return StudioImages(s, nil, r.Image())
+			aliases, err := r.Studio().GetAliases(s.ID)
+			if err != nil {
+				return err
+			}
+
+			return StudioImages(s, nil, aliases, r.Image())
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -708,7 +718,12 @@ func TestParseStudioGalleries(t *testing.T) {
 
 	for _, s := range studios {
 		if err := withTxn(func(r models.Repository) error {
-			return StudioGalleries(s, nil, r.Gallery())
+			aliases, err := r.Studio().GetAliases(s.ID)
+			if err != nil {
+				return err
+			}
+
+			return StudioGalleries(s, nil, aliases, r.Gallery())
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}

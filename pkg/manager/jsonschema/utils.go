@@ -2,14 +2,10 @@ package jsonschema
 
 import (
 	"bytes"
-
-	"io/ioutil"
-	"time"
+	"os"
 
 	jsoniter "github.com/json-iterator/go"
 )
-
-var nilTime = (time.Time{}).UnixNano()
 
 func CompareJSON(a interface{}, b interface{}) bool {
 	aBuf, _ := encode(a)
@@ -22,7 +18,7 @@ func marshalToFile(filePath string, j interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filePath, data, 0644)
+	return os.WriteFile(filePath, data, 0644)
 }
 
 func encode(j interface{}) ([]byte, error) {

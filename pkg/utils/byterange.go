@@ -30,14 +30,6 @@ func CreateByteRange(s string) ByteRange {
 	return ret
 }
 
-func (r ByteRange) getBytesToRead() int64 {
-	if r.End == nil {
-		return 0
-	}
-
-	return *r.End - r.Start + 1
-}
-
 func (r ByteRange) ToHeaderValue(fileLength int64) string {
 	if r.End == nil {
 		return ""

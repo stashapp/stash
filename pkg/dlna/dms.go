@@ -33,7 +33,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/pprof"
@@ -58,7 +57,6 @@ const (
 	resPath                     = "/res"
 	iconPath                    = "/icon"
 	rootDescPath                = "/rootDesc.xml"
-	contentDirectorySCPDURL     = "/scpd/ContentDirectory.xml"
 	contentDirectoryEventSubURL = "/evt/ContentDirectory"
 	serviceControlURL           = "/ctl"
 	deviceIconPath              = "/deviceIcon"
@@ -417,7 +415,7 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var scene *models.Scene
-	me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+	err := me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
 		idInt, err := strconv.Atoi(sceneId)
 		if err != nil {
 			return nil
@@ -425,6 +423,9 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 		scene, _ = r.Scene().Find(idInt)
 		return nil
 	})
+	if err != nil {
+		logger.Warnf("failed to execute read transaction while trying to serve an icon: %v", err)
+	}
 
 	if scene == nil {
 		return
@@ -481,7 +482,7 @@ func (me *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
 			logger.Errorf("Could not notify %s: %s", _url.String(), err)
 			continue
 		}
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		if len(b) > 0 {
 			logger.Debug(string(b))
 		}
@@ -553,7 +554,7 @@ func (me *Server) initMux(mux *http.ServeMux) {
 	mux.HandleFunc(resPath, func(w http.ResponseWriter, r *http.Request) {
 		sceneId := r.URL.Query().Get("scene")
 		var scene *models.Scene
-		me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+		err := me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
 			sceneIdInt, err := strconv.Atoi(sceneId)
 			if err != nil {
 				return nil
@@ -561,6 +562,9 @@ func (me *Server) initMux(mux *http.ServeMux) {
 			scene, _ = r.Scene().Find(sceneIdInt)
 			return nil
 		})
+		if err != nil {
+			logger.Warnf("failed to execute read transaction for scene id (%v): %v", sceneId, err)
+		}
 
 		if scene == nil {
 			return
@@ -572,7 +576,9 @@ func (me *Server) initMux(mux *http.ServeMux) {
 		w.Header().Set("content-type", `text/xml; charset="utf-8"`)
 		w.Header().Set("content-length", fmt.Sprint(len(me.rootDescXML)))
 		w.Header().Set("server", serverField)
-		w.Write(me.rootDescXML)
+		if k, err := w.Write(me.rootDescXML); err != nil {
+			logger.Warnf("could not write rootDescXML (wrote %v bytes of %v): %v", k, len(me.rootDescXML), err)
+		}
 	})
 	handleSCPDs(mux)
 	mux.HandleFunc(serviceControlURL, me.serviceControlHandler)

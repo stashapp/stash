@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"sync"
 
@@ -51,33 +50,35 @@ func (t *rawPluginTask) Start() error {
 		defer stdin.Close()
 
 		inBytes, _ := json.Marshal(t.input)
-		io.WriteString(stdin, string(inBytes))
+		if k, err := io.WriteString(stdin, string(inBytes)); err != nil {
+			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
+		}
 	}()
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		logger.Error("Plugin stderr not available: " + err.Error())
+		logger.Error("plugin stderr not available: " + err.Error())
 	}
 
 	stdout, err := cmd.StdoutPipe()
 	if nil != err {
-		logger.Error("Plugin stdout not available: " + err.Error())
+		logger.Error("plugin stdout not available: " + err.Error())
 	}
 
 	t.waitGroup.Add(1)
 	t.done = make(chan bool, 1)
 	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("Error running plugin: %s", err.Error())
+		return fmt.Errorf("error running plugin: %s", err.Error())
 	}
 
-	go t.handlePluginStderr(stderr)
+	go t.handlePluginStderr(t.plugin.Name, stderr)
 	t.cmd = cmd
 
 	// send the stdout to the plugin output
 	go func() {
 		defer t.waitGroup.Done()
 		defer close(t.done)
-		stdoutData, _ := ioutil.ReadAll(stdout)
+		stdoutData, _ := io.ReadAll(stdout)
 		stdoutString := string(stdoutData)
 
 		output := t.getOutput(stdoutString)

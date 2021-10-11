@@ -3,7 +3,7 @@ package scraper
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -28,6 +28,8 @@ func setPerformerImage(p *models.ScrapedPerformer, globalConfig GlobalConfig) er
 	}
 
 	p.Image = img
+	// Image is deprecated. Use images instead
+	p.Images = []string{*img}
 
 	return nil
 }
@@ -119,7 +121,7 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
