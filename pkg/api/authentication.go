@@ -83,12 +83,14 @@ func authenticateHandler() func(http.Handler) http.Handler {
 						return
 					}
 
+					prefix := getProxyPrefix(r.Header)
+
 					// otherwise redirect to the login page
 					u := url.URL{
-						Path: "/login",
+						Path: prefix + "/login",
 					}
 					q := u.Query()
-					q.Set(returnURLParam, r.URL.Path)
+					q.Set(returnURLParam, prefix+r.URL.Path)
 					u.RawQuery = q.Encode()
 					http.Redirect(w, r, u.String(), http.StatusFound)
 					return

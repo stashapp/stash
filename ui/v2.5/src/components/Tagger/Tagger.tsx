@@ -6,10 +6,11 @@ import { useLocalForage } from "src/hooks";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
-import { stashBoxSceneQuery, useConfiguration } from "src/core/StashService";
+import { stashBoxSceneQuery } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
 
 import { SceneQueue } from "src/models/sceneQueue";
+import { ConfigurationContext } from "src/hooks/Config";
 import Config from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "./constants";
 import { TaggerList } from "./TaggerList";
@@ -20,7 +21,7 @@ interface ITaggerProps {
 }
 
 export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
     initialConfig
@@ -63,20 +64,19 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
   if (!config) return <LoadingIndicator />;
 
   const savedEndpointIndex =
-    stashConfig.data?.configuration.general.stashBoxes.findIndex(
+    stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
     ) ?? -1;
   const selectedEndpointIndex =
-    savedEndpointIndex === -1 &&
-    stashConfig.data?.configuration.general.stashBoxes.length
+    savedEndpointIndex === -1 && stashConfig?.general.stashBoxes.length
       ? 0
       : savedEndpointIndex;
   const selectedEndpoint =
-    stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
+    stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
   function getEndpointIndex(endpoint: string) {
     return (
-      stashConfig.data?.configuration.general.stashBoxes.findIndex(
+      stashConfig?.general.stashBoxes.findIndex(
         (s) => s.endpoint === endpoint
       ) ?? -1
     );

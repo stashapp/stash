@@ -36,7 +36,7 @@ func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
 			trustedProxies := c.GetTrustedProxies()
 			proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
 
-			if trustedProxies == nil {
+			if len(trustedProxies) == 0 {
 				// validate proxies against local network only
 				if !isLocalIP(requestIP) {
 					return ExternalAccessError(requestIP)
@@ -98,6 +98,9 @@ func isLocalIP(requestIP net.IP) bool {
 }
 
 func isIPTrustedProxy(ip net.IP, trustedProxies []string) bool {
+	if len(trustedProxies) == 0 {
+		return isLocalIP(ip)
+	}
 	for _, v := range trustedProxies {
 		if ip.Equal(net.ParseIP(v)) {
 			return true

@@ -1,10 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration } from "src/core/StashService";
 import { TextUtils, NavUtils } from "src/utils";
 import cx from "classnames";
 import { SceneQueue } from "src/models/sceneQueue";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IWallItemProps {
   index?: number;
@@ -105,10 +105,9 @@ const Preview: React.FC<{
 export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const [active, setActive] = useState(false);
   const wallItem = useRef() as React.MutableRefObject<HTMLDivElement>;
-  const config = useConfiguration();
+  const { configuration: config } = React.useContext(ConfigurationContext);
 
-  const showTextContainer =
-    config.data?.configuration.interface.wallShowTitle ?? true;
+  const showTextContainer = config?.interface.wallShowTitle ?? true;
 
   const previews = props.sceneMarker
     ? {
@@ -203,11 +202,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     <div className="wall-item">
       <div className={`wall-item-container ${props.className}`} ref={wallItem}>
         <Link onClick={clickHandler} to={linkSrc} className="wall-item-anchor">
-          <Preview
-            previews={previews}
-            config={config.data?.configuration}
-            active={active}
-          />
+          <Preview previews={previews} config={config} active={active} />
           {renderText()}
         </Link>
       </div>
