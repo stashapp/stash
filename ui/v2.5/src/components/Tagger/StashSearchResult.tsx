@@ -270,7 +270,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
     if (currentSource?.stashboxEndpoint && scene.remote_site_id) {
       sceneCreateInput.stash_ids = [
-        ...(stashScene?.stash_ids ?? []),
+        ...(stashScene?.stash_ids
+          .map((s) => {
+            return {
+              endpoint: s.endpoint,
+              stash_id: s.stash_id,
+            };
+          })
+          .filter((s) => s.endpoint !== currentSource.stashboxEndpoint) ?? []),
         {
           endpoint: currentSource.stashboxEndpoint,
           stash_id: scene.remote_site_id,
