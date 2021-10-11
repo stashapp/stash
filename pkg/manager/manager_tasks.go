@@ -270,7 +270,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				continue
 			}
 
-			if input.Sprites {
+			if utils.IsTrue(input.Sprites) {
 				task := GenerateSpriteTask{
 					Scene:               *scene,
 					Overwrite:           overwrite,
@@ -283,10 +283,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if input.Previews {
+			if utils.IsTrue(input.Previews) {
 				task := GeneratePreviewTask{
 					Scene:               *scene,
-					ImagePreview:        input.ImagePreviews,
+					ImagePreview:        utils.IsTrue(input.ImagePreviews),
 					Options:             *generatePreviewOptions,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
@@ -298,15 +298,15 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if input.Markers {
+			if utils.IsTrue(input.Markers) {
 				wg.Add()
 				task := GenerateMarkersTask{
 					TxnManager:          s.TxnManager,
 					Scene:               scene,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
-					ImagePreview:        input.MarkerImagePreviews,
-					Screenshot:          input.MarkerScreenshots,
+					ImagePreview:        utils.IsTrue(input.MarkerImagePreviews),
+					Screenshot:          utils.IsTrue(input.MarkerScreenshots),
 				}
 				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
 					task.Start()
@@ -314,7 +314,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if input.Transcodes {
+			if utils.IsTrue(input.Transcodes) {
 				wg.Add()
 				task := GenerateTranscodeTask{
 					Scene:               *scene,
@@ -327,7 +327,7 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 				})
 			}
 
-			if input.Phashes {
+			if utils.IsTrue(input.Phashes) {
 				task := GeneratePhashTask{
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,
@@ -532,7 +532,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	logger.Infof("Counting content to generate...")
 	for _, scene := range scenes {
 		if scene != nil {
-			if input.Sprites {
+			if utils.IsTrue(input.Sprites) {
 				task := GenerateSpriteTask{
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,
@@ -543,10 +543,10 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 
-			if input.Previews {
+			if utils.IsTrue(input.Previews) {
 				task := GeneratePreviewTask{
 					Scene:               *scene,
-					ImagePreview:        input.ImagePreviews,
+					ImagePreview:        utils.IsTrue(input.ImagePreviews),
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
 
@@ -555,12 +555,12 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 					totals.previews++
 				}
 
-				if input.ImagePreviews && (overwrite || !task.doesImagePreviewExist(sceneHash)) {
+				if utils.IsTrue(input.ImagePreviews) && (overwrite || !task.doesImagePreviewExist(sceneHash)) {
 					totals.imagePreviews++
 				}
 			}
 
-			if input.Markers {
+			if utils.IsTrue(input.Markers) {
 				task := GenerateMarkersTask{
 					TxnManager:          s.TxnManager,
 					Scene:               scene,
@@ -570,7 +570,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				totals.markers += int64(task.isMarkerNeeded())
 			}
 
-			if input.Transcodes {
+			if utils.IsTrue(input.Transcodes) {
 				task := GenerateTranscodeTask{
 					Scene:               *scene,
 					Overwrite:           overwrite,
@@ -581,7 +581,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 
-			if input.Phashes {
+			if utils.IsTrue(input.Phashes) {
 				task := GeneratePhashTask{
 					Scene:               *scene,
 					fileNamingAlgorithm: fileNamingAlgo,

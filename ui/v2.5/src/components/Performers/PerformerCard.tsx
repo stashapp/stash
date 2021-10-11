@@ -74,6 +74,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
     return (
       <PopoverCountButton
+        className="scene-count"
         type="scene"
         count={performer.scene_count}
         url={NavUtils.makePerformerScenesUrl(performer, extraCriteria?.scenes)}
@@ -86,6 +87,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
     return (
       <PopoverCountButton
+        className="image-count"
         type="image"
         count={performer.image_count}
         url={NavUtils.makePerformerImagesUrl(performer, extraCriteria?.images)}
@@ -98,6 +100,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
     return (
       <PopoverCountButton
+        className="gallery-count"
         type="gallery"
         count={performer.gallery_count}
         url={NavUtils.makePerformerGalleriesUrl(
@@ -117,7 +120,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal">
+        <Button className="minimal tag-count">
           <Icon icon="tag" />
           <span>{performer.tags.length}</span>
         </Button>
@@ -130,6 +133,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 
     return (
       <PopoverCountButton
+        className="movie-count"
         type="movie"
         count={performer.movie_count}
         url={NavUtils.makePerformerMoviesUrl(performer, extraCriteria?.movies)}

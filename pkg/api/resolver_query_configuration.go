@@ -79,6 +79,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Username:                     config.GetUsername(),
 		Password:                     config.GetPasswordHash(),
 		MaxSessionAge:                config.GetMaxSessionAge(),
+		TrustedProxies:               config.GetTrustedProxies(),
 		LogFile:                      &logFile,
 		LogOut:                       config.GetLogOut(),
 		LogLevel:                     config.GetLogLevel(),

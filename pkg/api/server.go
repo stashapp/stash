@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"runtime/debug"
@@ -29,72 +28,12 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 var version string
 var buildstamp string
 var githash string
-
-func allowUnauthenticated(r *http.Request) bool {
-	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
-}
-
-func authenticateHandler() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
-			if err != nil {
-				if err != session.ErrUnauthorized {
-					w.WriteHeader(http.StatusInternalServerError)
-					_, err = w.Write([]byte(err.Error()))
-					if err != nil {
-						logger.Error(err)
-					}
-					return
-				}
-
-				// unauthorized error
-				w.Header().Add("WWW-Authenticate", `FormBased`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			c := config.GetInstance()
-			ctx := r.Context()
-
-			// handle redirect if no user and user is required
-			if userID == "" && c.HasCredentials() && !allowUnauthenticated(r) {
-				// if we don't have a userID, then redirect
-				// if graphql was requested, we just return a forbidden error
-				if r.URL.Path == "/graphql" {
-					w.Header().Add("WWW-Authenticate", `FormBased`)
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-
-				// otherwise redirect to the login page
-				u := url.URL{
-					Path: "/login",
-				}
-				q := u.Query()
-				q.Set(returnURLParam, r.URL.Path)
-				u.RawQuery = q.Encode()
-				http.Redirect(w, r, u.String(), http.StatusFound)
-				return
-			}
-
-			ctx = session.SetCurrentUserID(ctx, userID)
-
-			r = r.WithContext(ctx)
-
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-const loginEndPoint = "/login"
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
@@ -208,7 +147,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			_, _ = w.Write(getLoginPage(loginUIBox))
+			prefix := getProxyPrefix(r.Header)
+
+			data := getLoginPage(loginUIBox)
+			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
+			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
 			loginRoot, err := fs.Sub(loginUIBox, loginRootDir)
@@ -259,11 +202,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 				panic(err)
 			}
 
-			prefix := ""
-			if r.Header.Get("X-Forwarded-Prefix") != "" {
-				prefix = strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
-			}
-
+			prefix := getProxyPrefix(r.Header)
 			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
 			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
 			_, _ = w.Write([]byte(baseURLIndex))
@@ -274,7 +213,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 			uiRoot, err := fs.Sub(uiBox, uiRootDir)
 			if err != nil {
-				panic(error.Error(err))
+				panic(err)
 			}
 			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
 		}
@@ -384,10 +323,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		} else {
 			scheme = "http"
 		}
-		prefix := ""
-		if r.Header.Get("X-Forwarded-Prefix") != "" {
-			prefix = strings.TrimRight(r.Header.Get("X-Forwarded-Prefix"), "/")
-		}
+		prefix := getProxyPrefix(r.Header)
 
 		port := ""
 		forwardedPort := r.Header.Get("X-Forwarded-Port")
@@ -407,4 +343,13 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
+}
+
+func getProxyPrefix(headers http.Header) string {
+	prefix := ""
+	if headers.Get("X-Forwarded-Prefix") != "" {
+		prefix = strings.TrimRight(headers.Get("X-Forwarded-Prefix"), "/")
+	}
+
+	return prefix
 }

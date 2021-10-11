@@ -138,6 +138,13 @@ const SlideshowDelay = "slideshow_delay"
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
+// Security
+const TrustedProxies = "trusted_proxies"
+const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
+const dangerousAllowPublicWithoutAuthDefault = "false"
+const SecurityTripwireAccessedFromPublicInternet = "security_tripwire_accessed_from_public_internet"
+const securityTripwireAccessedFromPublicInternetDefault = ""
+
 // DLNA options
 const DLNAServerName = "dlna.server_name"
 const DLNADefaultEnabled = "dlna.default_enabled"
@@ -838,6 +845,31 @@ func (i *Instance) GetFunscriptOffset() int {
 	return viper.GetInt(FunscriptOffset)
 }
 
+// GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
+// When empty, allow from any private network
+func (i *Instance) GetTrustedProxies() []string {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetStringSlice(TrustedProxies)
+}
+
+// GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
+// See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
+func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetBool(dangerousAllowPublicWithoutAuth)
+}
+
+// GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
+// has been accessed from the public internet, with no auth enabled, and
+// DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
+func (i *Instance) GetSecurityTripwireAccessedFromPublicInternet() string {
+	i.RLock()
+	defer i.RUnlock()
+	return viper.GetString(SecurityTripwireAccessedFromPublicInternet)
+}
+
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
 // "stash" will be used.
 func (i *Instance) GetDLNAServerName() string {
@@ -930,6 +962,14 @@ func (i *Instance) GetMaxUploadSize() int64 {
 	return ret << 20
 }
 
+// ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
+// config field to the provided IP address to indicate that stash has been accessed
+// from this public IP without authentication.
+func (i *Instance) ActivatePublicAccessTripwire(requestIP string) error {
+	i.Set(SecurityTripwireAccessedFromPublicInternet, requestIP)
+	return i.Write()
+}
+
 func (i *Instance) Validate() error {
 	i.RLock()
 	defer i.RUnlock()
@@ -981,6 +1021,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 	viper.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 
 	viper.SetDefault(Database, defaultDatabaseFilePath)
+
+	viper.SetDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
+	viper.SetDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
