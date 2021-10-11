@@ -19,12 +19,13 @@ var matcher = language.NewMatcher([]language.Tag{
 
 // newCollator parses a locale into a collator
 // Go through the available matches and return a valid match, in practice the first is a fallback
+// Optionally pass collation options through for creation.
 // If passed a nil-locale string, return nil
-func newCollator(locale *string) *collate.Collator {
+func newCollator(locale *string, opts ...collate.Option) *collate.Collator {
 	if locale == nil {
 		return nil
 	}
 
 	tag, _ := language.MatchStrings(matcher, *locale)
-	return collate.New(tag)
+	return collate.New(tag, opts...)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"golang.org/x/text/collate"
 )
 
 func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult, error) {
@@ -17,7 +18,7 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*m
 	directory := &models.Directory{}
 	var err error
 
-	col := newCollator(locale)
+	col := newCollator(locale, collate.IgnoreCase, collate.Numeric)
 
 	var dirPath = ""
 	if path != nil {
