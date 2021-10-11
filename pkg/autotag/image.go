@@ -1,77 +1,9 @@
 package autotag
 
 import (
-	"fmt"
-	"path/filepath"
-	"strings"
-
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-func imagePathsFilter(paths []string) *models.ImageFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.ImageFilterType
-	var or *models.ImageFilterType
-	for _, p := range paths {
-		newOr := &models.ImageFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p = p + sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
-func getMatchingImages(name string, paths []string, imageReader models.ImageReader) ([]*models.Image, error) {
-	regex := getPathQueryRegex(name)
-	organized := false
-	filter := models.ImageFilterType{
-		Path: &models.StringCriterionInput{
-			Value:    "(?i)" + regex,
-			Modifier: models.CriterionModifierMatchesRegex,
-		},
-		Organized: &organized,
-	}
-
-	filter.And = imagePathsFilter(paths)
-
-	pp := models.PerPageAll
-	images, _, err := imageReader.Query(&filter, &models.FindFilterType{
-		PerPage: &pp,
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("error querying images with regex '%s': %s", regex, err.Error())
-	}
-
-	var ret []*models.Image
-	for _, p := range images {
-		if nameMatchesPath(name, p.Path) {
-			ret = append(ret, p)
-		}
-	}
-
-	return ret, nil
-}
 
 func getImageFileTagger(s *models.Image) tagger {
 	return tagger{

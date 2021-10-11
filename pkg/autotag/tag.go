@@ -7,42 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-func getMatchingTags(path string, tagReader models.TagReader) ([]*models.Tag, error) {
-	words := getPathWords(path)
-	tags, err := tagReader.QueryForAutoTag(words)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.Tag
-	for _, t := range tags {
-		matches := false
-		if nameMatchesPath(t.Name, path) {
-			matches = true
-		}
-
-		if !matches {
-			aliases, err := tagReader.GetAliases(t.ID)
-			if err != nil {
-				return nil, err
-			}
-			for _, alias := range aliases {
-				if nameMatchesPath(alias, path) {
-					matches = true
-					break
-				}
-			}
-		}
-
-		if matches {
-			ret = append(ret, t)
-		}
-	}
-
-	return ret, nil
-}
-
 func getTagTaggers(p *models.Tag, aliases []string) []tagger {
 	ret := []tagger{{
 		ID:   p.ID,
