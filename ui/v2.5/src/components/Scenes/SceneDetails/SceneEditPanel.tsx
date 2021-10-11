@@ -18,7 +18,6 @@ import {
   useListSceneScrapers,
   useSceneUpdate,
   mutateReloadScrapers,
-  useConfiguration,
   queryScrapeSceneQueryFragment,
 } from "src/core/StashService";
 import {
@@ -35,6 +34,7 @@ import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
 import { Prompt } from "react-router";
+import { ConfigurationContext } from "src/hooks/Config";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
@@ -76,7 +76,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     string | undefined
   >(scene.paths.screenshot ?? undefined);
 
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -380,7 +380,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderScrapeQueryMenu() {
-    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
 
     if (stashBoxes.length === 0 && queryableScrapers.length === 0) return;
 
@@ -450,7 +450,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   };
 
   function renderScraperMenu() {
-    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
 
     return (
       <DropdownButton

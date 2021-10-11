@@ -15,77 +15,11 @@ package autotag
 
 import (
 	"fmt"
-	"path/filepath"
-	"regexp"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-const separatorChars = `.\-_ `
-
-func getPathQueryRegex(name string) string {
-	// escape specific regex characters
-	name = regexp.QuoteMeta(name)
-
-	// handle path separators
-	const separator = `[` + separatorChars + `]`
-
-	ret := strings.Replace(name, " ", separator+"*", -1)
-	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
-	return ret
-}
-
-func nameMatchesPath(name, path string) bool {
-	// escape specific regex characters
-	name = regexp.QuoteMeta(name)
-
-	name = strings.ToLower(name)
-	path = strings.ToLower(path)
-
-	// handle path separators
-	const separator = `[` + separatorChars + `]`
-
-	reStr := strings.Replace(name, " ", separator+"*", -1)
-	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
-
-	re := regexp.MustCompile(reStr)
-	return re.MatchString(path)
-}
-
-func getPathWords(path string) []string {
-	retStr := path
-
-	// remove the extension
-	ext := filepath.Ext(retStr)
-	if ext != "" {
-		retStr = strings.TrimSuffix(retStr, ext)
-	}
-
-	// handle path separators
-	const separator = `(?:_|[^\w\d])+`
-	re := regexp.MustCompile(separator)
-	retStr = re.ReplaceAllString(retStr, " ")
-
-	words := strings.Split(retStr, " ")
-
-	// remove any single letter words
-	var ret []string
-	for _, w := range words {
-		if len(w) > 1 {
-			// #1450 - we need to open up the criteria for matching so that we
-			// can match where path has no space between subject names -
-			// ie name = "foo bar" - path = "foobar"
-			// we post-match afterwards, so we can afford to be a little loose
-			// with the query
-			// just use the first two characters
-			ret = append(ret, w[0:2])
-		}
-	}
-
-	return ret
-}
 
 type tagger struct {
 	ID   int
@@ -105,7 +39,7 @@ func (t *tagger) addLog(otherType, otherName string) {
 }
 
 func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc addLinkFunc) error {
-	others, err := getMatchingPerformers(t.Path, performerReader)
+	others, err := match.PathToPerformers(t.Path, performerReader)
 	if err != nil {
 		return err
 	}
@@ -126,7 +60,7 @@ func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc a
 }
 
 func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFunc) error {
-	others, err := getMatchingStudios(t.Path, studioReader)
+	others, err := match.PathToStudios(t.Path, studioReader)
 	if err != nil {
 		return err
 	}
@@ -149,7 +83,7 @@ func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFun
 }
 
 func (t *tagger) tagTags(tagReader models.TagReader, addFunc addLinkFunc) error {
-	others, err := getMatchingTags(t.Path, tagReader)
+	others, err := match.PathToTags(t.Path, tagReader)
 	if err != nil {
 		return err
 	}
@@ -170,7 +104,7 @@ func (t *tagger) tagTags(tagReader models.TagReader, addFunc addLinkFunc) error 
 }
 
 func (t *tagger) tagScenes(paths []string, sceneReader models.SceneReader, addFunc addLinkFunc) error {
-	others, err := getMatchingScenes(t.Name, paths, sceneReader)
+	others, err := match.PathToScenes(t.Name, paths, sceneReader)
 	if err != nil {
 		return err
 	}
@@ -191,7 +125,7 @@ func (t *tagger) tagScenes(paths []string, sceneReader models.SceneReader, addFu
 }
 
 func (t *tagger) tagImages(paths []string, imageReader models.ImageReader, addFunc addLinkFunc) error {
-	others, err := getMatchingImages(t.Name, paths, imageReader)
+	others, err := match.PathToImages(t.Name, paths, imageReader)
 	if err != nil {
 		return err
 	}
@@ -212,7 +146,7 @@ func (t *tagger) tagImages(paths []string, imageReader models.ImageReader, addFu
 }
 
 func (t *tagger) tagGalleries(paths []string, galleryReader models.GalleryReader, addFunc addLinkFunc) error {
-	others, err := getMatchingGalleries(t.Name, paths, galleryReader)
+	others, err := match.PathToGalleries(t.Name, paths, galleryReader)
 	if err != nil {
 		return err
 	}

@@ -9,11 +9,11 @@ import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
 import {
   stashBoxPerformerQuery,
-  useConfiguration,
   useJobsSubscribe,
   mutateStashBoxBatchPerformerTag,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
+import { ConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
@@ -480,7 +480,7 @@ interface ITaggerProps {
 
 export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const jobsSubscribe = useJobsSubscribe();
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
     initialConfig
@@ -513,16 +513,15 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   if (!config) return <LoadingIndicator />;
 
   const savedEndpointIndex =
-    stashConfig.data?.configuration.general.stashBoxes.findIndex(
+    stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
     ) ?? -1;
   const selectedEndpointIndex =
-    savedEndpointIndex === -1 &&
-    stashConfig.data?.configuration.general.stashBoxes.length
+    savedEndpointIndex === -1 && stashConfig?.general.stashBoxes.length
       ? 0
       : savedEndpointIndex;
   const selectedEndpoint =
-    stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
+    stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
   async function batchAdd(performerInput: string) {
     if (performerInput && selectedEndpoint) {
@@ -630,7 +629,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig.data?.configuration.general.stashBoxes}
+              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />

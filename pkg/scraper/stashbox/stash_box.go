@@ -12,8 +12,8 @@ import (
 	"github.com/Yamashou/gqlgenc/client"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -644,7 +644,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 				RemoteSiteID: &studioID,
 			}
 
-			err := scraper.MatchScrapedStudio(r.Studio(), ss.Studio)
+			err := match.ScrapedStudio(r.Studio(), ss.Studio)
 			if err != nil {
 				return err
 			}
@@ -653,7 +653,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := scraper.MatchScrapedPerformer(pqb, sp)
+			err := match.ScrapedPerformer(pqb, sp)
 			if err != nil {
 				return err
 			}
@@ -666,7 +666,7 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 				Name: t.Name,
 			}
 
-			err := scraper.MatchScrapedTag(tqb, st)
+			err := match.ScrapedTag(tqb, st)
 			if err != nil {
 				return err
 			}

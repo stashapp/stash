@@ -41,7 +41,11 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="scene-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="play-circle" />
           <span>{props.movie.scenes.length}</span>

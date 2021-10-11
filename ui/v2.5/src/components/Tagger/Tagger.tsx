@@ -32,7 +32,6 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     submitFingerprints,
     pendingFingerprints,
   } = useContext(TaggerStateContext);
-
   const [showConfig, setShowConfig] = useState(false);
   const [hideUnmatched, setHideUnmatched] = useState(false);
 

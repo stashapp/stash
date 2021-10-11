@@ -13,8 +13,8 @@ import Mousetrap from "mousetrap";
 
 import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
+import { ConfigurationContext } from "src/hooks/Config";
 import { Manual } from "./Help/Manual";
-import { useConfiguration } from "../core/StashService";
 
 interface IMenuItem {
   name: string;
@@ -120,7 +120,7 @@ const allMenuItems: IMenuItem[] = [
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
-  const { data: config, loading } = useConfiguration();
+  const { configuration, loading } = React.useContext(ConfigurationContext);
 
   // Show all menu items by default, unless config says otherwise
   const [menuItems, setMenuItems] = useState<IMenuItem[]>(allMenuItems);
@@ -129,7 +129,7 @@ export const MainNavbar: React.FC = () => {
   const [showManual, setShowManual] = useState(false);
 
   useEffect(() => {
-    const iCfg = config?.configuration?.interface;
+    const iCfg = configuration?.interface;
     if (iCfg?.menuItems) {
       setMenuItems(
         allMenuItems.filter((menuItem) =>
@@ -137,7 +137,7 @@ export const MainNavbar: React.FC = () => {
         )
       );
     }
-  }, [config]);
+  }, [configuration]);
 
   // react-bootstrap typing bug
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

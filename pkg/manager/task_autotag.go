@@ -444,14 +444,6 @@ func (t *autoTagFilesTask) getCount(r models.ReaderRepository) (int, error) {
 	return sceneCount + imageCount + galleryCount, nil
 }
 
-func (t *autoTagFilesTask) batchFindFilter(batchSize int) *models.FindFilterType {
-	page := 1
-	return &models.FindFilterType{
-		PerPage: &batchSize,
-		Page:    &page,
-	}
-}
-
 func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 	if job.IsCancelled(t.ctx) {
 		return nil
@@ -459,7 +451,7 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 
 	batchSize := 1000
 
-	findFilter := t.batchFindFilter(batchSize)
+	findFilter := models.BatchFindFilter(batchSize)
 	sceneFilter := t.makeSceneFilter()
 
 	more := true
@@ -507,7 +499,7 @@ func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
 
 	batchSize := 1000
 
-	findFilter := t.batchFindFilter(batchSize)
+	findFilter := models.BatchFindFilter(batchSize)
 	imageFilter := t.makeImageFilter()
 
 	more := true
@@ -555,7 +547,7 @@ func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
 
 	batchSize := 1000
 
-	findFilter := t.batchFindFilter(batchSize)
+	findFilter := models.BatchFindFilter(batchSize)
 	galleryFilter := t.makeGalleryFilter()
 
 	more := true
