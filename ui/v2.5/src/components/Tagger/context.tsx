@@ -12,7 +12,6 @@ import {
   queryScrapeSceneQuery,
   queryScrapeSceneQueryFragment,
   stashBoxSceneBatchQuery,
-  useConfiguration,
   useListSceneScrapers,
   usePerformerCreate,
   usePerformerUpdate,
@@ -22,6 +21,7 @@ import {
   useTagCreate,
 } from "src/core/StashService";
 import { useLocalForage, useToast } from "src/hooks";
+import { ConfigurationContext } from "src/hooks/Config";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 
 export interface ITaggerContextState {
@@ -113,7 +113,7 @@ export const TaggerContext: React.FC = ({ children }) => {
 
   const stopping = useRef(false);
 
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
   const Scrapers = useListSceneScrapers();
 
   const Toast = useToast();
@@ -125,11 +125,11 @@ export const TaggerContext: React.FC = ({ children }) => {
   const [updateScene] = useSceneUpdate();
 
   useEffect(() => {
-    if (!stashConfig.data || !Scrapers.data) {
+    if (!stashConfig || !Scrapers.data) {
       return;
     }
 
-    const { stashBoxes } = stashConfig.data.configuration.general;
+    const { stashBoxes } = stashConfig.general;
     const scrapers = Scrapers.data.listSceneScrapers;
 
     const stashboxSources: ITaggerSource[] = stashBoxes.map((s, i) => ({
@@ -166,7 +166,7 @@ export const TaggerContext: React.FC = ({ children }) => {
       }));
 
     setSources(stashboxSources.concat(scraperSources));
-  }, [Scrapers.data, stashConfig.data]);
+  }, [Scrapers.data, stashConfig]);
 
   useEffect(() => {
     if (sources.length && !currentSource) {
