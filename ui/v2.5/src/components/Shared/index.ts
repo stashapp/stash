@@ -17,3 +17,4 @@ export { GridCard } from "./GridCard";
 export { RatingStars } from "./RatingStars";
 export { ExportDialog } from "./ExportDialog";
 export { default as DeleteEntityDialog } from "./DeleteEntityDialog";
+export { IndeterminateCheckbox } from "./IndeterminateCheckbox";

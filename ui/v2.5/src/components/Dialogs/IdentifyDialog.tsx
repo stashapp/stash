@@ -6,9 +6,10 @@ import {
   useListSceneScrapers,
 } from "src/core/StashService";
 import { Modal, Icon } from "src/components/Shared";
-import { useIndeterminate, useToast } from "src/hooks";
+import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
+import { ThreeStateCheckbox } from "../Shared/ThreeStateCheckbox";
 
 interface IScraperSource {
   id: string;
@@ -35,86 +36,91 @@ const FieldOptionsList: React.FC<IFieldOptionsList> = ({}) => <div></div>;
 interface IOptionsEditor {
   options: GQL.IdentifyMetadataOptionsInput;
   setOptions: (s: GQL.IdentifyMetadataOptionsInput) => void;
+  source?: IScraperSource;
 }
 
 const OptionsEditor: React.FC<IOptionsEditor> = ({
   options,
   setOptions: setOptionsState,
+  source,
 }) => {
   const intl = useIntl();
-  const malePerformerRef = React.createRef<HTMLInputElement>();
-  const coverImageRef = React.createRef<HTMLInputElement>();
-  const organizedRef = React.createRef<HTMLInputElement>();
 
   function setOptions(v: Partial<GQL.IdentifyMetadataOptionsInput>) {
     setOptionsState({ ...options, ...v });
   }
 
-  useIndeterminate(
-    malePerformerRef,
-    options.includeMalePerformers ?? undefined
-  );
-  useIndeterminate(coverImageRef, options.setCoverImage ?? undefined);
-  useIndeterminate(organizedRef, options.setOrganized ?? undefined);
-
-  function cycleState(existingState: boolean | undefined) {
-    if (existingState) {
-      return undefined;
-    }
-    if (existingState === undefined) {
-      return false;
-    }
-    return true;
-  }
+  const headingID = !source
+    ? "config.tasks.identify.default_options"
+    : "config.tasks.identify.source_options";
+  const checkboxProps = {
+    allowUndefined: !!source,
+    indeterminateClassname: "text-muted",
+  };
 
   return (
     <Form.Group>
       <h5>
-        <FormattedMessage id="config.tasks.identify.default_options" />
+        <FormattedMessage
+          id={headingID}
+          values={{ source: source?.displayName }}
+        />
       </h5>
-      <Form.Check
-        ref={malePerformerRef}
-        checked={options.includeMalePerformers ?? false}
+      <ThreeStateCheckbox
+        value={
+          options.includeMalePerformers === null
+            ? undefined
+            : options.includeMalePerformers
+        }
+        setValue={(v) =>
+          setOptions({
+            includeMalePerformers: v,
+          })
+        }
         label={intl.formatMessage({
           id: "config.tasks.identify.include_male_performers",
         })}
-        onChange={() =>
+        {...checkboxProps}
+      />
+      <ThreeStateCheckbox
+        value={
+          options.setCoverImage === null ? undefined : options.setCoverImage
+        }
+        setValue={(v) =>
           setOptions({
-            includeMalePerformers: cycleState(
-              options.includeMalePerformers ?? undefined
-            ),
+            setCoverImage: v,
           })
         }
-      />
-      <Form.Check
-        ref={coverImageRef}
-        checked={options.setCoverImage ?? false}
         label={intl.formatMessage({
           id: "config.tasks.identify.set_cover_images",
         })}
-        onChange={() =>
+        {...checkboxProps}
+      />
+      <ThreeStateCheckbox
+        value={options.setOrganized === null ? undefined : options.setOrganized}
+        setValue={(v) =>
           setOptions({
-            setCoverImage: cycleState(options.setCoverImage ?? undefined),
+            setOrganized: v,
           })
         }
-      />
-      <Form.Check
-        ref={organizedRef}
-        checked={options.setOrganized ?? false}
         label={intl.formatMessage({
           id: "config.tasks.identify.set_organized",
         })}
-        onChange={() =>
-          setOptions({
-            setOrganized: cycleState(options.setOrganized ?? undefined),
-          })
-        }
+        {...checkboxProps}
       />
 
       <FieldOptionsList
         fieldOptions={options.fieldOptions ?? undefined}
         setFieldOptions={(o) => setOptions({ fieldOptions: o })}
       />
+
+      {!source && (
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.tasks.identify.explicit_set_description",
+          })}
+        </Form.Text>
+      )}
     </Form.Group>
   );
 };
@@ -137,7 +143,7 @@ const SourcesEditor: React.FC<ISourceEditor> = ({
   const intl = useIntl();
 
   // if id is empty, then we are adding a new source
-  const headerMsgId = isNew ? "actions.add" : "actions.edit";
+  const headerMsgId = isNew ? "actions.add" : "dialogs.edit_entity_title";
   const acceptMsgId = isNew ? "actions.add" : "actions.confirm";
 
   function handleSourceSelect(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -159,8 +165,14 @@ const SourcesEditor: React.FC<ISourceEditor> = ({
     <Modal
       modalProps={{ animation: false }}
       show
-      icon="plus"
-      header={intl.formatMessage({ id: headerMsgId })}
+      icon={isNew ? "plus" : "pencil-alt"}
+      header={intl.formatMessage(
+        { id: headerMsgId },
+        {
+          count: 1,
+          singularEntity: source?.displayName,
+        }
+      )}
       accept={{
         onClick: () => saveSource(source),
         text: intl.formatMessage({ id: acceptMsgId }),
@@ -195,6 +207,7 @@ const SourcesEditor: React.FC<ISourceEditor> = ({
         <OptionsEditor
           options={source.options ?? {}}
           setOptions={(o) => setSource({ ...source, options: o })}
+          source={source}
         />
       </Form>
     </Modal>
@@ -229,10 +242,7 @@ const SourcesList: React.FC<ISourcesList> = ({
   }
 
   function onDragStart(event: React.DragEvent<HTMLElement>, index: number) {
-    event.dataTransfer.setData("text/plain", "");
-    event.dataTransfer.setDragImage(new Image(), 0, 0);
     event.dataTransfer.effectAllowed = "move";
-    // event.dataTransfer.dropEffect = "move";
     setDragIndex(index);
   }
 

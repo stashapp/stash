@@ -296,10 +296,11 @@
         "heading": "Identify",
         "description": "Automatically set scene metadata using stash-box and scraper sources.",
         "default_options": "Default Options",
+        "explicit_set_description": "Default options will be used where source-specific options are not set.",
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organized flag",
-        "source_options": "Source Options",
+        "source_options": "{source} Options",
         "source": "Source",
         "sources": "Sources"
       },

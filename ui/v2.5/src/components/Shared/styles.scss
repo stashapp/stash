@@ -205,3 +205,36 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     }
   }
 }
+
+.three-state-checkbox {
+  display: flex;
+
+  button.btn {
+    font-size: 12.67px;
+    margin-left: -0.2em;
+    margin-right: 0.25rem;
+    padding: 0;
+
+    &:not(:disabled):active,
+    &:not(:disabled):active:focus,
+    &:not(:disabled):hover,
+    &:not(:disabled):not(:hover) {
+      background-color: initial;
+      box-shadow: none;
+    }
+  }
+  &.unset {
+    .label {
+      color: #bfccd6;
+      text-decoration: line-through;
+    }
+  }
+
+  &.checked svg {
+    color: #0f9960;
+  }
+
+  &.not-checked svg {
+    color: #db3737;
+  }
+}
