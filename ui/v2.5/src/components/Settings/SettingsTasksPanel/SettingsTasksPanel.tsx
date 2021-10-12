@@ -16,7 +16,7 @@ import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
 import { downloadFile } from "src/utils";
-import IdentifyDialog from "src/components/Dialogs/IdentifyDialog";
+import IdentifyDialog from "src/components/Dialogs/IdentifyDialog/IdentifyDialog";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
