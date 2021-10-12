@@ -213,6 +213,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
 
+  const stashBoxURL = useMemo(() => {
+    if (currentSource?.stashboxEndpoint && scene.remote_site_id) {
+      const endpoint = currentSource.stashboxEndpoint;
+      const endpointBase = endpoint.match(/https?:\/\/.*?\//)?.[0];
+      return `${endpointBase}scenes/${scene.remote_site_id}`;
+    }
+  }, [currentSource, scene]);
+
   const setExcludedField = (name: string, value: boolean) =>
     setExcludedFields({
       ...excludedFields,
@@ -268,7 +276,13 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       stash_ids: stashScene.stash_ids ?? [],
     };
 
-    if (currentSource?.stashboxEndpoint && scene.remote_site_id) {
+    const includeStashID = !excludedFieldList.includes("stash_ids");
+
+    if (
+      includeStashID &&
+      currentSource?.stashboxEndpoint &&
+      scene.remote_site_id
+    ) {
       sceneCreateInput.stash_ids = [
         ...(stashScene?.stash_ids
           .map((s) => {
@@ -285,7 +299,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       ];
     }
 
-    await saveScene(sceneCreateInput);
+    await saveScene(sceneCreateInput, includeStashID);
   }
 
   function performerModalCallback(
@@ -318,6 +332,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     url: "url",
     details: "details",
     studio: "studio",
+    stash_ids: "stash_ids",
   };
 
   const maybeRenderCoverImage = () => {
@@ -331,13 +346,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }
             setExclude={(v) => setExcludedField(fields.cover_image, v)}
           >
-            <a href="TODO" target="_blank" rel="noopener noreferrer">
-              <img
-                src={scene.image}
-                alt=""
-                className="align-self-center scene-image"
-              />
-            </a>
+            <img
+              src={scene.image}
+              alt=""
+              className="align-self-center scene-image"
+            />
           </OptionalField>
         </div>
       );
@@ -444,6 +457,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             setExclude={(v) => setExcludedField(fields.details, v)}
           >
             <TruncatedText text={scene.details ?? ""} lineCount={3} />
+          </OptionalField>
+        </div>
+      );
+    }
+  };
+
+  const maybeRenderStashBoxID = () => {
+    if (scene.remote_site_id && stashBoxURL) {
+      return (
+        <div className="scene-details">
+          <OptionalField
+            exclude={excludedFields[fields.stash_ids]}
+            setExclude={(v) => setExcludedField(fields.stash_ids, v)}
+          >
+            <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
+              {scene.remote_site_id}
+            </a>
           </OptionalField>
         </div>
       );
@@ -561,6 +591,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         </div>
         {isActive && (
           <div className="d-flex flex-column">
+            {maybeRenderStashBoxID()}
             {maybeRenderURL()}
             {maybeRenderDetails()}
           </div>
