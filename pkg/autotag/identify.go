@@ -546,10 +546,16 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 
 func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, error) {
 	scraped := input.scraped
-	fieldStrategy := input.fieldOptions["cover_image"]
+	setCoverImage := false
+	for _, o := range input.options {
+		if o.SetCoverImage != nil {
+			setCoverImage = *o.SetCoverImage
+			break
+		}
+	}
 
 	// just check if ignored
-	if !t.shouldSetSingleValueField(fieldStrategy, false) {
+	if !setCoverImage {
 		return nil, nil
 	}
 
