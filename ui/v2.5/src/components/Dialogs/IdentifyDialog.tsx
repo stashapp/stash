@@ -272,20 +272,20 @@ const SourcesList: React.FC<ISourcesList> = ({
           <ListGroup.Item
             as="li"
             key={s.id}
-            className="d-flex justify-content-between"
+            className="d-flex justify-content-between align-items-center"
             draggable={mouseOverIndex === index}
             onDragStart={(e) => onDragStart(e, index)}
             onDragEnter={(e) => onDragOver(e, index)}
             onDrop={() => onDrop()}
           >
             <div>
-              <Button
+              <div
                 className="minimal text-muted drag-handle"
                 onMouseEnter={() => setMouseOverIndex(index)}
                 onMouseLeave={() => setMouseOverIndex(undefined)}
               >
-                <Icon icon="grip-lines" />
-              </Button>
+                <Icon icon="grip-vertical" />
+              </div>
               {s.displayName}
             </div>
             <div>

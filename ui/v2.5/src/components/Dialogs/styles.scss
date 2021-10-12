@@ -3,6 +3,13 @@
     background-color: $textfield-bg;
     padding: 0.25em;
 
+    .drag-handle {
+      cursor: move;
+      display: inline-block;
+      margin: -0.25em 0.25em -0.25em -0.25em;
+      padding: 0.25em 0.5em 0.25em;
+    }
+
     .drag-handle:hover,
     .drag-handle:active,
     .drag-handle:focus,
