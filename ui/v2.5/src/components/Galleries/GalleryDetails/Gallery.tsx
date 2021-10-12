@@ -2,6 +2,7 @@ import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import {
   mutateMetadataScan,
   useFindGallery,
@@ -299,6 +300,11 @@ export const Gallery: React.FC = () => {
 
   return (
     <div className="row">
+      <Helmet>
+        <title>
+          {gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "")}
+        </title>
+      </Helmet>
       {maybeRenderDeleteDialog()}
       <div className="gallery-tabs">
         <div className="d-none d-xl-block">

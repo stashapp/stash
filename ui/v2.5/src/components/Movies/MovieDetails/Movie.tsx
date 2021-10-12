@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -207,6 +208,10 @@ export const Movie: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
+      <Helmet>
+        <title>{movie?.name}</title>
+      </Helmet>
+
       <div
         className={cx("movie-details mb-3 col", {
           "col-xl-4 col-lg-6": !isNew,

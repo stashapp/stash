@@ -2,6 +2,7 @@ import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -228,6 +229,11 @@ export const Studio: React.FC = () => {
         </div>
         {!isEditing && !isNew && studio ? (
           <>
+            <Helmet>
+              <title>
+                {studio.name ?? intl.formatMessage({ id: "studio" })}
+              </title>
+            </Helmet>
             <StudioDetailsPanel studio={studio} />
             <DetailsEditNavbar
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}

@@ -2,6 +2,7 @@ import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 
@@ -324,39 +325,51 @@ export const Tag: React.FC = () => {
         )}
       </div>
       {!isNew && tag && (
-        <div className="col col-md-8">
-          <Tabs
-            id="tag-tabs"
-            mountOnEnter
-            activeKey={activeTabKey}
-            onSelect={setActiveTabKey}
-          >
-            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
-              <TagScenesPanel tag={tag} />
-            </Tab>
-            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
-              <TagImagesPanel tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="galleries"
-              title={intl.formatMessage({ id: "galleries" })}
+        <>
+          <Helmet>
+            <title>{tag.name}</title>
+          </Helmet>
+
+          <div className="col col-md-8">
+            <Tabs
+              id="tag-tabs"
+              mountOnEnter
+              activeKey={activeTabKey}
+              onSelect={setActiveTabKey}
             >
-              <TagGalleriesPanel tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="markers"
-              title={intl.formatMessage({ id: "markers" })}
-            >
-              <TagMarkersPanel tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="performers"
-              title={intl.formatMessage({ id: "performers" })}
-            >
-              <TagPerformersPanel tag={tag} />
-            </Tab>
-          </Tabs>
-        </div>
+              <Tab
+                eventKey="scenes"
+                title={intl.formatMessage({ id: "scenes" })}
+              >
+                <TagScenesPanel tag={tag} />
+              </Tab>
+              <Tab
+                eventKey="images"
+                title={intl.formatMessage({ id: "images" })}
+              >
+                <TagImagesPanel tag={tag} />
+              </Tab>
+              <Tab
+                eventKey="galleries"
+                title={intl.formatMessage({ id: "galleries" })}
+              >
+                <TagGalleriesPanel tag={tag} />
+              </Tab>
+              <Tab
+                eventKey="markers"
+                title={intl.formatMessage({ id: "markers" })}
+              >
+                <TagMarkersPanel tag={tag} />
+              </Tab>
+              <Tab
+                eventKey="performers"
+                title={intl.formatMessage({ id: "performers" })}
+              >
+                <TagPerformersPanel tag={tag} />
+              </Tab>
+            </Tabs>
+          </div>
+        </>
       )}
       {renderDeleteAlert()}
       {renderMergeDialog()}
