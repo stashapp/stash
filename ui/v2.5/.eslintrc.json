@@ -71,6 +71,7 @@
           "markers": ["/"]
       }],
       "max-classes-per-file": "off",
+      "no-param-reassign": ["error", { "props": false}],
       "no-plusplus": "off",
       "prefer-destructuring": ["error", {"object": true, "array": false}],
       "default-case": "off",
