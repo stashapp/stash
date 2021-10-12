@@ -310,19 +310,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     createStudioModal(t, studioModalCallback);
   }
 
-  const sceneTitle = scene.url ? (
-    <a
-      href={scene.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="scene-link"
-    >
-      <TruncatedText text={scene?.title} />
-    </a>
-  ) : (
-    <TruncatedText text={scene?.title} />
-  );
-
   // constants to get around dot-notation eslint rule
   const fields = {
     cover_image: "cover_image",
@@ -357,16 +344,39 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
-  const renderTitle = () => (
-    <h4>
-      <OptionalField
-        exclude={excludedFields[fields.title]}
-        setExclude={(v) => setExcludedField(fields.title, v)}
+  const renderTitle = () => {
+    if (!scene.title) {
+      return (
+        <h4 className="text-muted">
+          <FormattedMessage id="component_tagger.results.unnamed" />
+        </h4>
+      );
+    }
+
+    const sceneTitleEl = scene.url ? (
+      <a
+        href={scene.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="scene-link"
       >
-        {sceneTitle}
-      </OptionalField>
-    </h4>
-  );
+        <TruncatedText text={scene.title} />
+      </a>
+    ) : (
+      <TruncatedText text={scene.title} />
+    );
+
+    return (
+      <h4>
+        <OptionalField
+          exclude={excludedFields[fields.title]}
+          setExclude={(v) => setExcludedField(fields.title, v)}
+        >
+          {sceneTitleEl}
+        </OptionalField>
+      </h4>
+    );
+  };
 
   function renderStudioDate() {
     const text =
@@ -532,7 +542,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   return (
     <>
       <div className={isActive ? "col-lg-6" : ""}>
-        <div className="row pl-3">
+        <div className="row mx-0">
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
             {renderTitle()}
