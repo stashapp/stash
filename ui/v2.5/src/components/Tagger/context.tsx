@@ -57,7 +57,10 @@ export interface ITaggerContextState {
   ) => Promise<void>;
   submitFingerprints: () => Promise<void>;
   pendingFingerprints: string[];
-  saveScene: (sceneCreateInput: GQL.SceneUpdateInput) => Promise<void>;
+  saveScene: (
+    sceneCreateInput: GQL.SceneUpdateInput,
+    queueFingerprint: boolean
+  ) => Promise<void>;
 }
 
 const dummyFn = () => {
@@ -319,6 +322,8 @@ export const TaggerContext: React.FC = ({ children }) => {
     try {
       setLoading(true);
       await sceneFragmentScrape(sceneID);
+    } catch (err) {
+      Toast.error(err);
     } finally {
       setLoading(false);
     }
@@ -376,6 +381,8 @@ export const TaggerContext: React.FC = ({ children }) => {
           }
         }, Promise.resolve());
       }
+    } catch (err) {
+      Toast.error(err);
     } finally {
       setLoading(false);
       setLoadingMulti(false);
@@ -440,7 +447,10 @@ export const TaggerContext: React.FC = ({ children }) => {
     });
   }
 
-  async function saveScene(sceneCreateInput: GQL.SceneUpdateInput) {
+  async function saveScene(
+    sceneCreateInput: GQL.SceneUpdateInput,
+    queueFingerprint: boolean
+  ) {
     try {
       await updateScene({
         variables: {
@@ -448,7 +458,9 @@ export const TaggerContext: React.FC = ({ children }) => {
         },
       });
 
-      queueFingerprintSubmission(sceneCreateInput.id);
+      if (queueFingerprint) {
+        queueFingerprintSubmission(sceneCreateInput.id);
+      }
       clearSearchResults(sceneCreateInput.id);
     } catch (err) {
       Toast.error(err);

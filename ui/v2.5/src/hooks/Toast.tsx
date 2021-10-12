@@ -49,14 +49,30 @@ export const ToastProvider: React.FC = ({ children }) => {
 function createHookObject(toastFunc: (toast: IToast) => void) {
   return {
     success: toastFunc,
-    error: (error: Error) => {
-      // eslint-disable-next-line no-console
-      console.error(error.message);
+    error: (error: unknown) => {
+      /* eslint-disable @typescript-eslint/no-explicit-any, no-console */
+      let message: string;
+      if (error instanceof Error) {
+        message = error.message ?? error.toString();
+      } else if ((error as any).toString) {
+        message = (error as any).toString();
+      } else {
+        console.error(error);
+        toastFunc({
+          variant: "danger",
+          header: "Error",
+          content: "Unknown error",
+        });
+        return;
+      }
+
+      console.error(message);
       toastFunc({
         variant: "danger",
         header: "Error",
-        content: error.message ?? error.toString(),
+        content: message,
       });
+      /* eslint-enable @typescript-eslint/no-explicit-any, no-console */
     },
   };
 }
