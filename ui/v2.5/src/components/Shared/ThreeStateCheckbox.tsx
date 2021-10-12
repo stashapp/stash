@@ -7,6 +7,7 @@ interface IThreeStateCheckbox {
   setValue: (v: boolean | undefined) => void;
   allowUndefined?: boolean;
   label?: React.ReactNode;
+  disabled?: boolean;
 }
 
 export const ThreeStateCheckbox: React.FC<IThreeStateCheckbox> = ({
@@ -14,6 +15,7 @@ export const ThreeStateCheckbox: React.FC<IThreeStateCheckbox> = ({
   setValue,
   allowUndefined,
   label,
+  disabled = false,
 }) => {
   function cycleState() {
     const undefAllowed = allowUndefined ?? true;
@@ -26,13 +28,17 @@ export const ThreeStateCheckbox: React.FC<IThreeStateCheckbox> = ({
     return true;
   }
 
-  const icon = value === undefined ? "square" : value ? "check" : "times";
+  const icon = value === undefined ? "minus" : value ? "check" : "times";
   const labelClassName =
     value === undefined ? "unset" : value ? "checked" : "not-checked";
 
   return (
     <span className={`three-state-checkbox ${labelClassName}`}>
-      <Button onClick={() => setValue(cycleState())} className="minimal">
+      <Button
+        onClick={() => setValue(cycleState())}
+        className="minimal"
+        disabled={disabled}
+      >
         <Icon icon={icon} className="fa-fw" />
       </Button>
       <span className="label">{label}</span>

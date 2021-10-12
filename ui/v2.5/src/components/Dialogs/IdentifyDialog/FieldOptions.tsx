@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Form, Button, ListGroup, Row, Col } from "react-bootstrap";
+import { Form, Button, Table } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ThreeStateCheckbox } from "../../Shared/ThreeStateCheckbox";
-import { sceneFields } from "../constants";
+import { sceneFields } from "./constants";
 
 interface IFieldOptionsEditor {
   availableFields: string[];
   options: GQL.IdentifyFieldOptions;
+  editField: () => void;
   editOptions: (o?: GQL.IdentifyFieldOptions) => void;
   removeField: () => void;
   editing: boolean;
@@ -18,6 +19,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
   availableFields,
   options,
   removeField,
+  editField,
   editOptions,
   editing,
 }) => {
@@ -29,63 +31,74 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
     setLocalOptions(options);
   }, [options]);
 
-  function renderFieldSelect() {
+  function renderField() {
+    if (!editing) {
+      return intl.formatMessage({ id: options.field });
+    }
+
     return (
-      <Form.Group>
-        <Form.Label>Field</Form.Label>
-        <Form.Control
-          disabled={!editing}
-          className="w-auto input-control"
-          as="select"
-          value={localOptions.field}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setLocalOptions({ ...localOptions, field: e.currentTarget.value })
-          }
-        >
-          {availableFields.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </Form.Control>
-      </Form.Group>
+      <Form.Control
+        disabled={!editing}
+        className="w-auto input-control"
+        as="select"
+        value={localOptions.field}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+          setLocalOptions({ ...localOptions, field: e.currentTarget.value })
+        }
+      >
+        {availableFields.map((f) => (
+          <option key={f} value={f}>
+            {intl.formatMessage({ id: f })}
+          </option>
+        ))}
+      </Form.Control>
     );
   }
 
-  function renderStrategySelect() {
-    const strategyStrings = Object.keys(GQL.IdentifyFieldStrategy);
+  function renderStrategy() {
+    const strategies = Object.entries(GQL.IdentifyFieldStrategy);
+
+    if (!editing) {
+      const field = strategies.find((s) => s[1] === options.strategy);
+      return intl.formatMessage({
+        id: `config.tasks.identify.field_strategies.${field![0].toLowerCase()}`,
+      });
+    }
 
     return (
-      <Form.Group>
-        <Form.Label>Strategy</Form.Label>
-        <Form.Control
-          disabled={!editing}
-          className="w-auto input-control"
-          as="select"
-          value={localOptions.strategy}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setLocalOptions({
-              ...localOptions,
-              strategy: e.currentTarget.value as GQL.IdentifyFieldStrategy,
-            })
-          }
-        >
-          {strategyStrings.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </Form.Control>
-      </Form.Group>
+      <Form.Control
+        disabled={!editing}
+        className="w-auto input-control"
+        as="select"
+        value={localOptions.strategy}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+          setLocalOptions({
+            ...localOptions,
+            strategy: e.currentTarget.value as GQL.IdentifyFieldStrategy,
+          })
+        }
+      >
+        {strategies.map((f) => (
+          <option key={f[0]} value={f[1]}>
+            {intl.formatMessage({
+              id: `config.tasks.identify.field_strategies.${f[0].toLowerCase()}`,
+            })}
+          </option>
+        ))}
+      </Form.Control>
     );
   }
 
   function maybeRenderCreateMissing() {
     const createMissingFields = ["studio", "performers", "tags"];
 
-    if (createMissingFields.includes(localOptions.field)) {
+    if (
+      createMissingFields.includes(localOptions.field) &&
+      localOptions.strategy !== GQL.IdentifyFieldStrategy.Ignore
+    ) {
       return (
         <ThreeStateCheckbox
+          disabled={!editing}
           value={
             localOptions.createMissing === null
               ? undefined
@@ -94,54 +107,47 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
           setValue={(v) =>
             setLocalOptions({ ...localOptions, createMissing: v })
           }
-          label={intl.formatMessage({
-            id: "config.tasks.identify.create_missing",
-          })}
         />
       );
     }
   }
 
-  function render() {
-    return (
-      <Row className="mx-2 align-items-center">
-        <Col sm={3}>{renderFieldSelect()}</Col>
-        <Col sm={3}>{renderStrategySelect()}</Col>
-        <Col sm={3}>{maybeRenderCreateMissing()}</Col>
-
-        <div className="col-3 d-flex justify-content-end">
-          {editing ? (
-            <>
-              <Button
-                className="minimal text-success"
-                onClick={() => editOptions(localOptions)}
-              >
-                <Icon icon="check" />
-              </Button>
-              <Button
-                className="minimal text-danger"
-                onClick={() => editOptions()}
-              >
-                <Icon icon="times" />
-              </Button>
-            </>
-          ) : (
+  return (
+    <tr>
+      <td>{renderField()}</td>
+      <td>{renderStrategy()}</td>
+      <td>{maybeRenderCreateMissing()}</td>
+      <td className="text-right">
+        {editing ? (
+          <>
+            <Button
+              className="minimal text-success"
+              onClick={() => editOptions(localOptions)}
+            >
+              <Icon icon="check" />
+            </Button>
+            <Button
+              className="minimal text-danger"
+              onClick={() => editOptions()}
+            >
+              <Icon icon="times" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button className="minimal" onClick={() => editField()}>
+              <Icon icon="pencil-alt" />
+            </Button>
             <Button
               className="minimal text-danger"
               onClick={() => removeField()}
             >
               <Icon icon="minus" />
             </Button>
-          )}
-        </div>
-      </Row>
-    );
-  }
-
-  return (
-    <ListGroup.Item as="li" key={options.field}>
-      {render()}
-    </ListGroup.Item>
+          </>
+        )}
+      </td>
+    </tr>
   );
 };
 
@@ -205,6 +211,11 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
     setEditingField(false);
   }
 
+  function onEditField(index: number) {
+    setEditField(localFieldOptions[index]);
+    setEditingField(true);
+  }
+
   function removeField(index: number) {
     const newOptions = [...localFieldOptions];
     newOptions.splice(index, 1);
@@ -216,17 +227,29 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
       <h5>
         <FormattedMessage id="config.tasks.identify.field_options" />
       </h5>
-      <ListGroup as="ul" className="scraper-source-list">
-        {localFieldOptions?.map((s, index) => (
-          <FieldOptionsEditor
-            availableFields={availableFields}
-            options={s}
-            removeField={() => removeField(index)}
-            editOptions={handleEditOptions}
-            editing={s === editField}
-          />
-        ))}
-      </ListGroup>
+      <Table responsive className="field-options-table">
+        <thead>
+          <tr>
+            <th className="w-25">Field</th>
+            <th className="w-25">Strategy</th>
+            <th className="w-25">Create missing</th>
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+            <th className="w-25" />
+          </tr>
+        </thead>
+        <tbody>
+          {localFieldOptions?.map((s, index) => (
+            <FieldOptionsEditor
+              availableFields={availableFields}
+              options={s}
+              removeField={() => removeField(index)}
+              editField={() => onEditField(index)}
+              editOptions={handleEditOptions}
+              editing={s === editField}
+            />
+          ))}
+        </tbody>
+      </Table>
       {!editField && availableFields.length > 0 ? (
         <div className="text-right">
           <Button

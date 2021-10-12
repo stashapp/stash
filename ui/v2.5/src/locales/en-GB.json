@@ -301,6 +301,11 @@
         "explicit_set_description": "Default options will be used where source-specific options are not set.",
         "field_behaviour": "{strategy} {field}",
         "field_options": "Field Options",
+        "field_strategies": {
+          "ignore": "Ignore",
+          "merge": "Merge",
+          "overwrite": "Overwrite"
+        },
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organized flag",
@@ -665,6 +670,7 @@
   "settings": "Settings",
   "sub_tag_of": "Sub-tag of",
   "stash_id": "Stash ID",
+  "stash_ids": "Stash IDs",
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Levels (empty for all)",

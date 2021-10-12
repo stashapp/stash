@@ -9,7 +9,7 @@ import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
-import { IScraperSource } from "../constants";
+import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
 

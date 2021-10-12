@@ -3,7 +3,7 @@ import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ThreeStateCheckbox } from "../../Shared/ThreeStateCheckbox";
-import { IScraperSource } from "../constants";
+import { IScraperSource } from "./constants";
 import { FieldOptionsList } from "./FieldOptions";
 
 interface IOptionsEditor {

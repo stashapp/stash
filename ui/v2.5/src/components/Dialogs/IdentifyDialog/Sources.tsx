@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, ListGroup } from "react-bootstrap";
 import { Modal, Icon } from "src/components/Shared";
 import { FormattedMessage, useIntl } from "react-intl";
-import { IScraperSource } from "../constants";
+import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 
 interface ISourceEditor {
@@ -44,7 +44,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
 
   return (
     <Modal
-      modalProps={{ animation: false }}
+      modalProps={{ animation: false, size: "lg" }}
       show
       icon={isNew ? "plus" : "pencil-alt"}
       header={intl.formatMessage(
