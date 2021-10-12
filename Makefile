@@ -41,8 +41,17 @@ ifndef STASH_VERSION
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
 endif
 
+ifdef CI
+    ifeq ($(GITHUB_ACTIONS), true)
+        ifeq ("$(GITHUB_REPOSITORY)", "stashapp/stash")
+            $(eval OFFICIAL_BUILD := true)
+        endif
+    endif
+endif 
+
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.officialBuild=$(OFFICIAL_BUILD)')
 	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
