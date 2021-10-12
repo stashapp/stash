@@ -18,6 +18,7 @@ var once sync.Once
 type flagStruct struct {
 	configFilePath string
 	cpuProfilePath string
+	nobrowser      bool
 }
 
 func Initialize() (*Instance, error) {
@@ -102,6 +103,7 @@ func initFlags() flagStruct {
 	pflag.Int("port", 9999, "port to serve from")
 	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
 	pflag.StringVar(&flags.cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
+	pflag.BoolVar(&flags.nobrowser, "nobrowser", false, "Don't open a browser window after launch")
 
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {

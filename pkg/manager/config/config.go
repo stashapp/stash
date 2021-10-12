@@ -223,6 +223,12 @@ func (i *Instance) GetCPUProfilePath() string {
 	return i.cpuProfilePath
 }
 
+func (i *Instance) GetNoBrowserFlag() bool {
+	i.Lock()
+	defer i.Unlock()
+	return viper.GetBool("nobrowser")
+}
+
 func (i *Instance) Set(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
