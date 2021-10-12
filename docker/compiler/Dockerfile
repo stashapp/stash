@@ -42,15 +42,26 @@ RUN     cp osxcross/target/lib/* /usr/lib/ ; \
         rm -rf osxcross;
 
 ENV PATH $OSX_NDK_X86/bin:$PATH
+ENV IS_STASH_COMPILER_IMAGE true
 
 RUN mkdir -p /root/.ssh; \
     chmod 0700 /root/.ssh; \
     ssh-keyscan github.com > /root/.ssh/known_hosts;
 
 # Notes for self:
+
+# To test locally:
+# make generate
+# make ui
+# cd docker/compiler
+# make build
+# docker run -it -v /PATH_TO_STASH:/go/stash stashapp/compiler:latest /bin/bash
+# cd stash
+# make cross-compile-all
+# # binaries will show up in /dist
+
 # Windows:
 # GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++  go build -ldflags "-extldflags '-static'" -tags extended
-
 
 # Darwin
 # CC=o64-clang CXX=o64-clang++ GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -tags extended

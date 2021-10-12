@@ -41,13 +41,9 @@ ifndef STASH_VERSION
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
 endif
 
-ifdef CI
-    ifeq ($(GITHUB_ACTIONS), true)
-        ifeq ("$(GITHUB_REPOSITORY)", "stashapp/stash")
-            $(eval OFFICIAL_BUILD := true)
-        endif
-    endif
-endif 
+ifeq ($(IS_STASH_COMPILER_IMAGE), true)
+    $(eval OFFICIAL_BUILD := true)
+endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
