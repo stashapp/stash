@@ -3,8 +3,8 @@ import { Form, Button, Table } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ThreeStateCheckbox } from "../../Shared/ThreeStateCheckbox";
 import { sceneFields } from "./constants";
+import { ThreeStateBoolean } from "./ThreeStateBoolean";
 
 interface IFieldOptionsEditor {
   availableFields: string[];
@@ -13,6 +13,7 @@ interface IFieldOptionsEditor {
   editOptions: (o?: GQL.IdentifyFieldOptions) => void;
   removeField: () => void;
   editing: boolean;
+  allowSetDefault: boolean;
 }
 
 const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
@@ -22,6 +23,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
   editField,
   editOptions,
   editing,
+  allowSetDefault,
 }) => {
   const intl = useIntl();
 
@@ -96,14 +98,27 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       createMissingFields.includes(localOptions.field) &&
       localOptions.strategy !== GQL.IdentifyFieldStrategy.Ignore
     ) {
+      const value =
+        localOptions.createMissing === null
+          ? undefined
+          : localOptions.createMissing;
+
+      if (!editing) {
+        if (value === undefined) {
+          return intl.formatMessage({ id: "use_default" });
+        }
+        if (value) {
+          return <Icon icon="check" className="text-success" />;
+        }
+
+        return <Icon icon="times" className="text-danger" />;
+      }
+
       return (
-        <ThreeStateCheckbox
+        <ThreeStateBoolean
           disabled={!editing}
-          value={
-            localOptions.createMissing === null
-              ? undefined
-              : localOptions.createMissing
-          }
+          allowUndefined={allowSetDefault}
+          value={value}
           setValue={(v) =>
             setLocalOptions({ ...localOptions, createMissing: v })
           }
@@ -155,12 +170,14 @@ interface IFieldOptionsList {
   fieldOptions?: GQL.IdentifyFieldOptions[];
   setFieldOptions: (o: GQL.IdentifyFieldOptions[]) => void;
   setEditingField: (v: boolean) => void;
+  allowSetDefault?: boolean;
 }
 
 export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   fieldOptions,
   setFieldOptions,
   setEditingField,
+  allowSetDefault = true,
 }) => {
   const [localFieldOptions, setLocalFieldOptions] = useState<
     GQL.IdentifyFieldOptions[]
@@ -240,6 +257,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
         <tbody>
           {localFieldOptions?.map((s, index) => (
             <FieldOptionsEditor
+              allowSetDefault={allowSetDefault}
               availableFields={availableFields}
               options={s}
               removeField={() => removeField(index)}

@@ -575,6 +575,7 @@
   "ethnicity": "Ethnicity",
   "eye_color": "Eye Colour",
   "fake_tits": "Fake Tits",
+  "false": "False",
   "favourite": "Favourite",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
@@ -696,10 +697,12 @@
     "updated_entity": "Updated {entity}"
   },
   "total": "Total",
+  "true": "True",
   "twitter": "Twitter",
   "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
+  "use_default": "Use default",
   "weight": "Weight",
   "years_old": "years old",
   "stats": {

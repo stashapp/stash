@@ -2,9 +2,9 @@ import React from "react";
 import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
-import { ThreeStateCheckbox } from "../../Shared/ThreeStateCheckbox";
 import { IScraperSource } from "./constants";
 import { FieldOptionsList } from "./FieldOptions";
+import { ThreeStateBoolean } from "./ThreeStateBoolean";
 
 interface IOptionsEditor {
   options: GQL.IdentifyMetadataOptionsInput;
@@ -42,7 +42,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
         />
       </h5>
       <Form.Group>
-        <ThreeStateCheckbox
+        <ThreeStateBoolean
           value={
             options.includeMalePerformers === null
               ? undefined
@@ -58,7 +58,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           })}
           {...checkboxProps}
         />
-        <ThreeStateCheckbox
+        <ThreeStateBoolean
           value={
             options.setCoverImage === null ? undefined : options.setCoverImage
           }
@@ -72,7 +72,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           })}
           {...checkboxProps}
         />
-        <ThreeStateCheckbox
+        <ThreeStateBoolean
           value={
             options.setOrganized === null ? undefined : options.setOrganized
           }
@@ -92,6 +92,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
         fieldOptions={options.fieldOptions ?? undefined}
         setFieldOptions={(o) => setOptions({ fieldOptions: o })}
         setEditingField={setEditingField}
+        allowSetDefault={!!source}
       />
 
       {!source && (
