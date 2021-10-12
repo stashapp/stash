@@ -11,7 +11,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then BIN=stash-pi; \
 
 FROM --platform=$BUILDPLATFORM alpine:latest AS app
 COPY --from=binary /stash /usr/bin/
-RUN apk add --no-cache python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg vips-tools && pip install mechanicalsoup cloudscraper
+RUN apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg vips-tools && pip install mechanicalsoup cloudscraper
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
 EXPOSE 9999
