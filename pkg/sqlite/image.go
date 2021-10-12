@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -145,7 +146,7 @@ func (qb *imageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
 func (qb *imageQueryBuilder) find(id int) (*models.Image, error) {
 	var ret models.Image
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

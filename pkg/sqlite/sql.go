@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -228,7 +229,7 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {
 	rows, err := tx.Queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()

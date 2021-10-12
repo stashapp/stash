@@ -40,7 +40,7 @@ func (i *Importer) PreImport() error {
 	if len(i.Input.Image) > 0 {
 		_, i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
-			return fmt.Errorf("invalid image: %s", err.Error())
+			return fmt.Errorf("invalid image: %v", err)
 		}
 	}
 
@@ -50,12 +50,12 @@ func (i *Importer) PreImport() error {
 func (i *Importer) PostImport(id int) error {
 	if len(i.imageData) > 0 {
 		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
-			return fmt.Errorf("error setting tag image: %s", err.Error())
+			return fmt.Errorf("error setting tag image: %v", err)
 		}
 	}
 
 	if err := i.ReaderWriter.UpdateAliases(id, i.Input.Aliases); err != nil {
-		return fmt.Errorf("error setting tag aliases: %s", err.Error())
+		return fmt.Errorf("error setting tag aliases: %v", err)
 	}
 
 	parents, err := i.getParents()
@@ -64,7 +64,7 @@ func (i *Importer) PostImport(id int) error {
 	}
 
 	if err := i.ReaderWriter.UpdateParentTags(id, parents); err != nil {
-		return fmt.Errorf("error setting parents: %s", err.Error())
+		return fmt.Errorf("error setting parents: %v", err)
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (i *Importer) FindExistingID() (*int, error) {
 func (i *Importer) Create() (*int, error) {
 	created, err := i.ReaderWriter.Create(i.tag)
 	if err != nil {
-		return nil, fmt.Errorf("error creating tag: %s", err.Error())
+		return nil, fmt.Errorf("error creating tag: %v", err)
 	}
 
 	id := created.ID
@@ -104,7 +104,7 @@ func (i *Importer) Update(id int) error {
 	tag.ID = id
 	_, err := i.ReaderWriter.UpdateFull(tag)
 	if err != nil {
-		return fmt.Errorf("error updating existing tag: %s", err.Error())
+		return fmt.Errorf("error updating existing tag: %v", err)
 	}
 
 	return nil
@@ -115,7 +115,7 @@ func (i *Importer) getParents() ([]int, error) {
 	for _, parent := range i.Input.Parents {
 		tag, err := i.ReaderWriter.FindByName(parent, false)
 		if err != nil {
-			return nil, fmt.Errorf("error finding parent by name: %s", err.Error())
+			return nil, fmt.Errorf("error finding parent by name: %v", err)
 		}
 
 		if tag == nil {

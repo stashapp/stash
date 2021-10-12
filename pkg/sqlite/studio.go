@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -68,7 +69,7 @@ func (qb *studioQueryBuilder) Destroy(id int) error {
 func (qb *studioQueryBuilder) Find(id int) (*models.Studio, error) {
 	var ret models.Studio
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

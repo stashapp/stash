@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -215,7 +216,7 @@ func (qb *sceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 func (qb *sceneQueryBuilder) find(id int) (*models.Scene, error) {
 	var ret models.Scene
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

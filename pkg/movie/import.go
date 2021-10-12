@@ -31,13 +31,13 @@ func (i *Importer) PreImport() error {
 	if len(i.Input.FrontImage) > 0 {
 		_, i.frontImageData, err = utils.ProcessBase64Image(i.Input.FrontImage)
 		if err != nil {
-			return fmt.Errorf("invalid front_image: %s", err.Error())
+			return fmt.Errorf("invalid front_image: %v", err)
 		}
 	}
 	if len(i.Input.BackImage) > 0 {
 		_, i.backImageData, err = utils.ProcessBase64Image(i.Input.BackImage)
 		if err != nil {
-			return fmt.Errorf("invalid back_image: %s", err.Error())
+			return fmt.Errorf("invalid back_image: %v", err)
 		}
 	}
 
@@ -74,7 +74,7 @@ func (i *Importer) populateStudio() error {
 	if i.Input.Studio != "" {
 		studio, err := i.StudioWriter.FindByName(i.Input.Studio, false)
 		if err != nil {
-			return fmt.Errorf("error finding studio by name: %s", err.Error())
+			return fmt.Errorf("error finding studio by name: %v", err)
 		}
 
 		if studio == nil {
@@ -118,7 +118,7 @@ func (i *Importer) createStudio(name string) (int, error) {
 func (i *Importer) PostImport(id int) error {
 	if len(i.frontImageData) > 0 {
 		if err := i.ReaderWriter.UpdateImages(id, i.frontImageData, i.backImageData); err != nil {
-			return fmt.Errorf("error setting movie images: %s", err.Error())
+			return fmt.Errorf("error setting movie images: %v", err)
 		}
 	}
 
@@ -147,7 +147,7 @@ func (i *Importer) FindExistingID() (*int, error) {
 func (i *Importer) Create() (*int, error) {
 	created, err := i.ReaderWriter.Create(i.movie)
 	if err != nil {
-		return nil, fmt.Errorf("error creating movie: %s", err.Error())
+		return nil, fmt.Errorf("error creating movie: %v", err)
 	}
 
 	id := created.ID
@@ -159,7 +159,7 @@ func (i *Importer) Update(id int) error {
 	movie.ID = id
 	_, err := i.ReaderWriter.UpdateFull(movie)
 	if err != nil {
-		return fmt.Errorf("error updating existing movie: %s", err.Error())
+		return fmt.Errorf("error updating existing movie: %v", err)
 	}
 
 	return nil
