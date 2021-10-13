@@ -663,7 +663,7 @@ func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, err
 	}
 
 	// only return if different
-	if bytes.Compare(existingCover, data) != 0 {
+	if !bytes.Equal(existingCover, data) {
 		return data, nil
 	}
 
