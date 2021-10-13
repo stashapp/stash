@@ -10,6 +10,7 @@ interface IOptionsEditor {
   options: GQL.IdentifyMetadataOptionsInput;
   setOptions: (s: GQL.IdentifyMetadataOptionsInput) => void;
   source?: IScraperSource;
+  defaultOptions?: GQL.IdentifyMetadataOptionsInput;
   setEditingField: (v: boolean) => void;
 }
 
@@ -18,6 +19,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
   setOptions: setOptionsState,
   source,
   setEditingField,
+  defaultOptions,
 }) => {
   const intl = useIntl();
 
@@ -56,6 +58,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           label={intl.formatMessage({
             id: "config.tasks.identify.include_male_performers",
           })}
+          defaultValue={defaultOptions?.includeMalePerformers ?? undefined}
           {...checkboxProps}
         />
         <ThreeStateBoolean
@@ -70,6 +73,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           label={intl.formatMessage({
             id: "config.tasks.identify.set_cover_images",
           })}
+          defaultValue={defaultOptions?.setCoverImage ?? undefined}
           {...checkboxProps}
         />
         <ThreeStateBoolean
@@ -84,6 +88,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           label={intl.formatMessage({
             id: "config.tasks.identify.set_organized",
           })}
+          defaultValue={defaultOptions?.setOrganized ?? undefined}
           {...checkboxProps}
         />
       </Form.Group>
@@ -93,6 +98,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
         setFieldOptions={(o) => setOptions({ fieldOptions: o })}
         setEditingField={setEditingField}
         allowSetDefault={!!source}
+        defaultOptions={defaultOptions}
       />
 
       {!source && (

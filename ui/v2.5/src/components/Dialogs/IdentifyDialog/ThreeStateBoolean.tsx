@@ -8,6 +8,7 @@ interface IThreeStateBoolean {
   allowUndefined?: boolean;
   label?: React.ReactNode;
   disabled?: boolean;
+  defaultValue?: boolean;
 }
 
 export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
@@ -16,6 +17,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
   allowUndefined = true,
   label,
   disabled,
+  defaultValue,
 }) => {
   const intl = useIntl();
 
@@ -30,14 +32,33 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
     );
   }
 
-  function getButtonText(v: boolean | undefined) {
-    if (v === undefined) {
-      return intl.formatMessage({ id: "use_default" });
-    }
+  function getBooleanText(v: boolean) {
     if (v) {
       return intl.formatMessage({ id: "true" });
     }
     return intl.formatMessage({ id: "false" });
+  }
+
+  function getButtonText(v: boolean | undefined) {
+    if (v === undefined) {
+      const defaultVal =
+        defaultValue !== undefined ? (
+          <span className="default-value">
+            {" "}
+            ({getBooleanText(defaultValue)})
+          </span>
+        ) : (
+          ""
+        );
+      return (
+        <span>
+          {intl.formatMessage({ id: "use_default" })}
+          {defaultVal}
+        </span>
+      );
+    }
+
+    return getBooleanText(v);
   }
 
   function renderModeButton(v: boolean | undefined) {

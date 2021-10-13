@@ -14,6 +14,7 @@ interface IFieldOptionsEditor {
   removeField: () => void;
   editing: boolean;
   allowSetDefault: boolean;
+  defaultOptions?: GQL.IdentifyMetadataOptionsInput;
 }
 
 const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
@@ -24,6 +25,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
   editOptions,
   editing,
   allowSetDefault,
+  defaultOptions,
 }) => {
   const intl = useIntl();
 
@@ -114,6 +116,10 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
         return <Icon icon="times" className="text-danger" />;
       }
 
+      const defaultVal = defaultOptions?.fieldOptions?.find(
+        (f) => f.field === localOptions.field
+      )?.createMissing;
+
       return (
         <ThreeStateBoolean
           disabled={!editing}
@@ -122,6 +128,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
           setValue={(v) =>
             setLocalOptions({ ...localOptions, createMissing: v })
           }
+          defaultValue={defaultVal ?? undefined}
         />
       );
     }
@@ -171,6 +178,7 @@ interface IFieldOptionsList {
   setFieldOptions: (o: GQL.IdentifyFieldOptions[]) => void;
   setEditingField: (v: boolean) => void;
   allowSetDefault?: boolean;
+  defaultOptions?: GQL.IdentifyMetadataOptionsInput;
 }
 
 export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
@@ -178,6 +186,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   setFieldOptions,
   setEditingField,
   allowSetDefault = true,
+  defaultOptions,
 }) => {
   const [localFieldOptions, setLocalFieldOptions] = useState<
     GQL.IdentifyFieldOptions[]
@@ -265,6 +274,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
                 editField={() => onEditField(index)}
                 editOptions={handleEditOptions}
                 editing={s === editField}
+                defaultOptions={defaultOptions}
               />
             ))}
           </tbody>

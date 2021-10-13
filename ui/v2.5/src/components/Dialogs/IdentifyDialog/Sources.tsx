@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, ListGroup } from "react-bootstrap";
 import { Modal, Icon } from "src/components/Shared";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as GQL from "src/core/generated-graphql";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 
@@ -10,6 +11,7 @@ interface ISourceEditor {
   availableSources: IScraperSource[];
   source: IScraperSource;
   saveSource: (s?: IScraperSource) => void;
+  defaultOptions: GQL.IdentifyMetadataOptionsInput;
 }
 
 export const SourcesEditor: React.FC<ISourceEditor> = ({
@@ -17,6 +19,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
   availableSources,
   source: initialSource,
   saveSource,
+  defaultOptions,
 }) => {
   const [source, setSource] = useState<IScraperSource>(initialSource);
   const [editingField, setEditingField] = useState(false);
@@ -44,6 +47,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
 
   return (
     <Modal
+      dialogClassName="identify-source-editor"
       modalProps={{ animation: false, size: "lg" }}
       show
       icon={isNew ? "plus" : "pencil-alt"}
@@ -92,6 +96,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
           setOptions={(o) => setSource({ ...source, options: o })}
           source={source}
           setEditingField={(v) => setEditingField(v)}
+          defaultOptions={defaultOptions}
         />
       </Form>
     </Modal>

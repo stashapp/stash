@@ -238,6 +238,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         source={editingSource}
         saveSource={onSaveSource}
         isNew={isNewSource()}
+        defaultOptions={options}
       />
     );
   }
