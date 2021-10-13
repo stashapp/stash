@@ -1,20 +1,14 @@
-import React, { useRef, useState } from "react";
-import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
-import { ScenePreview } from "src/components/Scenes/SceneCard";
-
+import React, { useState, useContext, PropsWithChildren } from "react";
 import * as GQL from "src/core/generated-graphql";
+import { Link } from "react-router-dom";
 import { Icon, TagLink, TruncatedText } from "src/components/Shared";
+import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import { sortPerformers } from "src/core/performers";
-import StashSearchResult from "./StashSearchResult";
-import { ITaggerConfig } from "./constants";
-import {
-  parsePath,
-  IStashBoxScene,
-  sortScenesByDuration,
-  prepareQueryString,
-} from "./utils";
+import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { TaggerStateContext } from "./context";
+import { ScenePreview } from "../Scenes/SceneCard";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -25,7 +19,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
   const sorted = sortPerformers(scene.performers);
 
   return (
-    <div className="scene-details">
+    <div className="original-scene-details">
       <Collapse in={open}>
         <div className="row">
           <div className="col col-lg-6">
@@ -78,55 +72,29 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
   );
 };
 
-export interface ISearchResult {
-  results?: IStashBoxScene[];
-  error?: string;
-}
-
-export interface ITaggerScene {
+interface ITaggerScene {
   scene: GQL.SlimSceneDataFragment;
   url: string;
-  config: ITaggerConfig;
-  searchResult?: ISearchResult;
-  hideUnmatched?: boolean;
+  errorMessage?: string;
+  doSceneQuery?: (queryString: string) => void;
+  scrapeSceneFragment?: (scene: GQL.SlimSceneDataFragment) => void;
   loading?: boolean;
-  doSceneQuery: (queryString: string) => void;
-  taggedScene?: Partial<GQL.SlimSceneDataFragment>;
-  tagScene: (scene: Partial<GQL.SlimSceneDataFragment>) => void;
-  endpoint: string;
-  queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
-  createNewTag: (toCreate: GQL.ScrapedTag) => void;
 }
 
-export const TaggerScene: React.FC<ITaggerScene> = ({
+export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   scene,
   url,
-  config,
-  searchResult,
-  hideUnmatched,
   loading,
   doSceneQuery,
-  taggedScene,
-  tagScene,
-  endpoint,
-  queueFingerprintSubmission,
-  createNewTag,
+  scrapeSceneFragment,
+  errorMessage,
+  children,
 }) => {
-  const [selectedResult, setSelectedResult] = useState<number>(0);
-  const [excluded, setExcluded] = useState<Record<string, boolean>>({});
+  const { config } = useContext(TaggerStateContext);
+  const [queryString, setQueryString] = useState<string>("");
+  const [queryLoading, setQueryLoading] = useState(false);
 
-  const queryString = useRef<string>("");
-
-  const searchResults = searchResult?.results ?? [];
-  const searchError = searchResult?.error;
-  const emptyResults =
-    searchResult && searchResult.results && searchResult.results.length === 0;
-
-  const { paths, file, ext } = parsePath(scene.path);
-  const originalDir = scene.path.slice(
-    0,
-    scene.path.length - file.length - ext.length
-  );
+  const { paths, file } = parsePath(scene.path);
   const defaultQueryString = prepareQueryString(
     scene,
     paths,
@@ -135,72 +103,56 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
     config.blacklist
   );
 
-  const hasStashIDs = scene.stash_ids.length > 0;
   const width = scene.file.width ? scene.file.width : 0;
   const height = scene.file.height ? scene.file.height : 0;
   const isPortrait = height > width;
 
-  function renderMainContent() {
-    if (!taggedScene && hasStashIDs) {
-      return (
-        <div className="text-right">
-          <h5 className="text-bold">
-            <FormattedMessage id="component_tagger.results.match_failed_already_tagged" />
-          </h5>
-        </div>
-      );
-    }
+  async function query() {
+    if (!doSceneQuery) return;
 
-    if (!taggedScene && !hasStashIDs) {
-      return (
-        <InputGroup>
-          <InputGroup.Prepend>
-            <InputGroup.Text>
-              <FormattedMessage id="component_tagger.noun_query" />
-            </InputGroup.Text>
-          </InputGroup.Prepend>
-          <Form.Control
-            className="text-input"
-            defaultValue={queryString.current || defaultQueryString}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              queryString.current = e.currentTarget.value;
-            }}
-            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-              e.key === "Enter" &&
-              doSceneQuery(queryString.current || defaultQueryString)
-            }
-          />
-          <InputGroup.Append>
-            <Button
-              disabled={loading}
-              onClick={() =>
-                doSceneQuery(queryString.current || defaultQueryString)
-              }
-            >
-              <FormattedMessage id="actions.search" />
-            </Button>
-          </InputGroup.Append>
-        </InputGroup>
-      );
-    }
-
-    if (taggedScene) {
-      return (
-        <div className="d-flex flex-column text-right">
-          <h5>
-            <FormattedMessage id="component_tagger.results.match_success" />
-          </h5>
-          <h6>
-            <Link className="bold" to={url}>
-              {taggedScene.title}
-            </Link>
-          </h6>
-        </div>
-      );
+    try {
+      setQueryLoading(true);
+      await doSceneQuery(queryString || defaultQueryString);
+    } finally {
+      setQueryLoading(false);
     }
   }
 
-  function renderSubContent() {
+  function renderQueryForm() {
+    if (!doSceneQuery) return;
+
+    return (
+      <InputGroup>
+        <InputGroup.Prepend>
+          <InputGroup.Text>
+            <FormattedMessage id="component_tagger.noun_query" />
+          </InputGroup.Text>
+        </InputGroup.Prepend>
+        <Form.Control
+          className="text-input"
+          value={queryString || defaultQueryString}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setQueryString(e.currentTarget.value);
+          }}
+          onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+            e.key === "Enter" && query()
+          }
+        />
+        <InputGroup.Append>
+          <OperationButton
+            disabled={loading}
+            operation={query}
+            loading={queryLoading}
+            setLoading={setQueryLoading}
+          >
+            <FormattedMessage id="actions.search" />
+          </OperationButton>
+        </InputGroup.Append>
+      </InputGroup>
+    );
+  }
+
+  function maybeRenderStashLinks() {
     if (scene.stash_ids.length > 0) {
       const stashLinks = scene.stash_ids.map((stashID) => {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
@@ -220,57 +172,11 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
 
         return link;
       });
-      return <>{stashLinks}</>;
-    }
-
-    if (searchError) {
-      return <div className="text-danger font-weight-bold">{searchError}</div>;
-    }
-
-    if (emptyResults) {
-      return (
-        <div className="text-danger font-weight-bold">
-          <FormattedMessage id="component_tagger.results.match_failed_no_result" />
-        </div>
-      );
+      return <div className="mt-2 sub-content text-right">{stashLinks}</div>;
     }
   }
 
-  function renderSearchResult() {
-    if (searchResults.length > 0 && !taggedScene) {
-      return (
-        <ul className="pl-0 mt-3 mb-0">
-          {sortScenesByDuration(
-            searchResults,
-            scene.file.duration ?? undefined
-          ).map(
-            (sceneResult, i) =>
-              sceneResult && (
-                <StashSearchResult
-                  key={sceneResult.stash_id}
-                  showMales={config.showMales}
-                  stashScene={scene}
-                  scene={sceneResult}
-                  isActive={selectedResult === i}
-                  setActive={() => setSelectedResult(i)}
-                  setCoverImage={config.setCoverImage}
-                  tagOperation={config.tagOperation}
-                  setTags={config.setTags}
-                  setScene={tagScene}
-                  endpoint={endpoint}
-                  queueFingerprintSubmission={queueFingerprintSubmission}
-                  createNewTag={createNewTag}
-                  excludedFields={excluded}
-                  setExcludedFields={(v) => setExcluded(v)}
-                />
-              )
-          )}
-        </ul>
-      );
-    }
-  }
-
-  return hideUnmatched && emptyResults ? null : (
+  return (
     <div key={scene.id} className="mt-3 search-item">
       <div className="row">
         <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
@@ -285,19 +191,33 @@ export const TaggerScene: React.FC<ITaggerScene> = ({
             </Link>
           </div>
           <Link to={url} className="scene-link overflow-hidden">
-            <TruncatedText
-              text={`${originalDir}\u200B${file}${ext}`}
-              lineCount={2}
-            />
+            <TruncatedText text={scene.title ?? scene.path} lineCount={2} />
           </Link>
         </div>
-        <div className="col-md-6 my-1 align-self-center">
-          {renderMainContent()}
-          <div className="sub-content text-right">{renderSubContent()}</div>
+        <div className="col-md-6 my-1">
+          <div>
+            {renderQueryForm()}
+            {scrapeSceneFragment ? (
+              <div className="mt-2 text-right">
+                <OperationButton
+                  disabled={loading}
+                  operation={async () => {
+                    await scrapeSceneFragment(scene);
+                  }}
+                >
+                  <FormattedMessage id="actions.scrape_scene_fragment" />
+                </OperationButton>
+              </div>
+            ) : undefined}
+          </div>
+          {errorMessage ? (
+            <div className="text-danger font-weight-bold">{errorMessage}</div>
+          ) : undefined}
+          {maybeRenderStashLinks()}
         </div>
         <TaggerSceneDetails scene={scene} />
       </div>
-      {renderSearchResult()}
+      {children}
     </div>
   );
 };

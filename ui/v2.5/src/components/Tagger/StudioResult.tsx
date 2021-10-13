@@ -1,122 +1,75 @@
-import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
+import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
-import { Modal, StudioSelect } from "src/components/Shared";
+import { Icon, StudioSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
-import { IStashBoxStudio } from "./utils";
-import { OptionalField } from "./IncludeButton";
 
-export type StudioOperation =
-  | { type: "create"; data: IStashBoxStudio }
-  | { type: "update"; data: GQL.SlimStudioDataFragment }
-  | { type: "existing"; data: GQL.StudioDataFragment }
-  | { type: "skip" };
+import { OptionalField } from "./IncludeButton";
+import { OperationButton } from "../Shared/OperationButton";
 
 interface IStudioResultProps {
-  studio: IStashBoxStudio | null;
-  setStudio: Dispatch<SetStateAction<StudioOperation | undefined>>;
+  studio: GQL.ScrapedStudio;
+  selectedID: string | undefined;
+  setSelectedID: (id: string | undefined) => void;
+  onCreate: () => void;
+  onLink?: () => Promise<void>;
+  endpoint?: string;
 }
 
-const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
-  const intl = useIntl();
-  const [selectedStudio, setSelectedStudio] = useState<string | null>();
-  const [modalVisible, showModal] = useState(false);
-  const [selectedSource, setSelectedSource] = useState<
-    "create" | "existing" | "skip" | undefined
-  >();
-  const { data: studioData } = GQL.useFindStudioQuery({
-    variables: { id: studio?.id ?? "" },
-    skip: !studio?.id,
-  });
-  const {
-    data: stashIDData,
-    loading: loadingStashID,
-  } = GQL.useFindStudiosQuery({
-    variables: {
-      studio_filter: {
-        stash_id: {
-          value: studio?.stash_id ?? "no-stashid",
-          modifier: GQL.CriterionModifier.Equals,
-        },
-      },
-    },
+const StudioResult: React.FC<IStudioResultProps> = ({
+  studio,
+  selectedID,
+  setSelectedID,
+  onCreate,
+  onLink,
+  endpoint,
+}) => {
+  const { data: studioData, loading: stashLoading } = GQL.useFindStudioQuery({
+    variables: { id: studio.stored_id ?? "" },
+    skip: !studio.stored_id,
   });
 
-  useEffect(() => {
-    if (stashIDData?.findStudios.studios?.[0])
-      setStudio({
-        type: "existing",
-        data: stashIDData.findStudios.studios[0],
-      });
-    else if (studioData?.findStudio) {
-      setSelectedSource("existing");
-      setSelectedStudio(studioData.findStudio.id);
-      setStudio({
-        type: "update",
-        data: studioData.findStudio,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stashIDData, studioData]);
+  const matchedStudio = studioData?.findStudio;
+  const matchedStashID = matchedStudio?.stash_ids.some(
+    (stashID) => stashID.endpoint === endpoint && stashID.stash_id
+  );
 
-  const handleStudioSelect = (newStudio: ValidTypes[]) => {
-    if (newStudio.length) {
-      setSelectedSource("existing");
-      setSelectedStudio(newStudio[0].id);
-      setStudio({
-        type: "update",
-        data: newStudio[0] as GQL.SlimStudioDataFragment,
-      });
+  const handleSelect = (studios: ValidTypes[]) => {
+    if (studios.length) {
+      setSelectedID(studios[0].id);
     } else {
-      setSelectedSource(undefined);
-      setSelectedStudio(null);
+      setSelectedID(undefined);
     }
   };
 
-  const handleStudioCreate = () => {
-    if (!studio) return;
-    setSelectedSource("create");
-    setStudio({
-      type: "create",
-      data: studio,
-    });
-    showModal(false);
+  const handleSkip = () => {
+    setSelectedID(undefined);
   };
 
-  const handleStudioSkip = () => {
-    setSelectedSource("skip");
-    setStudio({ type: "skip" });
-  };
+  if (stashLoading) return <div>Loading studio</div>;
 
-  if (loadingStashID) return <div>Loading studio</div>;
-
-  if (stashIDData?.findStudios.studios.length) {
+  if (matchedStudio && matchedStashID) {
     return (
       <div className="row no-gutters my-2">
         <div className="entity-name">
-          <FormattedMessage
-            id="countables.studios"
-            values={{ count: stashIDData?.findStudios.studios.length }}
-          />
-          :<b className="ml-2">{studio?.name}</b>
+          <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
+          <b className="ml-2">{studio.name}</b>
         </div>
         <span className="ml-auto">
           <OptionalField
-            exclude={selectedSource === "skip"}
+            exclude={selectedID === undefined}
             setExclude={(v) =>
-              v ? handleStudioSkip() : setSelectedSource("existing")
+              v ? handleSkip() : setSelectedID(matchedStudio.id)
             }
           >
             <div>
               <span className="mr-2">
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
-              <b className="col-3 text-right">
-                {stashIDData.findStudios.studios[0].name}
-              </b>
+              <b className="col-3 text-right">{matchedStudio.name}</b>
             </div>
           </OptionalField>
         </span>
@@ -124,60 +77,48 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
     );
   }
 
+  function maybeRenderLinkButton() {
+    if (endpoint && onLink) {
+      return (
+        <OperationButton
+          variant="secondary"
+          disabled={selectedID === undefined}
+          operation={onLink}
+          hideChildrenWhenLoading
+        >
+          <Icon icon="save" />
+        </OperationButton>
+      );
+    }
+  }
+
+  const selectedSource = !selectedID ? "skip" : "existing";
+
   return (
     <div className="row no-gutters align-items-center mt-2">
-      <Modal
-        show={modalVisible}
-        accept={{
-          text: intl.formatMessage({ id: "actions.save" }),
-          onClick: handleStudioCreate,
-        }}
-        cancel={{ onClick: () => showModal(false), variant: "secondary" }}
-      >
-        <div className="row">
-          <strong className="col-2">
-            <FormattedMessage id="name" />:
-          </strong>
-          <span className="col-10">{studio?.name}</span>
-        </div>
-        <div className="row">
-          <strong className="col-2">
-            <FormattedMessage id="url" />:
-          </strong>
-          <span className="col-10">{studio?.url ?? ""}</span>
-        </div>
-        <div className="row">
-          <strong className="col-2">Logo:</strong>
-          <span className="col-10">
-            <img src={studio?.image ?? ""} alt="" />
-          </span>
-        </div>
-      </Modal>
-
       <div className="entity-name">
-        <FormattedMessage id="studios" />:<b className="ml-2">{studio?.name}</b>
+        <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
+        <b className="ml-2">{studio.name}</b>
       </div>
       <ButtonGroup>
-        <Button
-          variant={selectedSource === "create" ? "primary" : "secondary"}
-          onClick={() => showModal(true)}
-        >
+        <Button variant="secondary" onClick={() => onCreate()}>
           <FormattedMessage id="actions.create" />
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
-          onClick={() => handleStudioSkip()}
+          onClick={() => handleSkip()}
         >
           <FormattedMessage id="actions.skip" />
         </Button>
         <StudioSelect
-          ids={selectedStudio ? [selectedStudio] : []}
-          onSelect={handleStudioSelect}
+          ids={selectedID ? [selectedID] : []}
+          onSelect={handleSelect}
           className={cx("studio-select", {
             "studio-select-active": selectedSource === "existing",
           })}
           isClearable={false}
         />
+        {maybeRenderLinkButton()}
       </ButtonGroup>
     </div>
   );

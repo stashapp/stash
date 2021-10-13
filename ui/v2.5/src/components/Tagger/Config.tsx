@@ -1,4 +1,4 @@
-import React, { Dispatch, useRef } from "react";
+import React, { useRef, useContext } from "react";
 import {
   Badge,
   Button,
@@ -9,28 +9,17 @@ import {
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
-import { useConfiguration } from "src/core/StashService";
-
-import { ITaggerConfig, ParseMode, TagOperation } from "./constants";
+import { ParseMode, TagOperation } from "./constants";
+import { TaggerStateContext } from "./context";
 
 interface IConfigProps {
   show: boolean;
-  config: ITaggerConfig;
-  setConfig: Dispatch<ITaggerConfig>;
 }
 
-const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
+const Config: React.FC<IConfigProps> = ({ show }) => {
+  const { config, setConfig } = useContext(TaggerStateContext);
   const intl = useIntl();
-  const stashConfig = useConfiguration();
   const blacklistRef = useRef<HTMLInputElement | null>(null);
-
-  const handleInstanceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedEndpoint = e.currentTarget.value;
-    setConfig({
-      ...config,
-      selectedEndpoint,
-    });
-  };
 
   const removeBlacklist = (index: number) => {
     setConfig({
@@ -54,8 +43,6 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
     });
     blacklistRef.current.value = "";
   };
-
-  const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
 
   return (
     <Collapse in={show}>
@@ -221,29 +208,6 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 </Button>
               </Badge>
             ))}
-
-            <Form.Group
-              controlId="stash-box-endpoint"
-              className="align-items-center row no-gutters mt-4"
-            >
-              <Form.Label className="mr-4">
-                <FormattedMessage id="component_tagger.config.active_instance" />
-              </Form.Label>
-              <Form.Control
-                as="select"
-                value={config.selectedEndpoint}
-                className="col-md-4 col-6 input-control"
-                disabled={!stashBoxes.length}
-                onChange={handleInstanceSelect}
-              >
-                {!stashBoxes.length && <option>No instances found</option>}
-                {stashConfig.data?.configuration.general.stashBoxes.map((i) => (
-                  <option value={i.endpoint} key={i.endpoint}>
-                    {i.endpoint}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
           </div>
         </div>
       </Card>

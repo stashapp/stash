@@ -102,7 +102,7 @@ export function prepareQueryString(
     s = filename;
   } else if (mode === "path") {
     s = [...paths, filename].join(" ");
-  } else {
+  } else if (mode === "dir" && paths.length) {
     s = paths[paths.length - 1];
   }
   blacklist.forEach((b) => {
