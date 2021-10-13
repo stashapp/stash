@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/mattn/go-colorable"
 )
 
 type LogItem struct {
@@ -45,7 +46,7 @@ func Init(logFile string, logOut bool, logLevel string) {
 	}
 
 	if file != nil && logOut {
-		mw := io.MultiWriter(os.Stderr, file)
+		mw := io.MultiWriter(colorable.NewColorableStderr(), file)
 		logger.Out = mw
 	} else if file != nil {
 		logger.Out = file

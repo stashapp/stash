@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -23,6 +24,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
+	"github.com/mattn/go-colorable"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
@@ -37,6 +39,8 @@ var githash string
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
+
+	middleware.DefaultLogger = middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: log.New(colorable.NewColorableStderr(), "", log.LstdFlags), NoColor: false})
 
 	r := chi.NewRouter()
 
