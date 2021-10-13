@@ -244,30 +244,32 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
       <h5>
         <FormattedMessage id="config.tasks.identify.field_options" />
       </h5>
-      <Table responsive className="field-options-table">
-        <thead>
-          <tr>
-            <th className="w-25">Field</th>
-            <th className="w-25">Strategy</th>
-            <th className="w-25">Create missing</th>
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-            <th className="w-25" />
-          </tr>
-        </thead>
-        <tbody>
-          {localFieldOptions?.map((s, index) => (
-            <FieldOptionsEditor
-              allowSetDefault={allowSetDefault}
-              availableFields={availableFields}
-              options={s}
-              removeField={() => removeField(index)}
-              editField={() => onEditField(index)}
-              editOptions={handleEditOptions}
-              editing={s === editField}
-            />
-          ))}
-        </tbody>
-      </Table>
+      {!!localFieldOptions.length && (
+        <Table responsive className="field-options-table">
+          <thead>
+            <tr>
+              <th className="w-25">Field</th>
+              <th className="w-25">Strategy</th>
+              <th className="w-25">Create missing</th>
+              {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+              <th className="w-25" />
+            </tr>
+          </thead>
+          <tbody>
+            {localFieldOptions?.map((s, index) => (
+              <FieldOptionsEditor
+                allowSetDefault={allowSetDefault}
+                availableFields={availableFields}
+                options={s}
+                removeField={() => removeField(index)}
+                editField={() => onEditField(index)}
+                editOptions={handleEditOptions}
+                editing={s === editField}
+              />
+            ))}
+          </tbody>
+        </Table>
+      )}
       {!editField && availableFields.length > 0 ? (
         <div className="text-right">
           <Button
