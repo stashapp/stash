@@ -214,6 +214,14 @@ export const useSceneStreams = (id: string) =>
 export const useFindImage = (id: string) =>
   GQL.useFindImageQuery({ variables: { id } });
 
+export const queryFindPerformer = (id: string) =>
+  client.query<GQL.FindPerformerQuery>({
+    query: GQL.FindPerformerDocument,
+    variables: {
+      id,
+    },
+  });
+
 export const useFindPerformer = (id: string) => {
   const skip = id === "new";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });
@@ -222,6 +230,13 @@ export const useFindStudio = (id: string) => {
   const skip = id === "new";
   return GQL.useFindStudioQuery({ variables: { id }, skip });
 };
+export const queryFindStudio = (id: string) =>
+  client.query<GQL.FindStudioQuery>({
+    query: GQL.FindStudioDocument,
+    variables: {
+      id,
+    },
+  });
 export const useFindMovie = (id: string) => {
   const skip = id === "new";
   return GQL.useFindMovieQuery({ variables: { id }, skip });

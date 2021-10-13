@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -211,7 +212,7 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 	} else if criterion.Modifier == models.CriterionModifierExcludes {
 		// excludes all of the provided ids
 		if joinTable != "" {
-			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+			whereClause = primaryTable + ".id not in (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
 		} else {
 			whereClause = "not exists (select s.id from " + primaryTable + " as s where s.id = " + primaryTable + ".id and s." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
 		}
@@ -228,7 +229,7 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {
 	rows, err := tx.Queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()

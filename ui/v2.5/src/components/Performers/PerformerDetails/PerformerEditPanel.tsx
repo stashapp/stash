@@ -20,7 +20,6 @@ import {
   usePerformerCreate,
   useTagCreate,
   queryScrapePerformerURL,
-  useConfiguration,
 } from "src/core/StashService";
 import {
   Icon,
@@ -41,6 +40,7 @@ import {
   genderToString,
   stringToGender,
 } from "src/utils/gender";
+import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -88,7 +88,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [scrapedPerformer, setScrapedPerformer] = useState<
     GQL.ScrapedPerformer | undefined
   >();
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
@@ -601,7 +601,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (!performer) {
       return;
     }
-    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+    const stashBoxes = stashConfig?.general.stashBoxes ?? [];
 
     const popover = (
       <Dropdown.Menu id="performer-scraper-popover">

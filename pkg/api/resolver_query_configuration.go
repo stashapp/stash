@@ -116,19 +116,20 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	scriptOffset := config.GetFunscriptOffset()
 
 	return &models.ConfigInterfaceResult{
-		MenuItems:           menuItems,
-		SoundOnPreview:      &soundOnPreview,
-		WallShowTitle:       &wallShowTitle,
-		WallPlayback:        &wallPlayback,
-		MaximumLoopDuration: &maximumLoopDuration,
-		AutostartVideo:      &autostartVideo,
-		ShowStudioAsText:    &showStudioAsText,
-		CSS:                 &css,
-		CSSEnabled:          &cssEnabled,
-		Language:            &language,
-		SlideshowDelay:      &slideshowDelay,
-		HandyKey:            &handyKey,
-		FunscriptOffset:     &scriptOffset,
+		MenuItems:              menuItems,
+		SoundOnPreview:         &soundOnPreview,
+		WallShowTitle:          &wallShowTitle,
+		WallPlayback:           &wallPlayback,
+		MaximumLoopDuration:    &maximumLoopDuration,
+		AutostartVideo:         &autostartVideo,
+		ShowStudioAsText:       &showStudioAsText,
+		CSS:                    &css,
+		CSSEnabled:             &cssEnabled,
+		Language:               &language,
+		SlideshowDelay:         &slideshowDelay,
+		DisabledDropdownCreate: config.GetDisableDropdownCreate(),
+		HandyKey:               &handyKey,
+		FunscriptOffset:        &scriptOffset,
 	}
 }
 

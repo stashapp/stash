@@ -2,6 +2,7 @@ package api
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -60,7 +61,7 @@ func handleLogin(loginUIBox embed.FS) http.HandlerFunc {
 		}
 
 		err := manager.GetInstance().SessionStore.Login(w, r)
-		if err == session.ErrInvalidCredentials {
+		if errors.Is(err, session.ErrInvalidCredentials) {
 			// redirect back to the login page with an error
 			redirectToLogin(loginUIBox, w, url, "Username or password is invalid")
 			return

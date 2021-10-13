@@ -188,6 +188,12 @@ type ConfigGeneralResult {
   stashBoxes: [StashBox!]!
 }
 
+input ConfigDisableDropdownCreateInput {
+  performer: Boolean
+  tag: Boolean
+  studio: Boolean
+}
+
 input ConfigInterfaceInput {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
@@ -210,10 +216,18 @@ input ConfigInterfaceInput {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Set to true to disable creating new objects via the dropdown menus"""
+  disableDropdownCreate: ConfigDisableDropdownCreateInput
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
+}
+
+type ConfigDisableDropdownCreate {
+  performer: Boolean!
+  tag: Boolean!
+  studio: Boolean!
 }
 
 type ConfigInterfaceResult {
@@ -238,6 +252,8 @@ type ConfigInterfaceResult {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Fields are true if creating via dropdown menus are disabled"""
+  disabledDropdownCreate: ConfigDisableDropdownCreate!
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""

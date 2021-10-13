@@ -131,7 +131,10 @@ export const createClient = () => {
     // handle unauthorized error by redirecting to the login page
     if (networkError && (networkError as ServerError).statusCode === 401) {
       // redirect to login page
-      const newURL = new URL("/login", window.location.toString());
+      const newURL = new URL(
+        `${window.STASH_BASE_URL}login`,
+        window.location.toString()
+      );
       newURL.searchParams.append("returnURL", window.location.href);
       window.location.href = newURL.toString();
     }

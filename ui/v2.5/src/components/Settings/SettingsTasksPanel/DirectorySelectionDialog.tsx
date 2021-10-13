@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { useConfiguration } from "src/core/StashService";
 import { Icon, Modal } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IDirectorySelectionDialogProps {
   onClose: (paths?: string[]) => void;
@@ -13,9 +13,9 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
   props: IDirectorySelectionDialogProps
 ) => {
   const intl = useIntl();
-  const { data } = useConfiguration();
+  const { configuration } = React.useContext(ConfigurationContext);
 
-  const libraryPaths = data?.configuration.general.stashes.map((s) => s.path);
+  const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
   const [paths, setPaths] = useState<string[]>([]);
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
