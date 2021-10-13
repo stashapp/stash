@@ -742,6 +742,12 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useConfigureDefaults = () =>
+  GQL.useConfigureDefaultsMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
 export const useConfigureDLNA = () =>

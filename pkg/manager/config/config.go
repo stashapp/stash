@@ -138,6 +138,11 @@ const SlideshowDelay = "slideshow_delay"
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
+// Default settings
+const (
+	DefaultIdentifySettings = "defaults.identify_task"
+)
+
 // Security
 const TrustedProxies = "trusted_proxies"
 const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
@@ -841,8 +846,28 @@ func (i *Instance) GetHandyKey() string {
 }
 
 func (i *Instance) GetFunscriptOffset() int {
+	i.RLock()
+	defer i.RUnlock()
 	viper.SetDefault(FunscriptOffset, 0)
 	return viper.GetInt(FunscriptOffset)
+}
+
+// GetDefaultIdentifySettings returns the default Identify task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOptions {
+	i.RLock()
+	defer i.RUnlock()
+
+	if viper.IsSet(DefaultIdentifySettings) {
+		var ret models.IdentifyMetadataTaskOptions
+		if err := viper.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
 }
 
 // GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.

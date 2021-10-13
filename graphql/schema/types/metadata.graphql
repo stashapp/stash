@@ -74,7 +74,7 @@ enum IdentifyFieldStrategy {
   OVERWRITE
 }
 
-input IdentifyFieldOptions {
+input IdentifyFieldOptionsInput {
   field: String!
   strategy: IdentifyFieldStrategy!
   """creates missing objects if needed - only applicable for performers, tags and studios"""
@@ -83,7 +83,7 @@ input IdentifyFieldOptions {
 
 input IdentifyMetadataOptionsInput {
   """any fields missing from here are defaulted to MERGE and createMissing false"""
-  fieldOptions: [IdentifyFieldOptions!]
+  fieldOptions: [IdentifyFieldOptionsInput!]
   """defaults to true if not provided"""
   setCoverImage: Boolean
   setOrganized: Boolean
@@ -105,6 +105,37 @@ input IdentifyMetadataInput {
 
   """scene ids to identify"""
   sceneIDs: [ID!]
+}
+
+# types for default options
+type IdentifyFieldOptions {
+  field: String!
+  strategy: IdentifyFieldStrategy!
+  """creates missing objects if needed - only applicable for performers, tags and studios"""
+  createMissing: Boolean
+}
+
+type IdentifyMetadataOptions {
+  """any fields missing from here are defaulted to MERGE and createMissing false"""
+  fieldOptions: [IdentifyFieldOptions!]
+  """defaults to true if not provided"""
+  setCoverImage: Boolean
+  setOrganized: Boolean
+  """defaults to true if not provided"""
+  includeMalePerformers: Boolean
+}
+
+type IdentifySource {
+  source: ScraperSource!
+  """Options defined for a source override the defaults"""
+  options: IdentifyMetadataOptions
+}
+
+type IdentifyMetadataTaskOptions {
+  """An ordered list of sources to identify items with. Only the first source that finds a match is used."""
+  sources: [IdentifySource!]!
+  """Options defined here override the configured defaults"""
+  options: IdentifyMetadataOptions
 }
 
 input ExportObjectTypeInput {

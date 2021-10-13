@@ -21,6 +21,7 @@ interface IModal {
   disabled?: boolean;
   modalProps?: ModalProps;
   dialogClassName?: string;
+  footerButtons?: React.ReactNode;
 }
 
 const defaultOnHide = () => {};
@@ -37,6 +38,7 @@ const ModalComponent: React.FC<IModal> = ({
   disabled,
   modalProps,
   dialogClassName,
+  footerButtons,
 }) => (
   <Modal
     keyboard={false}
@@ -52,12 +54,13 @@ const ModalComponent: React.FC<IModal> = ({
     <Modal.Body>{children}</Modal.Body>
     <Modal.Footer>
       <div>
+        {footerButtons}
         {cancel ? (
           <Button
             disabled={isRunning}
             variant={cancel.variant ?? "primary"}
             onClick={cancel.onClick}
-            className="mr-2"
+            className="ml-2"
           >
             {cancel.text ?? (
               <FormattedMessage

@@ -567,7 +567,7 @@ func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, err
 	return nil, nil
 }
 
-func (t *IdentifySceneTask) shouldSetSingleValueField(strategy *models.IdentifyFieldOptions, hasExistingValue bool) bool {
+func (t *IdentifySceneTask) shouldSetSingleValueField(strategy *models.IdentifyFieldOptionsInput, hasExistingValue bool) bool {
 	// if unset then default to MERGE
 	fs := models.IdentifyFieldStrategyMerge
 
@@ -586,7 +586,7 @@ type modifySceneOptions struct {
 	scene        *models.Scene
 	scraped      *models.ScrapedScene
 	stashBox     *models.StashBox
-	fieldOptions map[string]*models.IdentifyFieldOptions
+	fieldOptions map[string]*models.IdentifyFieldOptionsInput
 	options      []models.IdentifyMetadataOptionsInput
 	repo         models.Repository
 }
@@ -607,7 +607,7 @@ func (o *modifySceneOptions) setOptions(source models.IdentifySourceInput, defau
 
 func (o *modifySceneOptions) setFieldStrategies() {
 	// prefer source-specific field strategies, then the defaults
-	ret := make(map[string]*models.IdentifyFieldOptions)
+	ret := make(map[string]*models.IdentifyFieldOptionsInput)
 	for _, oo := range o.options {
 		for _, f := range oo.FieldOptions {
 			if _, found := ret[f.Field]; !found {

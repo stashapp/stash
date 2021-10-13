@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Form } from "react-bootstrap";
+import { Button, Form, Spinner } from "react-bootstrap";
 import {
   mutateMetadataIdentify,
   useConfiguration,
+  useConfigureDefaults,
   useListSceneScrapers,
 } from "src/core/StashService";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
@@ -31,6 +32,8 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     };
   }
 
+  const [configureDefaults] = useConfigureDefaults();
+
   const [options, setOptions] = useState<GQL.IdentifyMetadataOptionsInput>(
     getDefaultOptions()
   );
@@ -40,6 +43,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
   >();
   const [animation, setAnimation] = useState(true);
   const [editingField, setEditingField] = useState(false);
+  const [savingDefaults, setSavingDefaults] = useState(false);
 
   const intl = useIntl();
   const Toast = useToast();
@@ -86,30 +90,72 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
   }, [configData, scraperData]);
 
   useEffect(() => {
-    if (!allSources) return;
+    if (!configData || !allSources) return;
 
-    // set default sources
-    setSources(allSources);
-  }, [allSources]);
+    const { identify: identifyDefaults } = configData.configuration.defaults;
+
+    if (identifyDefaults) {
+      const mappedSources = identifyDefaults.sources
+        .map((s) => {
+          const found = allSources.find(
+            (ss) =>
+              ss.scraper_id === s.source.scraper_id ||
+              ss.stash_box_endpoint === s.source.stash_box_endpoint
+          );
+
+          if (!found) return;
+
+          const ret: IScraperSource = {
+            ...found,
+          };
+
+          if (s.options) {
+            const { __typename, ...sourceOptions } = s.options;
+            ret.options = sourceOptions;
+          }
+
+          return ret;
+        })
+        .filter((s) => s) as IScraperSource[];
+
+      setSources(mappedSources);
+      if (identifyDefaults.options) {
+        const { __typename, ...defaultOptions } = identifyDefaults.options;
+        setOptions(defaultOptions);
+      }
+    } else {
+      // default to first stash-box instance only
+      const stashBox = allSources.find((s) => s.stash_box_endpoint);
+      if (stashBox) {
+        setSources([stashBox]);
+      } else {
+        setSources([]);
+      }
+    }
+  }, [allSources, configData]);
 
   if (configError || scraperError)
     return <div>{configError ?? scraperError}</div>;
-  if (!allSources) return <div />;
+  if (!allSources || !configData) return <div />;
+
+  function makeIdentifyInput(): GQL.IdentifyMetadataInput {
+    return {
+      sources: sources.map((s) => {
+        return {
+          source: {
+            scraper_id: s.scraper_id,
+            stash_box_endpoint: s.stash_box_endpoint,
+          },
+          options: s.options,
+        };
+      }),
+      options,
+    };
+  }
 
   async function onIdentify() {
     try {
-      await mutateMetadataIdentify({
-        sources: sources.map((s) => {
-          return {
-            source: {
-              scraper_id: s.scraper_id,
-              stash_box_endpoint: s.stash_box_endpoint,
-            },
-            options: s.options,
-          };
-        }),
-        options,
-      });
+      await mutateMetadataIdentify(makeIdentifyInput());
 
       Toast.success({
         content: intl.formatMessage(
@@ -168,6 +214,23 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     setEditingSource(undefined);
   }
 
+  async function setAsDefault() {
+    try {
+      setSavingDefaults(true);
+      await configureDefaults({
+        variables: {
+          input: {
+            identify: makeIdentifyInput(),
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setSavingDefaults(false);
+    }
+  }
+
   if (editingSource) {
     return (
       <SourcesEditor
@@ -194,7 +257,19 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
-      disabled={editingField}
+      disabled={editingField || savingDefaults}
+      footerButtons={
+        <Button
+          variant="secondary"
+          disabled={savingDefaults}
+          onClick={() => setAsDefault()}
+        >
+          {savingDefaults && (
+            <Spinner animation="border" role="status" size="sm" />
+          )}
+          <FormattedMessage id="actions.set_as_default" />
+        </Button>
+      }
     >
       <Form>
         <SourcesList
