@@ -864,8 +864,8 @@ func (i *Instance) GetHandyKey() string {
 }
 
 func (i *Instance) GetFunscriptOffset() int {
-	i.RLock()
-	defer i.RUnlock()
+	i.Lock()
+	defer i.Unlock()
 	viper.SetDefault(FunscriptOffset, 0)
 	return viper.GetInt(FunscriptOffset)
 }
