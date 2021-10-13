@@ -128,7 +128,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			return nil
 		})
 
-		if err == stoppingErr {
+		if errors.Is(err, stoppingErr) {
 			logger.Info("Stopping due to user request")
 			break
 		}
@@ -206,7 +206,7 @@ func (j *ScanJob) neededScan(ctx context.Context, paths []*models.StashConfig) (
 			return nil
 		})
 
-		if err == timeoutErr {
+		if errors.Is(err, timeoutErr) {
 			// timeout should return nil counts
 			return nil, nil
 		}

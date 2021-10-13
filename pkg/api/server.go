@@ -229,7 +229,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	tlsConfig, err := makeTLSConfig(c)
 	if err != nil {
 		// assume we don't want to start with a broken TLS configuration
-		panic(fmt.Errorf("error loading TLS config: %s", err.Error()))
+		panic(fmt.Errorf("error loading TLS config: %v", err))
 	}
 
 	server := &http.Server{
@@ -296,7 +296,7 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	certs := make([]tls.Certificate, 1)
 	certs[0], err = tls.X509KeyPair(cert, key)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing key pair: %s", err.Error())
+		return nil, fmt.Errorf("error parsing key pair: %v", err)
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,

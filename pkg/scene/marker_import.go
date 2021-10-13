@@ -70,7 +70,7 @@ func (i *MarkerImporter) PostImport(id int) error {
 			tagIDs = append(tagIDs, t.ID)
 		}
 		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %s", err.Error())
+			return fmt.Errorf("failed to associate tags: %v", err)
 		}
 	}
 
@@ -101,7 +101,7 @@ func (i *MarkerImporter) FindExistingID() (*int, error) {
 func (i *MarkerImporter) Create() (*int, error) {
 	created, err := i.ReaderWriter.Create(i.marker)
 	if err != nil {
-		return nil, fmt.Errorf("error creating marker: %s", err.Error())
+		return nil, fmt.Errorf("error creating marker: %v", err)
 	}
 
 	id := created.ID
@@ -113,7 +113,7 @@ func (i *MarkerImporter) Update(id int) error {
 	marker.ID = id
 	_, err := i.ReaderWriter.Update(marker)
 	if err != nil {
-		return fmt.Errorf("error updating existing marker: %s", err.Error())
+		return fmt.Errorf("error updating existing marker: %v", err)
 	}
 
 	return nil

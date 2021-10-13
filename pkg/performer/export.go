@@ -84,7 +84,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 
 	image, err := reader.GetImage(performer.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting performers image: %s", err.Error())
+		return nil, fmt.Errorf("error getting performers image: %v", err)
 	}
 
 	if len(image) > 0 {
