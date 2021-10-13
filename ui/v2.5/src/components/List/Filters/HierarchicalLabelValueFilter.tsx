@@ -51,6 +51,14 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     onValueChanged(value);
   }
 
+  function criterionOptionTypeToIncludeID(): string {
+    return criterion.criterionOption.type === "studios"
+        ? "include-sub-studios"
+        : criterion.criterionOption.type === "childTags"
+        ? "include-parent-tags"
+        : "include-sub-tags";
+  }
+
   function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
     const optionType =
       criterion.criterionOption.type === "studios"
@@ -76,6 +84,7 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
 
       <Form.Group>
         <Form.Check
+          id={criterionOptionTypeToIncludeID()}
           checked={criterion.value.depth !== 0}
           label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
           onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}
