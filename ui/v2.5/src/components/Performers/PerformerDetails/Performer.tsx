@@ -18,6 +18,7 @@ import {
 } from "src/components/Shared";
 import { useLightbox, useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
@@ -209,6 +210,19 @@ export const Performer: React.FC = () => {
     }
   }
 
+  function setRating(v: number | null) {
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            rating: v,
+          },
+        },
+      });
+    }
+  }
+
   const renderIcons = () => (
     <span className="name-icons">
       <Button
@@ -317,6 +331,12 @@ export const Performer: React.FC = () => {
               {performer.name}
               {renderIcons()}
             </h2>
+            <h4>
+              <RatingStars
+                value={performer.rating ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+            </h4>
             {maybeRenderAliases()}
             {maybeRenderAge()}
           </div>
