@@ -26,7 +26,12 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
 }) => {
   function getDefaultOptions(): GQL.IdentifyMetadataOptionsInput {
     return {
-      fieldOptions: [],
+      fieldOptions: [
+        {
+          field: "title",
+          strategy: GQL.IdentifyFieldStrategy.Overwrite,
+        },
+      ],
       includeMalePerformers: true,
       setCoverImage: true,
       setOrganized: false,
@@ -269,7 +274,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       footerButtons={
         <Button
           variant="secondary"
-          disabled={savingDefaults}
+          disabled={editingField || savingDefaults}
           onClick={() => setAsDefault()}
         >
           {savingDefaults && (

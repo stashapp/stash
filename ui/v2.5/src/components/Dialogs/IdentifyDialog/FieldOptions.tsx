@@ -3,11 +3,11 @@ import { Form, Button, Table } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
-import { sceneFields } from "./constants";
+import { multiValueSceneFields, SceneField, sceneFields } from "./constants";
 import { ThreeStateBoolean } from "./ThreeStateBoolean";
 
 interface IFieldOptionsEditor {
-  availableFields: string[];
+  availableFields: SceneField[];
   options: GQL.IdentifyFieldOptions;
   editField: () => void;
   editOptions: (o?: GQL.IdentifyFieldOptions) => void;
@@ -94,10 +94,8 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
   }
 
   function maybeRenderCreateMissing() {
-    const createMissingFields = ["studio", "performers", "tags"];
-
     if (
-      createMissingFields.includes(localOptions.field) &&
+      multiValueSceneFields.includes(localOptions.field as SceneField) &&
       localOptions.strategy !== GQL.IdentifyFieldStrategy.Ignore
     ) {
       const value =
@@ -201,7 +199,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
     }
   }, [fieldOptions]);
 
-  const availableFields = useMemo(() => {
+  const availableFields: SceneField[] = useMemo(() => {
     return sceneFields.filter(
       (f) => !localFieldOptions?.some((o) => o !== editField && o.field === f)
     );
