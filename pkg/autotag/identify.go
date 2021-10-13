@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
@@ -124,9 +125,10 @@ func (t *IdentifySceneTask) modifyScene(r models.Repository, options modifyScene
 		ID: target.ID,
 	}
 
-	t.setSceneFields(&partial, options)
+	fieldsSet := t.setSceneFields(&partial, options)
 
-	if err := t.setSceneStudio(&partial, options); err != nil {
+	studioSet, err := t.setSceneStudio(&partial, options)
+	if err != nil {
 		return fmt.Errorf("error setting studio: %w", err)
 	}
 
@@ -150,7 +152,16 @@ func (t *IdentifySceneTask) modifyScene(r models.Repository, options modifyScene
 		return err
 	}
 
+	// don't update anything if nothing was set
+	if !fieldsSet && !studioSet && len(performerIDs) == 0 && len(tagIDs) == 0 && len(stashIDs) == 0 && len(coverImage) == 0 {
+		logger.Infof("Nothing to set for %s", target.Path)
+		return nil
+	}
+
 	qb := r.Scene()
+	partial.UpdatedAt = &models.SQLiteTimestamp{
+		Timestamp: time.Now(),
+	}
 	_, err = qb.Update(partial)
 	if err != nil {
 		return fmt.Errorf("error updating scene: %w", err)
@@ -189,31 +200,38 @@ func (t *IdentifySceneTask) modifyScene(r models.Repository, options modifyScene
 	return nil
 }
 
-func (t *IdentifySceneTask) setSceneFields(partial *models.ScenePartial, input modifySceneOptions) {
+// setSceneFields sets scene fields based on field strategies. Returns true if at least one
+// field was set.
+func (t *IdentifySceneTask) setSceneFields(partial *models.ScenePartial, input modifySceneOptions) bool {
 	scraped := input.scraped
 	fieldStrategies := input.fieldOptions
 	target := input.scene
+	set := false
 
-	if scraped.Title != nil {
+	if scraped.Title != nil && target.Title.String != *scraped.Title {
 		if t.shouldSetSingleValueField(fieldStrategies["title"], target.Title.String != "") {
 			partial.Title = models.NullStringPtr(*scraped.Title)
+			set = true
 		}
 	}
-	if scraped.Date != nil {
+	if scraped.Date != nil && target.Date.String != *scraped.Date {
 		if t.shouldSetSingleValueField(fieldStrategies["date"], target.Date.Valid) {
 			partial.Date = &models.SQLiteDate{
 				String: *scraped.Date,
 			}
+			set = true
 		}
 	}
-	if scraped.Details != nil {
+	if scraped.Details != nil && target.Details.String != *scraped.Details {
 		if t.shouldSetSingleValueField(fieldStrategies["details"], target.Details.String != "") {
-			partial.Title = models.NullStringPtr(*scraped.Details)
+			partial.Details = models.NullStringPtr(*scraped.Details)
+			set = true
 		}
 	}
-	if scraped.URL != nil {
+	if scraped.URL != nil && target.URL.String != *scraped.URL {
 		if t.shouldSetSingleValueField(fieldStrategies["url"], target.URL.String != "") {
 			partial.URL = models.NullStringPtr(*scraped.URL)
+			set = true
 		}
 	}
 
@@ -224,18 +242,21 @@ func (t *IdentifySceneTask) setSceneFields(partial *models.ScenePartial, input m
 			break
 		}
 	}
-	if setOrganized {
+	if setOrganized && !target.Organized {
 		// just reuse the boolean since we know it's true
 		partial.Organized = &setOrganized
+		set = true
 	}
 
+	return set
 }
 
-func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input modifySceneOptions) error {
+func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input modifySceneOptions) (bool, error) {
 	scraped := input.scraped
 	fieldStrategy := input.fieldOptions["studio"]
 	target := input.scene
 	r := input.repo
+	set := false
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
 
@@ -245,17 +266,20 @@ func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input m
 				// existing studio, just set it
 				studioID, err := strconv.ParseInt(*scraped.Studio.StoredID, 10, 64)
 				if err != nil {
-					return fmt.Errorf("error converting studio ID %s: %w", *scraped.Studio.StoredID, err)
+					return false, fmt.Errorf("error converting studio ID %s: %w", *scraped.Studio.StoredID, err)
 				}
 
-				target.StudioID = sql.NullInt64{
-					Int64: studioID,
-					Valid: true,
+				if target.StudioID.Int64 == studioID {
+					partial.StudioID = &sql.NullInt64{
+						Int64: studioID,
+						Valid: true,
+					}
+					set = true
 				}
 			} else if createMissing {
 				created, err := r.Studio().Create(scrapedToStudioInput(scraped.Studio))
 				if err != nil {
-					return fmt.Errorf("error creating studio: %w", err)
+					return false, fmt.Errorf("error creating studio: %w", err)
 				}
 
 				if input.stashBox != nil && scraped.RemoteSiteID != nil {
@@ -265,19 +289,20 @@ func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input m
 							StashID:  *scraped.Studio.RemoteSiteID,
 						},
 					}); err != nil {
-						return fmt.Errorf("error setting studio stash id: %w", err)
+						return false, fmt.Errorf("error setting studio stash id: %w", err)
 					}
 				}
 
-				target.StudioID = sql.NullInt64{
+				partial.StudioID = &sql.NullInt64{
 					Int64: int64(created.ID),
 					Valid: true,
 				}
+				set = true
 			}
 		}
 	}
 
-	return nil
+	return set, nil
 }
 
 func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
@@ -294,6 +319,20 @@ func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
 	}
 
 	return ret
+}
+
+func idListEquals(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for _, aa := range a {
+		if !utils.IntInclude(b, aa) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]int, error) {
@@ -321,16 +360,18 @@ func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]in
 		}
 	}
 
+	var originalPerformerIDs []int
 	var performerIDs []int
 	if len(scraped.Performers) > 0 {
 		var err error
+		originalPerformerIDs, err = r.Scene().GetPerformerIDs(target.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting scene performers: %w", err)
+		}
 
 		if strategy == models.IdentifyFieldStrategyMerge {
 			// add to existing
-			performerIDs, err = r.Scene().GetPerformerIDs(target.ID)
-			if err != nil {
-				return nil, fmt.Errorf("error getting scene performers: %w", err)
-			}
+			performerIDs = originalPerformerIDs
 		}
 
 		for _, p := range scraped.Performers {
@@ -366,6 +407,11 @@ func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]in
 				performerIDs = append(performerIDs, created.ID)
 			}
 		}
+	}
+
+	// don't return if nothing was added
+	if idListEquals(originalPerformerIDs, performerIDs) {
+		return nil, nil
 	}
 
 	return performerIDs, nil
@@ -449,16 +495,18 @@ func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, err
 		strategy = fieldStrategy.Strategy
 	}
 
+	var originalTagIDs []int
 	var tagIDs []int
 	if len(scraped.Tags) > 0 {
 		var err error
+		originalTagIDs, err = r.Scene().GetTagIDs(target.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting scene tag: %w", err)
+		}
 
 		if strategy == models.IdentifyFieldStrategyMerge {
 			// add to existing
-			tagIDs, err = r.Scene().GetTagIDs(target.ID)
-			if err != nil {
-				return nil, fmt.Errorf("error getting scene tag: %w", err)
-			}
+			tagIDs = originalTagIDs
 		}
 
 		for _, t := range scraped.Tags {
@@ -486,7 +534,33 @@ func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, err
 		}
 	}
 
+	// don't return if nothing was added
+	if idListEquals(originalTagIDs, tagIDs) {
+		return nil, nil
+	}
+
 	return tagIDs, nil
+}
+
+func stashIDListEquals(a, b []models.StashID) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for _, aa := range a {
+		for _, bb := range b {
+			found := false
+			if aa == bb {
+				found = true
+				break
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models.StashID, error) {
@@ -507,29 +581,36 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 		strategy = fieldStrategy.Strategy
 	}
 
+	var originalStashIDs []models.StashID
 	var stashIDs []models.StashID
 	if scraped.RemoteSiteID != nil {
 		var err error
+		var stashIDPtrs []*models.StashID
+		stashIDPtrs, err = r.Scene().GetStashIDs(target.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting scene tag: %w", err)
+		}
+
+		// convert existing to non-pointer types
+		for _, stashID := range stashIDPtrs {
+			originalStashIDs = append(stashIDs, *stashID)
+		}
 
 		if strategy == models.IdentifyFieldStrategyMerge {
 			// add to existing
-			var stashIDPtrs []*models.StashID
-			stashIDPtrs, err = r.Scene().GetStashIDs(target.ID)
-			if err != nil {
-				return nil, fmt.Errorf("error getting scene tag: %w", err)
-			}
-
-			// convert existing to non-pointer types
-			for _, stashID := range stashIDPtrs {
-				stashIDs = append(stashIDs, *stashID)
-			}
+			stashIDs = originalStashIDs
 		}
 
 		remoteSiteID := *scraped.RemoteSiteID
 		for _, stashID := range stashIDs {
 			if stashBox.Endpoint == stashID.Endpoint {
+				// if stashID is the same, then don't set
+				if stashID.StashID == remoteSiteID {
+					return nil, nil
+				}
+
 				// replace the stash id and return
-				stashID.Endpoint = remoteSiteID
+				stashID.StashID = remoteSiteID
 				return stashIDs, nil
 			}
 		}
@@ -541,11 +622,22 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 		})
 	}
 
+	if stashIDListEquals(originalStashIDs, stashIDs) {
+		return nil, nil
+	}
+
 	return stashIDs, nil
 }
 
 func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, error) {
 	scraped := input.scraped
+	target := input.scene
+	r := input.repo
+
+	if scraped.Image == nil {
+		return nil, nil
+	}
+
 	setCoverImage := false
 	for _, o := range input.options {
 		if o.SetCoverImage != nil {
@@ -559,9 +651,20 @@ func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, err
 		return nil, nil
 	}
 
-	if scraped.Image != nil {
-		// always overwrite if present
-		return utils.ProcessImageInput(*scraped.Image)
+	// always overwrite if present
+	existingCover, err := r.Scene().GetCover(target.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting scene cover: %w", err)
+	}
+
+	data, err := utils.ProcessImageInput(*scraped.Image)
+	if err != nil {
+		return nil, fmt.Errorf("error processing image input: %w", err)
+	}
+
+	// only return if different
+	if bytes.Compare(existingCover, data) != 0 {
+		return data, nil
 	}
 
 	return nil, nil

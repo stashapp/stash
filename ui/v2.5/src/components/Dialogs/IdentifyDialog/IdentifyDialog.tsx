@@ -10,6 +10,7 @@ import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
+import { withoutTypename } from "src/utils";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
@@ -110,7 +111,10 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
           };
 
           if (s.options) {
-            const { __typename, ...sourceOptions } = s.options;
+            const sourceOptions = withoutTypename(s.options);
+            sourceOptions.fieldOptions = sourceOptions.fieldOptions?.map(
+              withoutTypename
+            );
             ret.options = sourceOptions;
           }
 
@@ -120,7 +124,10 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
 
       setSources(mappedSources);
       if (identifyDefaults.options) {
-        const { __typename, ...defaultOptions } = identifyDefaults.options;
+        const defaultOptions = withoutTypename(identifyDefaults.options);
+        defaultOptions.fieldOptions = defaultOptions.fieldOptions?.map(
+          withoutTypename
+        );
         setOptions(defaultOptions);
       }
     } else {
