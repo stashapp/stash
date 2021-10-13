@@ -52,11 +52,13 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
   }
 
   function criterionOptionTypeToIncludeID(): string {
-    return criterion.criterionOption.type === "studios"
-        ? "include-sub-studios"
-        : criterion.criterionOption.type === "childTags"
-        ? "include-parent-tags"
-        : "include-sub-tags";
+    if (criterion.criterionOption.type === "studios") {
+      return "include-sub-studios";
+    }
+    if (criterion.criterionOption.type === "childTags") {
+      return "include-parent-tags";
+    }
+    return "include-sub-tags";
   }
 
   function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
