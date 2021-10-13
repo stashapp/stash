@@ -2,7 +2,7 @@
 
 # Build Frontend
 FROM node:alpine as frontend
-RUN apk add --no-cache make git
+RUN apk add --no-cache make
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
 WORKDIR /stash
