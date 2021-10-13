@@ -22,7 +22,6 @@ type IdentifySceneTask struct {
 	Input   models.IdentifyMetadataInput
 	SceneID int
 
-	Ctx          context.Context
 	TxnManager   models.TransactionManager
 	ScraperCache *scraper.Cache
 	StashBoxes   models.StashBoxes
@@ -45,10 +44,12 @@ func (t *IdentifySceneTask) Execute(ctx context.Context, progress *job.Progress)
 
 		progress.ExecuteTask("Identifying "+scene.Path, func() {
 			// iterate through the input sources
-			// TODO - use default sources if not provided
 			for _, source := range t.Input.Sources {
 				var stashBox *models.StashBox
 				stashBox, err = t.getStashBox(source.Source)
+				if err != nil {
+					return
+				}
 
 				// scrape using the source
 				var scraped *models.ScrapedScene
@@ -548,15 +549,16 @@ func stashIDListEquals(a, b []models.StashID) bool {
 	}
 
 	for _, aa := range a {
+		found := false
 		for _, bb := range b {
-			found := false
 			if aa == bb {
 				found = true
 				break
 			}
-			if !found {
-				return false
-			}
+		}
+
+		if !found {
+			return false
 		}
 	}
 
@@ -584,9 +586,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 	var originalStashIDs []models.StashID
 	var stashIDs []models.StashID
 	if scraped.RemoteSiteID != nil {
-		var err error
-		var stashIDPtrs []*models.StashID
-		stashIDPtrs, err = r.Scene().GetStashIDs(target.ID)
+		stashIDPtrs, err := r.Scene().GetStashIDs(target.ID)
 		if err != nil {
 			return nil, fmt.Errorf("error getting scene tag: %w", err)
 		}

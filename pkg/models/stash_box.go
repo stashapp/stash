@@ -11,7 +11,7 @@ func (sb StashBoxes) ResolveStashBox(source ScraperSourceInput) (*StashBox, erro
 	if source.StashBoxIndex != nil {
 		index := source.StashBoxIndex
 		if *index < 0 || *index >= len(sb) {
-			return nil, fmt.Errorf("invalid stash_box_index: %d", index)
+			return nil, fmt.Errorf("%w: invalid stash_box_index: %d", ErrScraperSource, index)
 		}
 
 		return sb[*index], nil
@@ -27,11 +27,13 @@ func (sb StashBoxes) ResolveStashBox(source ScraperSourceInput) (*StashBox, erro
 		}
 
 		if ret == nil {
-			return nil, fmt.Errorf(`stash-box with endpoint "%s" not found`, endpoint)
+			return nil, fmt.Errorf(`%w: stash-box with endpoint "%s"`, ErrNotFound, endpoint)
 		}
 
 		return ret, nil
 	}
+
+	// neither stash-box inputs were provided, so assume it is a scraper
 
 	return nil, nil
 }

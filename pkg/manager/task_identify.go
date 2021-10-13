@@ -31,8 +31,7 @@ func CreateIdentifyJob(input models.IdentifyMetadataInput) *IdentifyJob {
 func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.progress = progress
 
-	// if no sources provided - get defaults
-	// TODO - no defaults yet, just return
+	// if no sources provided - just return
 	if len(j.input.Sources) == 0 {
 		return
 	}
@@ -106,7 +105,6 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, sceneID int) {
 	task := autotag.IdentifySceneTask{
 		Input:        j.input,
 		SceneID:      sceneID,
-		Ctx:          ctx,
 		TxnManager:   j.txnManager,
 		ScraperCache: instance.ScraperCache,
 		StashBoxes:   j.stashBoxes,
