@@ -39,7 +39,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
-	if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		if len(j.input.SceneIDs) == 0 {
 			return j.identifyAllScenes(ctx, r)
 		}
