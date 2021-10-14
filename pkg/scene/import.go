@@ -398,7 +398,6 @@ func (i *Importer) FindExistingID() (*int, error) {
 	var err error
 
 	switch i.FileNamingAlgorithm {
-
 	case models.HashAlgorithmMd5:
 		existing, err = i.ReaderWriter.FindByChecksum(i.Input.Checksum)
 	case models.HashAlgorithmOshash:
