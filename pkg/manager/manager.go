@@ -302,19 +302,19 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	configDir := filepath.Dir(input.ConfigLocation)
 	if exists, _ := utils.DirExists(configDir); !exists {
 		if err := os.Mkdir(configDir, 0755); err != nil {
-			return fmt.Errorf("abc: %s", err.Error())
+			return fmt.Errorf("abc: %v", err)
 		}
 	}
 
 	// create the generated directory if it does not exist
 	if exists, _ := utils.DirExists(input.GeneratedLocation); !exists {
 		if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
-			return fmt.Errorf("error creating generated directory: %s", err.Error())
+			return fmt.Errorf("error creating generated directory: %v", err)
 		}
 	}
 
 	if err := utils.Touch(input.ConfigLocation); err != nil {
-		return fmt.Errorf("error creating config file: %s", err.Error())
+		return fmt.Errorf("error creating config file: %v", err)
 	}
 
 	s.Config.SetConfigFile(input.ConfigLocation)
@@ -324,12 +324,12 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	s.Config.Set(config.Database, input.DatabaseFile)
 	s.Config.Set(config.Stash, input.Stashes)
 	if err := s.Config.Write(); err != nil {
-		return fmt.Errorf("error writing configuration file: %s", err.Error())
+		return fmt.Errorf("error writing configuration file: %v", err)
 	}
 
 	// initialise the database
 	if err := s.PostInit(); err != nil {
-		return fmt.Errorf("error initializing the database: %s", err.Error())
+		return fmt.Errorf("error initializing the database: %v", err)
 	}
 
 	s.Config.FinalizeSetup()

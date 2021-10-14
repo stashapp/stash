@@ -663,7 +663,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
 				}
 				if err != nil {
-					return fmt.Errorf("error querying performers: %s", err.Error())
+					return fmt.Errorf("error querying performers: %v", err)
 				}
 
 				for _, performer := range performers {

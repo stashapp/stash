@@ -73,19 +73,19 @@ func (j *autoTagJob) autoTagSpecific(ctx context.Context, progress *job.Progress
 		if performerCount == 1 && performerIds[0] == wildcard {
 			performerCount, err = performerQuery.Count()
 			if err != nil {
-				return fmt.Errorf("error getting performer count: %s", err.Error())
+				return fmt.Errorf("error getting performer count: %v", err)
 			}
 		}
 		if studioCount == 1 && studioIds[0] == wildcard {
 			studioCount, err = studioQuery.Count()
 			if err != nil {
-				return fmt.Errorf("error getting studio count: %s", err.Error())
+				return fmt.Errorf("error getting studio count: %v", err)
 			}
 		}
 		if tagCount == 1 && tagIds[0] == wildcard {
 			tagCount, err = tagQuery.Count()
 			if err != nil {
-				return fmt.Errorf("error getting tag count: %s", err.Error())
+				return fmt.Errorf("error getting tag count: %v", err)
 			}
 		}
 
@@ -122,7 +122,7 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 				var err error
 				performers, err = performerQuery.All()
 				if err != nil {
-					return fmt.Errorf("error querying performers: %s", err.Error())
+					return fmt.Errorf("error querying performers: %v", err)
 				}
 			} else {
 				performerIdInt, err := strconv.Atoi(performerId)
@@ -188,7 +188,7 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 				var err error
 				studios, err = studioQuery.All()
 				if err != nil {
-					return fmt.Errorf("error querying studios: %s", err.Error())
+					return fmt.Errorf("error querying studios: %v", err)
 				}
 			} else {
 				studioIdInt, err := strconv.Atoi(studioId)
@@ -259,7 +259,7 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 				var err error
 				tags, err = tagQuery.All()
 				if err != nil {
-					return fmt.Errorf("error querying tags: %s", err.Error())
+					return fmt.Errorf("error querying tags: %v", err)
 				}
 			} else {
 				tagIdInt, err := strconv.Atoi(tagId)

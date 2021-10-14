@@ -190,7 +190,7 @@ func AddTag(client *graphql.Client) error {
 	log.Infof("Adding tag to scene %v", scene.ID)
 	err = client.Mutate(context.Background(), &m, vars)
 	if err != nil {
-		return fmt.Errorf("Error mutating scene: %s", err.Error())
+		return fmt.Errorf("Error mutating scene: %v", err)
 	}
 
 	return nil
@@ -225,7 +225,7 @@ func RemoveTag(client *graphql.Client) error {
 
 	err = client.Mutate(context.Background(), &m, vars)
 	if err != nil {
-		return fmt.Errorf("Error destroying tag: %s", err.Error())
+		return fmt.Errorf("Error destroying tag: %v", err)
 	}
 
 	return nil

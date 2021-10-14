@@ -75,7 +75,7 @@ func GetStudioName(reader models.StudioReader, image *models.Image) (string, err
 // func GetGalleryChecksum(reader models.GalleryReader, image *models.Image) (string, error) {
 // 	gallery, err := reader.FindByImageID(image.ID)
 // 	if err != nil {
-// 		return "", fmt.Errorf("error getting image gallery: %s", err.Error())
+// 		return "", fmt.Errorf("error getting image gallery: %v", err)
 // 	}
 
 // 	if gallery != nil {

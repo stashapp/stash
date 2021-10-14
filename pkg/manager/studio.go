@@ -24,7 +24,7 @@ func ValidateModifyStudio(studio models.StudioPartial, qb models.StudioReader) e
 
 		currentStudio, err := qb.Find(int(currentParentID.Int64))
 		if err != nil {
-			return fmt.Errorf("error finding parent studio: %s", err.Error())
+			return fmt.Errorf("error finding parent studio: %v", err)
 		}
 
 		currentParentID = currentStudio.ParentID

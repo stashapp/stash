@@ -63,13 +63,13 @@ func Initialize(databasePath string) error {
 	dbPath = databasePath
 
 	if err := getDatabaseSchemaVersion(); err != nil {
-		return fmt.Errorf("error getting database schema version: %s", err.Error())
+		return fmt.Errorf("error getting database schema version: %v", err)
 	}
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
 		if err := RunMigrations(); err != nil {
-			return fmt.Errorf("error running initial schema migrations: %s", err.Error())
+			return fmt.Errorf("error running initial schema migrations: %v", err)
 		}
 		// RunMigrations calls Initialise. Just return
 		return nil
@@ -298,7 +298,7 @@ func registerCustomDriver() {
 				})
 
 				if err != nil {
-					return fmt.Errorf("error registering natural sort collation: %s", err.Error())
+					return fmt.Errorf("error registering natural sort collation: %v", err)
 				}
 
 				return nil
