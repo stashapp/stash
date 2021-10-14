@@ -66,7 +66,7 @@ type SceneUpdateInput struct {
 	TagIds []graphql.ID `graphql:"tag_ids" json:"tag_ids"`
 }
 
-func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
+func getTagID(ctx context.Context, client *graphql.Client, create bool) (*graphql.ID, error) {
 	log.Info("Checking if tag exists already")
 
 	// see if tag exists already
@@ -74,7 +74,7 @@ func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
 		AllTags []Tag `graphql:"allTags"`
 	}
 
-	err := client.Query(context.Background(), &q, nil)
+	err := client.Query(ctx, &q, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting tags: %s\n", err.Error())
 	}
@@ -106,7 +106,7 @@ func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
 
 	log.Info("Creating new tag")
 
-	err = client.Mutate(context.Background(), &m, vars)
+	err = client.Mutate(ctx, &m, vars)
 	if err != nil {
 		return nil, fmt.Errorf("Error mutating scene: %s\n", err.Error())
 	}
@@ -114,7 +114,7 @@ func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
 	return &m.TagCreate.ID, nil
 }
 
-func findRandomScene(client *graphql.Client) (*Scene, error) {
+func findRandomScene(ctx context.Context, client *graphql.Client) (*Scene, error) {
 	// get a random scene
 	var q struct {
 		FindScenes FindScenesResultType `graphql:"findScenes(filter: $c)"`
@@ -132,7 +132,7 @@ func findRandomScene(client *graphql.Client) (*Scene, error) {
 	}
 
 	log.Info("Finding a random scene")
-	err := client.Query(context.Background(), &q, vars)
+	err := client.Query(ctx, &q, vars)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting random scene: %s\n", err.Error())
 	}
@@ -155,14 +155,14 @@ func addTagId(tagIds []graphql.ID, tagId graphql.ID) []graphql.ID {
 	return tagIds
 }
 
-func AddTag(client *graphql.Client) error {
-	tagID, err := getTagID(client, true)
+func AddTag(ctx context.Context, client *graphql.Client) error {
+	tagID, err := getTagID(ctx, client, true)
 
 	if err != nil {
 		return err
 	}
 
-	scene, err := findRandomScene(client)
+	scene, err := findRandomScene(ctx, client)
 
 	if err != nil {
 		return err
@@ -188,7 +188,7 @@ func AddTag(client *graphql.Client) error {
 	}
 
 	log.Infof("Adding tag to scene %v", scene.ID)
-	err = client.Mutate(context.Background(), &m, vars)
+	err = client.Mutate(ctx, &m, vars)
 	if err != nil {
 		return fmt.Errorf("Error mutating scene: %v", err)
 	}
@@ -196,8 +196,8 @@ func AddTag(client *graphql.Client) error {
 	return nil
 }
 
-func RemoveTag(client *graphql.Client) error {
-	tagID, err := getTagID(client, false)
+func RemoveTag(ctx context.Context, client *graphql.Client) error {
+	tagID, err := getTagID(ctx, client, false)
 
 	if err != nil {
 		return err
@@ -223,7 +223,7 @@ func RemoveTag(client *graphql.Client) error {
 
 	log.Info("Destroying tag")
 
-	err = client.Mutate(context.Background(), &m, vars)
+	err = client.Mutate(ctx, &m, vars)
 	if err != nil {
 		return fmt.Errorf("Error destroying tag: %v", err)
 	}

@@ -165,7 +165,7 @@ func Backup(db *sqlx.DB, backupPath string) error {
 		var err error
 		db, err = sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
 		if err != nil {
-			return fmt.Errorf("Open database %s failed:%s", dbPath, err)
+			return fmt.Errorf("open database %s failed: %v", dbPath, err)
 		}
 		defer db.Close()
 	}
@@ -173,7 +173,7 @@ func Backup(db *sqlx.DB, backupPath string) error {
 	logger.Infof("Backing up database into: %s", backupPath)
 	_, err := db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
-		return fmt.Errorf("vacuum failed: %s", err)
+		return fmt.Errorf("vacuum failed: %v", err)
 	}
 
 	return nil
