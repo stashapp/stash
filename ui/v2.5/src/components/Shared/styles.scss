@@ -205,3 +205,10 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     }
   }
 }
+
+.input-group-prepend {
+  .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
