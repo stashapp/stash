@@ -331,12 +331,10 @@ export const Performer: React.FC = () => {
               {performer.name}
               {renderIcons()}
             </h2>
-            <h4>
-              <RatingStars
-                value={performer.rating ?? undefined}
-                onSetRating={(value) => setRating(value ?? null)}
-              />
-            </h4>
+            <RatingStars
+              value={performer.rating ?? undefined}
+              onSetRating={(value) => setRating(value ?? null)}
+            />
             {maybeRenderAliases()}
             {maybeRenderAge()}
           </div>
