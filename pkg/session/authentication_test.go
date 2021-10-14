@@ -12,7 +12,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 	c := config.GetInstance()
 	_ = c.SetInitialMemoryConfig()
 
-	doTest := func(caseIndex int, r *http.Request, expectedErr error) {
+	doTest := func(caseIndex int, r *http.Request, expectedErr interface{}) {
 		t.Helper()
 		err := CheckAllowPublicWithoutAuth(c, r)
 
@@ -25,8 +25,8 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			return
 		}
 
-		if !errors.Is(err, expectedErr) {
-			t.Errorf("[%d]: expected %v, got %v", caseIndex, expectedErr, err)
+		if !errors.As(err, expectedErr) {
+			t.Errorf("[%d]: expected %T, got %v (%T)", caseIndex, expectedErr, err, err)
 			return
 		}
 	}
@@ -43,8 +43,8 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			{"127.0.0.1:8080", nil},
 			{"[::1]:8080", nil},
 			{"[fe80::c081:1c1a:ae39:d3cd%Ethernet 5]:9999", nil},
-			{"193.168.1.1:8080", ExternalAccessError{}},
-			{"[2002:9fc4:ed97:e472:5170:5766:520c:c901]:9999", ExternalAccessError{}},
+			{"193.168.1.1:8080", &ExternalAccessError{}},
+			{"[2002:9fc4:ed97:e472:5170:5766:520c:c901]:9999", &ExternalAccessError{}},
 		}
 
 		// try with no X-FORWARDED-FOR and valid one
@@ -72,8 +72,8 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			err        error
 		}{
 			{"192.168.1.1, 192.168.1.2, 100.64.0.1, 127.0.0.1", nil},
-			{"192.168.1.1, 193.168.1.1", ExternalAccessError{}},
-			{"193.168.1.1, 192.168.1.1", ExternalAccessError{}},
+			{"192.168.1.1, 193.168.1.1", &ExternalAccessError{}},
+			{"193.168.1.1, 192.168.1.1", &ExternalAccessError{}},
 		}
 
 		const remoteAddr = "192.168.1.1:8080"
@@ -101,12 +101,12 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			proxyChain string
 			err        error
 		}{
-			{"192.168.1.1:8080", "192.168.1.1, 192.168.1.2, 100.64.0.1, 127.0.0.1", UntrustedProxyError{}},
-			{"8.8.8.8:8080", "192.168.1.2, 127.0.0.1", UntrustedProxyError{}},
-			{"8.8.8.8:8080", "193.168.1.1, 4.4.4.4", ExternalAccessError{}},
-			{"8.8.8.8:8080", "4.4.4.4", ExternalAccessError{}},
-			{"8.8.8.8:8080", "192.168.1.1, 4.4.4.4a", UntrustedProxyError{}},
-			{"8.8.8.8:8080", "192.168.1.1a, 4.4.4.4", ExternalAccessError{}},
+			{"192.168.1.1:8080", "192.168.1.1, 192.168.1.2, 100.64.0.1, 127.0.0.1", &UntrustedProxyError{}},
+			{"8.8.8.8:8080", "192.168.1.2, 127.0.0.1", &UntrustedProxyError{}},
+			{"8.8.8.8:8080", "193.168.1.1, 4.4.4.4", &ExternalAccessError{}},
+			{"8.8.8.8:8080", "4.4.4.4", &ExternalAccessError{}},
+			{"8.8.8.8:8080", "192.168.1.1, 4.4.4.4a", &UntrustedProxyError{}},
+			{"8.8.8.8:8080", "192.168.1.1a, 4.4.4.4", &ExternalAccessError{}},
 			{"8.8.8.8:8080", "192.168.1.1, 4.4.4.4", nil},
 			{"8.8.8.8:8080", "192.168.1.1", nil},
 		}
@@ -134,8 +134,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			}
 
 			err := CheckAllowPublicWithoutAuth(c, r)
-
-			if errors.Is(err, UntrustedProxyError{}) || errors.Is(err, ExternalAccessError{}) {
+			if errors.As(err, &UntrustedProxyError{}) || errors.As(err, &ExternalAccessError{}) {
 				t.Errorf("[%s]: unexpected error: %v", remoteAddr, err)
 				continue
 			}
