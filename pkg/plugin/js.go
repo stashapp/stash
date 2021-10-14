@@ -97,7 +97,7 @@ func (t *jsPluginTask) Start() error {
 			t.waitGroup.Done()
 
 			if caught := recover(); caught != nil {
-				if caught == errStop {
+				if err, ok := caught.(error); ok && errors.Is(err, errStop) {
 					// TODO - log this
 					return
 				}

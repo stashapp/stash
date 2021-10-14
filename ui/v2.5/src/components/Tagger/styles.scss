@@ -1,6 +1,11 @@
 .tagger-container {
   max-width: 1600px;
 
+  .tagger-container-header {
+    background-color: rgba(0, 0, 0, 0);
+    padding-bottom: 0;
+  }
+
   .scene-card-preview {
     border-radius: 3px;
     margin-bottom: 0;
@@ -28,6 +33,12 @@
   padding: 1rem;
 
   .scene-details {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .original-scene-details {
     align-items: center;
     display: flex;
     flex-direction: column;
@@ -65,11 +76,10 @@
   max-width: 14rem;
   min-width: 168px;
   object-fit: contain;
-  padding-right: 1rem;
 }
 
 .scene-metadata {
-  margin-right: 1rem;
+  margin-left: 1rem;
 }
 
 .select-existing {
@@ -230,11 +240,15 @@ li:not(.active) {
 
 .optional-field {
   align-items: center;
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
 }
 
-li.active .optional-field.excluded,
+li.active .optional-field.missing .optional-field-content {
+  color: #bfccd6;
+}
+
+li.active .optional-field.excluded .optional-field-content,
 li.active .optional-field.excluded .scene-link {
   color: #bfccd6;
   text-decoration: line-through;
@@ -244,11 +258,12 @@ li.active .optional-field.excluded .scene-link {
   }
 }
 
-li.active .scene-image-container {
-  margin-left: 1rem;
-}
+// li.active .scene-image-container {
+//   margin-left: 1rem;
+// }
 
-.scene-details {
+.scene-details,
+.original-scene-details {
   margin-top: 0.5rem;
 
   > .row {

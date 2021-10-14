@@ -1,6 +1,6 @@
 import React, { Dispatch, useState } from "react";
 import { Badge, Button, Card, Collapse, Form } from "react-bootstrap";
-import { useConfiguration } from "src/core/StashService";
+import { ConfigurationContext } from "src/hooks/Config";
 
 import { TextUtils } from "src/utils";
 import { ITaggerConfig, PERFORMER_FIELDS } from "../constants";
@@ -13,7 +13,7 @@ interface IConfigProps {
 }
 
 const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
   const [showExclusionModal, setShowExclusionModal] = useState(false);
 
   const excludedFields = config.excludedPerformerFields ?? [];
@@ -26,7 +26,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
     });
   };
 
-  const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+  const stashBoxes = stashConfig?.general.stashBoxes ?? [];
 
   const handleFieldSelect = (fields: string[]) => {
     setConfig({ ...config, excludedPerformerFields: fields });
@@ -77,13 +77,11 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                   onChange={handleInstanceSelect}
                 >
                   {!stashBoxes.length && <option>No instances found</option>}
-                  {stashConfig.data?.configuration.general.stashBoxes.map(
-                    (i) => (
-                      <option value={i.endpoint} key={i.endpoint}>
-                        {i.endpoint}
-                      </option>
-                    )
-                  )}
+                  {stashConfig?.general.stashBoxes.map((i) => (
+                    <option value={i.endpoint} key={i.endpoint}>
+                      {i.endpoint}
+                    </option>
+                  ))}
                 </Form.Control>
               </Form.Group>
             </div>

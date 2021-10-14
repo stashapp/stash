@@ -31,6 +31,7 @@ import { Setup } from "./components/Setup/Setup";
 import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator } from "./components/Shared";
+import ConfigurationProvider from "./hooks/Config";
 
 initPolyfills();
 
@@ -138,12 +139,17 @@ export const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <IntlProvider locale={language} messages={messages} formats={intlFormats}>
-        <ToastProvider>
-          <LightboxProvider>
-            {maybeRenderNavbar()}
-            <div className="main container-fluid">{renderContent()}</div>
-          </LightboxProvider>
-        </ToastProvider>
+        <ConfigurationProvider
+          configuration={config.data?.configuration}
+          loading={config.loading}
+        >
+          <ToastProvider>
+            <LightboxProvider>
+              {maybeRenderNavbar()}
+              <div className="main container-fluid">{renderContent()}</div>
+            </LightboxProvider>
+          </ToastProvider>
+        </ConfigurationProvider>
       </IntlProvider>
     </ErrorBoundary>
   );

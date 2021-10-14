@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // FreeonesScraperID is the scraper ID for the built-in Freeones scraper
@@ -122,13 +123,13 @@ xPathScrapers:
 # Last updated April 13, 2021
 `
 
-func getFreeonesScraper() config {
+func getFreeonesScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	yml := freeonesScraperConfig
 
-	scraper, err := loadScraperFromYAML(FreeonesScraperID, strings.NewReader(yml))
+	c, err := loadConfigFromYAML(FreeonesScraperID, strings.NewReader(yml))
 	if err != nil {
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}
 
-	return *scraper
+	return createScraperFromConfig(*c, txnManager, globalConfig)
 }
