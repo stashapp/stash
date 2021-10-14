@@ -283,6 +283,14 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.FunscriptOffset, *input.FunscriptOffset)
 	}
 
+	if input.DeleteFileDefault != nil {
+		c.Set(config.DeleteFileDefault, *input.DeleteFileDefault)
+	}
+
+	if input.DeleteGeneratedDefault != nil {
+		c.Set(config.DeleteGeneratedDefault, *input.DeleteGeneratedDefault)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigInterfaceResult(), err
 	}

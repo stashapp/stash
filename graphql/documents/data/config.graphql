@@ -65,6 +65,8 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   }
   handyKey
   funscriptOffset
+  deleteFileDefault
+  deleteGeneratedDefault
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {

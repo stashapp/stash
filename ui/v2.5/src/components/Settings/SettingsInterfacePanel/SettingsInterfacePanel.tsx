@@ -39,6 +39,10 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [language, setLanguage] = useState<string>("en");
   const [handyKey, setHandyKey] = useState<string>();
   const [funscriptOffset, setFunscriptOffset] = useState<number>(0);
+  const [deleteFileDefault, setDeleteFileDefault] = useState<boolean>(false);
+  const [deleteGeneratedDefault, setDeleteGeneratedDefault] = useState<boolean>(
+    true
+  );
   const [
     disableDropdownCreate,
     setDisableDropdownCreate,
@@ -58,6 +62,8 @@ export const SettingsInterfacePanel: React.FC = () => {
     slideshowDelay,
     handyKey,
     funscriptOffset,
+    deleteFileDefault,
+    deleteGeneratedDefault,
     disableDropdownCreate,
   });
 
@@ -76,6 +82,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setSlideshowDelay(iCfg?.slideshowDelay ?? 5000);
     setHandyKey(iCfg?.handyKey ?? "");
     setFunscriptOffset(iCfg?.funscriptOffset ?? 0);
+    setDeleteFileDefault(iCfg?.deleteFileDefault ?? false);
     setDisableDropdownCreate({
       performer: iCfg?.disabledDropdownCreate.performer,
       studio: iCfg?.disabledDropdownCreate.studio,
@@ -384,6 +391,38 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.ui.funscript_offset.description" })}
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <h5>
+          {intl.formatMessage({ id: "config.ui.delete_options.heading" })}
+        </h5>
+        <Form.Check
+          id="delete-file-default"
+          checked={deleteFileDefault}
+          label={intl.formatMessage({
+            id: "config.ui.delete_options.options.delete_file",
+          })}
+          onChange={() => {
+            setDeleteFileDefault(!deleteFileDefault);
+          }}
+        />
+        <Form.Check
+          id="delete-generated-default"
+          checked={deleteGeneratedDefault}
+          label={intl.formatMessage({
+            id:
+              "config.ui.delete_options.options.delete_generated_supporting_files",
+          })}
+          onChange={() => {
+            setDeleteGeneratedDefault(!deleteGeneratedDefault);
+          }}
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.ui.delete_options.description",
+          })}
         </Form.Text>
       </Form.Group>
 

@@ -58,6 +58,7 @@
     "reshuffle": "Reshuffle",
     "running": "running",
     "save": "Save",
+    "save_delete_settings": "Use these options by default when deleting",
     "save_filter": "Save filter",
     "scan": "Scan",
     "scrape_with": "Scrape with…",
@@ -331,6 +332,14 @@
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "delete_options": {
+        "description": "Default settings when deleting images, galleries, and scenes.",
+        "heading": "Delete Options",
+        "options": {
+          "delete_file": "Delete file by default",
+          "delete_generated_supporting_files": "Delete generated supporting files by default"
+        }
       },
       "editing": {
         "disable_dropdown_create": {

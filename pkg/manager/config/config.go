@@ -145,6 +145,9 @@ const (
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
+const DeleteFileDefault = "delete_file_default"
+const DeleteGeneratedDefault = "delete_generated_default"
+
 // Security
 const TrustedProxies = "trusted_proxies"
 const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
@@ -861,6 +864,20 @@ func (i *Instance) GetHandyKey() string {
 func (i *Instance) GetFunscriptOffset() int {
 	viper.SetDefault(FunscriptOffset, 0)
 	return viper.GetInt(FunscriptOffset)
+}
+
+func (i *Instance) GetDeleteFileDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteFileDefault, false)
+	return viper.GetBool(DeleteFileDefault)
+}
+
+func (i *Instance) GetDeleteGeneratedDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteGeneratedDefault, true)
+	return viper.GetBool(DeleteGeneratedDefault)
 }
 
 // GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
