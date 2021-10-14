@@ -221,7 +221,7 @@ export const Performer: React.FC = () => {
         <Icon icon="heart" />
       </Button>
       {performer.url && (
-        <Button className="minimal">
+        <Button className="minimal icon-link">
           <a
             href={TextUtils.sanitiseURL(performer.url)}
             className="link"
@@ -233,7 +233,7 @@ export const Performer: React.FC = () => {
         </Button>
       )}
       {performer.twitter && (
-        <Button className="minimal">
+        <Button className="minimal icon-link">
           <a
             href={TextUtils.sanitiseURL(
               performer.twitter,
@@ -248,7 +248,7 @@ export const Performer: React.FC = () => {
         </Button>
       )}
       {performer.instagram && (
-        <Button className="minimal">
+        <Button className="minimal icon-link">
           <a
             href={TextUtils.sanitiseURL(
               performer.instagram,
