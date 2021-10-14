@@ -123,7 +123,7 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 	}
 
 	if input.Q != nil {
-		return client.QueryStashBoxScene(*input.Q)
+		return client.QueryStashBoxScene(ctx, *input.Q)
 	}
 
 	return nil, nil
@@ -197,7 +197,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 		if input.SceneID != nil {
 			return client.FindStashBoxScenesByFingerprintsFlat([]string{*input.SceneID})
 		} else if input.Query != nil {
-			return client.QueryStashBoxScene(*input.Query)
+			return client.QueryStashBoxScene(ctx, *input.Query)
 		}
 
 		return nil, errors.New("scene_id or query must be set")

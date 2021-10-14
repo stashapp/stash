@@ -20,18 +20,18 @@ linters:
     # Linters added by the stash project
     # - bodyclose
     - dogsled
-    # - errorlint
+    - errorlint
     # - exhaustive
     - exportloopref
-    # - goconst
     # - gocritic
     # - goerr113
     - gofmt
+    # - gomnd
     # - gosec
     # - ifshort
     - misspell
     # - nakedret
-    # - noctx
+    - noctx
     # - paralleltest
     - revive
     - rowserrcheck
@@ -40,6 +40,13 @@ linters:
 linters-settings:
   gofmt:
     simplify: false
+
+  errorlint:
+    # Disable errorf because there are false positives, where you don't want to wrap
+    #  an error.
+    errorf: false
+    asserts: true
+    comparison: true
 
   revive:
     ignore-generated-header: true
@@ -80,3 +87,7 @@ linters-settings:
         disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
+
+  rowserrcheck:
+    packages:
+      - github.com/jmoiron/sqlx

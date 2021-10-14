@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -100,7 +101,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 
 		go func() {
-			task.Start()
+			task.Start(ctx)
 			wg.Done()
 			progress.Increment()
 		}()
@@ -191,7 +192,7 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 
 		wg.Wait()
 
-		if err != nil && err != context.Canceled {
+		if err != nil && !errors.Is(err, context.Canceled) {
 			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
 			return
 		}
@@ -254,12 +255,12 @@ type ScanTask struct {
 	mutexManager *utils.MutexManager
 }
 
-func (t *ScanTask) Start() {
+func (t *ScanTask) Start(ctx context.Context) {
 	var s *models.Scene
 	path := t.file.Path()
 	t.progress.ExecuteTask("Scanning "+path, func() {
 		if isGallery(path) {
-			t.scanGallery()
+			t.scanGallery(ctx)
 		} else if isVideo(path) {
 			s = t.scanScene()
 		} else if isImage(path) {

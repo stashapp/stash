@@ -6,23 +6,26 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"golang.org/x/text/collate"
 )
 
 func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult, error) {
 	return makeConfigResult(), nil
 }
 
-func (r *queryResolver) Directory(ctx context.Context, path *string) (*models.Directory, error) {
+func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*models.Directory, error) {
 
 	directory := &models.Directory{}
 	var err error
+
+	col := newCollator(locale, collate.IgnoreCase, collate.Numeric)
 
 	var dirPath = ""
 	if path != nil {
 		dirPath = *path
 	}
 	currentDir := utils.GetDir(dirPath)
-	directories, err := utils.ListDir(currentDir)
+	directories, err := utils.ListDir(col, currentDir)
 	if err != nil {
 		return directory, err
 	}
@@ -115,19 +118,20 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	scriptOffset := config.GetFunscriptOffset()
 
 	return &models.ConfigInterfaceResult{
-		MenuItems:           menuItems,
-		SoundOnPreview:      &soundOnPreview,
-		WallShowTitle:       &wallShowTitle,
-		WallPlayback:        &wallPlayback,
-		MaximumLoopDuration: &maximumLoopDuration,
-		AutostartVideo:      &autostartVideo,
-		ShowStudioAsText:    &showStudioAsText,
-		CSS:                 &css,
-		CSSEnabled:          &cssEnabled,
-		Language:            &language,
-		SlideshowDelay:      &slideshowDelay,
-		HandyKey:            &handyKey,
-		FunscriptOffset:     &scriptOffset,
+		MenuItems:              menuItems,
+		SoundOnPreview:         &soundOnPreview,
+		WallShowTitle:          &wallShowTitle,
+		WallPlayback:           &wallPlayback,
+		MaximumLoopDuration:    &maximumLoopDuration,
+		AutostartVideo:         &autostartVideo,
+		ShowStudioAsText:       &showStudioAsText,
+		CSS:                    &css,
+		CSSEnabled:             &cssEnabled,
+		Language:               &language,
+		SlideshowDelay:         &slideshowDelay,
+		DisabledDropdownCreate: config.GetDisableDropdownCreate(),
+		HandyKey:               &handyKey,
+		FunscriptOffset:        &scriptOffset,
 	}
 }
 

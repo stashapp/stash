@@ -104,6 +104,21 @@ func (p *Progress) Increment() {
 	}
 }
 
+// AddProcessed increments the number of processed work units by the provided
+// amount. This is used to calculate the percentage.
+func (p *Progress) AddProcessed(v int) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	newVal := v
+	if newVal > p.total {
+		newVal = p.total
+	}
+
+	p.processed = newVal
+	p.calculatePercent()
+}
+
 func (p *Progress) addTask(t *task) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()

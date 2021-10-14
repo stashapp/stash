@@ -24,6 +24,7 @@ import {
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { SelectComponents } from "react-select/src/components";
+import { ConfigurationContext } from "src/hooks/Config";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -400,6 +401,10 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllPerformersForFilter();
   const [createPerformer] = usePerformerCreate();
 
+  const { configuration } = React.useContext(ConfigurationContext);
+  const defaultCreatable =
+    !configuration?.interface.disabledDropdownCreate.performer ?? true;
+
   const performers = data?.allPerformers ?? [];
 
   const onCreate = async (name: string) => {
@@ -416,7 +421,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
     <FilterSelectComponent
       {...props}
       isMulti={props.isMulti ?? false}
-      creatable={props.creatable ?? true}
+      creatable={props.creatable ?? defaultCreatable}
       onCreate={onCreate}
       type="performers"
       isLoading={loading}
@@ -435,6 +440,10 @@ export const StudioSelect: React.FC<
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate();
+
+  const { configuration } = React.useContext(ConfigurationContext);
+  const defaultCreatable =
+    !configuration?.interface.disabledDropdownCreate.studio ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
   const studios = useMemo(
@@ -542,7 +551,7 @@ export const StudioSelect: React.FC<
       isLoading={loading}
       items={studios}
       placeholder={props.noSelectionString ?? "Select studio..."}
-      creatable={props.creatable ?? true}
+      creatable={props.creatable ?? defaultCreatable}
       onCreate={onCreate}
     />
   );
@@ -572,6 +581,10 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
   const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate();
   const placeholder = props.noSelectionString ?? "Select tags...";
+
+  const { configuration } = React.useContext(ConfigurationContext);
+  const defaultCreatable =
+    !configuration?.interface.disabledDropdownCreate.tag ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
   const tags = useMemo(
@@ -675,7 +688,7 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       components={{ Option: TagOption }}
       isMulti={props.isMulti ?? false}
       items={tags}
-      creatable={props.creatable ?? true}
+      creatable={props.creatable ?? defaultCreatable}
       type="tags"
       placeholder={placeholder}
       isLoading={loading}

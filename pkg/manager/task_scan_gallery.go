@@ -15,13 +15,13 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (t *ScanTask) scanGallery() {
+func (t *ScanTask) scanGallery(ctx context.Context) {
 	var g *models.Gallery
 	path := t.file.Path()
 	images := 0
 	scanImages := false
 
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		g, err = r.Gallery().FindByPath(path)
 
@@ -143,7 +143,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		subTask.Start()
+		subTask.Start(context.TODO())
 		return nil
 	})
 	if err != nil {

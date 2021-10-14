@@ -448,8 +448,8 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCrit
 			} else if criterion.Modifier == models.CriterionModifierExcludes {
 				// excludes all of the provided ids
 				// need to use actual join table name for this
-				// not exists (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<primaryFK> = <primaryTable>.id and <joinTable>.<foreignFK> in <values>)
-				whereClause = fmt.Sprintf("not exists (select %[1]s.%[2]s from %[1]s where %[1]s.%[2]s = %[3]s.id and %[1]s.%[4]s in %[5]s)", m.joinTable, m.primaryFK, m.primaryTable, m.foreignFK, getInBinding(len(criterion.Value)))
+				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
+				whereClause = fmt.Sprintf("%[1]s.id NOT IN (SELECT %[3]s.%[2]s from %[3]s where %[3]s.%[4]s in %[5]s)", m.primaryTable, m.primaryFK, m.joinTable, m.foreignFK, getInBinding(len(criterion.Value)))
 			}
 
 			f.addWhere(whereClause, args...)

@@ -32,7 +32,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 
 	// Start the transaction and save the scene
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		ret, err = r.sceneUpdate(input, translator, repo)
+		ret, err = r.sceneUpdate(ctx, input, translator, repo)
 		return err
 	}); err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 				inputMap: inputMaps[i],
 			}
 
-			thisScene, err := r.sceneUpdate(*scene, translator, repo)
+			thisScene, err := r.sceneUpdate(ctx, *scene, translator, repo)
 			ret = append(ret, thisScene)
 
 			if err != nil {
@@ -85,7 +85,7 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 	return newRet, nil
 }
 
-func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Scene, error) {
+func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Scene, error) {
 	// Populate scene from the input
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -110,7 +110,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
-		coverImageData, err = utils.ProcessImageInput(*input.CoverImage)
+		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
 		if err != nil {
 			return nil, err
 		}

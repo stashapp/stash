@@ -135,6 +135,13 @@ const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
 const SlideshowDelay = "slideshow_delay"
+
+const (
+	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
+	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
+	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
+)
+
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
@@ -785,6 +792,17 @@ func (i *Instance) GetSlideshowDelay() int {
 	defer i.Unlock()
 	viper.SetDefault(SlideshowDelay, 5000)
 	return viper.GetInt(SlideshowDelay)
+}
+
+func (i *Instance) GetDisableDropdownCreate() *models.ConfigDisableDropdownCreate {
+	i.Lock()
+	defer i.Unlock()
+
+	return &models.ConfigDisableDropdownCreate{
+		Performer: viper.GetBool(DisableDropdownCreatePerformer),
+		Studio:    viper.GetBool(DisableDropdownCreateStudio),
+		Tag:       viper.GetBool(DisableDropdownCreateTag),
+	}
 }
 
 func (i *Instance) GetCSSPath() string {

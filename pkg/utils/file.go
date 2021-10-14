@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/user"
@@ -14,6 +15,7 @@ import (
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
 	"github.com/stashapp/stash/pkg/logger"
+	"golang.org/x/text/collate"
 )
 
 // FileType uses the filetype package to determine the given file path's type
@@ -104,8 +106,22 @@ func EmptyDir(path string) error {
 	return nil
 }
 
+type dirSorter []fs.DirEntry
+
+func (s dirSorter) Len() int {
+	return len(s)
+}
+
+func (s dirSorter) Swap(i, j int) {
+	s[j], s[i] = s[i], s[j]
+}
+
+func (s dirSorter) Bytes(i int) []byte {
+	return []byte(s[i].Name())
+}
+
 // ListDir will return the contents of a given directory path as a string slice
-func ListDir(path string) ([]string, error) {
+func ListDir(col *collate.Collator, path string) ([]string, error) {
 	var dirPaths []string
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -115,6 +131,11 @@ func ListDir(path string) ([]string, error) {
 			return dirPaths, err
 		}
 	}
+
+	if col != nil {
+		col.Sort(dirSorter(files))
+	}
+
 	for _, file := range files {
 		if !file.IsDir() {
 			continue

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -271,7 +272,7 @@ func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interf
 
 func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
 	rows, err := database.DB.Queryx(query, args...)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()

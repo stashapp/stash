@@ -90,7 +90,7 @@ func (s *singleton) Import(ctx context.Context) (int, error) {
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start()
+		task.Start(ctx)
 	})
 
 	return s.JobManager.Add(ctx, "Importing...", j), nil
@@ -122,7 +122,7 @@ func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
 	wg.Add(1)
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		t.Start()
+		t.Start(ctx)
 		wg.Done()
 	})
 
@@ -443,136 +443,13 @@ func (s *singleton) AutoTag(ctx context.Context, input models.AutoTagMetadataInp
 }
 
 func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) int {
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		var scenes []*models.Scene
-		var images []*models.Image
-		var galleries []*models.Gallery
+	j := cleanJob{
+		txnManager: s.TxnManager,
+		input:      input,
+		scanSubs:   s.scanSubs,
+	}
 
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			qb := r.Scene()
-			iqb := r.Image()
-			gqb := r.Gallery()
-
-			logger.Infof("Starting cleaning of tracked files")
-			if input.DryRun {
-				logger.Infof("Running in Dry Mode")
-			}
-			var err error
-
-			scenes, err = qb.All()
-
-			if err != nil {
-				return errors.New("failed to fetch list of scenes for cleaning")
-			}
-
-			images, err = iqb.All()
-			if err != nil {
-				return errors.New("failed to fetch list of images for cleaning")
-			}
-
-			galleries, err = gqb.All()
-			if err != nil {
-				return errors.New("failed to fetch list of galleries for cleaning")
-			}
-
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		if job.IsCancelled(ctx) {
-			logger.Info("Stopping due to user request")
-			return
-		}
-
-		var wg sync.WaitGroup
-		total := len(scenes) + len(images) + len(galleries)
-		progress.SetTotal(total)
-		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-		for _, scene := range scenes {
-			progress.Increment()
-			if job.IsCancelled(ctx) {
-				logger.Info("Stopping due to user request")
-				return
-			}
-
-			if scene == nil {
-				logger.Errorf("nil scene, skipping Clean")
-				continue
-			}
-
-			wg.Add(1)
-
-			task := CleanTask{
-				ctx:                 ctx,
-				TxnManager:          s.TxnManager,
-				Scene:               scene,
-				fileNamingAlgorithm: fileNamingAlgo,
-			}
-			go progress.ExecuteTask(fmt.Sprintf("Assessing scene %s for clean", scene.Path), func() {
-				task.Start(&wg, input.DryRun)
-			})
-
-			wg.Wait()
-		}
-
-		for _, img := range images {
-			progress.Increment()
-			if job.IsCancelled(ctx) {
-				logger.Info("Stopping due to user request")
-				return
-			}
-
-			if img == nil {
-				logger.Errorf("nil image, skipping Clean")
-				continue
-			}
-
-			wg.Add(1)
-
-			task := CleanTask{
-				ctx:        ctx,
-				TxnManager: s.TxnManager,
-				Image:      img,
-			}
-			go progress.ExecuteTask(fmt.Sprintf("Assessing image %s for clean", img.Path), func() {
-				task.Start(&wg, input.DryRun)
-			})
-			wg.Wait()
-		}
-
-		for _, gallery := range galleries {
-			progress.Increment()
-			if job.IsCancelled(ctx) {
-				logger.Info("Stopping due to user request")
-				return
-			}
-
-			if gallery == nil {
-				logger.Errorf("nil gallery, skipping Clean")
-				continue
-			}
-
-			wg.Add(1)
-
-			task := CleanTask{
-				ctx:        ctx,
-				TxnManager: s.TxnManager,
-				Gallery:    gallery,
-			}
-			go progress.ExecuteTask(fmt.Sprintf("Assessing gallery %s for clean", gallery.GetTitle()), func() {
-				task.Start(&wg, input.DryRun)
-			})
-			wg.Wait()
-		}
-
-		logger.Info("Finished Cleaning")
-
-		s.scanSubs.notify()
-	})
-
-	return s.JobManager.Add(ctx, "Cleaning...", j)
+	return s.JobManager.Add(ctx, "Cleaning...", &j)
 }
 
 func (s *singleton) MigrateHash(ctx context.Context) int {
@@ -786,7 +663,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
 				}
 				if err != nil {
-					return fmt.Errorf("error querying performers: %s", err.Error())
+					return fmt.Errorf("error querying performers: %v", err)
 				}
 
 				for _, performer := range performers {

@@ -2,45 +2,9 @@ package autotag
 
 import (
 	"database/sql"
+
 	"github.com/stashapp/stash/pkg/models"
 )
-
-func getMatchingStudios(path string, reader models.StudioReader) ([]*models.Studio, error) {
-	words := getPathWords(path)
-	candidates, err := reader.QueryForAutoTag(words)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.Studio
-	for _, c := range candidates {
-		matches := false
-		if nameMatchesPath(c.Name.String, path) {
-			matches = true
-		}
-
-		if !matches {
-			aliases, err := reader.GetAliases(c.ID)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, alias := range aliases {
-				if nameMatchesPath(alias, path) {
-					matches = true
-					break
-				}
-			}
-		}
-
-		if matches {
-			ret = append(ret, c)
-		}
-	}
-
-	return ret, nil
-}
 
 func addSceneStudio(sceneWriter models.SceneReaderWriter, sceneID, studioID int) (bool, error) {
 	// don't set if already set
