@@ -102,7 +102,7 @@ func Initialize() *singleton {
 		} else {
 			cfgFile := cfg.GetConfigFile()
 			if cfgFile != "" {
-				cfgFile = cfgFile + " "
+				cfgFile += " "
 			}
 
 			// create temporary session store - this will be re-initialised

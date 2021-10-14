@@ -330,7 +330,7 @@ func (t *autoTagFilesTask) makeSceneFilter() *models.SceneFilterType {
 
 	for _, p := range t.paths {
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		if ret.Path == nil {
@@ -360,7 +360,7 @@ func (t *autoTagFilesTask) makeImageFilter() *models.ImageFilterType {
 
 	for _, p := range t.paths {
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		if ret.Path == nil {
@@ -397,7 +397,7 @@ func (t *autoTagFilesTask) makeGalleryFilter() *models.GalleryFilterType {
 
 	for _, p := range t.paths {
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		if ret.Path == nil {

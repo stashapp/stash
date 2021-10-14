@@ -185,7 +185,7 @@ func scenePathsFilter(paths []string) *models.SceneFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{
@@ -249,7 +249,7 @@ func imagePathsFilter(paths []string) *models.ImageFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{
@@ -313,7 +313,7 @@ func galleryPathsFilter(paths []string) *models.GalleryFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{

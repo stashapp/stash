@@ -486,7 +486,7 @@ func (p *postProcessLbToKg) Apply(value string, q mappedQuery) string {
 	const lb_in_kg = 0.45359237
 	w, err := strconv.ParseFloat(value, 64)
 	if err == nil {
-		w = w * lb_in_kg
+		w *= lb_in_kg
 		value = strconv.Itoa(int(math.Round(w)))
 	}
 	return value

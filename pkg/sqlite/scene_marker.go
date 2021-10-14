@@ -106,13 +106,13 @@ func (qb *sceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
-		query = query + " WHERE title LIKE '%" + *q + "%'"
+		query += " WHERE title LIKE '%" + *q + "%'"
 	}
-	query = query + " GROUP BY title"
+	query += " GROUP BY title"
 	if sort != nil && *sort == "count" {
-		query = query + " ORDER BY `count` DESC"
+		query += " ORDER BY `count` DESC"
 	} else {
-		query = query + " ORDER BY title ASC"
+		query += " ORDER BY title ASC"
 	}
 	var args []interface{}
 	return qb.queryMarkerStringsResultType(query, args)
