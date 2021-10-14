@@ -43,7 +43,8 @@ func (t *GenerateMarkersTask) Start() {
 			return
 		}
 
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+		ffprobe := instance.FFProbe
+		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -68,7 +69,8 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	ffprobe := instance.FFProbe
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return
@@ -106,7 +108,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		Width:     640,
 	}
 
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if t.Overwrite || !videoExists {
 		videoFilename := baseFilename + ".mp4"

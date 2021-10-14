@@ -9,7 +9,7 @@ import (
 )
 
 const maxGraveyardSize = 10
-const defaultThrottleLimit = time.Second
+const defaultThrottleLimit = 100 * time.Millisecond
 
 // Manager maintains a queue of jobs. Jobs are executed one at a time.
 type Manager struct {

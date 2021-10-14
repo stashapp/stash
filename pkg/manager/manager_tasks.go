@@ -19,17 +19,17 @@ import (
 
 func isGallery(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
-	return matchExtension(pathname, gExt)
+	return utils.MatchExtension(pathname, gExt)
 }
 
 func isVideo(pathname string) bool {
 	vidExt := config.GetInstance().GetVideoExtensions()
-	return matchExtension(pathname, vidExt)
+	return utils.MatchExtension(pathname, vidExt)
 }
 
 func isImage(pathname string) bool {
 	imgExt := config.GetInstance().GetImageExtensions()
-	return matchExtension(pathname, imgExt)
+	return utils.MatchExtension(pathname, imgExt)
 }
 
 func getScanPaths(inputPaths []string) []*models.StashConfig {

@@ -25,7 +25,7 @@ const (
 
 const (
 	path      = "path"
-	zip       = true
+	isZip     = true
 	url       = "url"
 	checksum  = "checksum"
 	title     = "title"
@@ -48,7 +48,7 @@ func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
 		ID:       id,
 		Path:     models.NullString(path),
-		Zip:      zip,
+		Zip:      isZip,
 		Title:    models.NullString(title),
 		Checksum: checksum,
 		Date: models.SQLiteDate{
@@ -72,7 +72,7 @@ func createFullJSONGallery() *jsonschema.Gallery {
 	return &jsonschema.Gallery{
 		Title:     title,
 		Path:      path,
-		Zip:       zip,
+		Zip:       isZip,
 		Checksum:  checksum,
 		Date:      date,
 		Details:   details,

@@ -205,7 +205,7 @@ func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, e
 
 func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
-	cmd := exec.Command(e.Path, args...)
+	cmd := exec.Command(string(*e), args...)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
 	stdout, err := cmd.StdoutPipe()

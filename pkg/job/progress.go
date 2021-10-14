@@ -92,13 +92,13 @@ func (p *Progress) SetPercent(percent float64) {
 	p.updated()
 }
 
-// Increment increments the number of processed work units, if this does not
-// exceed the total units. This is used to calculate the percentage.
+// Increment increments the number of processed work units. This is used to calculate the percentage.
+// If total is set already, then the number of processed work units will not exceed the total.
 func (p *Progress) Increment() {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	if p.processed < p.total {
+	if p.total <= 0 || p.processed < p.total {
 		p.processed++
 		p.calculatePercent()
 	}
