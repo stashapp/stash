@@ -62,6 +62,7 @@
     "scan": "Scan",
     "scrape_with": "Scrape with…",
     "scrape_query": "Scrape query",
+    "scrape_scene_fragment": "Scrape by fragment",
     "search": "Search",
     "select_all": "Select All",
     "select_none": "Select None",
@@ -73,6 +74,7 @@
     "set_image": "Set image…",
     "show": "Show",
     "skip": "Skip",
+    "stop": "Stop",
     "tasks": {
       "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
       "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
@@ -119,6 +121,7 @@
       "set_cover_label": "Set scene cover image",
       "set_tag_desc": "Attach tags to scene, either by overwriting or merging with existing tags on scene.",
       "set_tag_label": "Set tags",
+      "source": "Source",
       "show_male_desc": "Toggle whether male performers will be available to tag.",
       "show_male_label": "Show male performers"
     },
@@ -131,11 +134,13 @@
       "match_failed_already_tagged": "Scene already tagged",
       "match_failed_no_result": "No results found",
       "match_success": "Scene successfully tagged",
+      "unnamed": "Unnamed",
       "duration_off": "Duration off by at least {number}s",
       "duration_unknown": "Duration unknown"
     },
     "verb_match_fp": "Match Fingerprints",
     "verb_matched": "Matched",
+    "verb_scrape_all": "Scrape All",
     "verb_submit_fp": "Submit {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} unmatched scenes"
@@ -326,6 +331,13 @@
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "editing": {
+        "disable_dropdown_create": {
+          "heading": "Disable dropdown create",
+          "description": "Remove the ability to create new objects from the dropdown selectors"
+        },
+        "heading": "Editing"
       },
       "handy_connection_key": {
         "description": "Handy connection key to use for interactive scenes.",

@@ -1,18 +1,15 @@
-import React, { useState } from "react";
-import { Button } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
-import { HashLink } from "react-router-hash-link";
-import { useLocalForage } from "src/hooks";
-
+import React, { useContext, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
-import { stashBoxSceneQuery, useConfiguration } from "src/core/StashService";
-import { Manual } from "src/components/Help/Manual";
-
 import { SceneQueue } from "src/models/sceneQueue";
+import { Button, Form } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Icon, LoadingIndicator } from "src/components/Shared";
+import { OperationButton } from "src/components/Shared/OperationButton";
+import { TaggerStateContext } from "./context";
 import Config from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "./constants";
-import { TaggerList } from "./TaggerList";
+import { TaggerScene } from "./TaggerScene";
+import { SceneTaggerModals } from "./sceneTaggerModals";
+import { SceneSearchResults } from "./StashSearchResult";
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -20,162 +17,220 @@ interface ITaggerProps {
 }
 
 export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
-  const stashConfig = useConfiguration();
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
-    LOCAL_FORAGE_KEY,
-    initialConfig
-  );
-  const [showConfig, setShowConfig] = useState(false);
-  const [showManual, setShowManual] = useState(false);
-
-  const clearSubmissionQueue = (endpoint: string) => {
-    if (!config) return;
-
-    setConfig({
-      ...config,
-      fingerprintQueue: {
-        ...config.fingerprintQueue,
-        [endpoint]: [],
-      },
-    });
-  };
-
-  const [
+  const {
+    sources,
+    setCurrentSource,
+    currentSource,
+    doSceneQuery,
+    doSceneFragmentScrape,
+    doMultiSceneFragmentScrape,
+    stopMultiScrape,
+    searchResults,
+    loading,
+    loadingMulti,
+    multiError,
     submitFingerprints,
-    { loading: submittingFingerprints },
-  ] = GQL.useSubmitStashBoxFingerprintsMutation();
+    pendingFingerprints,
+  } = useContext(TaggerStateContext);
+  const [showConfig, setShowConfig] = useState(false);
+  const [hideUnmatched, setHideUnmatched] = useState(false);
 
-  const handleFingerprintSubmission = (endpoint: string) => {
-    if (!config) return;
+  const intl = useIntl();
 
-    return submitFingerprints({
-      variables: {
-        input: {
-          stash_box_index: getEndpointIndex(endpoint),
-          scene_ids: config?.fingerprintQueue[endpoint],
-        },
-      },
-    }).then(() => {
-      clearSubmissionQueue(endpoint);
-    });
-  };
+  function generateSceneLink(scene: GQL.SlimSceneDataFragment, index: number) {
+    return queue
+      ? queue.makeLink(scene.id, { sceneIndex: index })
+      : `/scenes/${scene.id}`;
+  }
 
-  if (!config) return <LoadingIndicator />;
+  function handleSourceSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+    setCurrentSource(sources!.find((s) => s.id === e.currentTarget.value));
+  }
 
-  const savedEndpointIndex =
-    stashConfig.data?.configuration.general.stashBoxes.findIndex(
-      (s) => s.endpoint === config.selectedEndpoint
-    ) ?? -1;
-  const selectedEndpointIndex =
-    savedEndpointIndex === -1 &&
-    stashConfig.data?.configuration.general.stashBoxes.length
-      ? 0
-      : savedEndpointIndex;
-  const selectedEndpoint =
-    stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
-
-  function getEndpointIndex(endpoint: string) {
+  function renderSourceSelector() {
     return (
-      stashConfig.data?.configuration.general.stashBoxes.findIndex(
-        (s) => s.endpoint === endpoint
-      ) ?? -1
+      <Form.Group controlId="scraper">
+        <Form.Label>
+          <FormattedMessage id="component_tagger.config.source" />
+        </Form.Label>
+        <div>
+          <Form.Control
+            as="select"
+            value={currentSource?.id}
+            className="input-control"
+            disabled={loading || !sources.length}
+            onChange={handleSourceSelect}
+          >
+            {!sources.length && <option>No scraper sources</option>}
+            {sources.map((i) => (
+              <option value={i.id} key={i.id}>
+                {i.displayName}
+              </option>
+            ))}
+          </Form.Control>
+        </div>
+      </Form.Group>
     );
   }
 
-  async function doBoxSearch(searchVal: string) {
-    return (await stashBoxSceneQuery(searchVal, selectedEndpointIndex)).data;
+  function renderConfigButton() {
+    return (
+      <div className="ml-2">
+        <Button onClick={() => setShowConfig(!showConfig)}>
+          <Icon className="fa-fw" icon="cog" />
+        </Button>
+      </div>
+    );
   }
 
-  const queueFingerprintSubmission = (sceneId: string, endpoint: string) => {
-    if (!config) return;
-    setConfig({
-      ...config,
-      fingerprintQueue: {
-        ...config.fingerprintQueue,
-        [endpoint]: [...(config.fingerprintQueue[endpoint] ?? []), sceneId],
-      },
-    });
-  };
+  function renderScenes() {
+    const filteredScenes = !hideUnmatched
+      ? scenes
+      : scenes.filter((s) => searchResults[s.id]?.results?.length);
 
-  const getQueue = (endpoint: string) => {
-    if (!config) return [];
-    return config.fingerprintQueue[endpoint] ?? [];
-  };
+    return filteredScenes.map((scene, index) => {
+      const sceneLink = generateSceneLink(scene, index);
+      let errorMessage: string | undefined;
+      const searchResult = searchResults[scene.id];
+      if (searchResult?.error) {
+        errorMessage = searchResult.error;
+      } else if (searchResult && searchResult.results?.length === 0) {
+        errorMessage = intl.formatMessage({
+          id: "component_tagger.results.match_failed_no_result",
+        });
+      }
 
-  const fingerprintQueue = {
-    queueFingerprintSubmission,
-    getQueue,
-    submitFingerprints: handleFingerprintSubmission,
-    submittingFingerprints,
-  };
-
-  return (
-    <>
-      <Manual
-        show={showManual}
-        onClose={() => setShowManual(false)}
-        defaultActiveTab="Tagger.md"
-      />
-      <div className="tagger-container mx-md-auto">
-        {selectedEndpointIndex !== -1 && selectedEndpoint ? (
-          <>
-            <div className="row mb-2 no-gutters">
-              <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-                <FormattedMessage
-                  id="component_tagger.verb_toggle_config"
-                  values={{
-                    toggle: (
-                      <FormattedMessage
-                        id={`actions.${showConfig ? "hide" : "show"}`}
-                      />
-                    ),
-                    configuration: <FormattedMessage id="configuration" />,
-                  }}
-                />
-              </Button>
-              <Button
-                className="ml-auto"
-                onClick={() => setShowManual(true)}
-                title="Help"
-                variant="link"
-              >
-                <FormattedMessage id="help" />
-              </Button>
-            </div>
-
-            <Config config={config} setConfig={setConfig} show={showConfig} />
-            <TaggerList
-              scenes={scenes}
-              queue={queue}
-              config={config}
-              selectedEndpoint={{
-                endpoint: selectedEndpoint.endpoint,
-                index: selectedEndpointIndex,
-              }}
-              queryScene={doBoxSearch}
-              fingerprintQueue={fingerprintQueue}
-            />
-          </>
-        ) : (
-          <div className="my-4">
-            <h3 className="text-center mt-4">
-              To use the scene tagger a stash-box instance needs to be
-              configured.
-            </h3>
-            <h5 className="text-center">
-              Please see{" "}
-              <HashLink
-                to="/settings?tab=configuration#stashbox"
-                scroll={(el) =>
-                  el.scrollIntoView({ behavior: "smooth", block: "center" })
+      return (
+        <TaggerScene
+          key={scene.id}
+          loading={loading}
+          scene={scene}
+          url={sceneLink}
+          errorMessage={errorMessage}
+          doSceneQuery={
+            currentSource?.supportSceneQuery
+              ? async (v) => {
+                  await doSceneQuery(scene.id, v);
                 }
-              >
-                Settings.
-              </HashLink>
-            </h5>
-          </div>
+              : undefined
+          }
+          scrapeSceneFragment={
+            currentSource?.supportSceneFragment
+              ? async () => {
+                  await doSceneFragmentScrape(scene.id);
+                }
+              : undefined
+          }
+        >
+          {searchResult && searchResult.results?.length ? (
+            <SceneSearchResults scenes={searchResult.results} target={scene} />
+          ) : undefined}
+        </TaggerScene>
+      );
+    });
+  }
+
+  const toggleHideUnmatchedScenes = () => {
+    setHideUnmatched(!hideUnmatched);
+  };
+
+  function maybeRenderShowHideUnmatchedButton() {
+    if (Object.keys(searchResults).length) {
+      return (
+        <Button onClick={toggleHideUnmatchedScenes}>
+          <FormattedMessage
+            id="component_tagger.verb_toggle_unmatched"
+            values={{
+              toggle: (
+                <FormattedMessage
+                  id={`actions.${!hideUnmatched ? "hide" : "show"}`}
+                />
+              ),
+            }}
+          />
+        </Button>
+      );
+    }
+  }
+
+  function maybeRenderSubmitFingerprintsButton() {
+    if (pendingFingerprints.length) {
+      return (
+        <OperationButton
+          className="ml-1"
+          operation={submitFingerprints}
+          disabled={loading || loadingMulti}
+        >
+          <span>
+            <FormattedMessage
+              id="component_tagger.verb_submit_fp"
+              values={{ fpCount: pendingFingerprints.length }}
+            />
+          </span>
+        </OperationButton>
+      );
+    }
+  }
+
+  function renderFragmentScrapeButton() {
+    if (!currentSource?.supportSceneFragment) {
+      return;
+    }
+
+    if (loadingMulti) {
+      return (
+        <Button
+          className="ml-1"
+          variant="danger"
+          onClick={() => {
+            stopMultiScrape();
+          }}
+        >
+          <LoadingIndicator message="" inline small />
+          <span className="ml-2">
+            {intl.formatMessage({ id: "actions.stop" })}
+          </span>
+        </Button>
+      );
+    }
+
+    return (
+      <div className="ml-1">
+        <OperationButton
+          disabled={loading}
+          operation={async () => {
+            await doMultiSceneFragmentScrape(scenes.map((s) => s.id));
+          }}
+        >
+          {intl.formatMessage({ id: "component_tagger.verb_scrape_all" })}
+        </OperationButton>
+        {multiError && (
+          <>
+            <br />
+            <b className="text-danger">{multiError}</b>
+          </>
         )}
       </div>
-    </>
+    );
+  }
+
+  return (
+    <SceneTaggerModals>
+      <div className="tagger-container mx-md-auto">
+        <div className="tagger-container-header">
+          <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <div className="w-auto">{renderSourceSelector()}</div>
+            <div className="d-flex">
+              {maybeRenderShowHideUnmatchedButton()}
+              {maybeRenderSubmitFingerprintsButton()}
+              {renderFragmentScrapeButton()}
+              {renderConfigButton()}
+            </div>
+          </div>
+          <Config show={showConfig} />
+        </div>
+        <div>{renderScenes()}</div>
+      </div>
+    </SceneTaggerModals>
   );
 };

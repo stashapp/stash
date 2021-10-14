@@ -87,7 +87,7 @@ func (qb *tagQueryBuilder) Destroy(id int) error {
 func (qb *tagQueryBuilder) Find(id int) (*models.Tag, error) {
 	var ret models.Tag
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -234,6 +234,11 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 
 	var whereClauses []string
 	var args []interface{}
+
+	// always include names that begin with a single character
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "tags.name regexp ? OR COALESCE(tag_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		ww := w + "%"

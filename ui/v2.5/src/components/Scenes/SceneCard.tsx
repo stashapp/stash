@@ -3,7 +3,6 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration } from "src/core/StashService";
 import {
   Icon,
   TagLink,
@@ -13,6 +12,7 @@ import {
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
+import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
@@ -80,15 +80,14 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
-  const config = useConfiguration();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   // studio image is missing if it uses the default
   const missingStudioImage = props.scene.studio?.image_path?.endsWith(
     "?default=true"
   );
   const showStudioAsText =
-    missingStudioImage ||
-    (config?.data?.configuration.interface.showStudioAsText ?? false);
+    missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
 
   function maybeRenderSceneSpecsOverlay() {
     return (
@@ -139,7 +138,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="tag-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="tag" />
           <span>{props.scene.tags.length}</span>
@@ -181,7 +184,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       <HoverPopover
         placement="bottom"
         content={popoverContent}
-        className="tag-tooltip"
+        className="movie-count tag-tooltip"
       >
         <Button className="minimal">
           <Icon icon="film" />
@@ -200,7 +203,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     });
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="marker-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="map-marker-alt" />
           <span>{props.scene.scene_markers.length}</span>
@@ -212,7 +219,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOCounter() {
     if (props.scene.o_counter) {
       return (
-        <div>
+        <div className="o-counter">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />
@@ -232,7 +239,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="gallery-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="images" />
           <span>{props.scene.galleries.length}</span>
@@ -244,7 +255,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOrganized() {
     if (props.scene.organized) {
       return (
-        <div>
+        <div className="organized">
           <Button className="minimal">
             <Icon icon="box" />
           </Button>
@@ -315,9 +326,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             image={props.scene.paths.screenshot ?? undefined}
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
-            soundActive={
-              config.data?.configuration?.interface?.soundOnPreview ?? false
-            }
+            soundActive={configuration?.interface?.soundOnPreview ?? false}
           />
           <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}

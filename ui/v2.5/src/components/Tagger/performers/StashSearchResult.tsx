@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
 import * as GQL from "src/core/generated-graphql";
-import { IStashBoxPerformer, filterPerformer } from "../utils";
+import { IStashBoxPerformer } from "../utils";
 import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
 
@@ -34,21 +34,19 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
-  const handleSave = async (image: number, excludedFields: string[]) => {
-    if (modalPerformer) {
-      const performerData = filterPerformer(modalPerformer, excludedFields);
+  const handleSave = async (input: GQL.PerformerCreateInput) => {
+    const performerData = modalPerformer;
+    if (performerData?.id) {
       setError({});
       setSaveState("Saving performer");
       setModalPerformer(undefined);
 
-      const res = await updatePerformer({
-        ...performerData,
-        image: excludedFields.includes("image")
-          ? undefined
-          : modalPerformer.images[image],
-        stash_ids: [{ stash_id: modalPerformer.stash_id, endpoint }],
-        id: performer.id,
-      });
+      const updateData: GQL.PerformerUpdateInput = {
+        id: performerData.id,
+        ...input,
+      };
+
+      const res = await updatePerformer(updateData);
 
       if (!res?.data?.performerUpdate)
         setError({
@@ -83,7 +81,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           closeModal={() => setModalPerformer(undefined)}
           modalVisible={modalPerformer !== undefined}
           performer={modalPerformer}
-          handlePerformerCreate={handleSave}
+          onSave={handleSave}
           icon="tags"
           header="Update Performer"
           excludedPerformerFields={excludedPerformerFields}

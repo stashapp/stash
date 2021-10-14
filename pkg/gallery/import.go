@@ -78,7 +78,7 @@ func (i *Importer) populateStudio() error {
 	if i.Input.Studio != "" {
 		studio, err := i.StudioWriter.FindByName(i.Input.Studio, false)
 		if err != nil {
-			return fmt.Errorf("error finding studio by name: %s", err.Error())
+			return fmt.Errorf("error finding studio by name: %v", err)
 		}
 
 		if studio == nil {
@@ -147,7 +147,7 @@ func (i *Importer) populatePerformers() error {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
 				createdPerformers, err := i.createPerformers(missingPerformers)
 				if err != nil {
-					return fmt.Errorf("error creating gallery performers: %s", err.Error())
+					return fmt.Errorf("error creating gallery performers: %v", err)
 				}
 
 				performers = append(performers, createdPerformers...)
@@ -203,7 +203,7 @@ func (i *Importer) populateTags() error {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
 				createdTags, err := i.createTags(missingTags)
 				if err != nil {
-					return fmt.Errorf("error creating gallery tags: %s", err.Error())
+					return fmt.Errorf("error creating gallery tags: %v", err)
 				}
 
 				tags = append(tags, createdTags...)
@@ -242,7 +242,7 @@ func (i *Importer) PostImport(id int) error {
 		}
 
 		if err := i.ReaderWriter.UpdatePerformers(id, performerIDs); err != nil {
-			return fmt.Errorf("failed to associate performers: %s", err.Error())
+			return fmt.Errorf("failed to associate performers: %v", err)
 		}
 	}
 
@@ -252,7 +252,7 @@ func (i *Importer) PostImport(id int) error {
 			tagIDs = append(tagIDs, t.ID)
 		}
 		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %s", err.Error())
+			return fmt.Errorf("failed to associate tags: %v", err)
 		}
 	}
 
@@ -280,7 +280,7 @@ func (i *Importer) FindExistingID() (*int, error) {
 func (i *Importer) Create() (*int, error) {
 	created, err := i.ReaderWriter.Create(i.gallery)
 	if err != nil {
-		return nil, fmt.Errorf("error creating gallery: %s", err.Error())
+		return nil, fmt.Errorf("error creating gallery: %v", err)
 	}
 
 	id := created.ID
@@ -292,7 +292,7 @@ func (i *Importer) Update(id int) error {
 	gallery.ID = id
 	_, err := i.ReaderWriter.Update(gallery)
 	if err != nil {
-		return fmt.Errorf("error updating existing gallery: %s", err.Error())
+		return fmt.Errorf("error updating existing gallery: %v", err)
 	}
 
 	return nil

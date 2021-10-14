@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -84,7 +85,7 @@ func (qb *performerQueryBuilder) Destroy(id int) error {
 func (qb *performerQueryBuilder) Find(id int) (*models.Performer, error) {
 	var ret models.Performer
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -182,11 +183,15 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 	var whereClauses []string
 	var args []interface{}
 
+	whereClauses = append(whereClauses, "name regexp ?")
+	args = append(args, "^[\\w][.\\-_ ]")
+
 	for _, w := range words {
 		whereClauses = append(whereClauses, "name like ?")
 		args = append(args, w+"%")
-		whereClauses = append(whereClauses, "aliases like ?")
-		args = append(args, w+"%")
+		// TODO - commented out until alias matching works both ways
+		// whereClauses = append(whereClauses, "aliases like ?")
+		// args = append(args, w+"%")
 	}
 
 	where := strings.Join(whereClauses, " OR ")

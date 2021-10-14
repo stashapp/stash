@@ -27,6 +27,7 @@ export const IncludeExcludeButton: React.FC<IIncludeExcludeButton> = ({
 
 interface IOptionalField {
   exclude: boolean;
+  title?: string;
   disabled?: boolean;
   setExclude: (v: boolean) => void;
 }
@@ -35,9 +36,13 @@ export const OptionalField: React.FC<IOptionalField> = ({
   exclude,
   setExclude,
   children,
-}) => (
-  <div className={`optional-field ${!exclude ? "included" : "excluded"}`}>
-    <IncludeExcludeButton exclude={exclude} setExclude={setExclude} />
-    {children}
-  </div>
-);
+  title,
+}) => {
+  return (
+    <div className={`optional-field ${!exclude ? "included" : "excluded"}`}>
+      <IncludeExcludeButton exclude={exclude} setExclude={setExclude} />
+      {title && <span className="optional-field-title">{title}</span>}
+      <div className="optional-field-content">{children}</div>
+    </div>
+  );
+};

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -85,7 +86,8 @@ func initConfig(flags flagStruct) error {
 
 	err := viper.ReadInConfig() // Find and read the config file
 	// if not found, assume its a new system
-	if _, isMissing := err.(viper.ConfigFileNotFoundError); isMissing {
+	var notFoundErr viper.ConfigFileNotFoundError
+	if errors.As(err, &notFoundErr) {
 		instance.isNewSystem = true
 		return nil
 	} else if err != nil {
