@@ -48,8 +48,7 @@ endif
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.officialBuild=$(OFFICIAL_BUILD)')
-	$(eval OUTPUTARG := $(addprefix -o ,$(OUTPUT)))
-	go build $(OUTPUTARG) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
 build-release: EXTRA_LDFLAGS := -s -w
@@ -65,64 +64,49 @@ cross-compile-windows: export GOOS := windows
 cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
-cross-compile-windows: OUTPUT := dist/stash-win.exe
+cross-compile-windows: OUTPUT := -o dist/stash-win.exe
 cross-compile-windows: build-release-static
-cross-compile-windows: 
-	upx $(OUTPUT)
 
 cross-compile-osx-intel: export GOOS := darwin
 cross-compile-osx-intel: export GOARCH := amd64
 cross-compile-osx-intel: export CC := o64-clang
 cross-compile-osx-intel: export CXX := o64-clang++
-cross-compile-osx-intel: OUTPUT := dist/stash-osx
+cross-compile-osx-intel: OUTPUT := -o dist/stash-osx
 # can't use static build for OSX
 cross-compile-osx-intel: build-release
-cross-compile-osx-intel: 
-	upx $(OUTPUT)
 
 cross-compile-osx-applesilicon: export GOOS := darwin
 cross-compile-osx-applesilicon: export GOARCH := arm64
 cross-compile-osx-applesilicon: export CC := oa64e-clang
 cross-compile-osx-applesilicon: export CXX := oa64e-clang++
-cross-compile-osx-applesilicon: OUTPUT := dist/stash-osx-applesilicon
+cross-compile-osx-applesilicon: OUTPUT := -o dist/stash-osx-applesilicon
 # can't use static build for OSX
 cross-compile-osx-applesilicon: build-release
-cross-compile-osx-applesilicon: 
-	upx $(OUTPUT)
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
-cross-compile-linux: OUTPUT := dist/stash-linux
+cross-compile-linux: OUTPUT := -o dist/stash-linux
 cross-compile-linux: build-release-static
-cross-compile-linux: 
-	upx $(OUTPUT)
-
 
 cross-compile-linux-arm64v8: export GOOS := linux
 cross-compile-linux-arm64v8: export GOARCH := arm64
 cross-compile-linux-arm64v8: export CC := aarch64-linux-gnu-gcc
-cross-compile-linux-arm64v8: OUTPUT := dist/stash-linux-arm64v8
+cross-compile-linux-arm64v8: OUTPUT := -o dist/stash-linux-arm64v8
 cross-compile-linux-arm64v8: build-release-static
-cross-compile-linux-arm64v8: 
-	upx $(OUTPUT)
 
 cross-compile-linux-arm32v7: export GOOS := linux
 cross-compile-linux-arm32v7: export GOARCH := arm
 cross-compile-linux-arm32v7: export GOARM := 7
 cross-compile-linux-arm32v7: export CC := arm-linux-gnueabihf-gcc
-cross-compile-linux-arm32v7: OUTPUT := dist/stash-linux-arm32v7
+cross-compile-linux-arm32v7: OUTPUT := -o dist/stash-linux-arm32v7
 cross-compile-linux-arm32v7: build-release-static
-cross-compile-linux-arm32v7: 
-	upx $(OUTPUT)
 
 cross-compile-pi: export GOOS := linux
 cross-compile-pi: export GOARCH := arm
 cross-compile-pi: export GOARM := 6
 cross-compile-pi: export CC := arm-linux-gnueabi-gcc
-cross-compile-pi: OUTPUT := dist/stash-pi
+cross-compile-pi: OUTPUT := -o dist/stash-pi
 cross-compile-pi: build-release-static
-cross-compile-pi: 
-	upx $(OUTPUT)
 
 cross-compile-all:
 	make cross-compile-windows
