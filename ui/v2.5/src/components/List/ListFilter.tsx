@@ -1,5 +1,6 @@
 import _, { debounce } from "lodash";
 import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
+import cx from "classnames";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -44,6 +45,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 }) => {
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
   const [queryRef, setQueryFocus] = useFocus();
+  const [queryClearShowing, setQueryClearShowing] = useState(
+    !!filter.searchTerm
+  );
   const perPageSelect = useRef(null);
   const [perPageInput, perPageFocus] = useFocus();
 
@@ -99,12 +103,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
     searchCallback(event.currentTarget.value);
+    setQueryClearShowing(!!event.currentTarget.value);
   }
 
   function onClearQuery() {
     queryRef.current.value = "";
     searchCallback("");
     setQueryFocus();
+    setQueryClearShowing(false);
   }
 
   function onChangeSortDirection() {
@@ -223,24 +229,18 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               onInput={onChangeQuery}
               className="query-text-field bg-secondary text-white border-secondary"
             />
-
+            <Button
+              variant="secondary"
+              onClick={onClearQuery}
+              title={intl.formatMessage({ id: "actions.search" })}
+              className={cx(
+                "query-text-field-clear",
+                queryClearShowing ? "" : "d-none"
+              )}
+            >
+              <Icon icon="times" />
+            </Button>
             <InputGroup.Append>
-              <OverlayTrigger
-                placement="top"
-                overlay={
-                  <Tooltip id="filter-tooltip">
-                    <FormattedMessage id="actions.clear" />
-                  </Tooltip>
-                }
-              >
-                <Button
-                  variant="secondary"
-                  onClick={onClearQuery}
-                  active={filterDialogOpen}
-                >
-                  <Icon icon="times" />
-                </Button>
-              </OverlayTrigger>
               <OverlayTrigger
                 placement="top"
                 overlay={
