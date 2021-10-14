@@ -64,6 +64,8 @@ const VideoFileNamingAlgorithm = "video_file_naming_algorithm"
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+const NoBrowser = "nobrowser"
+
 const ParallelTasks = "parallel_tasks"
 const parallelTasksDefault = 1
 

@@ -94,6 +94,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	c.Set(config.CalculateMD5, input.CalculateMd5)
 
+	c.Set(config.NoBrowser, input.Nobrowser)
+
 	if input.ParallelTasks != nil {
 		c.Set(config.ParallelTasks, *input.ParallelTasks)
 	}
