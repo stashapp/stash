@@ -101,6 +101,12 @@ export const ListFilter: React.FC<IListFilterProps> = ({
     searchCallback(event.currentTarget.value);
   }
 
+  function onClearQuery() {
+    queryRef.current.value = "";
+    searchCallback("");
+    setQueryFocus();
+  }
+
   function onChangeSortDirection() {
     const newFilter = _.cloneDeep(filter);
     if (filter.sortDirection === SortDirectionEnum.Asc) {
@@ -219,6 +225,22 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             />
 
             <InputGroup.Append>
+              <OverlayTrigger
+                placement="top"
+                overlay={
+                  <Tooltip id="filter-tooltip">
+                    <FormattedMessage id="actions.clear" />
+                  </Tooltip>
+                }
+              >
+                <Button
+                  variant="secondary"
+                  onClick={onClearQuery}
+                  active={filterDialogOpen}
+                >
+                  <Icon icon="times" />
+                </Button>
+              </OverlayTrigger>
               <OverlayTrigger
                 placement="top"
                 overlay={
