@@ -221,7 +221,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
-      setNoBrowserFlag(conf.general.nobrowser)
+      setNoBrowserFlag(conf.general.nobrowser);
       setTrustedProxies(conf.general.trustedProxies ?? undefined);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
