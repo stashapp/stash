@@ -16,10 +16,20 @@ func (e ExternalAccessError) Error() string {
 	return fmt.Sprintf("stash accessed from external IP %s", net.IP(e).String())
 }
 
+func (e ExternalAccessError) Is(target error) bool {
+	_, ok := target.(ExternalAccessError)
+	return ok
+}
+
 type UntrustedProxyError net.IP
 
 func (e UntrustedProxyError) Error() string {
 	return fmt.Sprintf("untrusted proxy %s", net.IP(e).String())
+}
+
+func (e UntrustedProxyError) Is(target error) bool {
+	_, ok := target.(UntrustedProxyError)
+	return ok
 }
 
 func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
