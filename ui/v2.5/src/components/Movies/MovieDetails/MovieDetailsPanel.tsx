@@ -2,7 +2,6 @@ import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { DurationUtils, TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { TextField, URLField } from "src/utils/field";
 
 interface IMovieDetailsPanel {
@@ -24,21 +23,6 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
         </div>
       );
     }
-  }
-
-  function renderRatingField() {
-    if (!movie.rating) {
-      return;
-    }
-
-    return (
-      <>
-        <dt>{intl.formatMessage({ id: "rating" })}</dt>
-        <dd>
-          <RatingStars value={movie.rating} disabled />
-        </dd>
-      </>
-    );
   }
 
   // TODO: CSS class
@@ -67,8 +51,6 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
           url={`/studios/${movie.studio?.id}`}
         />
         <TextField id="director" value={movie.director} />
-
-        {renderRatingField()}
 
         <URLField
           id="url"

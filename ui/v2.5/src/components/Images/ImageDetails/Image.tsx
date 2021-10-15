@@ -16,6 +16,7 @@ import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
@@ -124,6 +125,19 @@ export const Image: React.FC = () => {
     }
   }
 
+  function setRating(v: number | null) {
+    if (image?.id) {
+      updateImage({
+        variables: {
+          input: {
+            id: image?.id,
+            rating: v,
+          },
+        },
+      });
+    }
+  }
+
   function maybeRenderDeleteDialog() {
     if (isDeleteAlertOpen && image) {
       return (
@@ -194,6 +208,12 @@ export const Image: React.FC = () => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item className="ml-auto">
+              <RatingStars
+                value={image?.rating ?? undefined}
+                onSetRating={(value) => setRating(value ?? null)}
+              />
+            </Nav.Item>
+            <Nav.Item>
               <OCounterButton
                 loading={oLoading}
                 value={image.o_counter || 0}
@@ -242,11 +262,37 @@ export const Image: React.FC = () => {
     Mousetrap.bind("f", () => setActiveTabKey("image-file-info-panel"));
     Mousetrap.bind("o", () => onIncrementClick());
 
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
+
     return () => {
       Mousetrap.unbind("a");
       Mousetrap.unbind("e");
       Mousetrap.unbind("f");
       Mousetrap.unbind("o");
+
+      Mousetrap.unbind("r");
     };
   });
 

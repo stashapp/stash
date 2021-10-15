@@ -21,6 +21,7 @@ import {
   ErrorMessage,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
@@ -62,9 +63,35 @@ export const Studio: React.FC = () => {
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
 
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
+
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+
+      Mousetrap.unbind("r");
     };
   });
 
@@ -166,6 +193,19 @@ export const Studio: React.FC = () => {
     setIsEditing(!isEditing);
   }
 
+  function setRating(v: number | null) {
+    if (studio?.id) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studio?.id,
+            rating: v,
+          },
+        },
+      });
+    }
+  }
+
   function renderImage() {
     let studioImage = studio?.image_path;
     if (isEditing) {
@@ -226,6 +266,12 @@ export const Studio: React.FC = () => {
             renderImage()
           )}
         </div>
+
+        <RatingStars
+          value={studio?.rating ?? undefined}
+          onSetRating={(value) => setRating(value ?? null)}
+        />
+
         {!isEditing && !isNew && studio ? (
           <>
             <StudioDetailsPanel studio={studio} />

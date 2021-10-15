@@ -24,7 +24,6 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import { DurationUtils, FormUtils, ImageUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
@@ -76,7 +75,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       .optional()
       .nullable()
       .matches(/^\d{4}-\d{2}-\d{2}$/),
-    rating: yup.number().optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     director: yup.string().optional().nullable(),
     synopsis: yup.string().optional().nullable(),
@@ -90,7 +88,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     aliases: movie?.aliases,
     duration: movie?.duration,
     date: movie?.date,
-    rating: movie?.rating ?? null,
     studio_id: movie?.studio?.id,
     director: movie?.director,
     synopsis: movie?.synopsis,
@@ -122,18 +119,8 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     encodingImage,
   ]);
 
-  function setRating(v: number) {
-    formik.setFieldValue("rating", v);
-  }
-
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("r 0", () => setRating(NaN));
-    Mousetrap.bind("r 1", () => setRating(1));
-    Mousetrap.bind("r 2", () => setRating(2));
-    Mousetrap.bind("r 3", () => setRating(3));
-    Mousetrap.bind("r 4", () => setRating(4));
-    Mousetrap.bind("r 5", () => setRating(5));
     // Mousetrap.bind("u", (e) => {
     //   setStudioFocus()
     //   e.preventDefault();
@@ -141,12 +128,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     Mousetrap.bind("s s", () => formik.handleSubmit());
 
     return () => {
-      Mousetrap.unbind("r 0");
-      Mousetrap.unbind("r 1");
-      Mousetrap.unbind("r 2");
-      Mousetrap.unbind("r 3");
-      Mousetrap.unbind("r 4");
-      Mousetrap.unbind("r 5");
       // Mousetrap.unbind("u");
       Mousetrap.unbind("s s");
     };
@@ -171,7 +152,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   function getMovieInput(values: InputValues) {
     const input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       ...values,
-      rating: values.rating ?? null,
       studio_id: values.studio_id ?? null,
     };
 
@@ -443,20 +423,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         </Form.Group>
 
         {renderTextField("director", intl.formatMessage({ id: "director" }))}
-
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
-            <RatingStars
-              value={formik.values.rating ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating", value ?? null)
-              }
-            />
-          </Col>
-        </Form.Group>
 
         <Form.Group controlId="url" as={Row}>
           {FormUtils.renderLabel({

@@ -36,7 +36,6 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router";
 import { ConfigurationContext } from "src/hooks/Config";
 import { SceneMovieTable } from "./SceneMovieTable";
-import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
 import { SceneQueryModal } from "./SceneQueryModal";
 
@@ -88,7 +87,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     details: yup.string().optional().nullable(),
     url: yup.string().optional().nullable(),
     date: yup.string().optional().nullable(),
-    rating: yup.number().optional().nullable(),
     gallery_ids: yup.array(yup.string().required()).optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
@@ -109,7 +107,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     details: scene.details ?? "",
     url: scene.url ?? "",
     date: scene.date ?? "",
-    rating: scene.rating ?? null,
     gallery_ids: (scene.galleries ?? []).map((g) => g.id),
     studio_id: scene.studio?.id,
     performer_ids: (scene.performers ?? []).map((p) => p.id),
@@ -128,10 +125,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     validationSchema: schema,
     onSubmit: (values) => onSave(getSceneInput(values)),
   });
-
-  function setRating(v: number) {
-    formik.setFieldValue("rating", v);
-  }
 
   interface IGallerySelectValue {
     id: string;
@@ -155,35 +148,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
         onDelete();
       });
 
-      // numeric keypresses get caught by jwplayer, so blur the element
-      // if the rating sequence is started
-      Mousetrap.bind("r", () => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-
-        Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(1));
-        Mousetrap.bind("2", () => setRating(2));
-        Mousetrap.bind("3", () => setRating(3));
-        Mousetrap.bind("4", () => setRating(4));
-        Mousetrap.bind("5", () => setRating(5));
-
-        setTimeout(() => {
-          Mousetrap.unbind("0");
-          Mousetrap.unbind("1");
-          Mousetrap.unbind("2");
-          Mousetrap.unbind("3");
-          Mousetrap.unbind("4");
-          Mousetrap.unbind("5");
-        }, 1000);
-      });
-
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
-
-        Mousetrap.unbind("r");
       };
     }
   });
@@ -235,7 +202,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
         variables: {
           input: {
             ...input,
-            rating: input.rating ?? null,
           },
         },
       });
@@ -669,19 +635,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
               intl.formatMessage({ id: "date" }),
               "YYYY-MM-DD"
             )}
-            <Form.Group controlId="rating" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "rating" }),
-              })}
-              <Col xs={9}>
-                <RatingStars
-                  value={formik.values.rating ?? undefined}
-                  onSetRating={(value) =>
-                    formik.setFieldValue("rating", value ?? null)
-                  }
-                />
-              </Col>
-            </Form.Group>
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "galleries" }),

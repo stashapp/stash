@@ -37,6 +37,7 @@ import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
+import { RatingStars } from "./RatingStars";
 
 interface ISceneParams {
   id?: string;
@@ -101,6 +102,19 @@ export const Scene: React.FC = () => {
     setQueueScenes(scenes);
     setQueueTotal(count);
     setQueueStart(1);
+  }
+
+  function setRating(v: number | null) {
+    if (scene?.id) {
+      updateScene({
+        variables: {
+          input: {
+            id: scene?.id,
+            rating: v,
+          },
+        },
+      });
+    }
   }
 
   // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
@@ -470,6 +484,12 @@ export const Scene: React.FC = () => {
             </Nav.Item>
             <ButtonGroup className="ml-auto">
               <Nav.Item className="ml-auto">
+                <RatingStars
+                  value={scene?.rating ?? undefined}
+                  onSetRating={(value) => setRating(value ?? null)}
+                />
+              </Nav.Item>
+              <Nav.Item className="ml-auto">
                 <ExternalPlayerButton scene={scene} />
               </Nav.Item>
               <Nav.Item className="ml-auto">
@@ -565,6 +585,30 @@ export const Scene: React.FC = () => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
 
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
+
     return () => {
       Mousetrap.unbind("a");
       Mousetrap.unbind("q");
@@ -575,6 +619,8 @@ export const Scene: React.FC = () => {
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
+
+      Mousetrap.unbind("r");
     };
   });
 

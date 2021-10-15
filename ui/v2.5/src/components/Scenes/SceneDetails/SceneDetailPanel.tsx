@@ -6,7 +6,6 @@ import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { RatingStars } from "./RatingStars";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -95,14 +94,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               />
             </h5>
           ) : undefined}
-          {props.scene.rating ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingStars value={props.scene.rating} />
-            </h6>
-          ) : (
-            ""
-          )}
           {props.scene.file.width && props.scene.file.height && (
             <h6>
               <FormattedMessage id="resolution" />:{" "}

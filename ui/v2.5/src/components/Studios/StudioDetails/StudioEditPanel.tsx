@@ -6,7 +6,6 @@ import Mousetrap from "mousetrap";
 import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
@@ -41,7 +40,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: yup.string().optional().nullable(),
     details: yup.string().optional().nullable(),
     image: yup.string().optional().nullable(),
-    rating: yup.number().optional().nullable(),
     parent_id: yup.string().optional().nullable(),
     stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
     aliases: yup
@@ -62,7 +60,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     url: studio.url ?? "",
     details: studio.details ?? "",
     image: undefined,
-    rating: studio.rating ?? null,
     parent_id: studio.parent_studio?.id,
     stash_ids: studio.stash_ids ?? undefined,
     aliases: studio.aliases,
@@ -75,10 +72,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     validationSchema: schema,
     onSubmit: (values) => onSubmit(getStudioInput(values)),
   });
-
-  function setRating(v: number) {
-    formik.setFieldValue("rating", v);
-  }
 
   function onImageLoad(imageData: string) {
     formik.setFieldValue("image", imageData);
@@ -99,30 +92,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("s s", () => formik.handleSubmit());
-
-    // numeric keypresses get caught by jwplayer, so blur the element
-    // if the rating sequence is started
-    Mousetrap.bind("r", () => {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-
-      Mousetrap.bind("0", () => setRating(NaN));
-      Mousetrap.bind("1", () => setRating(1));
-      Mousetrap.bind("2", () => setRating(2));
-      Mousetrap.bind("3", () => setRating(3));
-      Mousetrap.bind("4", () => setRating(4));
-      Mousetrap.bind("5", () => setRating(5));
-
-      setTimeout(() => {
-        Mousetrap.unbind("0");
-        Mousetrap.unbind("1");
-        Mousetrap.unbind("2");
-        Mousetrap.unbind("3");
-        Mousetrap.unbind("4");
-        Mousetrap.unbind("5");
-      }, 1000);
-    });
 
     return () => {
       Mousetrap.unbind("s s");
@@ -278,20 +247,6 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
               }
               ids={formik.values.parent_id ? [formik.values.parent_id] : []}
               excludeIds={studio.id ? [studio.id] : []}
-            />
-          </Col>
-        </Form.Group>
-
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
-            <RatingStars
-              value={formik.values.rating ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating", value ?? null)
-              }
             />
           </Col>
         </Form.Group>

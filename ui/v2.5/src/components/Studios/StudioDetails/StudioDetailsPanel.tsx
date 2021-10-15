@@ -1,9 +1,8 @@
 import React from "react";
 import { Badge } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { TextField, URLField } from "src/utils/field";
 
 interface IStudioDetailsPanel {
@@ -13,23 +12,6 @@ interface IStudioDetailsPanel {
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
 }) => {
-  const intl = useIntl();
-
-  function renderRatingField() {
-    if (!studio.rating) {
-      return;
-    }
-
-    return (
-      <>
-        <dt>{intl.formatMessage({ id: "rating" })}</dt>
-        <dd>
-          <RatingStars value={studio.rating} disabled />
-        </dd>
-      </>
-    );
-  }
-
   function renderTagsList() {
     if (!studio?.aliases?.length) {
       return;
@@ -74,7 +56,6 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
           target="_self"
         />
 
-        {renderRatingField()}
         {renderTagsList()}
       </dl>
     </div>

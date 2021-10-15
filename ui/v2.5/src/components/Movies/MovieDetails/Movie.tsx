@@ -16,6 +16,7 @@ import {
   Modal,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieDetailsPanel } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
@@ -58,9 +59,35 @@ export const Movie: React.FC = () => {
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
 
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
+
     return () => {
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
+
+      Mousetrap.unbind("r");
     };
   });
 
@@ -136,6 +163,19 @@ export const Movie: React.FC = () => {
     setIsEditing(!isEditing);
     setFrontImage(undefined);
     setBackImage(undefined);
+  }
+
+  function setRating(v: number | null) {
+    if (movie?.id) {
+      updateMovie({
+        variables: {
+          input: {
+            id: movie?.id,
+            rating: v,
+          },
+        },
+      });
+    }
   }
 
   function renderDeleteAlert() {
@@ -222,6 +262,11 @@ export const Movie: React.FC = () => {
             </div>
           )}
         </div>
+
+        <RatingStars
+          value={movie?.rating ?? undefined}
+          onSetRating={(value) => setRating(value ?? null)}
+        />
 
         {!isEditing && movie ? (
           <>
