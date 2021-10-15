@@ -5,10 +5,10 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IDeleteGalleryDialogProps {
-  selected: Pick<GQL.Gallery, "id">[];
+  selected: GQL.SlimGalleryDataFragment[];
   onClose: (confirmed: boolean) => void;
 }
 
@@ -67,6 +67,42 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
     props.onClose(true);
   }
 
+  function maybeRenderDeleteFileAlert() {
+    if (!deleteFile) {
+      return;
+    }
+
+    return (
+      <div className="delete-dialog alert alert-danger text-break">
+        <p className="font-weight-bold">
+          <FormattedMessage
+            values={{
+              count: props.selected.length,
+              singularEntity,
+              pluralEntity,
+            }}
+            id="dialogs.delete_alert"
+          />
+        </p>
+        <ul>
+          {props.selected.slice(0, 5).map((s) => (
+            <li>{s.path}</li>
+          ))}
+          {props.selected.length > 5 && (
+            <FormattedMessage
+              values={{
+                count: props.selected.length - 5,
+                singularEntity,
+                pluralEntity,
+              }}
+              id="dialogs.delete_object_overflow"
+            />
+          )}
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <Modal
       show
@@ -85,6 +121,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       isRunning={isDeleting}
     >
       <p>{message}</p>
+      {maybeRenderDeleteFileAlert()}
       <Form>
         <Form.Check
           id="delete-file"

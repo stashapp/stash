@@ -99,7 +99,7 @@ export const Gallery: React.FC = () => {
     if (isDeleteAlertOpen && gallery) {
       return (
         <DeleteGalleriesDialog
-          selected={[gallery]}
+          selected={[{ ...gallery, image_count: NaN }]}
           onClose={onDeleteDialogClosed}
         />
       );
