@@ -2,6 +2,7 @@ package ffmpeg
 
 import (
 	"archive/zip"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -36,9 +37,9 @@ func GetPaths(paths []string) (string, string) {
 	return ffmpegPath, ffprobePath
 }
 
-func Download(configDirectory string) error {
+func Download(ctx context.Context, configDirectory string) error {
 	for _, url := range getFFMPEGURL() {
-		err := DownloadSingle(configDirectory, url)
+		err := DownloadSingle(ctx, configDirectory, url)
 		if err != nil {
 			return err
 		}
@@ -69,7 +70,7 @@ func (r *progressReader) Read(p []byte) (int, error) {
 	return read, err
 }
 
-func DownloadSingle(configDirectory, url string) error {
+func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 	if url == "" {
 		return fmt.Errorf("no ffmpeg url for this platform")
 	}
@@ -88,7 +89,12 @@ func DownloadSingle(configDirectory, url string) error {
 	logger.Infof("Downloading %s...", url)
 
 	// Make the HTTP request
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}

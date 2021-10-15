@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/base64"
@@ -20,7 +21,7 @@ const base64RE = `^data:.+\/(.+);base64,(.*)$`
 
 // ProcessImageInput transforms an image string either from a base64 encoded
 // string, or from a URL, and returns the image as a byte slice
-func ProcessImageInput(imageInput string) ([]byte, error) {
+func ProcessImageInput(ctx context.Context, imageInput string) ([]byte, error) {
 	regex := regexp.MustCompile(base64RE)
 	if regex.MatchString(imageInput) {
 		_, d, err := ProcessBase64Image(imageInput)
@@ -28,11 +29,11 @@ func ProcessImageInput(imageInput string) ([]byte, error) {
 	}
 
 	// assume input is a URL. Read it.
-	return ReadImageFromURL(imageInput)
+	return ReadImageFromURL(ctx, imageInput)
 }
 
 // ReadImageFromURL returns image data from a URL
-func ReadImageFromURL(url string) ([]byte, error) {
+func ReadImageFromURL(ctx context.Context, url string) ([]byte, error) {
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -41,7 +42,7 @@ func ReadImageFromURL(url string) ([]byte, error) {
 		Timeout: imageGetTimeout,
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

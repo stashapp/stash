@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -29,8 +30,8 @@ type singleton struct {
 
 	Paths *paths.Paths
 
-	FFMPEGPath  string
-	FFProbePath string
+	FFMPEG  ffmpeg.Encoder
+	FFProbe ffmpeg.FFProbe
 
 	SessionStore *session.Store
 
@@ -58,6 +59,7 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
+		ctx := context.TODO()
 		cfg, err := config.Initialize()
 
 		if err != nil {
@@ -93,7 +95,7 @@ func Initialize() *singleton {
 			if err != nil {
 				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
 			} else {
-				if err := instance.PostInit(); err != nil {
+				if err := instance.PostInit(ctx); err != nil {
 					panic(err)
 				}
 			}
@@ -152,6 +154,8 @@ func initProfiling(cpuProfilePath string) {
 }
 
 func initFFMPEG() error {
+	ctx := context.TODO()
+
 	// only do this if we have a config file set
 	if instance.Config.GetConfigFile() != "" {
 		// use same directory as config path
@@ -164,7 +168,7 @@ func initFFMPEG() error {
 
 		if ffmpegPath == "" || ffprobePath == "" {
 			logger.Infof("couldn't find FFMPEG, attempting to download it")
-			if err := ffmpeg.Download(configDirectory); err != nil {
+			if err := ffmpeg.Download(ctx, configDirectory); err != nil {
 				msg := `Unable to locate / automatically download FFMPEG
 
 	Check the readme for download links.
@@ -180,8 +184,8 @@ func initFFMPEG() error {
 			}
 		}
 
-		instance.FFMPEGPath = ffmpegPath
-		instance.FFProbePath = ffprobePath
+		instance.FFMPEG = ffmpeg.Encoder(ffmpegPath)
+		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 	}
 
 	return nil
@@ -195,7 +199,7 @@ func initLog() {
 // PostInit initialises the paths, caches and txnManager after the initial
 // configuration has been set. Should only be called if the configuration
 // is valid.
-func (s *singleton) PostInit() error {
+func (s *singleton) PostInit(ctx context.Context) error {
 	if err := s.Config.SetInitialConfig(); err != nil {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
@@ -235,7 +239,7 @@ func (s *singleton) PostInit() error {
 	}
 
 	if database.Ready() == nil {
-		s.PostMigrate()
+		s.PostMigrate(ctx)
 	}
 
 	return nil
@@ -295,7 +299,7 @@ func setSetupDefaults(input *models.SetupInput) {
 	}
 }
 
-func (s *singleton) Setup(input models.SetupInput) error {
+func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 	setSetupDefaults(&input)
 
 	// create the config directory if it does not exist
@@ -328,7 +332,7 @@ func (s *singleton) Setup(input models.SetupInput) error {
 	}
 
 	// initialise the database
-	if err := s.PostInit(); err != nil {
+	if err := s.PostInit(ctx); err != nil {
 		return fmt.Errorf("error initializing the database: %v", err)
 	}
 
@@ -342,14 +346,14 @@ func (s *singleton) Setup(input models.SetupInput) error {
 }
 
 func (s *singleton) validateFFMPEG() error {
-	if s.FFMPEGPath == "" || s.FFProbePath == "" {
+	if s.FFMPEG == "" || s.FFProbe == "" {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
 
 	return nil
 }
 
-func (s *singleton) Migrate(input models.MigrateInput) error {
+func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) error {
 	// always backup so that we can roll back to the previous version if
 	// migration fails
 	backupPath := input.BackupPath
@@ -377,7 +381,7 @@ func (s *singleton) Migrate(input models.MigrateInput) error {
 	}
 
 	// perform post-migration operations
-	s.PostMigrate()
+	s.PostMigrate(ctx)
 
 	// if no backup path was provided, then delete the created backup
 	if input.BackupPath == "" {

@@ -79,7 +79,7 @@ func (t *ImportTask) GetDescription() string {
 	return "Importing..."
 }
 
-func (t *ImportTask) Start() {
+func (t *ImportTask) Start(ctx context.Context) {
 	if t.TmpZip != "" {
 		defer func() {
 			err := utils.RemoveDir(t.BaseDir)
@@ -125,8 +125,6 @@ func (t *ImportTask) Start() {
 			return
 		}
 	}
-
-	ctx := context.TODO()
 
 	t.ImportTags(ctx)
 	t.ImportPerformers(ctx)

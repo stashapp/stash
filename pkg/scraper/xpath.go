@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"net/url"
 	"regexp"
@@ -42,7 +43,7 @@ func (s *xpathScraper) scrapeURL(url string) (*html.Node, *mappedScraper, error)
 		return nil, nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(url)
+	doc, err := s.loadURL(context.TODO(), url)
 
 	if err != nil {
 		return nil, nil, err
@@ -110,7 +111,7 @@ func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 	url := s.scraper.QueryURL
 	url = strings.Replace(url, placeholder, escapedName, -1)
 
-	doc, err := s.loadURL(url)
+	doc, err := s.loadURL(context.TODO(), url)
 
 	if err != nil {
 		return nil, err
@@ -139,7 +140,7 @@ func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 	url := s.scraper.QueryURL
 	url = strings.Replace(url, placeholder, escapedName, -1)
 
-	doc, err := s.loadURL(url)
+	doc, err := s.loadURL(context.TODO(), url)
 
 	if err != nil {
 		return nil, err
@@ -163,7 +164,7 @@ func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(url)
+	doc, err := s.loadURL(context.TODO(), url)
 
 	if err != nil {
 		return nil, err
@@ -187,7 +188,7 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*m
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(url)
+	doc, err := s.loadURL(context.TODO(), url)
 
 	if err != nil {
 		return nil, err
@@ -211,7 +212,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(url)
+	doc, err := s.loadURL(context.TODO(), url)
 
 	if err != nil {
 		return nil, err
@@ -225,8 +226,8 @@ func (s *xpathScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInpu
 	return nil, errors.New("scrapeGalleryByFragment not supported for xpath scraper")
 }
 
-func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
-	r, err := loadURL(url, s.config, s.globalConfig)
+func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
+	r, err := loadURL(ctx, url, s.config, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +299,7 @@ func (q *xpathQuery) nodeText(n *html.Node) string {
 }
 
 func (q *xpathQuery) subScrape(value string) mappedQuery {
-	doc, err := q.scraper.loadURL(value)
+	doc, err := q.scraper.loadURL(context.TODO(), value)
 
 	if err != nil {
 		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())

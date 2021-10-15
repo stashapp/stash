@@ -415,7 +415,7 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var scene *models.Scene
-	err := me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+	err := me.txnManager.WithReadTxn(r.Context(), func(r models.ReaderRepository) error {
 		idInt, err := strconv.Atoi(sceneId)
 		if err != nil {
 			return nil
@@ -434,7 +434,7 @@ func (me *Server) serveIcon(w http.ResponseWriter, r *http.Request) {
 	me.sceneServer.ServeScreenshot(scene, w, r)
 }
 
-func (me *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
+func (me *Server) contentDirectoryInitialEvent(ctx context.Context, urls []*url.URL, sid string) {
 	body := xmlMarshalOrPanic(upnp.PropertySet{
 		Properties: []upnp.Property{
 			{
@@ -465,7 +465,7 @@ func (me *Server) contentDirectoryInitialEvent(urls []*url.URL, sid string) {
 	body = append([]byte(`<?xml version="1.0"?>`+"\n"), body...)
 	for _, _url := range urls {
 		bodyReader := bytes.NewReader(body)
-		req, err := http.NewRequest("NOTIFY", _url.String(), bodyReader)
+		req, err := http.NewRequestWithContext(ctx, "NOTIFY", _url.String(), bodyReader)
 		if err != nil {
 			logger.Errorf("Could not create a request to notify %s: %s", _url.String(), err)
 			continue
@@ -526,7 +526,7 @@ func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http
 		w.WriteHeader(http.StatusOK)
 		go func() {
 			time.Sleep(100 * time.Millisecond)
-			me.contentDirectoryInitialEvent(urls, sid)
+			me.contentDirectoryInitialEvent(r.Context(), urls, sid)
 		}()
 	} else if r.Method == "SUBSCRIBE" {
 		http.Error(w, "meh", http.StatusPreconditionFailed)
@@ -554,7 +554,7 @@ func (me *Server) initMux(mux *http.ServeMux) {
 	mux.HandleFunc(resPath, func(w http.ResponseWriter, r *http.Request) {
 		sceneId := r.URL.Query().Get("scene")
 		var scene *models.Scene
-		err := me.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+		err := me.txnManager.WithReadTxn(r.Context(), func(r models.ReaderRepository) error {
 			sceneIdInt, err := strconv.Atoi(sceneId)
 			if err != nil {
 				return nil
