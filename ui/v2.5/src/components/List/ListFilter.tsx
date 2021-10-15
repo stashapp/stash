@@ -232,7 +232,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
             <Button
               variant="secondary"
               onClick={onClearQuery}
-              title={intl.formatMessage({ id: "actions.search" })}
+              title={intl.formatMessage({ id: "actions.clear" })}
               className={cx(
                 "query-text-field-clear",
                 queryClearShowing ? "" : "d-none"
