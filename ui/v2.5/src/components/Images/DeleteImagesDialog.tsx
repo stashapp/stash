@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
-import { useImagesDestroy, useConfigureInterface } from "src/core/StashService";
+import { useImagesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
@@ -40,12 +40,6 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(
     config?.interface.deleteGeneratedDefault ?? true
   );
-  const [saveDeleteSettings, setSaveDeleteSettings] = useState<boolean>(false);
-
-  const [updateInterfaceConfig] = useConfigureInterface({
-    deleteFileDefault: deleteFile,
-    deleteGeneratedDefault: deleteGenerated,
-  });
 
   const Toast = useToast();
   const [deleteImage] = useImagesDestroy(getImagesDeleteInput());
@@ -65,9 +59,6 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     setIsDeleting(true);
     try {
       await deleteImage();
-      if (saveDeleteSettings) {
-        await updateInterfaceConfig();
-      }
       Toast.success({ content: toastMessage });
     } catch (e) {
       Toast.error(e);
@@ -108,15 +99,6 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
             id: "actions.delete_generated_supporting_files",
           })}
           onChange={() => setDeleteGenerated(!deleteGenerated)}
-        />
-        <hr />
-        <Form.Check
-          id="save-delete-settings"
-          checked={saveDeleteSettings}
-          label={intl.formatMessage({
-            id: "actions.save_delete_settings",
-          })}
-          onChange={() => setSaveDeleteSettings(!saveDeleteSettings)}
         />
       </Form>
     </Modal>
