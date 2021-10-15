@@ -51,7 +51,8 @@ func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (
 	// HTTP Client setup
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
+			MaxIdleConnsPerHost: 8,
 		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to 20
