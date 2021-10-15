@@ -27,6 +27,10 @@ func (c config) jar() (*cookiejar.Jar, error) {
 		return nil, err
 	}
 
+	if opts == nil || opts.UseCDP {
+		return jar, nil
+	}
+
 	for i, ckURL := range opts.Cookies {
 		url, err := url.Parse(ckURL.CookieURL) // CookieURL must be valid, include schema
 		if err != nil {
