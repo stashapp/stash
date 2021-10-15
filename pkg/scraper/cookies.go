@@ -17,7 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-// newJar constructs a cookie jar from a configuration
+// jar constructs a cookie jar from a configuration
 func (c config) jar() (*cookiejar.Jar, error) {
 	opts := c.DriverOptions
 	jar, err := cookiejar.New(&cookiejar.Options{
