@@ -78,8 +78,8 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
           <FormattedMessage
             values={{
               count: props.selected.length,
-              singularEntity,
-              pluralEntity,
+              singularEntity: intl.formatMessage({ id: "file" }),
+              pluralEntity: intl.formatMessage({ id: "files" }),
             }}
             id="dialogs.delete_alert"
           />
@@ -92,8 +92,8 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
             <FormattedMessage
               values={{
                 count: props.selected.length - 5,
-                singularEntity,
-                pluralEntity,
+                singularEntity: intl.formatMessage({ id: "file" }),
+                pluralEntity: intl.formatMessage({ id: "files" }),
               }}
               id="dialogs.delete_object_overflow"
             />
