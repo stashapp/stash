@@ -84,7 +84,9 @@
     "select_folders": "選擇資料夾",
     "browse_for_image": "選擇圖像…",
     "open_random": "隨機開啟",
-    "scrape_query": "爬蟲搜尋關鍵字"
+    "scrape_query": "爬蟲搜尋關鍵字",
+    "stop": "停止",
+    "scrape_scene_fragment": "部分爬取"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -118,7 +120,8 @@
       "set_tag_label": "標籤設定",
       "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
       "show_male_label": "顯示男優",
-      "query_mode_metadata": "Metadata"
+      "query_mode_metadata": "Metadata",
+      "source": "來源"
     },
     "noun_query": "關鍵字",
     "results": {
@@ -130,13 +133,15 @@
       "match_failed_no_result": "未找到結果",
       "match_success": "已成功標記短片",
       "duration_off": "片長差至少 {number} 秒",
-      "duration_unknown": "未知片長"
+      "duration_unknown": "未知片長",
+      "unnamed": "未命名"
     },
     "verb_match_fp": "特徵碼辨別",
     "verb_matched": "符合",
     "verb_submit_fp": "{fpCount, plural, other{提交 # 個特徵碼}}",
     "verb_toggle_config": "{toggle}{configuration}",
-    "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片"
+    "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片",
+    "verb_scrape_all": "爬取所有"
   },
   "config": {
     "about": {
@@ -387,6 +392,13 @@
             "heading": "建立圖片縮圖",
             "description": "建立縮圖時，將檔案寫至磁碟中"
           }
+        }
+      },
+      "editing": {
+        "heading": "編輯",
+        "disable_dropdown_create": {
+          "description": "關閉下拉選單建立物件功能",
+          "heading": "關閉下拉選單建立"
         }
       }
     },
@@ -681,5 +693,8 @@
   "sub_tags": "子標籤",
   "include_parent_tags": "包含母標籤",
   "parent_tag_count": "母標籤數量",
-  "sub_tag_count": "子標籤數量"
+  "sub_tag_count": "子標籤數量",
+  "parent_of": "{children} 的母物件",
+  "sub_tag_of": "{parent} 的子標籤",
+  "part_of": "{parent} 的一部分"
 }
