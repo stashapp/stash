@@ -86,7 +86,7 @@ input ConfigGeneralInput {
   """True if galleries should be created from folders with images"""
   createGalleriesFromFolders: Boolean!
   """True if we should not auto-open a browser window on startup"""
-  nobrowser: Boolean?
+  nobrowser: Boolean
   """Array of video file extensions"""
   videoExtensions: [String!]
   """Array of image file extensions"""
