@@ -45,7 +45,7 @@ func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnMa
 	case scraperActionScript:
 		return newScriptScraper(scraper, c, globalConfig)
 	case scraperActionStash:
-		return newStashScraper(scraper, txnManager, c, globalConfig)
+		return newStashScraper(scraper, client, txnManager, c, globalConfig)
 	case scraperActionXPath:
 		return newXpathScraper(scraper, client, txnManager, c, globalConfig)
 	case scraperActionJson:

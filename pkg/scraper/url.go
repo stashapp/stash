@@ -20,9 +20,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-// Timeout for the scrape http request. Includes transfer time. May want to make this
-// configurable at some point.
-const scrapeGetTimeout = time.Second * 60
 const scrapeDefaultSleep = time.Second * 2
 
 func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {

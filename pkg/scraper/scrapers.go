@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	stash_config "github.com/stashapp/stash/pkg/manager/config"
@@ -16,6 +17,11 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+// scrapeGetTimeout is the timeout for scraper HTTP requests. Includes transfer time.
+// We may want to bump this at some point and use local context-timeouts if more granularity
+// is needed.
+const scrapeGetTimeout = time.Second * 60
 
 // GlobalConfig contains the global scraper options.
 type GlobalConfig interface {
@@ -275,7 +281,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerfo
 	}
 
 	// post-process - set the image if applicable
-	if err := setPerformerImage(ctx, ret, c.globalConfig); err != nil {
+	if err := setPerformerImage(ctx, c.client, ret, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 	}
 
@@ -343,7 +349,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) er
 	}
 
 	// post-process - set the image if applicable
-	if err := setSceneImage(ctx, ret, c.globalConfig); err != nil {
+	if err := setSceneImage(ctx, c.client, ret, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %v", *ret.Image, err)
 	}
 
@@ -571,10 +577,10 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 			}
 
 			// post-process - set the image if applicable
-			if err := setMovieFrontImage(context.TODO(), ret, c.globalConfig); err != nil {
+			if err := setMovieFrontImage(context.TODO(), c.client, ret, c.globalConfig); err != nil {
 				logger.Warnf("Could not set front image using URL %s: %s", *ret.FrontImage, err.Error())
 			}
-			if err := setMovieBackImage(context.TODO(), ret, c.globalConfig); err != nil {
+			if err := setMovieBackImage(context.TODO(), c.client, ret, c.globalConfig); err != nil {
 				logger.Warnf("Could not set back image using URL %s: %s", *ret.BackImage, err.Error())
 			}
 
