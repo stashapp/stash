@@ -20,13 +20,14 @@ func (t *GenerateTranscodeTask) Start() {
 		return
 	}
 
+	ffprobe := instance.FFProbe
 	var container ffmpeg.Container
 
 	if t.Scene.Format.Valid {
 		container = ffmpeg.Container(t.Scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
-		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+		tmpVideoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
 			return
@@ -45,7 +46,7 @@ func (t *GenerateTranscodeTask) Start() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return
@@ -58,7 +59,7 @@ func (t *GenerateTranscodeTask) Start() {
 		OutputPath:       outputPath,
 		MaxTranscodeSize: transcodeSize,
 	}
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {

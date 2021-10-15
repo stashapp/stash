@@ -22,6 +22,7 @@ import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
+import { TaggerContext } from "../Tagger/context";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -253,5 +254,5 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  return listData.template;
+  return <TaggerContext>{listData.template}</TaggerContext>;
 };

@@ -22,7 +22,7 @@ type StashBoxPerformerTagTask struct {
 }
 
 func (t *StashBoxPerformerTagTask) Start() {
-	t.stashBoxPerformerTag()
+	t.stashBoxPerformerTag(context.TODO())
 }
 
 func (t *StashBoxPerformerTagTask) Description() string {
@@ -36,7 +36,7 @@ func (t *StashBoxPerformerTagTask) Description() string {
 	return fmt.Sprintf("Tagging performer %s from stash-box", name)
 }
 
-func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
+func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	var performer *models.ScrapedPerformer
 	var err error
 
@@ -169,7 +169,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if len(performer.Images) > 0 && !excluded["image"] {
-					image, err := utils.ReadImageFromURL(performer.Images[0])
+					image, err := utils.ReadImageFromURL(ctx, performer.Images[0])
 					if err != nil {
 						return err
 					}
@@ -232,7 +232,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag() {
 				}
 
 				if len(performer.Images) > 0 {
-					image, imageErr := utils.ReadImageFromURL(performer.Images[0])
+					image, imageErr := utils.ReadImageFromURL(ctx, performer.Images[0])
 					if imageErr != nil {
 						return imageErr
 					}

@@ -294,7 +294,7 @@ func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
 	}
 
 	config := config.GetInstance()
-	if !matchExtension(s.Path, config.GetVideoExtensions()) {
+	if !utils.MatchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
@@ -325,7 +325,7 @@ func (j *cleanJob) shouldCleanGallery(g *models.Gallery) bool {
 	}
 
 	config := config.GetInstance()
-	if !matchExtension(path, config.GetGalleryExtensions()) {
+	if !utils.MatchExtension(path, config.GetGalleryExtensions()) {
 		logger.Infof("File extension does not match gallery extensions. Marking to clean: \"%s\"", path)
 		return true
 	}
@@ -355,7 +355,7 @@ func (j *cleanJob) shouldCleanImage(s *models.Image) bool {
 	}
 
 	config := config.GetInstance()
-	if !matchExtension(s.Path, config.GetImageExtensions()) {
+	if !utils.MatchExtension(s.Path, config.GetImageExtensions()) {
 		logger.Infof("File extension does not match image extensions. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
