@@ -4,7 +4,6 @@ import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { genderToString } from "src/utils/gender";
 
 interface IPerformerDetails {
@@ -33,23 +32,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
               <TagLink key={tag.id} tagType="performer" tag={tag} />
             ))}
           </ul>
-        </dd>
-      </>
-    );
-  }
-
-  function renderRating() {
-    if (!performer.rating) {
-      return null;
-    }
-
-    return (
-      <>
-        <dt>
-          <FormattedMessage id="rating" />:
-        </dt>
-        <dd>
-          <RatingStars value={performer.rating} />
         </dd>
       </>
     );
@@ -159,7 +141,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           TextUtils.instagramURL
         )}
       />
-      {renderRating()}
       {renderTagsField()}
       {renderStashIDs()}
     </dl>

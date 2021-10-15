@@ -98,6 +98,30 @@ export const Performer: React.FC = () => {
     Mousetrap.bind("o", () => setActiveTabKey("operations"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
 
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
+
     return () => {
       Mousetrap.unbind("a");
       Mousetrap.unbind("e");
