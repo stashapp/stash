@@ -2,7 +2,9 @@ package scraper
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -33,6 +35,7 @@ func isCDPPathWS(c GlobalConfig) bool {
 
 // Cache stores scraper details.
 type Cache struct {
+	client       *http.Client
 	scrapers     []scraper
 	globalConfig GlobalConfig
 	txnManager   models.TransactionManager
@@ -45,19 +48,35 @@ type Cache struct {
 // Scraper configurations are loaded from yml files in the provided scrapers
 // directory and any subdirectories.
 func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (*Cache, error) {
-	scrapers, err := loadScrapers(globalConfig, txnManager)
+	// HTTP Client setup
+	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
+		},
+		Timeout: scrapeGetTimeout,
+		// defaultCheckRedirect code with max changed from 10 to 20
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 20 {
+				return errors.New("stopped after 20 redirects")
+			}
+			return nil
+		},
+	}
+
+	scrapers, err := loadScrapers(globalConfig, client, txnManager)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Cache{
+		client:       client,
 		globalConfig: globalConfig,
 		scrapers:     scrapers,
 		txnManager:   txnManager,
 	}, nil
 }
 
-func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManager) ([]scraper, error) {
+func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager models.TransactionManager) ([]scraper, error) {
 	path := globalConfig.GetScrapersPath()
 	scrapers := make([]scraper, 0)
 
@@ -76,14 +95,14 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 	}
 
 	// add built-in freeones scraper
-	scrapers = append(scrapers, getFreeonesScraper(txnManager, globalConfig), getAutoTagScraper(txnManager, globalConfig))
+	scrapers = append(scrapers, getFreeonesScraper(client, txnManager, globalConfig), getAutoTagScraper(txnManager, globalConfig))
 
 	for _, file := range scraperFiles {
 		c, err := loadConfigFromYAMLFile(file)
 		if err != nil {
 			logger.Errorf("Error loading scraper %s: %s", file, err.Error())
 		} else {
-			scraper := createScraperFromConfig(*c, txnManager, globalConfig)
+			scraper := createScraperFromConfig(*c, client, txnManager, globalConfig)
 			scrapers = append(scrapers, scraper)
 		}
 	}
@@ -95,7 +114,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 // In the event of an error during loading, the cache will be left empty.
 func (c *Cache) ReloadScrapers() error {
 	c.scrapers = nil
-	scrapers, err := loadScrapers(c.globalConfig, c.txnManager)
+	scrapers, err := loadScrapers(c.globalConfig, c.client, c.txnManager)
 	if err != nil {
 		return err
 	}

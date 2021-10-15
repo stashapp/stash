@@ -3,8 +3,6 @@ package scraper
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,25 +25,11 @@ import (
 const scrapeGetTimeout = time.Second * 60
 const scrapeDefaultSleep = time.Second * 2
 
-func loadURL(ctx context.Context, loadURL string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
+func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
 		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
-	}
-
-	client := &http.Client{
-		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
-		},
-		Timeout: scrapeGetTimeout,
-		// defaultCheckRedirect code with max changed from 10 to 20
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 20 {
-				return errors.New("stopped after 20 redirects")
-			}
-			return nil
-		},
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
