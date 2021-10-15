@@ -180,6 +180,7 @@ type StashBoxError struct {
 }
 
 func (s *StashBoxError) Error() string {
+	// "Stash-box" is a proper noun and is therefore capitcalized
 	return "Stash-box: " + s.msg
 }
 
@@ -694,17 +695,24 @@ func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
 	for _, box := range boxes {
-		switch {
-		case box.APIKey == "":
+		// Validate each stash-box configuration field, return on error
+		if box.APIKey == "" {
 			return &StashBoxError{msg: "API Key cannot be blank"}
-		case box.Endpoint == "":
+		}
+
+		if box.Endpoint == "" {
 			return &StashBoxError{msg: "endpoint cannot be blank"}
-		case !stashBoxRe.Match([]byte(box.Endpoint)):
-			return &StashBoxError{msg: "enpoint is invalid"}
-		case isMulti && box.Name == "":
+		}
+
+		if !stashBoxRe.Match([]byte(box.Endpoint)) {
+			return &StashBoxError{msg: "endpoint is invalid"}
+		}
+
+		if isMulti && box.Name == "" {
 			return &StashBoxError{msg: "name cannot be blank"}
 		}
 	}
+
 	return nil
 }
 
