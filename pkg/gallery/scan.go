@@ -142,38 +142,35 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 
 				isUpdatedGallery = true
 			}
-		} else {
-			// don't create gallery if it has no images
-			if scanner.hasImages(path) {
-				currentTime := time.Now()
+		} else if scanner.hasImages(path) { // don't create gallery if it has no images
+			currentTime := time.Now()
 
-				g = &models.Gallery{
-					Zip: true,
-					Title: sql.NullString{
-						String: utils.GetNameFromPath(path, scanner.StripFileExtension),
-						Valid:  true,
-					},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-				}
-
-				g.SetFile(*scanned)
-
-				// only warn when creating the gallery
-				ok, err := utils.IsZipFileUncompressed(path)
-				if err == nil && !ok {
-					logger.Warnf("%s is using above store (0) level compression.", path)
-				}
-
-				logger.Infof("%s doesn't exist.  Creating new item...", path)
-				g, err = qb.Create(*g)
-				if err != nil {
-					return err
-				}
-
-				scanImages = true
-				isNewGallery = true
+			g = &models.Gallery{
+				Zip: true,
+				Title: sql.NullString{
+					String: utils.GetNameFromPath(path, scanner.StripFileExtension),
+					Valid:  true,
+				},
+				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			}
+
+			g.SetFile(*scanned)
+
+			// only warn when creating the gallery
+			ok, err := utils.IsZipFileUncompressed(path)
+			if err == nil && !ok {
+				logger.Warnf("%s is using above store (0) level compression.", path)
+			}
+
+			logger.Infof("%s doesn't exist.  Creating new item...", path)
+			g, err = qb.Create(*g)
+			if err != nil {
+				return err
+			}
+
+			scanImages = true
+			isNewGallery = true
 		}
 
 		return nil
