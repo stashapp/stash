@@ -67,7 +67,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       className="PerformerTagger-performer-search-item minimal col-6"
       variant="link"
       key={p.stash_id}
-      onClick={() => setModalPerformer(p)}
+      onClick={() => setModalPerformer({ ...p, id: performer.id })}
     >
       <img src={p.images[0]} alt="" className="PerformerTagger-thumb" />
       <span>{p.name}</span>
