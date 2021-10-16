@@ -616,7 +616,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 
 		var tasks []StashBoxPerformerTagTask
 
-		if len(input.PerformerIds) > 0 {
+		if len(input.PerformerIds) > 0 { //nolint:gocritic
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 
@@ -652,32 +652,34 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 					})
 				}
 			}
-		} else if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			performerQuery := r.Performer()
-			var performers []*models.Performer
-			var err error
-			if input.Refresh {
-				performers, err = performerQuery.FindByStashIDStatus(true, box.Endpoint)
-			} else {
-				performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
-			}
-			if err != nil {
-				return fmt.Errorf("error querying performers: %v", err)
-			}
+		} else { //nolint:gocritic
+			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				performerQuery := r.Performer()
+				var performers []*models.Performer
+				var err error
+				if input.Refresh {
+					performers, err = performerQuery.FindByStashIDStatus(true, box.Endpoint)
+				} else {
+					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
+				}
+				if err != nil {
+					return fmt.Errorf("error querying performers: %v", err)
+				}
 
-			for _, performer := range performers {
-				tasks = append(tasks, StashBoxPerformerTagTask{
-					txnManager:      s.TxnManager,
-					performer:       performer,
-					refresh:         input.Refresh,
-					box:             box,
-					excluded_fields: input.ExcludeFields,
-				})
+				for _, performer := range performers {
+					tasks = append(tasks, StashBoxPerformerTagTask{
+						txnManager:      s.TxnManager,
+						performer:       performer,
+						refresh:         input.Refresh,
+						box:             box,
+						excluded_fields: input.ExcludeFields,
+					})
+				}
+				return nil
+			}); err != nil {
+				logger.Error(err.Error())
+				return
 			}
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			return
 		}
 
 		if len(tasks) == 0 {
