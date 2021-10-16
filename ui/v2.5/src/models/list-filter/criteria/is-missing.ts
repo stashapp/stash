@@ -42,6 +42,7 @@ export const SceneIsMissingCriterionOption = new IsMissingCriterionOptionClass(
     "performers",
     "tags",
     "stash_id",
+    "phash",
   ]
 );
 
