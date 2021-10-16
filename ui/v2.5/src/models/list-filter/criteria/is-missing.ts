@@ -98,7 +98,7 @@ export const StudioIsMissingCriterionOption = new IsMissingCriterionOptionClass(
   "isMissing",
   "studioIsMissing",
   "is_missing",
-  ["image", "stash_id", "details"]
+  ["image", "stash_id", "details", "parent_id"]
 );
 
 export const MovieIsMissingCriterionOption = new IsMissingCriterionOptionClass(
