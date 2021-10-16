@@ -2,22 +2,24 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import cx from "classnames";
 import { Badge, Button, Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
+import { uniq } from "lodash";
+import { blobToBase64 } from "base64-blob";
+import distance from "hamming-distance";
 
 import * as GQL from "src/core/generated-graphql";
 import {
+  HoverPopover,
   Icon,
   LoadingIndicator,
   SuccessIcon,
   TagSelect,
   TruncatedText,
+  OperationButton,
 } from "src/components/Shared";
 import { FormUtils } from "src/utils";
-import { uniq } from "lodash";
-import { blobToBase64 } from "base64-blob";
 import { stringToGender } from "src/utils/gender";
-import { OptionalField } from "./IncludeButton";
-import { IScrapedScene, TaggerStateContext } from "./context";
-import { OperationButton } from "../Shared/OperationButton";
+import { IScrapedScene, TaggerStateContext } from "../context";
+import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
@@ -77,23 +79,58 @@ const getFingerprintStatus = (
   const checksumMatch = scene.fingerprints?.some(
     (f) => f.hash === stashScene.checksum || f.hash === stashScene.oshash
   );
-  const phashMatch = scene.fingerprints?.some(
-    (f) => f.hash === stashScene.phash
+  const phashMatches =
+    scene.fingerprints?.filter(
+      (f) => f.algorithm === "PHASH" && distance(f.hash, stashScene.phash) <= 8
+    ) ?? [];
+
+  const phashList = (
+    <div className="m-2">
+      {phashMatches.map((fp) => (
+        <div>
+          <b>{fp.hash}</b>
+          {fp.hash === stashScene.phash
+            ? ", Exact match"
+            : `, distance ${distance(fp.hash, stashScene.phash)}`}
+        </div>
+      ))}
+    </div>
   );
-  if (checksumMatch || phashMatch)
+
+  if (checksumMatch || phashMatches.length > 0)
     return (
       <div className="font-weight-bold">
         <SuccessIcon className="mr-2" />
-        <FormattedMessage
-          id="component_tagger.results.hash_matches"
-          values={{
-            hash_type: (
+        {phashMatches.length > 0 ? (
+          <HoverPopover
+            placement="bottom"
+            content={phashList}
+            className="PHashPopover"
+          >
+            {phashMatches.length > 1 ? (
               <FormattedMessage
-                id={`media_info.${phashMatch ? "phash" : "checksum"}`}
+                id="component_tagger.results.phash_matches"
+                values={{
+                  count: phashMatches.length,
+                }}
               />
-            ),
-          }}
-        />
+            ) : (
+              <FormattedMessage
+                id="component_tagger.results.hash_matches"
+                values={{
+                  hash_type: <FormattedMessage id="media_info.phash" />,
+                }}
+              />
+            )}
+          </HoverPopover>
+        ) : (
+          <FormattedMessage
+            id="component_tagger.results.hash_matches"
+            values={{
+              hash_type: <FormattedMessage id="media_info.checksum" />,
+            }}
+          />
+        )}
       </div>
     );
 };
