@@ -74,7 +74,7 @@ func (t *IdentifySceneTask) Execute(ctx context.Context, progress *job.Progress)
 
 					options.setOptions(*source, t.Input.Options)
 
-					err = t.modifyScene(r, options)
+					err = t.modifyScene(ctx, r, options)
 					return
 				}
 			}
@@ -119,7 +119,7 @@ func (t *IdentifySceneTask) scrapeUsingStashBox(box *models.StashBox) (*models.S
 	return nil, nil
 }
 
-func (t *IdentifySceneTask) modifyScene(r models.Repository, options modifySceneOptions) error {
+func (t *IdentifySceneTask) modifyScene(ctx context.Context, r models.Repository, options modifySceneOptions) error {
 	target := options.scene
 
 	partial := models.ScenePartial{
@@ -148,7 +148,7 @@ func (t *IdentifySceneTask) modifyScene(r models.Repository, options modifyScene
 		return err
 	}
 
-	coverImage, err := t.getSceneCover(options)
+	coverImage, err := t.getSceneCover(ctx, options)
 	if err != nil {
 		return err
 	}
@@ -629,7 +629,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 	return stashIDs, nil
 }
 
-func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, error) {
+func (t *IdentifySceneTask) getSceneCover(ctx context.Context, input modifySceneOptions) ([]byte, error) {
 	scraped := input.scraped
 	target := input.scene
 	r := input.repo
@@ -657,7 +657,7 @@ func (t *IdentifySceneTask) getSceneCover(input modifySceneOptions) ([]byte, err
 		return nil, fmt.Errorf("error getting scene cover: %w", err)
 	}
 
-	data, err := utils.ProcessImageInput(*scraped.Image)
+	data, err := utils.ProcessImageInput(ctx, *scraped.Image)
 	if err != nil {
 		return nil, fmt.Errorf("error processing image input: %w", err)
 	}
