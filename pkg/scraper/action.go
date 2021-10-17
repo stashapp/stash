@@ -1,6 +1,8 @@
 package scraper
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"github.com/stashapp/stash/pkg/models"
+)
 
 type scraperAction string
 

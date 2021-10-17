@@ -160,7 +160,7 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 
 //Gets latest version (git shorthash commit for now)
 func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion, error) {
-	ver, url, err := GetLatestVersion(true)
+	ver, url, err := GetLatestVersion(ctx, true)
 	if err == nil {
 		logger.Infof("Retrieved latest hash: %s", ver)
 	} else {

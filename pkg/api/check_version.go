@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -107,12 +108,12 @@ type githubTagResponse struct {
 	Node_id string
 }
 
-func makeGithubRequest(url string, output interface{}) error {
+func makeGithubRequest(ctx context.Context, url string, output interface{}) error {
 	client := &http.Client{
 		Timeout: 3 * time.Second,
 	}
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
 	req.Header.Add("Accept", apiAcceptHeader) // gh api recommendation , send header with api version
 	response, err := client.Do(req)
@@ -147,7 +148,7 @@ func makeGithubRequest(url string, output interface{}) error {
 // If running a build from the "master" branch, then the latest full release
 // is used, otherwise it uses the release that is tagged with "latest_develop"
 // which is the latest pre-release build.
-func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease string, err error) {
+func GetLatestVersion(ctx context.Context, shortHash bool) (latestVersion string, latestRelease string, err error) {
 
 	arch := runtime.GOARCH                                                                    // https://en.wikipedia.org/wiki/Comparison_of_ARM_cores
 	isARMv7 := cpu.ARM.HasNEON || cpu.ARM.HasVFPv3 || cpu.ARM.HasVFPv3D16 || cpu.ARM.HasVFPv4 // armv6 doesn't support any of these features
@@ -180,14 +181,14 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 	}
 
 	release := githubReleasesResponse{}
-	err = makeGithubRequest(url, &release)
+	err = makeGithubRequest(ctx, url, &release)
 
 	if err != nil {
 		return "", "", err
 	}
 
 	if release.Prerelease == usePreRelease {
-		latestVersion = getReleaseHash(release, shortHash, usePreRelease)
+		latestVersion = getReleaseHash(ctx, release, shortHash, usePreRelease)
 
 		if wantedRelease != "" {
 			for _, asset := range release.Assets {
@@ -205,12 +206,12 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 	return latestVersion, latestRelease, nil
 }
 
-func getReleaseHash(release githubReleasesResponse, shortHash bool, usePreRelease bool) string {
+func getReleaseHash(ctx context.Context, release githubReleasesResponse, shortHash bool, usePreRelease bool) string {
 	shaLength := len(release.Target_commitish)
 	// the /latest API call doesn't return the hash in target_commitish
 	// also add sanity check in case Target_commitish is not 40 characters
 	if !usePreRelease || shaLength != 40 {
-		return getShaFromTags(shortHash, release.Tag_name)
+		return getShaFromTags(ctx, shortHash, release.Tag_name)
 	}
 
 	if shortHash {
@@ -225,9 +226,9 @@ func getReleaseHash(release githubReleasesResponse, shortHash bool, usePreReleas
 	return release.Target_commitish
 }
 
-func printLatestVersion() {
+func printLatestVersion(ctx context.Context) {
 	_, githash, _ = GetVersion()
-	latest, _, err := GetLatestVersion(true)
+	latest, _, err := GetLatestVersion(ctx, true)
 	if err != nil {
 		logger.Errorf("Couldn't find latest version: %s", err)
 	} else {
@@ -241,10 +242,10 @@ func printLatestVersion() {
 
 // get sha from the github api tags endpoint
 // returns the sha1 hash/shorthash or "" if something's wrong
-func getShaFromTags(shortHash bool, name string) string {
+func getShaFromTags(ctx context.Context, shortHash bool, name string) string {
 	url := apiTags
 	tags := []githubTagResponse{}
-	err := makeGithubRequest(url, &tags)
+	err := makeGithubRequest(ctx, url, &tags)
 
 	if err != nil {
 		logger.Errorf("Github Tags Api %v", err)

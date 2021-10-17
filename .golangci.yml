@@ -31,7 +31,7 @@ linters:
     # - ifshort
     - misspell
     # - nakedret
-    # - noctx
+    - noctx
     # - paralleltest
     - revive
     - rowserrcheck

@@ -243,3 +243,10 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     color: #db3737;
   }
 }
+
+.input-group-prepend {
+  .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+  }
+}

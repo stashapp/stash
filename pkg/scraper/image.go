@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -16,13 +17,13 @@ import (
 // configurable at some point.
 const imageGetTimeout = time.Second * 30
 
-func setPerformerImage(p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
+func setPerformerImage(ctx context.Context, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
 	if p == nil || p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
 		// nothing to do
 		return nil
 	}
 
-	img, err := getImage(*p.Image, globalConfig)
+	img, err := getImage(ctx, *p.Image, globalConfig)
 	if err != nil {
 		return err
 	}
@@ -34,14 +35,14 @@ func setPerformerImage(p *models.ScrapedPerformer, globalConfig GlobalConfig) er
 	return nil
 }
 
-func setSceneImage(s *models.ScrapedScene, globalConfig GlobalConfig) error {
+func setSceneImage(ctx context.Context, s *models.ScrapedScene, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if s == nil || s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
 		// nothing to do
 		return nil
 	}
 
-	img, err := getImage(*s.Image, globalConfig)
+	img, err := getImage(ctx, *s.Image, globalConfig)
 	if err != nil {
 		return err
 	}
@@ -51,14 +52,14 @@ func setSceneImage(s *models.ScrapedScene, globalConfig GlobalConfig) error {
 	return nil
 }
 
-func setMovieFrontImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error {
+func setMovieFrontImage(ctx context.Context, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if m == nil || m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
 		// nothing to do
 		return nil
 	}
 
-	img, err := getImage(*m.FrontImage, globalConfig)
+	img, err := getImage(ctx, *m.FrontImage, globalConfig)
 	if err != nil {
 		return err
 	}
@@ -68,14 +69,14 @@ func setMovieFrontImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error
 	return nil
 }
 
-func setMovieBackImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error {
+func setMovieBackImage(ctx context.Context, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if m == nil || m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
 		// nothing to do
 		return nil
 	}
 
-	img, err := getImage(*m.BackImage, globalConfig)
+	img, err := getImage(ctx, *m.BackImage, globalConfig)
 	if err != nil {
 		return err
 	}
@@ -85,14 +86,14 @@ func setMovieBackImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error 
 	return nil
 }
 
-func getImage(url string, globalConfig GlobalConfig) (*string, error) {
+func getImage(ctx context.Context, url string, globalConfig GlobalConfig) (*string, error) {
 	client := &http.Client{
 		Transport: &http.Transport{ // ignore insecure certificates
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()}},
 		Timeout: imageGetTimeout,
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -136,10 +137,10 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 	return &img, nil
 }
 
-func getStashPerformerImage(stashURL string, performerID string, globalConfig GlobalConfig) (*string, error) {
-	return getImage(stashURL+"/performer/"+performerID+"/image", globalConfig)
+func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, globalConfig GlobalConfig) (*string, error) {
+	return getImage(ctx, stashURL+"/performer/"+performerID+"/image", globalConfig)
 }
 
-func getStashSceneImage(stashURL string, sceneID string, globalConfig GlobalConfig) (*string, error) {
-	return getImage(stashURL+"/scene/"+sceneID+"/screenshot", globalConfig)
+func getStashSceneImage(ctx context.Context, stashURL string, sceneID string, globalConfig GlobalConfig) (*string, error) {
+	return getImage(ctx, stashURL+"/scene/"+sceneID+"/screenshot", globalConfig)
 }

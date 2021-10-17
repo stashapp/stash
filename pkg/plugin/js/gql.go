@@ -2,6 +2,7 @@ package js
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -33,7 +34,7 @@ func throw(vm *otto.Otto, str string) {
 	panic(value)
 }
 
-func gqlRequestFunc(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) func(call otto.FunctionCall) otto.Value {
+func gqlRequestFunc(ctx context.Context, vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) func(call otto.FunctionCall) otto.Value {
 	return func(call otto.FunctionCall) otto.Value {
 		if len(call.ArgumentList) == 0 {
 			throw(vm, "missing argument")
@@ -61,7 +62,7 @@ func gqlRequestFunc(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler)
 			throw(vm, err.Error())
 		}
 
-		r, err := http.NewRequest("POST", "/graphql", &body)
+		r, err := http.NewRequestWithContext(ctx, "POST", "/graphql", &body)
 		if err != nil {
 			throw(vm, "could not make request")
 		}
@@ -103,9 +104,9 @@ func gqlRequestFunc(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler)
 	}
 }
 
-func AddGQLAPI(vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) error {
+func AddGQLAPI(ctx context.Context, vm *otto.Otto, cookie *http.Cookie, gqlHandler http.Handler) error {
 	gql, _ := vm.Object("({})")
-	if err := gql.Set("Do", gqlRequestFunc(vm, cookie, gqlHandler)); err != nil {
+	if err := gql.Set("Do", gqlRequestFunc(ctx, vm, cookie, gqlHandler)); err != nil {
 		return fmt.Errorf("unable to set GraphQL Do function: %w", err)
 	}
 

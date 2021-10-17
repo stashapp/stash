@@ -221,14 +221,17 @@ type VideoFile struct {
 	AudioCodec string
 }
 
+// FFProbe
+type FFProbe string
+
 // Execute exec command and bind result to struct.
-func NewVideoFile(ffprobePath string, videoPath string, stripExt bool) (*VideoFile, error) {
+func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
 	//// Extremely slow on windows for some reason
 	//if runtime.GOOS != "windows" {
 	//	args = append(args, "-count_frames")
 	//}
-	out, err := exec.Command(ffprobePath, args...).Output()
+	out, err := exec.Command(string(*f), args...).Output()
 
 	if err != nil {
 		return nil, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", videoPath, string(out), err.Error())
