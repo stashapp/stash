@@ -616,6 +616,12 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 
 		var tasks []StashBoxPerformerTagTask
 
+		// The gocritic linter wants to turn this ifElseChain into a switch.
+		// however, such a switch would contain quite large blocks for each section
+		// and would arguably be hard to read.
+		//
+		// This is why we mark this section nolint. In principle, we should look to
+		// rewrite the section at some point, to avoid the linter warning.
 		if len(input.PerformerIds) > 0 { //nolint:gocritic
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
@@ -653,6 +659,10 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 				}
 			}
 		} else { //nolint:gocritic
+			// The gocritic linter wants to fold this if-block into the else on the line above.
+			// However, this doesn't really help with readability of the current section. Mark it
+			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
+			// this into separate functions.
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 				var performers []*models.Performer
