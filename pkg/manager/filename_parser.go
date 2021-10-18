@@ -3,12 +3,13 @@ package manager
 import (
 	"database/sql"
 	"errors"
-	"github.com/stashapp/stash/pkg/studio"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/stashapp/stash/pkg/studio"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/tag"

@@ -2,8 +2,9 @@ package ffmpeg
 
 import (
 	"bytes"
-	"github.com/stashapp/stash/pkg/logger"
 	"os"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // detect file format from magic file number

@@ -2,8 +2,9 @@ package manager
 
 import (
 	"fmt"
-	"github.com/stashapp/stash/pkg/logger"
 	"testing"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 var excludeTestFilenames = []string{
