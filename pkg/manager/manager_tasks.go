@@ -592,7 +592,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 		}
-		//check for timeout
+		// check for timeout
 		select {
 		case <-chTimeout:
 			return nil

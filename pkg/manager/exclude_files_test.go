@@ -31,16 +31,16 @@ var excludeTests = []struct {
 	testPattern []string
 	expected    int
 }{
-	{[]string{"sample\\.mp4$", "trash", "\\.[\\d]{3}\\.webm$"}, 6}, //generic
-	{[]string{"no_match\\.mp4"}, 0},                                //no match
-	{[]string{"^/stash/videos/exclude/", "/videos/xcl/"}, 3},       //linux
-	{[]string{"/\\.[[:word:]]+/"}, 1},                              //linux hidden dirs (handbrake unraid issue?)
-	{[]string{"c:\\\\stash\\\\videos\\\\exclude"}, 1},              //windows
-	{[]string{"\\/[/invalid"}, 0},                                  //invalid pattern
-	{[]string{"\\/[/invalid", "sample\\.[[:alnum:]]+$"}, 3},        //invalid pattern but continue
-	{[]string{"^\\\\\\\\network"}, 4},                              //windows net share
-	{[]string{"\\\\private\\\\"}, 1},                               //windows net share
-	{[]string{"\\\\private\\\\", "sample\\.mp4"}, 3},               //windows net share
+	{[]string{"sample\\.mp4$", "trash", "\\.[\\d]{3}\\.webm$"}, 6}, // generic
+	{[]string{"no_match\\.mp4"}, 0},                                // no match
+	{[]string{"^/stash/videos/exclude/", "/videos/xcl/"}, 3},       // linux
+	{[]string{"/\\.[[:word:]]+/"}, 1},                              // linux hidden dirs (handbrake unraid issue?)
+	{[]string{"c:\\\\stash\\\\videos\\\\exclude"}, 1},              // windows
+	{[]string{"\\/[/invalid"}, 0},                                  // invalid pattern
+	{[]string{"\\/[/invalid", "sample\\.[[:alnum:]]+$"}, 3},        // invalid pattern but continue
+	{[]string{"^\\\\\\\\network"}, 4},                              // windows net share
+	{[]string{"\\\\private\\\\"}, 1},                               // windows net share
+	{[]string{"\\\\private\\\\", "sample\\.mp4"}, 3},               // windows net share
 }
 
 func TestExcludeFiles(t *testing.T) {
