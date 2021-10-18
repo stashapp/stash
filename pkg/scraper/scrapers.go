@@ -67,7 +67,7 @@ func newClient(gc GlobalConfig) *http.Client {
 			MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		},
 		Timeout: scrapeGetTimeout,
-		// defaultCheckRedirect code with max changed from 10 to 20
+		// defaultCheckRedirect code with max changed from 10 to maxRedirects
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= maxRedirects {
 				return fmt.Errorf("after %d redirects: %w", maxRedirects, ErrMaxRedirects)
