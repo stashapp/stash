@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,10 +19,21 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-// scrapeGetTimeout is the timeout for scraper HTTP requests. Includes transfer time.
-// We may want to bump this at some point and use local context-timeouts if more granularity
-// is needed.
-const scrapeGetTimeout = time.Second * 60
+var ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
+
+const (
+	// scrapeGetTimeout is the timeout for scraper HTTP requests. Includes transfer time.
+	// We may want to bump this at some point and use local context-timeouts if more granularity
+	// is needed.
+	scrapeGetTimeout = time.Second * 60
+
+	// maxIdleConnsPerHost is the maximum number of idle connections the HTTP client will
+	// keep on a per-host basis.
+	maxIdleConnsPerHost = 8
+
+	// maxRedirects defines the maximum number of redirects the HTTP client will follow
+	maxRedirects = 20
+)
 
 // GlobalConfig contains the global scraper options.
 type GlobalConfig interface {
@@ -47,6 +59,26 @@ type Cache struct {
 	txnManager   models.TransactionManager
 }
 
+// newClient creates a scraper-local http client we use throughout the scraper subsystem.
+func newClient(gc GlobalConfig) *http.Client {
+	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: !gc.GetScraperCertCheck()},
+			MaxIdleConnsPerHost: maxIdleConnsPerHost,
+		},
+		Timeout: scrapeGetTimeout,
+		// defaultCheckRedirect code with max changed from 10 to 20
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= maxRedirects {
+				return fmt.Errorf("after %d redirects: %w", maxRedirects, ErrMaxRedirects)
+			}
+			return nil
+		},
+	}
+
+	return client
+}
+
 // NewCache returns a new Cache loading scraper configurations from the
 // scraper path provided in the global config object. It returns a new
 // instance and an error if the scraper directory could not be loaded.
@@ -55,20 +87,7 @@ type Cache struct {
 // directory and any subdirectories.
 func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (*Cache, error) {
 	// HTTP Client setup
-	client := &http.Client{
-		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
-			MaxIdleConnsPerHost: 8,
-		},
-		Timeout: scrapeGetTimeout,
-		// defaultCheckRedirect code with max changed from 10 to 20
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 20 {
-				return errors.New("stopped after 20 redirects")
-			}
-			return nil
-		},
-	}
+	client := newClient(globalConfig)
 
 	scrapers, err := loadScrapers(globalConfig, client, txnManager)
 	if err != nil {
