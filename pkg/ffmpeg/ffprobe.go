@@ -72,8 +72,8 @@ var validAudioForMkv = []AudioCodec{Aac, Mp3, Vorbis, Opus}
 var validAudioForWebm = []AudioCodec{Vorbis, Opus}
 var validAudioForMp4 = []AudioCodec{Aac, Mp3}
 
-//maps user readable container strings to ffprobe's format_name
-//on some formats ffprobe can't differentiate
+// ContainerToFfprobe maps user readable container strings to ffprobe's format_name.
+// On some formats ffprobe can't differentiate
 var ContainerToFfprobe = map[Container]string{
 	Mp4:      Mp4Ffmpeg,
 	M4v:      M4vFfmpeg,
@@ -155,7 +155,8 @@ func IsValidForContainer(format Container, validContainers []Container) bool {
 	return false
 }
 
-//extend stream validation check to take into account container
+// IsValidCombo checks if a codec/container combination is valid.
+// Returns true on validity, false otherwise
 func IsValidCombo(codecName string, format Container, supportedVideoCodecs []string) bool {
 	supportMKV := IsValidCodec(Mkv, supportedVideoCodecs)
 	supportHEVC := IsValidCodec(Hevc, supportedVideoCodecs)
