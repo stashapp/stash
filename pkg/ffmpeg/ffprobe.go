@@ -228,10 +228,6 @@ type FFProbe string
 // Execute exec command and bind result to struct.
 func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
-	//// Extremely slow on windows for some reason
-	//if runtime.GOOS != "windows" {
-	//	args = append(args, "-count_frames")
-	//}
 	out, err := exec.Command(string(*f), args...).Output()
 
 	if err != nil {
@@ -257,9 +253,6 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	if result.JSON.Error.Code != 0 {
 		return nil, fmt.Errorf("ffprobe error code %d: %s", result.JSON.Error.Code, result.JSON.Error.String)
 	}
-	//} else if (ffprobeResult.stderr.includes("could not find codec parameters")) {
-	//	throw new Error(`FFProbe [${filePath}] -> Could not find codec parameters`);
-	//} // TODO nil_or_unsupported.(video_stream) && nil_or_unsupported.(audio_stream)
 
 	result.Path = filePath
 	result.Title = probeJSON.Format.Tags.Title

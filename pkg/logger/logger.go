@@ -295,7 +295,3 @@ func Fatal(args ...interface{}) {
 func Fatalf(format string, args ...interface{}) {
 	logger.Fatalf(format, args...)
 }
-
-//func WithRequest(req *http.Request) *logrus.Entry {
-//	return logger.WithFields(RequestFields(req))
-//}

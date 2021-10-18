@@ -81,8 +81,6 @@ func initParserFields() {
 	ret["title"] = newParserField("title", ".*", true)
 	ret["ext"] = newParserField("ext", ".*$", false)
 
-	//I = new ParserField("i", undefined, "Matches any ignored word", false);
-
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
 	ret["rating"] = newParserField("rating", `\d`, true)
 	ret["performer"] = newParserField("performer", ".*", true)
