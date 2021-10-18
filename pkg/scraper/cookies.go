@@ -65,6 +65,36 @@ func getCookieValue(cookie *scraperCookies) string {
 	return cookie.Value
 }
 
+// printCookies prints all cookies from the given cookie jar
+func printCookies(jar *cookiejar.Jar, scraperConfig config, msg string) {
+	driverOptions := scraperConfig.DriverOptions
+	if driverOptions != nil && !driverOptions.UseCDP {
+		var foundURLs []*url.URL
+
+		for _, ckURL := range driverOptions.Cookies { // go through all cookies
+			url, err := url.Parse(ckURL.CookieURL) // CookieURL must be valid, include schema
+			if err == nil {
+				foundURLs = append(foundURLs, url)
+			}
+		}
+		if len(foundURLs) > 0 {
+			logger.Debugf("%s\n", msg)
+			printJarCookies(jar, foundURLs)
+
+		}
+	}
+}
+
+// print all cookies from the jar of the native http client for given urls
+func printJarCookies(jar *cookiejar.Jar, urls []*url.URL) {
+	for _, url := range urls {
+		logger.Debugf("Jar cookies for %s", url.String())
+		for i, cookie := range jar.Cookies(url) {
+			logger.Debugf("[%d]: Name: \"%s\" Value: \"%s\"", i, cookie.Name, cookie.Value)
+		}
+	}
+}
+
 // set all cookies listed in the scraper config
 func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 	return chromedp.Tasks{

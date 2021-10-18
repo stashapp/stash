@@ -80,6 +80,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperCo
 	}
 
 	bodyReader := bytes.NewReader(body)
+	printCookies(jar, scraperConfig, "Jar cookies found for scraper urls")
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
 
