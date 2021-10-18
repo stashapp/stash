@@ -50,7 +50,7 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*mod
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(context.TODO(), http.DefaultClient, c.txnManager, s)
+		ss, err := sceneFragmentToScrapedScene(context.TODO(), c.client.Client.Client, c.txnManager, s)
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +196,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, fingerprin
 		sceneFragments := scenes.FindScenesByFingerprints
 
 		for _, s := range sceneFragments {
-			ss, err := sceneFragmentToScrapedScene(ctx, http.DefaultClient, c.txnManager, s)
+			ss, err := sceneFragmentToScrapedScene(ctx, c.client.Client.Client, c.txnManager, s)
 			if err != nil {
 				return nil, err
 			}
