@@ -482,13 +482,14 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 
 			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
 
-			if resolution.Modifier == models.CriterionModifierEquals {
+			switch resolution.Modifier {
+			case models.CriterionModifierEquals:
 				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierNotEquals {
+			case models.CriterionModifierNotEquals:
 				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierLessThan {
+			case models.CriterionModifierLessThan:
 				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, min))
-			} else if resolution.Modifier == models.CriterionModifierGreaterThan {
+			case models.CriterionModifierGreaterThan:
 				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
 		}

@@ -49,7 +49,7 @@ func IsZipPath(p string) bool {
 // path separators within zip files. It returns the original provided path
 // if it does not contain the zip file separator character.
 func ZipPathDisplayName(path string) string {
-	return strings.Replace(path, zipSeparator, "/", -1)
+	return strings.ReplaceAll(path, zipSeparator, "/")
 }
 
 func ZipFilePath(path string) (zipFilename, filename string) {

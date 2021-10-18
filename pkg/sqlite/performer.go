@@ -443,13 +443,14 @@ func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models
 		if studios != nil {
 			var clauseCondition string
 
-			if studios.Modifier == models.CriterionModifierIncludes {
+			switch studios.Modifier {
+			case models.CriterionModifierIncludes:
 				// return performers who appear in scenes/images/galleries with any of the given studios
 				clauseCondition = "NOT"
-			} else if studios.Modifier == models.CriterionModifierExcludes {
+			case models.CriterionModifierExcludes:
 				// exclude performers who appear in scenes/images/galleries with any of the given studios
 				clauseCondition = ""
-			} else {
+			default:
 				return
 			}
 

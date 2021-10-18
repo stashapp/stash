@@ -94,17 +94,15 @@ func Initialize() *singleton {
 
 			if err != nil {
 				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
-			} else {
-				if err := instance.PostInit(ctx); err != nil {
-					panic(err)
-				}
+			} else if err := instance.PostInit(ctx); err != nil {
+				panic(err)
 			}
 
 			initSecurity(cfg)
 		} else {
 			cfgFile := cfg.GetConfigFile()
 			if cfgFile != "" {
-				cfgFile = cfgFile + " "
+				cfgFile += " "
 			}
 
 			// create temporary session store - this will be re-initialised

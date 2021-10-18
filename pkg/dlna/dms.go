@@ -515,7 +515,8 @@ func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http
 	// the spec on eventing but hasn't been completed as I have nothing to
 	// test it with.
 	service := me.services["ContentDirectory"]
-	if r.Method == "SUBSCRIBE" && r.Header.Get("SID") == "" {
+	switch {
+	case r.Method == "SUBSCRIBE" && r.Header.Get("SID") == "":
 		urls := upnp.ParseCallbackURLs(r.Header.Get("CALLBACK"))
 		var timeout int
 		fmt.Sscanf(r.Header.Get("TIMEOUT"), "Second-%d", &timeout)
@@ -528,9 +529,9 @@ func (me *Server) contentDirectoryEventSubHandler(w http.ResponseWriter, r *http
 			time.Sleep(100 * time.Millisecond)
 			me.contentDirectoryInitialEvent(r.Context(), urls, sid)
 		}()
-	} else if r.Method == "SUBSCRIBE" {
+	case r.Method == "SUBSCRIBE":
 		http.Error(w, "meh", http.StatusPreconditionFailed)
-	} else {
+	default:
 		logger.Debugf("unhandled event method: %s", r.Method)
 	}
 }
