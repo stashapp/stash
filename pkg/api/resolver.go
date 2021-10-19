@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scraper"
 )
 
 var (
@@ -21,6 +22,7 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
+	scraperCache *scraper.Cache
 	txnManager   models.TransactionManager
 	hookExecutor hookExecutor
 }

@@ -68,6 +68,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	txnManager := manager.GetInstance().TxnManager
 	pluginCache := manager.GetInstance().PluginCache
 	resolver := &Resolver{
+		scraperCache: manager.GetInstance().ScraperCache,
 		txnManager:   txnManager,
 		hookExecutor: pluginCache,
 	}

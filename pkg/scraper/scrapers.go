@@ -199,7 +199,7 @@ func (c Cache) ScraperPerformerQuery(scraperID string, query string) ([]*models.
 
 // ScrapePerformer uses the scraper with the provided ID to scrape a
 // performer using the provided performer fragment.
-func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+func (c Cache) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
 	if s != nil && s.Performer != nil {
@@ -209,7 +209,7 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 		}
 
 		if ret != nil {
-			err = c.postScrapePerformer(context.TODO(), ret)
+			err = c.postScrapePerformer(ctx, ret)
 			if err != nil {
 				return nil, err
 			}
