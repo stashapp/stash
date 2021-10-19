@@ -55,6 +55,23 @@ type scraper struct {
 	Movie     movieScraper
 }
 
+func (k Kind) String() string {
+	switch k {
+	case Unknown:
+		return "Unknown"
+	case Performer:
+		return "Performer"
+	case Scene:
+		return "Scene"
+	case Gallery:
+		return "Gallery"
+	case Movie:
+		return "Movie"
+	}
+
+	panic("missing implementation of Kind.String()")
+}
+
 func (s scraper) matchKind(k Kind) bool {
 	switch k {
 	case Unknown:

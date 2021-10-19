@@ -20,6 +20,8 @@ import (
 )
 
 var ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
+var ErrNotFound = errors.New("scraper not found")
+var ErrUnsupported = errors.New("unsupported scraper operation")
 
 const (
 	// scrapeGetTimeout is the timeout for scraper HTTP requests. Includes transfer time.
@@ -54,7 +56,7 @@ func isCDPPathWS(c GlobalConfig) bool {
 // Cache stores scraper details.
 type Cache struct {
 	client       *http.Client
-	scrapers     []scraper
+	scrapers     map[string]scraper // Scraper ID -> Scraper
 	globalConfig GlobalConfig
 	txnManager   models.TransactionManager
 }
@@ -102,9 +104,9 @@ func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (
 	}, nil
 }
 
-func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager models.TransactionManager) ([]scraper, error) {
+func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager models.TransactionManager) (map[string]scraper, error) {
 	path := globalConfig.GetScrapersPath()
-	scrapers := make([]scraper, 0)
+	scrapers := make(map[string]scraper)
 
 	logger.Debugf("Reading scraper configs from %s", path)
 	scraperFiles := []string{}
@@ -120,8 +122,11 @@ func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager mod
 		return nil, err
 	}
 
-	// add built-in freeones scraper
-	scrapers = append(scrapers, getFreeonesScraper(client, txnManager, globalConfig), getAutoTagScraper(txnManager, globalConfig))
+	// Add built-in scrapers
+	freeOnes := getFreeonesScraper(client, txnManager, globalConfig)
+	autoTag := getAutoTagScraper(txnManager, globalConfig)
+	scrapers[freeOnes.ID] = freeOnes
+	scrapers[autoTag.ID] = autoTag
 
 	for _, file := range scraperFiles {
 		c, err := loadConfigFromYAMLFile(file)
@@ -129,7 +134,7 @@ func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager mod
 			logger.Errorf("Error loading scraper %s: %s", file, err.Error())
 		} else {
 			scraper := createScraperFromConfig(*c, client, txnManager, globalConfig)
-			scrapers = append(scrapers, scraper)
+			scrapers[scraper.ID] = scraper
 		}
 	}
 
@@ -169,26 +174,29 @@ func (c Cache) ListScrapers(k Kind) []*models.Scraper {
 }
 
 func (c Cache) findScraper(scraperID string) *scraper {
-	for _, s := range c.scrapers {
-		if s.ID == scraperID {
-			return &s
-		}
+	s, ok := c.scrapers[scraperID]
+	if ok {
+		return &s
 	}
 
 	return nil
 }
 
-// ScrapePerformerList uses the scraper with the provided ID to query for
+// ScraperPerformerQuery uses the scraper with the provided ID to query for
 // performers using the provided query string. It returns a list of
 // scraped performer data.
-func (c Cache) ScrapePerformerList(scraperID string, query string) ([]*models.ScrapedPerformer, error) {
+func (c Cache) ScraperPerformerQuery(scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
-	if s != nil && s.Performer != nil {
-		return s.Performer.scrapeByName(query)
+	if s == nil {
+		return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 	}
 
-	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+	if !s.matchKind(Performer) {
+		return nil, fmt.Errorf("scraping %v with scraper %s: %w", Performer, scraperID, ErrUnsupported)
+	}
+
+	return s.Performer.scrapeByName(query)
 }
 
 // ScrapePerformer uses the scraper with the provided ID to scrape a

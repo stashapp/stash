@@ -23,7 +23,7 @@ func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name strin
 
 // deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	scrapedPerformers, err := manager.GetInstance().ScraperCache.ScrapePerformerList(scraper.FreeonesScraperID, query)
+	scrapedPerformers, err := manager.GetInstance().ScraperCache.ScraperPerformerQuery(scraper.FreeonesScraperID, query)
 
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID strin
 		return nil, nil
 	}
 
-	return manager.GetInstance().ScraperCache.ScrapePerformerList(scraperID, query)
+	return manager.GetInstance().ScraperCache.ScraperPerformerQuery(scraperID, query)
 }
 
 func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
@@ -238,7 +238,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		}
 
 		if input.Query != nil {
-			return manager.GetInstance().ScraperCache.ScrapePerformerList(*source.ScraperID, *input.Query)
+			return manager.GetInstance().ScraperCache.ScraperPerformerQuery(*source.ScraperID, *input.Query)
 		}
 
 		return nil, ErrNotImplemented
