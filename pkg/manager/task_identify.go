@@ -2,13 +2,17 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/autotag"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -36,11 +40,17 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 		return
 	}
 
+	sources, err := j.getSources()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
 	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		if len(j.input.SceneIDs) == 0 {
-			return j.identifyAllScenes(ctx, r)
+			return j.identifyAllScenes(ctx, r, sources)
 		}
 
 		sceneIDs, err := utils.StringSliceToIntSlice(j.input.SceneIDs)
@@ -54,7 +64,18 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 				break
 			}
 
-			j.identifyScene(ctx, id)
+			// find the scene
+			var err error
+			scene, err := r.Scene().Find(id)
+			if err != nil {
+				return fmt.Errorf("error finding scene with id %d: %w", id, err)
+			}
+
+			if scene == nil {
+				return fmt.Errorf("no scene found with id %d", id)
+			}
+
+			j.identifyScene(ctx, scene, sources)
 		}
 
 		return nil
@@ -63,7 +84,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 }
 
-func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepository) error {
+func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepository, sources []autotag.ScraperSource) error {
 	// exclude organised
 	organised := false
 	sceneFilter := &models.SceneFilterType{
@@ -90,26 +111,115 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 			return nil
 		}
 
-		// TODO - we get the whole scene out just to extract the ids, which are
-		// then queried again. Need to be able to query just for ids.
-		j.identifyScene(ctx, scene.ID)
+		j.identifyScene(ctx, scene, sources)
 		return nil
 	})
 }
 
-func (j *IdentifyJob) identifyScene(ctx context.Context, sceneID int) {
+func (j *IdentifyJob) identifyScene(ctx context.Context, scene *models.Scene, sources []autotag.ScraperSource) {
 	if job.IsCancelled(ctx) {
 		return
 	}
 
-	task := autotag.IdentifySceneTask{
-		Input:        j.input,
-		SceneID:      sceneID,
-		TxnManager:   j.txnManager,
-		ScraperCache: instance.ScraperCache,
-		StashBoxes:   j.stashBoxes,
+	if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		var taskError error
+		j.progress.ExecuteTask("Identifying "+scene.Path, func() {
+			task := autotag.IdentifySceneTask{
+				DefaultOptions: j.input.Options,
+				Sources:        sources,
+				Scene:          scene,
+				Repo:           r,
+			}
+
+			taskError = task.Execute(ctx)
+		})
+
+		return taskError
+	}); err != nil {
+		logger.Errorf("Error encountered identifying %s: %v", scene.Path, err)
 	}
 
-	task.Execute(ctx, j.progress)
 	j.progress.Increment()
+}
+
+func (j *IdentifyJob) getSources() ([]autotag.ScraperSource, error) {
+	var ret []autotag.ScraperSource
+	for _, source := range j.input.Sources {
+		// get scraper source
+		stashBox, err := j.getStashBox(source.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		var src autotag.ScraperSource
+		if stashBox != nil {
+			src = autotag.ScraperSource{
+				Scraper: stashboxSource{
+					stashbox.NewClient(*stashBox, j.txnManager),
+					stashBox.Endpoint,
+				},
+				RemoteSite: stashBox.Endpoint,
+			}
+		} else {
+			src = autotag.ScraperSource{
+				Scraper: scraperSource{
+					cache:     instance.ScraperCache,
+					scraperID: *source.Source.ScraperID,
+				},
+			}
+		}
+
+		src.Options = source.Options
+		ret = append(ret, src)
+	}
+
+	return ret, nil
+}
+
+func (j *IdentifyJob) getStashBox(scraperSrc *models.ScraperSourceInput) (*models.StashBox, error) {
+	if scraperSrc.ScraperID != nil {
+		return nil, nil
+	}
+
+	// must be stash-box
+	if scraperSrc.StashBoxIndex == nil && scraperSrc.StashBoxEndpoint == nil {
+		return nil, errors.New("stash_box_index or stash_box_endpoint or scraper_id must be set")
+	}
+
+	return j.stashBoxes.ResolveStashBox(*scraperSrc)
+}
+
+type stashboxSource struct {
+	*stashbox.Client
+	endpoint string
+}
+
+func (s stashboxSource) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
+	results, err := s.FindStashBoxScenesByFingerprintsFlat([]string{strconv.Itoa(sceneID)})
+	if err != nil {
+		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
+	}
+
+	if len(results) > 0 {
+		return results[0], nil
+	}
+
+	return nil, nil
+}
+
+func (s stashboxSource) String() string {
+	return fmt.Sprintf("stash-box %s", s.endpoint)
+}
+
+type scraperSource struct {
+	cache     *scraper.Cache
+	scraperID string
+}
+
+func (s scraperSource) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
+	return s.cache.ScrapeScene(s.scraperID, sceneID)
+}
+
+func (s scraperSource) String() string {
+	return fmt.Sprintf("scraper %s", s.scraperID)
 }

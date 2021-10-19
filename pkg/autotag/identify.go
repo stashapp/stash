@@ -4,122 +4,67 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper"
-	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type IdentifySceneTask struct {
-	Input   models.IdentifyMetadataInput
-	SceneID int
-
-	TxnManager   models.TransactionManager
-	ScraperCache *scraper.Cache
-	StashBoxes   models.StashBoxes
+type SceneScraper interface {
+	ScrapeScene(sceneID int) (*models.ScrapedScene, error)
 }
 
-func (t *IdentifySceneTask) Execute(ctx context.Context, progress *job.Progress) {
-	var scene *models.Scene
+type ScraperSource struct {
+	Options    *models.IdentifyMetadataOptionsInput
+	Scraper    SceneScraper
+	RemoteSite string
+}
 
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		// find the scene
-		var err error
-		scene, err = r.Scene().Find(t.SceneID)
+type IdentifySceneTask struct {
+	DefaultOptions *models.IdentifyMetadataOptionsInput
+	Sources        []ScraperSource
+	Scene          *models.Scene
+
+	Repo models.Repository
+}
+
+func (t *IdentifySceneTask) Execute(ctx context.Context) error {
+	// iterate through the input sources
+	for _, source := range t.Sources {
+		// scrape using the source
+		scraped, err := source.Scraper.ScrapeScene(t.Scene.ID)
 		if err != nil {
-			return fmt.Errorf("error finding scene with id %d: %w", t.SceneID, err)
+			return fmt.Errorf("error scraping from %v: %v", source.Scraper, err)
 		}
 
-		if scene == nil {
-			return fmt.Errorf("no scene found with id %d", t.SceneID)
-		}
-
-		progress.ExecuteTask("Identifying "+scene.Path, func() {
-			// iterate through the input sources
-			for _, source := range t.Input.Sources {
-				var stashBox *models.StashBox
-				stashBox, err = t.getStashBox(source.Source)
-				if err != nil {
-					return
-				}
-
-				// scrape using the source
-				var scraped *models.ScrapedScene
-				if stashBox != nil {
-					scraped, err = t.scrapeUsingStashBox(stashBox)
-				} else {
-					scraped, err = t.ScraperCache.ScrapeScene(*source.Source.ScraperID, t.SceneID)
-				}
-
-				if err != nil {
-					return
-				}
-
-				// if results were found then modify the scene
-				if scraped != nil {
-					options := modifySceneOptions{
-						scene:    scene,
-						scraped:  scraped,
-						stashBox: stashBox,
-						repo:     r,
-					}
-
-					options.setOptions(*source, t.Input.Options)
-
-					err = t.modifyScene(ctx, r, options)
-					return
-				}
+		// if results were found then modify the scene
+		if scraped != nil {
+			options := modifySceneOptions{
+				scene:    t.Scene,
+				scraped:  scraped,
+				endpoint: source.RemoteSite,
 			}
 
-			logger.Infof("Unable to identify %s", scene.Path)
-		})
+			options.setOptions(source.Options, t.DefaultOptions)
 
-		return err
-	}); err != nil {
-		if scene == nil {
-			logger.Error(err.Error())
-		} else {
-			logger.Errorf("Error encountered identifying %s: %v", scene.Path, err)
+			if err := t.modifyScene(ctx, options); err != nil {
+				return fmt.Errorf("error modifying scene: %v", err)
+			}
+
+			// scene was matched
+			return nil
 		}
 	}
+
+	logger.Infof("Unable to identify %s", t.Scene.Path)
+	return nil
 }
 
-func (t *IdentifySceneTask) getStashBox(scraperSrc *models.ScraperSourceInput) (*models.StashBox, error) {
-	if scraperSrc.ScraperID != nil {
-		return nil, nil
-	}
-
-	// must be stash-box
-	if scraperSrc.StashBoxIndex == nil && scraperSrc.StashBoxEndpoint == nil {
-		return nil, errors.New("stash_box_index or stash_box_endpoint or scraper_id must be set")
-	}
-
-	return t.StashBoxes.ResolveStashBox(*scraperSrc)
-}
-
-func (t *IdentifySceneTask) scrapeUsingStashBox(box *models.StashBox) (*models.ScrapedScene, error) {
-	client := stashbox.NewClient(*box, t.TxnManager)
-	results, err := client.FindStashBoxScenesByFingerprintsFlat([]string{strconv.Itoa(t.SceneID)})
-	if err != nil {
-		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", t.SceneID, err)
-	}
-
-	if len(results) > 0 {
-		return results[0], nil
-	}
-
-	return nil, nil
-}
-
-func (t *IdentifySceneTask) modifyScene(ctx context.Context, r models.Repository, options modifySceneOptions) error {
+func (t *IdentifySceneTask) modifyScene(ctx context.Context, options modifySceneOptions) error {
 	target := options.scene
 
 	partial := models.ScenePartial{
@@ -159,7 +104,7 @@ func (t *IdentifySceneTask) modifyScene(ctx context.Context, r models.Repository
 		return nil
 	}
 
-	qb := r.Scene()
+	qb := t.Repo.Scene()
 	partial.UpdatedAt = &models.SQLiteTimestamp{
 		Timestamp: time.Now(),
 	}
@@ -169,25 +114,25 @@ func (t *IdentifySceneTask) modifyScene(ctx context.Context, r models.Repository
 	}
 
 	if len(performerIDs) > 0 {
-		if err := qb.UpdatePerformers(t.SceneID, performerIDs); err != nil {
+		if err := qb.UpdatePerformers(t.Scene.ID, performerIDs); err != nil {
 			return fmt.Errorf("error updating scene performers: %w", err)
 		}
 	}
 
 	if len(tagIDs) > 0 {
-		if err := qb.UpdateTags(t.SceneID, tagIDs); err != nil {
+		if err := qb.UpdateTags(t.Scene.ID, tagIDs); err != nil {
 			return fmt.Errorf("error updating scene tags: %w", err)
 		}
 	}
 
 	if len(stashIDs) > 0 {
-		if err := qb.UpdateStashIDs(t.SceneID, stashIDs); err != nil {
+		if err := qb.UpdateStashIDs(t.Scene.ID, stashIDs); err != nil {
 			return fmt.Errorf("error updating scene stash_ids: %w", err)
 		}
 	}
 
 	if len(coverImage) > 0 {
-		if err := qb.UpdateCover(t.SceneID, coverImage); err != nil {
+		if err := qb.UpdateCover(t.Scene.ID, coverImage); err != nil {
 			return fmt.Errorf("error updating scene cover: %w", err)
 		}
 	}
@@ -256,7 +201,7 @@ func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input m
 	scraped := input.scraped
 	fieldStrategy := input.fieldOptions["studio"]
 	target := input.scene
-	r := input.repo
+	r := t.Repo
 	set := false
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
@@ -283,10 +228,10 @@ func (t *IdentifySceneTask) setSceneStudio(partial *models.ScenePartial, input m
 					return false, fmt.Errorf("error creating studio: %w", err)
 				}
 
-				if input.stashBox != nil && scraped.RemoteSiteID != nil {
+				if input.endpoint != "" && scraped.RemoteSiteID != nil {
 					if err := r.Studio().UpdateStashIDs(created.ID, []models.StashID{
 						{
-							Endpoint: input.stashBox.Endpoint,
+							Endpoint: input.endpoint,
 							StashID:  *scraped.Studio.RemoteSiteID,
 						},
 					}); err != nil {
@@ -340,7 +285,7 @@ func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]in
 	scraped := input.scraped
 	fieldStrategy := input.fieldOptions["performers"]
 	target := input.scene
-	r := input.repo
+	r := t.Repo
 
 	// just check if ignored
 	if !t.shouldSetSingleValueField(fieldStrategy, false) {
@@ -394,10 +339,10 @@ func (t *IdentifySceneTask) getScenePerformerIDs(input modifySceneOptions) ([]in
 					return nil, fmt.Errorf("error creating performer: %w", err)
 				}
 
-				if input.stashBox != nil && scraped.RemoteSiteID != nil {
+				if input.endpoint != "" && scraped.RemoteSiteID != nil {
 					if err := r.Performer().UpdateStashIDs(created.ID, []models.StashID{
 						{
-							Endpoint: input.stashBox.Endpoint,
+							Endpoint: input.endpoint,
 							StashID:  *scraped.Studio.RemoteSiteID,
 						},
 					}); err != nil {
@@ -483,7 +428,7 @@ func (t *IdentifySceneTask) getSceneTagIDs(input modifySceneOptions) ([]int, err
 	scraped := input.scraped
 	fieldStrategy := input.fieldOptions["tags"]
 	target := input.scene
-	r := input.repo
+	r := t.Repo
 
 	// just check if ignored
 	if !t.shouldSetSingleValueField(fieldStrategy, false) {
@@ -569,12 +514,12 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 	scraped := input.scraped
 	fieldStrategy := input.fieldOptions["stash_ids"]
 	target := input.scene
-	r := input.repo
+	r := t.Repo
 
-	stashBox := input.stashBox
+	endpoint := input.endpoint
 
 	// just check if ignored
-	if stashBox == nil || !t.shouldSetSingleValueField(fieldStrategy, false) {
+	if endpoint == "" || !t.shouldSetSingleValueField(fieldStrategy, false) {
 		return nil, nil
 	}
 
@@ -603,7 +548,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 
 		remoteSiteID := *scraped.RemoteSiteID
 		for _, stashID := range stashIDs {
-			if stashBox.Endpoint == stashID.Endpoint {
+			if endpoint == stashID.Endpoint {
 				// if stashID is the same, then don't set
 				if stashID.StashID == remoteSiteID {
 					return nil, nil
@@ -618,7 +563,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 		// not found, create new entry
 		stashIDs = append(stashIDs, models.StashID{
 			StashID:  remoteSiteID,
-			Endpoint: stashBox.Endpoint,
+			Endpoint: endpoint,
 		})
 	}
 
@@ -632,7 +577,7 @@ func (t *IdentifySceneTask) getSceneStashIDs(input modifySceneOptions) ([]models
 func (t *IdentifySceneTask) getSceneCover(ctx context.Context, input modifySceneOptions) ([]byte, error) {
 	scraped := input.scraped
 	target := input.scene
-	r := input.repo
+	r := t.Repo
 
 	if scraped.Image == nil {
 		return nil, nil
@@ -688,14 +633,13 @@ func (t *IdentifySceneTask) shouldSetSingleValueField(strategy *models.IdentifyF
 type modifySceneOptions struct {
 	scene        *models.Scene
 	scraped      *models.ScrapedScene
-	stashBox     *models.StashBox
+	endpoint     string
 	fieldOptions map[string]*models.IdentifyFieldOptionsInput
 	options      []models.IdentifyMetadataOptionsInput
-	repo         models.Repository
 }
 
-func (o *modifySceneOptions) setOptions(source models.IdentifySourceInput, defaultOptions *models.IdentifyMetadataOptionsInput) {
-	options := source.Options
+func (o *modifySceneOptions) setOptions(sourceOptions *models.IdentifyMetadataOptionsInput, defaultOptions *models.IdentifyMetadataOptionsInput) {
+	options := sourceOptions
 
 	// set up options in order of preference
 	if options != nil {
