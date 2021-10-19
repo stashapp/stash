@@ -40,19 +40,19 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 }
 
 func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListPerformerScrapers(), nil
+	return manager.GetInstance().ScraperCache.ListScrapers(scraper.Performer), nil
 }
 
 func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListSceneScrapers(), nil
+	return manager.GetInstance().ScraperCache.ListScrapers(scraper.Scene), nil
 }
 
 func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListGalleryScrapers(), nil
+	return manager.GetInstance().ScraperCache.ListScrapers(scraper.Gallery), nil
 }
 
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListMovieScrapers(), nil
+	return manager.GetInstance().ScraperCache.ListScrapers(scraper.Movie), nil
 }
 
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {

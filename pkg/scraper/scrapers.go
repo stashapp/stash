@@ -156,55 +156,11 @@ func (c *Cache) UpdateConfig(globalConfig GlobalConfig) {
 	c.globalConfig = globalConfig
 }
 
-// ListPerformerScrapers returns a list of scrapers that are capable of
-// scraping performers.
-func (c Cache) ListPerformerScrapers() []*models.Scraper {
+// ListScrapers returns scrapers matching a given kind
+func (c Cache) ListScrapers(k Kind) []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
-		// filter on type
-		if s.Performer != nil {
-			ret = append(ret, s.Spec)
-		}
-	}
-
-	return ret
-}
-
-// ListSceneScrapers returns a list of scrapers that are capable of
-// scraping scenes.
-func (c Cache) ListSceneScrapers() []*models.Scraper {
-	var ret []*models.Scraper
-	for _, s := range c.scrapers {
-		// filter on type
-		if s.Scene != nil {
-			ret = append(ret, s.Spec)
-		}
-	}
-
-	return ret
-}
-
-// ListGalleryScrapers returns a list of scrapers that are capable of
-// scraping galleries.
-func (c Cache) ListGalleryScrapers() []*models.Scraper {
-	var ret []*models.Scraper
-	for _, s := range c.scrapers {
-		// filter on type
-		if s.Gallery != nil {
-			ret = append(ret, s.Spec)
-		}
-	}
-
-	return ret
-}
-
-// ListMovieScrapers returns a list of scrapers that are capable of
-// scraping scenes.
-func (c Cache) ListMovieScrapers() []*models.Scraper {
-	var ret []*models.Scraper
-	for _, s := range c.scrapers {
-		// filter on type
-		if s.Movie != nil {
+		if s.matchKind(k) {
 			ret = append(ret, s.Spec)
 		}
 	}
