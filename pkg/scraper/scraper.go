@@ -2,22 +2,6 @@ package scraper
 
 import "github.com/stashapp/stash/pkg/models"
 
-// Kind is the categorization of scrapers
-type Kind int
-
-const (
-	// Unknown scraper
-	Unknown Kind = iota
-	// The scraper can handle Performer scrapes
-	Performer
-	// The scraper can handle Scene scrapes
-	Scene
-	// The scraper can handle Gallery scrapes
-	Gallery
-	// The scraper can handle Movie scrapes
-	Movie
-)
-
 type urlMatcher interface {
 	matchesURL(url string) bool
 }
@@ -55,34 +39,15 @@ type scraper struct {
 	Movie     movieScraper
 }
 
-func (k Kind) String() string {
+func (s scraper) matchKind(k models.ScrapeContentType) bool {
 	switch k {
-	case Unknown:
-		return "Unknown"
-	case Performer:
-		return "Performer"
-	case Scene:
-		return "Scene"
-	case Gallery:
-		return "Gallery"
-	case Movie:
-		return "Movie"
-	}
-
-	panic("missing implementation of Kind.String()")
-}
-
-func (s scraper) matchKind(k Kind) bool {
-	switch k {
-	case Unknown:
-		return false
-	case Performer:
+	case models.ScrapeContentTypePerformer:
 		return s.Performer != nil
-	case Scene:
+	case models.ScrapeContentTypeScene:
 		return s.Scene != nil
-	case Gallery:
+	case models.ScrapeContentTypeGallery:
 		return s.Gallery != nil
-	case Movie:
+	case models.ScrapeContentTypeMovie:
 		return s.Movie != nil
 	default:
 		return false

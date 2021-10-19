@@ -160,7 +160,7 @@ func (c *Cache) UpdateConfig(globalConfig GlobalConfig) {
 }
 
 // ListScrapers returns scrapers matching a given kind
-func (c Cache) ListScrapers(k Kind) []*models.Scraper {
+func (c Cache) ListScrapers(k models.ScrapeContentType) []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
 		if s.matchKind(k) {
@@ -190,8 +190,8 @@ func (c Cache) ScraperPerformerQuery(scraperID string, query string) ([]*models.
 		return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 	}
 
-	if !s.matchKind(Performer) {
-		return nil, fmt.Errorf("scraping %v with scraper %s: %w", Performer, scraperID, ErrUnsupported)
+	if !s.matchKind(models.ScrapeContentTypePerformer) {
+		return nil, fmt.Errorf("scraping %v with scraper %s: %w", models.ScrapeContentTypePerformer, scraperID, ErrUnsupported)
 	}
 
 	return s.Performer.scrapeByName(query)

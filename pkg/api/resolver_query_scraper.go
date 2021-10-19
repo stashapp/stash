@@ -12,6 +12,21 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
+func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+	switch ty {
+	case models.ScrapeContentTypeGallery:
+		return r.scraperCache.ScrapeGalleryURL(url)
+	case models.ScrapeContentTypeMovie:
+		return r.scraperCache.ScrapeMovieURL(url)
+	case models.ScrapeContentTypePerformer:
+		return r.scraperCache.ScrapePerformerURL(url)
+	case models.ScrapeContentTypeScene:
+		return r.scraperCache.ScrapeSceneURL(url)
+	default:
+		return nil, ErrNotSupported
+	}
+}
+
 // deprecated
 func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name string) (*models.ScrapedPerformer, error) {
 	scrapedPerformer := models.ScrapedPerformerInput{
@@ -38,20 +53,24 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 	return ret, nil
 }
 
+func (r *queryResolver) ListScrapers(ctx context.Context, ty models.ScrapeContentType) ([]*models.Scraper, error) {
+	return r.scraperCache.ListScrapers(ty), nil
+}
+
 func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(scraper.Performer), nil
+	return r.scraperCache.ListScrapers(models.ScrapeContentTypePerformer), nil
 }
 
 func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(scraper.Scene), nil
+	return r.scraperCache.ListScrapers(models.ScrapeContentTypeScene), nil
 }
 
 func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(scraper.Gallery), nil
+	return r.scraperCache.ListScrapers(models.ScrapeContentTypeGallery), nil
 }
 
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(scraper.Movie), nil
+	return r.scraperCache.ListScrapers(models.ScrapeContentTypeMovie), nil
 }
 
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {

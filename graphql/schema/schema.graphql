@@ -67,10 +67,12 @@ type Query {
   # Scrapers
 
   """List available scrapers"""
+  listScrapers(ty: ScrapeContentType!): [Scraper!]!
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
   listGalleryScrapers: [Scraper!]!
   listMovieScrapers: [Scraper!]!
+
 
   """Scrape for a single scene"""
   scrapeSingleScene(source: ScraperSourceInput!, input: ScrapeSingleSceneInput!): [ScrapedScene!]!
@@ -87,6 +89,9 @@ type Query {
 
   """Scrape for a single movie"""
   scrapeSingleMovie(source: ScraperSourceInput!, input: ScrapeSingleMovieInput!): [ScrapedMovie!]!
+
+  "Scrapes content based on a URL"
+  scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
 
   """Scrapes a complete performer record based on a URL"""
   scrapePerformerURL(url: String!): ScrapedPerformer
