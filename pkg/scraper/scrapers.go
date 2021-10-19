@@ -108,10 +108,24 @@ func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager mod
 	path := globalConfig.GetScrapersPath()
 	scrapers := make(map[string]scraper)
 
+	// Add built-in scrapers
+	freeOnes := getFreeonesScraper(client, txnManager, globalConfig)
+	autoTag := getAutoTagScraper(txnManager, globalConfig)
+	scrapers[freeOnes.ID] = freeOnes
+	scrapers[autoTag.ID] = autoTag
+
 	logger.Debugf("Reading scraper configs from %s", path)
+
 	scraperFiles := []string{}
 	err := utils.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
+			c, err := loadConfigFromYAMLFile(fp)
+			if err != nil {
+				logger.Errorf("Error loading scraper %s: %v", fp, err)
+			} else {
+				scraper := createScraperFromConfig(*c, client, txnManager, globalConfig)
+				scrapers[scraper.ID] = scraper
+			}
 			scraperFiles = append(scraperFiles, fp)
 		}
 		return nil
@@ -120,22 +134,6 @@ func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager mod
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
 		return nil, err
-	}
-
-	// Add built-in scrapers
-	freeOnes := getFreeonesScraper(client, txnManager, globalConfig)
-	autoTag := getAutoTagScraper(txnManager, globalConfig)
-	scrapers[freeOnes.ID] = freeOnes
-	scrapers[autoTag.ID] = autoTag
-
-	for _, file := range scraperFiles {
-		c, err := loadConfigFromYAMLFile(file)
-		if err != nil {
-			logger.Errorf("Error loading scraper %s: %s", file, err.Error())
-		} else {
-			scraper := createScraperFromConfig(*c, client, txnManager, globalConfig)
-			scrapers[scraper.ID] = scraper
-		}
 	}
 
 	return scrapers, nil
