@@ -218,7 +218,7 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 		return ret, nil
 	}
 
-	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 }
 
 // ScrapePerformerURL uses the first scraper it finds that matches the URL
@@ -383,7 +383,6 @@ func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene,
 		}
 
 		ret, err := s.Scene.scrapeByScene(scene)
-
 		if err != nil {
 			return nil, err
 		}
@@ -398,7 +397,7 @@ func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene,
 		return ret, nil
 	}
 
-	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 }
 
 // ScrapeSceneQuery uses the scraper with the provided ID to query for
@@ -411,7 +410,7 @@ func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.Scrap
 		return s.Scene.scrapeByName(query)
 	}
 
-	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 }
 
 // ScrapeSceneFragment uses the scraper with the provided ID to scrape a scene.
@@ -435,7 +434,7 @@ func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneIn
 		return ret, nil
 	}
 
-	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 }
 
 // ScrapeSceneURL uses the first scraper it finds that matches the URL
@@ -488,7 +487,7 @@ func (c Cache) ScrapeGallery(scraperID string, galleryID int) (*models.ScrapedGa
 		return ret, nil
 	}
 
-	return nil, errors.New("Scraped with ID " + scraperID + " not found")
+	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 }
 
 // ScrapeGalleryFragment uses the scraper with the provided ID to scrape a gallery.
@@ -511,7 +510,7 @@ func (c Cache) ScrapeGalleryFragment(scraperID string, gallery models.ScrapedGal
 		return ret, nil
 	}
 
-	return nil, errors.New("Scraped with ID " + scraperID + " not found")
+	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
 }
 
 // ScrapeGalleryURL uses the first scraper it finds that matches the URL
