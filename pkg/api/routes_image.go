@@ -43,7 +43,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEGPath)
+		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
 		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
 		if err != nil {
 			logger.Errorf("error generating thumbnail for image: %s", err.Error())
@@ -59,7 +59,9 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
 			}
 		}
-		w.Write(data)
+		if n, err := w.Write(data); err != nil {
+			logger.Errorf("error writing thumbnail response. Wrote %v bytes: %v", n, err)
+		}
 	}
 }
 

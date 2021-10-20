@@ -48,7 +48,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 				sceneTitle = sceneTitle[0:3]
 			}
 
-			title = title + fmt.Sprintf(" (%s...)", sceneTitle)
+			title += fmt.Sprintf(" (%s...)", sceneTitle)
 		}
 
 		objs = append(objs, makeStorageFolder(p.getPageID(page), title, p.parentID))

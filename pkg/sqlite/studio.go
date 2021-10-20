@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -68,7 +69,7 @@ func (qb *studioQueryBuilder) Destroy(id int) error {
 func (qb *studioQueryBuilder) Find(id int) (*models.Studio, error) {
 	var ret models.Studio
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -132,6 +133,11 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 
 	var whereClauses []string
 	var args []interface{}
+
+	// always include names that begin with a single character
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "studios.name regexp ? OR COALESCE(studio_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		ww := w + "%"
@@ -199,7 +205,7 @@ func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) 
 	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if studioFilter.StashID != nil {
 			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
-			stringCriterionHandler(studioFilter.StashID, "scene_stash_ids.stash_id")(f)
+			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(f)
 		}
 	}))
 

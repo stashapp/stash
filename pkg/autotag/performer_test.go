@@ -9,6 +9,8 @@ import (
 )
 
 func TestPerformerScenes(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		performerName string
 		expectedRegex string
@@ -85,6 +87,8 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 }
 
 func TestPerformerImages(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		performerName string
 		expectedRegex string
@@ -157,6 +161,8 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 }
 
 func TestPerformerGalleries(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		performerName string
 		expectedRegex string

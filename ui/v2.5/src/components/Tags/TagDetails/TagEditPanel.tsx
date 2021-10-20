@@ -225,6 +225,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           setImage(null);
         }}
         onDelete={onDelete}
+        acceptSVG
       />
     </div>
   );

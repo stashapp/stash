@@ -50,11 +50,13 @@ const (
 
 const (
 	studioName = "studioName"
-	//galleryChecksum = "galleryChecksum"
+	// galleryChecksum = "galleryChecksum"
 )
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+)
 
 func createFullImage(id int) models.Image {
 	return models.Image{
@@ -163,11 +165,12 @@ func TestGetStudioName(t *testing.T) {
 		image := s.input
 		json, err := GetStudioName(mockStudioReader, &image)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

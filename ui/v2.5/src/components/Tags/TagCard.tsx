@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
+import { FormattedMessage } from "react-intl";
 import { Icon } from "../Shared";
 import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
@@ -22,11 +23,72 @@ export const TagCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
+  function maybeRenderParents() {
+    if (tag.parents.length === 1) {
+      const parent = tag.parents[0];
+      return (
+        <div className="tag-parent-tags">
+          <FormattedMessage
+            id="sub_tag_of"
+            values={{
+              parent: <Link to={`/tags/${parent.id}`}>{parent.name}</Link>,
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (tag.parents.length > 1) {
+      return (
+        <div className="tag-parent-tags">
+          <FormattedMessage
+            id="sub_tag_of"
+            values={{
+              parent: (
+                <Link to={NavUtils.makeParentTagsUrl(tag)}>
+                  {tag.parents.length}&nbsp;
+                  <FormattedMessage
+                    id="countables.tags"
+                    values={{ count: tag.parents.length }}
+                  />
+                </Link>
+              ),
+            }}
+          />
+        </div>
+      );
+    }
+  }
+
+  function maybeRenderChildren() {
+    if (tag.children.length > 0) {
+      return (
+        <div className="tag-sub-tags">
+          <FormattedMessage
+            id="parent_of"
+            values={{
+              children: (
+                <Link to={NavUtils.makeChildTagsUrl(tag)}>
+                  {tag.children.length}&nbsp;
+                  <FormattedMessage
+                    id="countables.tags"
+                    values={{ count: tag.children.length }}
+                  />
+                </Link>
+              ),
+            }}
+          />
+        </div>
+      );
+    }
+  }
+
   function maybeRenderScenesPopoverButton() {
     if (!tag.scene_count) return;
 
     return (
       <PopoverCountButton
+        className="scene-count"
         type="scene"
         count={tag.scene_count}
         url={NavUtils.makeTagScenesUrl(tag)}
@@ -38,7 +100,7 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.scene_marker_count) return;
 
     return (
-      <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
+      <Link className="marker-count" to={NavUtils.makeTagSceneMarkersUrl(tag)}>
         <Button className="minimal">
           <Icon icon="map-marker-alt" />
           <span>{tag.scene_marker_count}</span>
@@ -52,6 +114,7 @@ export const TagCard: React.FC<IProps> = ({
 
     return (
       <PopoverCountButton
+        className="image-count"
         type="image"
         count={tag.image_count}
         url={NavUtils.makeTagImagesUrl(tag)}
@@ -64,6 +127,7 @@ export const TagCard: React.FC<IProps> = ({
 
     return (
       <PopoverCountButton
+        className="gallery-count"
         type="gallery"
         count={tag.gallery_count}
         url={NavUtils.makeTagGalleriesUrl(tag)}
@@ -75,7 +139,7 @@ export const TagCard: React.FC<IProps> = ({
     if (!tag.performer_count) return;
 
     return (
-      <Link to={NavUtils.makeTagPerformersUrl(tag)}>
+      <Link className="performer-count" to={NavUtils.makeTagPerformersUrl(tag)}>
         <Button className="minimal">
           <Icon icon="user" />
           <span>{tag.performer_count}</span>
@@ -114,7 +178,13 @@ export const TagCard: React.FC<IProps> = ({
           src={tag.image_path ?? ""}
         />
       }
-      popovers={maybeRenderPopoverButtonGroup()}
+      details={
+        <>
+          {maybeRenderParents()}
+          {maybeRenderChildren()}
+          {maybeRenderPopoverButtonGroup()}
+        </>
+      }
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

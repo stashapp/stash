@@ -14,12 +14,12 @@ import (
 )
 
 func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
-	err := manager.GetInstance().Setup(input)
+	err := manager.GetInstance().Setup(ctx, input)
 	return err == nil, err
 }
 
 func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInput) (bool, error) {
-	err := manager.GetInstance().Migrate(input)
+	err := manager.GetInstance().Migrate(ctx, input)
 	return err == nil, err
 }
 
@@ -59,6 +59,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 			return makeConfigGeneralResult(), err
 		}
 		c.Set(config.Generated, input.GeneratedPath)
+	}
+
+	if input.MetadataPath != nil {
+		if *input.MetadataPath != "" {
+			if err := utils.EnsureDir(*input.MetadataPath); err != nil {
+				return makeConfigGeneralResult(), err
+			}
+		}
+		c.Set(config.Metadata, input.MetadataPath)
 	}
 
 	if input.CachePath != nil {
@@ -137,6 +146,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.MaxSessionAge, *input.MaxSessionAge)
 	}
 
+	if input.TrustedProxies != nil {
+		c.Set(config.TrustedProxies, input.TrustedProxies)
+	}
+
 	if input.LogFile != nil {
 		c.Set(config.LogFile, input.LogFile)
 	}
@@ -212,17 +225,19 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
 	c := config.GetInstance()
+
+	setBool := func(key string, v *bool) {
+		if v != nil {
+			c.Set(key, *v)
+		}
+	}
+
 	if input.MenuItems != nil {
 		c.Set(config.MenuItems, input.MenuItems)
 	}
 
-	if input.SoundOnPreview != nil {
-		c.Set(config.SoundOnPreview, *input.SoundOnPreview)
-	}
-
-	if input.WallShowTitle != nil {
-		c.Set(config.WallShowTitle, *input.WallShowTitle)
-	}
+	setBool(config.SoundOnPreview, input.SoundOnPreview)
+	setBool(config.WallShowTitle, input.WallShowTitle)
 
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
@@ -232,13 +247,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}
 
-	if input.AutostartVideo != nil {
-		c.Set(config.AutostartVideo, *input.AutostartVideo)
-	}
-
-	if input.ShowStudioAsText != nil {
-		c.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
-	}
+	setBool(config.AutostartVideo, input.AutostartVideo)
+	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
@@ -256,8 +266,13 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	c.SetCSS(css)
 
-	if input.CSSEnabled != nil {
-		c.Set(config.CSSEnabled, *input.CSSEnabled)
+	setBool(config.CSSEnabled, input.CSSEnabled)
+
+	if input.DisableDropdownCreate != nil {
+		ddc := input.DisableDropdownCreate
+		setBool(config.DisableDropdownCreatePerformer, ddc.Performer)
+		setBool(config.DisableDropdownCreateStudio, ddc.Studio)
+		setBool(config.DisableDropdownCreateTag, ddc.Tag)
 	}
 
 	if input.HandyKey != nil {

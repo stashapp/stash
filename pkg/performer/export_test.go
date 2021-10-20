@@ -54,8 +54,11 @@ var deathDate = models.SQLiteDate{
 	String: "2021-02-02",
 	Valid:  true,
 }
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+)
 
 func createFullPerformer(id int, name string) *models.Performer {
 	return &models.Performer{
@@ -165,17 +168,17 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			*createFullPerformer(performerID, performerName),
 			createFullJSONPerformer(performerName, image),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyPerformer(noImageID),
 			createEmptyJSONPerformer(),
 			false,
 		},
-		testScenario{
+		{
 			*createFullPerformer(errImageID, performerName),
 			nil,
 			true,
@@ -198,11 +201,12 @@ func TestToJSON(t *testing.T) {
 		tag := s.input
 		json, err := ToJSON(mockPerformerReader, &tag)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

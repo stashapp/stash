@@ -2,7 +2,6 @@ package ffmpeg
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -206,7 +205,7 @@ func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, e
 
 func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
-	cmd := exec.Command(e.Path, args...)
+	cmd := exec.Command(string(*e), args...)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
 	stdout, err := cmd.StdoutPipe()
@@ -234,7 +233,7 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 
 	// stderr must be consumed or the process deadlocks
 	go func() {
-		stderrData, _ := ioutil.ReadAll(stderr)
+		stderrData, _ := io.ReadAll(stderr)
 		stderrString := string(stderrData)
 		if len(stderrString) > 0 {
 			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)

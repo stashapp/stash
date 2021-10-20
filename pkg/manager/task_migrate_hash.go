@@ -2,6 +2,7 @@ package manager
 
 import (
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 // MigrateHashTask renames generated files between oshash and MD5 based on the
@@ -28,5 +29,5 @@ func (t *MigrateHashTask) Start() {
 		newHash = oshash
 	}
 
-	MigrateHash(oldHash, newHash)
+	scene.MigrateHash(instance.Paths, oldHash, newHash)
 }

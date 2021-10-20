@@ -1,6 +1,6 @@
 # Dupe Checker
 
-[The dupe checker](/settings?tab=duplicates) searches your collection for scenes that are perceptually similar. This means that the files don't need to be identical, and will be identified even with different bitrates, resolutions, and intros/outros.
+[The dupe checker](/sceneDuplicateChecker) searches your collection for scenes that are perceptually similar. This means that the files don't need to be identical, and will be identified even with different bitrates, resolutions, and intros/outros.
 
 To achieve this stash needs to generate what's called a phash, or perceptual hash. Similar to sprite generation stash will generate a set of 25 images from fixed points in the scene. These images will be stitched together, and then hashed using the phash algorithm. The phash can then be used to find scenes that are the same or similar to others in the database. Phash generation can be run during scan, or as a separate task. Note that generation can take a while due to the work involved with extracting screenshots.
 

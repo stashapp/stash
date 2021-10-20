@@ -28,7 +28,7 @@ func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) e
 		"-f", "image2",
 		options.OutputPath,
 	}
-	_, err := e.run(probeResult, args)
+	_, err := e.run(probeResult.Path, args, nil)
 
 	return err
 }

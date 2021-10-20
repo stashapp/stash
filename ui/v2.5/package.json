@@ -6,7 +6,7 @@
   "sideEffects": false,
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build-ci": "yarn validate && yarn build",
@@ -46,6 +46,7 @@
     "formik": "^2.2.6",
     "graphql": "^15.4.0",
     "graphql-tag": "^2.11.0",
+    "hamming-distance": "^1.0.0",
     "i18n-iso-countries": "^6.4.0",
     "intersection-observer": "^0.12.0",
     "jimp": "^0.16.1",
@@ -73,6 +74,7 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
+    "@craco/craco": "^6.3.0",
     "@graphql-codegen/add": "^2.0.2",
     "@graphql-codegen/cli": "^1.20.0",
     "@graphql-codegen/time": "^2.0.2",
@@ -92,6 +94,7 @@
     "@types/react-router-hash-link": "^1.2.1",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
+    "craco-esbuild": "^0.4.2",
     "eslint": "^7.18.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
     "eslint-config-prettier": "^7.2.0",

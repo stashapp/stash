@@ -55,6 +55,8 @@ var testTagCases = []testTagCase{
 }
 
 func TestTagScenes(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testTagCases {
 		testTagScenes(t, p)
 	}
@@ -141,6 +143,8 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 }
 
 func TestTagImages(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testTagCases {
 		testTagImages(t, p)
 	}
@@ -226,6 +230,8 @@ func testTagImages(t *testing.T, tc testTagCase) {
 }
 
 func TestTagGalleries(t *testing.T) {
+	t.Parallel()
+
 	for _, p := range testTagCases {
 		testTagGalleries(t, p)
 	}

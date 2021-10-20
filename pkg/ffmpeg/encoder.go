@@ -2,7 +2,7 @@ package ffmpeg
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -12,20 +12,12 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-type Encoder struct {
-	Path string
-}
+type Encoder string
 
 var (
 	runningEncoders      = make(map[string][]*os.Process)
 	runningEncodersMutex = sync.RWMutex{}
 )
-
-func NewEncoder(ffmpegPath string) Encoder {
-	return Encoder{
-		Path: ffmpegPath,
-	}
-}
 
 func registerRunningEncoder(path string, process *os.Process) {
 	runningEncodersMutex.Lock()
@@ -86,7 +78,7 @@ func KillRunningEncoders(path string) {
 
 // FFmpeg runner with progress output, used for transcodes
 func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, error) {
-	cmd := exec.Command(e.Path, args...)
+	cmd := exec.Command(string(*e), args...)
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -126,7 +118,7 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 		}
 	}
 
-	stdoutData, _ := ioutil.ReadAll(stdout)
+	stdoutData, _ := io.ReadAll(stdout)
 	stdoutString := string(stdoutData)
 
 	registerRunningEncoder(probeResult.Path, cmd.Process)
@@ -141,19 +133,25 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 	return stdoutString, nil
 }
 
-func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
-	cmd := exec.Command(e.Path, args...)
+func (e *Encoder) run(sourcePath string, args []string, stdin io.Reader) (string, error) {
+	cmd := exec.Command(string(*e), args...)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Stdin = stdin
 
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}
 
-	registerRunningEncoder(probeResult.Path, cmd.Process)
-	err := waitAndDeregister(probeResult.Path, cmd)
+	var err error
+	if sourcePath != "" {
+		registerRunningEncoder(sourcePath, cmd.Process)
+		err = waitAndDeregister(sourcePath, cmd)
+	} else {
+		err = cmd.Wait()
+	}
 
 	if err != nil {
 		// error message should be in the stderr stream

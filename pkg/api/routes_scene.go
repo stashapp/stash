@@ -57,7 +57,8 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 		container = ffmpeg.Container(scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
-		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
+		ffprobe := manager.GetInstance().FFProbe
+		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path, false)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %v", err)
 			return ffmpeg.Container("")
@@ -105,7 +106,8 @@ func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
+	ffprobe := manager.GetInstance().FFProbe
+	videoFile, err := ffprobe.NewVideoFile(scene.Path, false)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %v", err)
 		return
@@ -142,8 +144,8 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	// needs to be transcoded
-
-	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
+	ffprobe := manager.GetInstance().FFProbe
+	videoFile, err := ffprobe.NewVideoFile(scene.Path, false)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %v", err)
 		return
@@ -171,7 +173,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize)
 	}
 
-	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
+	encoder := manager.GetInstance().FFMPEG
 	stream, err = encoder.GetTranscodeStream(options)
 
 	if err != nil {
@@ -298,6 +300,12 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	if sceneMarker == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 	http.ServeFile(w, r, filepath)
 }
@@ -315,6 +323,12 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	if sceneMarker == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
@@ -342,6 +356,12 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	if sceneMarker == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder

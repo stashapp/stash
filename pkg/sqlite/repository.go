@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -132,7 +133,7 @@ func (r *repository) runCountQuery(query string, args []interface{}) (int, error
 	}{0}
 
 	// Perform query and fetch result
-	if err := r.tx.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := r.tx.Get(&result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
 
@@ -144,7 +145,7 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 		Int int `db:"id"`
 	}
 
-	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := r.tx.Select(&result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return []int{}, err
 	}
 
@@ -162,7 +163,7 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 	}{0}
 
 	// Perform query and fetch result
-	if err := r.tx.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+	if err := r.tx.Get(&result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
 
@@ -172,7 +173,7 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
 	rows, err := r.tx.Queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 	defer rows.Close()
@@ -193,7 +194,7 @@ func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sq
 func (r *repository) query(query string, args []interface{}, out objectList) error {
 	rows, err := r.tx.Queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 	defer rows.Close()
@@ -216,7 +217,7 @@ func (r *repository) query(query string, args []interface{}, out objectList) err
 func (r *repository) querySimple(query string, args []interface{}, out interface{}) error {
 	rows, err := r.tx.Queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 	defer rows.Close()
@@ -238,8 +239,8 @@ func (r *repository) buildQueryBody(body string, whereClauses []string, havingCl
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
-	body = body + " GROUP BY " + r.tableName + ".id "
 	if len(havingClauses) > 0 {
+		body = body + " GROUP BY " + r.tableName + ".id "
 		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
 	}
 
@@ -505,7 +506,7 @@ func listKeys(i interface{}, addPrefix bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// Get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		if key == "id" {
@@ -523,7 +524,7 @@ func updateSet(i interface{}, partial bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// Get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		if key == "id" {

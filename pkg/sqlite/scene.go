@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -215,7 +216,7 @@ func (qb *sceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 func (qb *sceneQueryBuilder) find(id int) (*models.Scene, error) {
 	var ret models.Scene
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -483,13 +484,14 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 
 			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
 
-			if resolution.Modifier == models.CriterionModifierEquals {
+			switch resolution.Modifier {
+			case models.CriterionModifierEquals:
 				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierNotEquals {
+			case models.CriterionModifierNotEquals:
 				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierLessThan {
+			case models.CriterionModifierLessThan:
 				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, min))
-			} else if resolution.Modifier == models.CriterionModifierGreaterThan {
+			case models.CriterionModifierGreaterThan:
 				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
 		}

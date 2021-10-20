@@ -2,10 +2,15 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
+  MandatoryNumberCriterionOption,
 } from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
+import {
+  ChildTagsCriterionOption,
+  ParentTagsCriterionOption,
+} from "./criteria/tags";
 
 const defaultSortBy = "name";
 const sortByOptions = ["name", "random"]
@@ -43,6 +48,18 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("performer_count"),
   createMandatoryNumberCriterionOption("marker_count"),
+  ParentTagsCriterionOption,
+  new MandatoryNumberCriterionOption(
+    "parent_tag_count",
+    "parent_tag_count",
+    "parent_count"
+  ),
+  ChildTagsCriterionOption,
+  new MandatoryNumberCriterionOption(
+    "sub_tag_count",
+    "child_tag_count",
+    "child_count"
+  ),
 ];
 
 export const TagListFilterOptions = new ListFilterOptions(

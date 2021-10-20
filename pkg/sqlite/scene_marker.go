@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -104,13 +106,13 @@ func (qb *sceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
-		query = query + " WHERE title LIKE '%" + *q + "%'"
+		query += " WHERE title LIKE '%" + *q + "%'"
 	}
-	query = query + " GROUP BY title"
+	query += " GROUP BY title"
 	if sort != nil && *sort == "count" {
-		query = query + " ORDER BY `count` DESC"
+		query += " ORDER BY `count` DESC"
 	} else {
-		query = query + " ORDER BY title ASC"
+		query += " ORDER BY title ASC"
 	}
 	var args []interface{}
 	return qb.queryMarkerStringsResultType(query, args)
@@ -159,7 +161,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 
 	query.addFilter(filter)
 
-	query.sortAndPagination = qb.getSceneMarkerSort(findFilter) + getPagination(findFilter)
+	query.sortAndPagination = qb.getSceneMarkerSort(&query, findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -246,13 +248,15 @@ func sceneMarkerPerformersCriterionHandler(qb *sceneMarkerQueryBuilder, performe
 	}
 }
 
-func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFilterType) string {
+func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(query *queryBuilder, findFilter *models.FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
 	tableName := "scene_markers"
 	if sort == "scenes_updated_at" {
+		// ensure scene table is joined
+		query.join(sceneTable, "", "scenes.id = scene_markers.scene_id")
 		sort = "updated_at"
-		tableName = "scene"
+		tableName = "scenes"
 	}
 	return getSort(sort, direction, tableName)
 }
@@ -268,7 +272,7 @@ func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interf
 
 func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
 	rows, err := database.DB.Queryx(query, args...)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()

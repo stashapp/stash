@@ -2,7 +2,6 @@ package logger
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"sync"
 	"time"
@@ -35,6 +34,13 @@ func Init(logFile string, logOut bool, logLevel string) {
 	customFormatter.FullTimestamp = true
 	logger.SetFormatter(customFormatter)
 
+	// #1837 - trigger the console to use color-mode since it won't be
+	// otherwise triggered until the first log entry
+	// this is covers the situation where the logger is only logging to file
+	// and therefore does not trigger the console color-mode - resulting in
+	// the access log colouring not being applied
+	_, _ = customFormatter.Format(logrus.NewEntry(logger))
+
 	if logFile != "" {
 		var err error
 		file, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -44,11 +50,22 @@ func Init(logFile string, logOut bool, logLevel string) {
 		}
 	}
 
-	if file != nil && logOut {
-		mw := io.MultiWriter(os.Stderr, file)
-		logger.Out = mw
-	} else if file != nil {
-		logger.Out = file
+	if file != nil {
+		if logOut {
+			// log to file separately disabling colours
+			fileFormatter := new(logrus.TextFormatter)
+			fileFormatter.TimestampFormat = customFormatter.TimestampFormat
+			fileFormatter.FullTimestamp = customFormatter.FullTimestamp
+			logger.AddHook(&fileLogHook{
+				Writer:    file,
+				Formatter: fileFormatter,
+			})
+		} else {
+			// logging to file only
+			// turn off the colouring for the file
+			customFormatter.ForceColors = false
+			logger.Out = file
+		}
 	}
 
 	// otherwise, output to StdErr
@@ -63,13 +80,14 @@ func SetLogLevel(level string) {
 func logLevelFromString(level string) logrus.Level {
 	ret := logrus.InfoLevel
 
-	if level == "Debug" {
+	switch level {
+	case "Debug":
 		ret = logrus.DebugLevel
-	} else if level == "Warning" {
+	case "Warning":
 		ret = logrus.WarnLevel
-	} else if level == "Error" {
+	case "Error":
 		ret = logrus.ErrorLevel
-	} else if level == "Trace" {
+	case "Trace":
 		ret = logrus.TraceLevel
 	}
 
@@ -277,7 +295,3 @@ func Fatal(args ...interface{}) {
 func Fatalf(format string, args ...interface{}) {
 	logger.Fatalf(format, args...)
 }
-
-//func WithRequest(req *http.Request) *logrus.Entry {
-//	return logger.WithFields(RequestFields(req))
-//}

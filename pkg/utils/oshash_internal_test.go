@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"math/rand"
 	"testing"
 )
 
@@ -42,5 +43,33 @@ func TestOshashCollisions(t *testing.T) {
 
 	if hash1 != hash2 {
 		t.Errorf("TestOshashCollisions: oshash(n, k, ... %v) =! oshash(n, k, ... %v)", buf1, buf2)
+	}
+}
+
+func BenchmarkOsHash(b *testing.B) {
+	src := rand.NewSource(9999)
+	r := rand.New(src)
+
+	size := int64(1234567890)
+
+	head := make([]byte, 1024*64)
+	_, err := r.Read(head)
+	if err != nil {
+		b.Errorf("unable to generate head array: %v", err)
+	}
+
+	tail := make([]byte, 1024*64)
+	_, err = r.Read(tail)
+	if err != nil {
+		b.Errorf("unable to generate tail array: %v", err)
+	}
+
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		_, err := oshash(size, head, tail)
+		if err != nil {
+			b.Errorf("unexpected error: %v", err)
+		}
 	}
 }

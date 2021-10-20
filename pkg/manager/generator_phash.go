@@ -42,7 +42,7 @@ func NewPhashGenerator(videoFile ffmpeg.VideoFile, checksum string) (*PhashGener
 }
 
 func (g *PhashGenerator) Generate() (*uint64, error) {
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	sprite, err := g.generateSprite(&encoder)
 	if err != nil {

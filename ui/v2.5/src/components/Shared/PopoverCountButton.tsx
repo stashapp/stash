@@ -4,15 +4,21 @@ import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
 
-type PopoverLinkType = "scene" | "image" | "gallery";
+type PopoverLinkType = "scene" | "image" | "gallery" | "movie";
 
 interface IProps {
+  className?: string;
   url: string;
   type: PopoverLinkType;
   count: number;
 }
 
-export const PopoverCountButton: React.FC<IProps> = ({ url, type, count }) => {
+export const PopoverCountButton: React.FC<IProps> = ({
+  className,
+  url,
+  type,
+  count,
+}) => {
   const intl = useIntl();
 
   function getIcon() {
@@ -23,6 +29,8 @@ export const PopoverCountButton: React.FC<IProps> = ({ url, type, count }) => {
         return "image";
       case "gallery":
         return "images";
+      case "movie":
+        return "film";
     }
   }
 
@@ -43,6 +51,11 @@ export const PopoverCountButton: React.FC<IProps> = ({ url, type, count }) => {
           one: "gallery",
           other: "galleries",
         };
+      case "movie":
+        return {
+          one: "movie",
+          other: "movies",
+        };
     }
   }
 
@@ -54,7 +67,7 @@ export const PopoverCountButton: React.FC<IProps> = ({ url, type, count }) => {
   }
 
   return (
-    <Link to={url} title={getTitle()}>
+    <Link className={className} to={url} title={getTitle()}>
       <Button className="minimal">
         <Icon icon={getIcon()} />
         <span>{count}</span>

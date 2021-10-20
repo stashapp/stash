@@ -3,11 +3,10 @@ package manager
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"time"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -21,7 +20,8 @@ type GenerateScreenshotTask struct {
 
 func (t *GenerateScreenshotTask) Start() {
 	scenePath := t.Scene.Path
-	probeResult, err := ffmpeg.NewVideoFile(instance.FFProbePath, scenePath, false)
+	ffprobe := instance.FFProbe
+	probeResult, err := ffprobe.NewVideoFile(scenePath, false)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -52,7 +52,7 @@ func (t *GenerateScreenshotTask) Start() {
 	}
 	defer f.Close()
 
-	coverImageData, err := ioutil.ReadAll(f)
+	coverImageData, err := io.ReadAll(f)
 	if err != nil {
 		logger.Errorf("Error reading screenshot: %s", err.Error())
 		return

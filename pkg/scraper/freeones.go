@@ -1,9 +1,11 @@
 package scraper
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // FreeonesScraperID is the scraper ID for the built-in Freeones scraper
@@ -45,7 +47,7 @@ xPathScrapers:
               - regex: \sBio\s*$
                 with: ""
       URL: //link[@rel="alternate" and @hreflang="x-default"]/@href
-      Twitter: //a[contains(@href,'twitter.com/')]/@href
+      Twitter: //a[not(starts-with(@href,'https://twitter.com/FreeOnes'))][contains(@href,'twitter.com/')]/@href 
       Instagram: //a[contains(@href,'instagram.com/')]/@href
       Birthdate:
         selector: //span[contains(text(),'Born On')]
@@ -122,13 +124,13 @@ xPathScrapers:
 # Last updated April 13, 2021
 `
 
-func getFreeonesScraper() config {
+func getFreeonesScraper(client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	yml := freeonesScraperConfig
 
-	scraper, err := loadScraperFromYAML(FreeonesScraperID, strings.NewReader(yml))
+	c, err := loadConfigFromYAML(FreeonesScraperID, strings.NewReader(yml))
 	if err != nil {
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}
 
-	return *scraper
+	return createScraperFromConfig(*c, client, txnManager, globalConfig)
 }

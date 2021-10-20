@@ -11,6 +11,7 @@
     "backup": "Backup",
     "cancel": "Cancel",
     "clean": "Clean",
+    "clear": "Clear",
     "clear_back_image": "Clear back image",
     "clear_front_image": "Clear front image",
     "clear_image": "Clear Image",
@@ -62,6 +63,7 @@
     "scan": "Scan",
     "scrape_with": "Scrape with…",
     "scrape_query": "Scrape query",
+    "scrape_scene_fragment": "Scrape by fragment",
     "search": "Search",
     "select_all": "Select All",
     "select_none": "Select None",
@@ -73,6 +75,7 @@
     "set_image": "Set image…",
     "show": "Show",
     "skip": "Skip",
+    "stop": "Stop",
     "tasks": {
       "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
       "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
@@ -98,6 +101,7 @@
   "career_length": "Career Length",
   "subsidiary_studios": "Subsidiary Studios",
   "sub_tags": "Sub-Tags",
+  "sub_tag_count": "Sub-Tag Count",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -118,6 +122,7 @@
       "set_cover_label": "Set scene cover image",
       "set_tag_desc": "Attach tags to scene, either by overwriting or merging with existing tags on scene.",
       "set_tag_label": "Set tags",
+      "source": "Source",
       "show_male_desc": "Toggle whether male performers will be available to tag.",
       "show_male_label": "Show male performers"
     },
@@ -130,11 +135,14 @@
       "match_failed_already_tagged": "Scene already tagged",
       "match_failed_no_result": "No results found",
       "match_success": "Scene successfully tagged",
+      "unnamed": "Unnamed",
       "duration_off": "Duration off by at least {number}s",
-      "duration_unknown": "Duration unknown"
+      "duration_unknown": "Duration unknown",
+      "phash_matches": "{count} PHashes match"
     },
     "verb_match_fp": "Match Fingerprints",
     "verb_matched": "Matched",
+    "verb_scrape_all": "Scrape All",
     "verb_submit_fp": "Submit {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} unmatched scenes"
@@ -192,6 +200,8 @@
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
+        "trusted_proxies": "Trusted proxies",
+        "trusted_proxies_desc": "List of proxies that are allowed to proxy traffic into stash. Leave empty to allow from private network.",
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
@@ -227,6 +237,10 @@
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",
       "maximum_transcode_size_head": "Maximum transcode size",
+      "metadata_path": {
+        "heading": "Metadata Path",
+        "description": "Directory location used when performing a full export or import"
+      },
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
@@ -319,6 +333,13 @@
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "editing": {
+        "disable_dropdown_create": {
+          "heading": "Disable dropdown create",
+          "description": "Remove the ability to create new objects from the dropdown selectors"
+        },
+        "heading": "Editing"
       },
       "handy_connection_key": {
         "description": "Handy connection key to use for interactive scenes.",
@@ -443,6 +464,27 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "lightbox": {
+      "delay": "Delay (Sec)",
+      "display_mode": {
+        "label": "Display Mode",
+        "original": "Original",
+        "fit_to_screen": "Fit to screen",
+        "fit_horizontally": "Fit horizontally"
+      },
+      "options": "Options",
+      "reset_zoom_on_nav": "Reset zoom level when changing image",
+      "scale_up": {
+        "label": "Scale up to fit",
+        "description": "Scale smaller images up to fill screen"
+      },
+      "scroll_mode": {
+        "label": "Scroll Mode",
+        "zoom": "Zoom",
+        "pan_y": "Pan Y",
+        "description": "Hold shift to temporarily use other mode."
+      }
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"
@@ -545,6 +587,7 @@
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",
+  "include_parent_tags": "Include parent tags",
   "include_sub_studios": "Include subsidiary studios",
   "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
@@ -587,8 +630,11 @@
     "next": "Next",
     "previous": "Previous"
   },
+  "parent_of": "Parent of {children}",
   "parent_studios": "Parent Studios",
   "parent_tags": "Parent Tags",
+  "parent_tag_count": "Parent Tag Count",
+  "part_of": "Part of {parent}",
   "path": "Path",
   "performer": "Performer",
   "performer_count": "Performer Count",
@@ -615,6 +661,7 @@
   },
   "seconds": "Seconds",
   "settings": "Settings",
+  "sub_tag_of": "Sub-tag of {parent}",
   "stash_id": "Stash ID",
   "status": "Status: {statusText}",
   "studio": "Studio",

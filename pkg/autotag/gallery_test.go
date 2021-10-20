@@ -12,6 +12,8 @@ import (
 const galleryExt = "zip"
 
 func TestGalleryPerformers(t *testing.T) {
+	t.Parallel()
+
 	const galleryID = 1
 	const performerName = "performer name"
 	const performerID = 2
@@ -55,6 +57,8 @@ func TestGalleryPerformers(t *testing.T) {
 }
 
 func TestGalleryStudios(t *testing.T) {
+	t.Parallel()
+
 	const galleryID = 1
 	const studioName = "studio name"
 	const studioID = 2
@@ -124,6 +128,8 @@ func TestGalleryStudios(t *testing.T) {
 }
 
 func TestGalleryTags(t *testing.T) {
+	t.Parallel()
+
 	const galleryID = 1
 	const tagName = "tag name"
 	const tagID = 2

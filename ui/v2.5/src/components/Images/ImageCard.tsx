@@ -27,7 +27,11 @@ export const ImageCard: React.FC<IImageCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        className="tag-count"
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button className="minimal">
           <Icon icon="tag" />
           <span>{props.image.tags.length}</span>

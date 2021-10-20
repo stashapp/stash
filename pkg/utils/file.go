@@ -4,7 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/user"
@@ -15,6 +15,7 @@ import (
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
 	"github.com/stashapp/stash/pkg/logger"
+	"golang.org/x/text/collate"
 )
 
 // FileType uses the filetype package to determine the given file path's type
@@ -105,17 +106,36 @@ func EmptyDir(path string) error {
 	return nil
 }
 
+type dirSorter []fs.DirEntry
+
+func (s dirSorter) Len() int {
+	return len(s)
+}
+
+func (s dirSorter) Swap(i, j int) {
+	s[j], s[i] = s[i], s[j]
+}
+
+func (s dirSorter) Bytes(i int) []byte {
+	return []byte(s[i].Name())
+}
+
 // ListDir will return the contents of a given directory path as a string slice
-func ListDir(path string) ([]string, error) {
+func ListDir(col *collate.Collator, path string) ([]string, error) {
 	var dirPaths []string
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		path = filepath.Dir(path)
-		files, err = ioutil.ReadDir(path)
+		files, err = os.ReadDir(path)
 		if err != nil {
 			return dirPaths, err
 		}
 	}
+
+	if col != nil {
+		col.Sort(dirSorter(files))
+	}
+
 	for _, file := range files {
 		if !file.IsDir() {
 			continue
@@ -196,7 +216,7 @@ func WriteFile(path string, file []byte) error {
 		return fmt.Errorf("cannot ensure path %s", pathErr)
 	}
 
-	err := ioutil.WriteFile(path, file, 0755)
+	err := os.WriteFile(path, file, 0755)
 	if err != nil {
 		return fmt.Errorf("write error for thumbnail %s: %s ", path, err)
 	}
@@ -356,4 +376,17 @@ func FindInPaths(paths []string, baseName string) string {
 	}
 
 	return ""
+}
+
+// MatchExtension returns true if the extension of the provided path
+// matches any of the provided extensions.
+func MatchExtension(path string, extensions []string) bool {
+	ext := filepath.Ext(path)
+	for _, e := range extensions {
+		if strings.EqualFold(ext, "."+e) {
+			return true
+		}
+	}
+
+	return false
 }

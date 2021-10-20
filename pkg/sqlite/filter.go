@@ -105,7 +105,7 @@ type filterBuilder struct {
 	err error
 }
 
-var errSubFilterAlreadySet error = errors.New(`sub-filter already set`)
+var errSubFilterAlreadySet = errors.New(`sub-filter already set`)
 
 // sub-filter operator values
 var (
@@ -210,10 +210,8 @@ func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) strin
 		var op string
 		if len(ret) > 0 {
 			op = " " + f.subFilterOp + " "
-		} else {
-			if f.subFilterOp == notOp {
-				op = "NOT "
-			}
+		} else if f.subFilterOp == notOp {
+			op = "NOT "
 		}
 
 		ret += op + "(" + subFilterClause + ")"
@@ -436,20 +434,22 @@ func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCrit
 
 			whereClause := ""
 			havingClause := ""
-			if criterion.Modifier == models.CriterionModifierIncludes {
+
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
 				// includes any of the provided ids
 				m.addJoinTable(f)
 				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
-			} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+			case models.CriterionModifierIncludesAll:
 				// includes all of the provided ids
 				m.addJoinTable(f)
 				whereClause = fmt.Sprintf("%s.%s IN %s", joinAlias, m.foreignFK, getInBinding(len(criterion.Value)))
 				havingClause = fmt.Sprintf("count(distinct %s.%s) IS %d", joinAlias, m.foreignFK, len(criterion.Value))
-			} else if criterion.Modifier == models.CriterionModifierExcludes {
+			case models.CriterionModifierExcludes:
 				// excludes all of the provided ids
 				// need to use actual join table name for this
-				// not exists (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<primaryFK> = <primaryTable>.id and <joinTable>.<foreignFK> in <values>)
-				whereClause = fmt.Sprintf("not exists (select %[1]s.%[2]s from %[1]s where %[1]s.%[2]s = %[3]s.id and %[1]s.%[4]s in %[5]s)", m.joinTable, m.primaryFK, m.primaryTable, m.foreignFK, getInBinding(len(criterion.Value)))
+				// <primaryTable>.id NOT IN (select <joinTable>.<primaryFK> from <joinTable> where <joinTable>.<foreignFK> in <values>)
+				whereClause = fmt.Sprintf("%[1]s.id NOT IN (SELECT %[3]s.%[2]s from %[3]s where %[3]s.%[4]s in %[5]s)", m.primaryTable, m.primaryFK, m.joinTable, m.foreignFK, getInBinding(len(criterion.Value)))
 			}
 
 			f.addWhere(whereClause, args...)
@@ -620,12 +620,13 @@ WHERE id in {inBinding}
 }
 
 func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.HierarchicalMultiCriterionInput, table, idColumn string) {
-	if criterion.Modifier == models.CriterionModifierIncludes {
+	switch criterion.Modifier {
+	case models.CriterionModifierIncludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
-	} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+	case models.CriterionModifierIncludesAll:
 		f.addWhere(fmt.Sprintf("%s.%s IS NOT NULL", table, idColumn))
 		f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", table, idColumn, len(criterion.Value)))
-	} else if criterion.Modifier == models.CriterionModifierExcludes {
+	case models.CriterionModifierExcludes:
 		f.addWhere(fmt.Sprintf("%s.%s IS NULL", table, idColumn))
 	}
 }

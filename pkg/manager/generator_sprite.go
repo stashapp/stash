@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -54,7 +53,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 }
 
 func (g *SpriteGenerator) Generate() error {
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if err := g.generateSpriteImage(&encoder); err != nil {
 		return err
@@ -141,7 +140,7 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 	}
 	vtt := strings.Join(vttLines, "\n")
 
-	return ioutil.WriteFile(g.VTTOutputPath, []byte(vtt), 0644)
+	return os.WriteFile(g.VTTOutputPath, []byte(vtt), 0644)
 }
 
 func (g *SpriteGenerator) imageExists() bool {

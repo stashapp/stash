@@ -36,7 +36,7 @@ func (t *transaction) Begin() error {
 	var err error
 	t.tx, err = database.DB.BeginTxx(t.Ctx, nil)
 	if err != nil {
-		return fmt.Errorf("error starting transaction: %s", err.Error())
+		return fmt.Errorf("error starting transaction: %v", err)
 	}
 
 	return nil
@@ -49,7 +49,7 @@ func (t *transaction) Rollback() error {
 
 	err := t.tx.Rollback()
 	if err != nil {
-		return fmt.Errorf("error rolling back transaction: %s", err.Error())
+		return fmt.Errorf("error rolling back transaction: %v", err)
 	}
 	t.tx = nil
 
@@ -63,7 +63,7 @@ func (t *transaction) Commit() error {
 
 	err := t.tx.Commit()
 	if err != nil {
-		return fmt.Errorf("error committing transaction: %s", err.Error())
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	t.tx = nil
 

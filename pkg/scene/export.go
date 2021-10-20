@@ -58,7 +58,7 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 
 	cover, err := reader.GetCover(scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene cover: %s", err.Error())
+		return nil, fmt.Errorf("error getting scene cover: %v", err)
 	}
 
 	if len(cover) > 0 {
@@ -136,7 +136,7 @@ func GetStudioName(reader models.StudioReader, scene *models.Scene) (string, err
 func GetTagNames(reader models.TagReader, scene *models.Scene) ([]string, error) {
 	tags, err := reader.FindBySceneID(scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene tags: %s", err.Error())
+		return nil, fmt.Errorf("error getting scene tags: %v", err)
 	}
 
 	return getTagNames(tags), nil
@@ -175,7 +175,7 @@ func GetDependentTagIDs(tags models.TagReader, markerReader models.SceneMarkerRe
 		ret = utils.IntAppendUnique(ret, smm.PrimaryTagID)
 		smmt, err := tags.FindBySceneMarkerID(smm.ID)
 		if err != nil {
-			return nil, fmt.Errorf("invalid tags for scene marker: %s", err.Error())
+			return nil, fmt.Errorf("invalid tags for scene marker: %v", err)
 		}
 
 		for _, smmtt := range smmt {
@@ -191,14 +191,14 @@ func GetDependentTagIDs(tags models.TagReader, markerReader models.SceneMarkerRe
 func GetSceneMoviesJSON(movieReader models.MovieReader, sceneReader models.SceneReader, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
 	sceneMovies, err := sceneReader.GetMovies(scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene movies: %s", err.Error())
+		return nil, fmt.Errorf("error getting scene movies: %v", err)
 	}
 
 	var results []jsonschema.SceneMovie
 	for _, sceneMovie := range sceneMovies {
 		movie, err := movieReader.Find(sceneMovie.MovieID)
 		if err != nil {
-			return nil, fmt.Errorf("error getting movie: %s", err.Error())
+			return nil, fmt.Errorf("error getting movie: %v", err)
 		}
 
 		if movie.Name.Valid {
@@ -234,7 +234,7 @@ func GetDependentMovieIDs(sceneReader models.SceneReader, scene *models.Scene) (
 func GetSceneMarkersJSON(markerReader models.SceneMarkerReader, tagReader models.TagReader, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
 	sceneMarkers, err := markerReader.FindBySceneID(scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting scene markers: %s", err.Error())
+		return nil, fmt.Errorf("error getting scene markers: %v", err)
 	}
 
 	var results []jsonschema.SceneMarker
@@ -242,12 +242,12 @@ func GetSceneMarkersJSON(markerReader models.SceneMarkerReader, tagReader models
 	for _, sceneMarker := range sceneMarkers {
 		primaryTag, err := tagReader.Find(sceneMarker.PrimaryTagID)
 		if err != nil {
-			return nil, fmt.Errorf("invalid primary tag for scene marker: %s", err.Error())
+			return nil, fmt.Errorf("invalid primary tag for scene marker: %v", err)
 		}
 
 		sceneMarkerTags, err := tagReader.FindBySceneMarkerID(sceneMarker.ID)
 		if err != nil {
-			return nil, fmt.Errorf("invalid tags for scene marker: %s", err.Error())
+			return nil, fmt.Errorf("invalid tags for scene marker: %v", err)
 		}
 
 		sceneMarkerJSON := jsonschema.SceneMarker{

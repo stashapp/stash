@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"sync"
 
@@ -44,7 +43,7 @@ func (t *rawPluginTask) Start() error {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return fmt.Errorf("error getting plugin process stdin: %s", err.Error())
+		return fmt.Errorf("error getting plugin process stdin: %v", err)
 	}
 
 	go func() {
@@ -69,7 +68,7 @@ func (t *rawPluginTask) Start() error {
 	t.waitGroup.Add(1)
 	t.done = make(chan bool, 1)
 	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("error running plugin: %s", err.Error())
+		return fmt.Errorf("error running plugin: %v", err)
 	}
 
 	go t.handlePluginStderr(t.plugin.Name, stderr)
@@ -79,7 +78,7 @@ func (t *rawPluginTask) Start() error {
 	go func() {
 		defer t.waitGroup.Done()
 		defer close(t.done)
-		stdoutData, _ := ioutil.ReadAll(stdout)
+		stdoutData, _ := io.ReadAll(stdout)
 		stdoutString := string(stdoutData)
 
 		output := t.getOutput(stdoutString)

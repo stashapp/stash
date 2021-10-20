@@ -117,9 +117,6 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/dgrijalva/jwt-go v3.2.0+incompatible
-## explicit
-github.com/dgrijalva/jwt-go
 # github.com/disintegration/imaging v1.6.0
 ## explicit
 github.com/disintegration/imaging
@@ -146,6 +143,9 @@ github.com/gobwas/pool/pbytes
 ## explicit; go 1.15
 github.com/gobwas/ws
 github.com/gobwas/ws/wsutil
+# github.com/golang-jwt/jwt/v4 v4.0.0
+## explicit; go 1.15
+github.com/golang-jwt/jwt/v4
 # github.com/golang-migrate/migrate/v4 v4.15.0-beta.1
 ## explicit; go 1.16
 github.com/golang-migrate/migrate/v4
@@ -398,6 +398,7 @@ golang.org/x/sys/windows
 golang.org/x/term
 # golang.org/x/text v0.3.6
 ## explicit; go 1.11
+golang.org/x/text/collate
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -408,6 +409,7 @@ golang.org/x/text/encoding/korean
 golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
 golang.org/x/text/encoding/unicode
+golang.org/x/text/internal/colltab
 golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag

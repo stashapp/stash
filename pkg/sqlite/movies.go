@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -58,7 +59,7 @@ func (qb *movieQueryBuilder) Destroy(id int) error {
 func (qb *movieQueryBuilder) Find(id int) (*models.Movie, error) {
 	var ret models.Movie
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -224,12 +225,13 @@ func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.M
 			)`, args...)
 			f.addJoin("movies_performers", "", "movies.id = movies_performers.movie_id")
 
-			if performers.Modifier == models.CriterionModifierIncludes {
+			switch performers.Modifier {
+			case models.CriterionModifierIncludes:
 				f.addWhere("movies_performers.performer_id IS NOT NULL")
-			} else if performers.Modifier == models.CriterionModifierIncludesAll {
+			case models.CriterionModifierIncludesAll:
 				f.addWhere("movies_performers.performer_id IS NOT NULL")
 				f.addHaving("COUNT(DISTINCT movies_performers.performer_id) = ?", len(performers.Value))
-			} else if performers.Modifier == models.CriterionModifierExcludes {
+			case models.CriterionModifierExcludes:
 				f.addWhere("movies_performers.performer_id IS NULL")
 			}
 		}
@@ -307,4 +309,43 @@ func (qb *movieQueryBuilder) GetFrontImage(movieID int) ([]byte, error) {
 func (qb *movieQueryBuilder) GetBackImage(movieID int) ([]byte, error) {
 	query := `SELECT back_image from movies_images WHERE movie_id = ?`
 	return getImage(qb.tx, query, movieID)
+}
+
+func (qb *movieQueryBuilder) FindByPerformerID(performerID int) ([]*models.Movie, error) {
+	query := `SELECT DISTINCT movies.*
+FROM movies
+INNER JOIN movies_scenes ON movies.id = movies_scenes.movie_id
+INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
+WHERE performers_scenes.performer_id = ?
+`
+	args := []interface{}{performerID}
+	return qb.queryMovies(query, args)
+}
+
+func (qb *movieQueryBuilder) CountByPerformerID(performerID int) (int, error) {
+	query := `SELECT COUNT(DISTINCT movies_scenes.movie_id) AS count
+FROM movies_scenes
+INNER JOIN performers_scenes ON performers_scenes.scene_id = movies_scenes.scene_id
+WHERE performers_scenes.performer_id = ?
+`
+	args := []interface{}{performerID}
+	return qb.runCountQuery(query, args)
+}
+
+func (qb *movieQueryBuilder) FindByStudioID(studioID int) ([]*models.Movie, error) {
+	query := `SELECT movies.*
+FROM movies
+WHERE movies.studio_id = ?
+`
+	args := []interface{}{studioID}
+	return qb.queryMovies(query, args)
+}
+
+func (qb *movieQueryBuilder) CountByStudioID(studioID int) (int, error) {
+	query := `SELECT COUNT(1) AS count
+FROM movies
+WHERE movies.studio_id = ?
+`
+	args := []interface{}{studioID}
+	return qb.runCountQuery(query, args)
 }

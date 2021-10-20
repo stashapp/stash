@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -57,14 +58,15 @@ func getSort(sort string, direction string, tableName string) string {
 
 	const randomSeedPrefix = "random_"
 
-	if strings.HasSuffix(sort, "_count") {
+	switch {
+	case strings.HasSuffix(sort, "_count"):
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
-	} else if strings.Compare(sort, "filesize") == 0 {
+	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
-	} else if strings.HasPrefix(sort, randomSeedPrefix) {
+	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		// turn the provided seed into a float
 		seedStr := "0." + sort[len(randomSeedPrefix):]
@@ -74,9 +76,9 @@ func getSort(sort string, direction string, tableName string) string {
 			seed = randomSortFloat
 		}
 		return getRandomSort(tableName, direction, seed)
-	} else if strings.Compare(sort, "random") == 0 {
+	case strings.Compare(sort, "random") == 0:
 		return getRandomSort(tableName, direction, randomSortFloat)
-	} else {
+	default:
 		colName := getColumn(tableName, sort)
 		var additional string
 		if tableName == "scenes" {
@@ -201,17 +203,18 @@ func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (
 func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, foreignFK string, criterion *models.MultiCriterionInput) (string, string) {
 	whereClause := ""
 	havingClause := ""
-	if criterion.Modifier == models.CriterionModifierIncludes {
+	switch criterion.Modifier {
+	case models.CriterionModifierIncludes:
 		// includes any of the provided ids
 		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
-	} else if criterion.Modifier == models.CriterionModifierIncludesAll {
+	case models.CriterionModifierIncludesAll:
 		// includes all of the provided ids
 		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
 		havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
-	} else if criterion.Modifier == models.CriterionModifierExcludes {
+	case models.CriterionModifierExcludes:
 		// excludes all of the provided ids
 		if joinTable != "" {
-			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+			whereClause = primaryTable + ".id not in (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
 		} else {
 			whereClause = "not exists (select s.id from " + primaryTable + " as s where s.id = " + primaryTable + ".id and s." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
 		}
@@ -228,7 +231,7 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {
 	rows, err := tx.Queryx(query, args...)
 
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()
