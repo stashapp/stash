@@ -36,10 +36,6 @@ linters:
 
 # Project-specific linter overrides
 linters-settings:
-  gocritic:
-    disabled-checks:
-      - appendAssign
-
   gofmt:
     simplify: false
 

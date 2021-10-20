@@ -67,7 +67,8 @@ func generateFalseNamePatterns(name string, separator, ext string) []string {
 }
 
 func generateTestPaths(testName, ext string) (scenePatterns []string, falseScenePatterns []string) {
-	separators := append(testSeparators, testEndSeparators...)
+	separators := testSeparators
+	separators = append(separators, testEndSeparators...)
 
 	for _, separator := range separators {
 		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator, ext)...)
@@ -115,7 +116,8 @@ func generateTestTable(testName, ext string) []pathTestTable {
 	var scenePatterns []string
 	var falseScenePatterns []string
 
-	separators := append(testSeparators, testEndSeparators...)
+	separators := testSeparators
+	separators = append(separators, testEndSeparators...)
 
 	for _, separator := range separators {
 		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator, ext)...)
