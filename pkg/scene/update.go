@@ -2,10 +2,92 @@ package scene
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+var ErrEmptyUpdater = errors.New("no fields have been set")
+
+// Updater is used to update a scene and its relationships.
+type Updater struct {
+	ID int
+
+	Partial models.ScenePartial
+
+	// in future these could be moved into a separate struct and reused
+	// for a Creator struct
+
+	// Not set if nil. Set to []int{} to clear existing
+	PerformerIDs []int
+	// Not set if nil. Set to []int{} to clear existing
+	TagIDs []int
+	// Not set if nil. Set to []int{} to clear existing
+	StashIDs []models.StashID
+	// Not set if nil. Set to []byte{} to clear existing
+	CoverImage []byte
+}
+
+// IsEmpty returns true if there is nothing to update.
+func (u *Updater) IsEmpty() bool {
+	withoutID := u.Partial
+	withoutID.ID = 0
+
+	return withoutID == models.ScenePartial{} &&
+		u.PerformerIDs == nil &&
+		u.TagIDs == nil &&
+		u.StashIDs == nil &&
+		u.CoverImage == nil
+}
+
+// Update updates a scene by updating the fields in the Partial field, then
+// updates non-nil relationships. Returns an error if there is no work to
+// be done.
+func (u *Updater) Update(qb models.SceneWriter) (*models.Scene, error) {
+	if u.IsEmpty() {
+		return nil, ErrEmptyUpdater
+	}
+
+	partial := u.Partial
+	partial.ID = u.ID
+	partial.UpdatedAt = &models.SQLiteTimestamp{
+		Timestamp: time.Now(),
+	}
+
+	ret, err := qb.Update(partial)
+	if err != nil {
+		return nil, fmt.Errorf("error updating scene: %w", err)
+	}
+
+	if u.PerformerIDs != nil {
+		if err := qb.UpdatePerformers(u.ID, u.PerformerIDs); err != nil {
+			return nil, fmt.Errorf("error updating scene performers: %w", err)
+		}
+	}
+
+	if u.TagIDs != nil {
+		if err := qb.UpdateTags(u.ID, u.TagIDs); err != nil {
+			return nil, fmt.Errorf("error updating scene tags: %w", err)
+		}
+	}
+
+	if u.StashIDs != nil {
+		if err := qb.UpdateStashIDs(u.ID, u.StashIDs); err != nil {
+			return nil, fmt.Errorf("error updating scene stash_ids: %w", err)
+		}
+	}
+
+	if u.CoverImage != nil {
+		if err := qb.UpdateCover(u.ID, u.CoverImage); err != nil {
+			return nil, fmt.Errorf("error updating scene cover: %w", err)
+		}
+	}
+
+	return ret, nil
+}
 
 func UpdateFormat(qb models.SceneWriter, id int, format string) (*models.Scene, error) {
 	return qb.Update(models.ScenePartial{

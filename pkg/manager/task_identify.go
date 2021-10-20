@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/autotag"
+	"github.com/stashapp/stash/pkg/identify"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -84,7 +84,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 }
 
-func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepository, sources []autotag.ScraperSource) error {
+func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepository, sources []identify.ScraperSource) error {
 	// exclude organised
 	organised := false
 	sceneFilter := &models.SceneFilterType{
@@ -116,7 +116,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 	})
 }
 
-func (j *IdentifyJob) identifyScene(ctx context.Context, scene *models.Scene, sources []autotag.ScraperSource) {
+func (j *IdentifyJob) identifyScene(ctx context.Context, scene *models.Scene, sources []identify.ScraperSource) {
 	if job.IsCancelled(ctx) {
 		return
 	}
@@ -124,14 +124,12 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, scene *models.Scene, so
 	if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		var taskError error
 		j.progress.ExecuteTask("Identifying "+scene.Path, func() {
-			task := autotag.IdentifySceneTask{
+			task := identify.SceneIdentifier{
 				DefaultOptions: j.input.Options,
 				Sources:        sources,
-				Scene:          scene,
-				Repo:           r,
 			}
 
-			taskError = task.Execute(ctx)
+			taskError = task.Identify(ctx, r, scene)
 		})
 
 		return taskError
@@ -142,8 +140,8 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, scene *models.Scene, so
 	j.progress.Increment()
 }
 
-func (j *IdentifyJob) getSources() ([]autotag.ScraperSource, error) {
-	var ret []autotag.ScraperSource
+func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
+	var ret []identify.ScraperSource
 	for _, source := range j.input.Sources {
 		// get scraper source
 		stashBox, err := j.getStashBox(source.Source)
@@ -151,9 +149,9 @@ func (j *IdentifyJob) getSources() ([]autotag.ScraperSource, error) {
 			return nil, err
 		}
 
-		var src autotag.ScraperSource
+		var src identify.ScraperSource
 		if stashBox != nil {
-			src = autotag.ScraperSource{
+			src = identify.ScraperSource{
 				Scraper: stashboxSource{
 					stashbox.NewClient(*stashBox, j.txnManager),
 					stashBox.Endpoint,
@@ -161,7 +159,7 @@ func (j *IdentifyJob) getSources() ([]autotag.ScraperSource, error) {
 				RemoteSite: stashBox.Endpoint,
 			}
 		} else {
-			src = autotag.ScraperSource{
+			src = identify.ScraperSource{
 				Scraper: scraperSource{
 					cache:     instance.ScraperCache,
 					scraperID: *source.Source.ScraperID,
