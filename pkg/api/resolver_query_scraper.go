@@ -164,18 +164,19 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 		var singleScene *models.ScrapedScene
 		var err error
 
-		if input.SceneID != nil {
+		switch {
+		case input.SceneID != nil:
 			var sceneID int
 			sceneID, err = strconv.Atoi(*input.SceneID)
 			if err != nil {
 				return nil, err
 			}
 			singleScene, err = manager.GetInstance().ScraperCache.ScrapeScene(*source.ScraperID, sceneID)
-		} else if input.SceneInput != nil {
+		case input.SceneInput != nil:
 			singleScene, err = manager.GetInstance().ScraperCache.ScrapeSceneFragment(*source.ScraperID, *input.SceneInput)
-		} else if input.Query != nil {
+		case input.Query != nil:
 			return manager.GetInstance().ScraperCache.ScrapeSceneQuery(*source.ScraperID, *input.Query)
-		} else {
+		default:
 			err = errors.New("scene_id, scene_input or query must be set")
 		}
 
@@ -208,7 +209,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiScenesInput) ([][]*models.ScrapedScene, error) {
 	if source.ScraperID != nil {
-		return nil, errors.New("not implemented")
+		return nil, ErrNotImplemented
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
@@ -240,7 +241,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 			return manager.GetInstance().ScraperCache.ScrapePerformerList(*source.ScraperID, *input.Query)
 		}
 
-		return nil, errors.New("not implemented")
+		return nil, ErrNotImplemented
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
@@ -248,12 +249,13 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		}
 
 		var ret []*models.StashBoxPerformerQueryResult
-		if input.PerformerID != nil {
+		switch {
+		case input.PerformerID != nil:
 			ret, err = client.FindStashBoxPerformersByNames([]string{*input.PerformerID})
-		} else if input.Query != nil {
+		case input.Query != nil:
 			ret, err = client.QueryStashBoxPerformer(*input.Query)
-		} else {
-			return nil, errors.New("not implemented")
+		default:
+			return nil, ErrNotImplemented
 		}
 
 		if err != nil {
@@ -272,7 +274,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 
 func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiPerformersInput) ([][]*models.ScrapedPerformer, error) {
 	if source.ScraperID != nil {
-		return nil, errors.New("not implemented")
+		return nil, ErrNotImplemented
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
@@ -290,17 +292,18 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source models.S
 		var singleGallery *models.ScrapedGallery
 		var err error
 
-		if input.GalleryID != nil {
+		switch {
+		case input.GalleryID != nil:
 			var galleryID int
 			galleryID, err = strconv.Atoi(*input.GalleryID)
 			if err != nil {
 				return nil, err
 			}
 			singleGallery, err = manager.GetInstance().ScraperCache.ScrapeGallery(*source.ScraperID, galleryID)
-		} else if input.GalleryInput != nil {
+		case input.GalleryInput != nil:
 			singleGallery, err = manager.GetInstance().ScraperCache.ScrapeGalleryFragment(*source.ScraperID, *input.GalleryInput)
-		} else {
-			return nil, errors.New("not implemented")
+		default:
+			return nil, ErrNotImplemented
 		}
 
 		if err != nil {
@@ -313,12 +316,12 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source models.S
 
 		return nil, nil
 	} else if source.StashBoxIndex != nil {
-		return nil, errors.New("not supported")
+		return nil, ErrNotSupported
 	}
 
 	return nil, errors.New("scraper_id must be set")
 }
 
 func (r *queryResolver) ScrapeSingleMovie(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleMovieInput) ([]*models.ScrapedMovie, error) {
-	return nil, errors.New("not supported")
+	return nil, ErrNotSupported
 }

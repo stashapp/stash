@@ -17,26 +17,24 @@ linters:
     - typecheck
     - unused
     - varcheck
-    # Linters added by the stash project
-    # - bodyclose
+    # Linters added by the stash project.
     - dogsled
     - errorlint
     # - exhaustive
     - exportloopref
-    # - gocritic
+    - gocritic
     # - goerr113
     - gofmt
     # - gomnd
-    # - gosec
     # - ifshort
     - misspell
     # - nakedret
     - noctx
-    # - paralleltest
     - revive
     - rowserrcheck
     - sqlclosecheck
 
+# Project-specific linter overrides
 linters-settings:
   gofmt:
     simplify: false

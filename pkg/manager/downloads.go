@@ -44,7 +44,7 @@ func (s *DownloadStore) RegisterFile(fp string, contentType string, keep bool) s
 	for generate && a < attempts {
 		hash = utils.GenerateRandomKey(keyLength)
 		_, generate = s.m[hash]
-		a = a + 1
+		a++
 	}
 
 	s.m[hash] = &storeFile{

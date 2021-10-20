@@ -72,8 +72,8 @@ var validAudioForMkv = []AudioCodec{Aac, Mp3, Vorbis, Opus}
 var validAudioForWebm = []AudioCodec{Vorbis, Opus}
 var validAudioForMp4 = []AudioCodec{Aac, Mp3}
 
-//maps user readable container strings to ffprobe's format_name
-//on some formats ffprobe can't differentiate
+// ContainerToFfprobe maps user readable container strings to ffprobe's format_name.
+// On some formats ffprobe can't differentiate
 var ContainerToFfprobe = map[Container]string{
 	Mp4:      Mp4Ffmpeg,
 	M4v:      M4vFfmpeg,
@@ -116,7 +116,7 @@ func IsValidCodec(codecName string, supportedCodecs []string) bool {
 	return false
 }
 
-func IsValidAudio(audio AudioCodec, ValidCodecs []AudioCodec) bool {
+func IsValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
 
 	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
 	// report it as valid so that the file can at least be streamed directly if the video codec is supported
@@ -124,7 +124,7 @@ func IsValidAudio(audio AudioCodec, ValidCodecs []AudioCodec) bool {
 		return true
 	}
 
-	for _, c := range ValidCodecs {
+	for _, c := range validCodecs {
 		if c == audio {
 			return true
 		}
@@ -155,7 +155,8 @@ func IsValidForContainer(format Container, validContainers []Container) bool {
 	return false
 }
 
-//extend stream validation check to take into account container
+// IsValidCombo checks if a codec/container combination is valid.
+// Returns true on validity, false otherwise
 func IsValidCombo(codecName string, format Container, supportedVideoCodecs []string) bool {
 	supportMKV := IsValidCodec(Mkv, supportedVideoCodecs)
 	supportHEVC := IsValidCodec(Hevc, supportedVideoCodecs)
@@ -227,10 +228,6 @@ type FFProbe string
 // Execute exec command and bind result to struct.
 func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
-	//// Extremely slow on windows for some reason
-	//if runtime.GOOS != "windows" {
-	//	args = append(args, "-count_frames")
-	//}
 	out, err := exec.Command(string(*f), args...).Output()
 
 	if err != nil {
@@ -256,9 +253,6 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	if result.JSON.Error.Code != 0 {
 		return nil, fmt.Errorf("ffprobe error code %d: %s", result.JSON.Error.Code, result.JSON.Error.String)
 	}
-	//} else if (ffprobeResult.stderr.includes("could not find codec parameters")) {
-	//	throw new Error(`FFProbe [${filePath}] -> Could not find codec parameters`);
-	//} // TODO nil_or_unsupported.(video_stream) && nil_or_unsupported.(audio_stream)
 
 	result.Path = filePath
 	result.Title = probeJSON.Format.Tags.Title

@@ -38,7 +38,9 @@ func WithTxn(txn Transaction, fn func(r Repository) error) error {
 				logger.Warnf("error while trying to roll back transaction: %v", err)
 			}
 			panic(p)
-		} else if err != nil {
+		}
+
+		if err != nil {
 			// something went wrong, rollback
 			if err := txn.Rollback(); err != nil {
 				logger.Warnf("error while trying to roll back transaction: %v", err)
@@ -66,7 +68,9 @@ func WithROTxn(txn ReadTransaction, fn func(r ReaderRepository) error) error {
 				logger.Warnf("error while trying to roll back RO transaction: %v", err)
 			}
 			panic(p)
-		} else if err != nil {
+		}
+
+		if err != nil {
 			// something went wrong, rollback
 			if err := txn.Rollback(); err != nil {
 				logger.Warnf("error while trying to roll back RO transaction: %v", err)

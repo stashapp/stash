@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -16,13 +17,15 @@ type jsonScraper struct {
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
+	client       *http.Client
 	txnManager   models.TransactionManager
 }
 
-func newJsonScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *jsonScraper {
+func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *jsonScraper {
 	return &jsonScraper{
 		scraper:      scraper,
 		config:       config,
+		client:       client,
 		globalConfig: globalConfig,
 		txnManager:   txnManager,
 	}
@@ -49,7 +52,7 @@ func (s *jsonScraper) scrapeURL(ctx context.Context, url string) (string, *mappe
 }
 
 func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
-	r, err := loadURL(ctx, url, s.config, s.globalConfig)
+	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +131,7 @@ func (s *jsonScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerf
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 
@@ -157,7 +160,7 @@ func (s *jsonScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, e
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 

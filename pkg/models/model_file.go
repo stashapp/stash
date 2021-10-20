@@ -13,16 +13,14 @@ type File struct {
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s File) GetHash(hashAlgorithm HashAlgorithm) string {
-	var ret string
-	if hashAlgorithm == HashAlgorithmMd5 {
-		ret = s.Checksum
-	} else if hashAlgorithm == HashAlgorithmOshash {
-		ret = s.OSHash
-	} else {
+	switch hashAlgorithm {
+	case HashAlgorithmMd5:
+		return s.Checksum
+	case HashAlgorithmOshash:
+		return s.OSHash
+	default:
 		panic("unknown hash algorithm")
 	}
-
-	return ret
 }
 
 func (s File) Equal(o File) bool {

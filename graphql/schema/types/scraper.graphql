@@ -176,10 +176,16 @@ type StashBoxFingerprint {
   duration: Int!
 }
 
+"""If neither performer_ids nor performer_names are set, tag all performers"""
 input StashBoxBatchPerformerTagInput {
+  "Stash endpoint to use for the performer tagging"
   endpoint: Int!
+  "Fields to exclude when executing the performer tagging"
   exclude_fields: [String!]
+  "Refresh performers already tagged by StashBox if true. Only tag performers with no StashBox tagging if false"
   refresh: Boolean!
+  "If set, only tag these performer ids"
   performer_ids: [ID!]
+  "If set, only tag these performer names"
   performer_names: [String!]
 }

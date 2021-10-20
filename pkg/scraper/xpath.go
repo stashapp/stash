@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -20,14 +21,16 @@ type xpathScraper struct {
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
+	client       *http.Client
 	txnManager   models.TransactionManager
 }
 
-func newXpathScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *xpathScraper {
+func newXpathScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *xpathScraper {
 	return &xpathScraper{
 		scraper:      scraper,
 		config:       config,
 		globalConfig: globalConfig,
+		client:       client,
 		txnManager:   txnManager,
 	}
 }
@@ -109,7 +112,7 @@ func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 
@@ -138,7 +141,7 @@ func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 
@@ -227,7 +230,7 @@ func (s *xpathScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInpu
 }
 
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
-	r, err := loadURL(ctx, url, s.config, s.globalConfig)
+	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
