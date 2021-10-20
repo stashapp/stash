@@ -79,7 +79,7 @@ func generateTestPaths(testName, ext string) (scenePatterns []string, falseScene
 	// add test cases for intra-name separators
 	for _, separator := range testSeparators {
 		if separator != " " {
-			scenePatterns = append(scenePatterns, generateNamePatterns(strings.Replace(testName, " ", separator, -1), separator, ext)...)
+			scenePatterns = append(scenePatterns, generateNamePatterns(strings.ReplaceAll(testName, " ", separator), separator, ext)...)
 		}
 	}
 

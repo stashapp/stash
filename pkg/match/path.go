@@ -18,7 +18,7 @@ func getPathQueryRegex(name string) string {
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
-	ret := strings.Replace(name, " ", separator+"*", -1)
+	ret := strings.ReplaceAll(name, " ", separator+"*")
 	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
 	return ret
 }
@@ -66,7 +66,7 @@ func nameMatchesPath(name, path string) bool {
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
-	reStr := strings.Replace(name, " ", separator+"*", -1)
+	reStr := strings.ReplaceAll(name, " ", separator+"*")
 	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
 
 	re := regexp.MustCompile(reStr)
@@ -185,7 +185,7 @@ func scenePathsFilter(paths []string) *models.SceneFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{
@@ -249,7 +249,7 @@ func imagePathsFilter(paths []string) *models.ImageFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{
@@ -313,7 +313,7 @@ func galleryPathsFilter(paths []string) *models.GalleryFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{

@@ -6,17 +6,22 @@ import (
 	"fmt"
 )
 
+var ErrUnsupportedFormat = errors.New("unsupported image format")
+
 func (e *Encoder) ImageThumbnail(image *bytes.Buffer, format *string, maxDimensions int, path string) ([]byte, error) {
 	// ffmpeg spends a long sniffing image format when data is piped through stdio, so we pass the format explicitly instead
 	ffmpegformat := ""
-	if format != nil && *format == "jpeg" {
+	if format == nil {
+		return nil, ErrUnsupportedFormat
+	}
+
+	switch *format {
+	case "jpeg":
 		ffmpegformat = "mjpeg"
-	} else if format != nil && *format == "png" {
+	case "png":
 		ffmpegformat = "png_pipe"
-	} else if format != nil && *format == "webp" {
+	case "webp":
 		ffmpegformat = "webp_pipe"
-	} else {
-		return nil, errors.New("unsupported image format")
 	}
 
 	args := []string{
