@@ -437,7 +437,7 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 			Sort:    &sort,
 		}
 
-		scenes, total, _, _, err := r.Scene().Query(sceneFilter, findFilter)
+		scenes, total, err := r.Scene().Query(sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}

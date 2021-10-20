@@ -98,7 +98,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		scenes, _, _, _, err := qb.Query(nil, findFilter)
+		scenes, _, err := qb.Query(nil, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for scenes: %w", err)
 		}
@@ -223,7 +223,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		images, _, _, _, err := qb.Query(nil, findFilter)
+		images, _, err := qb.Query(nil, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for images: %w", err)
 		}

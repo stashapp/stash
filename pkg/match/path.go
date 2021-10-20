@@ -211,7 +211,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	filter.And = scenePathsFilter(paths)
 
 	pp := models.PerPageAll
-	scenes, _, _, _, err := sceneReader.Query(&filter, &models.FindFilterType{
+	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
@@ -275,7 +275,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	filter.And = imagePathsFilter(paths)
 
 	pp := models.PerPageAll
-	images, _, _, _, err := imageReader.Query(&filter, &models.FindFilterType{
+	images, _, err := imageReader.Query(&filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 

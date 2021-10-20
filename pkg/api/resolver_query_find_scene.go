@@ -67,8 +67,6 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var scenes []*models.Scene
 		var count int
-		var duration float64
-		var filesize int
 		var err error
 
 		if len(sceneIDs) > 0 {
@@ -80,7 +78,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 				}
 			}
 		} else {
-			scenes, count, duration, filesize, err = repo.Scene().Query(sceneFilter, filter)
+			scenes, count, err = repo.Scene().Query(sceneFilter, filter)
 		}
 
 		if err != nil {
@@ -88,10 +86,10 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:    count,
-			Scenes:   scenes,
-			Duration: duration,
-			Filesize: filesize,
+			Count:  count,
+			Scenes: scenes,
+			// Duration: duration,
+			// Filesize: filesize,
 		}
 
 		return nil
@@ -122,16 +120,16 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			queryFilter.Q = nil
 		}
 
-		scenes, total, duration, filesize, err := repo.Scene().Query(sceneFilter, queryFilter)
+		scenes, total, err := repo.Scene().Query(sceneFilter, queryFilter)
 		if err != nil {
 			return err
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:    total,
-			Scenes:   scenes,
-			Duration: duration,
-			Filesize: filesize,
+			Count:  total,
+			Scenes: scenes,
+			// Duration: duration,
+			// Filesize: filesize,
 		}
 
 		return nil

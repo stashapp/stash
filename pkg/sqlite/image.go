@@ -283,30 +283,28 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	return &query, nil
 }
 
-func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, float64, int, error) {
+func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
 	query, err := qb.makeQuery(imageFilter, findFilter)
 	if err != nil {
-		return nil, 0, 0, 0, err
+		return nil, 0, err
 	}
 
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
-		return nil, 0, 0, 0, err
+		return nil, 0, err
 	}
-
-	megapixels, fileSize := query.repository.getImageSums(*query)
 
 	var images []*models.Image
 	for _, id := range idsResult {
 		image, err := qb.Find(id)
 		if err != nil {
-			return nil, 0, 0, 0, err
+			return nil, 0, err
 		}
 
 		images = append(images, image)
 	}
 
-	return images, countResult, megapixels, fileSize, nil
+	return images, countResult, nil
 }
 
 func (qb *imageQueryBuilder) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {

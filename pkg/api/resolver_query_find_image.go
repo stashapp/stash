@@ -39,16 +39,16 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (ret *models.FindImagesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		qb := repo.Image()
-		images, total, megapixels, filesize, err := qb.Query(imageFilter, filter)
+		images, total, err := qb.Query(imageFilter, filter)
 		if err != nil {
 			return err
 		}
 
 		ret = &models.FindImagesResultType{
-			Count:      total,
-			Images:     images,
-			Megapixels: megapixels,
-			Filesize:   filesize,
+			Count:  total,
+			Images: images,
+			// Megapixels: megapixels,
+			// Filesize:   filesize,
 		}
 
 		return nil

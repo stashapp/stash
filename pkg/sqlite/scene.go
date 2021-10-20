@@ -395,7 +395,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	return query
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, float64, int, error) {
+func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -416,7 +416,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if err := qb.validateFilter(sceneFilter); err != nil {
-		return nil, 0, 0, 0, err
+		return nil, 0, err
 	}
 	filter := qb.makeFilter(sceneFilter)
 
@@ -427,21 +427,19 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
-		return nil, 0, 0, 0, err
+		return nil, 0, err
 	}
-
-	duration, fileSize := query.repository.getSceneSums(query)
 
 	var scenes []*models.Scene
 	for _, id := range idsResult {
 		scene, err := qb.Find(id)
 		if err != nil {
-			return nil, 0, 0, 0, err
+			return nil, 0, err
 		}
 		scenes = append(scenes, scene)
 	}
 
-	return scenes, countResult, duration, fileSize, nil
+	return scenes, countResult, nil
 }
 
 func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
