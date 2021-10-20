@@ -1,8 +1,48 @@
 package models
 
-type SceneReader interface {
+type SceneQueryOptions struct {
+	QueryOptions
+	SceneFilter *SceneFilterType
+
+	TotalDuration bool
+	TotalSize     bool
+}
+
+type SceneQueryResult struct {
+	QueryResult
+	TotalDuration float64
+	TotalSize     int
+
+	finder     SceneFinder
+	scenes     []*Scene
+	resolveErr error
+}
+
+func NewSceneQueryResult(ids []int, count int, finder SceneFinder) *SceneQueryResult {
+	return &SceneQueryResult{
+		QueryResult: QueryResult{
+			IDs:   ids,
+			Count: count,
+		},
+		finder: finder,
+	}
+}
+
+func (r *SceneQueryResult) Resolve() ([]*Scene, error) {
+	// cache results
+	if r.scenes == nil && r.resolveErr == nil {
+		r.scenes, r.resolveErr = r.finder.FindMany(r.IDs)
+	}
+	return r.scenes, r.resolveErr
+}
+
+type SceneFinder interface {
 	Find(id int) (*Scene, error)
 	FindMany(ids []int) ([]*Scene, error)
+}
+
+type SceneReader interface {
+	SceneFinder
 	FindByChecksum(checksum string) (*Scene, error)
 	FindByOSHash(oshash string) (*Scene, error)
 	FindByPath(path string) (*Scene, error)
@@ -24,6 +64,7 @@ type SceneReader interface {
 	Wall(q *string) ([]*Scene, error)
 	All() ([]*Scene, error)
 	Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int, error)
+	// QueryEx(options SceneQueryOptions) (*SceneQueryResult, error)
 	GetCover(sceneID int) ([]byte, error)
 	GetMovies(sceneID int) ([]MoviesScenes, error)
 	GetTagIDs(sceneID int) ([]int, error)

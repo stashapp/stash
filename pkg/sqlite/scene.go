@@ -396,6 +396,29 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 }
 
 func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+	result, err := qb.QueryEx(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		SceneFilter: sceneFilter,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	scenes, err := result.Resolve()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return scenes, result.Count, nil
+}
+
+func (qb *sceneQueryBuilder) QueryEx(options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+	sceneFilter := options.SceneFilter
+	findFilter := options.FindFilter
+
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -416,7 +439,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if err := qb.validateFilter(sceneFilter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	filter := qb.makeFilter(sceneFilter)
 
@@ -425,21 +448,13 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
 
+	// TODO - count is optional - other grouped stuff
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	var scenes []*models.Scene
-	for _, id := range idsResult {
-		scene, err := qb.Find(id)
-		if err != nil {
-			return nil, 0, err
-		}
-		scenes = append(scenes, scene)
-	}
-
-	return scenes, countResult, nil
+	return models.NewSceneQueryResult(idsResult, countResult, qb), nil
 }
 
 func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
