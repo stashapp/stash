@@ -8,9 +8,10 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
+
 import { Icon } from "src/components/Shared";
-import { ParseMode, TagOperation } from "./constants";
-import { TaggerStateContext } from "./context";
+import { ParseMode, TagOperation } from "../constants";
+import { TaggerStateContext } from "../context";
 
 interface IConfigProps {
   show: boolean;

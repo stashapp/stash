@@ -3,15 +3,17 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import cx from "classnames";
 
-import { Icon, StudioSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { ValidTypes } from "src/components/Shared/Select";
+import {
+  Icon,
+  OperationButton,
+  PerformerSelect,
+  ValidTypes,
+} from "src/components/Shared";
+import { OptionalField } from "../IncludeButton";
 
-import { OptionalField } from "./IncludeButton";
-import { OperationButton } from "../Shared/OperationButton";
-
-interface IStudioResultProps {
-  studio: GQL.ScrapedStudio;
+interface IPerformerResultProps {
+  performer: GQL.ScrapedPerformer;
   selectedID: string | undefined;
   setSelectedID: (id: string | undefined) => void;
   onCreate: () => void;
@@ -19,57 +21,60 @@ interface IStudioResultProps {
   endpoint?: string;
 }
 
-const StudioResult: React.FC<IStudioResultProps> = ({
-  studio,
+const PerformerResult: React.FC<IPerformerResultProps> = ({
+  performer,
   selectedID,
   setSelectedID,
   onCreate,
   onLink,
   endpoint,
 }) => {
-  const { data: studioData, loading: stashLoading } = GQL.useFindStudioQuery({
-    variables: { id: studio.stored_id ?? "" },
-    skip: !studio.stored_id,
+  const {
+    data: performerData,
+    loading: stashLoading,
+  } = GQL.useFindPerformerQuery({
+    variables: { id: performer.stored_id ?? "" },
+    skip: !performer.stored_id,
   });
 
-  const matchedStudio = studioData?.findStudio;
-  const matchedStashID = matchedStudio?.stash_ids.some(
+  const matchedPerformer = performerData?.findPerformer;
+  const matchedStashID = matchedPerformer?.stash_ids.some(
     (stashID) => stashID.endpoint === endpoint && stashID.stash_id
   );
 
-  const handleSelect = (studios: ValidTypes[]) => {
-    if (studios.length) {
-      setSelectedID(studios[0].id);
+  const handlePerformerSelect = (performers: ValidTypes[]) => {
+    if (performers.length) {
+      setSelectedID(performers[0].id);
     } else {
       setSelectedID(undefined);
     }
   };
 
-  const handleSkip = () => {
+  const handlePerformerSkip = () => {
     setSelectedID(undefined);
   };
 
-  if (stashLoading) return <div>Loading studio</div>;
+  if (stashLoading) return <div>Loading performer</div>;
 
-  if (matchedStudio && matchedStashID) {
+  if (matchedPerformer && matchedStashID) {
     return (
       <div className="row no-gutters my-2">
         <div className="entity-name">
-          <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
-          <b className="ml-2">{studio.name}</b>
+          <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
+          <b className="ml-2">{performer.name}</b>
         </div>
         <span className="ml-auto">
           <OptionalField
             exclude={selectedID === undefined}
             setExclude={(v) =>
-              v ? handleSkip() : setSelectedID(matchedStudio.id)
+              v ? handlePerformerSkip() : setSelectedID(matchedPerformer.id)
             }
           >
             <div>
               <span className="mr-2">
                 <FormattedMessage id="component_tagger.verb_matched" />:
               </span>
-              <b className="col-3 text-right">{matchedStudio.name}</b>
+              <b className="col-3 text-right">{matchedPerformer.name}</b>
             </div>
           </OptionalField>
         </span>
@@ -97,8 +102,8 @@ const StudioResult: React.FC<IStudioResultProps> = ({
   return (
     <div className="row no-gutters align-items-center mt-2">
       <div className="entity-name">
-        <FormattedMessage id="countables.studios" values={{ count: 1 }} />:
-        <b className="ml-2">{studio.name}</b>
+        <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
+        <b className="ml-2">{performer.name}</b>
       </div>
       <ButtonGroup>
         <Button variant="secondary" onClick={() => onCreate()}>
@@ -106,15 +111,15 @@ const StudioResult: React.FC<IStudioResultProps> = ({
         </Button>
         <Button
           variant={selectedSource === "skip" ? "primary" : "secondary"}
-          onClick={() => handleSkip()}
+          onClick={() => handlePerformerSkip()}
         >
           <FormattedMessage id="actions.skip" />
         </Button>
-        <StudioSelect
+        <PerformerSelect
           ids={selectedID ? [selectedID] : []}
-          onSelect={handleSelect}
-          className={cx("studio-select", {
-            "studio-select-active": selectedSource === "existing",
+          onSelect={handlePerformerSelect}
+          className={cx("performer-select", {
+            "performer-select-active": selectedSource === "existing",
           })}
           isClearable={false}
         />
@@ -124,4 +129,4 @@ const StudioResult: React.FC<IStudioResultProps> = ({
   );
 };
 
-export default StudioResult;
+export default PerformerResult;
