@@ -313,6 +313,7 @@
           "merge": "Merge",
           "overwrite": "Overwrite"
         },
+        "identifying_scenes": "Identifying {num} {scene}",
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organized flag",

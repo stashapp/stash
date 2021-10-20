@@ -27,7 +27,7 @@ interface IIdentifyDialogProps {
 }
 
 export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
-  // selectedIds,
+  selectedIds,
   onClose,
 }) => {
   function getDefaultOptions(): GQL.IdentifyMetadataOptionsInput {
@@ -96,6 +96,30 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
 
     return ret;
   }, [configData, scraperData]);
+
+  const selectionStatus = useMemo(() => {
+    if (selectedIds) {
+      return (
+        <Form.Group id="selected-identify-ids">
+          <FormattedMessage
+            id="config.tasks.identify.identifying_scenes"
+            values={{
+              num: selectedIds.length,
+              scene: intl.formatMessage(
+                {
+                  id: "countables.scenes",
+                },
+                {
+                  count: selectedIds.length,
+                }
+              ),
+            }}
+          />
+          .
+        </Form.Group>
+      );
+    }
+  }, [selectedIds, intl]);
 
   useEffect(() => {
     if (!configData || !allSources) return;
@@ -181,6 +205,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         };
       }),
       options,
+      sceneIDs: selectedIds,
     };
   }
 
@@ -304,6 +329,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       }
     >
       <Form>
+        {selectionStatus}
         <SourcesList
           sources={sources}
           setSources={(s) => setSources(s)}
