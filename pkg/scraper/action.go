@@ -1,6 +1,8 @@
 package scraper
 
 import (
+	"net/http"
+
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -38,16 +40,16 @@ type scraperActionImpl interface {
 	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
 }
 
-func (c config) getScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, globalConfig GlobalConfig) scraperActionImpl {
+func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraperActionImpl {
 	switch scraper.Action {
 	case scraperActionScript:
 		return newScriptScraper(scraper, c, globalConfig)
 	case scraperActionStash:
-		return newStashScraper(scraper, txnManager, c, globalConfig)
+		return newStashScraper(scraper, client, txnManager, c, globalConfig)
 	case scraperActionXPath:
-		return newXpathScraper(scraper, txnManager, c, globalConfig)
+		return newXpathScraper(scraper, client, txnManager, c, globalConfig)
 	case scraperActionJson:
-		return newJsonScraper(scraper, txnManager, c, globalConfig)
+		return newJsonScraper(scraper, client, txnManager, c, globalConfig)
 	}
 
 	panic("unknown scraper action: " + scraper.Action)
