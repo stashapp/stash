@@ -514,14 +514,8 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	var totals totalsGenerate
 	const timeout = 90 * time.Second
 
-	// create a control channel through which to signal the counting loop when the timeout is reached
-	chTimeout := make(chan struct{})
-
-	//run the timeout function in a separate thread
-	go func() {
-		time.Sleep(timeout)
-		chTimeout <- struct{}{}
-	}()
+	// Set a deadline.
+	chTimeout := time.After(timeout)
 
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	overwrite := false
@@ -592,7 +586,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 		}
-		//check for timeout
+		// check for timeout
 		select {
 		case <-chTimeout:
 			return nil

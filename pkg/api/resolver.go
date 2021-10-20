@@ -164,7 +164,7 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 	}, nil
 }
 
-//Gets latest version (git shorthash commit for now)
+// Latestversion returns the latest git shorthash commit.
 func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion, error) {
 	ver, url, err := GetLatestVersion(ctx, true)
 	if err == nil {
