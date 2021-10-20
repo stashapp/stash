@@ -306,7 +306,7 @@
         "heading": "Identify",
         "description": "Automatically set scene metadata using stash-box and scraper sources.",
         "default_options": "Default Options",
-        "explicit_set_description": "Default options will be used where source-specific options are not set.",
+        "explicit_set_description": "The following options will be used where not overridden in the source-specific options.",
         "field_behaviour": "{strategy} {field}",
         "field_options": "Field Options",
         "field_strategies": {
@@ -318,7 +318,7 @@
         "identifying_from_paths": "Identifying scenes from the following paths",
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
-        "set_organized": "Set organized flag",
+        "set_organized": "Set organised flag",
         "source_options": "{source} Options",
         "source": "Source",
         "sources": "Sources"

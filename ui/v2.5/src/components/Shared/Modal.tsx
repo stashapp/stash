@@ -22,6 +22,7 @@ interface IModal {
   modalProps?: ModalProps;
   dialogClassName?: string;
   footerButtons?: React.ReactNode;
+  leftFooterButtons?: React.ReactNode;
 }
 
 const defaultOnHide = () => {};
@@ -39,8 +40,10 @@ const ModalComponent: React.FC<IModal> = ({
   modalProps,
   dialogClassName,
   footerButtons,
+  leftFooterButtons,
 }) => (
   <Modal
+    className="ModalComponent"
     keyboard={false}
     onHide={onHide ?? defaultOnHide}
     show={show}
@@ -52,7 +55,8 @@ const ModalComponent: React.FC<IModal> = ({
       <span>{header ?? ""}</span>
     </Modal.Header>
     <Modal.Body>{children}</Modal.Body>
-    <Modal.Footer>
+    <Modal.Footer className="ModalFooter">
+      <div>{leftFooterButtons}</div>
       <div>
         {footerButtons}
         {cancel ? (

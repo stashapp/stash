@@ -16,6 +16,7 @@ import {
   STASH_BOX_PREFIX,
 } from "src/components/Tagger/constants";
 import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
+import { Manual } from "src/components/Help/Manual";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
@@ -55,6 +56,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     IScraperSource | undefined
   >();
   const [paths, setPaths] = useState<string[]>([]);
+  const [showManual, setShowManual] = useState(false);
   const [settingPaths, setSettingPaths] = useState(false);
   const [animation, setAnimation] = useState(true);
   const [editingField, setEditingField] = useState(false);
@@ -305,6 +307,11 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     }
   }
 
+  function onShowManual() {
+    setAnimation(false);
+    setShowManual(true);
+  }
+
   function isNewSource() {
     return !!editingSource && !sources.includes(editingSource);
   }
@@ -373,6 +380,17 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     );
   }
 
+  if (showManual) {
+    return (
+      <Manual
+        animation={false}
+        show
+        onClose={() => setShowManual(false)}
+        defaultActiveTab="Identify.md"
+      />
+    );
+  }
+
   return (
     <Modal
       modalProps={{ animation, size: "lg" }}
@@ -399,6 +417,15 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
             <Spinner animation="border" role="status" size="sm" />
           )}
           <FormattedMessage id="actions.set_as_default" />
+        </Button>
+      }
+      leftFooterButtons={
+        <Button
+          title="Help"
+          className="minimal help-button"
+          onClick={() => onShowManual()}
+        >
+          <Icon icon="question-circle" />
         </Button>
       }
     >

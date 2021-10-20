@@ -250,3 +250,7 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     border-top-right-radius: 0;
   }
 }
+
+.ModalComponent .modal-footer {
+  justify-content: space-between;
+}
