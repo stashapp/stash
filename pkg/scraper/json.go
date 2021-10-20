@@ -131,7 +131,7 @@ func (s *jsonScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerf
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 
@@ -160,7 +160,7 @@ func (s *jsonScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, e
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 

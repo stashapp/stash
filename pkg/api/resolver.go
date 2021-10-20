@@ -2,12 +2,18 @@ package api
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+)
+
+var (
+	ErrNotImplemented = errors.New("not implemented")
+	ErrNotSupported   = errors.New("not supported")
 )
 
 type hookExecutor interface {

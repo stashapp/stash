@@ -61,11 +61,12 @@ func (p *Progress) SetProcessed(processed int) {
 }
 
 func (p *Progress) calculatePercent() {
-	if p.total <= 0 {
+	switch {
+	case p.total <= 0:
 		p.percent = ProgressIndefinite
-	} else if p.processed < 0 {
+	case p.processed < 0:
 		p.percent = 0
-	} else {
+	default:
 		p.percent = float64(p.processed) / float64(p.total)
 		if p.percent > 1 {
 			p.percent = 1

@@ -97,7 +97,7 @@ func (c *autotagSceneScraper) scrapeByScene(scene *models.Scene) (*models.Scrape
 	var ret *models.ScrapedScene
 
 	// populate performers, studio and tags based on scene path
-	if err := c.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		path := scene.Path
 		performers, err := c.matchPerformers(path, r.Performer())
 		if err != nil {
@@ -150,7 +150,7 @@ func (c *autotagGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*model
 	var ret *models.ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
-	if err := c.txnManager.WithReadTxn(context.Background(), func(r models.ReaderRepository) error {
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		path := gallery.Path.String
 		performers, err := c.matchPerformers(path, r.Performer())
 		if err != nil {

@@ -112,7 +112,7 @@ func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 
@@ -141,7 +141,7 @@ func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 	escapedName := url.QueryEscape(name)
 
 	url := s.scraper.QueryURL
-	url = strings.Replace(url, placeholder, escapedName, -1)
+	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(context.TODO(), url)
 

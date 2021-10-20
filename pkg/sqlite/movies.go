@@ -225,12 +225,13 @@ func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.M
 			)`, args...)
 			f.addJoin("movies_performers", "", "movies.id = movies_performers.movie_id")
 
-			if performers.Modifier == models.CriterionModifierIncludes {
+			switch performers.Modifier {
+			case models.CriterionModifierIncludes:
 				f.addWhere("movies_performers.performer_id IS NOT NULL")
-			} else if performers.Modifier == models.CriterionModifierIncludesAll {
+			case models.CriterionModifierIncludesAll:
 				f.addWhere("movies_performers.performer_id IS NOT NULL")
 				f.addHaving("COUNT(DISTINCT movies_performers.performer_id) = ?", len(performers.Value))
-			} else if performers.Modifier == models.CriterionModifierExcludes {
+			case models.CriterionModifierExcludes:
 				f.addWhere("movies_performers.performer_id IS NULL")
 			}
 		}

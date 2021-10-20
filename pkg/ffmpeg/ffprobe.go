@@ -116,7 +116,7 @@ func IsValidCodec(codecName string, supportedCodecs []string) bool {
 	return false
 }
 
-func IsValidAudio(audio AudioCodec, ValidCodecs []AudioCodec) bool {
+func IsValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
 
 	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
 	// report it as valid so that the file can at least be streamed directly if the video codec is supported
@@ -124,7 +124,7 @@ func IsValidAudio(audio AudioCodec, ValidCodecs []AudioCodec) bool {
 		return true
 	}
 
-	for _, c := range ValidCodecs {
+	for _, c := range validCodecs {
 		if c == audio {
 			return true
 		}
