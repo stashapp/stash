@@ -2,7 +2,7 @@ query FindImages($filter: FindFilterType, $image_filter: ImageFilterType, $image
   findImages(filter: $filter, image_filter: $image_filter, image_ids: $image_ids) {
     count
     megapixels
-    filesizeBytes
+    filesize
     images {
       ...SlimImageData
     }

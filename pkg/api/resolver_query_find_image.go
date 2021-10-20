@@ -45,10 +45,10 @@ func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.Imag
 		}
 
 		ret = &models.FindImagesResultType{
-			Count:         total,
-			Images:        images,
-			Megapixels:    megapixels,
-			FilesizeBytes: filesize,
+			Count:      total,
+			Images:     images,
+			Megapixels: megapixels,
+			Filesize:   filesize,
 		}
 
 		return nil

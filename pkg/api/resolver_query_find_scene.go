@@ -88,10 +88,10 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:           count,
-			Scenes:          scenes,
-			DurationSeconds: duration,
-			FilesizeBytes:   filesize,
+			Count:    count,
+			Scenes:   scenes,
+			Duration: duration,
+			Filesize: filesize,
 		}
 
 		return nil
@@ -128,10 +128,10 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:           total,
-			Scenes:          scenes,
-			DurationSeconds: duration,
-			FilesizeBytes:   filesize,
+			Count:    total,
+			Scenes:   scenes,
+			Duration: duration,
+			Filesize: filesize,
 		}
 
 		return nil
