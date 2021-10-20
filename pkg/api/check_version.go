@@ -16,7 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-//we use the github REST V3 API as no login is required
+// we use the github REST V3 API as no login is required
 const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
 const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
