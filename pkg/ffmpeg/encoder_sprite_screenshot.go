@@ -22,7 +22,7 @@ func (e *Encoder) SpriteScreenshot(probeResult VideoFile, options SpriteScreensh
 		"-f", "rawvideo",
 		"-",
 	}
-	data, err := e.run(probeResult, args)
+	data, err := e.run(probeResult.Path, args, nil)
 	if err != nil {
 		return nil, err
 	}

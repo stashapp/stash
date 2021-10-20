@@ -3,12 +3,10 @@ package scraper
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -18,53 +16,38 @@ import (
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/net/html/charset"
-	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-// Timeout for the scrape http request. Includes transfer time. May want to make this
-// configurable at some point.
-const scrapeGetTimeout = time.Second * 60
 const scrapeDefaultSleep = time.Second * 2
 
-func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
+func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
-		return urlFromCDP(url, *driverOptions, globalConfig)
+		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
 	}
 
-	// get the page using http.Client
-	options := cookiejar.Options{
-		PublicSuffixList: publicsuffix.List,
-	}
-	jar, er := cookiejar.New(&options)
-	if er != nil {
-		return nil, er
-	}
-
-	setCookies(jar, scraperConfig)
-	printCookies(jar, scraperConfig, "Jar cookies set from scraper")
-
-	client := &http.Client{
-		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
-		},
-		Timeout: scrapeGetTimeout,
-		// defaultCheckRedirect code with max changed from 10 to 20
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 20 {
-				return errors.New("stopped after 20 redirects")
-			}
-			return nil
-		},
-		Jar: jar,
-	}
-
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	jar, err := scraperConfig.jar()
+	if err != nil {
+		return nil, fmt.Errorf("error creating cookie jar: %w", err)
+	}
+
+	u, err := url.Parse(loadURL)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url %s: %w", loadURL, err)
+	}
+
+	// Fetch relevant cookies from the jar for url u and add them to the request
+	cookies := jar.Cookies(u)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
 	}
 
 	userAgent := globalConfig.GetScraperUserAgent()
@@ -98,14 +81,13 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 
 	bodyReader := bytes.NewReader(body)
 	printCookies(jar, scraperConfig, "Jar cookies found for scraper urls")
-
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
 
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
+func urlFromCDP(ctx context.Context, url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
 
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("url shouldn't be fetched through CDP")
@@ -117,7 +99,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 		sleepDuration = time.Duration(driverOptions.Sleep) * time.Second
 	}
 
-	act := context.Background()
+	act := context.TODO()
 
 	// if scraperCDPPath is a remote address, then allocate accordingly
 	cdpPath := globalConfig.GetScraperCDPPath()
@@ -130,13 +112,13 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 			// if CDPPath is http(s) then we need to get the websocket URL
 			if isCDPPathHTTP(globalConfig) {
 				var err error
-				remote, err = getRemoteCDPWSAddress(remote)
+				remote, err = getRemoteCDPWSAddress(ctx, remote)
 				if err != nil {
 					return nil, err
 				}
 			}
 
-			act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
+			act, cancelAct = chromedp.NewRemoteAllocator(act, remote)
 		} else {
 			// use a temporary user directory for chrome
 			dir, err := os.MkdirTemp("", "stash-chromedp")
@@ -218,8 +200,13 @@ func setCDPClicks(driverOptions scraperDriverOptions) chromedp.Tasks {
 }
 
 // getRemoteCDPWSAddress returns the complete remote address that is required to access the cdp instance
-func getRemoteCDPWSAddress(address string) (string, error) {
-	resp, err := http.Get(address)
+func getRemoteCDPWSAddress(ctx context.Context, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}

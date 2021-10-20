@@ -84,7 +84,9 @@
     "select_folders": "選擇資料夾",
     "browse_for_image": "選擇圖像…",
     "open_random": "隨機開啟",
-    "scrape_query": "爬蟲搜尋關鍵字"
+    "scrape_query": "爬蟲搜尋關鍵字",
+    "stop": "停止",
+    "scrape_scene_fragment": "部分爬取"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -118,7 +120,8 @@
       "set_tag_label": "標籤設定",
       "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
       "show_male_label": "顯示男優",
-      "query_mode_metadata": "Metadata"
+      "query_mode_metadata": "Metadata",
+      "source": "來源"
     },
     "noun_query": "關鍵字",
     "results": {
@@ -130,13 +133,15 @@
       "match_failed_no_result": "未找到結果",
       "match_success": "已成功標記短片",
       "duration_off": "片長差至少 {number} 秒",
-      "duration_unknown": "未知片長"
+      "duration_unknown": "未知片長",
+      "unnamed": "未命名"
     },
     "verb_match_fp": "特徵碼辨別",
     "verb_matched": "符合",
     "verb_submit_fp": "{fpCount, plural, other{提交 # 個特徵碼}}",
     "verb_toggle_config": "{toggle}{configuration}",
-    "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片"
+    "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片",
+    "verb_scrape_all": "爬取所有"
   },
   "config": {
     "about": {
@@ -192,7 +197,9 @@
         "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
         "stash-box_integration": "整合 Stash-box",
         "username": "用戶名",
-        "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
+        "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證",
+        "trusted_proxies": "已信任代理伺服器",
+        "trusted_proxies_desc": "允許代理 stash 流量的代理伺服器列表。留空以允許內網。"
       },
       "cache_location": "快取的檔案位置",
       "cache_path_head": "快取路徑",
@@ -238,7 +245,11 @@
       "video_ext_head": "影片副檔名",
       "video_head": "影片設定",
       "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
-      "include_audio_head": "包含音訊"
+      "include_audio_head": "包含音訊",
+      "metadata_path": {
+        "heading": "Metadata 路徑",
+        "description": "進行完整匯出或匯入時所使用的檔案位置"
+      }
     },
     "logs": {
       "log_level": "日誌級別"
@@ -287,7 +298,8 @@
       "only_dry_run": "僅模擬作業，不要刪除任何東西",
       "plugin_tasks": "插件排程",
       "scan_for_content_desc": "掃描新內容，並將其新增到資料庫中。",
-      "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）"
+      "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）",
+      "generate_thumbnails_during_scan": "掃描圖片時，順便產生縮圖。"
     },
     "tools": {
       "scene_duplicate_checker": "短片相近性檢查工具",
@@ -369,6 +381,25 @@
             "heading": "自訂演員圖像路徑"
           }
         }
+      },
+      "funscript_offset": {
+        "description": "互動式腳本的時間偏移量 (毫秒)。",
+        "heading": "Funscript 偏移量 (毫秒)"
+      },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "heading": "建立圖片縮圖",
+            "description": "建立縮圖時，將檔案寫至磁碟中"
+          }
+        }
+      },
+      "editing": {
+        "heading": "編輯",
+        "disable_dropdown_create": {
+          "description": "關閉下拉選單建立物件功能",
+          "heading": "關閉下拉選單建立"
+        }
       }
     },
     "plugins": {
@@ -440,7 +471,9 @@
       "preview_seg_duration_head": "預覽片段長度",
       "sprites": "時間軸預覽（用於短片中時間軸的預覽圖）",
       "transcodes": "轉碼（將不支援的影片格式轉換成 MP4）",
-      "video_previews": "影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）"
+      "video_previews": "影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）",
+      "marker_image_previews": "章節預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
+      "marker_screenshots": "章節截圖（靜態 JPG 預覽，僅當預覽類型設置為『靜態』時才需要）"
     },
     "scrape_entity_title": "{entity_type}爬取結果",
     "scrape_results_existing": "現有資訊",
@@ -453,7 +486,28 @@
     },
     "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
     "scenes_found": "已找到 {count} 個短片",
-    "scrape_entity_query": "{entity_type}爬蟲搜尋"
+    "scrape_entity_query": "{entity_type}爬蟲搜尋",
+    "lightbox": {
+      "delay": "延遲 (秒)",
+      "display_mode": {
+        "fit_horizontally": "橫向置放",
+        "label": "顯示模式",
+        "fit_to_screen": "適應螢幕大小",
+        "original": "原始"
+      },
+      "options": "選項",
+      "reset_zoom_on_nav": "當更換圖片時，重置縮放大小",
+      "scale_up": {
+        "label": "縮放適應",
+        "description": "將較小的圖片放大，以填滿整個畫面"
+      },
+      "scroll_mode": {
+        "description": "按住 Shift 以暫時使用其他模式。",
+        "pan_y": "Y 軸滑動",
+        "label": "滑動模式",
+        "zoom": "放大"
+      }
+    }
   },
   "dimensions": "解析度",
   "director": "導演",
@@ -636,5 +690,11 @@
   "include_sub_studios": "包含子工作室",
   "include_sub_tags": "包含子標籤",
   "parent_tags": "母標籤",
-  "sub_tags": "子標籤"
+  "sub_tags": "子標籤",
+  "include_parent_tags": "包含母標籤",
+  "parent_tag_count": "母標籤數量",
+  "sub_tag_count": "子標籤數量",
+  "parent_of": "{children} 的母物件",
+  "sub_tag_of": "{parent} 的子標籤",
+  "part_of": "{parent} 的一部分"
 }

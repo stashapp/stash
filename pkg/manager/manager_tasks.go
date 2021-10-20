@@ -19,17 +19,17 @@ import (
 
 func isGallery(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
-	return matchExtension(pathname, gExt)
+	return utils.MatchExtension(pathname, gExt)
 }
 
 func isVideo(pathname string) bool {
 	vidExt := config.GetInstance().GetVideoExtensions()
-	return matchExtension(pathname, vidExt)
+	return utils.MatchExtension(pathname, vidExt)
 }
 
 func isImage(pathname string) bool {
 	imgExt := config.GetInstance().GetImageExtensions()
-	return matchExtension(pathname, imgExt)
+	return utils.MatchExtension(pathname, imgExt)
 }
 
 func getScanPaths(inputPaths []string) []*models.StashConfig {
@@ -90,7 +90,7 @@ func (s *singleton) Import(ctx context.Context) (int, error) {
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start()
+		task.Start(ctx)
 	})
 
 	return s.JobManager.Add(ctx, "Importing...", j), nil
@@ -122,7 +122,7 @@ func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
 	wg.Add(1)
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		t.Start()
+		t.Start(ctx)
 		wg.Done()
 	})
 
@@ -514,14 +514,8 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	var totals totalsGenerate
 	const timeout = 90 * time.Second
 
-	// create a control channel through which to signal the counting loop when the timeout is reached
-	chTimeout := make(chan struct{})
-
-	//run the timeout function in a separate thread
-	go func() {
-		time.Sleep(timeout)
-		chTimeout <- struct{}{}
-	}()
+	// Set a deadline.
+	chTimeout := time.After(timeout)
 
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	overwrite := false
@@ -592,7 +586,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 				}
 			}
 		}
-		//check for timeout
+		// check for timeout
 		select {
 		case <-chTimeout:
 			return nil
@@ -616,7 +610,13 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 
 		var tasks []StashBoxPerformerTagTask
 
-		if len(input.PerformerIds) > 0 {
+		// The gocritic linter wants to turn this ifElseChain into a switch.
+		// however, such a switch would contain quite large blocks for each section
+		// and would arguably be hard to read.
+		//
+		// This is why we mark this section nolint. In principle, we should look to
+		// rewrite the section at some point, to avoid the linter warning.
+		if len(input.PerformerIds) > 0 { //nolint:gocritic
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 
@@ -652,7 +652,11 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 					})
 				}
 			}
-		} else {
+		} else { //nolint:gocritic
+			// The gocritic linter wants to fold this if-block into the else on the line above.
+			// However, this doesn't really help with readability of the current section. Mark it
+			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
+			// this into separate functions.
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 				var performers []*models.Performer

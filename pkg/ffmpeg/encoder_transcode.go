@@ -67,9 +67,9 @@ func (e *Encoder) Transcode(probeResult VideoFile, options TranscodeOptions) {
 	_, _ = e.runTranscode(probeResult, args)
 }
 
-//transcode the video, remove the audio
-//in some videos where the audio codec is not supported by ffmpeg
-//ffmpeg fails if you try to transcode the audio
+// TranscodeVideo transcodes the video, and removes the audio.
+// In some videos where the audio codec is not supported by ffmpeg,
+// ffmpeg fails if you try to transcode the audio
 func (e *Encoder) TranscodeVideo(probeResult VideoFile, options TranscodeOptions) {
 	scale := calculateTranscodeScale(probeResult, options.MaxTranscodeSize)
 	args := []string{
@@ -87,7 +87,7 @@ func (e *Encoder) TranscodeVideo(probeResult VideoFile, options TranscodeOptions
 	_, _ = e.runTranscode(probeResult, args)
 }
 
-//copy the video stream as is, transcode audio
+// TranscodeAudio will copy the video stream as is, and transcode audio.
 func (e *Encoder) TranscodeAudio(probeResult VideoFile, options TranscodeOptions) {
 	args := []string{
 		"-i", probeResult.Path,
@@ -99,7 +99,7 @@ func (e *Encoder) TranscodeAudio(probeResult VideoFile, options TranscodeOptions
 	_, _ = e.runTranscode(probeResult, args)
 }
 
-//copy the video stream as is, drop audio
+// CopyVideo will copy the video stream as is, and drop the audio stream.
 func (e *Encoder) CopyVideo(probeResult VideoFile, options TranscodeOptions) {
 	args := []string{
 		"-i", probeResult.Path,

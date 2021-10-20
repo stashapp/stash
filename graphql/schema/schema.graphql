@@ -7,7 +7,7 @@ type Query {
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
   findSceneByHash(input: SceneHashInput!): Scene
-  
+
   """A function which queries Scene objects"""
   findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
 
@@ -25,7 +25,7 @@ type Query {
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
 
   findImage(id: ID, checksum: String): Image
-  
+
   """A function which queries Scene objects"""
   findImages(image_filter: ImageFilterType, image_ids: [Int!], filter: FindFilterType): FindImagesResultType!
 
@@ -127,7 +127,12 @@ type Query {
   """Returns the current, complete configuration"""
   configuration: ConfigResult!
   """Returns an array of paths for the given path"""
-  directory(path: String): Directory!
+  directory(
+    "The directory path to list"
+    path: String,
+    "Desired collation locale. Determines the order of the directory result. eg. 'en-US', 'pt-BR', ..."
+    locale: String = "en"
+  ): Directory!
 
   # System status
   systemStatus: SystemStatus!
@@ -149,7 +154,7 @@ type Query {
 
   # Version
   version: Version!
-  
+
   # LatestVersion
   latestversion: ShortVersion!
 }
@@ -275,7 +280,7 @@ type Mutation {
 
   """Run batch performer tag task. Returns the job ID."""
   stashBoxBatchPerformerTag(input: StashBoxBatchPerformerTagInput!): String!
-  
+
   """Enables DLNA for an optional duration. Has no effect if DLNA is enabled by default"""
   enableDLNA(input: EnableDLNAInput!): Boolean!
   """Disables DLNA for an optional duration. Has no effect if DLNA is disabled by default"""

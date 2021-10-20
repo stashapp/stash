@@ -69,7 +69,7 @@ func (p queryURLParameters) applyReplacements(r queryURLReplacements) {
 func (p queryURLParameters) constructURL(url string) string {
 	ret := url
 	for k, v := range p {
-		ret = strings.Replace(ret, "{"+k+"}", v, -1)
+		ret = strings.ReplaceAll(ret, "{"+k+"}", v)
 	}
 
 	return ret

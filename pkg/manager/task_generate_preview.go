@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -27,7 +26,8 @@ func (t *GeneratePreviewTask) Start() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	ffprobe := instance.FFProbe
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

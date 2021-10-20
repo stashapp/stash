@@ -32,7 +32,7 @@ func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 
 	ret := src
 	for commonKey, commonVal := range c {
-		ret = strings.Replace(ret, commonKey, commonVal, -1)
+		ret = strings.ReplaceAll(ret, commonKey, commonVal)
 	}
 
 	return ret
@@ -486,7 +486,7 @@ func (p *postProcessLbToKg) Apply(value string, q mappedQuery) string {
 	const lb_in_kg = 0.45359237
 	w, err := strconv.ParseFloat(value, 64)
 	if err == nil {
-		w = w * lb_in_kg
+		w *= lb_in_kg
 		value = strconv.Itoa(int(math.Round(w)))
 	}
 	return value
@@ -576,7 +576,7 @@ type mappedScraperAttrConfig struct {
 
 	postProcessActions []postProcessAction
 
-	// deprecated: use PostProcess instead
+	// Deprecated: use PostProcess instead
 	ParseDate  string                   `yaml:"parseDate"`
 	Replace    mappedRegexConfigs       `yaml:"replace"`
 	SubScraper *mappedScraperAttrConfig `yaml:"subScraper"`

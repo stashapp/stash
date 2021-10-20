@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Yamashou/gqlgenc/client"
 
@@ -17,10 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/utils"
 )
-
-// Timeout to get the image. Includes transfer time. May want to make this
-// configurable at some point.
-const imageGetTimeout = time.Second * 30
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
@@ -44,9 +39,13 @@ func NewClient(box models.StashBox, txnManager models.TransactionManager) *Clien
 	}
 }
 
+func (c Client) getHTTPClient() *http.Client {
+	return c.client.Client.Client
+}
+
 // QueryStashBoxScene queries stash-box for scenes using a query string.
-func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, error) {
-	scenes, err := c.client.SearchScene(context.TODO(), queryStr)
+func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*models.ScrapedScene, error) {
+	scenes, err := c.client.SearchScene(ctx, queryStr)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +54,7 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(c.txnManager, s)
+		ss, err := sceneFragmentToScrapedScene(context.TODO(), c.getHTTPClient(), c.txnManager, s)
 		if err != nil {
 			return nil, err
 		}
@@ -69,6 +68,8 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
 func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models.ScrapedScene, error) {
+	ctx := context.TODO()
+
 	ids, err := utils.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
@@ -78,7 +79,7 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models
 	// map fingerprints to their scene index
 	fpToScene := make(map[string][]int)
 
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 
 		for index, sceneID := range ids {
@@ -113,7 +114,7 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models
 		return nil, err
 	}
 
-	allScenes, err := c.findStashBoxScenesByFingerprints(fingerprints)
+	allScenes, err := c.findStashBoxScenesByFingerprints(ctx, fingerprints)
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +140,8 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([][]*models
 // FindStashBoxScenesByFingerprintsFlat queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results a flat slice.
 func (c Client) FindStashBoxScenesByFingerprintsFlat(sceneIDs []string) ([]*models.ScrapedScene, error) {
+	ctx := context.TODO()
+
 	ids, err := utils.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
@@ -146,7 +149,7 @@ func (c Client) FindStashBoxScenesByFingerprintsFlat(sceneIDs []string) ([]*mode
 
 	var fingerprints []string
 
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 
 		for _, sceneID := range ids {
@@ -178,17 +181,17 @@ func (c Client) FindStashBoxScenesByFingerprintsFlat(sceneIDs []string) ([]*mode
 		return nil, err
 	}
 
-	return c.findStashBoxScenesByFingerprints(fingerprints)
+	return c.findStashBoxScenesByFingerprints(ctx, fingerprints)
 }
 
-func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*models.ScrapedScene, error) {
+func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, fingerprints []string) ([]*models.ScrapedScene, error) {
 	var ret []*models.ScrapedScene
 	for i := 0; i < len(fingerprints); i += 100 {
 		end := i + 100
 		if end > len(fingerprints) {
 			end = len(fingerprints)
 		}
-		scenes, err := c.client.FindScenesByFingerprints(context.TODO(), fingerprints[i:end])
+		scenes, err := c.client.FindScenesByFingerprints(ctx, fingerprints[i:end])
 
 		if err != nil {
 			return nil, err
@@ -197,7 +200,7 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 		sceneFragments := scenes.FindScenesByFingerprints
 
 		for _, s := range sceneFragments {
-			ss, err := sceneFragmentToScrapedScene(c.txnManager, s)
+			ss, err := sceneFragmentToScrapedScene(ctx, c.getHTTPClient(), c.txnManager, s)
 			if err != nil {
 				return nil, err
 			}
@@ -475,11 +478,12 @@ func formatCareerLength(start, end *int) *string {
 	}
 
 	var ret string
-	if end == nil {
+	switch {
+	case end == nil:
 		ret = fmt.Sprintf("%d -", *start)
-	} else if start == nil {
+	case start == nil:
 		ret = fmt.Sprintf("- %d", *end)
-	} else {
+	default:
 		ret = fmt.Sprintf("%d - %d", *start, *end)
 	}
 
@@ -504,12 +508,8 @@ func formatBodyModifications(m []*graphql.BodyModificationFragment) *string {
 	return &ret
 }
 
-func fetchImage(url string) (*string, error) {
-	client := &http.Client{
-		Timeout: imageGetTimeout,
-	}
-
-	req, err := http.NewRequest("GET", url, nil)
+func fetchImage(ctx context.Context, client *http.Client, url string) (*string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -590,8 +590,8 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	return sp
 }
 
-func getFirstImage(images []*graphql.ImageFragment) *string {
-	ret, err := fetchImage(images[0].URL)
+func getFirstImage(ctx context.Context, client *http.Client, images []*graphql.ImageFragment) *string {
+	ret, err := fetchImage(ctx, client, images[0].URL)
 	if err != nil {
 		logger.Warnf("Error fetching image %s: %s", images[0].URL, err.Error())
 	}
@@ -612,7 +612,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	return fingerprints
 }
 
-func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
+func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnManager models.TransactionManager, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	stashID := s.ID
 	ss := &models.ScrapedScene{
 		Title:        s.Title,
@@ -629,10 +629,10 @@ func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphq
 	if len(s.Images) > 0 {
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
-		ss.Image = getFirstImage(s.Images)
+		ss.Image = getFirstImage(ctx, client, s.Images)
 	}
 
-	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		tqb := r.Tag()
 

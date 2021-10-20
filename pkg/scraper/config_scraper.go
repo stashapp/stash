@@ -1,6 +1,10 @@
 package scraper
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"net/http"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 type configSceneScraper struct {
 	*configScraper
@@ -12,7 +16,7 @@ func (c *configSceneScraper) matchesURL(url string) bool {
 
 func (c *configSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, error) {
 	if c.config.SceneByName != nil {
-		s := c.config.getScraper(*c.config.SceneByName, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.SceneByName, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeScenesByName(name)
 	}
 
@@ -21,7 +25,7 @@ func (c *configSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, 
 
 func (c *configSceneScraper) scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error) {
 	if c.config.SceneByFragment != nil {
-		s := c.config.getScraper(*c.config.SceneByFragment, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.SceneByFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeSceneByScene(scene)
 	}
 
@@ -30,7 +34,7 @@ func (c *configSceneScraper) scrapeByScene(scene *models.Scene) (*models.Scraped
 
 func (c *configSceneScraper) scrapeByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	if c.config.SceneByQueryFragment != nil {
-		s := c.config.getScraper(*c.config.SceneByQueryFragment, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.SceneByQueryFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeSceneByFragment(scene)
 	}
 
@@ -40,7 +44,7 @@ func (c *configSceneScraper) scrapeByFragment(scene models.ScrapedSceneInput) (*
 func (c *configSceneScraper) scrapeByURL(url string) (*models.ScrapedScene, error) {
 	for _, scraper := range c.config.SceneByURL {
 		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.txnManager, c.globalConfig)
+			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
 			ret, err := s.scrapeSceneByURL(url)
 			if err != nil {
 				return nil, err
@@ -65,7 +69,7 @@ func (c *configPerformerScraper) matchesURL(url string) bool {
 
 func (c *configPerformerScraper) scrapeByName(name string) ([]*models.ScrapedPerformer, error) {
 	if c.config.PerformerByName != nil {
-		s := c.config.getScraper(*c.config.PerformerByName, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.PerformerByName, c.client, c.txnManager, c.globalConfig)
 		return s.scrapePerformersByName(name)
 	}
 
@@ -74,7 +78,7 @@ func (c *configPerformerScraper) scrapeByName(name string) ([]*models.ScrapedPer
 
 func (c *configPerformerScraper) scrapeByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	if c.config.PerformerByFragment != nil {
-		s := c.config.getScraper(*c.config.PerformerByFragment, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.PerformerByFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapePerformerByFragment(scrapedPerformer)
 	}
 
@@ -89,7 +93,7 @@ func (c *configPerformerScraper) scrapeByFragment(scrapedPerformer models.Scrape
 func (c *configPerformerScraper) scrapeByURL(url string) (*models.ScrapedPerformer, error) {
 	for _, scraper := range c.config.PerformerByURL {
 		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.txnManager, c.globalConfig)
+			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
 			ret, err := s.scrapePerformerByURL(url)
 			if err != nil {
 				return nil, err
@@ -114,7 +118,7 @@ func (c *configGalleryScraper) matchesURL(url string) bool {
 
 func (c *configGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if c.config.GalleryByFragment != nil {
-		s := c.config.getScraper(*c.config.GalleryByFragment, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeGalleryByGallery(gallery)
 	}
 
@@ -124,7 +128,7 @@ func (c *configGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models
 func (c *configGalleryScraper) scrapeByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
 	if c.config.GalleryByFragment != nil {
 		// TODO - this should be galleryByQueryFragment
-		s := c.config.getScraper(*c.config.GalleryByFragment, c.txnManager, c.globalConfig)
+		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeGalleryByFragment(gallery)
 	}
 
@@ -134,7 +138,7 @@ func (c *configGalleryScraper) scrapeByFragment(gallery models.ScrapedGalleryInp
 func (c *configGalleryScraper) scrapeByURL(url string) (*models.ScrapedGallery, error) {
 	for _, scraper := range c.config.GalleryByURL {
 		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.txnManager, c.globalConfig)
+			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
 			ret, err := s.scrapeGalleryByURL(url)
 			if err != nil {
 				return nil, err
@@ -160,7 +164,7 @@ func (c *configMovieScraper) matchesURL(url string) bool {
 func (c *configMovieScraper) scrapeByURL(url string) (*models.ScrapedMovie, error) {
 	for _, scraper := range c.config.MovieByURL {
 		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.txnManager, c.globalConfig)
+			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
 			ret, err := s.scrapeMovieByURL(url)
 			if err != nil {
 				return nil, err
@@ -177,12 +181,14 @@ func (c *configMovieScraper) scrapeByURL(url string) (*models.ScrapedMovie, erro
 
 type configScraper struct {
 	config       config
+	client       *http.Client
 	txnManager   models.TransactionManager
 	globalConfig GlobalConfig
 }
 
-func createScraperFromConfig(c config, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
+func createScraperFromConfig(c config, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	base := configScraper{
+		client:       client,
 		config:       c,
 		txnManager:   txnManager,
 		globalConfig: globalConfig,
