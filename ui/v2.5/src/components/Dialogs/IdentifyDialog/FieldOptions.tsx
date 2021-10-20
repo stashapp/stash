@@ -120,6 +120,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
 
       return (
         <ThreeStateBoolean
+          id="create-missing"
           disabled={!editing}
           allowUndefined={allowSetDefault}
           value={value}
@@ -265,6 +266,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
           <tbody>
             {localFieldOptions?.map((s, index) => (
               <FieldOptionsEditor
+                key={s.field}
                 allowSetDefault={allowSetDefault}
                 availableFields={availableFields}
                 options={s}

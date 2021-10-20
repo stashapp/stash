@@ -3,6 +3,7 @@ import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
 interface IThreeStateBoolean {
+  id: string;
   value: boolean | undefined;
   setValue: (v: boolean | undefined) => void;
   allowUndefined?: boolean;
@@ -12,6 +13,7 @@ interface IThreeStateBoolean {
 }
 
 export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
+  id,
   value,
   setValue,
   allowUndefined = true,
@@ -65,7 +67,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
     return (
       <Form.Check
         type="radio"
-        id={`value-${v ?? "undefined"}`}
+        id={`${id}-value-${v ?? "undefined"}`}
         checked={value === v}
         onChange={() => setValue(v)}
         disabled={disabled}

@@ -45,6 +45,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
       </h5>
       <Form.Group>
         <ThreeStateBoolean
+          id="include-male-performers"
           value={
             options.includeMalePerformers === null
               ? undefined
@@ -62,6 +63,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           {...checkboxProps}
         />
         <ThreeStateBoolean
+          id="set-cover-image"
           value={
             options.setCoverImage === null ? undefined : options.setCoverImage
           }
@@ -77,6 +79,7 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
           {...checkboxProps}
         />
         <ThreeStateBoolean
+          id="set-organized"
           value={
             options.setOrganized === null ? undefined : options.setOrganized
           }
