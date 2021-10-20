@@ -153,7 +153,12 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
 
       // sanity check - this should always be true
       if (autoTag) {
-        newSources.push(autoTag);
+        // don't set organised by default
+        const autoTagCopy = { ...autoTag };
+        autoTagCopy.options = {
+          setOrganized: false,
+        };
+        newSources.push(autoTagCopy);
       }
 
       setSources(newSources);
