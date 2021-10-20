@@ -388,7 +388,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
-      disabled={editingField || savingDefaults}
+      disabled={editingField || savingDefaults || sources.length === 0}
       footerButtons={
         <Button
           variant="secondary"

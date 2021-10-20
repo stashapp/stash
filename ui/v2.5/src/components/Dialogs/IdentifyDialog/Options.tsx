@@ -37,12 +37,21 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
 
   return (
     <Form.Group>
-      <h5>
-        <FormattedMessage
-          id={headingID}
-          values={{ source: source?.displayName }}
-        />
-      </h5>
+      <Form.Group>
+        <h5>
+          <FormattedMessage
+            id={headingID}
+            values={{ source: source?.displayName }}
+          />
+        </h5>
+        {!source && (
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.tasks.identify.explicit_set_description",
+            })}
+          </Form.Text>
+        )}
+      </Form.Group>
       <Form.Group>
         <ThreeStateBoolean
           id="include-male-performers"
@@ -103,14 +112,6 @@ export const OptionsEditor: React.FC<IOptionsEditor> = ({
         allowSetDefault={!!source}
         defaultOptions={defaultOptions}
       />
-
-      {!source && (
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.tasks.identify.explicit_set_description",
-          })}
-        </Form.Text>
-      )}
     </Form.Group>
   );
 };
