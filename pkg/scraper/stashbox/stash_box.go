@@ -39,6 +39,10 @@ func NewClient(box models.StashBox, txnManager models.TransactionManager) *Clien
 	}
 }
 
+func (c Client) getHTTPClient() *http.Client {
+	return c.client.Client.Client
+}
+
 // QueryStashBoxScene queries stash-box for scenes using a query string.
 func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*models.ScrapedScene, error) {
 	scenes, err := c.client.SearchScene(ctx, queryStr)
@@ -50,7 +54,7 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*mod
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(context.TODO(), c.client.Client.Client, c.txnManager, s)
+		ss, err := sceneFragmentToScrapedScene(context.TODO(), c.getHTTPClient(), c.txnManager, s)
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +200,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, fingerprin
 		sceneFragments := scenes.FindScenesByFingerprints
 
 		for _, s := range sceneFragments {
-			ss, err := sceneFragmentToScrapedScene(ctx, c.client.Client.Client, c.txnManager, s)
+			ss, err := sceneFragmentToScrapedScene(ctx, c.getHTTPClient(), c.txnManager, s)
 			if err != nil {
 				return nil, err
 			}
