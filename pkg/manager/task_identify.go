@@ -152,6 +152,7 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 		var src identify.ScraperSource
 		if stashBox != nil {
 			src = identify.ScraperSource{
+				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
 					stashbox.NewClient(*stashBox, j.txnManager),
 					stashBox.Endpoint,
@@ -159,10 +160,16 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 				RemoteSite: stashBox.Endpoint,
 			}
 		} else {
+			scraperID := *source.Source.ScraperID
+			s := instance.ScraperCache.GetScraper(scraperID)
+			if s == nil {
+				return nil, fmt.Errorf("%w: scraper with id %q", models.ErrNotFound, scraperID)
+			}
 			src = identify.ScraperSource{
+				Name: s.Name,
 				Scraper: scraperSource{
 					cache:     instance.ScraperCache,
-					scraperID: *source.Source.ScraperID,
+					scraperID: scraperID,
 				},
 			}
 		}

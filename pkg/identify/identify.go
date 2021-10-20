@@ -15,6 +15,7 @@ type SceneScraper interface {
 }
 
 type ScraperSource struct {
+	Name       string
 	Options    *models.IdentifyMetadataOptionsInput
 	Scraper    SceneScraper
 	RemoteSite string
@@ -179,7 +180,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, repo models.Repositor
 	if title != nil {
 		as = fmt.Sprintf(" as %s", title.String)
 	}
-	logger.Infof("Successfully identified %s%s", scene.Path, as)
+	logger.Infof("Successfully identified %s%s using %s", scene.Path, as, result.source.Name)
 
 	return nil
 }
