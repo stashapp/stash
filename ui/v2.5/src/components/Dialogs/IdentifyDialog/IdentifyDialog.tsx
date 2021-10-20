@@ -11,9 +11,15 @@ import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { withoutTypename } from "src/utils";
+import {
+  SCRAPER_PREFIX,
+  STASH_BOX_PREFIX,
+} from "src/components/Tagger/constants";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
+
+const autoTagScraperID = "builtin_autotag";
 
 interface IIdentifyDialogProps {
   selectedIds?: string[];
@@ -60,14 +66,12 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
   const allSources = useMemo(() => {
     if (!configData || !scraperData) return;
 
-    const defaultSources: IScraperSource[] = [];
+    const ret: IScraperSource[] = [];
 
-    // TODO - use tagger constants
-
-    defaultSources.push(
+    ret.push(
       ...configData.configuration.general.stashBoxes.map((b, i) => {
         return {
-          id: `stash-box: ${i}`,
+          id: `${STASH_BOX_PREFIX}${i}`,
           displayName: `stash-box: ${b.name}`,
           stash_box_endpoint: b.endpoint,
         };
@@ -80,19 +84,17 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
     );
 
-    // TODO - ensure auto-tag is last when we add auto-tag PR
-
-    defaultSources.push(
+    ret.push(
       ...fragmentScrapers.map((s) => {
         return {
-          id: `scraper: ${s.id}`,
+          id: `${SCRAPER_PREFIX}${s.id}`,
           displayName: s.name,
           scraper_id: s.id,
         };
       })
     );
 
-    return defaultSources;
+    return ret;
   }, [configData, scraperData]);
 
   useEffect(() => {
@@ -138,11 +140,23 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     } else {
       // default to first stash-box instance only
       const stashBox = allSources.find((s) => s.stash_box_endpoint);
+
+      // add auto-tag as well
+      const autoTag = allSources.find(
+        (s) => s.id === `${SCRAPER_PREFIX}${autoTagScraperID}`
+      );
+
+      const newSources: IScraperSource[] = [];
       if (stashBox) {
-        setSources([stashBox]);
-      } else {
-        setSources([]);
+        newSources.push(stashBox);
       }
+
+      // sanity check - this should always be true
+      if (autoTag) {
+        newSources.push(autoTag);
+      }
+
+      setSources(newSources);
     }
   }, [allSources, configData]);
 
