@@ -4,6 +4,7 @@
     "add_directory": "Add Directory",
     "add_entity": "Add {entityType}",
     "add_to_entity": "Add to {entityType}",
+    "all": "all",
     "allow": "Allow",
     "allow_temporarily": "Allow temporarily",
     "apply": "Apply",
@@ -314,6 +315,7 @@
           "overwrite": "Overwrite"
         },
         "identifying_scenes": "Identifying {num} {scene}",
+        "identifying_from_paths": "Identifying scenes from the following paths",
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organized flag",

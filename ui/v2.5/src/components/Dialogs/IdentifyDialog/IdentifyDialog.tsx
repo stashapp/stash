@@ -6,7 +6,7 @@ import {
   useConfigureDefaults,
   useListSceneScrapers,
 } from "src/core/StashService";
-import { Modal } from "src/components/Shared";
+import { Icon, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -15,6 +15,7 @@ import {
   SCRAPER_PREFIX,
   STASH_BOX_PREFIX,
 } from "src/components/Tagger/constants";
+import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
@@ -53,6 +54,8 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
   const [editingSource, setEditingSource] = useState<
     IScraperSource | undefined
   >();
+  const [paths, setPaths] = useState<string[]>([]);
+  const [settingPaths, setSettingPaths] = useState(false);
   const [animation, setAnimation] = useState(true);
   const [editingField, setEditingField] = useState(false);
   const [savingDefaults, setSavingDefaults] = useState(false);
@@ -119,7 +122,56 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         </Form.Group>
       );
     }
-  }, [selectedIds, intl]);
+    const message = paths.length ? (
+      <div>
+        <FormattedMessage id="config.tasks.identify.identifying_from_paths" />:
+        <ul>
+          {paths.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      </div>
+    ) : (
+      <span>
+        <FormattedMessage
+          id="config.tasks.identify.identifying_scenes"
+          values={{
+            num: intl.formatMessage({ id: "all" }),
+            scene: intl.formatMessage(
+              {
+                id: "countables.scenes",
+              },
+              {
+                count: 0,
+              }
+            ),
+          }}
+        />
+        .
+      </span>
+    );
+
+    function onClick() {
+      setAnimation(false);
+      setSettingPaths(true);
+    }
+
+    return (
+      <Form.Group id="selected-identify-folders">
+        <div>
+          {message}
+          <div>
+            <Button
+              title={intl.formatMessage({ id: "actions.select_folders" })}
+              onClick={() => onClick()}
+            >
+              <Icon icon="folder-open" />
+            </Button>
+          </div>
+        </div>
+      </Form.Group>
+    );
+  }, [selectedIds, intl, paths]);
 
   useEffect(() => {
     if (!configData || !allSources) return;
@@ -206,7 +258,14 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       }),
       options,
       sceneIDs: selectedIds,
+      paths,
     };
+  }
+
+  function makeDefaultIdentifyInput() {
+    const ret = makeIdentifyInput();
+    const { sceneIDs, paths: _paths, ...withoutSpecifics } = ret;
+    return withoutSpecifics;
   }
 
   async function onIdentify() {
@@ -276,7 +335,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       await configureDefaults({
         variables: {
           input: {
-            identify: makeIdentifyInput(),
+            identify: makeDefaultIdentifyInput(),
           },
         },
       });
@@ -295,6 +354,21 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
         saveSource={onSaveSource}
         isNew={isNewSource()}
         defaultOptions={options}
+      />
+    );
+  }
+
+  if (settingPaths) {
+    return (
+      <DirectorySelectionDialog
+        animation={false}
+        initialPaths={paths}
+        onClose={(p) => {
+          if (p) {
+            setPaths(p);
+          }
+          setSettingPaths(false);
+        }}
       />
     );
   }

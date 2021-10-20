@@ -6,18 +6,22 @@ import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import { ConfigurationContext } from "src/hooks/Config";
 
 interface IDirectorySelectionDialogProps {
+  animation?: boolean;
+  initialPaths?: string[];
   onClose: (paths?: string[]) => void;
 }
 
-export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = (
-  props: IDirectorySelectionDialogProps
-) => {
+export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = ({
+  animation,
+  initialPaths = [],
+  onClose,
+}) => {
   const intl = useIntl();
   const { configuration } = React.useContext(ConfigurationContext);
 
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
-  const [paths, setPaths] = useState<string[]>([]);
+  const [paths, setPaths] = useState<string[]>(initialPaths);
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
 
   function removePath(p: string) {
@@ -33,17 +37,18 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
   return (
     <Modal
       show
+      modalProps={{ animation }}
       disabled={paths.length === 0}
       icon="pencil-alt"
       header={intl.formatMessage({ id: "actions.select_folders" })}
       accept={{
         onClick: () => {
-          props.onClose(paths);
+          onClose(paths);
         },
         text: intl.formatMessage({ id: "actions.confirm" }),
       }}
       cancel={{
-        onClick: () => props.onClose(),
+        onClick: () => onClose(),
         text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}

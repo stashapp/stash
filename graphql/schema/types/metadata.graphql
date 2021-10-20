@@ -105,6 +105,9 @@ input IdentifyMetadataInput {
 
   """scene ids to identify"""
   sceneIDs: [ID!]
+
+  """paths of scenes to identify - ignored if scene ids are set"""
+  paths: [String!]
 }
 
 # types for default options

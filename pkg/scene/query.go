@@ -3,6 +3,8 @@ package scene
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/models"
@@ -45,4 +47,33 @@ func BatchProcess(ctx context.Context, reader models.SceneReader, sceneFilter *m
 	}
 
 	return nil
+}
+
+// FilterFromPaths creates a SceneFilterType that filters using the provided
+// paths.
+func FilterFromPaths(paths []string) *models.SceneFilterType {
+	ret := &models.SceneFilterType{}
+	or := ret
+	sep := string(filepath.Separator)
+
+	for _, p := range paths {
+		if !strings.HasSuffix(p, sep) {
+			p += sep
+		}
+
+		if ret.Path == nil {
+			or = ret
+		} else {
+			newOr := &models.SceneFilterType{}
+			or.Or = newOr
+			or = newOr
+		}
+
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	return ret
 }

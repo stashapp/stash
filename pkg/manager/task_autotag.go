@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type autoTagJob struct {
@@ -324,28 +325,7 @@ type autoTagFilesTask struct {
 }
 
 func (t *autoTagFilesTask) makeSceneFilter() *models.SceneFilterType {
-	ret := &models.SceneFilterType{}
-	or := ret
-	sep := string(filepath.Separator)
-
-	for _, p := range t.paths {
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		if ret.Path == nil {
-			or = ret
-		} else {
-			newOr := &models.SceneFilterType{}
-			or.Or = newOr
-			or = newOr
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
+	ret := scene.FilterFromPaths(t.paths)
 
 	organized := false
 	ret.Organized = &organized

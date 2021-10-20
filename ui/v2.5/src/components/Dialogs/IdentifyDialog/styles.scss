@@ -36,3 +36,10 @@
 .field-options-table td:first-child {
   padding-left: 0.75rem;
 }
+
+#selected-identify-folders {
+  & > div {
+    display: flex;
+    justify-content: space-between;
+  }
+}

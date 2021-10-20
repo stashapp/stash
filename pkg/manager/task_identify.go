@@ -87,9 +87,8 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepository, sources []identify.ScraperSource) error {
 	// exclude organised
 	organised := false
-	sceneFilter := &models.SceneFilterType{
-		Organized: &organised,
-	}
+	sceneFilter := scene.FilterFromPaths(j.input.Paths)
+	sceneFilter.Organized = &organised
 
 	sort := "path"
 	findFilter := &models.FindFilterType{
