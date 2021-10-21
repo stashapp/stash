@@ -50,7 +50,7 @@ func isCDPPathWS(c GlobalConfig) bool {
 	return strings.HasPrefix(c.GetScraperCDPPath(), "ws://")
 }
 
-// Cache stores scraper details.
+// Cache stores the database of scrapers
 type Cache struct {
 	client       *http.Client
 	scrapers     map[string]scraper // Scraper ID -> Scraper

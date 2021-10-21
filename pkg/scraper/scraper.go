@@ -10,6 +10,9 @@ type urlMatcher interface {
 	matchesURL(url string) bool
 }
 
+// Input coalesces inputs of diffrent types into a single structure.
+// The system expects one of these to be set, and the remaining to be
+// set to nil.
 type Input struct {
 	Performer *models.ScrapedPerformerInput
 	Scene     *models.ScrapedSceneInput
@@ -70,12 +73,16 @@ type fragmentScraper interface {
 	loadByFragment(input Input) (models.ScrapedContent, error)
 }
 
+// sceneLoader is a scraper which supports scene scrapes with
+// scene data as the input.
 type sceneLoader interface {
 	scraper
 
 	loadByScene(scene *models.Scene) (*models.ScrapedScene, error)
 }
 
+// galleryLoader is a sraper which supports gallery scrapes with
+// gallery data as the input.
 type galleryLoader interface {
 	scraper
 
