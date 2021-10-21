@@ -41,8 +41,8 @@ ifndef STASH_VERSION
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
 endif
 
-ifeq ($(IS_STASH_COMPILER_IMAGE), true)
-    $(eval OFFICIAL_BUILD := true)
+ifndef OFFICIAL_BUILD
+    $(eval OFFICIAL_BUILD := false)
 endif
 
 build: pre-build

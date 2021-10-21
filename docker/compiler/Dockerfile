@@ -42,7 +42,6 @@ RUN     cp osxcross/target/lib/* /usr/lib/ ; \
         rm -rf osxcross;
 
 ENV PATH $OSX_NDK_X86/bin:$PATH
-ENV IS_STASH_COMPILER_IMAGE true
 
 RUN mkdir -p /root/.ssh; \
     chmod 0700 /root/.ssh; \

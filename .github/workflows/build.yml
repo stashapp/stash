@@ -55,7 +55,7 @@ jobs:
     - name: Start build container
       run: |
         mkdir -p .go-cache
-        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=true -w /stash $COMPILER_IMAGE tail -f /dev/null
 
     - name: Pre-install
       run: docker exec -t build /bin/bash -c "make pre-ui"

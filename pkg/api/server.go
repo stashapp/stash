@@ -256,12 +256,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 func printVersion() {
 	versionString := githash
-	// TODO: Requires compiler image >= 5.1
-	// if IsOfficialBuild() {
-	// 	versionString += " - Official Build"
-	// } else {
-	// 	versionString += " - Unofficial Build"
-	// }
+	if IsOfficialBuild() {
+		versionString += " - Official Build"
+	} else {
+		versionString += " - Unofficial Build"
+	}
 	if version != "" {
 		versionString = version + " (" + versionString + ")"
 	}
