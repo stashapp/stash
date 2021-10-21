@@ -59,6 +59,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
 import { TextUtils } from "src/utils";
+import { FormattedNumber } from "react-intl";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -160,7 +161,7 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   useData: (filter: ListFilterModel) => T;
   getData: (data: T) => T2[];
   getCount: (data: T) => number;
-  getMetadataByline: (data: T) => string[];
+  getMetadataByline: (data: T) => React.ReactNode;
 }
 
 interface IRenderListProps {
@@ -744,11 +745,47 @@ export const useScenesList = (
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
-    getMetadataByline: (result: FindScenesQueryResult) => 
-      [
-        TextUtils.secondsAsTimeString(result?.data?.findScenes?.durationSeconds, 3),
-        `${TextUtils.fileSize(result?.data?.findScenes?.filesizeBytes).size} ${TextUtils.formatFileSizeUnit(TextUtils.fileSize(result?.data?.findScenes?.filesizeBytes).unit)}`
-      ],
+    getMetadataByline: (result: FindScenesQueryResult) => {
+      const duration = result?.data?.findScenes?.duration;
+      const size =
+        result?.data?.findScenes?.filesize !== undefined
+          ? TextUtils.fileSize(result?.data?.findScenes?.filesize)
+          : undefined;
+
+      if (duration === undefined && size === undefined) {
+        return;
+      }
+
+      const separator =
+        duration !== undefined && size !== undefined ? " - " : "";
+
+      return (
+        <span className="scenes-stats">
+          &nbsp;(
+          {duration !== undefined ? (
+            <span className="scenes-duration">
+              {TextUtils.secondsAsTimeString(
+                result?.data?.findScenes?.duration,
+                3
+              )}
+            </span>
+          ) : undefined}
+          {separator}
+          {size !== undefined ? (
+            <span className="scenes-size">
+              <FormattedNumber
+                value={size.size}
+                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                  size.unit
+                )}
+              />
+              {` ${TextUtils.formatFileSizeUnit(size.unit)}`}
+            </span>
+          ) : undefined}
+          )
+        </span>
+      );
+    },
   });
 
 export const useSceneMarkersList = (
@@ -776,11 +813,14 @@ export const useImagesList = (
       result?.data?.findImages?.images ?? [],
     getCount: (result: FindImagesQueryResult) =>
       result?.data?.findImages?.count ?? 0,
-    getMetadataByline: (result: FindImagesQueryResult) => 
-      [
-        `${result?.data?.findImages?.megapixels} Megapixels`,
-        `${TextUtils.fileSize(result?.data?.findImages?.filesizeBytes).size} ${TextUtils.formatFileSizeUnit(TextUtils.fileSize(result?.data?.findImages?.filesizeBytes).unit)}`
-      ]
+    getMetadataByline: (result: FindImagesQueryResult) => [
+      `${result?.data?.findImages?.megapixels} Megapixels`,
+      `${
+        TextUtils.fileSize(result?.data?.findImages?.filesize).size
+      } ${TextUtils.formatFileSizeUnit(
+        TextUtils.fileSize(result?.data?.findImages?.filesize).unit
+      )}`,
+    ],
   });
 
 export const useGalleriesList = (

@@ -6,7 +6,7 @@ interface IPaginationProps {
   itemsPerPage: number;
   currentPage: number;
   totalItems: number;
-  metadataByline: string[];
+  metadataByline?: React.ReactNode;
   onChangePage: (page: number) => void;
 }
 
@@ -14,7 +14,7 @@ interface IPaginationIndexProps {
   itemsPerPage: number;
   currentPage: number;
   totalItems: number;
-  metadataByline: string[];
+  metadataByline?: React.ReactNode;
 }
 
 export const Pagination: React.FC<IPaginationProps> = ({
@@ -133,13 +133,12 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
   const indexText: string = `${intl.formatNumber(
     firstItemCount
   )}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
-  const bylineString: string = metadataByline?.join(" - ");
 
   return (
     <span className="filter-container text-muted paginationIndex center-text">
       {indexText}
       <br />
-      {bylineString}
+      {metadataByline}
     </span>
   );
 };
