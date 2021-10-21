@@ -455,12 +455,12 @@ func (qb *sceneQueryBuilder) queryGroupedFields(options models.SceneQueryOptions
 
 	if options.TotalDuration {
 		query.addColumn("COALESCE(scenes.duration, 0) as duration")
-		aggregateQuery.addColumn("SUM(temp.duration) as duration")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.duration), 0) as duration")
 	}
 
 	if options.TotalSize {
 		query.addColumn("COALESCE(scenes.size, 0) as size")
-		aggregateQuery.addColumn("SUM(temp.size) as size")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
 	}
 
 	const includeSortPagination = false

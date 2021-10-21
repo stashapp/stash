@@ -316,12 +316,12 @@ func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions
 
 	if options.Megapixels {
 		query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
-		aggregateQuery.addColumn("SUM(temp.megapixels) as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
 	}
 
 	if options.TotalSize {
 		query.addColumn("COALESCE(images.size, 0) as size")
-		aggregateQuery.addColumn("SUM(temp.size) as size")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
 	}
 
 	const includeSortPagination = false
