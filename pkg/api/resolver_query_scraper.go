@@ -34,7 +34,7 @@ func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name strin
 
 // deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	content, err := r.scraperCache.ScrapeByName(scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeName(scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID strin
 		return nil, nil
 	}
 
-	content, err := r.scraperCache.ScrapeByName(scraperID, query, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeName(scraperID, query, models.ScrapeContentTypePerformer)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 		return nil, nil
 	}
 
-	content, err := r.scraperCache.ScrapeByName(scraperID, query, models.ScrapeContentTypeScene)
+	content, err := r.scraperCache.ScrapeName(scraperID, query, models.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			c, err = r.scraperCache.ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Scene: input.SceneInput})
 			content = []models.ScrapedContent{c}
 		case input.Query != nil:
-			content, err = r.scraperCache.ScrapeByName(*source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
+			content, err = r.scraperCache.ScrapeName(*source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
 		default:
 			err = fmt.Errorf("%w: scene_id, scene_input or query must be set", ErrInput)
 		}
@@ -297,7 +297,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		}
 
 		if input.Query != nil {
-			content, err := r.scraperCache.ScrapeByName(*source.ScraperID, *input.Query, models.ScrapeContentTypePerformer)
+			content, err := r.scraperCache.ScrapeName(*source.ScraperID, *input.Query, models.ScrapeContentTypePerformer)
 			if err != nil {
 				return nil, err
 			}

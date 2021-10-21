@@ -178,7 +178,7 @@ func (c Cache) findScraper(scraperID string) scraper {
 	return nil
 }
 
-func (c Cache) ScrapeByName(id, query string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (c Cache) ScrapeName(id, query string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	// find scraper with the provided id
 	s := c.findScraper(id)
 	if s == nil {
