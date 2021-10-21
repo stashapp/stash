@@ -30,8 +30,8 @@ func marshalScrapedScenes(content []models.ScrapedContent) ([]*models.ScrapedSce
 func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.ScrapedPerformer, error) {
 	var ret []*models.ScrapedPerformer
 	for _, c := range content {
-		if s, ok := c.(*models.ScrapedPerformer); ok {
-			ret = append(ret, s)
+		if p, ok := c.(*models.ScrapedPerformer); ok {
+			ret = append(ret, p)
 		} else {
 			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedPerformer: %w", ErrConversion)
 		}
@@ -45,10 +45,25 @@ func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.Scrape
 func marshalScrapedGalleries(content []models.ScrapedContent) ([]*models.ScrapedGallery, error) {
 	var ret []*models.ScrapedGallery
 	for _, c := range content {
-		if s, ok := c.(*models.ScrapedGallery); ok {
-			ret = append(ret, s)
+		if g, ok := c.(*models.ScrapedGallery); ok {
+			ret = append(ret, g)
 		} else {
 			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedGallery: %w", ErrConversion)
+		}
+	}
+
+	return ret, nil
+}
+
+// marshalScrapedMovies converts ScrapedContent into ScrapedMovie. If conversion
+// fails, an error is returned.
+func marshalScrapedMovies(content []models.ScrapedContent) ([]*models.ScrapedMovie, error) {
+	var ret []*models.ScrapedMovie
+	for _, c := range content {
+		if m, ok := c.(*models.ScrapedMovie); ok {
+			ret = append(ret, m)
+		} else {
+			return nil, fmt.Errorf("cannot turn ScrapedConetnt into ScrapedMovie: %w", ErrConversion)
 		}
 	}
 
@@ -83,4 +98,14 @@ func marshalScrapedGallery(content models.ScrapedContent) (*models.ScrapedGaller
 	}
 
 	return g[0], nil
+}
+
+// marshalScrapedMovie will marshal a single scraped movie
+func marshalScrapedMovie(content models.ScrapedContent) (*models.ScrapedMovie, error) {
+	m, err := marshalScrapedMovies([]models.ScrapedContent{content})
+	if err != nil {
+		return nil, err
+	}
+
+	return m[0], nil
 }

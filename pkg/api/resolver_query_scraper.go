@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -35,20 +34,21 @@ func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name strin
 
 // deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	scrapedPerformers, err := r.scraperCache.ScrapeByName(scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeByName(scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		return nil, err
 	}
 
+	performers, err := marshalScrapedPerformers(content)
+	if err != nil {
+		return nil, err
+	}
+
 	var ret []string
-	for _, v := range scrapedPerformers {
-		if p, ok := v.(models.ScrapedPerformer); ok {
-			if p.Name != nil {
-				ret = append(ret, *p.Name)
-			}
-		} else {
-			logger.Errorf("Internal Server Error: could not convert scraped content into a performer")
+	for _, p := range performers {
+		if p.Name != nil {
+			ret = append(ret, *p.Name)
 		}
 	}
 
@@ -97,16 +97,12 @@ func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, s
 }
 
 func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
-	ret, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
 	if err != nil {
 		return nil, err
 	}
 
-	if p, ok := ret.(models.ScrapedPerformer); ok {
-		return &p, err
-	}
-
-	return nil, ErrInternalUnreachable
+	return marshalScrapedPerformer(content)
 }
 
 func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, query string) ([]*models.ScrapedScene, error) {
@@ -137,16 +133,12 @@ func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene
 }
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	ret, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
 	if err != nil {
 		return nil, err
 	}
-	p, ok := ret.(models.ScrapedScene)
-	if ok {
-		return &p, err
-	}
 
-	return nil, ErrInternalUnreachable
+	return marshalScrapedScene(content)
 }
 
 func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
@@ -164,29 +156,21 @@ func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gal
 }
 
 func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	ret, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
 	if err != nil {
 		return nil, err
 	}
-	p, ok := ret.(models.ScrapedGallery)
-	if ok {
-		return &p, err
-	}
 
-	return nil, ErrInternalUnreachable
+	return marshalScrapedGallery(content)
 }
 
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	ret, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
 	if err != nil {
 		return nil, err
 	}
-	p, ok := ret.(models.ScrapedMovie)
-	if ok {
-		return &p, err
-	}
 
-	return nil, ErrInternalUnreachable
+	return marshalScrapedMovie(content)
 }
 
 func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxSceneQueryInput) ([]*models.ScrapedScene, error) {
