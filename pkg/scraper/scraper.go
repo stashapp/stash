@@ -98,6 +98,35 @@ func (s scraper_s) spec() models.Scraper {
 	return *s.Spec
 }
 
+func (s scraper_s) loadByFragment(input Input) (models.ScrapedContent, error) {
+	switch {
+	case input.Performer != nil:
+		s.performer.scrapeByFragment(*input.Performer)
+	case input.Gallery != nil:
+		s.gallery.scrapeByFragment(*input.Gallery)
+	case input.Scene != nil:
+		s.scene.scrapeByFragment(*input.Scene)
+	}
+
+	return nil, ErrNotSupported
+}
+
+func (s scraper_s) loadByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+	if s.scene == nil {
+		return nil, ErrNotSupported
+	}
+
+	return s.scene.scrapeByScene(scene)
+}
+
+func (s scraper_s) loadByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+	if s.gallery == nil {
+		return nil, ErrNotSupported
+	}
+
+	return s.gallery.scrapeByGallery(gallery)
+}
+
 func (s scraper_s) loadByURL(url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
