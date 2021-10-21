@@ -1,13 +1,10 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
-
-var ErrNotSupported = errors.New("not supported")
 
 type urlMatcher interface {
 	matchesURL(url string) bool
@@ -165,7 +162,7 @@ func (s scraper_s) loadByName(name string, ty models.ScrapeContentType) ([]model
 		}
 		return content, nil
 	default:
-		return nil, fmt.Errorf("loading %v by name: %w", ty, ErrUnsupported)
+		return nil, fmt.Errorf("loading %v by name: %w", ty, ErrNotSupported)
 	}
 }
 

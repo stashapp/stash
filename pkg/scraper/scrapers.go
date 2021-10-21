@@ -18,7 +18,7 @@ import (
 
 var ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
 var ErrNotFound = errors.New("scraper not found")
-var ErrUnsupported = errors.New("unsupported scraper operation")
+var ErrNotSupported = errors.New("not supported")
 
 const (
 	// scrapeGetTimeout is the timeout for scraper HTTP requests. Includes transfer time.
@@ -185,12 +185,12 @@ func (c Cache) ScrapeByName(id, query string, ty models.ScrapeContentType) ([]mo
 		return nil, fmt.Errorf("scraper with id %s: %w", id, ErrNotFound)
 	}
 	if !s.supports(ty) {
-		return nil, fmt.Errorf("scraping %v with scraper %s: %w", ty, id, ErrUnsupported)
+		return nil, fmt.Errorf("scraping %v with scraper %s: %w", ty, id, ErrNotSupported)
 	}
 
 	ns, ok := s.(nameScraper)
 	if !ok {
-		return nil, fmt.Errorf("name-scraping with scraper %s: %w", id, ErrUnsupported)
+		return nil, fmt.Errorf("name-scraping with scraper %s: %w", id, ErrNotSupported)
 	}
 
 	return ns.loadByName(query, ty)
@@ -224,7 +224,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 		if s.supportsURL(url, ty) {
 			ul, ok := s.(urlScraper)
 			if !ok {
-				return nil, fmt.Errorf("scraper with id %s used as url scraper: %w", s.spec().ID, ErrUnsupported)
+				return nil, fmt.Errorf("scraper with id %s used as url scraper: %w", s.spec().ID, ErrNotSupported)
 			}
 			ret, err := ul.loadByURL(url, ty)
 			if err != nil {
@@ -257,7 +257,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 	case models.ScrapeContentTypeScene:
 		ss, ok := s.(sceneLoader)
 		if !ok {
-			return nil, fmt.Errorf("scraper with id %s used as scene scraper: %w", scraperID, ErrUnsupported)
+			return nil, fmt.Errorf("scraper with id %s used as scene scraper: %w", scraperID, ErrNotSupported)
 		}
 
 		scene, err := getScene(id, c.txnManager)
@@ -272,7 +272,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 	case models.ScrapeContentTypeGallery:
 		gs, ok := s.(galleryLoader)
 		if !ok {
-			return nil, fmt.Errorf("scraper with id %s used as a gallery scraper: %w", scraperID, ErrUnsupported)
+			return nil, fmt.Errorf("scraper with id %s used as a gallery scraper: %w", scraperID, ErrNotSupported)
 		}
 
 		gallery, err := getGallery(id, c.txnManager)
