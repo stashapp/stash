@@ -52,17 +52,12 @@ jobs:
         path: .go-cache
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
 
-    - name: Start build container (PR Preview Build)
-      if: ${{ github.event_name == 'pull_request' }}
+    - name: Start build container
+      env:
+        official-build: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop') }}
       run: |
         mkdir -p .go-cache
-        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
-
-    - name: Start build container (Stable Release / Dev Build)
-      if: ${{ github.event_name != 'pull_request' }}
-      run: |
-        mkdir -p .go-cache
-        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=true -w /stash $COMPILER_IMAGE tail -f /dev/null
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
 
     - name: Pre-install
       run: docker exec -t build /bin/bash -c "make pre-ui"
