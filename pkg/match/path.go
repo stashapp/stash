@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 )
@@ -276,7 +277,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	filter.And = imagePathsFilter(paths)
 
 	pp := models.PerPageAll
-	images, _, err := imageReader.Query(&filter, &models.FindFilterType{
+	images, err := image.Query(imageReader, &filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 

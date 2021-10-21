@@ -22,3 +22,24 @@ func SceneQueryResult(scenes []*models.Scene, count int) *models.SceneQueryResul
 	ret.Count = count
 	return ret
 }
+
+type imageResolver struct {
+	images []*models.Image
+}
+
+func (s *imageResolver) Find(id int) (*models.Image, error) {
+	panic("not implemented")
+}
+
+func (s *imageResolver) FindMany(ids []int) ([]*models.Image, error) {
+	return s.images, nil
+}
+
+func ImageQueryResult(images []*models.Image, count int) *models.ImageQueryResult {
+	ret := models.NewImageQueryResult(&imageResolver{
+		images: images,
+	})
+
+	ret.Count = count
+	return ret
+}

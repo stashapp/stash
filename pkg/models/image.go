@@ -52,7 +52,7 @@ type ImageReader interface {
 	// CountByStudioID(studioID int) (int, error)
 	// CountByTagID(tagID int) (int, error)
 	All() ([]*Image, error)
-	Query(imageFilter *ImageFilterType, findFilter *FindFilterType) ([]*Image, int, error)
+	Query(options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
 	GetGalleryIDs(imageID int) ([]int, error)
 	GetTagIDs(imageID int) ([]int, error)

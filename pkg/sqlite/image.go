@@ -282,27 +282,7 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	return &query, nil
 }
 
-func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
-	result, err := qb.QueryEx(models.ImageQueryOptions{
-		QueryOptions: models.QueryOptions{
-			FindFilter: findFilter,
-			Count:      true,
-		},
-		ImageFilter: imageFilter,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	images, err := result.Resolve()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return images, result.Count, nil
-}
-
-func (qb *imageQueryBuilder) QueryEx(options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
+func (qb *imageQueryBuilder) Query(options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
 	query, err := qb.makeQuery(options.ImageFilter, options.FindFilter)
 	if err != nil {
 		return nil, err

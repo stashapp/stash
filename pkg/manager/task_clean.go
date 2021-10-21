@@ -224,7 +224,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		images, _, err := qb.Query(nil, findFilter)
+		images, err := image.Query(qb, nil, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for images: %w", err)
 		}

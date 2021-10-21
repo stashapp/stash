@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -39,7 +40,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (ret *models.FindImagesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		qb := repo.Image()
-		images, total, err := qb.Query(imageFilter, filter)
+		images, total, err := image.QueryWithCount(qb, imageFilter, filter)
 		if err != nil {
 			return err
 		}

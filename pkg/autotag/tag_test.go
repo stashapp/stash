@@ -3,6 +3,7 @@ package autotag
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scene"
@@ -200,11 +201,11 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockImageReader.On("Query", expectedImageFilter, expectedFindFilter)
+	onNameQuery := mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
-		onNameQuery.Return(images, len(images), nil).Once()
+		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	} else {
-		onNameQuery.Return(nil, 0, nil).Once()
+		onNameQuery.Return(mocks.ImageQueryResult(nil, 0), nil).Once()
 
 		expectedAliasFilter := &models.ImageFilterType{
 			Organized: &organized,
@@ -214,7 +215,8 @@ func testTagImages(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockImageReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(images, len(images), nil).Once()
+		mockImageReader.On("Query", image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
