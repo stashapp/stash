@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -111,11 +112,12 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockSceneReader.On("Query", expectedSceneFilter, expectedFindFilter)
+	onNameQuery := mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
+
 	if aliasName == "" {
-		onNameQuery.Return(scenes, len(scenes), nil).Once()
+		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	} else {
-		onNameQuery.Return(nil, 0, nil).Once()
+		onNameQuery.Return(mocks.SceneQueryResult(nil, 0), nil).Once()
 
 		expectedAliasFilter := &models.SceneFilterType{
 			Organized: &organized,
@@ -125,7 +127,8 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(scenes, len(scenes), nil).Once()
+		mockSceneReader.On("Query", scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {

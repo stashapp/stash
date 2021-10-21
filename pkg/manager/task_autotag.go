@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type autoTagJob struct {
@@ -426,10 +427,18 @@ func (t *autoTagFilesTask) getCount(r models.ReaderRepository) (int, error) {
 		PerPage: &pp,
 	}
 
-	_, sceneCount, err := r.Scene().Query(t.makeSceneFilter(), findFilter)
+	sceneResults, err := r.Scene().Query(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		SceneFilter: t.makeSceneFilter(),
+	})
 	if err != nil {
 		return 0, err
 	}
+
+	sceneCount := sceneResults.Count
 
 	_, imageCount, err := r.Image().Query(t.makeImageFilter(), findFilter)
 	if err != nil {
@@ -456,7 +465,7 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 
 	more := true
 	for more {
-		scenes, _, err := r.Scene().Query(sceneFilter, findFilter)
+		scenes, err := scene.Query(r.Scene(), sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}

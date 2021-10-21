@@ -39,6 +39,7 @@ import (
 	"github.com/anacrolix/dms/upnpav"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -437,7 +438,7 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 			Sort:    &sort,
 		}
 
-		scenes, total, err := r.Scene().Query(sceneFilter, findFilter)
+		scenes, total, err := scene.QueryWithCount(r.Scene(), sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}

@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -98,7 +99,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		scenes, _, err := qb.Query(nil, findFilter)
+		scenes, err := scene.Query(qb, nil, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for scenes: %w", err)
 		}

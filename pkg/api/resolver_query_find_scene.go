@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
@@ -78,7 +79,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 				}
 			}
 		} else {
-			scenes, count, err = repo.Scene().Query(sceneFilter, filter)
+			scenes, count, err = scene.QueryWithCount(repo.Scene(), sceneFilter, filter)
 		}
 
 		if err != nil {
@@ -120,7 +121,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			queryFilter.Q = nil
 		}
 
-		scenes, total, err := repo.Scene().Query(sceneFilter, queryFilter)
+		scenes, total, err := scene.QueryWithCount(repo.Scene(), sceneFilter, queryFilter)
 		if err != nil {
 			return err
 		}

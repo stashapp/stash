@@ -395,27 +395,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	return query
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
-	result, err := qb.QueryEx(models.SceneQueryOptions{
-		QueryOptions: models.QueryOptions{
-			FindFilter: findFilter,
-			Count:      true,
-		},
-		SceneFilter: sceneFilter,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	scenes, err := result.Resolve()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return scenes, result.Count, nil
-}
-
-func (qb *sceneQueryBuilder) QueryEx(options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+func (qb *sceneQueryBuilder) Query(options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
 	sceneFilter := options.SceneFilter
 	findFilter := options.FindFilter
 

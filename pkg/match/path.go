@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 const separatorChars = `.\-_ `
@@ -211,7 +212,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	filter.And = scenePathsFilter(paths)
 
 	pp := models.PerPageAll
-	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{
+	scenes, err := scene.Query(sceneReader, &filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
