@@ -69,7 +69,7 @@ func (t *GenerateTranscodeTask) Start() {
 		}
 	} else {
 		if audioCodec == ffmpeg.MissingUnsupported {
-			//ffmpeg fails if it trys to transcode an unsupported audio codec
+			// ffmpeg fails if it trys to transcode an unsupported audio codec
 			encoder.TranscodeVideo(*videoFile, options)
 		} else {
 			encoder.Transcode(*videoFile, options)

@@ -50,7 +50,7 @@ const (
 
 const (
 	studioName = "studioName"
-	//galleryChecksum = "galleryChecksum"
+	// galleryChecksum = "galleryChecksum"
 )
 
 var (

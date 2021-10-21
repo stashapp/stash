@@ -432,7 +432,7 @@ func listKeys(i interface{}, addPrefix bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// Get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		if key == "id" {
@@ -450,7 +450,7 @@ func updateSet(i interface{}, partial bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
+		// Get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
 		if key == "id" {

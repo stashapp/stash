@@ -874,7 +874,8 @@ xPathScrapers:
 
 	globalConfig := mockGlobalConfig{}
 
-	s := createScraperFromConfig(*c, nil, globalConfig)
+	client := &http.Client{}
+	s := createScraperFromConfig(*c, client, nil, globalConfig)
 	performer, err := s.Performer.scrapeByURL(ts.URL)
 
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"sync"
-	//"github.com/sasha-s/go-deadlock" // if you have deadlock issues
+	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -195,7 +195,7 @@ type Instance struct {
 	certFile       string
 	keyFile        string
 	sync.RWMutex
-	//deadlock.RWMutex // for deadlock testing/issues
+	// deadlock.RWMutex // for deadlock testing/issues
 }
 
 var instance *Instance

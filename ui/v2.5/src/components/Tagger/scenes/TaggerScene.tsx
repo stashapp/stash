@@ -1,14 +1,19 @@
 import React, { useState, useContext, PropsWithChildren } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Link } from "react-router-dom";
-import { Icon, TagLink, TruncatedText } from "src/components/Shared";
 import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
+
 import { sortPerformers } from "src/core/performers";
+import {
+  Icon,
+  OperationButton,
+  TagLink,
+  TruncatedText,
+} from "src/components/Shared";
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
-import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "./context";
-import { ScenePreview } from "../Scenes/SceneCard";
+import { ScenePreview } from "src/components/Scenes/SceneCard";
+import { TaggerStateContext } from "../context";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;

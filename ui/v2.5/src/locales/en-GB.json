@@ -139,7 +139,8 @@
       "match_success": "Scene successfully tagged",
       "unnamed": "Unnamed",
       "duration_off": "Duration off by at least {number}s",
-      "duration_unknown": "Duration unknown"
+      "duration_unknown": "Duration unknown",
+      "phash_matches": "{count} PHashes match"
     },
     "verb_match_fp": "Match Fingerprints",
     "verb_matched": "Matched",

@@ -36,12 +36,6 @@ linters:
 
 # Project-specific linter overrides
 linters-settings:
-  gocritic:
-    disabled-checks:
-      # Way too many errors to fix regarding comment formatting for now
-      - commentFormatting
-      - appendAssign
-
   gofmt:
     simplify: false
 
