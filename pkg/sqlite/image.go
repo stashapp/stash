@@ -261,8 +261,7 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(imageTable)
+	distinctIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"images.title", "images.path", "images.checksum"}

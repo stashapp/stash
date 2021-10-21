@@ -147,8 +147,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs("scene_markers")
+	distinctIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scene_markers.title", "scenes.title"}

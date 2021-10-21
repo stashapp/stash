@@ -18,12 +18,8 @@ type SceneQueryResult struct {
 	resolveErr error
 }
 
-func NewSceneQueryResult(ids []int, count int, finder SceneFinder) *SceneQueryResult {
+func NewSceneQueryResult(finder SceneFinder) *SceneQueryResult {
 	return &SceneQueryResult{
-		QueryResult: QueryResult{
-			IDs:   ids,
-			Count: count,
-		},
 		finder: finder,
 	}
 }

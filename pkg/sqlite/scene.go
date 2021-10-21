@@ -427,8 +427,7 @@ func (qb *sceneQueryBuilder) QueryEx(options models.SceneQueryOptions) (*models.
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(sceneTable)
+	distinctIDs(&query, sceneTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
@@ -448,13 +447,59 @@ func (qb *sceneQueryBuilder) QueryEx(options models.SceneQueryOptions) (*models.
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
 
-	// TODO - count is optional - other grouped stuff
-	idsResult, countResult, err := query.executeFind()
+	result, err := qb.queryGroupedFields(options, query)
 	if err != nil {
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
+	}
+
+	idsResult, err := query.findIDs()
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
+	}
+
+	result.IDs = idsResult
+	return result, nil
+}
+
+func (qb *sceneQueryBuilder) queryGroupedFields(options models.SceneQueryOptions, query queryBuilder) (*models.SceneQueryResult, error) {
+	if !options.Count && !options.TotalDuration && !options.TotalSize {
+		// nothing to do - return empty result
+		return models.NewSceneQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(temp.id) as total")
+	}
+
+	if options.TotalDuration {
+		query.addColumn("scenes.duration")
+		aggregateQuery.addColumn("SUM(temp.duration) as duration")
+	}
+
+	if options.TotalSize {
+		query.addColumn("scenes.size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total    int
+		Duration float64
+		Size     int
+	}{}
+	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
 	}
 
-	return models.NewSceneQueryResult(idsResult, countResult, qb), nil
+	ret := models.NewSceneQueryResult(qb)
+	ret.Count = out.Total
+	ret.TotalDuration = out.Duration
+	ret.TotalSize = out.Size
+	return ret, nil
 }
 
 func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
@@ -863,7 +908,7 @@ func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, er
 	} else {
 		var hashes []*utils.Phash
 
-		if err := qb.queryFunc(findAllPhashesQuery, nil, func(rows *sqlx.Rows) error {
+		if err := qb.queryFunc(findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
 			phash := utils.Phash{
 				Bucket: -1,
 			}
