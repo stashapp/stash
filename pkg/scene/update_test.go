@@ -84,6 +84,12 @@ func TestUpdater_IsEmpty(t *testing.T) {
 	}
 }
 
+type mockScreenshotSetter struct{}
+
+func (s *mockScreenshotSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
+	return nil
+}
+
 func TestUpdater_Update(t *testing.T) {
 	const (
 		sceneID = iota + 1
@@ -224,7 +230,7 @@ func TestUpdater_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.u.Update(&qb)
+			got, err := tt.u.Update(&qb, &mockScreenshotSetter{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Updater.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return

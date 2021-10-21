@@ -115,25 +115,29 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 	})
 }
 
-func (j *IdentifyJob) identifyScene(ctx context.Context, scene *models.Scene, sources []identify.ScraperSource) {
+func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, sources []identify.ScraperSource) {
 	if job.IsCancelled(ctx) {
 		return
 	}
 
 	if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		var taskError error
-		j.progress.ExecuteTask("Identifying "+scene.Path, func() {
+		j.progress.ExecuteTask("Identifying "+s.Path, func() {
 			task := identify.SceneIdentifier{
 				DefaultOptions: j.input.Options,
 				Sources:        sources,
+				ScreenshotSetter: &scene.PathsScreenshotSetter{
+					Paths:               instance.Paths,
+					FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+				},
 			}
 
-			taskError = task.Identify(ctx, r, scene)
+			taskError = task.Identify(ctx, r, s)
 		})
 
 		return taskError
 	}); err != nil {
-		logger.Errorf("Error encountered identifying %s: %v", scene.Path, err)
+		logger.Errorf("Error encountered identifying %s: %v", s.Path, err)
 	}
 
 	j.progress.Increment()

@@ -196,7 +196,7 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 
 	// convert existing to non-pointer types
 	for _, stashID := range stashIDPtrs {
-		originalStashIDs = append(stashIDs, *stashID)
+		originalStashIDs = append(originalStashIDs, *stashID)
 	}
 
 	if strategy == models.IdentifyFieldStrategyMerge {

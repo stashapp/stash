@@ -22,8 +22,9 @@ type ScraperSource struct {
 }
 
 type SceneIdentifier struct {
-	DefaultOptions *models.IdentifyMetadataOptionsInput
-	Sources        []ScraperSource
+	DefaultOptions   *models.IdentifyMetadataOptionsInput
+	Sources          []ScraperSource
+	ScreenshotSetter scene.ScreenshotSetter
 }
 
 func (t *SceneIdentifier) Identify(ctx context.Context, repo models.Repository, scene *models.Scene) error {
@@ -170,7 +171,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, repo models.Repositor
 		return nil
 	}
 
-	_, err = updater.Update(repo.Scene())
+	_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
 	if err != nil {
 		return fmt.Errorf("error updating scene: %w", err)
 	}
