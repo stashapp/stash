@@ -315,12 +315,12 @@ func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions
 	}
 
 	if options.Megapixels {
-		query.addColumn("images.width * images.height as megapixels")
+		query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
 		aggregateQuery.addColumn("SUM(temp.megapixels) as megapixels")
 	}
 
 	if options.TotalSize {
-		query.addColumn("images.size")
+		query.addColumn("COALESCE(images.size, 0) as size")
 		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 

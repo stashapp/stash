@@ -4,8 +4,9 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/image"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
@@ -40,16 +41,32 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (ret *models.FindImagesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		qb := repo.Image()
-		images, total, err := image.QueryWithCount(qb, imageFilter, filter)
+
+		fields := graphql.CollectAllFields(ctx)
+
+		result, err := qb.Query(models.ImageQueryOptions{
+			QueryOptions: models.QueryOptions{
+				FindFilter: filter,
+				Count:      utils.StrInclude(fields, "count"),
+			},
+			ImageFilter: imageFilter,
+			Megapixels:  utils.StrInclude(fields, "megapixels"),
+			TotalSize:   utils.StrInclude(fields, "filesize"),
+		})
+		if err != nil {
+			return err
+		}
+
+		images, err := result.Resolve()
 		if err != nil {
 			return err
 		}
 
 		ret = &models.FindImagesResultType{
-			Count:  total,
-			Images: images,
-			// Megapixels: megapixels,
-			// Filesize:   filesize,
+			Count:      result.Count,
+			Images:     images,
+			Megapixels: result.Megapixels,
+			Filesize:   result.TotalSize,
 		}
 
 		return nil
