@@ -765,7 +765,7 @@ export const useScenesList = (
           {duration !== undefined ? (
             <span className="scenes-duration">
               {TextUtils.secondsAsTimeString(
-                result?.data?.findScenes?.duration,
+                duration,
                 3
               )}
             </span>
@@ -813,14 +813,44 @@ export const useImagesList = (
       result?.data?.findImages?.images ?? [],
     getCount: (result: FindImagesQueryResult) =>
       result?.data?.findImages?.count ?? 0,
-    getMetadataByline: (result: FindImagesQueryResult) => [
-      `${result?.data?.findImages?.megapixels} Megapixels`,
-      `${
-        TextUtils.fileSize(result?.data?.findImages?.filesize).size
-      } ${TextUtils.formatFileSizeUnit(
-        TextUtils.fileSize(result?.data?.findImages?.filesize).unit
-      )}`,
-    ],
+    getMetadataByline: (result: FindImagesQueryResult) => {
+      const megapixels = result?.data?.findImages?.megapixels;
+      const size =
+        result?.data?.findImages?.filesize !== undefined
+          ? TextUtils.fileSize(result?.data?.findImages?.filesize)
+          : undefined;
+
+      if (megapixels === undefined && size === undefined) {
+        return;
+      }
+
+      const separator =
+        megapixels !== undefined && size !== undefined ? " - " : "";
+
+      return (
+        <span className="images-stats">
+          &nbsp;(
+          {megapixels !== undefined ? (
+            <span className="images-megapixels">
+              <FormattedNumber value={megapixels} /> Megapixels
+            </span>
+          ) : undefined}
+          {separator}
+          {size !== undefined ? (
+            <span className="images-size">
+              <FormattedNumber
+                value={size.size}
+                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                  size.unit
+                )}
+              />
+              {` ${TextUtils.formatFileSizeUnit(size.unit)}`}
+            </span>
+          ) : undefined}
+          )
+        </span>
+      );
+    },
   });
 
 export const useGalleriesList = (
