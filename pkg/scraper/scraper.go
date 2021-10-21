@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -109,6 +110,33 @@ func (s scraper_s) loadByURL(url string, ty models.ScrapeContentType) (models.Sc
 		return s.movie.scrapeByURL(url)
 	default:
 		panic("Unimplemented scraper type")
+	}
+}
+
+func (s scraper_s) loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		performers, err := s.performer.scrapeByName(name)
+		if err != nil {
+			return nil, err
+		}
+		content := make([]models.ScrapedContent, len(performers))
+		for i := range performers {
+			content[i] = performers[i]
+		}
+		return content, nil
+	case models.ScrapeContentTypeScene:
+		scenes, err := s.scene.scrapeByName(name)
+		if err != nil {
+			return nil, err
+		}
+		content := make([]models.ScrapedContent, len(scenes))
+		for i := range scenes {
+			content[i] = scenes[i]
+		}
+		return content, nil
+	default:
+		return nil, fmt.Errorf("loading %v by name: %w", ty, ErrUnsupported)
 	}
 }
 
