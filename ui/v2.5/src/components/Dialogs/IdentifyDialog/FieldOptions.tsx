@@ -211,6 +211,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
     const newOption = {
       field: availableFields[0],
       strategy: GQL.IdentifyFieldStrategy.Ignore,
+      createMissing: allowSetDefault ? undefined : false,
     };
     newOptions.push(newOption);
     setLocalFieldOptions(newOptions);
