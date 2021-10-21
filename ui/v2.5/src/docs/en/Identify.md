@@ -22,7 +22,7 @@ Field specific options may be set as well. Each field may have a Strategy. The b
 |----------|-------------|
 | Ignore | Not set. |
 | Overwrite | Overwrite existing value. |
-| Merge (*default*) | For multi-value fields, adds to existing values. For single-value fields, same behaviour as Overwrite. |
+| Merge (*default*) | For multi-value fields, adds to existing values. For single-value fields, only sets if not already set. |
 
 For Studio, Performers and Tags, an option is also available to Create Missing objects. This is false by default. When true, if a Studio/Performer/Tag is included during the identification process and does not exist in the system, then it will be created.
 
