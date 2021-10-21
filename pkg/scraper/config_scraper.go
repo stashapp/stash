@@ -11,7 +11,7 @@ type configSceneScraper struct {
 }
 
 func (c *configSceneScraper) matchesURL(url string) bool {
-	return c.config.matchesSceneURL(url)
+	return c.config.matchesURL(url, models.ScrapeContentTypeScene)
 }
 
 func (c *configSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, error) {
@@ -64,7 +64,7 @@ type configPerformerScraper struct {
 }
 
 func (c *configPerformerScraper) matchesURL(url string) bool {
-	return c.config.matchesPerformerURL(url)
+	return c.config.matchesURL(url, models.ScrapeContentTypePerformer)
 }
 
 func (c *configPerformerScraper) scrapeByName(name string) ([]*models.ScrapedPerformer, error) {
@@ -113,7 +113,7 @@ type configGalleryScraper struct {
 }
 
 func (c *configGalleryScraper) matchesURL(url string) bool {
-	return c.config.matchesGalleryURL(url)
+	return c.config.matchesURL(url, models.ScrapeContentTypeGallery)
 }
 
 func (c *configGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
@@ -158,7 +158,7 @@ type configMovieScraper struct {
 }
 
 func (c *configMovieScraper) matchesURL(url string) bool {
-	return c.config.matchesMovieURL(url)
+	return c.config.matchesURL(url, models.ScrapeContentTypeMovie)
 }
 
 func (c *configMovieScraper) scrapeByURL(url string) (*models.ScrapedMovie, error) {
@@ -194,23 +194,22 @@ func createScraperFromConfig(c config, client *http.Client, txnManager models.Tr
 		globalConfig: globalConfig,
 	}
 
-	ret := scraper{
-		ID:   c.ID,
+	ret := scraper_s{
 		Spec: configScraperSpec(c),
 	}
 
 	// only set fields if supported
-	if c.supportsPerformers() {
-		ret.Performer = &configPerformerScraper{&base}
+	if c.supports(models.ScrapeContentTypePerformer) {
+		ret.performer = &configPerformerScraper{&base}
 	}
-	if c.supportsGalleries() {
-		ret.Gallery = &configGalleryScraper{&base}
+	if c.supports(models.ScrapeContentTypeGallery) {
+		ret.gallery = &configGalleryScraper{&base}
 	}
-	if c.supportsMovies() {
-		ret.Movie = &configMovieScraper{&base}
+	if c.supports(models.ScrapeContentTypeMovie) {
+		ret.movie = &configMovieScraper{&base}
 	}
-	if c.supportsScenes() {
-		ret.Scene = &configSceneScraper{&base}
+	if c.supports(models.ScrapeContentTypeScene) {
+		ret.scene = &configSceneScraper{&base}
 	}
 
 	return ret

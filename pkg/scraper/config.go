@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/yaml.v2"
 )
 
@@ -232,55 +233,46 @@ func loadConfigFromYAMLFile(path string) (*config, error) {
 	return ret, nil
 }
 
-func (c config) supportsPerformers() bool {
-	return c.PerformerByName != nil || c.PerformerByFragment != nil || len(c.PerformerByURL) > 0
-}
-
-func (c config) matchesPerformerURL(url string) bool {
-	for _, scraper := range c.PerformerByURL {
-		if scraper.matchesURL(url) {
-			return true
-		}
+func (c config) supports(ty models.ScrapeContentType) bool {
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		return c.PerformerByName != nil || c.PerformerByFragment != nil || len(c.PerformerByURL) > 0
+	case models.ScrapeContentTypeScene:
+		return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
+	case models.ScrapeContentTypeGallery:
+		return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
+	case models.ScrapeContentTypeMovie:
+		return len(c.MovieByURL) > 0
 	}
 
-	return false
+	panic("Unhandled ScrapeContentType")
 }
 
-func (c config) supportsScenes() bool {
-	return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
-}
-
-func (c config) supportsGalleries() bool {
-	return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
-}
-
-func (c config) matchesSceneURL(url string) bool {
-	for _, scraper := range c.SceneByURL {
-		if scraper.matchesURL(url) {
-			return true
+func (c config) matchesURL(url string, ty models.ScrapeContentType) bool {
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		for _, scraper := range c.PerformerByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
 		}
-	}
-
-	return false
-}
-
-func (c config) matchesGalleryURL(url string) bool {
-	for _, scraper := range c.GalleryByURL {
-		if scraper.matchesURL(url) {
-			return true
+	case models.ScrapeContentTypeScene:
+		for _, scraper := range c.SceneByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
 		}
-	}
-	return false
-}
-
-func (c config) supportsMovies() bool {
-	return len(c.MovieByURL) > 0
-}
-
-func (c config) matchesMovieURL(url string) bool {
-	for _, scraper := range c.MovieByURL {
-		if scraper.matchesURL(url) {
-			return true
+	case models.ScrapeContentTypeGallery:
+		for _, scraper := range c.GalleryByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
+	case models.ScrapeContentTypeMovie:
+		for _, scraper := range c.MovieByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
 		}
 	}
 

@@ -111,8 +111,8 @@ func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager mod
 	// Add built-in scrapers
 	freeOnes := getFreeonesScraper(client, txnManager, globalConfig)
 	autoTag := getAutoTagScraper(txnManager, globalConfig)
-	scrapers[freeOnes.ID] = freeOnes
-	scrapers[autoTag.ID] = autoTag
+	scrapers[freeOnes.spec().ID] = freeOnes
+	scrapers[autoTag.spec().ID] = autoTag
 
 	logger.Debugf("Reading scraper configs from %s", path)
 
@@ -124,7 +124,7 @@ func loadScrapers(globalConfig GlobalConfig, client *http.Client, txnManager mod
 				logger.Errorf("Error loading scraper %s: %v", fp, err)
 			} else {
 				scraper := createScraperFromConfig(*c, client, txnManager, globalConfig)
-				scrapers[scraper.ID] = scraper
+				scrapers[scraper.spec().ID] = scraper
 			}
 			scraperFiles = append(scraperFiles, fp)
 		}
@@ -163,90 +163,127 @@ func (c *Cache) UpdateConfig(globalConfig GlobalConfig) {
 func (c Cache) ListScrapers(k models.ScrapeContentType) []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
-		if s.matchKind(k) {
-			ret = append(ret, s.Spec)
+		if s.supports(k) {
+			spec := s.spec()
+			ret = append(ret, &spec)
 		}
 	}
 
 	return ret
 }
 
-func (c Cache) findScraper(scraperID string) *scraper {
+func (c Cache) findScraper(scraperID string) scraper {
 	s, ok := c.scrapers[scraperID]
 	if ok {
-		return &s
+		return s
 	}
 
 	return nil
 }
 
-// ScraperPerformerQuery uses the scraper with the provided ID to query for
-// performers using the provided query string. It returns a list of
-// scraped performer data.
-func (c Cache) ScraperPerformerQuery(scraperID string, query string) ([]*models.ScrapedPerformer, error) {
+func (c Cache) ScrapeByName(id, query string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	// find scraper with the provided id
-	s := c.findScraper(scraperID)
+	s := c.findScraper(id)
 	if s == nil {
-		return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
+		return nil, fmt.Errorf("scraper with id %s: %w", id, ErrNotFound)
+	}
+	if !s.supports(ty) {
+		return nil, fmt.Errorf("scraping %v with scraper %s: %w", ty, id, ErrUnsupported)
 	}
 
-	if !s.matchKind(models.ScrapeContentTypePerformer) {
-		return nil, fmt.Errorf("scraping %v with scraper %s: %w", models.ScrapeContentTypePerformer, scraperID, ErrUnsupported)
+	ns, ok := s.(nameScraper)
+	if !ok {
+		return nil, fmt.Errorf("name-scraping with scraper %s: %w", id, ErrUnsupported)
 	}
 
-	return s.Performer.scrapeByName(query)
+	return ns.loadByName(query, ty)
 }
 
-// ScrapePerformer uses the scraper with the provided ID to scrape a
-// performer using the provided performer fragment.
-func (c Cache) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	// find scraper with the provided id
-	s := c.findScraper(scraperID)
-	if s != nil && s.Performer != nil {
-		ret, err := s.Performer.scrapeByFragment(scrapedPerformer)
-		if err != nil {
-			return nil, err
-		}
-
-		if ret != nil {
-			err = c.postScrapePerformer(ctx, ret)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		return ret, nil
+// ScrapeFragment uses the given fragment input to scrape
+func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (models.ScrapedContent, error) {
+	s := c.findScraper(id)
+	if s == nil {
+		return nil, fmt.Errorf("scraper %s: %w", id, ErrNotFound)
 	}
 
-	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
+	fs, ok := s.(fragmentScraper)
+	if !ok {
+		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, ErrNotSupported)
+	}
+
+	content, err := fs.loadByFragment(input)
+	if err != nil {
+		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, err)
+	}
+
+	return c.postScrape(ctx, content)
 }
 
-// ScrapePerformerURL uses the first scraper it finds that matches the URL
-// provided to scrape a performer. If no scrapers are found that matches
-// the URL, then nil is returned.
-func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
+// ScrapeURL scrapes a given url for the given content. Searches the scraper cache
+// and picks the first scraper capable of scraping the given url into the desired
+// content. Returns the scraped content or an error if the scrape fails.
+func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	for _, s := range c.scrapers {
-		if matchesURL(s.Performer, url) {
-			ret, err := s.Performer.scrapeByURL(url)
+		if s.supportsURL(url, ty) {
+			ul, ok := s.(urlScraper)
+			if !ok {
+				return nil, fmt.Errorf("scraper with id %s used as url scraper: %w", s.spec().ID, ErrUnsupported)
+			}
+			ret, err := ul.loadByURL(url, ty)
 			if err != nil {
 				return nil, err
 			}
 
-			if ret != nil {
-				err = c.postScrapePerformer(context.TODO(), ret)
-				if err != nil {
-					return nil, err
-				}
+			if ret == nil {
+				return ret, nil
 			}
 
-			return ret, nil
+			return c.postScrape(ctx, ret)
 		}
 	}
 
 	return nil, nil
 }
 
-func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerformer) error {
+// postScrape handles post-processing of scraped content
+func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (models.ScrapedContent, error) {
+	// Analyze the concrete type, call the right post-processing function
+	switch v := content.(type) {
+	case models.ScrapedPerformer:
+		return c.postScrapePerformer(ctx, &v)
+	case models.ScrapedScene:
+		return c.postScrapeScene(ctx, &v)
+	case models.ScrapedGallery:
+		return c.postScrapeGallery(ctx, &v)
+	case models.ScrapedMovie:
+		return c.postScrapeMovie(ctx, &v)
+	}
+
+	// If nothing matches, pass the content through
+	return content, nil
+}
+
+func (c Cache) postScrapeMovie(ctx context.Context, ret *models.ScrapedMovie) (models.ScrapedContent, error) {
+	if ret.Studio != nil {
+		if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+			return match.ScrapedStudio(r.Studio(), ret.Studio)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	// post-process - set the image if applicable
+	if err := setMovieFrontImage(ctx, c.client, ret, c.globalConfig); err != nil {
+		logger.Warnf("could not set front image using URL %s: %v", *ret.FrontImage, err)
+	}
+	if err := setMovieBackImage(ctx, c.client, ret, c.globalConfig); err != nil {
+		logger.Warnf("could not set back image using URL %s: %v", *ret.BackImage, err)
+	}
+
+	return ret, nil
+}
+
+func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerformer) (models.ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
@@ -258,7 +295,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerfo
 
 		return nil
 	}); err != nil {
-		return err
+		return nil, err
 	}
 
 	// post-process - set the image if applicable
@@ -266,7 +303,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerfo
 		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 	}
 
-	return nil
+	return ret, nil
 }
 
 func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
@@ -287,7 +324,7 @@ func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
 	return nil
 }
 
-func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) error {
+func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (models.ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		mqb := r.Movie()
@@ -326,7 +363,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) er
 
 		return nil
 	}); err != nil {
-		return err
+		return nil, err
 	}
 
 	// post-process - set the image if applicable
@@ -334,11 +371,11 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) er
 		logger.Warnf("Could not set image using URL %s: %v", *ret.Image, err)
 	}
 
-	return nil
+	return ret, nil
 }
 
-func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+func (c Cache) postScrapeGallery(ctx context.Context, ret *models.ScrapedGallery) (models.ScrapedContent, error) {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		tqb := r.Tag()
 		sqb := r.Studio()
@@ -365,210 +402,57 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 
 		return nil
 	}); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return ret, nil
 }
 
-// ScrapeScene uses the scraper with the provided ID to scrape a scene using existing data.
-func (c Cache) ScrapeScene(scraperID string, sceneID int) (*models.ScrapedScene, error) {
-	// find scraper with the provided id
+func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	s := c.findScraper(scraperID)
-	if s != nil && s.Scene != nil {
-		// get scene from id
-		scene, err := getScene(sceneID, c.txnManager)
+	if s == nil {
+		return nil, fmt.Errorf("scraper %s: %w", scraperID, ErrNotFound)
+	}
+
+	if !s.supports(ty) {
+		return nil, fmt.Errorf("scraper %s: scraping for %v: %w", scraperID, ty, ErrNotSupported)
+	}
+
+	var ret models.ScrapedContent
+	switch ty {
+	case models.ScrapeContentTypeScene:
+		ss, ok := s.(sceneLoader)
+		if !ok {
+			return nil, fmt.Errorf("scraper with id %s used as scene scraper: %w", scraperID, ErrUnsupported)
+		}
+
+		scene, err := getScene(id, c.txnManager)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scraper %s: unable to load scene id %v: %w", scraperID, id, err)
 		}
 
-		ret, err := s.Scene.scrapeByScene(scene)
+		ret, err = ss.loadByScene(scene)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
+		}
+	case models.ScrapeContentTypeGallery:
+		gs, ok := s.(galleryLoader)
+		if !ok {
+			return nil, fmt.Errorf("scraper with id %s used as a gallery scraper: %w", scraperID, ErrUnsupported)
 		}
 
-		if ret != nil {
-			err = c.postScrapeScene(context.TODO(), ret)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		return ret, nil
-	}
-
-	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
-}
-
-// ScrapeSceneQuery uses the scraper with the provided ID to query for
-// scenes using the provided query string. It returns a list of
-// scraped scene data.
-func (c Cache) ScrapeSceneQuery(scraperID string, query string) ([]*models.ScrapedScene, error) {
-	// find scraper with the provided id
-	s := c.findScraper(scraperID)
-	if s != nil && s.Scene != nil {
-		return s.Scene.scrapeByName(query)
-	}
-
-	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
-}
-
-// ScrapeSceneFragment uses the scraper with the provided ID to scrape a scene.
-func (c Cache) ScrapeSceneFragment(scraperID string, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
-	// find scraper with the provided id
-	s := c.findScraper(scraperID)
-	if s != nil && s.Scene != nil {
-		ret, err := s.Scene.scrapeByFragment(scene)
-
+		gallery, err := getGallery(id, c.txnManager)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scraper %s: unable to load gallery id %v: %w", scraperID, id, err)
 		}
 
-		if ret != nil {
-			err = c.postScrapeScene(context.TODO(), ret)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		return ret, nil
-	}
-
-	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
-}
-
-// ScrapeSceneURL uses the first scraper it finds that matches the URL
-// provided to scrape a scene. If no scrapers are found that matches
-// the URL, then nil is returned.
-func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
-	for _, s := range c.scrapers {
-		if matchesURL(s.Scene, url) {
-			ret, err := s.Scene.scrapeByURL(url)
-
-			if err != nil {
-				return nil, err
-			}
-
-			err = c.postScrapeScene(context.TODO(), ret)
-			if err != nil {
-				return nil, err
-			}
-
-			return ret, nil
-		}
-	}
-
-	return nil, nil
-}
-
-// ScrapeGallery uses the scraper with the provided ID to scrape a gallery using existing data.
-func (c Cache) ScrapeGallery(scraperID string, galleryID int) (*models.ScrapedGallery, error) {
-	s := c.findScraper(scraperID)
-	if s != nil && s.Gallery != nil {
-		// get gallery from id
-		gallery, err := getGallery(galleryID, c.txnManager)
+		ret, err = gs.loadByGallery(gallery)
 		if err != nil {
-			return nil, err
-		}
-
-		ret, err := s.Gallery.scrapeByGallery(gallery)
-
-		if err != nil {
-			return nil, err
-		}
-
-		if ret != nil {
-			err = c.postScrapeGallery(ret)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		return ret, nil
-	}
-
-	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
-}
-
-// ScrapeGalleryFragment uses the scraper with the provided ID to scrape a gallery.
-func (c Cache) ScrapeGalleryFragment(scraperID string, gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
-	s := c.findScraper(scraperID)
-	if s != nil && s.Gallery != nil {
-		ret, err := s.Gallery.scrapeByFragment(gallery)
-
-		if err != nil {
-			return nil, err
-		}
-
-		if ret != nil {
-			err = c.postScrapeGallery(ret)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		return ret, nil
-	}
-
-	return nil, fmt.Errorf("scraper with id %s: %w", scraperID, ErrNotFound)
-}
-
-// ScrapeGalleryURL uses the first scraper it finds that matches the URL
-// provided to scrape a scene. If no scrapers are found that matches
-// the URL, then nil is returned.
-func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
-	for _, s := range c.scrapers {
-		if matchesURL(s.Gallery, url) {
-			ret, err := s.Gallery.scrapeByURL(url)
-
-			if err != nil {
-				return nil, err
-			}
-
-			err = c.postScrapeGallery(ret)
-			if err != nil {
-				return nil, err
-			}
-
-			return ret, nil
+			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
 		}
 	}
 
-	return nil, nil
-}
-
-// ScrapeMovieURL uses the first scraper it finds that matches the URL
-// provided to scrape a movie. If no scrapers are found that matches
-// the URL, then nil is returned.
-func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
-	for _, s := range c.scrapers {
-		if s.Movie != nil && matchesURL(s.Movie, url) {
-			ret, err := s.Movie.scrapeByURL(url)
-			if err != nil {
-				return nil, err
-			}
-
-			if ret.Studio != nil {
-				if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-					return match.ScrapedStudio(r.Studio(), ret.Studio)
-				}); err != nil {
-					return nil, err
-				}
-			}
-
-			// post-process - set the image if applicable
-			if err := setMovieFrontImage(context.TODO(), c.client, ret, c.globalConfig); err != nil {
-				logger.Warnf("Could not set front image using URL %s: %s", *ret.FrontImage, err.Error())
-			}
-			if err := setMovieBackImage(context.TODO(), c.client, ret, c.globalConfig); err != nil {
-				logger.Warnf("Could not set back image using URL %s: %s", *ret.BackImage, err.Error())
-			}
-
-			return ret, nil
-		}
-	}
-
-	return nil, nil
+	return c.postScrape(ctx, ret)
 }
 
 func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {

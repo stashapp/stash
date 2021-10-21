@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	ErrNotImplemented = errors.New("not implemented")
-	ErrNotSupported   = errors.New("not supported")
+	ErrNotImplemented      = errors.New("not implemented")
+	ErrNotSupported        = errors.New("not supported")
+	ErrInternalUnreachable = errors.New("internal server error: unreachable")
 )
 
 type hookExecutor interface {

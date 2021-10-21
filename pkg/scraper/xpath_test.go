@@ -876,11 +876,20 @@ xPathScrapers:
 
 	client := &http.Client{}
 	s := createScraperFromConfig(*c, client, nil, globalConfig)
-	performer, err := s.Performer.scrapeByURL(ts.URL)
+	us, ok := s.(urlScraper)
+	if !ok {
+		t.Error("couldn't convert scraper into url scraper")
+	}
+	content, err := us.loadByURL(ts.URL, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
 		return
+	}
+
+	performer, ok := content.(*models.ScrapedPerformer)
+	if !ok {
+		t.Error("couldn't convert scraped content into a performer")
 	}
 
 	verifyField(t, "The name", performer.Name, "Name")

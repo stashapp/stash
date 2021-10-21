@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -15,8 +14,6 @@ const (
 	autoTagScraperID   = "builtin_autotag"
 	autoTagScraperName = "Auto Tag"
 )
-
-var errNotSupported = errors.New("not supported")
 
 type autotagScraper struct {
 	txnManager   models.TransactionManager
@@ -90,7 +87,7 @@ type autotagSceneScraper struct {
 }
 
 func (c *autotagSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, error) {
-	return nil, errNotSupported
+	return nil, ErrNotSupported
 }
 
 func (c *autotagSceneScraper) scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error) {
@@ -130,11 +127,11 @@ func (c *autotagSceneScraper) scrapeByScene(scene *models.Scene) (*models.Scrape
 }
 
 func (c *autotagSceneScraper) scrapeByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
-	return nil, errNotSupported
+	return nil, ErrNotSupported
 }
 
 func (c *autotagSceneScraper) scrapeByURL(url string) (*models.ScrapedScene, error) {
-	return nil, errNotSupported
+	return nil, ErrNotSupported
 }
 
 type autotagGalleryScraper struct {
@@ -183,11 +180,11 @@ func (c *autotagGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*model
 }
 
 func (c *autotagGalleryScraper) scrapeByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
-	return nil, errNotSupported
+	return nil, ErrNotSupported
 }
 
 func (c *autotagGalleryScraper) scrapeByURL(url string) (*models.ScrapedGallery, error) {
-	return nil, errNotSupported
+	return nil, ErrNotSupported
 }
 
 func getAutoTagScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
@@ -200,8 +197,7 @@ func getAutoTagScraper(txnManager models.TransactionManager, globalConfig Global
 		models.ScrapeTypeFragment,
 	}
 
-	return scraper{
-		ID: autoTagScraperID,
+	return scraper_s{
 		Spec: &models.Scraper{
 			ID:   autoTagScraperID,
 			Name: autoTagScraperName,
@@ -212,7 +208,7 @@ func getAutoTagScraper(txnManager models.TransactionManager, globalConfig Global
 				SupportedScrapes: supportedScrapes,
 			},
 		},
-		Scene:   &autotagSceneScraper{&base},
-		Gallery: &autotagGalleryScraper{&base},
+		scene:   &autotagSceneScraper{&base},
+		gallery: &autotagGalleryScraper{&base},
 	}
 }
