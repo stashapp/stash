@@ -1,8 +1,44 @@
 package models
 
-type ImageReader interface {
+type ImageQueryOptions struct {
+	QueryOptions
+	ImageFilter *ImageFilterType
+
+	Megapixels bool
+	TotalSize  bool
+}
+
+type ImageQueryResult struct {
+	QueryResult
+	Megapixels float64
+	TotalSize  int
+
+	finder     ImageFinder
+	images     []*Image
+	resolveErr error
+}
+
+func NewImageQueryResult(finder ImageFinder) *ImageQueryResult {
+	return &ImageQueryResult{
+		finder: finder,
+	}
+}
+
+func (r *ImageQueryResult) Resolve() ([]*Image, error) {
+	// cache results
+	if r.images == nil && r.resolveErr == nil {
+		r.images, r.resolveErr = r.finder.FindMany(r.IDs)
+	}
+	return r.images, r.resolveErr
+}
+
+type ImageFinder interface {
 	Find(id int) (*Image, error)
 	FindMany(ids []int) ([]*Image, error)
+}
+
+type ImageReader interface {
+	ImageFinder
 	FindByChecksum(checksum string) (*Image, error)
 	FindByGalleryID(galleryID int) ([]*Image, error)
 	CountByGalleryID(galleryID int) (int, error)

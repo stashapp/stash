@@ -283,27 +283,84 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 }
 
 func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
-	query, err := qb.makeQuery(imageFilter, findFilter)
+	result, err := qb.QueryEx(models.ImageQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		ImageFilter: imageFilter,
+	})
 	if err != nil {
 		return nil, 0, err
 	}
 
-	idsResult, countResult, err := query.executeFind()
+	images, err := result.Resolve()
 	if err != nil {
 		return nil, 0, err
 	}
 
-	var images []*models.Image
-	for _, id := range idsResult {
-		image, err := qb.Find(id)
-		if err != nil {
-			return nil, 0, err
-		}
+	return images, result.Count, nil
+}
 
-		images = append(images, image)
+func (qb *imageQueryBuilder) QueryEx(options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
+	query, err := qb.makeQuery(options.ImageFilter, options.FindFilter)
+	if err != nil {
+		return nil, err
 	}
 
-	return images, countResult, nil
+	result, err := qb.queryGroupedFields(options, *query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
+	}
+
+	idsResult, err := query.findIDs()
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
+	}
+
+	result.IDs = idsResult
+	return result, nil
+}
+
+func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions, query queryBuilder) (*models.ImageQueryResult, error) {
+	if !options.Count && !options.Megapixels && !options.TotalSize {
+		// nothing to do - return empty result
+		return models.NewImageQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(temp.id) as total")
+	}
+
+	if options.Megapixels {
+		query.addColumn("images.width * images.height as megapixels")
+		aggregateQuery.addColumn("SUM(temp.megapixels) as megapixels")
+	}
+
+	if options.TotalSize {
+		query.addColumn("images.size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total      int
+		Megapixels float64
+		Size       int
+	}{}
+	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewImageQueryResult(qb)
+	ret.Count = out.Total
+	ret.Megapixels = out.Megapixels
+	ret.TotalSize = out.Size
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {
