@@ -747,39 +747,33 @@ export const useScenesList = (
       result?.data?.findScenes?.count ?? 0,
     getMetadataByline: (result: FindScenesQueryResult) => {
       const duration = result?.data?.findScenes?.duration;
-      const size =
-        result?.data?.findScenes?.filesize !== undefined
-          ? TextUtils.fileSize(result?.data?.findScenes?.filesize)
-          : undefined;
+      const size = result?.data?.findScenes?.filesize;
+      const filesize = size ? TextUtils.fileSize(size) : undefined;
 
-      if (duration === undefined && size === undefined) {
+      if (!duration && !size) {
         return;
       }
 
-      const separator =
-        duration !== undefined && size !== undefined ? " - " : "";
+      const separator = duration && size ? " - " : "";
 
       return (
         <span className="scenes-stats">
           &nbsp;(
-          {duration !== undefined ? (
+          {duration ? (
             <span className="scenes-duration">
-              {TextUtils.secondsAsTimeString(
-                duration,
-                3
-              )}
+              {TextUtils.secondsAsTimeString(duration, 3)}
             </span>
           ) : undefined}
           {separator}
-          {size !== undefined ? (
+          {size && filesize ? (
             <span className="scenes-size">
               <FormattedNumber
-                value={size.size}
+                value={filesize.size}
                 maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                  size.unit
+                  filesize.unit
                 )}
               />
-              {` ${TextUtils.formatFileSizeUnit(size.unit)}`}
+              {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
             </span>
           ) : undefined}
           )
@@ -815,36 +809,33 @@ export const useImagesList = (
       result?.data?.findImages?.count ?? 0,
     getMetadataByline: (result: FindImagesQueryResult) => {
       const megapixels = result?.data?.findImages?.megapixels;
-      const size =
-        result?.data?.findImages?.filesize !== undefined
-          ? TextUtils.fileSize(result?.data?.findImages?.filesize)
-          : undefined;
+      const size = result?.data?.findImages?.filesize;
+      const filesize = size ? TextUtils.fileSize(size) : undefined;
 
-      if (megapixels === undefined && size === undefined) {
+      if (!megapixels && !size) {
         return;
       }
 
-      const separator =
-        megapixels !== undefined && size !== undefined ? " - " : "";
+      const separator = megapixels && size ? " - " : "";
 
       return (
         <span className="images-stats">
           &nbsp;(
-          {megapixels !== undefined ? (
+          {megapixels ? (
             <span className="images-megapixels">
               <FormattedNumber value={megapixels} /> Megapixels
             </span>
           ) : undefined}
           {separator}
-          {size !== undefined ? (
+          {size && filesize ? (
             <span className="images-size">
               <FormattedNumber
-                value={size.size}
+                value={filesize.size}
                 maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
-                  size.unit
+                  filesize.unit
                 )}
               />
-              {` ${TextUtils.formatFileSizeUnit(size.unit)}`}
+              {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
             </span>
           ) : undefined}
           )
