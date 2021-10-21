@@ -454,12 +454,12 @@ func (qb *sceneQueryBuilder) queryGroupedFields(options models.SceneQueryOptions
 	}
 
 	if options.TotalDuration {
-		query.addColumn("scenes.duration")
+		query.addColumn("COALESCE(scenes.duration, 0) as duration")
 		aggregateQuery.addColumn("SUM(temp.duration) as duration")
 	}
 
 	if options.TotalSize {
-		query.addColumn("scenes.size")
+		query.addColumn("COALESCE(scenes.size, 0) as size")
 		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 
