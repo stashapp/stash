@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -14,7 +17,11 @@ type GenerateTranscodeTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateTranscodeTask) Start() {
+func (t *GenerateTranscodeTask) GetDescription() string {
+	return fmt.Sprintf("Generating transcode for %s", t.Scene.Path)
+}
+
+func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return

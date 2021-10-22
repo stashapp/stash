@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -22,7 +23,17 @@ type GenerateMarkersTask struct {
 	Screenshot   bool
 }
 
-func (t *GenerateMarkersTask) Start() {
+func (t *GenerateMarkersTask) GetDescription() string {
+	if t.Scene != nil {
+		return fmt.Sprintf("Generating markers for %s", t.Scene.Path)
+	} else if t.Marker != nil {
+		return fmt.Sprintf("Generating marker preview for marker ID %d", t.Marker.ID)
+	}
+
+	return "Generating markers"
+}
+
+func (t *GenerateMarkersTask) Start(ctx context.Context) {
 	if t.Scene != nil {
 		t.generateSceneMarkers()
 	}
@@ -155,7 +166,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 	}
 }
 
-func (t *GenerateMarkersTask) isMarkerNeeded() int {
+func (t *GenerateMarkersTask) markersNeeded() int {
 	markers := 0
 	var sceneMarkers []*models.SceneMarker
 	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {

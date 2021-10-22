@@ -286,7 +286,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 				Overwrite:           false,
 				fileNamingAlgorithm: t.fileNamingAlgorithm,
 			}
-			taskSprite.Start()
+			taskSprite.Start(ctx)
 			iwg.Done()
 		})
 	}
@@ -300,7 +300,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 				fileNamingAlgorithm: t.fileNamingAlgorithm,
 				txnManager:          t.TxnManager,
 			}
-			taskPhash.Start()
+			taskPhash.Start(ctx)
 			iwg.Done()
 		})
 	}
@@ -332,7 +332,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 				Overwrite:           false,
 				fileNamingAlgorithm: t.fileNamingAlgorithm,
 			}
-			taskPreview.Start()
+			taskPreview.Start(ctx)
 			iwg.Done()
 		})
 	}
