@@ -133,7 +133,7 @@ func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene
 }
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
 	}

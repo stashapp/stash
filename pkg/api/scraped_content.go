@@ -15,6 +15,11 @@ var ErrConversion = errors.New("conversion error")
 func marshalScrapedScenes(content []models.ScrapedContent) ([]*models.ScrapedScene, error) {
 	var ret []*models.ScrapedScene
 	for _, c := range content {
+		if c == nil {
+			ret = append(ret, nil)
+			continue
+		}
+
 		if s, ok := c.(*models.ScrapedScene); ok {
 			ret = append(ret, s)
 		} else {
