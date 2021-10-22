@@ -68,9 +68,17 @@ input AutoTagMetadataInput {
 }
 
 enum IdentifyFieldStrategy {
+  """Never sets the field value"""
   IGNORE
-  """For multi-value fields, merge with existing. For single-value fields, ignore if already set"""
+  """
+  For multi-value fields, merge with existing. 
+  For single-value fields, ignore if already set
+  """
   MERGE
+  """Always replaces the value if a value is found. 
+  For multi-value fields, any existing values are removed and replaced with the
+  scraped values.
+  """
   OVERWRITE
 }
 
