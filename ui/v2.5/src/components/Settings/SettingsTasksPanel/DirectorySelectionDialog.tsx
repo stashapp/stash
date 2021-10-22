@@ -8,11 +8,13 @@ import { ConfigurationContext } from "src/hooks/Config";
 interface IDirectorySelectionDialogProps {
   animation?: boolean;
   initialPaths?: string[];
+  allowEmpty?: boolean;
   onClose: (paths?: string[]) => void;
 }
 
 export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = ({
   animation,
+  allowEmpty = false,
   initialPaths = [],
   onClose,
 }) => {
@@ -38,7 +40,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
     <Modal
       show
       modalProps={{ animation }}
-      disabled={paths.length === 0}
+      disabled={!allowEmpty && paths.length === 0}
       icon="pencil-alt"
       header={intl.formatMessage({ id: "actions.select_folders" })}
       accept={{

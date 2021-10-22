@@ -369,6 +369,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     return (
       <DirectorySelectionDialog
         animation={false}
+        allowEmpty
         initialPaths={paths}
         onClose={(p) => {
           if (p) {
