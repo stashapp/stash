@@ -27,23 +27,23 @@ func (g sceneRelationships) studio() (*int64, error) {
 	scraped := g.result.result.Studio
 	endpoint := g.result.source.RemoteSite
 
-	if scraped != nil {
-		if shouldSetSingleValueField(fieldStrategy, existingID.Valid) {
-			if scraped.StoredID != nil {
-				// existing studio, just set it
-				studioID, err := strconv.ParseInt(*scraped.StoredID, 10, 64)
-				if err != nil {
-					return nil, fmt.Errorf("error converting studio ID %s: %w", *scraped.StoredID, err)
-				}
+	if scraped == nil || !shouldSetSingleValueField(fieldStrategy, existingID.Valid) {
+		return nil, nil
+	}
 
-				// only return value if different to current
-				if existingID.Int64 != studioID {
-					return &studioID, nil
-				}
-			} else if createMissing {
-				return createMissingStudio(endpoint, g.repo, scraped)
-			}
+	if scraped.StoredID != nil {
+		// existing studio, just set it
+		studioID, err := strconv.ParseInt(*scraped.StoredID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("error converting studio ID %s: %w", *scraped.StoredID, err)
 		}
+
+		// only return value if different to current
+		if existingID.Int64 != studioID {
+			return &studioID, nil
+		}
+	} else if createMissing {
+		return createMissingStudio(endpoint, g.repo, scraped)
 	}
 
 	return nil, nil
@@ -51,9 +51,10 @@ func (g sceneRelationships) studio() (*int64, error) {
 
 func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 	fieldStrategy := g.fieldOptions["performers"]
+	scraped := g.result.result.Performers
 
 	// just check if ignored
-	if !shouldSetSingleValueField(fieldStrategy, false) {
+	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
 		return nil, nil
 	}
 
@@ -63,42 +64,37 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 		strategy = fieldStrategy.Strategy
 	}
 
-	scraped := g.result.result.Performers
 	repo := g.repo
 	endpoint := g.result.source.RemoteSite
 
-	var originalPerformerIDs []int
 	var performerIDs []int
-	if len(scraped) > 0 {
-		var err error
-		originalPerformerIDs, err = repo.Scene().GetPerformerIDs(g.scene.ID)
+	originalPerformerIDs, err := repo.Scene().GetPerformerIDs(g.scene.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting scene performers: %w", err)
+	}
+
+	if strategy == models.IdentifyFieldStrategyMerge {
+		// add to existing
+		performerIDs = originalPerformerIDs
+	}
+
+	for _, p := range scraped {
+		if ignoreMale && p.Gender != nil && strings.EqualFold(*p.Gender, models.GenderEnumMale.String()) {
+			continue
+		}
+
+		performerID, err := getPerformerID(endpoint, repo, p, createMissing)
 		if err != nil {
-			return nil, fmt.Errorf("error getting scene performers: %w", err)
+			return nil, err
 		}
 
-		if strategy == models.IdentifyFieldStrategyMerge {
-			// add to existing
-			performerIDs = originalPerformerIDs
-		}
-
-		for _, p := range scraped {
-			if ignoreMale && p.Gender != nil && strings.EqualFold(*p.Gender, models.GenderEnumMale.String()) {
-				continue
-			}
-
-			performerID, err := getPerformerID(endpoint, repo, p, createMissing)
-			if err != nil {
-				return nil, err
-			}
-
-			if performerID != nil {
-				performerIDs = utils.IntAppendUnique(performerIDs, *performerID)
-			}
+		if performerID != nil {
+			performerIDs = utils.IntAppendUnique(performerIDs, *performerID)
 		}
 	}
 
 	// don't return if nothing was added
-	if idListEquals(originalPerformerIDs, performerIDs) {
+	if utils.SliceSame(originalPerformerIDs, performerIDs) {
 		return nil, nil
 	}
 
@@ -112,7 +108,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 	r := g.repo
 
 	// just check if ignored
-	if !shouldSetSingleValueField(fieldStrategy, false) {
+	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
 		return nil, nil
 	}
 
@@ -122,47 +118,43 @@ func (g sceneRelationships) tags() ([]int, error) {
 		strategy = fieldStrategy.Strategy
 	}
 
-	var originalTagIDs []int
 	var tagIDs []int
-	if len(scraped) > 0 {
-		var err error
-		originalTagIDs, err = r.Scene().GetTagIDs(target.ID)
-		if err != nil {
-			return nil, fmt.Errorf("error getting scene tag: %w", err)
-		}
+	originalTagIDs, err := r.Scene().GetTagIDs(target.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting scene tags: %w", err)
+	}
 
-		if strategy == models.IdentifyFieldStrategyMerge {
-			// add to existing
-			tagIDs = originalTagIDs
-		}
+	if strategy == models.IdentifyFieldStrategyMerge {
+		// add to existing
+		tagIDs = originalTagIDs
+	}
 
-		for _, t := range scraped {
-			if t.StoredID != nil {
-				// existing tag, just add it
-				tagID, err := strconv.ParseInt(*t.StoredID, 10, 64)
-				if err != nil {
-					return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
-				}
-
-				tagIDs = utils.IntAppendUnique(tagIDs, int(tagID))
-			} else if createMissing {
-				now := time.Now()
-				created, err := r.Tag().Create(models.Tag{
-					Name:      t.Name,
-					CreatedAt: models.SQLiteTimestamp{Timestamp: now},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
-				})
-				if err != nil {
-					return nil, fmt.Errorf("error creating tag: %w", err)
-				}
-
-				tagIDs = append(tagIDs, created.ID)
+	for _, t := range scraped {
+		if t.StoredID != nil {
+			// existing tag, just add it
+			tagID, err := strconv.ParseInt(*t.StoredID, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
+
+			tagIDs = utils.IntAppendUnique(tagIDs, int(tagID))
+		} else if createMissing {
+			now := time.Now()
+			created, err := r.Tag().Create(models.Tag{
+				Name:      t.Name,
+				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
+				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
+			})
+			if err != nil {
+				return nil, fmt.Errorf("error creating tag: %w", err)
+			}
+
+			tagIDs = append(tagIDs, created.ID)
 		}
 	}
 
 	// don't return if nothing was added
-	if idListEquals(originalTagIDs, tagIDs) {
+	if utils.SliceSame(originalTagIDs, tagIDs) {
 		return nil, nil
 	}
 
@@ -224,7 +216,7 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 		Endpoint: endpoint,
 	})
 
-	if stashIDListEquals(originalStashIDs, stashIDs) {
+	if utils.SliceSame(originalStashIDs, stashIDs) {
 		return nil, nil
 	}
 
@@ -256,40 +248,4 @@ func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	}
 
 	return nil, nil
-}
-
-func idListEquals(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for _, aa := range a {
-		if !utils.IntInclude(b, aa) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func stashIDListEquals(a, b []models.StashID) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for _, aa := range a {
-		found := false
-		for _, bb := range b {
-			if aa == bb {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return false
-		}
-	}
-
-	return true
 }

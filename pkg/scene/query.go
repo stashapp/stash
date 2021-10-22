@@ -22,8 +22,7 @@ func BatchProcess(ctx context.Context, reader models.SceneReader, sceneFilter *m
 	findFilter.Page = &page
 	findFilter.PerPage = &perPage
 
-	more := true
-	for more {
+	for more := true; more; {
 		if job.IsCancelled(ctx) {
 			return nil
 		}

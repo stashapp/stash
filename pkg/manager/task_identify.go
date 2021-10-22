@@ -16,6 +16,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var ErrInput = errors.New("invalid request input")
+
 type IdentifyJob struct {
 	txnManager models.TransactionManager
 	input      models.IdentifyMetadataInput
@@ -184,17 +186,17 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 	return ret, nil
 }
 
-func (j *IdentifyJob) getStashBox(scraperSrc *models.ScraperSourceInput) (*models.StashBox, error) {
-	if scraperSrc.ScraperID != nil {
+func (j *IdentifyJob) getStashBox(src *models.ScraperSourceInput) (*models.StashBox, error) {
+	if src.ScraperID != nil {
 		return nil, nil
 	}
 
 	// must be stash-box
-	if scraperSrc.StashBoxIndex == nil && scraperSrc.StashBoxEndpoint == nil {
-		return nil, errors.New("stash_box_index or stash_box_endpoint or scraper_id must be set")
+	if src.StashBoxIndex == nil && src.StashBoxEndpoint == nil {
+		return nil, fmt.Errorf("%w: stash_box_index or stash_box_endpoint or scraper_id must be set", ErrInput)
 	}
 
-	return j.stashBoxes.ResolveStashBox(*scraperSrc)
+	return j.stashBoxes.ResolveStashBox(*src)
 }
 
 type stashboxSource struct {
