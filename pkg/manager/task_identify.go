@@ -74,7 +74,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			if scene == nil {
-				return fmt.Errorf("no scene found with id %d", id)
+				return fmt.Errorf("%w: scene with id %d", models.ErrNotFound, id)
 			}
 
 			j.identifyScene(ctx, scene, sources)
