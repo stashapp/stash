@@ -156,7 +156,7 @@ func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gal
 }
 
 func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypeGallery)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*mode
 }
 
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeURL(ctx, url, models.ScrapeContentTypeMovie)
 	if err != nil {
 		return nil, err
 	}
