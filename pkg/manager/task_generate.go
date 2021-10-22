@@ -98,11 +98,6 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	wg := sizedwaitgroup.New(parallelTasks)
 
-	if job.IsCancelled(ctx) {
-		logger.Info("Stopping due to user request")
-		return
-	}
-
 	// Start measuring how long the generate has taken. (consider moving this up)
 	start := time.Now()
 	if err = instance.Paths.Generated.EnsureTmpDir(); err != nil {
@@ -130,6 +125,11 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	wg.Wait()
 
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
+		return
+	}
+
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 }
@@ -156,7 +156,7 @@ func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsG
 
 			for _, ss := range scenes {
 				if job.IsCancelled(ctx) {
-					return nil
+					return context.Canceled
 				}
 
 				j.queueSceneJobs(ss, queue, &totals)
