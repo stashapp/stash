@@ -33,12 +33,14 @@ func (r *ImageQueryResult) Resolve() ([]*Image, error) {
 }
 
 type ImageFinder interface {
-	Find(id int) (*Image, error)
+	// TODO - rename to Find and remove existing method
 	FindMany(ids []int) ([]*Image, error)
 }
 
 type ImageReader interface {
 	ImageFinder
+	// TODO - remove this in another PR
+	Find(id int) (*Image, error)
 	FindByChecksum(checksum string) (*Image, error)
 	FindByGalleryID(galleryID int) ([]*Image, error)
 	CountByGalleryID(galleryID int) (int, error)

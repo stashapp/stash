@@ -27,10 +27,6 @@ type imageResolver struct {
 	images []*models.Image
 }
 
-func (s *imageResolver) Find(id int) (*models.Image, error) {
-	panic("not implemented")
-}
-
 func (s *imageResolver) FindMany(ids []int) ([]*models.Image, error) {
 	return s.images, nil
 }

@@ -33,12 +33,14 @@ func (r *SceneQueryResult) Resolve() ([]*Scene, error) {
 }
 
 type SceneFinder interface {
-	Find(id int) (*Scene, error)
+	// TODO - rename this to Find and remove existing method
 	FindMany(ids []int) ([]*Scene, error)
 }
 
 type SceneReader interface {
 	SceneFinder
+	// TODO - remove this in another PR
+	Find(id int) (*Scene, error)
 	FindByChecksum(checksum string) (*Scene, error)
 	FindByOSHash(oshash string) (*Scene, error)
 	FindByPath(path string) (*Scene, error)

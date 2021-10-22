@@ -21,23 +21,6 @@ func QueryOptions(imageFilter *models.ImageFilterType, findFilter *models.FindFi
 	}
 }
 
-// QueryWithCount queries for images, returning the image objects and the total count.
-func QueryWithCount(qb Queryer, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
-	// this was moved from the queryBuilder code
-	// left here so that calling functions can reference this instead
-	result, err := qb.Query(QueryOptions(imageFilter, findFilter, true))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	images, err := result.Resolve()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return images, result.Count, nil
-}
-
 // Query queries for images using the provided filters.
 func Query(qb Queryer, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, error) {
 	result, err := qb.Query(QueryOptions(imageFilter, findFilter, false))
