@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -17,7 +20,11 @@ type GeneratePreviewTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GeneratePreviewTask) Start() {
+func (t *GeneratePreviewTask) GetDescription() string {
+	return fmt.Sprintf("Generating preview for %s", t.Scene.Path)
+}
+
+func (t *GeneratePreviewTask) Start(ctx context.Context) {
 	videoFilename := t.videoFilename()
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imageFilename := t.imageFilename()
