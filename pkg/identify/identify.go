@@ -8,10 +8,15 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SceneScraper interface {
 	ScrapeScene(sceneID int) (*models.ScrapedScene, error)
+}
+
+type SceneUpdatePostHookExecutor interface {
+	ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string)
 }
 
 type ScraperSource struct {
@@ -22,9 +27,10 @@ type ScraperSource struct {
 }
 
 type SceneIdentifier struct {
-	DefaultOptions   *models.IdentifyMetadataOptionsInput
-	Sources          []ScraperSource
-	ScreenshotSetter scene.ScreenshotSetter
+	DefaultOptions              *models.IdentifyMetadataOptionsInput
+	Sources                     []ScraperSource
+	ScreenshotSetter            scene.ScreenshotSetter
+	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
 func (t *SceneIdentifier) Identify(ctx context.Context, repo models.Repository, scene *models.Scene) error {
@@ -72,8 +78,8 @@ func (t *SceneIdentifier) scrapeScene(scene *models.Scene) (*scrapeResult, error
 	return nil, nil
 }
 
-func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult, repo models.Repository) (*scene.Updater, error) {
-	ret := &scene.Updater{
+func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult, repo models.Repository) (*scene.UpdateSet, error) {
+	ret := &scene.UpdateSet{
 		ID: s.ID,
 	}
 
@@ -175,6 +181,11 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, repo models.Repositor
 	if err != nil {
 		return fmt.Errorf("error updating scene: %w", err)
 	}
+
+	// fire post-update hooks
+	updateInput := updater.UpdateInput()
+	fields := utils.NotNilFields(updateInput, "json")
+	t.SceneUpdatePostHookExecutor.ExecuteSceneUpdatePostHooks(ctx, updateInput, fields)
 
 	as := ""
 	title := updater.Partial.Title

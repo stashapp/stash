@@ -12,8 +12,8 @@ import (
 
 var ErrEmptyUpdater = errors.New("no fields have been set")
 
-// Updater is used to update a scene and its relationships.
-type Updater struct {
+// UpdateSet is used to update a scene and its relationships.
+type UpdateSet struct {
 	ID int
 
 	Partial models.ScenePartial
@@ -32,7 +32,7 @@ type Updater struct {
 }
 
 // IsEmpty returns true if there is nothing to update.
-func (u *Updater) IsEmpty() bool {
+func (u *UpdateSet) IsEmpty() bool {
 	withoutID := u.Partial
 	withoutID.ID = 0
 
@@ -46,7 +46,7 @@ func (u *Updater) IsEmpty() bool {
 // Update updates a scene by updating the fields in the Partial field, then
 // updates non-nil relationships. Returns an error if there is no work to
 // be done.
-func (u *Updater) Update(qb models.SceneWriter, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
+func (u *UpdateSet) Update(qb models.SceneWriter, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
 	if u.IsEmpty() {
 		return nil, ErrEmptyUpdater
 	}
@@ -91,6 +91,36 @@ func (u *Updater) Update(qb models.SceneWriter, screenshotSetter ScreenshotSette
 	}
 
 	return ret, nil
+}
+
+// UpdateInput converts the UpdateSet into SceneUpdateInput for hook firing purposes.
+func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
+	// ensure the partial ID is set
+	u.Partial.ID = u.ID
+	ret := u.Partial.UpdateInput()
+
+	if u.PerformerIDs != nil {
+		ret.PerformerIds = utils.IntSliceToStringSlice(u.PerformerIDs)
+	}
+
+	if u.TagIDs != nil {
+		ret.TagIds = utils.IntSliceToStringSlice(u.TagIDs)
+	}
+
+	if u.StashIDs != nil {
+		for _, s := range u.StashIDs {
+			ss := s.StashIDInput()
+			ret.StashIds = append(ret.StashIds, &ss)
+		}
+	}
+
+	if u.CoverImage != nil {
+		// convert back to base64
+		data := utils.GetBase64StringFromData(u.CoverImage)
+		ret.CoverImage = &data
+	}
+
+	return ret
 }
 
 func UpdateFormat(qb models.SceneWriter, id int, format string) (*models.Scene, error) {

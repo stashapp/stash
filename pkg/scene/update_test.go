@@ -2,11 +2,13 @@ package scene
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-
+	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -20,17 +22,17 @@ func TestUpdater_IsEmpty(t *testing.T) {
 
 	tests := []struct {
 		name string
-		u    *Updater
+		u    *UpdateSet
 		want bool
 	}{
 		{
 			"empty",
-			&Updater{},
+			&UpdateSet{},
 			true,
 		},
 		{
 			"id only",
-			&Updater{
+			&UpdateSet{
 				Partial: models.ScenePartial{
 					ID: 1,
 				},
@@ -39,7 +41,7 @@ func TestUpdater_IsEmpty(t *testing.T) {
 		},
 		{
 			"partial set",
-			&Updater{
+			&UpdateSet{
 				Partial: models.ScenePartial{
 					Organized: &organized,
 				},
@@ -48,28 +50,28 @@ func TestUpdater_IsEmpty(t *testing.T) {
 		},
 		{
 			"performer set",
-			&Updater{
+			&UpdateSet{
 				PerformerIDs: ids,
 			},
 			false,
 		},
 		{
 			"tags set",
-			&Updater{
+			&UpdateSet{
 				TagIDs: ids,
 			},
 			false,
 		},
 		{
 			"performer set",
-			&Updater{
+			&UpdateSet{
 				StashIDs: stashIDs,
 			},
 			false,
 		},
 		{
 			"cover set",
-			&Updater{
+			&UpdateSet{
 				CoverImage: cover,
 			},
 			false,
@@ -140,13 +142,13 @@ func TestUpdater_Update(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		u       *Updater
+		u       *UpdateSet
 		wantNil bool
 		wantErr bool
 	}{
 		{
 			"empty",
-			&Updater{
+			&UpdateSet{
 				ID: sceneID,
 			},
 			true,
@@ -154,7 +156,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"update all",
-			&Updater{
+			&UpdateSet{
 				ID:           sceneID,
 				PerformerIDs: performerIDs,
 				TagIDs:       tagIDs,
@@ -171,7 +173,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"update fields only",
-			&Updater{
+			&UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
 					Title: models.NullStringPtr(title),
@@ -182,7 +184,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"error updating scene",
-			&Updater{
+			&UpdateSet{
 				ID: badUpdateID,
 				Partial: models.ScenePartial{
 					Title: models.NullStringPtr(title),
@@ -193,7 +195,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"error updating performers",
-			&Updater{
+			&UpdateSet{
 				ID:           badPerformersID,
 				PerformerIDs: performerIDs,
 			},
@@ -202,7 +204,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"error updating tags",
-			&Updater{
+			&UpdateSet{
 				ID:     badTagsID,
 				TagIDs: tagIDs,
 			},
@@ -211,7 +213,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"error updating stash IDs",
-			&Updater{
+			&UpdateSet{
 				ID:       badStashIDsID,
 				StashIDs: stashIDs,
 			},
@@ -220,7 +222,7 @@ func TestUpdater_Update(t *testing.T) {
 		},
 		{
 			"error updating cover",
-			&Updater{
+			&UpdateSet{
 				ID:         badCoverID,
 				CoverImage: cover,
 			},
@@ -242,4 +244,94 @@ func TestUpdater_Update(t *testing.T) {
 	}
 
 	qb.AssertExpectations(t)
+}
+
+func TestUpdateSet_UpdateInput(t *testing.T) {
+	const (
+		sceneID = iota + 1
+		badUpdateID
+		badPerformersID
+		badTagsID
+		badStashIDsID
+		badCoverID
+		performerID
+		tagID
+	)
+
+	sceneIDStr := strconv.Itoa(sceneID)
+
+	performerIDs := []int{performerID}
+	performerIDStrs := utils.IntSliceToStringSlice(performerIDs)
+	tagIDs := []int{tagID}
+	tagIDStrs := utils.IntSliceToStringSlice(tagIDs)
+	stashID := "stashID"
+	endpoint := "endpoint"
+	stashIDs := []models.StashID{
+		{
+			StashID:  stashID,
+			Endpoint: endpoint,
+		},
+	}
+	stashIDInputs := []*models.StashIDInput{
+		{
+			StashID:  stashID,
+			Endpoint: endpoint,
+		},
+	}
+
+	title := "title"
+	cover := []byte("cover")
+	coverB64 := "Y292ZXI="
+
+	tests := []struct {
+		name string
+		u    UpdateSet
+		want models.SceneUpdateInput
+	}{
+		{
+			"empty",
+			UpdateSet{
+				ID: sceneID,
+			},
+			models.SceneUpdateInput{
+				ID: sceneIDStr,
+			},
+		},
+		{
+			"update all",
+			UpdateSet{
+				ID:           sceneID,
+				PerformerIDs: performerIDs,
+				TagIDs:       tagIDs,
+				StashIDs:     stashIDs,
+				CoverImage:   cover,
+			},
+			models.SceneUpdateInput{
+				ID:           sceneIDStr,
+				PerformerIds: performerIDStrs,
+				TagIds:       tagIDStrs,
+				StashIds:     stashIDInputs,
+				CoverImage:   &coverB64,
+			},
+		},
+		{
+			"update fields only",
+			UpdateSet{
+				ID: sceneID,
+				Partial: models.ScenePartial{
+					Title: models.NullStringPtr(title),
+				},
+			},
+			models.SceneUpdateInput{
+				ID:    sceneIDStr,
+				Title: &title,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.u.UpdateInput()
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

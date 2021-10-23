@@ -24,6 +24,12 @@ func (s mockSceneScraper) ScrapeScene(sceneID int) (*models.ScrapedScene, error)
 	return s.results[sceneID], nil
 }
 
+type mockHookExecutor struct {
+}
+
+func (s mockHookExecutor) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
+}
+
 func TestSceneIdentifier_Identify(t *testing.T) {
 	const (
 		errID1 = iota
@@ -109,8 +115,9 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	}
 
 	identifier := SceneIdentifier{
-		DefaultOptions: defaultOptions,
-		Sources:        sources,
+		DefaultOptions:              defaultOptions,
+		Sources:                     sources,
+		SceneUpdatePostHookExecutor: mockHookExecutor{},
 	}
 
 	for _, tt := range tests {

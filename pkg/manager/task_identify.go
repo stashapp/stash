@@ -19,8 +19,9 @@ import (
 var ErrInput = errors.New("invalid request input")
 
 type IdentifyJob struct {
-	txnManager models.TransactionManager
-	input      models.IdentifyMetadataInput
+	txnManager       models.TransactionManager
+	postHookExecutor identify.SceneUpdatePostHookExecutor
+	input            models.IdentifyMetadataInput
 
 	stashBoxes models.StashBoxes
 	progress   *job.Progress
@@ -28,9 +29,10 @@ type IdentifyJob struct {
 
 func CreateIdentifyJob(input models.IdentifyMetadataInput) *IdentifyJob {
 	return &IdentifyJob{
-		txnManager: instance.TxnManager,
-		input:      input,
-		stashBoxes: instance.Config.GetStashBoxes(),
+		txnManager:       instance.TxnManager,
+		postHookExecutor: instance.PluginCache,
+		input:            input,
+		stashBoxes:       instance.Config.GetStashBoxes(),
 	}
 }
 
@@ -132,6 +134,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 					Paths:               instance.Paths,
 					FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
 				},
+				SceneUpdatePostHookExecutor: j.postHookExecutor,
 			}
 
 			taskError = task.Identify(ctx, r, s)
