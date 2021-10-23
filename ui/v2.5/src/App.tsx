@@ -32,7 +32,7 @@ import { Setup } from "./components/Setup/Setup";
 import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
-import ConfigurationProvider from "./hooks/Config";
+import { ConfigurationProvider } from "./hooks/Config";
 
 initPolyfills();
 

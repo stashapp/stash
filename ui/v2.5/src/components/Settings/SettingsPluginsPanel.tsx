@@ -72,7 +72,7 @@ export const SettingsPluginsPanel: React.FC = () => {
             >
               <ul>
                 {h.hooks?.map((hh) => (
-                  <li>
+                  <li key={hh}>
                     <code>{hh}</code>
                   </li>
                 ))}

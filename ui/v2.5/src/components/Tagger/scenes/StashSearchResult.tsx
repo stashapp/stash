@@ -87,7 +87,7 @@ const getFingerprintStatus = (
   const phashList = (
     <div className="m-2">
       {phashMatches.map((fp) => (
-        <div>
+        <div key={fp.hash}>
           <b>{fp.hash}</b>
           {fp.hash === stashScene.phash
             ? ", Exact match"

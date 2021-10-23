@@ -162,7 +162,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   const SavedFilterDropdown = React.forwardRef<
     HTMLDivElement,
     HTMLAttributes<HTMLDivElement>
-  >(({ style, className }, ref) => (
+  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
     <div ref={ref} style={style} className={className}>
       <SavedFilterList
         filter={filter}
@@ -173,6 +173,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       />
     </div>
   ));
+  SavedFilterDropdown.displayName = 'SavedFilterDropdown';
 
   function render() {
     const currentSortBy = filterOptions.sortByOptions.find(

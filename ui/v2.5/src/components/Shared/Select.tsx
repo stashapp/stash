@@ -159,10 +159,12 @@ const SelectComponent = <T extends boolean>({
     }),
     container: (base, props) => ({
       ...base,
+      // eslint-disable-next-line react/prop-types
       zIndex: props.selectProps.isFocused ? 10 : base.zIndex,
     }),
     multiValueRemove: (base, props) => ({
       ...base,
+      // eslint-disable-next-line react/prop-types
       color: props.selectProps.isFocused ? base.color : "#333333",
     }),
   };

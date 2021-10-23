@@ -310,7 +310,7 @@ export const Setup: React.FC = () => {
     return (
       <ul>
         {stashes.map((s) => (
-          <li>
+          <li key={s.path}>
             <code>{s.path} </code>
             {maybeRenderExclusions(s)}
           </li>
