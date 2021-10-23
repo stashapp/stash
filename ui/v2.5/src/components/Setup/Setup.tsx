@@ -81,7 +81,10 @@ export const Setup: React.FC = () => {
           <p>
             <FormattedMessage
               id="setup.welcome_specific_config.config_path"
-              values={{ path: configLocation, code: (chunks: string) => <code>{chunks}</code> }}
+              values={{
+                path: configLocation,
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
             />
           </p>
           <p>
@@ -111,14 +114,20 @@ export const Setup: React.FC = () => {
             <FormattedMessage id="setup.welcome.unable_to_locate_config" />
           </p>
           <p>
-            <FormattedMessage id="setup.welcome.config_path_logic_explained" values={{
-                code: (chunks: string) => <code>{chunks}</code>
-              }}/>
+            <FormattedMessage
+              id="setup.welcome.config_path_logic_explained"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
           </p>
           <Alert variant="info text-center">
-            <FormattedMessage id="setup.welcome.unexpected_explained" values={{
-                code: (chunks: string) => <code>{chunks}</code>
-              }}/>
+            <FormattedMessage
+              id="setup.welcome.unexpected_explained"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
           </Alert>
           <p>
             <FormattedMessage id="setup.welcome.next_step" />
@@ -135,8 +144,12 @@ export const Setup: React.FC = () => {
               variant="secondary mx-2 p-5"
               onClick={() => onConfigLocationChosen("")}
             >
-              <FormattedMessage id="setup.welcome.in_current_stash_directory" values={{
-                code: (chunks: string) => <code>{chunks}</code>}} />
+              <FormattedMessage
+                id="setup.welcome.in_current_stash_directory"
+                values={{
+                  code: (chunks: string) => <code>{chunks}</code>,
+                }}
+              />
             </Button>
             <Button
               variant="secondary mx-2 p-5"
@@ -197,9 +210,12 @@ export const Setup: React.FC = () => {
               <FormattedMessage id="setup.paths.where_can_stash_store_its_database" />
             </h3>
             <p>
-              <FormattedMessage id="setup.paths.where_can_stash_store_its_database_description" values={{
-                code: (chunks: string) => <code>{chunks}</code>
-              }} />
+              <FormattedMessage
+                id="setup.paths.where_can_stash_store_its_database_description"
+                values={{
+                  code: (chunks: string) => <code>{chunks}</code>,
+                }}
+              />
             </p>
             <Form.Control
               className="text-input"
@@ -217,9 +233,12 @@ export const Setup: React.FC = () => {
               <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content" />
             </h3>
             <p>
-              <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content_description" values={{
-                code: (chunks: string) => <code>{chunks}</code>
-              }}/>
+              <FormattedMessage
+                id="setup.paths.where_can_stash_store_its_generated_content_description"
+                values={{
+                  code: (chunks: string) => <code>{chunks}</code>,
+                }}
+              />
             </p>
             <InputGroup>
               <Form.Control
@@ -347,7 +366,9 @@ export const Setup: React.FC = () => {
               <code>
                 {databaseFile !== ""
                   ? databaseFile
-                  : intl.formatMessage({id: 'setup.confirm.default_db_location'})}
+                  : intl.formatMessage({
+                      id: "setup.confirm.default_db_location",
+                    })}
               </code>
             </dd>
           </dl>
@@ -359,7 +380,9 @@ export const Setup: React.FC = () => {
               <code>
                 {generatedLocation !== ""
                   ? generatedLocation
-                  : intl.formatMessage({id: 'setup.confirm.default_generated_content_location'})}
+                  : intl.formatMessage({
+                      id: "setup.confirm.default_generated_content_location",
+                    })}
               </code>
             </dd>
           </dl>
