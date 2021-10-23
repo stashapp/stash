@@ -87,7 +87,10 @@
     "confirm": "Confirm",
     "select_folders": "Select folders",
     "browse_for_image": "Browse for image…",
-    "open_random": "Open Random"
+    "open_random": "Open Random",
+    "next_action": "Next",
+    "previous_action": "Back",
+    "finish": "Finish"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -518,7 +521,8 @@
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
     "set_image_url_title": "Image URL",
-    "unsaved_changes": "Unsaved changes. Are you sure you want to leave?"
+    "unsaved_changes": "Unsaved changes. Are you sure you want to leave?",
+    "aliases_must_be_unique": "aliases must be unique"
   },
   "dimensions": "Dimensions",
   "director": "Director",

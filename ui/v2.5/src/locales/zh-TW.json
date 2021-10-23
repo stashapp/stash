@@ -86,7 +86,11 @@
     "open_random": "隨機開啟",
     "scrape_query": "爬蟲搜尋關鍵字",
     "stop": "停止",
-    "scrape_scene_fragment": "部分爬取"
+    "scrape_scene_fragment": "部分爬取",
+    "clear": "清除",
+    "next_action": "下一步",
+    "previous_action": "上一步",
+    "finish": "完成"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -134,7 +138,8 @@
       "match_success": "已成功標記短片",
       "duration_off": "片長差至少 {number} 秒",
       "duration_unknown": "未知片長",
-      "unnamed": "未命名"
+      "unnamed": "未命名",
+      "phash_matches": "{count} 個 PHash 匹配"
     },
     "verb_match_fp": "特徵碼辨別",
     "verb_matched": "符合",
@@ -507,7 +512,8 @@
         "label": "滑動模式",
         "zoom": "放大"
       }
-    }
+    },
+    "aliases_must_be_unique": "別名不可重複"
   },
   "dimensions": "解析度",
   "director": "導演",
