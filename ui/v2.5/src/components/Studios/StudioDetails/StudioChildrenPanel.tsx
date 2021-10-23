@@ -5,7 +5,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { StudioList } from "../StudioList";
 
 interface IStudioChildrenPanel {
-  studio: Partial<GQL.StudioDataFragment>;
+  studio: GQL.StudioDataFragment;
 }
 
 export const StudioChildrenPanel: React.FC<IStudioChildrenPanel> = ({

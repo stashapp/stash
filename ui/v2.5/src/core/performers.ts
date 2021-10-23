@@ -2,11 +2,9 @@ import { PerformersCriterion } from "src/models/list-filter/criteria/performers"
 import * as GQL from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 
-export const performerFilterHook = (
-  performer: Partial<GQL.PerformerDataFragment>
-) => {
+export const performerFilterHook = (performer: GQL.PerformerDataFragment) => {
   return (filter: ListFilterModel) => {
-    const performerValue = { id: performer.id!, label: performer.name! };
+    const performerValue = { id: performer.id, label: performer.name };
     // if performers is already present, then we modify it, otherwise add
     let performerCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "performers";
