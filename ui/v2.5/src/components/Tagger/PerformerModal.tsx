@@ -162,7 +162,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
     // handle exclusions
     Object.keys(performerData).forEach((k) => {
-      if (excludedPerformerFields.includes(k) || excluded[k]) {
+      if (excluded[k]) {
         (performerData as Record<string, unknown>)[k] = undefined;
       }
     });
