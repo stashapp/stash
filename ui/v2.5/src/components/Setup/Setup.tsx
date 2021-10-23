@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   Alert,
   Button,
@@ -23,6 +24,8 @@ export const Setup: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [setupError, setSetupError] = useState("");
 
+  const intl = useIntl();
+
   const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
@@ -44,7 +47,7 @@ export const Setup: React.FC = () => {
       target="_blank"
       rel="noreferrer"
     >
-      Github repository
+      <FormattedMessage id="setup.github_repository" />
     </a>
   );
 
@@ -69,27 +72,27 @@ export const Setup: React.FC = () => {
     return (
       <>
         <section>
-          <h2 className="mb-5">Welcome to Stash</h2>
+          <h2 className="mb-5">
+            <FormattedMessage id="setup.welcome_to_stash" />
+          </h2>
           <p className="lead text-center">
-            If you&apos;re reading this, then Stash couldn&apos;t find the
-            configuration file specified at the command line or the environment.
-            This wizard will guide you through the process of setting up a new
-            configuration.
+            <FormattedMessage id="setup.welcome_specific_config.unable_to_locate_specified_config" />
           </p>
           <p>
-            Stash will use the following configuration file path:{" "}
-            <code>{configLocation}</code>
+            <FormattedMessage
+              id="setup.welcome_specific_config.config_path"
+              values={{ path: configLocation, code: (chunks: string) => <code>{chunks}</code> }}
+            />
           </p>
           <p>
-            When you&apos;re ready to proceed with setting up a new system,
-            click Next.
+            <FormattedMessage id="setup.welcome_specific_config.next_step" />
           </p>
         </section>
 
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Button variant="primary mx-2 p-5" onClick={() => next()}>
-              Next
+              <FormattedMessage id="actions.next_action" />
             </Button>
           </div>
         </section>
@@ -101,36 +104,30 @@ export const Setup: React.FC = () => {
     return (
       <>
         <section>
-          <h2 className="mb-5">Welcome to Stash</h2>
+          <h2 className="mb-5">
+            <FormattedMessage id="setup.welcome_to_stash" />
+          </h2>
           <p className="lead text-center">
-            If you&apos;re reading this, then Stash couldn&apos;t find an
-            existing configuration. This wizard will guide you through the
-            process of setting up a new configuration.
+            <FormattedMessage id="setup.welcome.unable_to_locate_config" />
           </p>
           <p>
-            Stash tries to find its configuration file (<code>config.yml</code>)
-            from the current working directory first, and if it does not find it
-            there, it falls back to <code>$HOME/.stash/config.yml</code> (on
-            Windows, this will be <code>%USERPROFILE%\.stash\config.yml</code>).
-            You can also make Stash read from a specific configuration file by
-            running it with the <code>-c &lt;path to config file&gt;</code> or{" "}
-            <code>--config &lt;path to config file&gt;</code> options.
+            <FormattedMessage id="setup.welcome.config_path_logic_explained" values={{
+                code: (chunks: string) => <code>{chunks}</code>
+              }}/>
           </p>
           <Alert variant="info text-center">
-            If you&apos;re getting this screen unexpectedly, please try
-            restarting Stash in the correct working directory or with the{" "}
-            <code>-c</code> flag.
+            <FormattedMessage id="setup.welcome.unexpected_explained" values={{
+                code: (chunks: string) => <code>{chunks}</code>
+              }}/>
           </Alert>
           <p>
-            With all of that out of the way, if you&apos;re ready to proceed
-            with setting up a new system, choose where you&apos;d like to store
-            your configuration file and click Next.
+            <FormattedMessage id="setup.welcome.next_step" />
           </p>
         </section>
 
         <section className="mt-5">
           <h3 className="text-center mb-5">
-            Where do you want to store your Stash configuration?
+            <FormattedMessage id="setup.welcome.store_stash_config" />
           </h3>
 
           <div className="d-flex justify-content-center">
@@ -138,13 +135,14 @@ export const Setup: React.FC = () => {
               variant="secondary mx-2 p-5"
               onClick={() => onConfigLocationChosen("")}
             >
-              In the <code>$HOME/.stash</code> directory
+              <FormattedMessage id="setup.welcome.in_current_stash_directory" values={{
+                code: (chunks: string) => <code>{chunks}</code>}} />
             </Button>
             <Button
               variant="secondary mx-2 p-5"
               onClick={() => onConfigLocationChosen("config.yml")}
             >
-              In the current working directory
+              <FormattedMessage id="setup.welcome.in_the_current_working_directory" />
             </Button>
           </div>
         </section>
@@ -172,19 +170,20 @@ export const Setup: React.FC = () => {
     return (
       <>
         <section>
-          <h2 className="mb-3">Set up your paths</h2>
+          <h2 className="mb-3">
+            <FormattedMessage id="setup.paths.set_up_your_paths" />
+          </h2>
           <p>
-            Next up, we need to determine where to find your porn collection,
-            where to store the stash database and generated files. These
-            settings can be changed later if needed.
+            <FormattedMessage id="setup.paths.description" />
           </p>
         </section>
         <section>
           <Form.Group id="stashes">
-            <h3>Where is your porn located?</h3>
+            <h3>
+              <FormattedMessage id="setup.paths.where_is_your_porn_located" />
+            </h3>
             <p>
-              Add directories containing your porn videos and images. Stash will
-              use these directories to find videos and images during scanning.
+              <FormattedMessage id="setup.paths.where_is_your_porn_located_description" />
             </p>
             <Card>
               <StashConfiguration
@@ -194,40 +193,42 @@ export const Setup: React.FC = () => {
             </Card>
           </Form.Group>
           <Form.Group id="database">
-            <h3>Where can Stash store its database?</h3>
+            <h3>
+              <FormattedMessage id="setup.paths.where_can_stash_store_its_database" />
+            </h3>
             <p>
-              Stash uses an sqlite database to store your porn metadata. By
-              default, this will be created as <code>stash-go.sqlite</code> in
-              the directory containing your config file. If you want to change
-              this, please enter an absolute or relative (to the current working
-              directory) filename.
+              <FormattedMessage id="setup.paths.where_can_stash_store_its_database_description" values={{
+                code: (chunks: string) => <code>{chunks}</code>
+              }} />
             </p>
             <Form.Control
               className="text-input"
               defaultValue={databaseFile}
-              placeholder="database filename (empty for default)"
+              placeholder={intl.formatMessage({
+                id: "setup.paths.database_filename_empty_for_default",
+              })}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setDatabaseFile(e.currentTarget.value)
               }
             />
           </Form.Group>
           <Form.Group id="generated">
-            <h3>Where can Stash store its generated content?</h3>
+            <h3>
+              <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content" />
+            </h3>
             <p>
-              In order to provide thumbnails, previews and sprites, Stash
-              generates images and videos. This also includes transcodes for
-              unsupported file formats. By default, Stash will create a{" "}
-              <code>generated</code> directory within the directory containing
-              your config file. If you want to change where this generated media
-              will be stored, please enter an absolute or relative (to the
-              current working directory) path. Stash will create this directory
-              if it does not already exist.
+              <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content_description" values={{
+                code: (chunks: string) => <code>{chunks}</code>
+              }}/>
             </p>
             <InputGroup>
               <Form.Control
                 className="text-input"
                 value={generatedLocation}
-                placeholder="path to generated directory (empty for default)"
+                placeholder={intl.formatMessage({
+                  id:
+                    "setup.paths.path_to_generated_directory_empty_for_default",
+                })}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setGeneratedLocation(e.currentTarget.value)
                 }
@@ -247,10 +248,10 @@ export const Setup: React.FC = () => {
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Button variant="secondary mx-2 p-5" onClick={() => goBack()}>
-              Back
+              <FormattedMessage id="actions.previous_action" />
             </Button>
             <Button variant="primary mx-2 p-5" onClick={() => next()}>
-              Next
+              <FormattedMessage id="actions.next_action" />
             </Button>
           </div>
         </section>
@@ -320,38 +321,45 @@ export const Setup: React.FC = () => {
     return (
       <>
         <section>
-          <h2 className="mb-3">Nearly there!</h2>
+          <h2 className="mb-3">
+            <FormattedMessage id="setup.confirm.nearly_there" />
+          </h2>
           <p>
-            We&apos;re almost ready to complete the configuration. Please
-            confirm the following settings. You can click back to change
-            anything incorrect. If everything looks good, click Confirm to
-            create your system.
+            <FormattedMessage id="setup.confirm.almost_ready" />
           </p>
           <dl>
-            <dt>Configuration file location:</dt>
+            <dt>
+              <FormattedMessage id="setup.confirm.configuration_file_location" />
+            </dt>
             <dd>{renderConfigLocation()}</dd>
           </dl>
           <dl>
-            <dt>Stash library directories</dt>
+            <dt>
+              <FormattedMessage id="setup.confirm.stash_library_directories" />
+            </dt>
             <dd>{renderStashLibraries()}</dd>
           </dl>
           <dl>
-            <dt>Database file path</dt>
+            <dt>
+              <FormattedMessage id="setup.confirm.database_file_path" />
+            </dt>
             <dd>
               <code>
                 {databaseFile !== ""
                   ? databaseFile
-                  : `<path containing configuration file>/stash-go.sqlite`}
+                  : intl.formatMessage({id: 'setup.confirm.default_db_location'})}
               </code>
             </dd>
           </dl>
           <dl>
-            <dt>Generated directory</dt>
+            <dt>
+              <FormattedMessage id="setup.confirm.generated_directory" />
+            </dt>
             <dd>
               <code>
                 {generatedLocation !== ""
                   ? generatedLocation
-                  : `<path containing configuration file>/generated`}
+                  : intl.formatMessage({id: 'setup.confirm.default_generated_content_location'})}
               </code>
             </dd>
           </dl>
@@ -359,10 +367,10 @@ export const Setup: React.FC = () => {
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Button variant="secondary mx-2 p-5" onClick={() => goBack()}>
-              Back
+              <FormattedMessage id="actions.previous_action" />
             </Button>
             <Button variant="success mx-2 p-5" onClick={() => onSave()}>
-              Confirm
+              <FormattedMessage id="actions.confirm" />
             </Button>
           </div>
         </section>
@@ -374,22 +382,26 @@ export const Setup: React.FC = () => {
     return (
       <>
         <section>
-          <h2>Oh no! Something went wrong!</h2>
+          <h2>
+            <FormattedMessage id="setup.errors.something_went_wrong" />
+          </h2>
           <p>
-            Something went wrong while setting up your system. Here is the error
-            we received:
-            <pre>{setupError}</pre>
+            <FormattedMessage
+              id="setup.errors.something_went_wrong_while_setting_up_your_system"
+              values={{ error: <pre>{setupError}</pre> }}
+            />
           </p>
           <p>
-            If this looks like a problem with your inputs, go ahead and click
-            back to fix them up. Otherwise, raise a bug on the {githubLink}
-            or seek help in the {discordLink}.
+            <FormattedMessage
+              id="setup.errors.something_went_wrong_description"
+              values={{ githubLink, discordLink }}
+            />
           </p>
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Button variant="secondary mx-2 p-5" onClick={() => goBack(2)}>
-              Back
+              <FormattedMessage id="actions.previous_action" />
             </Button>
           </div>
         </section>
@@ -401,60 +413,76 @@ export const Setup: React.FC = () => {
     return (
       <>
         <section>
-          <h2>Success! Your system has been created!</h2>
+          <h2>
+            <FormattedMessage id="setup.success.your_system_has_been_created" />
+          </h2>
           <p>
-            You will be taken to the Configuration page next. This page will
-            allow you to customize what files to include and exclude, set a
-            username and password to protect your system, and a whole bunch of
-            other options.
+            <FormattedMessage id="setup.success.next_config_step_one" />
           </p>
           <p>
-            When you are satisfied with these settings, you can begin scanning
-            your content into Stash by clicking on <code>Tasks</code>, then{" "}
-            <code>Scan</code>.
-          </p>
-        </section>
-        <section>
-          <h3>Getting help</h3>
-          <p>
-            You are encouraged to check out the in-app manual which can be
-            accessed from the icon in the top-right corner of the screen that
-            looks like this: <Icon icon="question-circle" />
-          </p>
-          <p>
-            If you run into issues or have any questions or suggestions, feel
-            free to open an issue in the {githubLink}, or ask the community in
-            the {discordLink}.
+            <FormattedMessage
+              id="setup.success.next_config_step_two"
+              values={{
+                localized_task: intl.formatMessage({
+                  id: "config.categories.tasks",
+                }),
+                localized_scan: intl.formatMessage({ id: "actions.scan" }),
+              }}
+            />
           </p>
         </section>
         <section>
-          <h3>Support us</h3>
+          <h3>
+            <FormattedMessage id="setup.success.getting_help" />
+          </h3>
           <p>
-            Check out our{" "}
-            <a
-              href="https://opencollective.com/stashapp"
-              target="_blank"
-              rel="noreferrer"
-            >
-              OpenCollective
-            </a>{" "}
-            to see how you can contribute to the continued development of Stash.
+            <FormattedMessage
+              id="setup.success.in_app_manual_explained"
+              values={{ icon: <Icon icon="question-circle" /> }}
+            />
           </p>
           <p>
-            We also welcome contributions in the form of code (bug fixes,
-            improvements and new features), testing, bug reports, improvement
-            and feature requests, and user support. Details can be found in the
-            Contribution section of the in-app manual.
+            <FormattedMessage
+              id="setup.success.help_links"
+              values={{ discordLink, githubLink }}
+            />
           </p>
         </section>
         <section>
-          <p className="lead text-center">Thanks for trying Stash!</p>
+          <h3>
+            <FormattedMessage id="setup.success.support_us" />
+          </h3>
+          <p>
+            <FormattedMessage
+              id="setup.success.open_collective"
+              values={{
+                open_collective_link: (
+                  <a
+                    href="https://opencollective.com/stashapp"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {" "}
+                    OpenCollective{" "}
+                  </a>
+                ),
+              }}
+            />
+          </p>
+          <p>
+            <FormattedMessage id="setup.success.welcome_contrib" />
+          </p>
+        </section>
+        <section>
+          <p className="lead text-center">
+            <FormattedMessage id="setup.success.thanks_for_trying_stash" />
+          </p>
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
             <Link to="/settings?tab=configuration">
               <Button variant="success mx-2 p-5" onClick={() => goBack(2)}>
-                Finish
+                <FormattedMessage id="actions.finish" />
               </Button>
             </Link>
           </div>
@@ -495,11 +523,13 @@ export const Setup: React.FC = () => {
   function renderCreating() {
     return (
       <Card>
-        <LoadingIndicator message="Creating your system" />
+        <LoadingIndicator
+          message={intl.formatMessage({
+            id: "setup.creating.creating_your_system",
+          })}
+        />
         <Alert variant="info text-center">
-          If <code>ffmpeg</code> is not yet in your paths, please be patient
-          while stash downloads it. View the console output to see download
-          progress.
+          <FormattedMessage id="setup.creating.ffmpeg_notice" />
         </Alert>
       </Card>
     );
@@ -508,7 +538,9 @@ export const Setup: React.FC = () => {
   return (
     <Container>
       {maybeRenderGeneratedSelectDialog()}
-      <h1 className="text-center">Stash Setup Wizard</h1>
+      <h1 className="text-center">
+        <FormattedMessage id="setup.stash_setup_wizard" />
+      </h1>
       {loading ? renderCreating() : <Card>{steps[step]()}</Card>}
     </Container>
   );
