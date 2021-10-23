@@ -130,10 +130,6 @@ func (c *autotagSceneScraper) scrapeByFragment(scene models.ScrapedSceneInput) (
 	return nil, ErrNotSupported
 }
 
-func (c *autotagSceneScraper) scrapeByURL(url string) (*models.ScrapedScene, error) {
-	return nil, ErrNotSupported
-}
-
 type autotagGalleryScraper struct {
 	*autotagScraper
 }
@@ -183,10 +179,6 @@ func (c *autotagGalleryScraper) scrapeByFragment(gallery models.ScrapedGalleryIn
 	return nil, ErrNotSupported
 }
 
-func (c *autotagGalleryScraper) scrapeByURL(url string) (*models.ScrapedGallery, error) {
-	return nil, ErrNotSupported
-}
-
 func getAutoTagScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	base := autotagScraper{
 		txnManager:   txnManager,
@@ -197,8 +189,8 @@ func getAutoTagScraper(txnManager models.TransactionManager, globalConfig Global
 		models.ScrapeTypeFragment,
 	}
 
-	return scraper_s{
-		Spec: &models.Scraper{
+	return group{
+		specification: &models.Scraper{
 			ID:   autoTagScraperID,
 			Name: autoTagScraperName,
 			Scene: &models.ScraperSpec{

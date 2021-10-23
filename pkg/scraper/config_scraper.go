@@ -10,10 +10,6 @@ type configSceneScraper struct {
 	*configScraper
 }
 
-func (c *configSceneScraper) matchesURL(url string) bool {
-	return c.config.matchesURL(url, models.ScrapeContentTypeScene)
-}
-
 func (c *configSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, error) {
 	if c.config.SceneByName != nil {
 		s := c.config.getScraper(*c.config.SceneByName, c.client, c.txnManager, c.globalConfig)
@@ -41,30 +37,8 @@ func (c *configSceneScraper) scrapeByFragment(scene models.ScrapedSceneInput) (*
 	return nil, nil
 }
 
-func (c *configSceneScraper) scrapeByURL(url string) (*models.ScrapedScene, error) {
-	for _, scraper := range c.config.SceneByURL {
-		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
-			ret, err := s.scrapeSceneByURL(url)
-			if err != nil {
-				return nil, err
-			}
-
-			if ret != nil {
-				return ret, nil
-			}
-		}
-	}
-
-	return nil, nil
-}
-
 type configPerformerScraper struct {
 	*configScraper
-}
-
-func (c *configPerformerScraper) matchesURL(url string) bool {
-	return c.config.matchesURL(url, models.ScrapeContentTypePerformer)
 }
 
 func (c *configPerformerScraper) scrapeByName(name string) ([]*models.ScrapedPerformer, error) {
@@ -112,10 +86,6 @@ type configGalleryScraper struct {
 	*configScraper
 }
 
-func (c *configGalleryScraper) matchesURL(url string) bool {
-	return c.config.matchesURL(url, models.ScrapeContentTypeGallery)
-}
-
 func (c *configGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if c.config.GalleryByFragment != nil {
 		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
@@ -130,50 +100,6 @@ func (c *configGalleryScraper) scrapeByFragment(gallery models.ScrapedGalleryInp
 		// TODO - this should be galleryByQueryFragment
 		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeGalleryByFragment(gallery)
-	}
-
-	return nil, nil
-}
-
-func (c *configGalleryScraper) scrapeByURL(url string) (*models.ScrapedGallery, error) {
-	for _, scraper := range c.config.GalleryByURL {
-		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
-			ret, err := s.scrapeGalleryByURL(url)
-			if err != nil {
-				return nil, err
-			}
-
-			if ret != nil {
-				return ret, nil
-			}
-		}
-	}
-
-	return nil, nil
-}
-
-type configMovieScraper struct {
-	*configScraper
-}
-
-func (c *configMovieScraper) matchesURL(url string) bool {
-	return c.config.matchesURL(url, models.ScrapeContentTypeMovie)
-}
-
-func (c *configMovieScraper) scrapeByURL(url string) (*models.ScrapedMovie, error) {
-	for _, scraper := range c.config.MovieByURL {
-		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
-			ret, err := s.scrapeMovieByURL(url)
-			if err != nil {
-				return nil, err
-			}
-
-			if ret != nil {
-				return ret, nil
-			}
-		}
 	}
 
 	return nil, nil
@@ -194,8 +120,11 @@ func createScraperFromConfig(c config, client *http.Client, txnManager models.Tr
 		globalConfig: globalConfig,
 	}
 
-	ret := scraper_s{
-		Spec: configScraperSpec(c),
+	ret := group{
+		config:        c,
+		specification: configScraperSpec(c),
+		txnManager:    txnManager,
+		globalConf:    globalConfig,
 	}
 
 	// only set fields if supported
@@ -204,9 +133,6 @@ func createScraperFromConfig(c config, client *http.Client, txnManager models.Tr
 	}
 	if c.supports(models.ScrapeContentTypeGallery) {
 		ret.gallery = &configGalleryScraper{&base}
-	}
-	if c.supports(models.ScrapeContentTypeMovie) {
-		ret.movie = &configMovieScraper{&base}
 	}
 	if c.supports(models.ScrapeContentTypeScene) {
 		ret.scene = &configSceneScraper{&base}

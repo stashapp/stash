@@ -2,13 +2,10 @@ package scraper
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/stashapp/stash/pkg/models"
 )
-
-type urlMatcher interface {
-	matchesURL(url string) bool
-}
 
 // Input coalesces inputs of diffrent types into a single structure.
 // The system expects one of these to be set, and the remaining to be
@@ -22,24 +19,17 @@ type Input struct {
 type performerScraper interface {
 	scrapeByName(name string) ([]*models.ScrapedPerformer, error)
 	scrapeByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
-	scrapeByURL(url string) (*models.ScrapedPerformer, error)
 }
 
 type sceneScraper interface {
 	scrapeByName(name string) ([]*models.ScrapedScene, error)
 	scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error)
 	scrapeByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
-	scrapeByURL(url string) (*models.ScrapedScene, error)
 }
 
 type galleryScraper interface {
 	scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
 	scrapeByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error)
-	scrapeByURL(url string) (*models.ScrapedGallery, error)
-}
-
-type movieScraper interface {
-	scrapeByURL(url string) (*models.ScrapedMovie, error)
 }
 
 // scraper is the generic interface to the scraper subsystems
@@ -56,7 +46,7 @@ type scraper interface {
 type urlScraper interface {
 	scraper
 
-	loadByURL(url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
+	loadByURL(client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
 }
 
 // nameScraper is the interface of scrapers supporting name loads
@@ -89,64 +79,101 @@ type galleryLoader interface {
 	loadByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
 }
 
-type scraper_s struct {
-	Spec *models.Scraper
+type group struct {
+	config        config
+	specification *models.Scraper
+
+	txnManager models.TransactionManager
+	globalConf GlobalConfig
 
 	performer performerScraper
 	scene     sceneScraper
 	gallery   galleryScraper
-	movie     movieScraper
 }
 
-func (s scraper_s) spec() models.Scraper {
-	return *s.Spec
+func (g group) spec() models.Scraper {
+	return *g.specification
 }
 
-func (s scraper_s) loadByFragment(input Input) (models.ScrapedContent, error) {
+func (g group) loadByFragment(input Input) (models.ScrapedContent, error) {
 	switch {
 	case input.Performer != nil:
-		s.performer.scrapeByFragment(*input.Performer)
+		g.performer.scrapeByFragment(*input.Performer)
 	case input.Gallery != nil:
-		s.gallery.scrapeByFragment(*input.Gallery)
+		g.gallery.scrapeByFragment(*input.Gallery)
 	case input.Scene != nil:
-		s.scene.scrapeByFragment(*input.Scene)
+		g.scene.scrapeByFragment(*input.Scene)
 	}
 
 	return nil, ErrNotSupported
 }
 
-func (s scraper_s) loadByScene(scene *models.Scene) (*models.ScrapedScene, error) {
-	if s.scene == nil {
+func (g group) loadByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+	if g.scene == nil {
 		return nil, ErrNotSupported
 	}
 
-	return s.scene.scrapeByScene(scene)
+	return g.scene.scrapeByScene(scene)
 }
 
-func (s scraper_s) loadByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
-	if s.gallery == nil {
+func (g group) loadByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+	if g.gallery == nil {
 		return nil, ErrNotSupported
 	}
 
-	return s.gallery.scrapeByGallery(gallery)
+	return g.gallery.scrapeByGallery(gallery)
 }
 
-func (s scraper_s) loadByURL(url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func loadUrlCandidates(c config, ty models.ScrapeContentType) []*scrapeByURLConfig {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		return s.performer.scrapeByURL(url)
+		return c.PerformerByURL
 	case models.ScrapeContentTypeScene:
-		return s.scene.scrapeByURL(url)
-	case models.ScrapeContentTypeGallery:
-		return s.gallery.scrapeByURL(url)
+		return c.SceneByURL
 	case models.ScrapeContentTypeMovie:
-		return s.movie.scrapeByURL(url)
-	default:
-		panic("Unimplemented scraper type")
+		return c.MovieByURL
+	case models.ScrapeContentTypeGallery:
+		return c.GalleryByURL
 	}
+
+	panic("loadUrlCandidates: unreachable")
 }
 
-func (s scraper_s) loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func scrapeByUrl(url string, s scraperActionImpl, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		return s.scrapePerformerByURL(url)
+	case models.ScrapeContentTypeScene:
+		return s.scrapeSceneByURL(url)
+	case models.ScrapeContentTypeMovie:
+		return s.scrapeMovieByURL(url)
+	case models.ScrapeContentTypeGallery:
+		return s.scrapeGalleryByURL(url)
+	}
+
+	panic("scrapeByUrl: unreachable")
+}
+
+func (g group) loadByURL(client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+	candidates := loadUrlCandidates(g.config, ty)
+	for _, scraper := range candidates {
+		if scraper.matchesURL(url) {
+			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.txnManager, g.globalConf)
+			ret, err := scrapeByUrl(url, s, ty)
+			if err != nil {
+				return nil, err
+			}
+
+			if ret != nil {
+				return ret, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+func (s group) loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
 		performers, err := s.performer.scrapeByName(name)
@@ -173,46 +200,10 @@ func (s scraper_s) loadByName(name string, ty models.ScrapeContentType) ([]model
 	}
 }
 
-func (s scraper_s) supports(ty models.ScrapeContentType) bool {
-	return s.matchesContentType(ty)
+func (s group) supports(ty models.ScrapeContentType) bool {
+	return s.config.supports(ty)
 }
 
-func (s scraper_s) matchesContentType(k models.ScrapeContentType) bool {
-	switch k {
-	case models.ScrapeContentTypePerformer:
-		return s.performer != nil
-	case models.ScrapeContentTypeScene:
-		return s.scene != nil
-	case models.ScrapeContentTypeGallery:
-		return s.gallery != nil
-	case models.ScrapeContentTypeMovie:
-		return s.movie != nil
-	default:
-		return false
-	}
-}
-
-func (s scraper_s) supportsURL(url string, ty models.ScrapeContentType) bool {
-	return s.matchesURLContent(url, ty)
-}
-
-func (s scraper_s) matchesURLContent(url string, k models.ScrapeContentType) bool {
-	var matcher urlMatcher
-	var ok bool
-	switch k {
-	case models.ScrapeContentTypePerformer:
-		matcher, ok = s.performer.(urlMatcher)
-	case models.ScrapeContentTypeScene:
-		matcher, ok = s.scene.(urlMatcher)
-	case models.ScrapeContentTypeGallery:
-		matcher, ok = s.gallery.(urlMatcher)
-	case models.ScrapeContentTypeMovie:
-		matcher, ok = s.movie.(urlMatcher)
-	}
-
-	if !ok {
-		return false
-	}
-
-	return matcher.matchesURL(url)
+func (s group) supportsURL(url string, ty models.ScrapeContentType) bool {
+	return s.config.matchesURL(url, ty)
 }

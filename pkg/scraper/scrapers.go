@@ -226,7 +226,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 			if !ok {
 				return nil, fmt.Errorf("scraper with id %s used as url scraper: %w", s.spec().ID, ErrNotSupported)
 			}
-			ret, err := ul.loadByURL(url, ty)
+			ret, err := ul.loadByURL(c.client, url, ty)
 			if err != nil {
 				return nil, err
 			}
