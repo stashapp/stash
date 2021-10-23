@@ -211,7 +211,12 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     <>
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={(location, action) => {
+          // Don't prompt when pushing to another studio, since it's usually a create
+          if (action === "PUSH" && location.pathname.startsWith("/studios/"))
+            return true;
+          return "Unsaved changes. Are you sure you want to leave?";
+        }}
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="studio-edit">
