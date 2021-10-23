@@ -446,6 +446,7 @@ export const Setup: React.FC = () => {
             <FormattedMessage
               id="setup.success.next_config_step_two"
               values={{
+                code: (chunks: string) => <code>{chunks}</code>,
                 localized_task: intl.formatMessage({
                   id: "config.categories.tasks",
                 }),
@@ -552,7 +553,12 @@ export const Setup: React.FC = () => {
           })}
         />
         <Alert variant="info text-center">
-          <FormattedMessage id="setup.creating.ffmpeg_notice" />
+          <FormattedMessage
+            id="setup.creating.ffmpeg_notice"
+            values={{
+              code: (chunks: string) => <code>{chunks}</code>,
+            }}
+          />
         </Alert>
       </Card>
     );
