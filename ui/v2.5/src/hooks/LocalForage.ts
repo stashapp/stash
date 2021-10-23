@@ -45,8 +45,7 @@ export function useLocalForage<T>(
         }
         setError(null);
       } catch (err) {
-        if (err instanceof Error)
-          setError(err);
+        if (err instanceof Error) setError(err);
         Cache[key] = defaultValue;
       } finally {
         Loading[key] = false;

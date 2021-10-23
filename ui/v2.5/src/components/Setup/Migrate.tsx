@@ -80,8 +80,7 @@ export const Migrate: React.FC = () => {
       const newURL = new URL("/", window.location.toString());
       window.location.href = newURL.toString();
     } catch (e) {
-      if (e instanceof Error)
-        setMigrateError(e.message ?? e.toString());
+      if (e instanceof Error) setMigrateError(e.message ?? e.toString());
       setMigrateLoading(false);
     }
   }

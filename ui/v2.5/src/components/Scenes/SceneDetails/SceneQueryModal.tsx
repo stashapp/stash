@@ -25,7 +25,11 @@ const SceneSearchResultDetails: React.FC<ISceneSearchResultDetailsProps> = ({
         <Row>
           <Col>
             {scene.performers?.map((performer) => (
-              <Badge className="tag-item" variant="secondary" key={performer.name}>
+              <Badge
+                className="tag-item"
+                variant="secondary"
+                key={performer.name}
+              >
                 {performer.name}
               </Badge>
             ))}
@@ -41,7 +45,11 @@ const SceneSearchResultDetails: React.FC<ISceneSearchResultDetailsProps> = ({
         <Row>
           <Col>
             {scene.tags?.map((tag) => (
-              <Badge className="tag-item" variant="secondary" key={tag.stored_id}>
+              <Badge
+                className="tag-item"
+                variant="secondary"
+                key={tag.stored_id}
+              >
                 {tag.name}
               </Badge>
             ))}
@@ -136,8 +144,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
         const r = await queryScrapeSceneQuery(scraper, input);
         setScenes(r.data.scrapeSingleScene);
       } catch (err) {
-        if (err instanceof Error)
-          setError(err);
+        if (err instanceof Error) setError(err);
       } finally {
         setLoading(false);
       }

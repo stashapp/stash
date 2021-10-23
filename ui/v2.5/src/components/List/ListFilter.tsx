@@ -173,7 +173,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       />
     </div>
   ));
-  SavedFilterDropdown.displayName = 'SavedFilterDropdown';
+  SavedFilterDropdown.displayName = "SavedFilterDropdown";
 
   function render() {
     const currentSortBy = filterOptions.sortByOptions.find(
