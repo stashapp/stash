@@ -329,7 +329,8 @@ export const Setup: React.FC = () => {
         stashes,
       });
     } catch (e) {
-      setSetupError(e.message ?? e.toString());
+      if (e instanceof Error)
+        setSetupError(e.message ?? e.toString());
     } finally {
       setLoading(false);
       next();

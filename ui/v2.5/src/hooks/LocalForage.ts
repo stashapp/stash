@@ -27,7 +27,7 @@ export function useLocalForage<T>(
   key: string,
   defaultValue: T = {} as T
 ): [ILocalForage<T>, Dispatch<SetStateAction<T>>] {
-  const [error, setError] = React.useState(null);
+  const [error, setError] = React.useState<Error | null>(null);
   const [data, setData] = React.useState<T>(Cache[key] as T);
   const [loading, setLoading] = React.useState(Loading[key]);
 
@@ -45,7 +45,8 @@ export function useLocalForage<T>(
         }
         setError(null);
       } catch (err) {
-        setError(err);
+        if (err instanceof Error)
+          setError(err);
         Cache[key] = defaultValue;
       } finally {
         Loading[key] = false;

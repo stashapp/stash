@@ -136,7 +136,8 @@ export const SceneQueryModal: React.FC<IProps> = ({
         const r = await queryScrapeSceneQuery(scraper, input);
         setScenes(r.data.scrapeSingleScene);
       } catch (err) {
-        setError(err);
+        if (err instanceof Error)
+          setError(err);
       } finally {
         setLoading(false);
       }

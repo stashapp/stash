@@ -112,6 +112,6 @@
     "stylelint": "^13.9.0",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-order": "^4.1.0",
-    "typescript": "~4.0.5"
+    "typescript": "~4.4.4"
   }
 }
