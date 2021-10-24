@@ -133,6 +133,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
+          <option value="es-ES">Spanish (Spain)</option>
           <option value="de-DE">German (Germany)</option>
           <option value="pt-BR">Portuguese (Brazil)</option>
           <option value="sv-SE">Swedish (Sweden)</option>
