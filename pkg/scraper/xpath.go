@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -260,11 +261,10 @@ type xpathQuery struct {
 	scraper *xpathScraper
 }
 
-func (q *xpathQuery) runQuery(selector string) []string {
+func (q *xpathQuery) runQuery(selector string) ([]string, error) {
 	found, err := htmlquery.QueryAll(q.doc, selector)
 	if err != nil {
-		logger.Warnf("Error parsing xpath expression '%s': %s", selector, err.Error())
-		return nil
+		return nil, fmt.Errorf("selector '%s': parse error: %v", selector, err)
 	}
 
 	var ret []string
@@ -276,7 +276,7 @@ func (q *xpathQuery) runQuery(selector string) []string {
 		}
 	}
 
-	return ret
+	return ret, nil
 }
 
 func (q *xpathQuery) nodeText(n *html.Node) string {

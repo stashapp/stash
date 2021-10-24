@@ -3,6 +3,7 @@ package scraper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -260,12 +261,11 @@ type jsonQuery struct {
 	scraper *jsonScraper
 }
 
-func (q *jsonQuery) runQuery(selector string) []string {
+func (q *jsonQuery) runQuery(selector string) ([]string, error) {
 	value := gjson.Get(q.doc, selector)
 
 	if !value.Exists() {
-		logger.Warnf("Could not find json path '%s' in json object", selector)
-		return nil
+		return nil, fmt.Errorf("could not find json path '%s' in json object", selector)
 	}
 
 	var ret []string
@@ -278,7 +278,7 @@ func (q *jsonQuery) runQuery(selector string) []string {
 		ret = append(ret, value.String())
 	}
 
-	return ret
+	return ret, nil
 }
 
 func (q *jsonQuery) subScrape(value string) mappedQuery {
