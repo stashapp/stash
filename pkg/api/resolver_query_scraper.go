@@ -110,7 +110,7 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 		return nil, nil
 	}
 
-	content, err := r.scraperCache.ScrapeName(scraperID, query, models.ScrapeContentTypeScene)
+	content, err := r.scraperCache.ScrapeName(ctx, scraperID, query, models.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			c, err = r.scraperCache.ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Scene: input.SceneInput})
 			content = []models.ScrapedContent{c}
 		case input.Query != nil:
-			content, err = r.scraperCache.ScrapeName(*source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
+			content, err = r.scraperCache.ScrapeName(ctx, *source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
 		default:
 			err = fmt.Errorf("%w: scene_id, scene_input or query must be set", ErrInput)
 		}
@@ -297,7 +297,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		}
 
 		if input.Query != nil {
-			content, err := r.scraperCache.ScrapeName(*source.ScraperID, *input.Query, models.ScrapeContentTypePerformer)
+			content, err := r.scraperCache.ScrapeName(ctx, *source.ScraperID, *input.Query, models.ScrapeContentTypePerformer)
 			if err != nil {
 				return nil, err
 			}
