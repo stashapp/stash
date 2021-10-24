@@ -56,10 +56,20 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 }
 
 func (r *queryResolver) ListScrapers(ctx context.Context, types []models.ScrapeContentType) ([]*models.Scraper, error) {
-	var ret []*models.Scraper
+	// Collect all scrapers in a map so they occur at-most-once
+	m := make(map[string]*models.Scraper)
 	for _, ty := range types {
-		s := r.scraperCache.ListScrapers(ty)
-		ret = append(ret, s...)
+		scrapers := r.scraperCache.ListScrapers(ty)
+		for _, s := range scrapers {
+			if _, ok := m[s.ID]; !ok {
+				m[s.ID] = s
+			}
+		}
+	}
+
+	var ret []*models.Scraper
+	for _, v := range m {
+		ret = append(ret, v)
 	}
 
 	return ret, nil
