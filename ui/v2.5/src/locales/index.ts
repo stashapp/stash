@@ -11,6 +11,7 @@ export default {
   deDE,
   enGB,
   enUS,
+  esES,
   ptBR,
   svSE,
   zhTW,
