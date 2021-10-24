@@ -64,8 +64,6 @@ const VideoFileNamingAlgorithm = "video_file_naming_algorithm"
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
-const NoBrowser = "nobrowser"
-
 const ParallelTasks = "parallel_tasks"
 const parallelTasksDefault = 1
 
@@ -152,6 +150,10 @@ const DLNAServerName = "dlna.server_name"
 const DLNADefaultEnabled = "dlna.default_enabled"
 const DLNADefaultIPWhitelist = "dlna.default_whitelist"
 const DLNAInterfaces = "dlna.interfaces"
+
+// Desktop Integration Options
+const NoBrowser = "nobrowser"
+const NoBrowserDefault = false
 
 // Logging options
 const LogFile = "logFile"
@@ -1035,6 +1037,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
+
+	viper.SetDefault(NoBrowser, NoBrowserDefault)
 
 	// Set default scrapers and plugins paths
 	viper.SetDefault(ScrapersPath, defaultScrapersPath)

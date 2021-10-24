@@ -42,6 +42,7 @@ func Initialize() (*Instance, error) {
 		}
 
 		if !instance.isNewSystem {
+			setExistingSystemDefaults(instance)
 			err = instance.SetInitialConfig()
 		}
 	})
@@ -94,6 +95,25 @@ func initConfig(flags flagStruct) error {
 	}
 
 	return nil
+}
+
+// setExistingSystemDefaults sets config options that are new and unset in an existing install,
+// but should have a separate default than for brand-new systems, to maintain behavior.
+func setExistingSystemDefaults(instance *Instance) {
+	if !instance.isNewSystem {
+		configDirtied := false
+
+		// Existing systems as of the introduction of auto-browser open should retain existing
+		// behavior and not start the browser automatically.
+		if !viper.InConfig("nobrowser") {
+			configDirtied = true
+			viper.Set("nobrowser", "true")
+		}
+
+		if configDirtied {
+			viper.WriteConfig()
+		}
+	}
 }
 
 func initFlags() flagStruct {
