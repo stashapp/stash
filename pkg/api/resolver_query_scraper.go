@@ -34,7 +34,7 @@ func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name strin
 
 // deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	content, err := r.scraperCache.ScrapeName(scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeName(ctx, scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID strin
 		return nil, nil
 	}
 
-	content, err := r.scraperCache.ScrapeName(scraperID, query, models.ScrapeContentTypePerformer)
+	content, err := r.scraperCache.ScrapeName(ctx, scraperID, query, models.ScrapeContentTypePerformer)
 	if err != nil {
 		return nil, err
 	}

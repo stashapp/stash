@@ -74,9 +74,9 @@ func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
 	return docStr, err
 }
 
-func (s *jsonScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
+func (s *jsonScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
-	doc, scraper, err := s.scrapeURL(context.TODO(), u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +85,9 @@ func (s *jsonScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer
 	return scraper.scrapePerformer(q)
 }
 
-func (s *jsonScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
+func (s *jsonScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for scene by URL queries
-	doc, scraper, err := s.scrapeURL(context.TODO(), u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +96,9 @@ func (s *jsonScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error)
 	return scraper.scrapeScene(q)
 }
 
-func (s *jsonScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+func (s *jsonScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for gallery by URL queries
-	doc, scraper, err := s.scrapeURL(context.TODO(), u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +107,9 @@ func (s *jsonScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, er
 	return scraper.scrapeGallery(q)
 }
 
-func (s *jsonScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+func (s *jsonScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for movie by URL queries
-	doc, scraper, err := s.scrapeURL(context.TODO(), u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (s *jsonScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
 	return scraper.scrapeMovie(q)
 }
 
-func (s *jsonScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
+func (s *jsonScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
 	scraper := s.getJsonScraper()
 
 	if scraper == nil {
@@ -147,7 +147,7 @@ func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedP
 	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
 }
 
-func (s *jsonScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+func (s *jsonScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
 	scraper := s.getJsonScraper()
 
 	if scraper == nil {
@@ -162,7 +162,7 @@ func (s *jsonScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, e
 	url := s.scraper.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (s *jsonScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, e
 	return scraper.scrapeScenes(q)
 }
 
-func (s *jsonScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -186,7 +186,7 @@ func (s *jsonScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedSc
 		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (s *jsonScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedSc
 	return scraper.scrapeScene(q)
 }
 
-func (s *jsonScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+func (s *jsonScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScrapedScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -210,7 +210,7 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*mo
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*mo
 	return scraper.scrapeScene(q)
 }
 
-func (s *jsonScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
@@ -234,7 +234,7 @@ func (s *jsonScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.S
 		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err

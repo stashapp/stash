@@ -83,11 +83,11 @@ func (s *autotagScraper) matchTags(path string, tagReader models.TagReader) ([]*
 	return ret, nil
 }
 
-func (s *autotagScraper) loadByScene(_client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *autotagScraper) loadByScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	var ret *models.ScrapedScene
 
 	// populate performers, studio and tags based on scene path
-	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := s.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		path := scene.Path
 		performers, err := s.matchPerformers(path, r.Performer())
 		if err != nil {
@@ -119,7 +119,7 @@ func (s *autotagScraper) loadByScene(_client *http.Client, scene *models.Scene) 
 	return ret, nil
 }
 
-func (s *autotagScraper) loadByGallery(_client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *autotagScraper) loadByGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if !gallery.Path.Valid {
 		// not valid for non-path-based galleries
 		return nil, nil
@@ -128,7 +128,7 @@ func (s *autotagScraper) loadByGallery(_client *http.Client, gallery *models.Gal
 	var ret *models.ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
-	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := s.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		path := gallery.Path.String
 		performers, err := s.matchPerformers(path, r.Performer())
 		if err != nil {

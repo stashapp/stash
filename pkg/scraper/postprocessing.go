@@ -74,8 +74,8 @@ func (c Cache) postScrapeMovie(ctx context.Context, ret *models.ScrapedMovie) (m
 	return ret, nil
 }
 
-func (c Cache) postScrapeScenePerformer(ret *models.ScrapedPerformer) error {
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+func (c Cache) postScrapeScenePerformer(ctx context.Context, ret *models.ScrapedPerformer) error {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
 		tags, err := postProcessTags(tqb, ret.Tags)
@@ -100,7 +100,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (m
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			if err := c.postScrapeScenePerformer(p); err != nil {
+			if err := c.postScrapeScenePerformer(ctx, p); err != nil {
 				return err
 			}
 

@@ -39,14 +39,14 @@ func (s *xpathScraper) getXpathScraper() *mappedScraper {
 	return s.config.XPathScrapers[s.scraper.Scraper]
 }
 
-func (s *xpathScraper) scrapeURL(url string) (*html.Node, *mappedScraper, error) {
+func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, *mappedScraper, error) {
 	scraper := s.getXpathScraper()
 
 	if scraper == nil {
 		return nil, nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, nil, err
@@ -55,9 +55,9 @@ func (s *xpathScraper) scrapeURL(url string) (*html.Node, *mappedScraper, error)
 	return doc, scraper, nil
 }
 
-func (s *xpathScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
+func (s *xpathScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
-	doc, scraper, err := s.scrapeURL(u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -66,9 +66,9 @@ func (s *xpathScraper) scrapePerformerByURL(url string) (*models.ScrapedPerforme
 	return scraper.scrapePerformer(q)
 }
 
-func (s *xpathScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
+func (s *xpathScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for scene by URL queries
-	doc, scraper, err := s.scrapeURL(u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +77,9 @@ func (s *xpathScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error
 	return scraper.scrapeScene(q)
 }
 
-func (s *xpathScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+func (s *xpathScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for gallery by URL queries
-	doc, scraper, err := s.scrapeURL(u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -88,9 +88,9 @@ func (s *xpathScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, e
 	return scraper.scrapeGallery(q)
 }
 
-func (s *xpathScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+func (s *xpathScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for movie by URL queries
-	doc, scraper, err := s.scrapeURL(u)
+	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (s *xpathScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error
 	return scraper.scrapeMovie(q)
 }
 
-func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
+func (s *xpathScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
 	scraper := s.getXpathScraper()
 
 	if scraper == nil {
@@ -114,7 +114,7 @@ func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 	url := s.scraper.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (s *xpathScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 	return nil, errors.New("scrapePerformerByFragment not supported for xpath scraper")
 }
 
-func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+func (s *xpathScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
 	scraper := s.getXpathScraper()
 
 	if scraper == nil {
@@ -143,7 +143,7 @@ func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 	url := s.scraper.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (s *xpathScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 	return scraper.scrapeScenes(q)
 }
 
-func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -167,7 +167,7 @@ func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func (s *xpathScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 	return scraper.scrapeScene(q)
 }
 
-func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+func (s *xpathScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScrapedScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -191,7 +191,7 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*m
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*m
 	return scraper.scrapeScene(q)
 }
 
-func (s *xpathScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
@@ -215,7 +215,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.
 		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
 	}
 
-	doc, err := s.loadURL(context.TODO(), url)
+	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err

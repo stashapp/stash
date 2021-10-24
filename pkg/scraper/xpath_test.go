@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -875,12 +876,13 @@ xPathScrapers:
 	globalConfig := mockGlobalConfig{}
 
 	client := &http.Client{}
+	ctx := context.Background()
 	s := createScraperFromConfig(*c, nil, globalConfig)
 	us, ok := s.(urlScraper)
 	if !ok {
 		t.Error("couldn't convert scraper into url scraper")
 	}
-	content, err := us.loadByURL(client, ts.URL, models.ScrapeContentTypePerformer)
+	content, err := us.loadByURL(ctx, client, ts.URL, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
