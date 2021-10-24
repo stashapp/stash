@@ -16,19 +16,6 @@ type Input struct {
 	Gallery   *models.ScrapedGalleryInput
 }
 
-type performerScraper interface {
-	scrapeByName(name string) ([]*models.ScrapedPerformer, error)
-}
-
-type sceneScraper interface {
-	scrapeByName(name string) ([]*models.ScrapedScene, error)
-	scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error)
-}
-
-type galleryScraper interface {
-	scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
-}
-
 // scraper is the generic interface to the scraper subsystems
 type scraper interface {
 	// spec returns the scraper specification, suitable for graphql
@@ -50,7 +37,7 @@ type urlScraper interface {
 type nameScraper interface {
 	scraper
 
-	loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
+	loadByName(client *http.Client, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
 }
 
 // fragmentScraper is the interface of scrapers supporting fragment loads
@@ -65,7 +52,7 @@ type fragmentScraper interface {
 type sceneLoader interface {
 	scraper
 
-	loadByScene(scene *models.Scene) (*models.ScrapedScene, error)
+	loadByScene(client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
 }
 
 // galleryLoader is a sraper which supports gallery scrapes with
@@ -73,23 +60,18 @@ type sceneLoader interface {
 type galleryLoader interface {
 	scraper
 
-	loadByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
+	loadByGallery(client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
 }
 
 type group struct {
-	config        config
-	specification *models.Scraper
+	config config
 
 	txnManager models.TransactionManager
 	globalConf GlobalConfig
-
-	performer performerScraper
-	scene     sceneScraper
-	gallery   galleryScraper
 }
 
 func (g group) spec() models.Scraper {
-	return *g.specification
+	return g.config.spec()
 }
 
 // fragmentScraper finds an appropriate fragment scraper based on input.
@@ -142,20 +124,22 @@ func (g group) loadByFragment(client *http.Client, input Input) (models.ScrapedC
 	return scrapeFragmentInput(input, s)
 }
 
-func (g group) loadByScene(scene *models.Scene) (*models.ScrapedScene, error) {
-	if g.scene == nil {
+func (g group) loadByScene(client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+	if g.config.SceneByFragment == nil {
 		return nil, ErrNotSupported
 	}
 
-	return g.scene.scrapeByScene(scene)
+	s := g.config.getScraper(*g.config.SceneByFragment, client, g.txnManager, g.globalConf)
+	return s.scrapeSceneByScene(scene)
 }
 
-func (g group) loadByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
-	if g.gallery == nil {
+func (g group) loadByGallery(client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+	if g.config.GalleryByFragment == nil {
 		return nil, ErrNotSupported
 	}
 
-	return g.gallery.scrapeByGallery(gallery)
+	s := g.config.getScraper(*g.config.GalleryByFragment, client, g.txnManager, g.globalConf)
+	return s.scrapeGalleryByGallery(gallery)
 }
 
 func loadUrlCandidates(c config, ty models.ScrapeContentType) []*scrapeByURLConfig {
@@ -207,10 +191,15 @@ func (g group) loadByURL(client *http.Client, url string, ty models.ScrapeConten
 	return nil, nil
 }
 
-func (g group) loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (g group) loadByName(client *http.Client, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		performers, err := g.performer.scrapeByName(name)
+		if g.config.PerformerByName == nil {
+			break
+		}
+
+		s := g.config.getScraper(*g.config.PerformerByName, client, g.txnManager, g.globalConf)
+		performers, err := s.scrapePerformersByName(name)
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +209,12 @@ func (g group) loadByName(name string, ty models.ScrapeContentType) ([]models.Sc
 		}
 		return content, nil
 	case models.ScrapeContentTypeScene:
-		scenes, err := g.scene.scrapeByName(name)
+		if g.config.SceneByName == nil {
+			break
+		}
+
+		s := g.config.getScraper(*g.config.SceneByName, client, g.txnManager, g.globalConf)
+		scenes, err := s.scrapeScenesByName(name)
 		if err != nil {
 			return nil, err
 		}
@@ -229,9 +223,9 @@ func (g group) loadByName(name string, ty models.ScrapeContentType) ([]models.Sc
 			content[i] = scenes[i]
 		}
 		return content, nil
-	default:
-		return nil, fmt.Errorf("loading %v by name: %w", ty, ErrNotSupported)
 	}
+
+	return nil, fmt.Errorf("loading %v by name: %w", ty, ErrNotSupported)
 }
 
 func (g group) supports(ty models.ScrapeContentType) bool {

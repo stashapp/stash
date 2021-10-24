@@ -3,6 +3,7 @@ package scraper
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/match"
@@ -82,30 +83,22 @@ func (s *autotagScraper) matchTags(path string, tagReader models.TagReader) ([]*
 	return ret, nil
 }
 
-type autotagSceneScraper struct {
-	*autotagScraper
-}
-
-func (c *autotagSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, error) {
-	return nil, ErrNotSupported
-}
-
-func (c *autotagSceneScraper) scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *autotagScraper) loadByScene(_client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	var ret *models.ScrapedScene
 
 	// populate performers, studio and tags based on scene path
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		path := scene.Path
-		performers, err := c.matchPerformers(path, r.Performer())
+		performers, err := s.matchPerformers(path, r.Performer())
 		if err != nil {
 			return err
 		}
-		studio, err := c.matchStudio(path, r.Studio())
+		studio, err := s.matchStudio(path, r.Studio())
 		if err != nil {
 			return err
 		}
 
-		tags, err := c.matchTags(path, r.Tag())
+		tags, err := s.matchTags(path, r.Tag())
 		if err != nil {
 			return err
 		}
@@ -126,11 +119,7 @@ func (c *autotagSceneScraper) scrapeByScene(scene *models.Scene) (*models.Scrape
 	return ret, nil
 }
 
-type autotagGalleryScraper struct {
-	*autotagScraper
-}
-
-func (c *autotagGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *autotagScraper) loadByGallery(_client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if !gallery.Path.Valid {
 		// not valid for non-path-based galleries
 		return nil, nil
@@ -139,18 +128,18 @@ func (c *autotagGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*model
 	var ret *models.ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
-	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		path := gallery.Path.String
-		performers, err := c.matchPerformers(path, r.Performer())
+		performers, err := s.matchPerformers(path, r.Performer())
 		if err != nil {
 			return err
 		}
-		studio, err := c.matchStudio(path, r.Studio())
+		studio, err := s.matchStudio(path, r.Studio())
 		if err != nil {
 			return err
 		}
 
-		tags, err := c.matchTags(path, r.Tag())
+		tags, err := s.matchTags(path, r.Tag())
 		if err != nil {
 			return err
 		}
@@ -171,28 +160,43 @@ func (c *autotagGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*model
 	return ret, nil
 }
 
+func (s autotagScraper) supports(ty models.ScrapeContentType) bool {
+	switch ty {
+	case models.ScrapeContentTypeScene:
+		return true
+	case models.ScrapeContentTypeGallery:
+		return true
+	}
+
+	return false
+}
+
+func (s autotagScraper) supportsURL(url string, ty models.ScrapeContentType) bool {
+	return false
+}
+
+func (s autotagScraper) spec() models.Scraper {
+	supportedScrapes := []models.ScrapeType{
+		models.ScrapeTypeFragment,
+	}
+
+	return models.Scraper{
+		ID:   autoTagScraperID,
+		Name: autoTagScraperName,
+		Scene: &models.ScraperSpec{
+			SupportedScrapes: supportedScrapes,
+		},
+		Gallery: &models.ScraperSpec{
+			SupportedScrapes: supportedScrapes,
+		},
+	}
+}
+
 func getAutoTagScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	base := autotagScraper{
 		txnManager:   txnManager,
 		globalConfig: globalConfig,
 	}
 
-	supportedScrapes := []models.ScrapeType{
-		models.ScrapeTypeFragment,
-	}
-
-	return group{
-		specification: &models.Scraper{
-			ID:   autoTagScraperID,
-			Name: autoTagScraperName,
-			Scene: &models.ScraperSpec{
-				SupportedScrapes: supportedScrapes,
-			},
-			Gallery: &models.ScraperSpec{
-				SupportedScrapes: supportedScrapes,
-			},
-		},
-		scene:   &autotagSceneScraper{&base},
-		gallery: &autotagGalleryScraper{&base},
-	}
+	return base
 }

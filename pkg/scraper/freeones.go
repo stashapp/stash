@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -124,7 +123,7 @@ xPathScrapers:
 # Last updated April 13, 2021
 `
 
-func getFreeonesScraper(client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
+func getFreeonesScraper(txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
 	yml := freeonesScraperConfig
 
 	c, err := loadConfigFromYAML(FreeonesScraperID, strings.NewReader(yml))
@@ -132,5 +131,5 @@ func getFreeonesScraper(client *http.Client, txnManager models.TransactionManage
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}
 
-	return createScraperFromConfig(*c, client, txnManager, globalConfig)
+	return createScraperFromConfig(*c, txnManager, globalConfig)
 }

@@ -875,7 +875,7 @@ xPathScrapers:
 	globalConfig := mockGlobalConfig{}
 
 	client := &http.Client{}
-	s := createScraperFromConfig(*c, client, nil, globalConfig)
+	s := createScraperFromConfig(*c, nil, globalConfig)
 	us, ok := s.(urlScraper)
 	if !ok {
 		t.Error("couldn't convert scraper into url scraper")

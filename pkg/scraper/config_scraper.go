@@ -1,96 +1,18 @@
 package scraper
 
 import (
-	"net/http"
-
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type configSceneScraper struct {
-	*configScraper
+func createScraperFromConfig(c config, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
+	return group{
+		config:     c,
+		txnManager: txnManager,
+		globalConf: globalConfig,
+	}
 }
 
-func (c *configSceneScraper) scrapeByName(name string) ([]*models.ScrapedScene, error) {
-	if c.config.SceneByName != nil {
-		s := c.config.getScraper(*c.config.SceneByName, c.client, c.txnManager, c.globalConfig)
-		return s.scrapeScenesByName(name)
-	}
-
-	return nil, nil
-}
-
-func (c *configSceneScraper) scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error) {
-	if c.config.SceneByFragment != nil {
-		s := c.config.getScraper(*c.config.SceneByFragment, c.client, c.txnManager, c.globalConfig)
-		return s.scrapeSceneByScene(scene)
-	}
-
-	return nil, nil
-}
-
-type configPerformerScraper struct {
-	*configScraper
-}
-
-func (c *configPerformerScraper) scrapeByName(name string) ([]*models.ScrapedPerformer, error) {
-	if c.config.PerformerByName != nil {
-		s := c.config.getScraper(*c.config.PerformerByName, c.client, c.txnManager, c.globalConfig)
-		return s.scrapePerformersByName(name)
-	}
-
-	return nil, nil
-}
-
-type configGalleryScraper struct {
-	*configScraper
-}
-
-func (c *configGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
-	if c.config.GalleryByFragment != nil {
-		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
-		return s.scrapeGalleryByGallery(gallery)
-	}
-
-	return nil, nil
-}
-
-type configScraper struct {
-	config       config
-	client       *http.Client
-	txnManager   models.TransactionManager
-	globalConfig GlobalConfig
-}
-
-func createScraperFromConfig(c config, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
-	base := configScraper{
-		client:       client,
-		config:       c,
-		txnManager:   txnManager,
-		globalConfig: globalConfig,
-	}
-
-	ret := group{
-		config:        c,
-		specification: configScraperSpec(c),
-		txnManager:    txnManager,
-		globalConf:    globalConfig,
-	}
-
-	// only set fields if supported
-	if c.supports(models.ScrapeContentTypePerformer) {
-		ret.performer = &configPerformerScraper{&base}
-	}
-	if c.supports(models.ScrapeContentTypeGallery) {
-		ret.gallery = &configGalleryScraper{&base}
-	}
-	if c.supports(models.ScrapeContentTypeScene) {
-		ret.scene = &configSceneScraper{&base}
-	}
-
-	return ret
-}
-
-func configScraperSpec(c config) *models.Scraper {
+func (c config) spec() models.Scraper {
 	ret := models.Scraper{
 		ID:   c.ID,
 		Name: c.Name,
@@ -159,5 +81,5 @@ func configScraperSpec(c config) *models.Scraper {
 		ret.Movie = &movie
 	}
 
-	return &ret
+	return ret
 }
