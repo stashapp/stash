@@ -67,7 +67,7 @@ type Query {
   # Scrapers
 
   """List available scrapers"""
-  listScrapers(ty: ScrapeContentType!): [Scraper!]!
+  listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
   listGalleryScrapers: [Scraper!]!

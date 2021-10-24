@@ -55,8 +55,14 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 	return ret, nil
 }
 
-func (r *queryResolver) ListScrapers(ctx context.Context, ty models.ScrapeContentType) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(ty), nil
+func (r *queryResolver) ListScrapers(ctx context.Context, types []models.ScrapeContentType) ([]*models.Scraper, error) {
+	var ret []*models.Scraper
+	for _, ty := range types {
+		s := r.scraperCache.ListScrapers(ty)
+		ret = append(ret, s...)
+	}
+
+	return ret, nil
 }
 
 func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Scraper, error) {
