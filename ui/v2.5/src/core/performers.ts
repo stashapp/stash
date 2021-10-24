@@ -4,7 +4,10 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 
 export const performerFilterHook = (performer: GQL.PerformerDataFragment) => {
   return (filter: ListFilterModel) => {
-    const performerValue = { id: performer.id, label: performer.name };
+    const performerValue = {
+      id: performer.id,
+      label: performer.name ?? `Performer ${performer.id}`,
+    };
     // if performers is already present, then we modify it, otherwise add
     let performerCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "performers";
