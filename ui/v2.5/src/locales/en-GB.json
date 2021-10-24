@@ -21,6 +21,7 @@
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
     "delete": "Delete",
+    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery.",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
     "delete_generated_supporting_files": "Delete generated supporting files",
