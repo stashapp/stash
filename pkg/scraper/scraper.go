@@ -7,7 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// Input coalesces inputs of diffrent types into a single structure.
+// Input coalesces inputs of different types into a single structure.
 // The system expects one of these to be set, and the remaining to be
 // set to nil.
 type Input struct {
@@ -18,18 +18,15 @@ type Input struct {
 
 type performerScraper interface {
 	scrapeByName(name string) ([]*models.ScrapedPerformer, error)
-	scrapeByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 }
 
 type sceneScraper interface {
 	scrapeByName(name string) ([]*models.ScrapedScene, error)
 	scrapeByScene(scene *models.Scene) (*models.ScrapedScene, error)
-	scrapeByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
 }
 
 type galleryScraper interface {
 	scrapeByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
-	scrapeByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error)
 }
 
 // scraper is the generic interface to the scraper subsystems
@@ -95,14 +92,29 @@ func (g group) spec() models.Scraper {
 	return *g.specification
 }
 
-func (g group) loadByFragment(input Input) (models.ScrapedContent, error) {
+func (g group) loadByFragment(client *http.Client, input Input) (models.ScrapedContent, error) {
 	switch {
 	case input.Performer != nil:
-		g.performer.scrapeByFragment(*input.Performer)
+		if g.config.PerformerByFragment != nil {
+			s := g.config.getScraper(*g.config.PerformerByFragment, client, g.txnManager, g.globalConf)
+			return s.scrapePerformerByFragment(*input.Performer)
+		}
+
+		// try to match against URL if present
+		if input.Performer.URL != nil && *input.Performer.URL != "" {
+			return g.loadByURL(client, *input.Performer.URL, models.ScrapeContentTypePerformer)
+		}
 	case input.Gallery != nil:
-		g.gallery.scrapeByFragment(*input.Gallery)
+		if g.config.GalleryByFragment != nil {
+			// TODO - this should be galleryByQueryFragment
+			s := g.config.getScraper(*g.config.GalleryByFragment, client, g.txnManager, g.globalConf)
+			return s.scrapeGalleryByFragment(*input.Gallery)
+		}
 	case input.Scene != nil:
-		g.scene.scrapeByFragment(*input.Scene)
+		if g.config.SceneByQueryFragment != nil {
+			s := g.config.getScraper(*g.config.SceneByQueryFragment, client, g.txnManager, g.globalConf)
+			return s.scrapeSceneByFragment(*input.Scene)
+		}
 	}
 
 	return nil, ErrNotSupported
@@ -173,10 +185,10 @@ func (g group) loadByURL(client *http.Client, url string, ty models.ScrapeConten
 	return nil, nil
 }
 
-func (s group) loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (g group) loadByName(name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		performers, err := s.performer.scrapeByName(name)
+		performers, err := g.performer.scrapeByName(name)
 		if err != nil {
 			return nil, err
 		}
@@ -186,7 +198,7 @@ func (s group) loadByName(name string, ty models.ScrapeContentType) ([]models.Sc
 		}
 		return content, nil
 	case models.ScrapeContentTypeScene:
-		scenes, err := s.scene.scrapeByName(name)
+		scenes, err := g.scene.scrapeByName(name)
 		if err != nil {
 			return nil, err
 		}
@@ -200,10 +212,10 @@ func (s group) loadByName(name string, ty models.ScrapeContentType) ([]models.Sc
 	}
 }
 
-func (s group) supports(ty models.ScrapeContentType) bool {
-	return s.config.supports(ty)
+func (g group) supports(ty models.ScrapeContentType) bool {
+	return g.config.supports(ty)
 }
 
-func (s group) supportsURL(url string, ty models.ScrapeContentType) bool {
-	return s.config.matchesURL(url, ty)
+func (g group) supportsURL(url string, ty models.ScrapeContentType) bool {
+	return g.config.matchesURL(url, ty)
 }

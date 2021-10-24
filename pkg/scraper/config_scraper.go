@@ -28,15 +28,6 @@ func (c *configSceneScraper) scrapeByScene(scene *models.Scene) (*models.Scraped
 	return nil, nil
 }
 
-func (c *configSceneScraper) scrapeByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
-	if c.config.SceneByQueryFragment != nil {
-		s := c.config.getScraper(*c.config.SceneByQueryFragment, c.client, c.txnManager, c.globalConfig)
-		return s.scrapeSceneByFragment(scene)
-	}
-
-	return nil, nil
-}
-
 type configPerformerScraper struct {
 	*configScraper
 }
@@ -50,38 +41,6 @@ func (c *configPerformerScraper) scrapeByName(name string) ([]*models.ScrapedPer
 	return nil, nil
 }
 
-func (c *configPerformerScraper) scrapeByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	if c.config.PerformerByFragment != nil {
-		s := c.config.getScraper(*c.config.PerformerByFragment, c.client, c.txnManager, c.globalConfig)
-		return s.scrapePerformerByFragment(scrapedPerformer)
-	}
-
-	// try to match against URL if present
-	if scrapedPerformer.URL != nil && *scrapedPerformer.URL != "" {
-		return c.scrapeByURL(*scrapedPerformer.URL)
-	}
-
-	return nil, nil
-}
-
-func (c *configPerformerScraper) scrapeByURL(url string) (*models.ScrapedPerformer, error) {
-	for _, scraper := range c.config.PerformerByURL {
-		if scraper.matchesURL(url) {
-			s := c.config.getScraper(scraper.scraperTypeConfig, c.client, c.txnManager, c.globalConfig)
-			ret, err := s.scrapePerformerByURL(url)
-			if err != nil {
-				return nil, err
-			}
-
-			if ret != nil {
-				return ret, nil
-			}
-		}
-	}
-
-	return nil, nil
-}
-
 type configGalleryScraper struct {
 	*configScraper
 }
@@ -90,16 +49,6 @@ func (c *configGalleryScraper) scrapeByGallery(gallery *models.Gallery) (*models
 	if c.config.GalleryByFragment != nil {
 		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
 		return s.scrapeGalleryByGallery(gallery)
-	}
-
-	return nil, nil
-}
-
-func (c *configGalleryScraper) scrapeByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
-	if c.config.GalleryByFragment != nil {
-		// TODO - this should be galleryByQueryFragment
-		s := c.config.getScraper(*c.config.GalleryByFragment, c.client, c.txnManager, c.globalConfig)
-		return s.scrapeGalleryByFragment(gallery)
 	}
 
 	return nil, nil
