@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 
 import * as GQL from "src/core/generated-graphql";
-import { IStashBoxPerformer } from "../utils";
 import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
 
 interface IStashSearchResultProps {
   performer: GQL.SlimPerformerDataFragment;
-  stashboxPerformers: IStashBoxPerformer[];
+  stashboxPerformers: GQL.ScrapedPerformerDataFragment[];
   endpoint: string;
   onPerformerTagged: (
     performer: Pick<GQL.SlimPerformerDataFragment, "id"> &
@@ -25,7 +24,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   endpoint,
 }) => {
   const [modalPerformer, setModalPerformer] = useState<
-    IStashBoxPerformer | undefined
+    GQL.ScrapedPerformerDataFragment | undefined
   >();
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
@@ -35,41 +34,38 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const updatePerformer = useUpdatePerformer();
 
   const handleSave = async (input: GQL.PerformerCreateInput) => {
-    const performerData = modalPerformer;
-    if (performerData?.id) {
-      setError({});
-      setSaveState("Saving performer");
-      setModalPerformer(undefined);
+    setError({});
+    setSaveState("Saving performer");
+    setModalPerformer(undefined);
 
-      const updateData: GQL.PerformerUpdateInput = {
-        id: performerData.id,
-        ...input,
-      };
+    const updateData: GQL.PerformerUpdateInput = {
+      ...input,
+      id: performer.id,
+    };
 
-      const res = await updatePerformer(updateData);
+    const res = await updatePerformer(updateData);
 
-      if (!res?.data?.performerUpdate)
-        setError({
-          message: `Failed to save performer "${performer.name}"`,
-          details:
-            res?.errors?.[0].message ===
-            "UNIQUE constraint failed: performers.checksum"
-              ? "Name already exists"
-              : res?.errors?.[0].message,
-        });
-      else onPerformerTagged(performer);
-      setSaveState("");
-    }
+    if (!res?.data?.performerUpdate)
+      setError({
+        message: `Failed to save performer "${performer.name}"`,
+        details:
+          res?.errors?.[0].message ===
+          "UNIQUE constraint failed: performers.checksum"
+            ? "Name already exists"
+            : res?.errors?.[0].message,
+      });
+    else onPerformerTagged(performer);
+    setSaveState("");
   };
 
   const performers = stashboxPerformers.map((p) => (
     <Button
       className="PerformerTagger-performer-search-item minimal col-6"
       variant="link"
-      key={p.stash_id}
+      key={p.remote_site_id}
       onClick={() => setModalPerformer(p)}
     >
-      <img src={p.images[0]} alt="" className="PerformerTagger-thumb" />
+      <img src={(p.images ?? [])[0]} alt="" className="PerformerTagger-thumb" />
       <span>{p.name}</span>
     </Button>
   ));
