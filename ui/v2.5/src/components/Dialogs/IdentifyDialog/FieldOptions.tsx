@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Form, Button, Table } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
@@ -7,20 +7,24 @@ import { multiValueSceneFields, SceneField, sceneFields } from "./constants";
 import { ThreeStateBoolean } from "./ThreeStateBoolean";
 
 interface IFieldOptionsEditor {
-  availableFields: SceneField[];
-  options: GQL.IdentifyFieldOptions;
+  options: GQL.IdentifyFieldOptions | undefined;
+  field: string;
   editField: () => void;
-  editOptions: (o?: GQL.IdentifyFieldOptions) => void;
-  removeField: () => void;
+  editOptions: (o?: GQL.IdentifyFieldOptions | null) => void;
   editing: boolean;
   allowSetDefault: boolean;
   defaultOptions?: GQL.IdentifyMetadataOptionsInput;
 }
 
+interface IFieldOptions {
+  field: string;
+  strategy: GQL.IdentifyFieldStrategy | undefined;
+  createMissing?: GQL.Maybe<boolean> | undefined;
+}
+
 const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
-  availableFields,
   options,
-  removeField,
+  field,
   editField,
   editOptions,
   editing,
@@ -29,71 +33,107 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
 }) => {
   const intl = useIntl();
 
-  const [localOptions, setLocalOptions] = useState(options);
+  const [localOptions, setLocalOptions] = useState<IFieldOptions>();
+
+  const resetOptions = useCallback(() => {
+    let toSet: IFieldOptions;
+    if (!options) {
+      // unset - use default values
+      toSet = {
+        field,
+        strategy: undefined,
+        createMissing: undefined,
+      };
+    } else {
+      toSet = {
+        field,
+        strategy: options.strategy,
+        createMissing: options.createMissing,
+      };
+    }
+    setLocalOptions(toSet);
+  }, [options, field]);
 
   useEffect(() => {
-    setLocalOptions(options);
-  }, [options]);
+    resetOptions();
+  }, [resetOptions]);
 
   function renderField() {
-    if (!editing) {
-      return intl.formatMessage({ id: options.field });
-    }
-
-    return (
-      <Form.Control
-        disabled={!editing}
-        className="w-auto input-control"
-        as="select"
-        value={localOptions.field}
-        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-          setLocalOptions({ ...localOptions, field: e.currentTarget.value })
-        }
-      >
-        {availableFields.map((f) => (
-          <option key={f} value={f}>
-            {intl.formatMessage({ id: f })}
-          </option>
-        ))}
-      </Form.Control>
-    );
+    return intl.formatMessage({ id: field });
   }
 
   function renderStrategy() {
+    if (!localOptions) {
+      return;
+    }
+
     const strategies = Object.entries(GQL.IdentifyFieldStrategy);
+    let { strategy } = localOptions;
+    if (strategy === undefined) {
+      if (!allowSetDefault) {
+        strategy = GQL.IdentifyFieldStrategy.Merge;
+      }
+    }
 
     if (!editing) {
-      const field = strategies.find((s) => s[1] === options.strategy);
+      if (strategy === undefined) {
+        return intl.formatMessage({ id: "use_default" });
+      }
+
+      const f = strategies.find((s) => s[1] === strategy);
       return intl.formatMessage({
-        id: `config.tasks.identify.field_strategies.${field![0].toLowerCase()}`,
+        id: `config.tasks.identify.field_strategies.${f![0].toLowerCase()}`,
       });
     }
 
+    if (!localOptions) {
+      return <></>;
+    }
+
     return (
-      <Form.Control
-        disabled={!editing}
-        className="w-auto input-control"
-        as="select"
-        value={localOptions.strategy}
-        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-          setLocalOptions({
-            ...localOptions,
-            strategy: e.currentTarget.value as GQL.IdentifyFieldStrategy,
-          })
-        }
-      >
+      <Form.Group>
+        {allowSetDefault ? (
+          <Form.Check
+            type="radio"
+            id={`${field}-strategy-default`}
+            checked={localOptions.strategy === undefined}
+            onChange={() =>
+              setLocalOptions({
+                ...localOptions,
+                strategy: undefined,
+              })
+            }
+            disabled={!editing}
+            label={intl.formatMessage({ id: "use_default" })}
+          />
+        ) : undefined}
         {strategies.map((f) => (
-          <option key={f[0]} value={f[1]}>
-            {intl.formatMessage({
+          <Form.Check
+            type="radio"
+            key={f[0]}
+            id={`${field}-strategy-${f[0]}`}
+            checked={localOptions.strategy === f[1]}
+            onChange={() =>
+              setLocalOptions({
+                ...localOptions,
+                strategy: f[1],
+              })
+            }
+            disabled={!editing}
+            label={intl.formatMessage({
               id: `config.tasks.identify.field_strategies.${f[0].toLowerCase()}`,
             })}
-          </option>
+          />
         ))}
-      </Form.Control>
+      </Form.Group>
     );
   }
 
   function maybeRenderCreateMissing() {
+    if (!localOptions) {
+      return;
+    }
+
     if (
       multiValueSceneFields.includes(localOptions.field as SceneField) &&
       localOptions.strategy !== GQL.IdentifyFieldStrategy.Ignore
@@ -104,7 +144,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
           : localOptions.createMissing;
 
       if (!editing) {
-        if (value === undefined) {
+        if (value === undefined && allowSetDefault) {
           return intl.formatMessage({ id: "use_default" });
         }
         if (value) {
@@ -117,6 +157,10 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
       const defaultVal = defaultOptions?.fieldOptions?.find(
         (f) => f.field === localOptions.field
       )?.createMissing;
+
+      if (localOptions.strategy === undefined) {
+        return;
+      }
 
       return (
         <ThreeStateBoolean
@@ -133,6 +177,29 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
     }
   }
 
+  function onEditOptions() {
+    if (!localOptions) {
+      return;
+    }
+
+    // send null if strategy is undefined
+    if (localOptions.strategy === undefined) {
+      editOptions(null);
+      resetOptions();
+    } else {
+      let { createMissing } = localOptions;
+      if (createMissing === undefined && !allowSetDefault) {
+        createMissing = false;
+      }
+
+      editOptions({
+        ...localOptions,
+        strategy: localOptions.strategy,
+        createMissing,
+      });
+    }
+  }
+
   return (
     <tr>
       <td>{renderField()}</td>
@@ -143,13 +210,16 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
           <>
             <Button
               className="minimal text-success"
-              onClick={() => editOptions(localOptions)}
+              onClick={() => onEditOptions()}
             >
               <Icon icon="check" />
             </Button>
             <Button
               className="minimal text-danger"
-              onClick={() => editOptions()}
+              onClick={() => {
+                editOptions();
+                resetOptions();
+              }}
             >
               <Icon icon="times" />
             </Button>
@@ -158,12 +228,6 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
           <>
             <Button className="minimal" onClick={() => editField()}>
               <Icon icon="pencil-alt" />
-            </Button>
-            <Button
-              className="minimal text-danger"
-              onClick={() => removeField()}
-            >
-              <Icon icon="minus" />
             </Button>
           </>
         )}
@@ -189,47 +253,40 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
 }) => {
   const [localFieldOptions, setLocalFieldOptions] = useState<
     GQL.IdentifyFieldOptions[]
-  >([]);
-  const [editField, setEditField] = useState<
-    GQL.IdentifyFieldOptions | undefined
   >();
+  const [editField, setEditField] = useState<string | undefined>();
 
   useEffect(() => {
     if (fieldOptions) {
       setLocalFieldOptions([...fieldOptions]);
+    } else {
+      setLocalFieldOptions([]);
     }
   }, [fieldOptions]);
 
-  const availableFields: SceneField[] = useMemo(() => {
-    return sceneFields.filter(
-      (f) => !localFieldOptions?.some((o) => o !== editField && o.field === f)
-    );
-  }, [localFieldOptions, editField]);
+  function handleEditOptions(o?: GQL.IdentifyFieldOptions | null) {
+    if (!localFieldOptions) {
+      return;
+    }
 
-  function onAdd() {
-    const newOptions = [...localFieldOptions];
-    const newOption = {
-      field: availableFields[0],
-      strategy: GQL.IdentifyFieldStrategy.Ignore,
-      createMissing: allowSetDefault ? undefined : false,
-    };
-    newOptions.push(newOption);
-    setLocalFieldOptions(newOptions);
-    setEditField(newOption);
-    setEditingField(true);
-  }
-
-  function handleEditOptions(o?: GQL.IdentifyFieldOptions) {
-    if (!o) {
-      if (localFieldOptions.length > (fieldOptions?.length ?? 0)) {
-        // must be new field option. remove it
-        const newOptions = [...localFieldOptions];
-        newOptions.pop();
-        setLocalFieldOptions(newOptions);
-      }
-    } else {
+    if (o !== undefined) {
       const newOptions = [...localFieldOptions];
-      newOptions.splice(newOptions.indexOf(editField!), 1, o);
+      const index = newOptions.findIndex(
+        (option) => option.field === editField
+      );
+      if (index !== -1) {
+        // if null, then we're removing
+        if (o === null) {
+          newOptions.splice(index, 1);
+        } else {
+          // replace in list
+          newOptions.splice(index, 1, o);
+        }
+      } else if (o !== null) {
+        // don't add if null
+        newOptions.push(o);
+      }
+
       setFieldOptions(newOptions);
     }
 
@@ -237,15 +294,13 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
     setEditingField(false);
   }
 
-  function onEditField(index: number) {
-    setEditField(localFieldOptions[index]);
+  function onEditField(field: string) {
+    setEditField(field);
     setEditingField(true);
   }
 
-  function removeField(index: number) {
-    const newOptions = [...localFieldOptions];
-    newOptions.splice(index, 1);
-    setFieldOptions(newOptions);
+  if (!localFieldOptions) {
+    return <></>;
   }
 
   return (
@@ -253,44 +308,31 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
       <h5>
         <FormattedMessage id="config.tasks.identify.field_options" />
       </h5>
-      {!!localFieldOptions.length && (
-        <Table responsive className="field-options-table">
-          <thead>
-            <tr>
-              <th className="w-25">Field</th>
-              <th className="w-25">Strategy</th>
-              <th className="w-25">Create missing</th>
-              {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-              <th className="w-25" />
-            </tr>
-          </thead>
-          <tbody>
-            {localFieldOptions?.map((s, index) => (
-              <FieldOptionsEditor
-                key={s.field}
-                allowSetDefault={allowSetDefault}
-                availableFields={availableFields}
-                options={s}
-                removeField={() => removeField(index)}
-                editField={() => onEditField(index)}
-                editOptions={handleEditOptions}
-                editing={s === editField}
-                defaultOptions={defaultOptions}
-              />
-            ))}
-          </tbody>
-        </Table>
-      )}
-      {!editField && availableFields.length > 0 ? (
-        <div className="text-right">
-          <Button
-            className="minimal add-scraper-source-button"
-            onClick={() => onAdd()}
-          >
-            <Icon icon="plus" />
-          </Button>
-        </div>
-      ) : undefined}
+      <Table responsive className="field-options-table">
+        <thead>
+          <tr>
+            <th className="w-25">Field</th>
+            <th className="w-25">Strategy</th>
+            <th className="w-25">Create missing</th>
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+            <th className="w-25" />
+          </tr>
+        </thead>
+        <tbody>
+          {sceneFields.map((f) => (
+            <FieldOptionsEditor
+              key={f}
+              field={f}
+              allowSetDefault={allowSetDefault}
+              options={localFieldOptions.find((o) => o.field === f)}
+              editField={() => onEditField(f)}
+              editOptions={handleEditOptions}
+              editing={f === editField}
+              defaultOptions={defaultOptions}
+            />
+          ))}
+        </tbody>
+      </Table>
     </Form.Group>
   );
 };
