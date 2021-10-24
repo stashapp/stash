@@ -35,6 +35,11 @@ func marshalScrapedScenes(content []models.ScrapedContent) ([]*models.ScrapedSce
 func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.ScrapedPerformer, error) {
 	var ret []*models.ScrapedPerformer
 	for _, c := range content {
+		if c == nil {
+			ret = append(ret, nil)
+			continue
+		}
+
 		if p, ok := c.(*models.ScrapedPerformer); ok {
 			ret = append(ret, p)
 		} else {
@@ -50,6 +55,11 @@ func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.Scrape
 func marshalScrapedGalleries(content []models.ScrapedContent) ([]*models.ScrapedGallery, error) {
 	var ret []*models.ScrapedGallery
 	for _, c := range content {
+		if c == nil {
+			ret = append(ret, nil)
+			continue
+		}
+
 		if g, ok := c.(*models.ScrapedGallery); ok {
 			ret = append(ret, g)
 		} else {
@@ -65,6 +75,11 @@ func marshalScrapedGalleries(content []models.ScrapedContent) ([]*models.Scraped
 func marshalScrapedMovies(content []models.ScrapedContent) ([]*models.ScrapedMovie, error) {
 	var ret []*models.ScrapedMovie
 	for _, c := range content {
+		if c == nil {
+			ret = append(ret, nil)
+			continue
+		}
+
 		if m, ok := c.(*models.ScrapedMovie); ok {
 			ret = append(ret, m)
 		} else {
