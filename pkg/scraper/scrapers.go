@@ -208,7 +208,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (mode
 		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, ErrNotSupported)
 	}
 
-	content, err := fs.loadByFragment(input)
+	content, err := fs.loadByFragment(c.client, input)
 	if err != nil {
 		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, err)
 	}

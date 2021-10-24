@@ -57,7 +57,7 @@ type nameScraper interface {
 type fragmentScraper interface {
 	scraper
 
-	loadByFragment(input Input) (models.ScrapedContent, error)
+	loadByFragment(client *http.Client, input Input) (models.ScrapedContent, error)
 }
 
 // sceneLoader is a scraper which supports scene scrapes with
@@ -92,32 +92,54 @@ func (g group) spec() models.Scraper {
 	return *g.specification
 }
 
-func (g group) loadByFragment(client *http.Client, input Input) (models.ScrapedContent, error) {
+// fragmentScraper finds an appropriate fragment scraper based on input.
+func (g group) fragmentScraper(client *http.Client, input Input) scraperActionImpl {
 	switch {
 	case input.Performer != nil:
 		if g.config.PerformerByFragment != nil {
-			s := g.config.getScraper(*g.config.PerformerByFragment, client, g.txnManager, g.globalConf)
-			return s.scrapePerformerByFragment(*input.Performer)
-		}
-
-		// try to match against URL if present
-		if input.Performer.URL != nil && *input.Performer.URL != "" {
-			return g.loadByURL(client, *input.Performer.URL, models.ScrapeContentTypePerformer)
+			return g.config.getScraper(*g.config.PerformerByFragment, client, g.txnManager, g.globalConf)
 		}
 	case input.Gallery != nil:
 		if g.config.GalleryByFragment != nil {
 			// TODO - this should be galleryByQueryFragment
-			s := g.config.getScraper(*g.config.GalleryByFragment, client, g.txnManager, g.globalConf)
-			return s.scrapeGalleryByFragment(*input.Gallery)
+			return g.config.getScraper(*g.config.GalleryByFragment, client, g.txnManager, g.globalConf)
 		}
 	case input.Scene != nil:
 		if g.config.SceneByQueryFragment != nil {
-			s := g.config.getScraper(*g.config.SceneByQueryFragment, client, g.txnManager, g.globalConf)
-			return s.scrapeSceneByFragment(*input.Scene)
+			return g.config.getScraper(*g.config.SceneByQueryFragment, client, g.txnManager, g.globalConf)
 		}
+	}
+	return nil
+}
+
+// scrapeFragmentInput analyzes the input and calls an appropriate scraperActionImpl
+func scrapeFragmentInput(input Input, s scraperActionImpl) (models.ScrapedContent, error) {
+	switch {
+	case input.Performer != nil:
+		return s.scrapePerformerByFragment(*input.Performer)
+	case input.Gallery != nil:
+		return s.scrapeGalleryByFragment(*input.Gallery)
+	case input.Scene != nil:
+		return s.scrapeSceneByFragment(*input.Scene)
 	}
 
 	return nil, ErrNotSupported
+}
+
+func (g group) loadByFragment(client *http.Client, input Input) (models.ScrapedContent, error) {
+	s := g.fragmentScraper(client, input)
+	if s == nil {
+		// If there's no performer fragment scraper in the group, we try to use
+		// the URL scraper. Check if there's an URL in the input, and then shift
+		// to an URL scrape if it's present.
+		if input.Performer != nil && input.Performer.URL != nil && *input.Performer.URL != "" {
+			return g.loadByURL(client, *input.Performer.URL, models.ScrapeContentTypePerformer)
+		}
+
+		return nil, ErrNotSupported
+	}
+
+	return scrapeFragmentInput(input, s)
 }
 
 func (g group) loadByScene(scene *models.Scene) (*models.ScrapedScene, error) {
