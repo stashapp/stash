@@ -75,22 +75,17 @@ func (g group) spec() models.Scraper {
 }
 
 // fragmentScraper finds an appropriate fragment scraper based on input.
-func (g group) fragmentScraper(client *http.Client, input Input) scraperActionImpl {
+func (g group) fragmentScraper(input Input) *scraperTypeConfig {
 	switch {
 	case input.Performer != nil:
-		if g.config.PerformerByFragment != nil {
-			return g.config.getScraper(*g.config.PerformerByFragment, client, g.txnManager, g.globalConf)
-		}
+		return g.config.PerformerByFragment
 	case input.Gallery != nil:
-		if g.config.GalleryByFragment != nil {
-			// TODO - this should be galleryByQueryFragment
-			return g.config.getScraper(*g.config.GalleryByFragment, client, g.txnManager, g.globalConf)
-		}
+		// TODO - this should be galleryByQueryFragment
+		return g.config.GalleryByFragment
 	case input.Scene != nil:
-		if g.config.SceneByQueryFragment != nil {
-			return g.config.getScraper(*g.config.SceneByQueryFragment, client, g.txnManager, g.globalConf)
-		}
+		return g.config.SceneByQueryFragment
 	}
+
 	return nil
 }
 
@@ -109,8 +104,8 @@ func scrapeFragmentInput(input Input, s scraperActionImpl) (models.ScrapedConten
 }
 
 func (g group) loadByFragment(client *http.Client, input Input) (models.ScrapedContent, error) {
-	s := g.fragmentScraper(client, input)
-	if s == nil {
+	stc := g.fragmentScraper(input)
+	if stc == nil {
 		// If there's no performer fragment scraper in the group, we try to use
 		// the URL scraper. Check if there's an URL in the input, and then shift
 		// to an URL scrape if it's present.
@@ -121,6 +116,7 @@ func (g group) loadByFragment(client *http.Client, input Input) (models.ScrapedC
 		return nil, ErrNotSupported
 	}
 
+	s := g.config.getScraper(*stc, client, g.txnManager, g.globalConf)
 	return scrapeFragmentInput(input, s)
 }
 
