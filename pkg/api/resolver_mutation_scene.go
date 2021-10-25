@@ -469,6 +469,20 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 			return fmt.Errorf("scene with id %d not found", sceneID)
 		}
 
+		// if delete file is true, then delete the file as well
+		if input.DeleteFile != nil && *input.DeleteFile {
+			err = manager.DeleteSceneFile(scene)
+			if err != nil {
+				return err
+			}
+		}
+
+		// if delete generated is true, then delete the generated files
+		// for the scene
+		if input.DeleteGenerated != nil && *input.DeleteGenerated {
+			manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
+		}
+
 		postCommitFunc, err = manager.DestroyScene(scene, repo)
 		return err
 	}); err != nil {
@@ -477,18 +491,6 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 
 	// perform the post-commit actions
 	postCommitFunc()
-
-	// if delete generated is true, then delete the generated files
-	// for the scene
-	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
-	}
-
-	// if delete file is true, then delete the file as well
-	// if it fails, just log a message
-	if input.DeleteFile != nil && *input.DeleteFile {
-		manager.DeleteSceneFile(scene)
-	}
 
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
@@ -501,6 +503,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 	var postCommitFuncs []func()
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
+		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 
 		for _, id := range input.Ids {
 			sceneID, _ := strconv.Atoi(id)
@@ -512,6 +515,21 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			if scene != nil {
 				scenes = append(scenes, scene)
 			}
+
+			// if delete file is true, then delete the file as well
+			if input.DeleteFile != nil && *input.DeleteFile {
+				err = manager.DeleteSceneFile(scene)
+				if err != nil {
+					return err
+				}
+			}
+
+			// if delete generated is true, then delete the generated files
+			// for the scene
+			if input.DeleteGenerated != nil && *input.DeleteGenerated {
+				manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
+			}
+
 			f, err := manager.DestroyScene(scene, repo)
 			if err != nil {
 				return err
@@ -529,20 +547,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		f()
 	}
 
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	for _, scene := range scenes {
-		// if delete generated is true, then delete the generated files
-		// for the scene
-		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
-		}
-
-		// if delete file is true, then delete the file as well
-		// if it fails, just log a message
-		if input.DeleteFile != nil && *input.DeleteFile {
-			manager.DeleteSceneFile(scene)
-		}
-
 		// call post hook after performing the other actions
 		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
 	}

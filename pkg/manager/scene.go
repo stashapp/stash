@@ -176,7 +176,7 @@ func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, fileNamingAlgo mod
 }
 
 // DeleteSceneFile deletes the scene video file from the filesystem.
-func DeleteSceneFile(scene *models.Scene) {
+func DeleteSceneFile(scene *models.Scene) error {
 	// kill any running encoders
 	KillRunningStreams(scene.Path)
 
@@ -184,6 +184,7 @@ func DeleteSceneFile(scene *models.Scene) {
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
 	}
+	return err
 }
 
 func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
