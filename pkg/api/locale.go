@@ -11,6 +11,7 @@ var matcher = language.NewMatcher([]language.Tag{
 	language.MustParse("en-GB"),
 	language.MustParse("en-AU"),
 	language.MustParse("de-DE"),
+	language.MustParse("it-IT"),
 	language.MustParse("pt-BR"),
 	language.MustParse("sv-SE"),
 	language.MustParse("zh-CN"),

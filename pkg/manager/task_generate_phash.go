@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -15,7 +16,11 @@ type GeneratePhashTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GeneratePhashTask) Start() {
+func (t *GeneratePhashTask) GetDescription() string {
+	return fmt.Sprintf("Generating phash for %s", t.Scene.Path)
+}
+
+func (t *GeneratePhashTask) Start(ctx context.Context) {
 	if !t.shouldGenerate() {
 		return
 	}
