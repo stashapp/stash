@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -149,7 +150,7 @@ func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsG
 				return context.Canceled
 			}
 
-			scenes, _, err := r.Scene().Query(nil, findFilter)
+			scenes, err := scene.Query(r.Scene(), nil, findFilter)
 			if err != nil {
 				return err
 			}
