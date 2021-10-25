@@ -6,7 +6,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 const separatorChars = `.\-_ `
@@ -211,7 +213,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	filter.And = scenePathsFilter(paths)
 
 	pp := models.PerPageAll
-	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{
+	scenes, err := scene.Query(sceneReader, &filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
@@ -275,7 +277,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	filter.And = imagePathsFilter(paths)
 
 	pp := models.PerPageAll
-	images, _, err := imageReader.Query(&filter, &models.FindFilterType{
+	images, err := image.Query(imageReader, &filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 

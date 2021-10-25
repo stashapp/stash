@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -465,7 +466,7 @@ func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.Sce
 
 	p.Filter.Q = nil
 
-	scenes, total, err := repo.Scene().Query(sceneFilter, p.Filter)
+	scenes, total, err := scene.QueryWithCount(repo.Scene(), sceneFilter, p.Filter)
 	if err != nil {
 		return nil, 0, err
 	}

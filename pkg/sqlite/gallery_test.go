@@ -962,18 +962,24 @@ func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCrite
 		for _, gallery := range galleries {
 			pp := 0
 
-			_, count, err := r.Image().Query(&models.ImageFilterType{
-				Galleries: &models.MultiCriterionInput{
-					Value:    []string{strconv.Itoa(gallery.ID)},
-					Modifier: models.CriterionModifierIncludes,
+			result, err := r.Image().Query(models.ImageQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						PerPage: &pp,
+					},
+					Count: true,
 				},
-			}, &models.FindFilterType{
-				PerPage: &pp,
+				ImageFilter: &models.ImageFilterType{
+					Galleries: &models.MultiCriterionInput{
+						Value:    []string{strconv.Itoa(gallery.ID)},
+						Modifier: models.CriterionModifierIncludes,
+					},
+				},
 			})
 			if err != nil {
 				return err
 			}
-			verifyInt(t, count, imageCountCriterion)
+			verifyInt(t, result.Count, imageCountCriterion)
 		}
 
 		return nil
