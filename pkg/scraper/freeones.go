@@ -131,5 +131,5 @@ func getFreeonesScraper(txnManager models.TransactionManager, globalConfig Globa
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}
 
-	return createScraperFromConfig(*c, txnManager, globalConfig)
+	return newGroupScraper(*c, txnManager, globalConfig)
 }

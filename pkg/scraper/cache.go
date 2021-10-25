@@ -3,7 +3,6 @@ package scraper
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,18 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-)
-
-var (
-	// ErrMaxRedirects is returned if the max number of HTTP redirects are reached.
-	ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
-
-	// ErrNotFound is returned when an entity isn't found
-	ErrNotFound = errors.New("scraper not found")
-
-	// ErrNotSupported is returned when a given invocation isn't supported, and there
-	// is a guard function which should be able to guard against it.
-	ErrNotSupported = errors.New("not supported")
 )
 
 const (
@@ -128,7 +115,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 			if err != nil {
 				logger.Errorf("Error loading scraper %s: %v", fp, err)
 			} else {
-				scraper := createScraperFromConfig(*c, txnManager, globalConfig)
+				scraper := newGroupScraper(*c, txnManager, globalConfig)
 				scrapers[scraper.spec().ID] = scraper
 			}
 			scraperFiles = append(scraperFiles, fp)
