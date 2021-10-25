@@ -13,8 +13,15 @@ import (
 )
 
 var (
+	// ErrNotImplemented is an error which means the given functionality isn't implemented by the API.
 	ErrNotImplemented = errors.New("not implemented")
-	ErrNotSupported   = errors.New("not supported")
+	// ErrNotSupported is returned whenever there's a test, which can be used to guard against the error,
+	// but the given parameters aren't supported by the system.
+	ErrNotSupported = errors.New("not supported")
+	// ErrInput signifies errors where the input isn't valid for some reason. And no more specific error exists.
+	ErrInput = errors.New("input error")
+	// ErrConversion signifies conversion errors
+	ErrConversion = errors.New("conversion error")
 )
 
 type hookExecutor interface {

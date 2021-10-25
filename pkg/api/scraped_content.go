@@ -1,14 +1,10 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
-
-// ErrConversion signifies conversion errors
-var ErrConversion = errors.New("conversion error")
 
 // marshalScrapedScenes converts ScrapedContent into ScrapedScene. If conversion fails, an
 // error is returned to the caller.

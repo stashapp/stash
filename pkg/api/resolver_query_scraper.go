@@ -12,8 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
-var ErrInput = errors.New("input error")
-
 func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	return r.scraperCache.ScrapeURL(ctx, url, ty)
 }
