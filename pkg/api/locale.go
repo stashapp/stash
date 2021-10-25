@@ -10,6 +10,7 @@ var matcher = language.NewMatcher([]language.Tag{
 	language.MustParse("en-US"), // The first language is used as fallback.
 	language.MustParse("en-GB"),
 	language.MustParse("en-AU"),
+	language.MustParse("es-ES"),
 	language.MustParse("de-DE"),
 	language.MustParse("it-IT"),
 	language.MustParse("pt-BR"),
