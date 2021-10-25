@@ -294,21 +294,24 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 			return fmt.Errorf("image with id %d not found", imageID)
 		}
 
+		// if delete file is true, then delete the file as well
+		// if it fails, just log a message
+		if input.DeleteFile != nil && *input.DeleteFile {
+			err = manager.DeleteImageFile(image)
+			if err != nil {
+				return err
+			}
+		}
+
+		// if delete generated is true, then delete the generated files
+		// for the image
+		if input.DeleteGenerated != nil && *input.DeleteGenerated {
+			manager.DeleteGeneratedImageFiles(image)
+		}
+
 		return qb.Destroy(imageID)
 	}); err != nil {
 		return false, err
-	}
-
-	// if delete generated is true, then delete the generated files
-	// for the image
-	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedImageFiles(image)
-	}
-
-	// if delete file is true, then delete the file as well
-	// if it fails, just log a message
-	if input.DeleteFile != nil && *input.DeleteFile {
-		manager.DeleteImageFile(image)
 	}
 
 	// call post hook after performing the other actions
@@ -338,6 +341,20 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 				return fmt.Errorf("image with id %d not found", imageID)
 			}
 
+			// if delete file is true, then delete the file as well
+			if input.DeleteFile != nil && *input.DeleteFile {
+				err = manager.DeleteImageFile(image)
+				if err != nil {
+					return err
+				}
+			}
+
+			// if delete generated is true, then delete the generated files
+			// for the image
+			if input.DeleteGenerated != nil && *input.DeleteGenerated {
+				manager.DeleteGeneratedImageFiles(image)
+			}
+
 			images = append(images, image)
 			if err := qb.Destroy(imageID); err != nil {
 				return err
@@ -350,18 +367,6 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 	}
 
 	for _, image := range images {
-		// if delete generated is true, then delete the generated files
-		// for the image
-		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedImageFiles(image)
-		}
-
-		// if delete file is true, then delete the file as well
-		// if it fails, just log a message
-		if input.DeleteFile != nil && *input.DeleteFile {
-			manager.DeleteImageFile(image)
-		}
-
 		// call post hook after performing the other actions
 		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
 	}

@@ -23,11 +23,12 @@ func DeleteGeneratedImageFiles(image *models.Image) {
 }
 
 // DeleteImageFile deletes the image file from the filesystem.
-func DeleteImageFile(image *models.Image) {
+func DeleteImageFile(image *models.Image) error {
 	err := os.Remove(image.Path)
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", image.Path, err.Error())
 	}
+	return err
 }
 
 func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
