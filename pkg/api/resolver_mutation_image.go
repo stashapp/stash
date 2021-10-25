@@ -305,7 +305,10 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		// if delete generated is true, then delete the generated files
 		// for the image
 		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedImageFiles(image)
+			err = manager.DeleteGeneratedImageFiles(image)
+			if err != nil {
+				return err
+			}
 		}
 
 		return qb.Destroy(imageID)
@@ -351,7 +354,10 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 			// if delete generated is true, then delete the generated files
 			// for the image
 			if input.DeleteGenerated != nil && *input.DeleteGenerated {
-				manager.DeleteGeneratedImageFiles(image)
+				err = manager.DeleteGeneratedImageFiles(image)
+				if err != nil {
+					return err
+				}
 			}
 
 			images = append(images, image)

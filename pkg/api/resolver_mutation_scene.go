@@ -480,7 +480,10 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		// if delete generated is true, then delete the generated files
 		// for the scene
 		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
+			err = manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
+			if err != nil {
+				return err
+			}
 		}
 
 		postCommitFunc, err = manager.DestroyScene(scene, repo)
@@ -527,7 +530,10 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			// if delete generated is true, then delete the generated files
 			// for the scene
 			if input.DeleteGenerated != nil && *input.DeleteGenerated {
-				manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
+				err = manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
+				if err != nil {
+					return err
+				}
 			}
 
 			f, err := manager.DestroyScene(scene, repo)

@@ -59,11 +59,11 @@ func DestroySceneMarker(scene *models.Scene, sceneMarker *models.SceneMarker, qb
 }
 
 // DeleteGeneratedSceneFiles deletes generated files for the provided scene.
-func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) {
+func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) error {
 	sceneHash := scene.GetHash(fileNamingAlgo)
 
 	if sceneHash == "" {
-		return
+		return nil
 	}
 
 	markersFolder := filepath.Join(GetInstance().Paths.Generated.Markers, sceneHash)
@@ -73,6 +73,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.RemoveAll(markersFolder)
 		if err != nil {
 			logger.Warnf("Could not delete folder %s: %s", markersFolder, err.Error())
+			return err
 		}
 	}
 
@@ -82,6 +83,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(thumbPath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", thumbPath, err.Error())
+			return err
 		}
 	}
 
@@ -91,6 +93,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(normalPath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", normalPath, err.Error())
+			return err
 		}
 	}
 
@@ -100,6 +103,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(streamPreviewPath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", streamPreviewPath, err.Error())
+			return err
 		}
 	}
 
@@ -109,6 +113,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(streamPreviewImagePath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", streamPreviewImagePath, err.Error())
+			return err
 		}
 	}
 
@@ -121,6 +126,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(transcodePath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", transcodePath, err.Error())
+			return err
 		}
 	}
 
@@ -130,6 +136,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(spritePath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", spritePath, err.Error())
+			return err
 		}
 	}
 
@@ -139,8 +146,10 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAl
 		err := os.Remove(vttPath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", vttPath, err.Error())
+			return err
 		}
 	}
+	return nil
 }
 
 // DeleteSceneMarkerFiles deletes generated files for a scene marker with the

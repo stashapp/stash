@@ -3,7 +3,6 @@ package manager
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/image"
@@ -380,6 +379,12 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 		if err != nil {
 			return err
 		}
+
+		err = DeleteGeneratedSceneFiles(scene, fileNamingAlgorithm)
+		if err != nil {
+			return err
+		}
+
 		postCommitFunc, err = DestroyScene(scene, repo)
 		return err
 	}); err != nil {
@@ -388,8 +393,6 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	}
 
 	postCommitFunc()
-
-	DeleteGeneratedSceneFiles(scene, fileNamingAlgorithm)
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, nil, nil)
 }
@@ -407,8 +410,6 @@ func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 }
 
 func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
-	var checksum string
-
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
 		qb := repo.Image()
 
@@ -421,18 +422,15 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 			return fmt.Errorf("image not found: %d", imageID)
 		}
 
-		checksum = image.Checksum
+		err = DeleteGeneratedImageFiles(image)
+		if err != nil {
+			return err
+		}
 
 		return qb.Destroy(imageID)
 	}); err != nil {
 		logger.Errorf("Error deleting image from database: %s", err.Error())
 		return
-	}
-
-	// remove cache image
-	pathErr := os.Remove(GetInstance().Paths.Generated.GetThumbnailPath(checksum, models.DefaultGthumbWidth))
-	if pathErr != nil {
-		logger.Errorf("Error deleting thumbnail image from cache: %s", pathErr)
 	}
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, imageID, plugin.ImageDestroyPost, nil, nil)

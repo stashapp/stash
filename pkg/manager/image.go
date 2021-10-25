@@ -11,7 +11,7 @@ import (
 )
 
 // DeleteGeneratedImageFiles deletes generated files for the provided image.
-func DeleteGeneratedImageFiles(image *models.Image) {
+func DeleteGeneratedImageFiles(image *models.Image) error {
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
@@ -19,7 +19,9 @@ func DeleteGeneratedImageFiles(image *models.Image) {
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", thumbPath, err.Error())
 		}
+		return err
 	}
+	return nil
 }
 
 // DeleteImageFile deletes the image file from the filesystem.

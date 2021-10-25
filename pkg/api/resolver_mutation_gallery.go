@@ -432,7 +432,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 					// if delete generated is true, then delete the generated files
 					// for the gallery
 					if input.DeleteGenerated != nil && *input.DeleteGenerated {
-						manager.DeleteGeneratedImageFiles(img)
+						err = manager.DeleteGeneratedImageFiles(img)
+						if err != nil {
+							return err
+						}
 					}
 
 					if err := iqb.Destroy(img.ID); err != nil {
@@ -465,7 +468,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 						// if delete generated is true, then delete the generated files
 						// for the gallery
 						if input.DeleteGenerated != nil && *input.DeleteGenerated {
-							manager.DeleteGeneratedImageFiles(img)
+							err = manager.DeleteGeneratedImageFiles(img)
+							if err != nil {
+								return err
+							}
 						}
 
 						if err := iqb.Destroy(img.ID); err != nil {
