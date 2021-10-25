@@ -395,6 +395,7 @@ export const SceneFilenameParser: React.FC = () => {
           currentPage={parserInput.page}
           itemsPerPage={parserInput.pageSize}
           totalItems={totalItems}
+          metadataByline={[]}
           onChangePage={(page) => onPageChanged(page)}
         />
         <Button variant="primary" onClick={onApply}>

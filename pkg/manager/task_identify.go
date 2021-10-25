@@ -102,12 +102,18 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 	// get the count
 	pp := 0
 	findFilter.PerPage = &pp
-	_, count, err := r.Scene().Query(sceneFilter, findFilter)
+	countResult, err := r.Scene().Query(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		SceneFilter: sceneFilter,
+	})
 	if err != nil {
 		return fmt.Errorf("error getting scene count: %w", err)
 	}
 
-	j.progress.SetTotal(count)
+	j.progress.SetTotal(countResult.Count)
 
 	return scene.BatchProcess(ctx, r.Scene(), sceneFilter, findFilter, func(scene *models.Scene) error {
 		if job.IsCancelled(ctx) {

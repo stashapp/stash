@@ -19,7 +19,7 @@ type GenerateScreenshotTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GenerateScreenshotTask) Start() {
+func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 	ffprobe := instance.FFProbe
 	probeResult, err := ffprobe.NewVideoFile(scenePath, false)

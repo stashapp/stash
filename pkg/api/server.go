@@ -34,6 +34,7 @@ import (
 var version string
 var buildstamp string
 var githash string
+var officialBuild string
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
@@ -255,10 +256,19 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 func printVersion() {
 	versionString := githash
+	if IsOfficialBuild() {
+		versionString += " - Official Build"
+	} else {
+		versionString += " - Unofficial Build"
+	}
 	if version != "" {
 		versionString = version + " (" + versionString + ")"
 	}
 	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
+}
+
+func IsOfficialBuild() bool {
+	return officialBuild == "true"
 }
 
 func GetVersion() (string, string, string) {

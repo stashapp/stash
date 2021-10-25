@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/stashapp/stash/pkg/autotag"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -406,15 +407,31 @@ func (t *autoTagFilesTask) getCount(r models.ReaderRepository) (int, error) {
 		PerPage: &pp,
 	}
 
-	_, sceneCount, err := r.Scene().Query(t.makeSceneFilter(), findFilter)
+	sceneResults, err := r.Scene().Query(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		SceneFilter: t.makeSceneFilter(),
+	})
 	if err != nil {
 		return 0, err
 	}
 
-	_, imageCount, err := r.Image().Query(t.makeImageFilter(), findFilter)
+	sceneCount := sceneResults.Count
+
+	imageResults, err := r.Image().Query(models.ImageQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+			Count:      true,
+		},
+		ImageFilter: t.makeImageFilter(),
+	})
 	if err != nil {
 		return 0, err
 	}
+
+	imageCount := imageResults.Count
 
 	_, galleryCount, err := r.Gallery().Query(t.makeGalleryFilter(), findFilter)
 	if err != nil {
@@ -436,7 +453,7 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 
 	more := true
 	for more {
-		scenes, _, err := r.Scene().Query(sceneFilter, findFilter)
+		scenes, err := scene.Query(r.Scene(), sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}
@@ -484,7 +501,7 @@ func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
 
 	more := true
 	for more {
-		images, _, err := r.Image().Query(imageFilter, findFilter)
+		images, err := image.Query(r.Image(), imageFilter, findFilter)
 		if err != nil {
 			return err
 		}

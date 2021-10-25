@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -12,7 +15,11 @@ type GenerateSpriteTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateSpriteTask) Start() {
+func (t *GenerateSpriteTask) GetDescription() string {
+	return fmt.Sprintf("Generating sprites for %s", t.Scene.Path)
+}
+
+func (t *GenerateSpriteTask) Start(ctx context.Context) {
 	if !t.Overwrite && !t.required() {
 		return
 	}

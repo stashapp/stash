@@ -3,8 +3,10 @@ package autotag
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -70,7 +72,8 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockSceneReader.On("Query", expectedSceneFilter, expectedFindFilter).Return(scenes, len(scenes), nil).Once()
+	mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
+		Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 
 	for i := range matchingPaths {
 		sceneID := i + 1
@@ -144,7 +147,8 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockImageReader.On("Query", expectedImageFilter, expectedFindFilter).Return(images, len(images), nil).Once()
+	mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
+		Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 
 	for i := range matchingPaths {
 		imageID := i + 1

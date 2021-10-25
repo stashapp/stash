@@ -33,7 +33,7 @@ func (r *repository) get(id int, dest interface{}) error {
 
 func (r *repository) getAll(id int, f func(rows *sqlx.Rows) error) error {
 	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
-	return r.queryFunc(stmt, []interface{}{id}, f)
+	return r.queryFunc(stmt, []interface{}{id}, false, f)
 }
 
 func (r *repository) insert(obj interface{}) (sql.Result, error) {
@@ -170,7 +170,7 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 	return result.Float64, nil
 }
 
-func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
+func (r *repository) queryFunc(query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
 	rows, err := r.tx.Queryx(query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -182,6 +182,9 @@ func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sq
 		if err := f(rows); err != nil {
 			return err
 		}
+		if single {
+			break
+		}
 	}
 
 	if err := rows.Err(); err != nil {
@@ -192,26 +195,23 @@ func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sq
 }
 
 func (r *repository) query(query string, args []interface{}, out objectList) error {
-	rows, err := r.tx.Queryx(query, args...)
-
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
+	return r.queryFunc(query, args, false, func(rows *sqlx.Rows) error {
 		object := out.New()
 		if err := rows.StructScan(object); err != nil {
 			return err
 		}
 		out.Append(object)
-	}
+		return nil
+	})
+}
 
-	if err := rows.Err(); err != nil {
-		return err
-	}
-
-	return nil
+func (r *repository) queryStruct(query string, args []interface{}, out interface{}) error {
+	return r.queryFunc(query, args, true, func(rows *sqlx.Rows) error {
+		if err := rows.StructScan(out); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (r *repository) querySimple(query string, args []interface{}, out interface{}) error {
@@ -361,7 +361,7 @@ type stringRepository struct {
 func (r *stringRepository) get(id int) ([]string, error) {
 	query := fmt.Sprintf("SELECT %s from %s WHERE %s = ?", r.stringColumn, r.tableName, r.idColumn)
 	var ret []string
-	err := r.queryFunc(query, []interface{}{id}, func(rows *sqlx.Rows) error {
+	err := r.queryFunc(query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
 		var out string
 		if err := rows.Scan(&out); err != nil {
 			return err

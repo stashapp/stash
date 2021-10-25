@@ -324,8 +324,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(tagTable)
+	distinctIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
