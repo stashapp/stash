@@ -340,34 +340,27 @@ func (_m *ImageReaderWriter) IncrementOCounter(id int) (int, error) {
 	return r0, r1
 }
 
-// Query provides a mock function with given fields: imageFilter, findFilter
-func (_m *ImageReaderWriter) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
-	ret := _m.Called(imageFilter, findFilter)
+// Query provides a mock function with given fields: options
+func (_m *ImageReaderWriter) Query(options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
+	ret := _m.Called(options)
 
-	var r0 []*models.Image
-	if rf, ok := ret.Get(0).(func(*models.ImageFilterType, *models.FindFilterType) []*models.Image); ok {
-		r0 = rf(imageFilter, findFilter)
+	var r0 *models.ImageQueryResult
+	if rf, ok := ret.Get(0).(func(models.ImageQueryOptions) *models.ImageQueryResult); ok {
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Image)
+			r0 = ret.Get(0).(*models.ImageQueryResult)
 		}
 	}
 
-	var r1 int
-	if rf, ok := ret.Get(1).(func(*models.ImageFilterType, *models.FindFilterType) int); ok {
-		r1 = rf(imageFilter, findFilter)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.ImageQueryOptions) error); ok {
+		r1 = rf(options)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Error(1)
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(*models.ImageFilterType, *models.FindFilterType) error); ok {
-		r2 = rf(imageFilter, findFilter)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // QueryCount provides a mock function with given fields: imageFilter, findFilter
