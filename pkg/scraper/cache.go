@@ -188,7 +188,7 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 		return nil, fmt.Errorf("name-scraping with scraper %s: %w", id, ErrNotSupported)
 	}
 
-	return ns.loadByName(ctx, c.client, query, ty)
+	return ns.viaName(ctx, c.client, query, ty)
 }
 
 // ScrapeFragment uses the given fragment input to scrape
@@ -203,7 +203,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (mode
 		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, ErrNotSupported)
 	}
 
-	content, err := fs.loadByFragment(ctx, c.client, input)
+	content, err := fs.viaFragment(ctx, c.client, input)
 	if err != nil {
 		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, err)
 	}
@@ -221,7 +221,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 			if !ok {
 				return nil, fmt.Errorf("scraper with id %s used as url scraper: %w", s.spec().ID, ErrNotSupported)
 			}
-			ret, err := ul.loadByURL(ctx, c.client, url, ty)
+			ret, err := ul.viaURL(ctx, c.client, url, ty)
 			if err != nil {
 				return nil, err
 			}
@@ -260,7 +260,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: unable to load scene id %v: %w", scraperID, id, err)
 		}
 
-		ret, err = ss.loadByScene(ctx, c.client, scene)
+		ret, err = ss.viaScene(ctx, c.client, scene)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
 		}
@@ -275,7 +275,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: unable to load gallery id %v: %w", scraperID, id, err)
 		}
 
-		ret, err = gs.loadByGallery(ctx, c.client, gallery)
+		ret, err = gs.viaGallery(ctx, c.client, gallery)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
 		}

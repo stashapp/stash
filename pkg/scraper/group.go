@@ -56,14 +56,14 @@ func scrapeFragmentInput(ctx context.Context, input Input, s scraperActionImpl) 
 	return nil, ErrNotSupported
 }
 
-func (g group) loadByFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error) {
+func (g group) viaFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error) {
 	stc := g.fragmentScraper(input)
 	if stc == nil {
 		// If there's no performer fragment scraper in the group, we try to use
 		// the URL scraper. Check if there's an URL in the input, and then shift
 		// to an URL scrape if it's present.
 		if input.Performer != nil && input.Performer.URL != nil && *input.Performer.URL != "" {
-			return g.loadByURL(ctx, client, *input.Performer.URL, models.ScrapeContentTypePerformer)
+			return g.viaURL(ctx, client, *input.Performer.URL, models.ScrapeContentTypePerformer)
 		}
 
 		return nil, ErrNotSupported
@@ -73,7 +73,7 @@ func (g group) loadByFragment(ctx context.Context, client *http.Client, input In
 	return scrapeFragmentInput(ctx, input, s)
 }
 
-func (g group) loadByScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	if g.config.SceneByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -82,7 +82,7 @@ func (g group) loadByScene(ctx context.Context, client *http.Client, scene *mode
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
-func (g group) loadByGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if g.config.GalleryByFragment == nil {
 		return nil, ErrNotSupported
 	}
@@ -121,7 +121,7 @@ func scrapeByUrl(ctx context.Context, url string, s scraperActionImpl, ty models
 	panic("scrapeByUrl: unreachable")
 }
 
-func (g group) loadByURL(ctx context.Context, client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
@@ -140,7 +140,7 @@ func (g group) loadByURL(ctx context.Context, client *http.Client, url string, t
 	return nil, nil
 }
 
-func (g group) loadByName(ctx context.Context, client *http.Client, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (g group) viaName(ctx context.Context, client *http.Client, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
 		if g.config.PerformerByName == nil {

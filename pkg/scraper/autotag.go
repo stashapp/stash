@@ -83,7 +83,7 @@ func (s *autotagScraper) matchTags(path string, tagReader models.TagReader) ([]*
 	return ret, nil
 }
 
-func (s *autotagScraper) loadByScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	var ret *models.ScrapedScene
 
 	// populate performers, studio and tags based on scene path
@@ -119,7 +119,7 @@ func (s *autotagScraper) loadByScene(ctx context.Context, _client *http.Client, 
 	return ret, nil
 }
 
-func (s *autotagScraper) loadByGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *autotagScraper) viaGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	if !gallery.Path.Valid {
 		// not valid for non-path-based galleries
 		return nil, nil

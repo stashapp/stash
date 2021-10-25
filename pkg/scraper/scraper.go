@@ -43,21 +43,21 @@ type scraper interface {
 type urlScraper interface {
 	scraper
 
-	loadByURL(ctx context.Context, client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
+	viaURL(ctx context.Context, client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
 }
 
 // nameScraper is the interface of scrapers supporting name loads
 type nameScraper interface {
 	scraper
 
-	loadByName(ctx context.Context, client *http.Client, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
+	viaName(ctx context.Context, client *http.Client, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
 }
 
 // fragmentScraper is the interface of scrapers supporting fragment loads
 type fragmentScraper interface {
 	scraper
 
-	loadByFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error)
+	viaFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error)
 }
 
 // sceneLoader is a scraper which supports scene scrapes with
@@ -65,7 +65,7 @@ type fragmentScraper interface {
 type sceneLoader interface {
 	scraper
 
-	loadByScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
+	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
 }
 
 // galleryLoader is a sraper which supports gallery scrapes with
@@ -73,5 +73,5 @@ type sceneLoader interface {
 type galleryLoader interface {
 	scraper
 
-	loadByGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
+	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
 }
