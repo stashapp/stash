@@ -387,7 +387,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       <Prompt
         when={formik.dirty}
         message={(location, action) => {
-          // Don't prompt when pushing to another studio, since it's usually a create
+          // Check if it's a redirect after movie creation
           if (action === "PUSH" && location.pathname.startsWith("/movies/"))
             return true;
           return intl.formatMessage({ id: "dialogs.unsaved_changes" });
