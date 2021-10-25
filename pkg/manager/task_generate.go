@@ -53,6 +53,8 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	queue := make(chan Task, generateQueueSize)
 	go func() {
+		defer close(queue)
+
 		var totals totalsGenerate
 		sceneIDs, err := utils.StringSliceToIntSlice(j.input.SceneIDs)
 		if err != nil {
@@ -117,8 +119,11 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 		}
 
 		wg.Add()
-		go progress.ExecuteTask(f.GetDescription(), func() {
-			f.Start(ctx)
+		// #1879 - need to make a copy of f - otherwise there is a race condition
+		// where f is changed when the goroutine runs
+		localTask := f
+		go progress.ExecuteTask(localTask.GetDescription(), func() {
+			localTask.Start(ctx)
 			wg.Done()
 			progress.Increment()
 		})
@@ -136,8 +141,6 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 }
 
 func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsGenerate {
-	defer close(queue)
-
 	var totals totalsGenerate
 
 	const batchSize = 1000
