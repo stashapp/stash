@@ -11,7 +11,7 @@ import { useIntl } from "react-intl";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 interface IGalleryAddProps {
-  gallery: Partial<GQL.GalleryDataFragment>;
+  gallery: GQL.GalleryDataFragment;
 }
 
 export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
@@ -20,7 +20,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
 
   function filterHook(filter: ListFilterModel) {
     const galleryValue = {
-      id: gallery.id!,
+      id: gallery.id,
       label: gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? ""),
     };
     // if galleries is already present, then we modify it, otherwise add

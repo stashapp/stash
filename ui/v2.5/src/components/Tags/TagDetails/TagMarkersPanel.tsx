@@ -8,12 +8,12 @@ import {
 import { SceneMarkerList } from "src/components/Scenes/SceneMarkerList";
 
 interface ITagMarkersPanel {
-  tag: Partial<GQL.TagDataFragment>;
+  tag: GQL.TagDataFragment;
 }
 
 export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
   function filterHook(filter: ListFilterModel) {
-    const tagValue = { id: tag.id!, label: tag.name! };
+    const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "tags";
