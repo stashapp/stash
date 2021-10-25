@@ -16,9 +16,17 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
-var ErrNotFound = errors.New("scraper not found")
-var ErrNotSupported = errors.New("not supported")
+var (
+	// ErrMaxRedirects is returned if the max number of HTTP redirects are reached.
+	ErrMaxRedirects = errors.New("maximum number of HTTP redirects reached")
+
+	// ErrNotFound is returned when an entity isn't found
+	ErrNotFound = errors.New("scraper not found")
+
+	// ErrNotSupported is returned when a given invocation isn't supported, and there
+	// is a guard function which should be able to guard against it.
+	ErrNotSupported = errors.New("not supported")
+)
 
 const (
 	// scrapeGetTimeout is the timeout for scraper HTTP requests. Includes transfer time.
