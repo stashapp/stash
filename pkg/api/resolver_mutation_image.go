@@ -295,7 +295,6 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		}
 
 		// if delete file is true, then delete the file as well
-		// if it fails, just log a message
 		if input.DeleteFile != nil && *input.DeleteFile {
 			err = manager.DeleteImageFile(image)
 			if err != nil {
