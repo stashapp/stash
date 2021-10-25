@@ -200,7 +200,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (mode
 
 	fs, ok := s.(fragmentScraper)
 	if !ok {
-		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, ErrNotSupported)
+		return nil, fmt.Errorf("fragment scraping with scraper %s: type assertion: %w", id, ErrNotSupported)
 	}
 
 	content, err := fs.viaFragment(ctx, c.client, input)
@@ -250,7 +250,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 	var ret models.ScrapedContent
 	switch ty {
 	case models.ScrapeContentTypeScene:
-		ss, ok := s.(sceneLoader)
+		ss, ok := s.(sceneScraper)
 		if !ok {
 			return nil, fmt.Errorf("scraper with id %s used as scene scraper: %w", scraperID, ErrNotSupported)
 		}
@@ -265,7 +265,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
 		}
 	case models.ScrapeContentTypeGallery:
-		gs, ok := s.(galleryLoader)
+		gs, ok := s.(galleryScraper)
 		if !ok {
 			return nil, fmt.Errorf("scraper with id %s used as a gallery scraper: %w", scraperID, ErrNotSupported)
 		}

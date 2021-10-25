@@ -60,17 +60,17 @@ type fragmentScraper interface {
 	viaFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error)
 }
 
-// sceneLoader is a scraper which supports scene scrapes with
+// sceneScraper is a scraper which supports scene scrapes with
 // scene data as the input.
-type sceneLoader interface {
+type sceneScraper interface {
 	scraper
 
 	viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error)
 }
 
-// galleryLoader is a sraper which supports gallery scrapes with
+// galleryScraper is a scraper which supports gallery scrapes with
 // gallery data as the input.
-type galleryLoader interface {
+type galleryScraper interface {
 	scraper
 
 	viaGallery(ctx context.Context, client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error)
