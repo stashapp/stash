@@ -54,6 +54,7 @@
       "import/named": "off",
       "import/namespace": "off",
       "import/no-unresolved": "off",
+      "react/display-name": "off",
       "react/prop-types": "off",
       "react/style-prop-object": ["error", {
         "allow": ["FormattedNumber"]
