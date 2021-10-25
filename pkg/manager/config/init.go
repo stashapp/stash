@@ -111,7 +111,10 @@ func setExistingSystemDefaults(instance *Instance) {
 		}
 
 		if configDirtied {
-			viper.WriteConfig()
+			err := viper.WriteConfig()
+			if err != nil {
+				logger.Errorf("Could not save existing system defaults: %s", err.Error())
+			}
 		}
 	}
 }
