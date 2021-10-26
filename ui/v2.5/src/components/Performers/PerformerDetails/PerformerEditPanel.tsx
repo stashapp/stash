@@ -661,19 +661,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScraper(undefined);
   }
 
-  function maybeRenderScrapeButton() {
-    return (
-      <Button
-        variant="secondary"
-        disabled={!urlScrapable(formik.values.url)}
-        className="scrape-url-button text-input"
-        onClick={() => onScrapePerformerURL()}
-      >
-        <Icon icon="file-upload" />
-      </Button>
-    );
-  }
-
   function renderButtons() {
     return (
       <Row>
@@ -968,7 +955,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 placeholder="URL"
                 {...formik.getFieldProps("url")}
               />
-              <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
+              <InputGroup.Append>
+                <Button
+                  className="scrape-url-button"
+                  variant="primary"
+                  onClick={onScrapePerformerURL}
+                  disabled={
+                    !formik.values.url || !urlScrapable(formik.values.url)
+                  }
+                >
+                  <FormattedMessage id="actions.scrape" />
+                </Button>
+              </InputGroup.Append>
             </InputGroup>
           </Col>
         </Form.Group>

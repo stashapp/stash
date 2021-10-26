@@ -10,7 +10,6 @@ import {
 import {
   LoadingIndicator,
   StudioSelect,
-  Icon,
   DetailsEditNavbar,
   DurationInput,
 } from "src/components/Shared";
@@ -257,21 +256,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     );
   }
 
-  function maybeRenderScrapeButton() {
-    const { url } = formik.values;
-    if (!url || !urlScrapable(url)) {
-      return undefined;
-    }
-    return (
-      <Button
-        className="minimal scrape-url-button"
-        onClick={() => onScrapeMovieURL()}
-      >
-        <Icon icon="file-upload" />
-      </Button>
-    );
-  }
-
   function maybeRenderScrapeDialog() {
     if (!scrapedMovie) {
       return;
@@ -474,7 +458,18 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
                 placeholder={intl.formatMessage({ id: "url" })}
                 {...formik.getFieldProps("url")}
               />
-              <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
+              <InputGroup.Append>
+                <Button
+                  className="scrape-url-button"
+                  variant="primary"
+                  onClick={onScrapeMovieURL}
+                  disabled={
+                    !formik.values.url || !urlScrapable(formik.values.url)
+                  }
+                >
+                  <FormattedMessage id="actions.scrape" />
+                </Button>
+              </InputGroup.Append>
             </InputGroup>
           </Col>
         </Form.Group>

@@ -5,6 +5,7 @@ import {
   Dropdown,
   DropdownButton,
   Form,
+  InputGroup,
   Col,
   Row,
   ButtonGroup,
@@ -573,21 +574,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  function maybeRenderScrapeButton() {
-    if (!formik.values.url || !urlScrapable(formik.values.url)) {
-      return undefined;
-    }
-    return (
-      <Button
-        className="minimal scrape-url-button"
-        onClick={onScrapeSceneURL}
-        title="Scrape"
-      >
-        <Icon className="fa-fw" icon="file-download" />
-      </Button>
-    );
-  }
-
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={title} as={Row}>
@@ -651,17 +637,28 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 <Form.Label className="col-form-label">
                   <FormattedMessage id="url" />
                 </Form.Label>
-                <div className="float-right scrape-button-container">
-                  {maybeRenderScrapeButton()}
-                </div>
               </Col>
               <Col xs={9}>
-                <Form.Control
-                  className="text-input"
-                  placeholder={intl.formatMessage({ id: "url" })}
-                  {...formik.getFieldProps("url")}
-                  isInvalid={!!formik.getFieldMeta("url").error}
-                />
+                <InputGroup className="mr-2 flex-grow-1">
+                  <Form.Control
+                    className="text-input"
+                    placeholder={intl.formatMessage({ id: "url" })}
+                    {...formik.getFieldProps("url")}
+                    isInvalid={!!formik.getFieldMeta("url").error}
+                  />
+                  <InputGroup.Append>
+                    <Button
+                      className="scrape-url-button"
+                      variant="primary"
+                      onClick={onScrapeSceneURL}
+                      disabled={
+                        !formik.values.url || !urlScrapable(formik.values.url)
+                      }
+                    >
+                      <FormattedMessage id="actions.scrape" />
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
               </Col>
             </Form.Group>
             {renderTextField(
