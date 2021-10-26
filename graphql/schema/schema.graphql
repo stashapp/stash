@@ -111,8 +111,6 @@ type Query {
   """Scrapes a complete gallery record based on an existing gallery"""
   scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery @deprecated(reason: "use scrapeSingleGallery")
 
-  """Scrape a performer using Freeones"""
-  scrapeFreeones(performer_name: String!): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]! @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
 

@@ -816,15 +816,6 @@ export const useDLNAStatus = () =>
     fetchPolicy: "no-cache",
   });
 
-export const queryScrapeFreeones = (performerName: string) =>
-  client.query<GQL.ScrapeFreeonesQuery>({
-    query: GQL.ScrapeFreeonesDocument,
-    variables: {
-      performer_name: performerName,
-    },
-    fetchPolicy: "network-only",
-  });
-
 export const queryScrapePerformer = (
   scraperId: string,
   scrapedPerformer: GQL.ScrapedPerformerInput

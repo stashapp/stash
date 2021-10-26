@@ -17,20 +17,6 @@ func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty models.Scr
 }
 
 // deprecated
-func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name string) (*models.ScrapedPerformer, error) {
-	scrapedPerformer := models.ScrapedPerformerInput{
-		Name: &performer_name,
-	}
-
-	content, err := r.scraperCache.ScrapeFragment(ctx, scraper.FreeonesScraperID, scraper.Input{Performer: &scrapedPerformer})
-	if err != nil {
-		return nil, err
-	}
-
-	return marshalScrapedPerformer(content)
-}
-
-// deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
 	content, err := r.scraperCache.ScrapeName(ctx, scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
 
