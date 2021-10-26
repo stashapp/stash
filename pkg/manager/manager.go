@@ -299,31 +299,41 @@ func setSetupDefaults(input *models.SetupInput) {
 
 func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 	setSetupDefaults(&input)
+	c := s.Config
 
 	// create the config directory if it does not exist
-	configDir := filepath.Dir(input.ConfigLocation)
-	if exists, _ := utils.DirExists(configDir); !exists {
-		if err := os.Mkdir(configDir, 0755); err != nil {
-			return fmt.Errorf("abc: %v", err)
+	// don't do anything if config is already set in the environment
+	if !config.FileEnvSet() {
+		configDir := filepath.Dir(input.ConfigLocation)
+		if exists, _ := utils.DirExists(configDir); !exists {
+			if err := os.Mkdir(configDir, 0755); err != nil {
+				return fmt.Errorf("error creating config directory: %v", err)
+			}
 		}
+
+		if err := utils.Touch(input.ConfigLocation); err != nil {
+			return fmt.Errorf("error creating config file: %v", err)
+		}
+
+		s.Config.SetConfigFile(input.ConfigLocation)
 	}
 
 	// create the generated directory if it does not exist
-	if exists, _ := utils.DirExists(input.GeneratedLocation); !exists {
-		if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
-			return fmt.Errorf("error creating generated directory: %v", err)
+	if !c.HasOverride(config.Generated) {
+		if exists, _ := utils.DirExists(input.GeneratedLocation); !exists {
+			if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
+				return fmt.Errorf("error creating generated directory: %v", err)
+			}
 		}
-	}
 
-	if err := utils.Touch(input.ConfigLocation); err != nil {
-		return fmt.Errorf("error creating config file: %v", err)
+		s.Config.Set(config.Generated, input.GeneratedLocation)
 	}
-
-	s.Config.SetConfigFile(input.ConfigLocation)
 
 	// set the configuration
-	s.Config.Set(config.Generated, input.GeneratedLocation)
-	s.Config.Set(config.Database, input.DatabaseFile)
+	if !c.HasOverride(config.Database) {
+		s.Config.Set(config.Database, input.DatabaseFile)
+	}
+
 	s.Config.Set(config.Stash, input.Stashes)
 	if err := s.Config.Write(); err != nil {
 		return fmt.Errorf("error writing configuration file: %v", err)

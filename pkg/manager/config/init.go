@@ -14,24 +14,35 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var once sync.Once
+var (
+	initOnce     sync.Once
+	instanceOnce sync.Once
+)
 
 type flagStruct struct {
 	configFilePath string
 	cpuProfilePath string
 }
 
+func GetInstance() *Instance {
+	instanceOnce.Do(func() {
+		instance = &Instance{
+			main:      viper.New(),
+			overrides: viper.New(),
+		}
+	})
+	return instance
+}
+
 func Initialize() (*Instance, error) {
 	var err error
-	once.Do(func() {
+	initOnce.Do(func() {
 		flags := initFlags()
 		overrides := makeOverrideConfig()
 
-		instance = &Instance{
-			main:           viper.New(),
-			overrides:      overrides,
-			cpuProfilePath: flags.cpuProfilePath,
-		}
+		_ = GetInstance()
+		instance.overrides = overrides
+		instance.cpuProfilePath = flags.cpuProfilePath
 
 		if err = initConfig(instance, flags); err != nil {
 			return

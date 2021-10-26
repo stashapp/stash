@@ -78,8 +78,12 @@ const (
 	WriteImageThumbnails        = "write_image_thumbnails"
 	writeImageThumbnailsDefault = true
 
-	Host         = "host"
-	Port         = "port"
+	Host        = "host"
+	hostDefault = "0.0.0.0"
+
+	Port        = "port"
+	portDefault = 9999
+
 	ExternalHost = "external_host"
 
 	// key used to sign JWT tokens
@@ -212,10 +216,6 @@ type Instance struct {
 
 var instance *Instance
 
-func GetInstance() *Instance {
-	return instance
-}
-
 func (i *Instance) IsNewSystem() bool {
 	return i.isNewSystem
 }
@@ -274,6 +274,12 @@ func (i *Instance) Write() error {
 	return i.main.WriteConfig()
 }
 
+// FileEnvSet returns true if the configuration file environment parameter
+// is set.
+func FileEnvSet() bool {
+	return os.Getenv("STASH_CONFIG_FILE") != ""
+}
+
 // GetConfigFile returns the full path to the used configuration file.
 func (i *Instance) GetConfigFile() string {
 	i.RLock()
@@ -303,6 +309,13 @@ func (i *Instance) viper(key string) *viper.Viper {
 	}
 
 	return v
+}
+
+func (i *Instance) HasOverride(key string) bool {
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.overrides.IsSet(key)
 }
 
 // These functions wrap the equivalent viper functions, checking the override
@@ -537,11 +550,21 @@ func (i *Instance) GetPluginsPath() string {
 }
 
 func (i *Instance) GetHost() string {
-	return i.getString(Host)
+	ret := i.getString(Host)
+	if ret == "" {
+		ret = hostDefault
+	}
+
+	return ret
 }
 
 func (i *Instance) GetPort() int {
-	return i.getInt(Port)
+	ret := i.getInt(Port)
+	if ret == 0 {
+		ret = portDefault
+	}
+
+	return ret
 }
 
 func (i *Instance) GetExternalHost() string {

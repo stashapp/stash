@@ -3,16 +3,11 @@ package config
 import (
 	"sync"
 	"testing"
-
-	"github.com/spf13/viper"
 )
 
 // should be run with -race
 func TestConcurrentConfigAccess(t *testing.T) {
-	i := &Instance{
-		main:      viper.New(),
-		overrides: viper.New(),
-	}
+	i := GetInstance()
 
 	const workers = 8
 	const loops = 200
