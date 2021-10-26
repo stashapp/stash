@@ -309,7 +309,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             >
               <TagGalleriesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="markers" title={intl.formatMessage({ id: "markers" })}>
+            <Tab
+              eventKey="markers"
+              title={intl.formatMessage({ id: "markers" })}
+            >
               <TagMarkersPanel tag={tag} />
             </Tab>
             <Tab
