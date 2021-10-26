@@ -121,7 +121,7 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("scene ID input %s: err", scene.ID)
+		return nil, fmt.Errorf("scene ID input %s: %w", scene.ID, ErrInput)
 	}
 
 	content, err := r.scraperCache.ScrapeID(ctx, scraperID, id, models.ScrapeContentTypeScene)
