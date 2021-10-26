@@ -73,6 +73,6 @@ type FindImagesResultType {
   """Total megapixels of the images"""
   megapixels: Float!
   """Total file size in bytes"""
-  filesize: Int!
+  filesize: Float!
   images: [Image!]!
 }
