@@ -56,7 +56,7 @@ function renderScrapedStudioRow(
       newValues={newStudio ? [newStudio] : undefined}
       onCreateNew={() => {
         if (onCreateNew && newStudio) {
-          onCreateNew(newStudio)
+          onCreateNew(newStudio);
         }
       }}
     />
