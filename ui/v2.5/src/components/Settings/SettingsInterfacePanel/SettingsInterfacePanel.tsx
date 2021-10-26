@@ -160,7 +160,11 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <hr />
 
-      <h4>{intl.formatMessage({ id: "config.ui.desktop_integration.desktop_integration" })}</h4>
+      <h4>
+        {intl.formatMessage({
+          id: "config.ui.desktop_integration.desktop_integration",
+        })}
+      </h4>
       <Form.Group>
         <Form.Check
           id="skip-browser"
