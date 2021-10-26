@@ -1038,6 +1038,12 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	i.Lock()
 	defer i.Unlock()
+
+	// set the default host and port so that these are written to the config
+	// file
+	i.main.SetDefault(Host, hostDefault)
+	i.main.SetDefault(Port, portDefault)
+
 	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
 	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	i.main.SetDefault(PreviewSegments, previewSegmentsDefault)
