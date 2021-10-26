@@ -54,7 +54,11 @@ function renderScrapedStudioRow(
       }
       onChange={onChange}
       newValues={newStudio ? [newStudio] : undefined}
-      onCreateNew={onCreateNew}
+      onCreateNew={() => {
+        if (onCreateNew && newStudio) {
+          onCreateNew(newStudio);
+        }
+      }}
     />
   );
 }
