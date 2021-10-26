@@ -2,6 +2,7 @@ import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
@@ -179,6 +180,11 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
         </div>
         {!isEditing ? (
           <>
+            <Helmet>
+              <title>
+                {studio.name ?? intl.formatMessage({ id: "studio" })}
+              </title>
+            </Helmet>
             <StudioDetailsPanel studio={studio} />
             <DetailsEditNavbar
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
