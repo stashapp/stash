@@ -84,7 +84,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [metadataPath, setMetadataPath] = useState<string | undefined>(
     undefined
   );
-  const [nobrowser, setNoBrowserFlag] = useState<boolean>(false);
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
   const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
@@ -167,7 +166,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
     previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
-    nobrowser,
     writeImageThumbnails,
     username,
     password,
@@ -221,7 +219,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
-      setNoBrowserFlag(conf.general.nobrowser);
       setTrustedProxies(conf.general.trustedProxies ?? undefined);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
@@ -1098,24 +1095,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
 
-      <hr />
-
-      <h4>{intl.formatMessage({ id: "config.general.startup" })}</h4>
-      <Form.Group>
-        <Form.Check
-          id="skip-browser"
-          checked={nobrowser}
-          label={intl.formatMessage({
-            id: "config.general.skip_opening_browser",
-          })}
-          onChange={() => setNoBrowserFlag(!nobrowser)}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.general.skip_opening_browser_on_startup",
-          })}
-        </Form.Text>
-      </Form.Group>
       <hr />
 
       <Button variant="primary" onClick={() => onSave()}>

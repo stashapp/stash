@@ -19,7 +19,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
-  nobrowser
   writeImageThumbnails
   apiKey
   username
@@ -53,6 +52,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallShowTitle
   wallPlayback
   maximumLoopDuration
+  nobrowser
   autostartVideo
   showStudioAsText
   css

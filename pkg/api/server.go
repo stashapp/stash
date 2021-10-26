@@ -7,11 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
-	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -253,15 +251,10 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 		// This can be done before actually starting the server, as modern browsers will
 		// automatically reload the page if a local port is closed at page load and then opened.
-		if !c.GetNoBrowserFlag() {
-			if !IsServerDockerized() {
-				// make sure we aren't root
-				if !(os.Getuid() == 0) {
-					err = browser.OpenURL(displayAddress)
-					if err != nil {
-						logger.Error("Could not open browser: " + err.Error())
-					}
-				}
+		if !c.GetNoBrowserFlag() && manager.GetInstance().IsDesktop() {
+			err = browser.OpenURL(displayAddress)
+			if err != nil {
+				logger.Error("Could not open browser: " + err.Error())
 			}
 		}
 
@@ -374,16 +367,4 @@ func getProxyPrefix(headers http.Header) string {
 	}
 
 	return prefix
-}
-
-func IsServerDockerized() bool {
-	if runtime.GOOS == "linux" {
-		_, dockerEnvErr := os.Stat("/.dockerenv")
-		cgroups, _ := ioutil.ReadFile("/proc/self/cgroup")
-		if !os.IsNotExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
-			return true
-		}
-	}
-
-	return false
 }

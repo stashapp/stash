@@ -85,8 +85,6 @@ input ConfigGeneralInput {
   logAccess: Boolean!
   """True if galleries should be created from folders with images"""
   createGalleriesFromFolders: Boolean!
-  """True if we should not auto-open a browser window on startup"""
-  nobrowser: Boolean
   """Array of video file extensions"""
   videoExtensions: [String!]
   """Array of image file extensions"""
@@ -174,8 +172,6 @@ type ConfigGeneralResult {
   galleryExtensions: [String!]!
   """True if galleries should be created from folders with images"""
   createGalleriesFromFolders: Boolean!
-  """"True if we should not auto-open a browser window on startup"""
-  nobrowser: Boolean!
   """Array of file regexp to exclude from Video Scans"""
   excludes: [String!]!
   """Array of file regexp to exclude from Image Scans"""
@@ -218,6 +214,8 @@ input ConfigInterfaceInput {
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
+  """True if we should not auto-open a browser window on startup"""
+  nobrowser: Boolean
 }
 
 type ConfigInterfaceResult {
@@ -231,6 +229,8 @@ type ConfigInterfaceResult {
   wallPlayback: String
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
+  """"True if we should not auto-open a browser window on startup"""
+  nobrowser: Boolean
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
   """If true, studio overlays will be shown as text instead of logo images"""

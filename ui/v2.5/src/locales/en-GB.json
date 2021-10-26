@@ -241,9 +241,6 @@
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
       "scraping": "Scraping",
-      "skip_opening_browser": "Skip Opening Browser",
-      "skip_opening_browser_on_startup": "Skip auto-opening browser during startup",
-      "startup": "Start-Up",
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
@@ -329,6 +326,11 @@
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "desktop_integration": {
+        "desktop_integration": "Desktop Integration",
+        "skip_opening_browser": "Skip Opening Browser",
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
       },
       "handy_connection_key": {
         "description": "Handy connection key to use for interactive scenes.",

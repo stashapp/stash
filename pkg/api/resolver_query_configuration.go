@@ -74,7 +74,6 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		PreviewPreset:                config.GetPreviewPreset(),
 		MaxTranscodeSize:             &maxTranscodeSize,
 		MaxStreamingTranscodeSize:    &maxStreamingTranscodeSize,
-		Nobrowser:                    config.GetNoBrowserFlag(),
 		WriteImageThumbnails:         config.IsWriteImageThumbnails(),
 		APIKey:                       config.GetAPIKey(),
 		Username:                     config.GetUsername(),
@@ -105,6 +104,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
+	Nobrowser := config.GetNoBrowserFlag()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
 	showStudioAsText := config.GetShowStudioAsText()
@@ -121,6 +121,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		WallShowTitle:       &wallShowTitle,
 		WallPlayback:        &wallPlayback,
 		MaximumLoopDuration: &maximumLoopDuration,
+		Nobrowser:           &Nobrowser,
 		AutostartVideo:      &autostartVideo,
 		ShowStudioAsText:    &showStudioAsText,
 		CSS:                 &css,
