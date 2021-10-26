@@ -25,14 +25,17 @@ func Initialize() (*Instance, error) {
 	var err error
 	once.Do(func() {
 		flags := initFlags()
+		overrides := makeOverrideConfig()
+
 		instance = &Instance{
+			main:           viper.New(),
+			overrides:      overrides,
 			cpuProfilePath: flags.cpuProfilePath,
 		}
 
-		if err = initConfig(flags); err != nil {
+		if err = initConfig(instance, flags); err != nil {
 			return
 		}
-		initEnvs()
 
 		if instance.isNewSystem {
 			if instance.Validate() == nil {
@@ -48,13 +51,14 @@ func Initialize() (*Instance, error) {
 	return instance, err
 }
 
-func initConfig(flags flagStruct) error {
+func initConfig(instance *Instance, flags flagStruct) error {
+	v := instance.main
 
 	// The config file is called config.  Leave off the file extension.
-	viper.SetConfigName("config")
+	v.SetConfigName("config")
 
-	viper.AddConfigPath(".")            // Look for config in the working directory
-	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
+	v.AddConfigPath(".")            // Look for config in the working directory
+	v.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
 
 	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
@@ -66,7 +70,7 @@ func initConfig(flags flagStruct) error {
 	}
 
 	if configFile != "" {
-		viper.SetConfigFile(configFile)
+		v.SetConfigFile(configFile)
 
 		// if file does not exist, assume it is a new system
 		if exists, _ := utils.FileExists(configFile); !exists {
@@ -84,7 +88,7 @@ func initConfig(flags flagStruct) error {
 		}
 	}
 
-	err := viper.ReadInConfig() // Find and read the config file
+	err := v.ReadInConfig() // Find and read the config file
 	// if not found, assume its a new system
 	var notFoundErr viper.ConfigFileNotFoundError
 	if errors.As(err, &notFoundErr) {
@@ -106,30 +110,35 @@ func initFlags() flagStruct {
 	pflag.StringVar(&flags.cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
 
 	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		logger.Infof("failed to bind flags: %s", err.Error())
-	}
 
 	return flags
 }
 
-func initEnvs() {
-	viper.SetEnvPrefix("stash") // will be uppercased automatically
-	bindEnv("host")             // STASH_HOST
-	bindEnv("port")             // STASH_PORT
-	bindEnv("external_host")    // STASH_EXTERNAL_HOST
-	bindEnv("generated")        // STASH_GENERATED
-	bindEnv("metadata")         // STASH_METADATA
-	bindEnv("cache")            // STASH_CACHE
-
-	// only set stash config flag if not already set
-	if instance.GetStashPaths() == nil {
-		bindEnv("stash") // STASH_STASH
-	}
+func initEnvs(viper *viper.Viper) {
+	viper.SetEnvPrefix("stash")     // will be uppercased automatically
+	bindEnv(viper, "host")          // STASH_HOST
+	bindEnv(viper, "port")          // STASH_PORT
+	bindEnv(viper, "external_host") // STASH_EXTERNAL_HOST
+	bindEnv(viper, "generated")     // STASH_GENERATED
+	bindEnv(viper, "metadata")      // STASH_METADATA
+	bindEnv(viper, "cache")         // STASH_CACHE
+	bindEnv(viper, "stash")         // STASH_STASH
 }
 
-func bindEnv(key string) {
+func bindEnv(viper *viper.Viper, key string) {
 	if err := viper.BindEnv(key); err != nil {
 		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
 	}
+}
+
+func makeOverrideConfig() *viper.Viper {
+	viper := viper.New()
+
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		logger.Infof("failed to bind flags: %s", err.Error())
+	}
+
+	initEnvs(viper)
+
+	return viper
 }

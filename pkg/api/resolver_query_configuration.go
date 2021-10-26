@@ -63,7 +63,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:                 config.GetDatabasePath(),
 		GeneratedPath:                config.GetGeneratedPath(),
 		MetadataPath:                 config.GetMetadataPath(),
-		ConfigFilePath:               config.GetConfigFilePath(),
+		ConfigFilePath:               config.GetConfigFile(),
 		ScrapersPath:                 config.GetScrapersPath(),
 		CachePath:                    config.GetCachePath(),
 		CalculateMd5:                 config.IsCalculateMD5(),
