@@ -386,7 +386,12 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
       <Prompt
         when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
+        message={(location, action) => {
+          // Check if it's a redirect after movie creation
+          if (action === "PUSH" && location.pathname.startsWith("/movies/"))
+            return true;
+          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+        }}
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">

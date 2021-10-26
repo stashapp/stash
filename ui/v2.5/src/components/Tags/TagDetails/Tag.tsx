@@ -2,20 +2,19 @@ import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
-import cx from "classnames";
 import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindTag,
   useTagUpdate,
-  useTagCreate,
   useTagDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
 import { ImageUtils } from "src/utils";
 import {
   DetailsEditNavbar,
+  ErrorMessage,
   Modal,
   LoadingIndicator,
   Icon,
@@ -31,33 +30,30 @@ import { TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
 
+interface IProps {
+  tag: GQL.TagDataFragment;
+}
+
 interface ITabParams {
-  id?: string;
   tab?: string;
 }
 
-export const Tag: React.FC = () => {
+const TagPage: React.FC<IProps> = ({ tag }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { tab = "scenes", id = "new" } = useParams<ITabParams>();
-  const isNew = id === "new";
+  const { tab = "scenes" } = useParams<ITabParams>();
 
   // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(isNew);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [mergeType, setMergeType] = useState<"from" | "into" | undefined>();
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
 
-  // Tag state
-  const { data, error, loading } = useFindTag(id);
-  const tag = data?.findTag;
-
   const [updateTag] = useTagUpdate();
-  const [createTag] = useTagCreate();
-  const [deleteTag] = useTagDestroy({ id });
+  const [deleteTag] = useTagDestroy({ id: tag.id });
 
   const activeTabKey =
     tab === "markers" ||
@@ -69,7 +65,7 @@ export const Tag: React.FC = () => {
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
-      history.replace(`/tags/${id}${tabParam}`);
+      history.replace(`/tags/${tag.id}${tabParam}`);
     }
   };
 
@@ -88,22 +84,11 @@ export const Tag: React.FC = () => {
     };
   });
 
-  useEffect(() => {
-    if (data && data.findTag) {
-      setImage(undefined);
-    }
-  }, [data]);
-
   function onImageLoad(imageData: string) {
     setImage(imageData);
   }
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  if (!isNew && !isEditing) {
-    if (!data?.findTag || loading) return <LoadingIndicator />;
-    if (error) return <div>{error.message}</div>;
-  }
 
   function getTagInput(
     input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput>
@@ -111,11 +96,8 @@ export const Tag: React.FC = () => {
     const ret: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
       ...input,
       image,
+      id: tag.id,
     };
-
-    if (!isNew) {
-      (ret as GQL.TagUpdateInput).id = id;
-    }
 
     return ret;
   }
@@ -125,39 +107,22 @@ export const Tag: React.FC = () => {
   ) {
     try {
       const oldRelations = {
-        parents: tag?.parents ?? [],
-        children: tag?.children ?? [],
+        parents: tag.parents ?? [],
+        children: tag.children ?? [],
       };
-      if (!isNew) {
-        const result = await updateTag({
-          variables: {
-            input: getTagInput(input) as GQL.TagUpdateInput,
-          },
+      const result = await updateTag({
+        variables: {
+          input: getTagInput(input) as GQL.TagUpdateInput,
+        },
+      });
+      if (result.data?.tagUpdate) {
+        setIsEditing(false);
+        const updated = result.data.tagUpdate;
+        tagRelationHook(updated, oldRelations, {
+          parents: updated.parents,
+          children: updated.children,
         });
-        if (result.data?.tagUpdate) {
-          setIsEditing(false);
-          const updated = result.data.tagUpdate;
-          tagRelationHook(updated, oldRelations, {
-            parents: updated.parents,
-            children: updated.children,
-          });
-          return updated.id;
-        }
-      } else {
-        const result = await createTag({
-          variables: {
-            input: getTagInput(input) as GQL.TagCreateInput,
-          },
-        });
-        if (result.data?.tagCreate?.id) {
-          setIsEditing(false);
-          const created = result.data.tagCreate;
-          tagRelationHook(created, oldRelations, {
-            parents: created.parents,
-            children: created.children,
-          });
-          return created.id;
-        }
+        return updated.id;
       }
     } catch (e) {
       Toast.error(e);
@@ -165,7 +130,7 @@ export const Tag: React.FC = () => {
   }
 
   async function onAutoTag() {
-    if (!tag?.id) return;
+    if (!tag.id) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
       Toast.success({
@@ -179,8 +144,8 @@ export const Tag: React.FC = () => {
   async function onDelete() {
     try {
       const oldRelations = {
-        parents: tag?.parents ?? [],
-        children: tag?.children ?? [],
+        parents: tag.parents ?? [],
+        children: tag.children ?? [],
       };
       await deleteTag();
       tagRelationHook(tag as GQL.TagDataFragment, oldRelations, {
@@ -212,7 +177,7 @@ export const Tag: React.FC = () => {
             id="dialogs.delete_confirm"
             values={{
               entityName:
-                tag?.name ??
+                tag.name ??
                 intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
             }}
           />
@@ -227,7 +192,7 @@ export const Tag: React.FC = () => {
   }
 
   function renderImage() {
-    let tagImage = tag?.image_path;
+    let tagImage = tag.image_path;
     if (isEditing) {
       if (image === null) {
         tagImage = `${tagImage}&default=true`;
@@ -237,7 +202,7 @@ export const Tag: React.FC = () => {
     }
 
     if (tagImage) {
-      return <img className="logo" alt={tag?.name ?? ""} src={tagImage} />;
+      return <img className="logo" alt={tag.name} src={tagImage} />;
     }
   }
 
@@ -284,27 +249,22 @@ export const Tag: React.FC = () => {
 
   return (
     <div className="row">
-      <div
-        className={cx("tag-details", {
-          "col-md-4": !isNew,
-          "col-md-8": isNew,
-        })}
-      >
+      <div className="tag-details col-md-4">
         <div className="text-center logo-container">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
             renderImage()
           )}
-          {!isNew && tag && <h2>{tag.name}</h2>}
+          <h2>{tag.name}</h2>
         </div>
-        {!isEditing && !isNew && tag ? (
+        {!isEditing ? (
           <>
             <TagDetailsPanel tag={tag} />
             {/* HACK - this is also rendered in the TagEditPanel */}
             <DetailsEditNavbar
-              objectName={tag.name ?? "tag"}
-              isNew={isNew}
+              objectName={tag.name}
+              isNew={false}
               isEditing={isEditing}
               onToggleEdit={onToggleEdit}
               onSave={() => {}}
@@ -317,7 +277,7 @@ export const Tag: React.FC = () => {
           </>
         ) : (
           <TagEditPanel
-            tag={tag ?? undefined}
+            tag={tag}
             onSubmit={onSave}
             onCancel={onToggleEdit}
             onDelete={onDelete}
@@ -325,43 +285,52 @@ export const Tag: React.FC = () => {
           />
         )}
       </div>
-      {!isNew && tag && (
-        <div className="col col-md-8">
-          <Tabs
-            id="tag-tabs"
-            mountOnEnter
-            activeKey={activeTabKey}
-            onSelect={setActiveTabKey}
+      <div className="col col-md-8">
+        <Tabs
+          id="tag-tabs"
+          mountOnEnter
+          activeKey={activeTabKey}
+          onSelect={setActiveTabKey}
+        >
+          <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+            <TagScenesPanel tag={tag} />
+          </Tab>
+          <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+            <TagImagesPanel tag={tag} />
+          </Tab>
+          <Tab
+            eventKey="galleries"
+            title={intl.formatMessage({ id: "galleries" })}
           >
-            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
-              <TagScenesPanel tag={tag} />
-            </Tab>
-            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
-              <TagImagesPanel tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="galleries"
-              title={intl.formatMessage({ id: "galleries" })}
-            >
-              <TagGalleriesPanel tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="markers"
-              title={intl.formatMessage({ id: "markers" })}
-            >
-              <TagMarkersPanel tag={tag} />
-            </Tab>
-            <Tab
-              eventKey="performers"
-              title={intl.formatMessage({ id: "performers" })}
-            >
-              <TagPerformersPanel tag={tag} />
-            </Tab>
-          </Tabs>
-        </div>
-      )}
+            <TagGalleriesPanel tag={tag} />
+          </Tab>
+          <Tab eventKey="markers" title={intl.formatMessage({ id: "markers" })}>
+            <TagMarkersPanel tag={tag} />
+          </Tab>
+          <Tab
+            eventKey="performers"
+            title={intl.formatMessage({ id: "performers" })}
+          >
+            <TagPerformersPanel tag={tag} />
+          </Tab>
+        </Tabs>
+      </div>
       {renderDeleteAlert()}
       {renderMergeDialog()}
     </div>
   );
 };
+
+const TagLoader: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { data, loading, error } = useFindTag(id ?? "");
+
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!data?.findTag)
+    return <ErrorMessage error={`No tag found with id ${id}.`} />;
+
+  return <TagPage tag={data.findTag} />;
+};
+
+export default TagLoader;
