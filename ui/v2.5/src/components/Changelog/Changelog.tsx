@@ -22,8 +22,8 @@ type Module = typeof V010;
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
 
-  const stashVersion = process.env.REACT_APP_STASH_VERSION;
-  const buildTime = process.env.REACT_APP_DATE;
+  const stashVersion = process.env.VITE_APP_STASH_VERSION;
+  const buildTime = process.env.VITE_APP_DATE;
 
   let buildDate;
   if (buildTime) {

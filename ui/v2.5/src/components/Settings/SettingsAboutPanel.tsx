@@ -5,9 +5,9 @@ import { LoadingIndicator } from "src/components/Shared";
 import { useLatestVersion } from "src/core/StashService";
 
 export const SettingsAboutPanel: React.FC = () => {
-  const gitHash = process.env.REACT_APP_GITHASH;
-  const stashVersion = process.env.REACT_APP_STASH_VERSION;
-  const buildTime = process.env.REACT_APP_DATE;
+  const gitHash = process.env.VITE_APP_GITHASH;
+  const stashVersion = process.env.VITE_APP_STASH_VERSION;
+  const buildTime = process.env.VITE_APP_DATE;
 
   const intl = useIntl();
 

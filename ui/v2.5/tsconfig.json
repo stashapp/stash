@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ESNext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -9,6 +9,7 @@
       "es2017.intl",
       "es2018.intl"
     ],
+    "types": ["vite/client", "vite-plugin-svgr/client"],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
