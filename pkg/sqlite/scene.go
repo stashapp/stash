@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -215,7 +216,7 @@ func (qb *sceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 func (qb *sceneQueryBuilder) find(id int) (*models.Scene, error) {
 	var ret models.Scene
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -394,7 +395,10 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	return query
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+func (qb *sceneQueryBuilder) Query(options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+	sceneFilter := options.SceneFilter
+	findFilter := options.FindFilter
+
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -403,8 +407,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(sceneTable)
+	distinctIDs(&query, sceneTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
@@ -415,7 +418,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	if err := qb.validateFilter(sceneFilter); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	filter := qb.makeFilter(sceneFilter)
 
@@ -424,21 +427,59 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	qb.setSceneSort(&query, findFilter)
 	query.sortAndPagination += getPagination(findFilter)
 
-	idsResult, countResult, err := query.executeFind()
+	result, err := qb.queryGroupedFields(options, query)
 	if err != nil {
-		return nil, 0, err
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
 	}
 
-	var scenes []*models.Scene
-	for _, id := range idsResult {
-		scene, err := qb.Find(id)
-		if err != nil {
-			return nil, 0, err
-		}
-		scenes = append(scenes, scene)
+	idsResult, err := query.findIDs()
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
 	}
 
-	return scenes, countResult, nil
+	result.IDs = idsResult
+	return result, nil
+}
+
+func (qb *sceneQueryBuilder) queryGroupedFields(options models.SceneQueryOptions, query queryBuilder) (*models.SceneQueryResult, error) {
+	if !options.Count && !options.TotalDuration && !options.TotalSize {
+		// nothing to do - return empty result
+		return models.NewSceneQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(temp.id) as total")
+	}
+
+	if options.TotalDuration {
+		query.addColumn("COALESCE(scenes.duration, 0) as duration")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.duration), 0) as duration")
+	}
+
+	if options.TotalSize {
+		query.addColumn("COALESCE(scenes.size, 0) as size")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total    int
+		Duration float64
+		Size     int
+	}{}
+	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewSceneQueryResult(qb)
+	ret.Count = out.Total
+	ret.TotalDuration = out.Duration
+	ret.TotalSize = out.Size
+	return ret, nil
 }
 
 func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
@@ -481,13 +522,14 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 
 			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
 
-			if resolution.Modifier == models.CriterionModifierEquals {
+			switch resolution.Modifier {
+			case models.CriterionModifierEquals:
 				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierNotEquals {
+			case models.CriterionModifierNotEquals:
 				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierLessThan {
+			case models.CriterionModifierLessThan:
 				f.addWhere(fmt.Sprintf("%s < %d", widthHeight, min))
-			} else if resolution.Modifier == models.CriterionModifierGreaterThan {
+			case models.CriterionModifierGreaterThan:
 				f.addWhere(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
 		}
@@ -846,7 +888,7 @@ func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, er
 	} else {
 		var hashes []*utils.Phash
 
-		if err := qb.queryFunc(findAllPhashesQuery, nil, func(rows *sqlx.Rows) error {
+		if err := qb.queryFunc(findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
 			phash := utils.Phash{
 				Bucket: -1,
 			}

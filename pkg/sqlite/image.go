@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -145,7 +146,7 @@ func (qb *imageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
 func (qb *imageQueryBuilder) find(id int) (*models.Image, error) {
 	var ret models.Image
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -260,8 +261,7 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(imageTable)
+	distinctIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"images.title", "images.path", "images.checksum"}
@@ -282,28 +282,65 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	return &query, nil
 }
 
-func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
-	query, err := qb.makeQuery(imageFilter, findFilter)
+func (qb *imageQueryBuilder) Query(options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
+	query, err := qb.makeQuery(options.ImageFilter, options.FindFilter)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	idsResult, countResult, err := query.executeFind()
+	result, err := qb.queryGroupedFields(options, *query)
 	if err != nil {
-		return nil, 0, err
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
 	}
 
-	var images []*models.Image
-	for _, id := range idsResult {
-		image, err := qb.Find(id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		images = append(images, image)
+	idsResult, err := query.findIDs()
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
 	}
 
-	return images, countResult, nil
+	result.IDs = idsResult
+	return result, nil
+}
+
+func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions, query queryBuilder) (*models.ImageQueryResult, error) {
+	if !options.Count && !options.Megapixels && !options.TotalSize {
+		// nothing to do - return empty result
+		return models.NewImageQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(temp.id) as total")
+	}
+
+	if options.Megapixels {
+		query.addColumn("COALESCE(images.width, 0) * COALESCE(images.height, 0) / 1000000 as megapixels")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.megapixels), 0) as megapixels")
+	}
+
+	if options.TotalSize {
+		query.addColumn("COALESCE(images.size, 0) as size")
+		aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total      int
+		Megapixels float64
+		Size       int
+	}{}
+	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewImageQueryResult(qb)
+	ret.Count = out.Total
+	ret.Megapixels = out.Megapixels
+	ret.TotalSize = out.Size
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {

@@ -15,9 +15,9 @@ import debounce from "lodash/debounce";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility } from "src/hooks";
-import { useConfiguration } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DisplayMode, LightboxImage, ScrollMode } from "./LightboxImage";
+import { ConfigurationContext } from "../Config";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -93,11 +93,10 @@ export const LightboxComponent: React.FC<IProps> = ({
   const allowNavigation = images.length > 1 || pageCallback;
 
   const intl = useIntl();
-  const config = useConfiguration();
+  const { configuration: config } = React.useContext(ConfigurationContext);
 
   const userSelectedSlideshowDelayOrDefault =
-    config?.data?.configuration.interface.slideshowDelay ??
-    DEFAULT_SLIDESHOW_DELAY;
+    config?.interface.slideshowDelay ?? DEFAULT_SLIDESHOW_DELAY;
 
   // slideshowInterval is used for controlling the logic
   // displaySlideshowInterval is for display purposes only

@@ -50,7 +50,7 @@ const (
 
 const (
 	studioName = "studioName"
-	//galleryChecksum = "galleryChecksum"
+	// galleryChecksum = "galleryChecksum"
 )
 
 var (
@@ -165,11 +165,12 @@ func TestGetStudioName(t *testing.T) {
 		image := s.input
 		json, err := GetStudioName(mockStudioReader, &image)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

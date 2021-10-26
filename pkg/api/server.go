@@ -35,6 +35,7 @@ import (
 var version string
 var buildstamp string
 var githash string
+var officialBuild string
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
@@ -230,7 +231,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	tlsConfig, err := makeTLSConfig(c)
 	if err != nil {
 		// assume we don't want to start with a broken TLS configuration
-		panic(fmt.Errorf("error loading TLS config: %s", err.Error()))
+		panic(fmt.Errorf("error loading TLS config: %v", err))
 	}
 
 	server := &http.Server{
@@ -241,7 +242,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	go func() {
 		printVersion()
-		printLatestVersion()
+		printLatestVersion(context.TODO())
 		logger.Infof("stash is listening on " + address)
 		if tlsConfig != nil {
 			displayAddress = "https://" + displayAddress + "/"
@@ -270,10 +271,19 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 func printVersion() {
 	versionString := githash
+	if IsOfficialBuild() {
+		versionString += " - Official Build"
+	} else {
+		versionString += " - Unofficial Build"
+	}
 	if version != "" {
 		versionString = version + " (" + versionString + ")"
 	}
 	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
+}
+
+func IsOfficialBuild() bool {
+	return officialBuild == "true"
 }
 
 func GetVersion() (string, string, string) {
@@ -311,7 +321,7 @@ func makeTLSConfig(c *config.Instance) (*tls.Config, error) {
 	certs := make([]tls.Certificate, 1)
 	certs[0], err = tls.X509KeyPair(cert, key)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing key pair: %s", err.Error())
+		return nil, fmt.Errorf("error parsing key pair: %v", err)
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,

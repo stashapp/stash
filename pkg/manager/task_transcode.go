@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -14,19 +17,24 @@ type GenerateTranscodeTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateTranscodeTask) Start() {
+func (t *GenerateTranscodeTask) GetDescription() string {
+	return fmt.Sprintf("Generating transcode for %s", t.Scene.Path)
+}
+
+func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return
 	}
 
+	ffprobe := instance.FFProbe
 	var container ffmpeg.Container
 
 	if t.Scene.Format.Valid {
 		container = ffmpeg.Container(t.Scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
-		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+		tmpVideoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
 			return
@@ -45,7 +53,7 @@ func (t *GenerateTranscodeTask) Start() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return
@@ -58,7 +66,7 @@ func (t *GenerateTranscodeTask) Start() {
 		OutputPath:       outputPath,
 		MaxTranscodeSize: transcodeSize,
 	}
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
@@ -68,7 +76,7 @@ func (t *GenerateTranscodeTask) Start() {
 		}
 	} else {
 		if audioCodec == ffmpeg.MissingUnsupported {
-			//ffmpeg fails if it trys to transcode an unsupported audio codec
+			// ffmpeg fails if it trys to transcode an unsupported audio codec
 			encoder.TranscodeVideo(*videoFile, options)
 		} else {
 			encoder.Transcode(*videoFile, options)

@@ -9,20 +9,15 @@ import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
 import {
   stashBoxPerformerQuery,
-  useConfiguration,
   useJobsSubscribe,
   mutateStashBoxBatchPerformerTag,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
+import { ConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
-import {
-  IStashBoxPerformer,
-  selectPerformers,
-  filterPerformer,
-} from "../utils";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 
@@ -55,7 +50,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const intl = useIntl();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    Record<string, IStashBoxPerformer[]>
+    Record<string, GQL.ScrapedPerformerDataFragment[]>
   >({});
   const [searchErrors, setSearchErrors] = useState<
     Record<string, string | undefined>
@@ -91,13 +86,13 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   >({});
   const [loadingUpdate, setLoadingUpdate] = useState<string | undefined>();
   const [modalPerformer, setModalPerformer] = useState<
-    IStashBoxPerformer | undefined
+    GQL.ScrapedPerformerDataFragment | undefined
   >();
 
   const doBoxSearch = (performerID: string, searchVal: string) => {
     stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
-        const s = selectPerformers(queryData.data?.scrapeSinglePerformer ?? []);
+        const s = queryData.data?.scrapeSinglePerformer ?? [];
         setSearchResults({
           ...searchResults,
           [performerID]: s,
@@ -134,13 +129,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     });
     stashBoxPerformerQuery(stashID, endpointIndex)
       .then((queryData) => {
-        const data = selectPerformers(
-          queryData.data?.scrapeSinglePerformer ?? []
-        );
+        const data = queryData.data?.scrapeSinglePerformer ?? [];
         if (data.length > 0) {
           setModalPerformer({
             ...data[0],
-            id: performerID,
+            stored_id: performerID,
           });
         }
       })
@@ -171,27 +164,21 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
-  const handlePerformerUpdate = async (
-    imageIndex: number,
-    excludedFields: string[]
-  ) => {
-    const performerData = modalPerformer;
+  const handlePerformerUpdate = async (input: GQL.PerformerCreateInput) => {
     setModalPerformer(undefined);
-    if (performerData?.id) {
-      const filteredData = filterPerformer(performerData, excludedFields);
+    const performerID = modalPerformer?.stored_id;
+    if (performerID) {
+      const updateData: GQL.PerformerUpdateInput = {
+        ...input,
+        id: performerID,
+      };
 
-      const res = await updatePerformer({
-        ...filteredData,
-        image: excludedFields.includes("image")
-          ? undefined
-          : performerData.images[imageIndex],
-        id: performerData.id,
-      });
+      const res = await updatePerformer(updateData);
       if (!res.data?.performerUpdate)
         setError({
           ...error,
-          [performerData.id]: {
-            message: `Failed to save performer "${performerData.name}"`,
+          [performerID]: {
+            message: `Failed to save performer "${modalPerformer?.name}"`,
             details:
               res?.errors?.[0].message ===
               "UNIQUE constraint failed: performers.checksum"
@@ -200,7 +187,6 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           },
         });
     }
-    setModalPerformer(undefined);
   };
 
   const renderPerformers = () =>
@@ -351,7 +337,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
               closeModal={() => setModalPerformer(undefined)}
               modalVisible={modalPerformer !== undefined}
               performer={modalPerformer}
-              handlePerformerCreate={handlePerformerUpdate}
+              onSave={handlePerformerUpdate}
               excludedPerformerFields={config.excludedPerformerFields}
               icon="tags"
               header="Update Performer"
@@ -491,7 +477,7 @@ interface ITaggerProps {
 
 export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const jobsSubscribe = useJobsSubscribe();
-  const stashConfig = useConfiguration();
+  const { configuration: stashConfig } = React.useContext(ConfigurationContext);
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
     initialConfig
@@ -524,16 +510,15 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   if (!config) return <LoadingIndicator />;
 
   const savedEndpointIndex =
-    stashConfig.data?.configuration.general.stashBoxes.findIndex(
+    stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
     ) ?? -1;
   const selectedEndpointIndex =
-    savedEndpointIndex === -1 &&
-    stashConfig.data?.configuration.general.stashBoxes.length
+    savedEndpointIndex === -1 && stashConfig?.general.stashBoxes.length
       ? 0
       : savedEndpointIndex;
   const selectedEndpoint =
-    stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
+    stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
   async function batchAdd(performerInput: string) {
     if (performerInput && selectedEndpoint) {
@@ -641,7 +626,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
               }}
               isIdle={batchJobID === undefined}
               config={config}
-              stashBoxes={stashConfig.data?.configuration.general.stashBoxes}
+              stashBoxes={stashConfig?.general.stashBoxes}
               onBatchAdd={batchAdd}
               onBatchUpdate={batchUpdate}
             />

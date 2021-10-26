@@ -1,7 +1,9 @@
 package manager
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg"
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -18,7 +20,11 @@ type GeneratePreviewTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GeneratePreviewTask) Start() {
+func (t *GeneratePreviewTask) GetDescription() string {
+	return fmt.Sprintf("Generating preview for %s", t.Scene.Path)
+}
+
+func (t *GeneratePreviewTask) Start(ctx context.Context) {
 	videoFilename := t.videoFilename()
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imageFilename := t.imageFilename()
@@ -27,7 +33,8 @@ func (t *GeneratePreviewTask) Start() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	ffprobe := instance.FFProbe
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

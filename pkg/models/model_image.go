@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"strconv"
+	"time"
 )
 
 // Image stores the metadata for a single image.
@@ -41,14 +43,55 @@ type ImagePartial struct {
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 }
 
-// GetTitle returns the title of the image. If the Title field is empty,
-// then the base filename is returned.
-func (s Image) GetTitle() string {
-	if s.Title.String != "" {
-		return s.Title.String
+func (i *Image) File() File {
+	ret := File{
+		Path: i.Path,
 	}
 
-	return filepath.Base(s.Path)
+	ret.Checksum = i.Checksum
+	if i.FileModTime.Valid {
+		ret.FileModTime = i.FileModTime.Timestamp
+	}
+	if i.Size.Valid {
+		ret.Size = strconv.FormatInt(i.Size.Int64, 10)
+	}
+
+	return ret
+}
+
+func (i *Image) SetFile(f File) {
+	path := f.Path
+	i.Path = path
+
+	if f.Checksum != "" {
+		i.Checksum = f.Checksum
+	}
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
+		i.FileModTime = NullSQLiteTimestamp{
+			Timestamp: f.FileModTime,
+			Valid:     true,
+		}
+	}
+	if f.Size != "" {
+		size, err := strconv.ParseInt(f.Size, 10, 64)
+		if err == nil {
+			i.Size = sql.NullInt64{
+				Int64: size,
+				Valid: true,
+			}
+		}
+	}
+}
+
+// GetTitle returns the title of the image. If the Title field is empty,
+// then the base filename is returned.
+func (i *Image) GetTitle() string {
+	if i.Title.String != "" {
+		return i.Title.String
+	}
+
+	return filepath.Base(i.Path)
 }
 
 // ImageFileType represents the file metadata for an image.

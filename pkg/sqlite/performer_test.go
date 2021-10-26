@@ -665,18 +665,24 @@ func verifyPerformersImageCount(t *testing.T, imageCountCriterion models.IntCrit
 		for _, performer := range performers {
 			pp := 0
 
-			_, count, err := r.Image().Query(&models.ImageFilterType{
-				Performers: &models.MultiCriterionInput{
-					Value:    []string{strconv.Itoa(performer.ID)},
-					Modifier: models.CriterionModifierIncludes,
+			result, err := r.Image().Query(models.ImageQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						PerPage: &pp,
+					},
+					Count: true,
 				},
-			}, &models.FindFilterType{
-				PerPage: &pp,
+				ImageFilter: &models.ImageFilterType{
+					Performers: &models.MultiCriterionInput{
+						Value:    []string{strconv.Itoa(performer.ID)},
+						Modifier: models.CriterionModifierIncludes,
+					},
+				},
 			})
 			if err != nil {
 				return err
 			}
-			verifyInt(t, count, imageCountCriterion)
+			verifyInt(t, result.Count, imageCountCriterion)
 		}
 
 		return nil

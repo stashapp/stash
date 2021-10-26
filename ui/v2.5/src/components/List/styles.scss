@@ -17,6 +17,10 @@
   }
 }
 
+.center-text {
+  text-align: center;
+}
+
 input[type="range"].zoom-slider {
   height: 100%;
   margin: 0;
@@ -28,6 +32,27 @@ input[type="range"].zoom-slider {
 .query-text-field {
   border: 0;
   width: 50%;
+}
+
+.query-text-field-clear {
+  background-color: $secondary;
+  color: $text-muted;
+  font-size: $btn-font-size-sm;
+  margin: $btn-padding-y $btn-padding-x;
+  padding: 0;
+  position: absolute;
+  right: 3em;
+  z-index: 4;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled):active:focus {
+    background-color: $secondary;
+    border-color: transparent;
+    box-shadow: none;
+  }
 }
 
 .saved-filter-list-menu {

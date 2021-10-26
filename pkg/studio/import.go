@@ -42,7 +42,7 @@ func (i *Importer) PreImport() error {
 	if len(i.Input.Image) > 0 {
 		_, i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
-			return fmt.Errorf("invalid image: %s", err.Error())
+			return fmt.Errorf("invalid image: %v", err)
 		}
 	}
 
@@ -53,7 +53,7 @@ func (i *Importer) populateParentStudio() error {
 	if i.Input.ParentStudio != "" {
 		studio, err := i.ReaderWriter.FindByName(i.Input.ParentStudio, false)
 		if err != nil {
-			return fmt.Errorf("error finding studio by name: %s", err.Error())
+			return fmt.Errorf("error finding studio by name: %v", err)
 		}
 
 		if studio == nil {
@@ -97,12 +97,12 @@ func (i *Importer) createParentStudio(name string) (int, error) {
 func (i *Importer) PostImport(id int) error {
 	if len(i.imageData) > 0 {
 		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
-			return fmt.Errorf("error setting studio image: %s", err.Error())
+			return fmt.Errorf("error setting studio image: %v", err)
 		}
 	}
 
 	if err := i.ReaderWriter.UpdateAliases(id, i.Input.Aliases); err != nil {
-		return fmt.Errorf("error setting tag aliases: %s", err.Error())
+		return fmt.Errorf("error setting tag aliases: %v", err)
 	}
 
 	return nil
@@ -130,7 +130,7 @@ func (i *Importer) FindExistingID() (*int, error) {
 func (i *Importer) Create() (*int, error) {
 	created, err := i.ReaderWriter.Create(i.studio)
 	if err != nil {
-		return nil, fmt.Errorf("error creating studio: %s", err.Error())
+		return nil, fmt.Errorf("error creating studio: %v", err)
 	}
 
 	id := created.ID
@@ -142,7 +142,7 @@ func (i *Importer) Update(id int) error {
 	studio.ID = id
 	_, err := i.ReaderWriter.UpdateFull(studio)
 	if err != nil {
-		return fmt.Errorf("error updating existing studio: %s", err.Error())
+		return fmt.Errorf("error updating existing studio: %v", err)
 	}
 
 	return nil

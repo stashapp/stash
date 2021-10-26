@@ -2,9 +2,12 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: 70vh;
   justify-content: center;
   width: 100%;
+
+  &:not(.card-based) {
+    height: 70vh;
+  }
 
   &-message {
     margin-top: 1rem;
@@ -203,5 +206,12 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     path {
       fill: gold;
     }
+  }
+}
+
+.input-group-prepend {
+  .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
   }
 }

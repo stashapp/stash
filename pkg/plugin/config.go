@@ -173,7 +173,7 @@ func (c Config) getExecCommand(task *OperationConfig) []string {
 			continue
 		}
 
-		ret[i] = strings.Replace(arg, "{pluginDir}", dir, -1)
+		ret[i] = strings.ReplaceAll(arg, "{pluginDir}", dir)
 	}
 
 	return ret

@@ -2,14 +2,12 @@ import { Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
-import cx from "classnames";
 import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindStudio,
   useStudioUpdate,
-  useStudioCreate,
   useStudioDestroy,
   mutateMetadataAutoTag,
 } from "src/core/StashService";
@@ -30,32 +28,29 @@ import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
 
+interface IProps {
+  studio: GQL.StudioDataFragment;
+}
+
 interface IStudioParams {
-  id?: string;
   tab?: string;
 }
 
-export const Studio: React.FC = () => {
+const StudioPage: React.FC<IProps> = ({ studio }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { tab = "details", id = "new" } = useParams<IStudioParams>();
-  const isNew = id === "new";
+  const { tab = "details" } = useParams<IStudioParams>();
 
   // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(isNew);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Studio state
   const [image, setImage] = useState<string | null>();
 
-  const { data, loading: studioLoading, error } = useFindStudio(id);
-  const studio = data?.findStudio;
-
-  const [isLoading, setIsLoading] = useState(false);
   const [updateStudio] = useStudioUpdate();
-  const [createStudio] = useStudioCreate();
-  const [deleteStudio] = useStudioDestroy({ id });
+  const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
   // set up hotkeys
   useEffect(() => {
@@ -68,53 +63,29 @@ export const Studio: React.FC = () => {
     };
   });
 
-  useEffect(() => {
-    if (data && data.findStudio) {
-      setImage(undefined);
-    }
-  }, [data]);
-
   function onImageLoad(imageData: string) {
     setImage(imageData);
   }
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
-  async function onSave(
-    input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput>
-  ) {
+  async function onSave(input: Partial<GQL.StudioUpdateInput>) {
     try {
-      setIsLoading(true);
-
-      if (!isNew) {
-        const result = await updateStudio({
-          variables: {
-            input: input as GQL.StudioUpdateInput,
-          },
-        });
-        if (result.data?.studioUpdate) {
-          setIsEditing(false);
-        }
-      } else {
-        const result = await createStudio({
-          variables: {
-            input: input as GQL.StudioCreateInput,
-          },
-        });
-        if (result.data?.studioCreate?.id) {
-          history.push(`/studios/${result.data.studioCreate.id}`);
-          setIsEditing(false);
-        }
+      const result = await updateStudio({
+        variables: {
+          input: input as GQL.StudioUpdateInput,
+        },
+      });
+      if (result.data?.studioUpdate) {
+        setIsEditing(false);
       }
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setIsLoading(false);
     }
   }
 
   async function onAutoTag() {
-    if (!studio?.id) return;
+    if (!studio.id) return;
     try {
       await mutateMetadataAutoTag({ studios: [studio.id] });
       Toast.success({
@@ -153,7 +124,7 @@ export const Studio: React.FC = () => {
             id="dialogs.delete_confirm"
             values={{
               entityName:
-                studio?.name ??
+                studio.name ??
                 intl.formatMessage({ id: "studio" }).toLocaleLowerCase(),
             }}
           />
@@ -167,7 +138,7 @@ export const Studio: React.FC = () => {
   }
 
   function renderImage() {
-    let studioImage = studio?.image_path;
+    let studioImage = studio.image_path;
     if (isEditing) {
       if (image === null) {
         studioImage = `${studioImage}&default=true`;
@@ -177,9 +148,7 @@ export const Studio: React.FC = () => {
     }
 
     if (studioImage) {
-      return (
-        <img className="logo" alt={studio?.name ?? ""} src={studioImage} />
-      );
+      return <img className="logo" alt={studio.name} src={studioImage} />;
     }
   }
 
@@ -194,31 +163,13 @@ export const Studio: React.FC = () => {
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
-      history.replace(`/studios/${id}${tabParam}`);
+      history.replace(`/studios/${studio.id}${tabParam}`);
     }
   };
 
-  if (isLoading || studioLoading) return <LoadingIndicator />;
-  if (error) return <ErrorMessage error={error.message} />;
-  if (!studio?.id && !isNew)
-    return <ErrorMessage error={`No studio found with id ${id}.`} />;
-
   return (
     <div className="row">
-      <div
-        className={cx("studio-details", {
-          "col-md-4": !isNew,
-          "col-md-8": isNew,
-        })}
-      >
-        {isNew && (
-          <h2>
-            {intl.formatMessage(
-              { id: "actions.add_entity" },
-              { entityType: intl.formatMessage({ id: "studio" }) }
-            )}
-          </h2>
-        )}
+      <div className="studio-detils col-md-4">
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
@@ -226,12 +177,12 @@ export const Studio: React.FC = () => {
             renderImage()
           )}
         </div>
-        {!isEditing && !isNew && studio ? (
+        {!isEditing ? (
           <>
             <StudioDetailsPanel studio={studio} />
             <DetailsEditNavbar
               objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
-              isNew={isNew}
+              isNew={false}
               isEditing={isEditing}
               onToggleEdit={onToggleEdit}
               onSave={() => {}}
@@ -243,7 +194,7 @@ export const Studio: React.FC = () => {
           </>
         ) : (
           <StudioEditPanel
-            studio={studio ?? ({} as Partial<GQL.Studio>)}
+            studio={studio}
             onSubmit={onSave}
             onCancel={onToggleEdit}
             onDelete={onDelete}
@@ -251,46 +202,58 @@ export const Studio: React.FC = () => {
           />
         )}
       </div>
-      {studio?.id && (
-        <div className="col col-md-8">
-          <Tabs
-            id="studio-tabs"
-            mountOnEnter
-            unmountOnExit
-            activeKey={activeTabKey}
-            onSelect={setActiveTabKey}
+      <div className="col col-md-8">
+        <Tabs
+          id="studio-tabs"
+          mountOnEnter
+          unmountOnExit
+          activeKey={activeTabKey}
+          onSelect={setActiveTabKey}
+        >
+          <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+            <StudioScenesPanel studio={studio} />
+          </Tab>
+          <Tab
+            eventKey="galleries"
+            title={intl.formatMessage({ id: "galleries" })}
           >
-            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
-              <StudioScenesPanel studio={studio} />
-            </Tab>
-            <Tab
-              eventKey="galleries"
-              title={intl.formatMessage({ id: "galleries" })}
-            >
-              <StudioGalleriesPanel studio={studio} />
-            </Tab>
-            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
-              <StudioImagesPanel studio={studio} />
-            </Tab>
-            <Tab
-              eventKey="performers"
-              title={intl.formatMessage({ id: "performers" })}
-            >
-              <StudioPerformersPanel studio={studio} />
-            </Tab>
-            <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
-              <StudioMoviesPanel studio={studio} />
-            </Tab>
-            <Tab
-              eventKey="childstudios"
-              title={intl.formatMessage({ id: "subsidiary_studios" })}
-            >
-              <StudioChildrenPanel studio={studio} />
-            </Tab>
-          </Tabs>
-        </div>
-      )}
+            <StudioGalleriesPanel studio={studio} />
+          </Tab>
+          <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+            <StudioImagesPanel studio={studio} />
+          </Tab>
+          <Tab
+            eventKey="performers"
+            title={intl.formatMessage({ id: "performers" })}
+          >
+            <StudioPerformersPanel studio={studio} />
+          </Tab>
+          <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+            <StudioMoviesPanel studio={studio} />
+          </Tab>
+          <Tab
+            eventKey="childstudios"
+            title={intl.formatMessage({ id: "subsidiary_studios" })}
+          >
+            <StudioChildrenPanel studio={studio} />
+          </Tab>
+        </Tabs>
+      </div>
       {renderDeleteAlert()}
     </div>
   );
 };
+
+const StudioLoader: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { data, loading, error } = useFindStudio(id ?? "");
+
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!data?.findStudio)
+    return <ErrorMessage error={`No studio found with id ${id}.`} />;
+
+  return <StudioPage studio={data.findStudio} />;
+};
+
+export default StudioLoader;

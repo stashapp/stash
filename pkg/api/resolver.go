@@ -2,12 +2,18 @@ package api
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+)
+
+var (
+	ErrNotImplemented = errors.New("not implemented")
+	ErrNotSupported   = errors.New("not supported")
 )
 
 type hookExecutor interface {
@@ -158,9 +164,9 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 	}, nil
 }
 
-//Gets latest version (git shorthash commit for now)
+// Latestversion returns the latest git shorthash commit.
 func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion, error) {
-	ver, url, err := GetLatestVersion(true)
+	ver, url, err := GetLatestVersion(ctx, true)
 	if err == nil {
 		logger.Infof("Retrieved latest hash: %s", ver)
 	} else {

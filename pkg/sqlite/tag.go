@@ -87,7 +87,7 @@ func (qb *tagQueryBuilder) Destroy(id int) error {
 func (qb *tagQueryBuilder) Find(id int) (*models.Tag, error) {
 	var ret models.Tag
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -235,6 +235,11 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	var whereClauses []string
 	var args []interface{}
 
+	// always include names that begin with a single character
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "tags.name regexp ? OR COALESCE(tag_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
+
 	for _, w := range words {
 		ww := w + "%"
 		whereClauses = append(whereClauses, "tags.name like ?")
@@ -319,8 +324,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(tagTable)
+	distinctIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
@@ -644,13 +648,13 @@ func (qb *tagQueryBuilder) Merge(source []int, destination int) error {
 		"performers_tags":    "performer_id",
 	}
 
-	tagArgs := append(args, destination)
+	args = append(args, destination)
 	for table, idColumn := range tagTables {
 		_, err := qb.tx.Exec(`UPDATE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
-			tagArgs...,
+			args...,
 		)
 		if err != nil {
 			return err

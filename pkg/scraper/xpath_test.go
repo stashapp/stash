@@ -874,7 +874,9 @@ xPathScrapers:
 
 	globalConfig := mockGlobalConfig{}
 
-	performer, err := c.ScrapePerformerURL(ts.URL, nil, globalConfig)
+	client := &http.Client{}
+	s := createScraperFromConfig(*c, client, nil, globalConfig)
+	performer, err := s.Performer.scrapeByURL(ts.URL)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())

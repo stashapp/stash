@@ -37,6 +37,15 @@
       .instagram {
         color: pink;
       }
+
+      .icon-link {
+        padding: 0;
+
+        a {
+          display: inline-block;
+          padding: $btn-padding-y $btn-padding-x;
+        }
+      }
     }
   }
 

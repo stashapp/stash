@@ -1,7 +1,9 @@
 package manager
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg"
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -13,12 +15,17 @@ type GenerateSpriteTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateSpriteTask) Start() {
+func (t *GenerateSpriteTask) GetDescription() string {
+	return fmt.Sprintf("Generating sprites for %s", t.Scene.Path)
+}
+
+func (t *GenerateSpriteTask) Start(ctx context.Context) {
 	if !t.Overwrite && !t.required() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	ffprobe := instance.FFProbe
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

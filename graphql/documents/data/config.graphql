@@ -59,6 +59,11 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   cssEnabled
   language
   slideshowDelay
+  disabledDropdownCreate {
+    performer
+    tag
+    studio
+  }
   handyKey
   funscriptOffset
 }

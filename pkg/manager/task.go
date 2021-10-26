@@ -1,6 +1,8 @@
 package manager
 
+import "context"
+
 type Task interface {
-	Start()
+	Start(context.Context)
 	GetDescription() string
 }
