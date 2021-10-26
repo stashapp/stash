@@ -3,7 +3,8 @@ import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared";
-import { Movie } from "./MovieDetails/Movie";
+import Movie from "./MovieDetails/Movie";
+import MovieCreate from "./MovieDetails/MovieCreate";
 import { MovieList } from "./MovieList";
 
 const Movies: React.FC = () => {
@@ -20,6 +21,7 @@ const Movies: React.FC = () => {
       />
       <Switch>
         <Route exact path="/movies" component={MovieList} />
+        <Route exact path="/movies/new" component={MovieCreate} />
         <Route path="/movies/:id/:tab?" component={Movie} />
       </Switch>
     </>

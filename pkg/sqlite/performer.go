@@ -303,10 +303,8 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 		findFilter = &models.FindFilterType{}
 	}
 
-	tableName := "performers"
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(tableName)
+	distinctIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"performers.name", "performers.aliases"}

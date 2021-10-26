@@ -507,18 +507,24 @@ func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriteri
 		for _, studio := range studios {
 			pp := 0
 
-			_, count, err := r.Image().Query(&models.ImageFilterType{
-				Studios: &models.HierarchicalMultiCriterionInput{
-					Value:    []string{strconv.Itoa(studio.ID)},
-					Modifier: models.CriterionModifierIncludes,
+			result, err := r.Image().Query(models.ImageQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						PerPage: &pp,
+					},
+					Count: true,
 				},
-			}, &models.FindFilterType{
-				PerPage: &pp,
+				ImageFilter: &models.ImageFilterType{
+					Studios: &models.HierarchicalMultiCriterionInput{
+						Value:    []string{strconv.Itoa(studio.ID)},
+						Modifier: models.CriterionModifierIncludes,
+					},
+				},
 			})
 			if err != nil {
 				return err
 			}
-			verifyInt(t, count, imageCountCriterion)
+			verifyInt(t, result.Count, imageCountCriterion)
 		}
 
 		return nil

@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
-import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindMovie,
   useMovieUpdate,
-  useMovieCreate,
   useMovieDestroy,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
 import {
   DetailsEditNavbar,
+  ErrorMessage,
   LoadingIndicator,
   Modal,
 } from "src/components/Shared";
@@ -21,19 +20,17 @@ import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieDetailsPanel } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
 
-interface IMovieParams {
-  id?: string;
+interface IProps {
+  movie: GQL.MovieDataFragment;
 }
 
-export const Movie: React.FC = () => {
+const MoviePage: React.FC<IProps> = ({ movie }) => {
   const intl = useIntl();
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams<IMovieParams>();
-  const isNew = id === "new";
 
   // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(isNew);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
@@ -45,14 +42,10 @@ export const Movie: React.FC = () => {
   );
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  // Network state
-  const { data, error, loading } = useFindMovie(id);
-  const movie = data?.findMovie;
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [updateMovie] = useMovieUpdate();
-  const [createMovie] = useMovieCreate();
-  const [deleteMovie] = useMovieDestroy({ id });
+  const [updateMovie, { loading: updating }] = useMovieUpdate();
+  const [deleteMovie, { loading: deleting }] = useMovieDestroy({
+    id: movie.id,
+  });
 
   // set up hotkeys
   useEffect(() => {
@@ -67,23 +60,14 @@ export const Movie: React.FC = () => {
 
   const onImageEncoding = (isEncoding = false) => setEncodingImage(isEncoding);
 
-  if (!isNew && !isEditing) {
-    if (!data || !data.findMovie || loading) return <LoadingIndicator />;
-    if (error) {
-      return <>{error!.message}</>;
-    }
-  }
-
   function getMovieInput(
     input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
   ) {
     const ret: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       ...input,
+      id: movie.id,
     };
 
-    if (!isNew) {
-      (ret as GQL.MovieUpdateInput).id = id;
-    }
     return ret;
   }
 
@@ -91,42 +75,25 @@ export const Movie: React.FC = () => {
     input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput>
   ) {
     try {
-      setIsLoading(true);
-
-      if (!isNew) {
-        const result = await updateMovie({
-          variables: {
-            input: getMovieInput(input) as GQL.MovieUpdateInput,
-          },
-        });
-        if (result.data?.movieUpdate) {
-          setIsEditing(false);
-          history.push(`/movies/${result.data.movieUpdate.id}`);
-        }
-      } else {
-        const result = await createMovie({
-          variables: getMovieInput(input) as GQL.MovieCreateInput,
-        });
-        if (result.data?.movieCreate?.id) {
-          history.push(`/movies/${result.data.movieCreate.id}`);
-          setIsEditing(false);
-        }
+      const result = await updateMovie({
+        variables: {
+          input: getMovieInput(input) as GQL.MovieUpdateInput,
+        },
+      });
+      if (result.data?.movieUpdate) {
+        setIsEditing(false);
+        history.push(`/movies/${result.data.movieUpdate.id}`);
       }
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setIsLoading(false);
     }
   }
 
   async function onDelete() {
     try {
-      setIsLoading(true);
       await deleteMovie();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setIsLoading(false);
     }
 
     // redirect to movies page
@@ -156,7 +123,7 @@ export const Movie: React.FC = () => {
             id="dialogs.delete_confirm"
             values={{
               entityName:
-                movie?.name ??
+                movie.name ??
                 intl.formatMessage({ id: "movie" }).toLocaleLowerCase(),
             }}
           />
@@ -166,7 +133,7 @@ export const Movie: React.FC = () => {
   }
 
   function renderFrontImage() {
-    let image = movie?.front_image_path;
+    let image = movie.front_image_path;
     if (isEditing) {
       if (frontImage === null) {
         image = `${image}&default=true`;
@@ -185,7 +152,7 @@ export const Movie: React.FC = () => {
   }
 
   function renderBackImage() {
-    let image = movie?.back_image_path;
+    let image = movie.back_image_path;
     if (isEditing) {
       if (backImage === null) {
         image = undefined;
@@ -203,7 +170,7 @@ export const Movie: React.FC = () => {
     }
   }
 
-  if (isLoading) return <LoadingIndicator />;
+  if (updating || deleting) return <LoadingIndicator />;
 
   // TODO: CSS class
   return (
@@ -212,11 +179,7 @@ export const Movie: React.FC = () => {
         <title>{movie?.name}</title>
       </Helmet>
 
-      <div
-        className={cx("movie-details mb-3 col", {
-          "col-xl-4 col-lg-6": !isNew,
-        })}
-      >
+      <div className="movie-details mb-3 col col-xl-4 col-lg-6">
         <div className="logo w-100">
           {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
@@ -228,13 +191,13 @@ export const Movie: React.FC = () => {
           )}
         </div>
 
-        {!isEditing && movie ? (
+        {!isEditing ? (
           <>
             <MovieDetailsPanel movie={movie} />
             {/* HACK - this is also rendered in the MovieEditPanel */}
             <DetailsEditNavbar
-              objectName={movie?.name ?? "movie"}
-              isNew={isNew}
+              objectName={movie.name}
+              isNew={false}
               isEditing={isEditing}
               onToggleEdit={onToggleEdit}
               onSave={() => {}}
@@ -244,7 +207,7 @@ export const Movie: React.FC = () => {
           </>
         ) : (
           <MovieEditPanel
-            movie={movie ?? undefined}
+            movie={movie}
             onSubmit={onSave}
             onCancel={onToggleEdit}
             onDelete={onDelete}
@@ -255,12 +218,24 @@ export const Movie: React.FC = () => {
         )}
       </div>
 
-      {!isNew && movie && (
-        <div className="col-xl-8 col-lg-6">
-          <MovieScenesPanel movie={movie} />
-        </div>
-      )}
+      <div className="col-xl-8 col-lg-6">
+        <MovieScenesPanel movie={movie} />
+      </div>
       {renderDeleteAlert()}
     </div>
   );
 };
+
+const MovieLoader: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { data, loading, error } = useFindMovie(id ?? "");
+
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!data?.findMovie)
+    return <ErrorMessage error={`No movie found with id ${id}.`} />;
+
+  return <MoviePage movie={data.findMovie} />;
+};
+
+export default MovieLoader;

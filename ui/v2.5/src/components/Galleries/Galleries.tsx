@@ -4,10 +4,11 @@ import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared";
 import { PersistanceLevel } from "src/hooks/ListHook";
-import { Gallery } from "./GalleryDetails/Gallery";
+import Gallery from "./GalleryDetails/Gallery";
+import GalleryCreate from "./GalleryDetails/GalleryCreate";
 import { GalleryList } from "./GalleryList";
 
-const Galleries: React.FC = () => {
+const Galleries = () => {
   const intl = useIntl();
 
   const title_template = `${intl.formatMessage({
@@ -27,6 +28,7 @@ const Galleries: React.FC = () => {
             <GalleryList {...props} persistState={PersistanceLevel.ALL} />
           )}
         />
+        <Route exact path="/galleries/new" component={GalleryCreate} />
         <Route path="/galleries/:id/:tab?" component={Gallery} />
       </Switch>
     </>

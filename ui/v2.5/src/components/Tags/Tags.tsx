@@ -3,7 +3,8 @@ import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared";
-import { Tag } from "./TagDetails/Tag";
+import Tag from "./TagDetails/Tag";
+import TagCreate from "./TagDetails/TagCreate";
 import { TagList } from "./TagList";
 
 const Tags: React.FC = () => {
@@ -21,6 +22,7 @@ const Tags: React.FC = () => {
 
       <Switch>
         <Route exact path="/tags" component={TagList} />
+        <Route exact path="/tags/new" component={TagCreate} />
         <Route path="/tags/:id/:tab?" component={Tag} />
       </Switch>
     </>

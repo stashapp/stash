@@ -3,7 +3,8 @@ import { Route, Switch } from "react-router-dom";
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared";
-import { Studio } from "./StudioDetails/Studio";
+import Studio from "./StudioDetails/Studio";
+import StudioCreate from "./StudioDetails/StudioCreate";
 import { StudioList } from "./StudioList";
 
 const Studios: React.FC = () => {
@@ -20,6 +21,7 @@ const Studios: React.FC = () => {
       />
       <Switch>
         <Route exact path="/studios" component={StudioList} />
+        <Route exact path="/studios/new" component={StudioCreate} />
         <Route path="/studios/:id/:tab?" component={Studio} />
       </Switch>
     </>

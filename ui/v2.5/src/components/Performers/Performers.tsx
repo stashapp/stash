@@ -4,7 +4,8 @@ import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared";
 import { PersistanceLevel } from "src/hooks/ListHook";
-import { Performer } from "./PerformerDetails/Performer";
+import Performer from "./PerformerDetails/Performer";
+import PerformerCreate from "./PerformerDetails/PerformerCreate";
 import { PerformerList } from "./PerformerList";
 
 const Performers: React.FC = () => {
@@ -27,6 +28,7 @@ const Performers: React.FC = () => {
             <PerformerList persistState={PersistanceLevel.ALL} {...props} />
           )}
         />
+        <Route path="/performers/new" component={PerformerCreate} />
         <Route path="/performers/:id/:tab?" component={Performer} />
       </Switch>
     </>

@@ -5,12 +5,12 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 
 interface ITagDetails {
-  tag: Partial<GQL.TagDataFragment>;
+  tag: GQL.TagDataFragment;
 }
 
 export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
   function renderAliasesField() {
-    if (!tag.aliases?.length) {
+    if (!tag.aliases.length) {
       return;
     }
 

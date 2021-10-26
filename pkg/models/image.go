@@ -1,8 +1,46 @@
 package models
 
-type ImageReader interface {
-	Find(id int) (*Image, error)
+type ImageQueryOptions struct {
+	QueryOptions
+	ImageFilter *ImageFilterType
+
+	Megapixels bool
+	TotalSize  bool
+}
+
+type ImageQueryResult struct {
+	QueryResult
+	Megapixels float64
+	TotalSize  int
+
+	finder     ImageFinder
+	images     []*Image
+	resolveErr error
+}
+
+func NewImageQueryResult(finder ImageFinder) *ImageQueryResult {
+	return &ImageQueryResult{
+		finder: finder,
+	}
+}
+
+func (r *ImageQueryResult) Resolve() ([]*Image, error) {
+	// cache results
+	if r.images == nil && r.resolveErr == nil {
+		r.images, r.resolveErr = r.finder.FindMany(r.IDs)
+	}
+	return r.images, r.resolveErr
+}
+
+type ImageFinder interface {
+	// TODO - rename to Find and remove existing method
 	FindMany(ids []int) ([]*Image, error)
+}
+
+type ImageReader interface {
+	ImageFinder
+	// TODO - remove this in another PR
+	Find(id int) (*Image, error)
 	FindByChecksum(checksum string) (*Image, error)
 	FindByGalleryID(galleryID int) ([]*Image, error)
 	CountByGalleryID(galleryID int) (int, error)
@@ -16,7 +54,7 @@ type ImageReader interface {
 	// CountByStudioID(studioID int) (int, error)
 	// CountByTagID(tagID int) (int, error)
 	All() ([]*Image, error)
-	Query(imageFilter *ImageFilterType, findFilter *FindFilterType) ([]*Image, int, error)
+	Query(options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
 	GetGalleryIDs(imageID int) ([]int, error)
 	GetTagIDs(imageID int) ([]int, error)

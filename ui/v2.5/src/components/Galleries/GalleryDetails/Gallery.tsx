@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
+import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
   useFindGallery,
@@ -10,7 +11,7 @@ import {
 } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
-import * as Mousetrap from "mousetrap";
+import Mousetrap from "mousetrap";
 import { useToast } from "src/hooks";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
@@ -21,27 +22,26 @@ import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 import { GalleryScenesPanel } from "./GalleryScenesPanel";
 
+interface IProps {
+  gallery: GQL.GalleryDataFragment;
+}
+
 interface IGalleryParams {
-  id?: string;
   tab?: string;
 }
 
-export const Gallery: React.FC = () => {
-  const { tab = "images", id = "new" } = useParams<IGalleryParams>();
+export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
+  const { tab = "images" } = useParams<IGalleryParams>();
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const isNew = id === "new";
-
-  const { data, error, loading } = useFindGallery(id);
-  const gallery = data?.findGallery;
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
   const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
   const setActiveRightTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "images" ? "" : `/${newTab}`;
-      history.replace(`/galleries/${id}${tabParam}`);
+      history.replace(`/galleries/${gallery.id}${tabParam}`);
     }
   };
 
@@ -55,8 +55,8 @@ export const Gallery: React.FC = () => {
       await updateGallery({
         variables: {
           input: {
-            id: gallery?.id ?? "",
-            organized: !gallery?.organized,
+            id: gallery.id,
+            organized: !gallery.organized,
           },
         },
       });
@@ -119,7 +119,7 @@ export const Gallery: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
-          {gallery?.path ? (
+          {gallery.path ? (
             <Dropdown.Item
               key="rescan"
               className="bg-secondary text-white"
@@ -269,35 +269,6 @@ export const Gallery: React.FC = () => {
     };
   });
 
-  if (loading) {
-    return <LoadingIndicator />;
-  }
-
-  if (error) return <ErrorMessage error={error.message} />;
-
-  if (isNew)
-    return (
-      <div className="row new-view">
-        <div className="col-md-6">
-          <h2>
-            <FormattedMessage
-              id="actions.create_entity"
-              values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
-            />
-          </h2>
-          <GalleryEditPanel
-            isNew
-            gallery={undefined}
-            isVisible
-            onDelete={() => setIsDeleteAlertOpen(true)}
-          />
-        </div>
-      </div>
-    );
-
-  if (!gallery)
-    return <ErrorMessage error={`No gallery with id ${id} found.`} />;
-
   return (
     <div className="row">
       <Helmet>
@@ -329,3 +300,17 @@ export const Gallery: React.FC = () => {
     </div>
   );
 };
+
+const GalleryLoader: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { data, loading, error } = useFindGallery(id ?? "");
+
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!data?.findGallery)
+    return <ErrorMessage error={`No gallery found with id ${id}.`} />;
+
+  return <GalleryPage gallery={data.findGallery} />;
+};
+
+export default GalleryLoader;
