@@ -85,6 +85,14 @@ var names = []string{
 
 var imageBytes = []byte("imageBytes")
 
+var stashID = models.StashID{
+	StashID:  "StashID",
+	Endpoint: "Endpoint",
+}
+var stashIDs = []*models.StashID{
+	&stashID,
+}
+
 const image = "aW1hZ2VCeXRlcw=="
 
 var (
@@ -174,6 +182,9 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 			Time: updateTime,
 		},
 		Cover: image,
+		StashIDs: []models.StashID{
+			stashID,
+		},
 	}
 }
 
@@ -221,6 +232,9 @@ func TestToJSON(t *testing.T) {
 	mockSceneReader.On("GetCover", sceneID).Return(imageBytes, nil).Once()
 	mockSceneReader.On("GetCover", noImageID).Return(nil, nil).Once()
 	mockSceneReader.On("GetCover", errImageID).Return(nil, imageErr).Once()
+
+	mockSceneReader.On("GetStashIDs", sceneID).Return(stashIDs, nil).Once()
+	mockSceneReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		scene := s.input
