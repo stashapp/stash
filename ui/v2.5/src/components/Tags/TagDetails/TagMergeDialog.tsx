@@ -6,7 +6,7 @@ import { FormUtils } from "src/utils";
 import { useTagsMerge } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks";
-import { useHistory } from "react-router";
+import { useHistory } from "react-router-dom";
 
 interface ITagMergeModalProps {
   show: boolean;

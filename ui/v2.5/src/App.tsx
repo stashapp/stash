@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
-import { IntlProvider } from "react-intl";
+import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
 import { mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
@@ -32,7 +32,7 @@ import { Setup } from "./components/Setup/Setup";
 import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
-import ConfigurationProvider from "./hooks/Config";
+import { ConfigurationProvider } from "./hooks/Config";
 
 initPolyfills();
 
@@ -41,7 +41,7 @@ MousetrapPause(Mousetrap);
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
 
-const intlFormats = {
+const intlFormats: CustomFormats = {
   date: {
     long: { year: "numeric", month: "long", day: "numeric" },
   },

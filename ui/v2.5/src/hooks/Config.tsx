@@ -24,5 +24,3 @@ export const ConfigurationProvider: React.FC<IContext> = ({
     </ConfigurationContext.Provider>
   );
 };
-
-export default ConfigurationProvider;

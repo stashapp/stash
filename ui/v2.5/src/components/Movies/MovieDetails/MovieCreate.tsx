@@ -6,7 +6,7 @@ import { LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { MovieEditPanel } from "./MovieEditPanel";
 
-export const MovieCreate: React.FC = () => {
+const MovieCreate: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
 
