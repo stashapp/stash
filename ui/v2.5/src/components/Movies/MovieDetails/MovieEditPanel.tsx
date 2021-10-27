@@ -10,6 +10,7 @@ import {
 import {
   LoadingIndicator,
   StudioSelect,
+  Icon,
   DetailsEditNavbar,
   DurationInput,
 } from "src/components/Shared";
@@ -460,14 +461,15 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
               />
               <InputGroup.Append>
                 <Button
-                  className="scrape-url-button"
-                  variant="primary"
+                  className="scrape-url-button text-input"
+                  variant="secondary"
                   onClick={onScrapeMovieURL}
                   disabled={
                     !formik.values.url || !urlScrapable(formik.values.url)
                   }
+                  title={intl.formatMessage({ id: "actions.scrape" })}
                 >
-                  <FormattedMessage id="actions.scrape" />
+                  <Icon icon="file-download" />
                 </Button>
               </InputGroup.Append>
             </InputGroup>

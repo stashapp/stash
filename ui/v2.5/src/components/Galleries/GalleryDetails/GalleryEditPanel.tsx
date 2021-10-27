@@ -459,14 +459,15 @@ export const GalleryEditPanel: React.FC<
                   />
                   <InputGroup.Append>
                     <Button
-                      className="scrape-url-button"
-                      variant="primary"
+                      className="scrape-url-button text-input"
+                      variant="secondary"
                       onClick={onScrapeGalleryURL}
                       disabled={
                         !formik.values.url || !urlScrapable(formik.values.url)
                       }
+                      title={intl.formatMessage({ id: "actions.scrape" })}
                     >
-                      <FormattedMessage id="actions.scrape" />
+                      <Icon icon="file-download" />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>
