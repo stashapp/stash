@@ -10,19 +10,12 @@ import {
 import {
   LoadingIndicator,
   StudioSelect,
-  Icon,
   DetailsEditNavbar,
   DurationInput,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import {
-  Modal as BSModal,
-  Form,
-  Button,
-  Col,
-  Row,
-  InputGroup,
-} from "react-bootstrap";
+import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
 import { DurationUtils, FormUtils, ImageUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
@@ -453,26 +446,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
             title: intl.formatMessage({ id: "url" }),
           })}
           <Col xs={9}>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                placeholder={intl.formatMessage({ id: "url" })}
-                {...formik.getFieldProps("url")}
-              />
-              <InputGroup.Append>
-                <Button
-                  className="scrape-url-button text-input"
-                  variant="secondary"
-                  onClick={onScrapeMovieURL}
-                  disabled={
-                    !formik.values.url || !urlScrapable(formik.values.url)
-                  }
-                  title={intl.formatMessage({ id: "actions.scrape" })}
-                >
-                  <Icon icon="file-download" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
+            <URLField
+              {...formik.getFieldProps("url")}
+              onScrapeClick={onScrapeMovieURL}
+              urlScrapable={urlScrapable}
+            />
           </Col>
         </Form.Group>
 

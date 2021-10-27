@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Col,
-  InputGroup,
-  Row,
-  Badge,
-  Dropdown,
-} from "react-bootstrap";
+import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -28,6 +20,7 @@ import {
   CollapseButton,
   Modal,
   TagSelect,
+  URLField,
 } from "src/components/Shared";
 import { ImageUtils, getStashIDs } from "src/utils";
 import { getCountryByISO } from "src/utils/country";
@@ -949,26 +942,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="url" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                placeholder="URL"
-                {...formik.getFieldProps("url")}
-              />
-              <InputGroup.Append>
-                <Button
-                  className="scrape-url-button text-input"
-                  variant="secondary"
-                  onClick={onScrapePerformerURL}
-                  disabled={
-                    !formik.values.url || !urlScrapable(formik.values.url)
-                  }
-                  title={intl.formatMessage({ id: "actions.scrape" })}
-                >
-                  <Icon icon="file-download" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
+            <URLField
+              {...formik.getFieldProps("url")}
+              onScrapeClick={onScrapePerformerURL}
+              urlScrapable={urlScrapable}
+            />
           </Col>
         </Form.Group>
 

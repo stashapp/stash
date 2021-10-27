@@ -5,7 +5,6 @@ import {
   Dropdown,
   DropdownButton,
   Form,
-  InputGroup,
   Col,
   Row,
   ButtonGroup,
@@ -29,6 +28,7 @@ import {
   Icon,
   LoadingIndicator,
   ImageInput,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
@@ -639,27 +639,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 </Form.Label>
               </Col>
               <Col xs={9}>
-                <InputGroup className="mr-2 flex-grow-1">
-                  <Form.Control
-                    className="text-input"
-                    placeholder={intl.formatMessage({ id: "url" })}
-                    {...formik.getFieldProps("url")}
-                    isInvalid={!!formik.getFieldMeta("url").error}
-                  />
-                  <InputGroup.Append>
-                    <Button
-                      className="scrape-url-button text-input"
-                      variant="secondary"
-                      onClick={onScrapeSceneURL}
-                      disabled={
-                        !formik.values.url || !urlScrapable(formik.values.url)
-                      }
-                      title={intl.formatMessage({ id: "actions.scrape" })}
-                    >
-                      <Icon icon="file-download" />
-                    </Button>
-                  </InputGroup.Append>
-                </InputGroup>
+                <URLField
+                  {...formik.getFieldProps("url")}
+                  onScrapeClick={onScrapeSceneURL}
+                  urlScrapable={urlScrapable}
+                  isInvalid={!!formik.getFieldMeta("url").error}
+                />
               </Col>
             </Form.Group>
             {renderTextField(
