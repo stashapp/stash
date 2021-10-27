@@ -108,25 +108,6 @@ export class ScenePlayerImpl extends React.Component<
       }
     });
 
-    //
-    this.player.on("meta", (metadata: any) => {
-      if (
-        metadata.metadataType === "media" &&
-        !metadata.width &&
-        !metadata.height
-      ) {
-        // Occurs during preload when videos with supported audio/unsupported video are preloaded.
-        // Treat this as a decoding error and try the next source without playing.
-        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
-        const currentFile = this.player.getPlaylistItem().file;
-        if (currentFile != null && !currentFile.includes("m3u8")) {
-          const state = this.player.getState();
-          const play = state === "buffering" || state === "playing";
-          this.handleError(play);
-        }
-      }
-    });
-
     this.player.on("firstFrame", () => {
       if (this.props.timestamp > 0) {
         this.player.seek(this.props.timestamp);

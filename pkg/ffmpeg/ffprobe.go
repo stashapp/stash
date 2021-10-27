@@ -53,6 +53,9 @@ const (
 	MimeMp4            string     = "video/mp4"
 	MimeHLS            string     = "application/vnd.apple.mpegurl"
 	MimeMpegts         string     = "video/MP2T"
+	MimeAudioMpeg      string     = "audio/mpeg"
+	MimeAudioOgg       string     = "audio/ogg"
+	MimeAudioWav       string     = "audio/wav"
 )
 
 // only support H264 by default, since Safari does not support VP8/VP9
@@ -141,6 +144,21 @@ func IsValidAudioForContainer(audio AudioCodec, format Container) bool {
 		return IsValidAudio(audio, validAudioForWebm)
 	case Mp4:
 		return IsValidAudio(audio, validAudioForMp4)
+	}
+	return false
+
+}
+
+func IsAudioContainer(format Container) bool {
+	switch format {
+	case "mp3":
+		return true
+	case "flac":
+		return true
+	case "ogg":
+		return true
+	case "wav":
+		return true
 	}
 	return false
 

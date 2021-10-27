@@ -264,6 +264,14 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 			MimeType: &mimeMp4,
 			Label:    &label,
 		})
+	} else if GetAudioMimeType(scene.Format.String) != "" {
+		label := "Direct audio stream"
+		mimetype := GetAudioMimeType(scene.Format.String)
+		ret = append(ret, &models.SceneStreamEndpoint{
+			URL:      directStreamURL,
+			MimeType: &mimetype,
+			Label:    &label,
+		})
 	}
 
 	// only add mkv stream endpoint if the scene container is an mkv already
@@ -362,4 +370,16 @@ func HasTranscode(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) bool
 	transcodePath := instance.Paths.Scene.GetTranscodePath(sceneHash)
 	ret, _ := utils.FileExists(transcodePath)
 	return ret
+}
+
+func GetAudioMimeType(format string) string {
+	switch format {
+	case "mp3":
+		return ffmpeg.MimeAudioMpeg
+	case "wav":
+		return ffmpeg.MimeAudioWav
+	case "ogg":
+		return ffmpeg.MimeAudioOgg
+	}
+	return ""
 }
