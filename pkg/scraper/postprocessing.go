@@ -17,12 +17,20 @@ import (
 func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (models.ScrapedContent, error) {
 	// Analyze the concrete type, call the right post-processing function
 	switch v := content.(type) {
+	case *models.ScrapedPerformer:
+		return c.postScrapePerformer(ctx, v)
 	case models.ScrapedPerformer:
 		return c.postScrapePerformer(ctx, &v)
+	case *models.ScrapedScene:
+		return c.postScrapeScene(ctx, v)
 	case models.ScrapedScene:
 		return c.postScrapeScene(ctx, &v)
+	case *models.ScrapedGallery:
+		return c.postScrapeGallery(ctx, v)
 	case models.ScrapedGallery:
 		return c.postScrapeGallery(ctx, &v)
+	case *models.ScrapedMovie:
+		return c.postScrapeMovie(ctx, v)
 	case models.ScrapedMovie:
 		return c.postScrapeMovie(ctx, &v)
 	}
