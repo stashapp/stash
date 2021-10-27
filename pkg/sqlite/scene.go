@@ -469,7 +469,7 @@ func (qb *sceneQueryBuilder) queryGroupedFields(options models.SceneQueryOptions
 	out := struct {
 		Total    int
 		Duration float64
-		Size     int
+		Size     float64
 	}{}
 	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
