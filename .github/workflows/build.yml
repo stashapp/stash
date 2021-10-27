@@ -54,8 +54,11 @@ jobs:
 
     - name: Start build container
       run: |
-        mkdir -p .go-cache
-        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
+        mkdir -pv .go-cache
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
+    
+    - name: Test cache
+      run: docker exec -t build /bin/bash -c "ls /root/.cache/go-build"
 
     - name: Pre-install
       run: docker exec -t build /bin/bash -c "make pre-ui"
@@ -88,12 +91,13 @@ jobs:
     - name: Compile for all supported platforms
       run: |
         docker exec -t build /bin/bash -c "make cross-compile-windows"
-        docker exec -t build /bin/bash -c "make cross-compile-osx-intel"
-        docker exec -t build /bin/bash -c "make cross-compile-osx-applesilicon"
-        docker exec -t build /bin/bash -c "make cross-compile-linux"
-        docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
-        docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
-        docker exec -t build /bin/bash -c "make cross-compile-pi"
+        
+      # docker exec -t build /bin/bash -c "make cross-compile-osx-intel"
+      # docker exec -t build /bin/bash -c "make cross-compile-osx-applesilicon"
+      # docker exec -t build /bin/bash -c "make cross-compile-linux"
+      # docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
+      # docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
+      # docker exec -t build /bin/bash -c "make cross-compile-pi"
 
     - name: Cleanup build container
       run: docker rm -f -v build
