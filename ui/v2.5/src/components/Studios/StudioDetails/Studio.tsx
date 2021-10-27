@@ -170,7 +170,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   return (
     <div className="row">
-      <div className="studio-detils col-md-4">
+      <div className="studio-details col-md-4">
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
