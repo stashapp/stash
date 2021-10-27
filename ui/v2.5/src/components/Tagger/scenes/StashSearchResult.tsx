@@ -79,10 +79,12 @@ const getFingerprintStatus = (
   const checksumMatch = scene.fingerprints?.some(
     (f) => f.hash === stashScene.checksum || f.hash === stashScene.oshash
   );
-  const phashMatches =
-    scene.fingerprints?.filter(
-      (f) => f.algorithm === "PHASH" && distance(f.hash, stashScene.phash) <= 8
-    ) ?? [];
+  const phashMatches = stashScene.phash
+    ? scene.fingerprints?.filter(
+        (f) =>
+          f.algorithm === "PHASH" && distance(f.hash, stashScene.phash) <= 8
+      ) ?? []
+    : [];
 
   const phashList = (
     <div className="m-2">
