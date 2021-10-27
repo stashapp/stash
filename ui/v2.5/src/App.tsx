@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider } from "react-intl";
+import { Helmet } from "react-helmet";
 import { mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
@@ -30,7 +31,7 @@ import Images from "./components/Images/Images";
 import { Setup } from "./components/Setup/Setup";
 import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
-import { LoadingIndicator } from "./components/Shared";
+import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import ConfigurationProvider from "./hooks/Config";
 
 initPolyfills();
@@ -145,6 +146,10 @@ export const App: React.FC = () => {
         >
           <ToastProvider>
             <LightboxProvider>
+              <Helmet
+                titleTemplate={`%s ${TITLE_SUFFIX}`}
+                defaultTitle="Stash"
+              />
               {maybeRenderNavbar()}
               <div className="main container-fluid">{renderContent()}</div>
             </LightboxProvider>

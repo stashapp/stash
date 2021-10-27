@@ -33,6 +33,7 @@ import {
   stringToGender,
 } from "src/utils/gender";
 import { ConfigurationContext } from "src/hooks/Config";
+import { stashboxDisplayName } from "src/utils/stashbox";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -573,7 +574,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             className="minimal"
             onClick={() => onScraperSelected({ ...s, index })}
           >
-            {s.name ?? "Stash-Box"}
+            {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
         ))}
         {queryableScrapers

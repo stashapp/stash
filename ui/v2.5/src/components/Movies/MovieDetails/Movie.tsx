@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -174,6 +175,10 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
   // TODO: CSS class
   return (
     <div className="row">
+      <Helmet>
+        <title>{movie?.name}</title>
+      </Helmet>
+
       <div className="movie-details mb-3 col col-xl-4 col-lg-6">
         <div className="logo w-100">
           {encodingImage ? (

@@ -3,6 +3,7 @@ import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
@@ -566,6 +567,9 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
 
   return (
     <div className="row">
+      <Helmet>
+        <title>{scene.title ?? TextUtils.fileNameFromPath(scene.path)}</title>
+      </Helmet>
       {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
       <div

@@ -112,7 +112,9 @@ function renderScrapedTagsRow(
       }
       newValues={newTags}
       onChange={onChange}
-      onCreateNew={onCreateNew}
+      onCreateNew={(i) => {
+        if (onCreateNew) onCreateNew(newTags[i]);
+      }}
     />
   );
 }
