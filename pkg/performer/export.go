@@ -101,9 +101,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 		ret = append(ret, newJoin)
 	}
 
-	if len(stashIDs) > 0 {
-		newPerformerJSON.StashIDs = ret
-	}
+	newPerformerJSON.StashIDs = ret
 
 	return &newPerformerJSON, nil
 }

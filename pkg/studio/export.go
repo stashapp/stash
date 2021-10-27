@@ -68,9 +68,7 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		ret = append(ret, newJoin)
 	}
 
-	if len(stashIDs) > 0 {
-		newStudioJSON.StashIDs = ret
-	}
+	newStudioJSON.StashIDs = ret
 
 	return &newStudioJSON, nil
 }

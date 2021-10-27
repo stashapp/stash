@@ -75,9 +75,7 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 		ret = append(ret, newJoin)
 	}
 
-	if len(stashIDs) > 0 {
-		newSceneJSON.StashIDs = ret
-	}
+	newSceneJSON.StashIDs = ret
 
 	return &newSceneJSON, nil
 }
