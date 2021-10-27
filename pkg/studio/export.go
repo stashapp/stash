@@ -58,5 +58,19 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		newStudioJSON.Image = utils.GetBase64StringFromData(image)
 	}
 
+	stashIDs, _ := reader.GetStashIDs(studio.ID)
+	var ret []models.StashID
+	for _, stashID := range stashIDs {
+		newJoin := models.StashID{
+			StashID:  stashID.StashID,
+			Endpoint: stashID.Endpoint,
+		}
+		ret = append(ret, newJoin)
+	}
+
+	if len(stashIDs) > 0 {
+		newStudioJSON.StashIDs = ret
+	}
+
 	return &newStudioJSON, nil
 }

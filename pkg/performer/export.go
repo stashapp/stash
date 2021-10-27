@@ -91,6 +91,20 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 		newPerformerJSON.Image = utils.GetBase64StringFromData(image)
 	}
 
+	stashIDs, _ := reader.GetStashIDs(performer.ID)
+	var ret []models.StashID
+	for _, stashID := range stashIDs {
+		newJoin := models.StashID{
+			StashID:  stashID.StashID,
+			Endpoint: stashID.Endpoint,
+		}
+		ret = append(ret, newJoin)
+	}
+
+	if len(stashIDs) > 0 {
+		newPerformerJSON.StashIDs = ret
+	}
+
 	return &newPerformerJSON, nil
 }
 
