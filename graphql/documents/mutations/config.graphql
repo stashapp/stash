@@ -30,6 +30,12 @@ mutation ConfigureScraping($input: ConfigScrapingInput!) {
   }
 }
 
+mutation ConfigureDefaults($input: ConfigDefaultSettingsInput!) {
+  configureDefaults(input: $input) {
+    ...ConfigDefaultSettingsData
+  }
+}
+
 mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {
   generateAPIKey(input: $input)
 }

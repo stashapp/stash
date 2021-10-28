@@ -100,6 +100,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
             return (
               <OverlayTrigger
                 overlay={<Tooltip id="edit">{button.text}</Tooltip>}
+                key={button.text}
               >
                 <Button
                   variant={button.buttonVariant ?? "secondary"}

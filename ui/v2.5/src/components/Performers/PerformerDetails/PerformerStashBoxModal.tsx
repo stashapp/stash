@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import { Modal, LoadingIndicator } from "src/components/Shared";
+import { stashboxDisplayName } from "src/utils/stashbox";
 
 const CLASSNAME = "PerformerScrapeModal";
 const CLASSNAME_LIST = `${CLASSNAME}-list`;
@@ -52,7 +53,10 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
     <Modal
       show
       onHide={onHide}
-      header={`Scrape performer from ${instance.name ?? "Stash-Box"}`}
+      header={`Scrape performer from ${stashboxDisplayName(
+        instance.name,
+        instance.index
+      )}`}
       accept={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: onHide,

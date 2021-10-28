@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -117,6 +118,29 @@ type ScenePartial struct {
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 	Interactive *bool                `db:"interactive" json:"interactive"`
+}
+
+// UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
+func (s ScenePartial) UpdateInput() SceneUpdateInput {
+	boolPtrCopy := func(v *bool) *bool {
+		if v == nil {
+			return nil
+		}
+
+		vv := *v
+		return &vv
+	}
+
+	return SceneUpdateInput{
+		ID:        strconv.Itoa(s.ID),
+		Title:     nullStringPtrToStringPtr(s.Title),
+		Details:   nullStringPtrToStringPtr(s.Details),
+		URL:       nullStringPtrToStringPtr(s.URL),
+		Date:      s.Date.StringPtr(),
+		Rating:    nullInt64PtrToIntPtr(s.Rating),
+		Organized: boolPtrCopy(s.Organized),
+		StudioID:  nullInt64PtrToStringPtr(s.StudioID),
+	}
 }
 
 func (s *ScenePartial) SetFile(f File) {

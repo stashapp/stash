@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -299,6 +300,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   return (
     <div id="performer-page" className="row">
+      <Helmet>
+        <title>{performer.name}</title>
+      </Helmet>
+
       <div className="performer-image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />

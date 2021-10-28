@@ -28,13 +28,15 @@ import {
   Icon,
   LoadingIndicator,
   ImageInput,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
-import { Prompt } from "react-router";
+import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
+import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
@@ -396,7 +398,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               key={s.endpoint}
               onClick={() => onScrapeQueryClicked({ stash_box_index: index })}
             >
-              {s.name ?? "Stash-Box"}
+              {stashboxDisplayName(s.name, index)}
             </Dropdown.Item>
           ))}
           {queryableScrapers.map((s) => (
@@ -463,7 +465,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             key={s.endpoint}
             onClick={() => onScrapeClicked({ stash_box_index: index })}
           >
-            {s.name ?? "Stash-Box"}
+            {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
         ))}
         {fragmentScrapers.map((s) => (
@@ -573,21 +575,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   }
 
-  function maybeRenderScrapeButton() {
-    if (!formik.values.url || !urlScrapable(formik.values.url)) {
-      return undefined;
-    }
-    return (
-      <Button
-        className="minimal scrape-url-button"
-        onClick={onScrapeSceneURL}
-        title="Scrape"
-      >
-        <Icon className="fa-fw" icon="file-download" />
-      </Button>
-    );
-  }
-
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={title} as={Row}>
@@ -651,15 +638,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 <Form.Label className="col-form-label">
                   <FormattedMessage id="url" />
                 </Form.Label>
-                <div className="float-right scrape-button-container">
-                  {maybeRenderScrapeButton()}
-                </div>
               </Col>
               <Col xs={9}>
-                <Form.Control
-                  className="text-input"
-                  placeholder={intl.formatMessage({ id: "url" })}
+                <URLField
                   {...formik.getFieldProps("url")}
+                  onScrapeClick={onScrapeSceneURL}
+                  urlScrapable={urlScrapable}
                   isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>

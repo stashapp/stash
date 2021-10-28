@@ -212,6 +212,16 @@ func (c Cache) ListMovieScrapers() []*models.Scraper {
 	return ret
 }
 
+// GetScraper returns the scraper matching the provided id.
+func (c Cache) GetScraper(scraperID string) *models.Scraper {
+	ret := c.findScraper(scraperID)
+	if ret != nil {
+		return ret.Spec
+	}
+
+	return nil
+}
+
 func (c Cache) findScraper(scraperID string) *scraper {
 	for _, s := range c.scrapers {
 		if s.ID == scraperID {

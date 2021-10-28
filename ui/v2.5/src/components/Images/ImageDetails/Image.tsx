@@ -2,6 +2,7 @@ import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import {
   useFindImage,
   useImageIncrementO,
@@ -262,6 +263,10 @@ export const Image: React.FC = () => {
 
   return (
     <div className="row">
+      <Helmet>
+        <title>{image.title ?? TextUtils.fileNameFromPath(image.path)}</title>
+      </Helmet>
+
       {maybeRenderDeleteDialog()}
       <div className="image-tabs order-xl-first order-last">
         <div className="d-none d-xl-block">
