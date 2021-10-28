@@ -23,7 +23,7 @@ import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
-import IdentifyDialog from "../Dialogs/IdentifyDialog/IdentifyDialog";
+import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
