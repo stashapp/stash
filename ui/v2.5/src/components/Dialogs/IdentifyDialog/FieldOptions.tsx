@@ -311,9 +311,15 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
       <Table responsive className="field-options-table">
         <thead>
           <tr>
-            <th className="w-25"><FormattedMessage id="config.tasks.identify.field"/></th>
-            <th className="w-25"><FormattedMessage id="config.tasks.identify.strategy"/></th>
-            <th className="w-25"><FormattedMessage id="config.tasks.identify.create_missing"/></th>
+            <th className="w-25">
+              <FormattedMessage id="config.tasks.identify.field" />
+            </th>
+            <th className="w-25">
+              <FormattedMessage id="config.tasks.identify.strategy" />
+            </th>
+            <th className="w-25">
+              <FormattedMessage id="config.tasks.identify.create_missing" />
+            </th>
             {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <th className="w-25" />
           </tr>
