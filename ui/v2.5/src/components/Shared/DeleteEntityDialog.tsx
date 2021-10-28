@@ -104,7 +104,7 @@ const DeleteEntityDialog: React.FC<IDeleteEntityDialogProps> = ({
       </p>
       <ul>
         {selected.slice(0, 10).map((s) => (
-          <li>{s.name}</li>
+          <li key={s.name}>{s.name}</li>
         ))}
         {selected.length > 10 && (
           <FormattedMessage

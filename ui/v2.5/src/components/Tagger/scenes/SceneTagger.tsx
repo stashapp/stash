@@ -3,9 +3,10 @@ import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
+
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "./context";
+import { TaggerStateContext } from "../context";
 import Config from "./Config";
 import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";

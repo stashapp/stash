@@ -6,7 +6,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 const separatorChars = `.\-_ `
@@ -18,7 +20,7 @@ func getPathQueryRegex(name string) string {
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
-	ret := strings.Replace(name, " ", separator+"*", -1)
+	ret := strings.ReplaceAll(name, " ", separator+"*")
 	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
 	return ret
 }
@@ -66,7 +68,7 @@ func nameMatchesPath(name, path string) bool {
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
-	reStr := strings.Replace(name, " ", separator+"*", -1)
+	reStr := strings.ReplaceAll(name, " ", separator+"*")
 	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
 
 	re := regexp.MustCompile(reStr)
@@ -185,7 +187,7 @@ func scenePathsFilter(paths []string) *models.SceneFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{
@@ -211,7 +213,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	filter.And = scenePathsFilter(paths)
 
 	pp := models.PerPageAll
-	scenes, _, err := sceneReader.Query(&filter, &models.FindFilterType{
+	scenes, err := scene.Query(sceneReader, &filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
@@ -249,7 +251,7 @@ func imagePathsFilter(paths []string) *models.ImageFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{
@@ -275,7 +277,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	filter.And = imagePathsFilter(paths)
 
 	pp := models.PerPageAll
-	images, _, err := imageReader.Query(&filter, &models.FindFilterType{
+	images, err := image.Query(imageReader, &filter, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
@@ -313,7 +315,7 @@ func galleryPathsFilter(paths []string) *models.GalleryFilterType {
 		or = newOr
 
 		if !strings.HasSuffix(p, sep) {
-			p = p + sep
+			p += sep
 		}
 
 		or.Path = &models.StringCriterionInput{

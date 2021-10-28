@@ -63,7 +63,9 @@ function renderScrapedStudioRow(
       }
       onChange={onChange}
       newValues={newStudio ? [newStudio] : undefined}
-      onCreateNew={onCreateNew}
+      onCreateNew={() => {
+        if (onCreateNew && newStudio) onCreateNew(newStudio);
+      }}
     />
   );
 }
@@ -115,7 +117,9 @@ function renderScrapedPerformersRow(
       }
       onChange={onChange}
       newValues={performersCopy}
-      onCreateNew={onCreateNew}
+      onCreateNew={(i) => {
+        if (onCreateNew) onCreateNew(newPerformers[i]);
+      }}
     />
   );
 }
@@ -167,7 +171,9 @@ function renderScrapedMoviesRow(
       }
       onChange={onChange}
       newValues={moviesCopy}
-      onCreateNew={onCreateNew}
+      onCreateNew={(i) => {
+        if (onCreateNew) onCreateNew(newMovies[i]);
+      }}
     />
   );
 }
@@ -214,7 +220,9 @@ function renderScrapedTagsRow(
       }
       newValues={newTags}
       onChange={onChange}
-      onCreateNew={onCreateNew}
+      onCreateNew={(i) => {
+        if (onCreateNew) onCreateNew(newTags[i]);
+      }}
     />
   );
 }

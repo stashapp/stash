@@ -50,7 +50,7 @@ export class ScrapeResult<T> {
 }
 
 interface IHasName {
-  name: string;
+  name: string | undefined;
 }
 
 interface IScrapedFieldProps<T> {
@@ -64,7 +64,7 @@ interface IScrapedRowProps<T, V extends IHasName>
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   onChange: (value: ScrapeResult<T>) => void;
   newValues?: V[];
-  onCreateNew?: (newValue: V) => void;
+  onCreateNew?: (index: number) => void;
 }
 
 function renderButtonIcon(selected: boolean) {
@@ -102,12 +102,12 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
 
     const ret = (
       <>
-        {props.newValues!.map((t) => (
+        {props.newValues!.map((t, i) => (
           <Badge
             className="tag-item"
             variant="secondary"
             key={t.name}
-            onClick={() => props.onCreateNew!(t)}
+            onClick={() => props.onCreateNew!(i)}
           >
             {t.name}
             <Button className="minimal ml-2">

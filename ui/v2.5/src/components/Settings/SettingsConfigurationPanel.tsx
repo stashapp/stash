@@ -9,7 +9,8 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import StashBoxConfiguration, {
+import {
+  StashBoxConfiguration,
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
@@ -47,7 +48,7 @@ export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
       <Form.Group>
         {props.excludes &&
           props.excludes.map((regexp, i) => (
-            <InputGroup>
+            <InputGroup key={regexp}>
               <Form.Control
                 className="col col-sm-6 text-input"
                 value={regexp}

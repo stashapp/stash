@@ -402,6 +402,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             itemsPerPage={pageSize}
             currentPage={currentPage}
             totalItems={scenes.length}
+            metadataByline={[]}
             onChangePage={(newPage) =>
               setQuery({ page: newPage === 1 ? undefined : newPage })
             }

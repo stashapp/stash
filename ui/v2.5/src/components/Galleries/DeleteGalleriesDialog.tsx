@@ -126,7 +126,9 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
         <Form.Check
           id="delete-file"
           checked={deleteFile}
-          label="Delete zip file and any images not attached to any other gallery."
+          label={intl.formatMessage({
+            id: "actions.delete_gallery_files",
+          })}
           onChange={() => setDeleteFile(!deleteFile)}
         />
         <Form.Check

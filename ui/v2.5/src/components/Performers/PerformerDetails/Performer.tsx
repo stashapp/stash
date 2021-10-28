@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -18,6 +19,7 @@ import {
 } from "src/components/Shared";
 import { useLightbox, useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
@@ -26,23 +28,21 @@ import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 
+interface IProps {
+  performer: GQL.PerformerDataFragment;
+}
 interface IPerformerParams {
-  id?: string;
   tab?: string;
 }
 
-export const Performer: React.FC = () => {
+const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const Toast = useToast();
   const history = useHistory();
   const intl = useIntl();
-  const { tab = "details", id = "new" } = useParams<IPerformerParams>();
-  const isNew = id === "new";
+  const { tab = "details" } = useParams<IPerformerParams>();
 
-  // Performer state
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-  const { data, loading: performerLoading, error } = useFindPerformer(id);
-  const performer = data?.findPerformer || ({} as Partial<GQL.Performer>);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
@@ -50,7 +50,7 @@ export const Performer: React.FC = () => {
   const activeImage =
     imagePreview === undefined
       ? performer.image_path ?? ""
-      : imagePreview ?? (isNew ? "" : `${performer.image_path}&default=true`);
+      : imagePreview ?? `${performer.image_path}&default=true`;
   const lightboxImages = useMemo(
     () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
     [activeImage]
@@ -60,12 +60,8 @@ export const Performer: React.FC = () => {
     images: lightboxImages,
   });
 
-  // Network state
-  const [loading, setIsLoading] = useState(false);
-  const isLoading = performerLoading || loading;
-
   const [updatePerformer] = usePerformerUpdate();
-  const [deletePerformer] = usePerformerDestroy();
+  const [deletePerformer, { loading: isDestroying }] = usePerformerDestroy();
 
   const activeTabKey =
     tab === "scenes" ||
@@ -79,7 +75,7 @@ export const Performer: React.FC = () => {
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "details" ? "" : `/${newTab}`;
-      history.replace(`/performers/${id}${tabParam}`);
+      history.replace(`/performers/${performer.id}${tabParam}`);
     }
   };
 
@@ -97,6 +93,30 @@ export const Performer: React.FC = () => {
     Mousetrap.bind("o", () => setActiveTabKey("operations"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
 
+    // numeric keypresses get caught by jwplayer, so blur the element
+    // if the rating sequence is started
+    Mousetrap.bind("r", () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      Mousetrap.bind("0", () => setRating(NaN));
+      Mousetrap.bind("1", () => setRating(1));
+      Mousetrap.bind("2", () => setRating(2));
+      Mousetrap.bind("3", () => setRating(3));
+      Mousetrap.bind("4", () => setRating(4));
+      Mousetrap.bind("5", () => setRating(5));
+
+      setTimeout(() => {
+        Mousetrap.unbind("0");
+        Mousetrap.unbind("1");
+        Mousetrap.unbind("2");
+        Mousetrap.unbind("3");
+        Mousetrap.unbind("4");
+        Mousetrap.unbind("5");
+      }, 1000);
+    });
+
     return () => {
       Mousetrap.unbind("a");
       Mousetrap.unbind("e");
@@ -106,19 +126,12 @@ export const Performer: React.FC = () => {
     };
   });
 
-  if (isLoading) return <LoadingIndicator />;
-  if (error) return <ErrorMessage error={error.message} />;
-  if (!performer.id && !isNew)
-    return <ErrorMessage error={`No performer found with id ${id}.`} />;
-
   async function onDelete() {
-    setIsLoading(true);
     try {
-      await deletePerformer({ variables: { id } });
+      await deletePerformer({ variables: { id: performer.id } });
     } catch (e) {
       Toast.error(e);
     }
-    setIsLoading(false);
 
     // redirect to performers page
     history.push("/performers");
@@ -150,7 +163,7 @@ export const Performer: React.FC = () => {
         <PerformerEditPanel
           performer={performer}
           isVisible={activeTabKey === "edit"}
-          isNew={isNew}
+          isNew={false}
           onDelete={onDelete}
           onImageChange={onImageChange}
           onImageEncoding={onImageEncoding}
@@ -203,6 +216,19 @@ export const Performer: React.FC = () => {
           input: {
             id: performer.id,
             favorite: v,
+          },
+        },
+      });
+    }
+  }
+
+  function setRating(v: number | null) {
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            rating: v,
           },
         },
       });
@@ -265,41 +291,19 @@ export const Performer: React.FC = () => {
     </span>
   );
 
-  function renderPerformerImage() {
-    if (imageEncoding) {
-      return <LoadingIndicator message="Encoding image..." />;
-    }
-    if (activeImage) {
-      return <img className="performer" src={activeImage} alt="Performer" />;
-    }
-  }
-
-  if (isNew)
+  if (isDestroying)
     return (
-      <div className="row new-view" id="performer-page">
-        <div className="performer-image-container col-md-4 text-center">
-          {renderPerformerImage()}
-        </div>
-        <div className="col-md-8">
-          <h2>Create Performer</h2>
-          <PerformerEditPanel
-            performer={performer}
-            isVisible
-            isNew
-            onDelete={onDelete}
-            onImageChange={onImageChange}
-            onImageEncoding={onImageEncoding}
-          />
-        </div>
-      </div>
+      <LoadingIndicator
+        message={`Deleting performer ${performer.id}: ${performer.name}`}
+      />
     );
-
-  if (!performer.id) {
-    return <LoadingIndicator />;
-  }
 
   return (
     <div id="performer-page" className="row">
+      <Helmet>
+        <title>{performer.name}</title>
+      </Helmet>
+
       <div className="performer-image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
@@ -317,6 +321,10 @@ export const Performer: React.FC = () => {
               {performer.name}
               {renderIcons()}
             </h2>
+            <RatingStars
+              value={performer.rating ?? undefined}
+              onSetRating={(value) => setRating(value ?? null)}
+            />
             {maybeRenderAliases()}
             {maybeRenderAge()}
           </div>
@@ -328,3 +336,17 @@ export const Performer: React.FC = () => {
     </div>
   );
 };
+
+const PerformerLoader: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { data, loading, error } = useFindPerformer(id ?? "");
+
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!data?.findPerformer)
+    return <ErrorMessage error={`No performer found with id ${id}.`} />;
+
+  return <PerformerPage performer={data.findPerformer} />;
+};
+
+export default PerformerLoader;

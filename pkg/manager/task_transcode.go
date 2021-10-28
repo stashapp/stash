@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -14,7 +17,11 @@ type GenerateTranscodeTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateTranscodeTask) Start() {
+func (t *GenerateTranscodeTask) GetDescription() string {
+	return fmt.Sprintf("Generating transcode for %s", t.Scene.Path)
+}
+
+func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return
@@ -69,7 +76,7 @@ func (t *GenerateTranscodeTask) Start() {
 		}
 	} else {
 		if audioCodec == ffmpeg.MissingUnsupported {
-			//ffmpeg fails if it trys to transcode an unsupported audio codec
+			// ffmpeg fails if it trys to transcode an unsupported audio codec
 			encoder.TranscodeVideo(*videoFile, options)
 		} else {
 			encoder.Transcode(*videoFile, options)

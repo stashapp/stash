@@ -209,17 +209,18 @@ func (j *ScanJob) doesPathExist(path string) bool {
 
 	ret := false
 	txnErr := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		if utils.MatchExtension(path, gExt) {
-			gallery, _ := r.Gallery().FindByPath(path)
-			if gallery != nil {
+		switch {
+		case utils.MatchExtension(path, gExt):
+			g, _ := r.Gallery().FindByPath(path)
+			if g != nil {
 				ret = true
 			}
-		} else if utils.MatchExtension(path, vidExt) {
+		case utils.MatchExtension(path, vidExt):
 			s, _ := r.Scene().FindByPath(path)
 			if s != nil {
 				ret = true
 			}
-		} else if utils.MatchExtension(path, imgExt) {
+		case utils.MatchExtension(path, imgExt):
 			i, _ := r.Image().FindByPath(path)
 			if i != nil {
 				ret = true
@@ -259,80 +260,84 @@ func (t *ScanTask) Start(ctx context.Context) {
 	var s *models.Scene
 	path := t.file.Path()
 	t.progress.ExecuteTask("Scanning "+path, func() {
-		if isGallery(path) {
+		switch {
+		case isGallery(path):
 			t.scanGallery(ctx)
-		} else if isVideo(path) {
+		case isVideo(path):
 			s = t.scanScene()
-		} else if isImage(path) {
+		case isImage(path):
 			t.scanImage()
 		}
 	})
 
-	if s != nil {
-		iwg := sizedwaitgroup.New(2)
-
-		if t.GenerateSprite {
-			iwg.Add()
-
-			go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", path), func() {
-				taskSprite := GenerateSpriteTask{
-					Scene:               *s,
-					Overwrite:           false,
-					fileNamingAlgorithm: t.fileNamingAlgorithm,
-				}
-				taskSprite.Start()
-				iwg.Done()
-			})
-		}
-
-		if t.GeneratePhash {
-			iwg.Add()
-
-			go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", path), func() {
-				taskPhash := GeneratePhashTask{
-					Scene:               *s,
-					fileNamingAlgorithm: t.fileNamingAlgorithm,
-					txnManager:          t.TxnManager,
-				}
-				taskPhash.Start()
-				iwg.Done()
-			})
-		}
-
-		if t.GeneratePreview {
-			iwg.Add()
-
-			go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
-				config := config.GetInstance()
-				var previewSegmentDuration = config.GetPreviewSegmentDuration()
-				var previewSegments = config.GetPreviewSegments()
-				var previewExcludeStart = config.GetPreviewExcludeStart()
-				var previewExcludeEnd = config.GetPreviewExcludeEnd()
-				var previewPresent = config.GetPreviewPreset()
-
-				// NOTE: the reuse of this model like this is painful.
-				previewOptions := models.GeneratePreviewOptionsInput{
-					PreviewSegments:        &previewSegments,
-					PreviewSegmentDuration: &previewSegmentDuration,
-					PreviewExcludeStart:    &previewExcludeStart,
-					PreviewExcludeEnd:      &previewExcludeEnd,
-					PreviewPreset:          &previewPresent,
-				}
-
-				taskPreview := GeneratePreviewTask{
-					Scene:               *s,
-					ImagePreview:        t.GenerateImagePreview,
-					Options:             previewOptions,
-					Overwrite:           false,
-					fileNamingAlgorithm: t.fileNamingAlgorithm,
-				}
-				taskPreview.Start()
-				iwg.Done()
-			})
-		}
-
-		iwg.Wait()
+	if s == nil {
+		return
 	}
+
+	// Handle the case of a scene
+	iwg := sizedwaitgroup.New(2)
+
+	if t.GenerateSprite {
+		iwg.Add()
+
+		go t.progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", path), func() {
+			taskSprite := GenerateSpriteTask{
+				Scene:               *s,
+				Overwrite:           false,
+				fileNamingAlgorithm: t.fileNamingAlgorithm,
+			}
+			taskSprite.Start(ctx)
+			iwg.Done()
+		})
+	}
+
+	if t.GeneratePhash {
+		iwg.Add()
+
+		go t.progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", path), func() {
+			taskPhash := GeneratePhashTask{
+				Scene:               *s,
+				fileNamingAlgorithm: t.fileNamingAlgorithm,
+				txnManager:          t.TxnManager,
+			}
+			taskPhash.Start(ctx)
+			iwg.Done()
+		})
+	}
+
+	if t.GeneratePreview {
+		iwg.Add()
+
+		go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
+			config := config.GetInstance()
+			var previewSegmentDuration = config.GetPreviewSegmentDuration()
+			var previewSegments = config.GetPreviewSegments()
+			var previewExcludeStart = config.GetPreviewExcludeStart()
+			var previewExcludeEnd = config.GetPreviewExcludeEnd()
+			var previewPresent = config.GetPreviewPreset()
+
+			// NOTE: the reuse of this model like this is painful.
+			previewOptions := models.GeneratePreviewOptionsInput{
+				PreviewSegments:        &previewSegments,
+				PreviewSegmentDuration: &previewSegmentDuration,
+				PreviewExcludeStart:    &previewExcludeStart,
+				PreviewExcludeEnd:      &previewExcludeEnd,
+				PreviewPreset:          &previewPresent,
+			}
+
+			taskPreview := GeneratePreviewTask{
+				Scene:               *s,
+				ImagePreview:        t.GenerateImagePreview,
+				Options:             previewOptions,
+				Overwrite:           false,
+				fileNamingAlgorithm: t.fileNamingAlgorithm,
+			}
+			taskPreview.Start(ctx)
+			iwg.Done()
+		})
+	}
+
+	iwg.Wait()
 }
 
 func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {

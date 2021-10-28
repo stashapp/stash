@@ -9,23 +9,25 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { sortPerformers } from "src/core/performers";
 
 interface IGalleryDetailProps {
-  gallery: Partial<GQL.GalleryDataFragment>;
+  gallery: GQL.GalleryDataFragment;
 }
 
-export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
+export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
+  gallery,
+}) => {
   function renderDetails() {
-    if (!props.gallery.details || props.gallery.details === "") return;
+    if (!gallery.details) return;
     return (
       <>
         <h6>Details</h6>
-        <p className="pre">{props.gallery.details}</p>
+        <p className="pre">{gallery.details}</p>
       </>
     );
   }
 
   function renderTags() {
-    if (!props.gallery.tags || props.gallery.tags.length === 0) return;
-    const tags = props.gallery.tags.map((tag) => (
+    if (gallery.tags.length === 0) return;
+    const tags = gallery.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} tagType="gallery" />
     ));
     return (
@@ -37,14 +39,13 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
   }
 
   function renderPerformers() {
-    if (!props.gallery.performers || props.gallery.performers.length === 0)
-      return;
-    const performers = sortPerformers(props.gallery.performers);
+    if (gallery.performers.length === 0) return;
+    const performers = sortPerformers(gallery.performers);
     const cards = performers.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
-        ageFromDate={props.gallery.date ?? undefined}
+        ageFromDate={gallery.date ?? undefined}
       />
     ));
 
@@ -59,9 +60,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
   }
 
   // filename should use entire row if there is no studio
-  const galleryDetailsWidth = props.gallery.studio ? "col-9" : "col-12";
-  const title =
-    props.gallery.title ?? TextUtils.fileNameFromPath(props.gallery.path ?? "");
+  const galleryDetailsWidth = gallery.studio ? "col-9" : "col-12";
+  const title = gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "");
 
   return (
     <>
@@ -70,29 +70,29 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
           <h3 className="gallery-header d-xl-none">
             <TruncatedText text={title} />
           </h3>
-          {props.gallery.date ? (
+          {gallery.date ? (
             <h5>
               <FormattedDate
-                value={props.gallery.date}
+                value={gallery.date}
                 format="long"
                 timeZone="utc"
               />
             </h5>
           ) : undefined}
-          {props.gallery.rating ? (
+          {gallery.rating ? (
             <h6>
-              Rating: <RatingStars value={props.gallery.rating} />
+              Rating: <RatingStars value={gallery.rating} />
             </h6>
           ) : (
             ""
           )}
         </div>
-        {props.gallery.studio && (
+        {gallery.studio && (
           <div className="col-3 d-xl-none">
-            <Link to={`/studios/${props.gallery.studio.id}`}>
+            <Link to={`/studios/${gallery.studio.id}`}>
               <img
-                src={props.gallery.studio.image_path ?? ""}
-                alt={`${props.gallery.studio.name} logo`}
+                src={gallery.studio.image_path ?? ""}
+                alt={`${gallery.studio.name} logo`}
                 className="studio-logo float-right"
               />
             </Link>

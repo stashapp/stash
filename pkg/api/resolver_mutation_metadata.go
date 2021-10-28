@@ -90,6 +90,13 @@ func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.Aut
 	return strconv.Itoa(jobID), nil
 }
 
+func (r *mutationResolver) MetadataIdentify(ctx context.Context, input models.IdentifyMetadataInput) (string, error) {
+	t := manager.CreateIdentifyJob(input)
+	jobID := manager.GetInstance().JobManager.Add(ctx, "Identifying...", t)
+
+	return strconv.Itoa(jobID), nil
+}
+
 func (r *mutationResolver) MetadataClean(ctx context.Context, input models.CleanMetadataInput) (string, error) {
 	jobID := manager.GetInstance().Clean(ctx, input)
 	return strconv.Itoa(jobID), nil

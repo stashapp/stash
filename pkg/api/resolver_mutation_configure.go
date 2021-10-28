@@ -360,6 +360,20 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.C
 	return makeConfigScrapingResult(), nil
 }
 
+func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.ConfigDefaultSettingsInput) (*models.ConfigDefaultSettingsResult, error) {
+	c := config.GetInstance()
+
+	if input.Identify != nil {
+		c.Set(config.DefaultIdentifySettings, input.Identify)
+	}
+
+	if err := c.Write(); err != nil {
+		return makeConfigDefaultsResult(), err
+	}
+
+	return makeConfigDefaultsResult(), nil
+}
+
 func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {
 	c := config.GetInstance()
 

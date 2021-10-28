@@ -106,13 +106,6 @@ func GetDataFromBase64String(encodedString string) ([]byte, error) {
 // GetBase64StringFromData returns the given byte slice as a base64 encoded string
 func GetBase64StringFromData(data []byte) string {
 	return base64.StdEncoding.EncodeToString(data)
-
-	// Really slow
-	//result = regexp.MustCompile(`(.{60})`).ReplaceAllString(result, "$1\n")
-	//if result[len(result)-1:] != "\n" {
-	//	result += "\n"
-	//}
-	//return result
 }
 
 func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {

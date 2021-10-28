@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
-	"time"
-
-	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -165,224 +162,10 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 		logger.Warnf("could not generate temporary directory: %v", err)
 	}
 
-	sceneIDs, err := utils.StringSliceToIntSlice(input.SceneIDs)
-	if err != nil {
-		logger.Error(err.Error())
+	j := &GenerateJob{
+		txnManager: s.TxnManager,
+		input:      input,
 	}
-	markerIDs, err := utils.StringSliceToIntSlice(input.MarkerIDs)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-
-	// TODO - formalise this
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		var scenes []*models.Scene
-		var err error
-		var markers []*models.SceneMarker
-
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			qb := r.Scene()
-			if len(sceneIDs) > 0 {
-				scenes, err = qb.FindMany(sceneIDs)
-			} else {
-				scenes, err = qb.All()
-			}
-
-			if err != nil {
-				return err
-			}
-
-			if len(markerIDs) > 0 {
-				markers, err = r.SceneMarker().FindMany(markerIDs)
-				if err != nil {
-					return err
-				}
-			}
-
-			return nil
-		}); err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		config := config.GetInstance()
-		parallelTasks := config.GetParallelTasksWithAutoDetection()
-
-		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
-		wg := sizedwaitgroup.New(parallelTasks)
-
-		lenScenes := len(scenes)
-		total := lenScenes + len(markers)
-		progress.SetTotal(total)
-
-		if job.IsCancelled(ctx) {
-			logger.Info("Stopping due to user request")
-			return
-		}
-
-		// TODO - consider removing this. Even though we're only waiting a maximum of
-		// 90 seconds for this, it is all for a simple log message, and probably not worth
-		// waiting for
-		var totalsNeeded *totalsGenerate
-		progress.ExecuteTask("Calculating content to generate...", func() {
-			totalsNeeded = s.neededGenerate(scenes, input)
-
-			if totalsNeeded == nil {
-				logger.Infof("Taking too long to count content. Skipping...")
-				logger.Infof("Generating content")
-			} else {
-				logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes, totalsNeeded.phashes)
-			}
-		})
-
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
-
-		overwrite := false
-		if input.Overwrite != nil {
-			overwrite = *input.Overwrite
-		}
-
-		generatePreviewOptions := input.PreviewOptions
-		if generatePreviewOptions == nil {
-			generatePreviewOptions = &models.GeneratePreviewOptionsInput{}
-		}
-		setGeneratePreviewOptionsInput(generatePreviewOptions)
-
-		// Start measuring how long the generate has taken. (consider moving this up)
-		start := time.Now()
-		if err = instance.Paths.Generated.EnsureTmpDir(); err != nil {
-			logger.Warnf("could not create temporary directory: %v", err)
-		}
-
-		for _, scene := range scenes {
-			progress.Increment()
-			if job.IsCancelled(ctx) {
-				logger.Info("Stopping due to user request")
-				wg.Wait()
-				if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
-					logger.Warnf("failure emptying temporary directory: %v", err)
-				}
-				return
-			}
-
-			if scene == nil {
-				logger.Errorf("nil scene, skipping generate")
-				continue
-			}
-
-			if utils.IsTrue(input.Sprites) {
-				task := GenerateSpriteTask{
-					Scene:               *scene,
-					Overwrite:           overwrite,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-				wg.Add()
-				go progress.ExecuteTask(fmt.Sprintf("Generating sprites for %s", scene.Path), func() {
-					task.Start()
-					wg.Done()
-				})
-			}
-
-			if utils.IsTrue(input.Previews) {
-				task := GeneratePreviewTask{
-					Scene:               *scene,
-					ImagePreview:        utils.IsTrue(input.ImagePreviews),
-					Options:             *generatePreviewOptions,
-					Overwrite:           overwrite,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-				wg.Add()
-				go progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", scene.Path), func() {
-					task.Start()
-					wg.Done()
-				})
-			}
-
-			if utils.IsTrue(input.Markers) {
-				wg.Add()
-				task := GenerateMarkersTask{
-					TxnManager:          s.TxnManager,
-					Scene:               scene,
-					Overwrite:           overwrite,
-					fileNamingAlgorithm: fileNamingAlgo,
-					ImagePreview:        utils.IsTrue(input.MarkerImagePreviews),
-					Screenshot:          utils.IsTrue(input.MarkerScreenshots),
-				}
-				go progress.ExecuteTask(fmt.Sprintf("Generating markers for %s", scene.Path), func() {
-					task.Start()
-					wg.Done()
-				})
-			}
-
-			if utils.IsTrue(input.Transcodes) {
-				wg.Add()
-				task := GenerateTranscodeTask{
-					Scene:               *scene,
-					Overwrite:           overwrite,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-				go progress.ExecuteTask(fmt.Sprintf("Generating transcode for %s", scene.Path), func() {
-					task.Start()
-					wg.Done()
-				})
-			}
-
-			if utils.IsTrue(input.Phashes) {
-				task := GeneratePhashTask{
-					Scene:               *scene,
-					fileNamingAlgorithm: fileNamingAlgo,
-					txnManager:          s.TxnManager,
-					Overwrite:           overwrite,
-				}
-				wg.Add()
-				go progress.ExecuteTask(fmt.Sprintf("Generating phash for %s", scene.Path), func() {
-					task.Start()
-					wg.Done()
-				})
-			}
-		}
-
-		wg.Wait()
-
-		for _, marker := range markers {
-			progress.Increment()
-			if job.IsCancelled(ctx) {
-				logger.Info("Stopping due to user request")
-				wg.Wait()
-				if err := instance.Paths.Generated.EmptyTmpDir(); err != nil {
-					logger.Warnf("failure emptying temporary directory: %v", err)
-				}
-				elapsed := time.Since(start)
-				logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
-				return
-			}
-
-			if marker == nil {
-				logger.Errorf("nil marker, skipping generate")
-				continue
-			}
-
-			wg.Add()
-			task := GenerateMarkersTask{
-				TxnManager:          s.TxnManager,
-				Marker:              marker,
-				Overwrite:           overwrite,
-				fileNamingAlgorithm: fileNamingAlgo,
-			}
-			go progress.ExecuteTask(fmt.Sprintf("Generating marker preview for marker ID %d", marker.ID), func() {
-				task.Start()
-				wg.Done()
-			})
-		}
-
-		wg.Wait()
-
-		if err = instance.Paths.Generated.EmptyTmpDir(); err != nil {
-			logger.Warnf("failure emptying temporary directory: %v", err)
-		}
-		elapsed := time.Since(start)
-		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
-	})
 
 	return s.JobManager.Add(ctx, "Generating...", j), nil
 }
@@ -425,7 +208,7 @@ func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *
 			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
 		}
 
-		task.Start()
+		task.Start(ctx)
 
 		logger.Infof("Generate screenshot finished")
 	})
@@ -500,109 +283,6 @@ func (s *singleton) MigrateHash(ctx context.Context) int {
 	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
 }
 
-type totalsGenerate struct {
-	sprites       int64
-	previews      int64
-	imagePreviews int64
-	markers       int64
-	transcodes    int64
-	phashes       int64
-}
-
-func (s *singleton) neededGenerate(scenes []*models.Scene, input models.GenerateMetadataInput) *totalsGenerate {
-
-	var totals totalsGenerate
-	const timeout = 90 * time.Second
-
-	// create a control channel through which to signal the counting loop when the timeout is reached
-	chTimeout := make(chan struct{})
-
-	//run the timeout function in a separate thread
-	go func() {
-		time.Sleep(timeout)
-		chTimeout <- struct{}{}
-	}()
-
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-	overwrite := false
-	if input.Overwrite != nil {
-		overwrite = *input.Overwrite
-	}
-
-	logger.Infof("Counting content to generate...")
-	for _, scene := range scenes {
-		if scene != nil {
-			if utils.IsTrue(input.Sprites) {
-				task := GenerateSpriteTask{
-					Scene:               *scene,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-
-				if overwrite || task.required() {
-					totals.sprites++
-				}
-			}
-
-			if utils.IsTrue(input.Previews) {
-				task := GeneratePreviewTask{
-					Scene:               *scene,
-					ImagePreview:        utils.IsTrue(input.ImagePreviews),
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-
-				sceneHash := scene.GetHash(task.fileNamingAlgorithm)
-				if overwrite || !task.doesVideoPreviewExist(sceneHash) {
-					totals.previews++
-				}
-
-				if utils.IsTrue(input.ImagePreviews) && (overwrite || !task.doesImagePreviewExist(sceneHash)) {
-					totals.imagePreviews++
-				}
-			}
-
-			if utils.IsTrue(input.Markers) {
-				task := GenerateMarkersTask{
-					TxnManager:          s.TxnManager,
-					Scene:               scene,
-					Overwrite:           overwrite,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-				totals.markers += int64(task.isMarkerNeeded())
-			}
-
-			if utils.IsTrue(input.Transcodes) {
-				task := GenerateTranscodeTask{
-					Scene:               *scene,
-					Overwrite:           overwrite,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-				if task.isTranscodeNeeded() {
-					totals.transcodes++
-				}
-			}
-
-			if utils.IsTrue(input.Phashes) {
-				task := GeneratePhashTask{
-					Scene:               *scene,
-					fileNamingAlgorithm: fileNamingAlgo,
-				}
-
-				if task.shouldGenerate() {
-					totals.phashes++
-				}
-			}
-		}
-		//check for timeout
-		select {
-		case <-chTimeout:
-			return nil
-		default:
-		}
-
-	}
-	return &totals
-}
-
 func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Initiating stash-box batch performer tag")
@@ -616,7 +296,13 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 
 		var tasks []StashBoxPerformerTagTask
 
-		if len(input.PerformerIds) > 0 {
+		// The gocritic linter wants to turn this ifElseChain into a switch.
+		// however, such a switch would contain quite large blocks for each section
+		// and would arguably be hard to read.
+		//
+		// This is why we mark this section nolint. In principle, we should look to
+		// rewrite the section at some point, to avoid the linter warning.
+		if len(input.PerformerIds) > 0 { //nolint:gocritic
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 
@@ -652,7 +338,11 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 					})
 				}
 			}
-		} else {
+		} else { //nolint:gocritic
+			// The gocritic linter wants to fold this if-block into the else on the line above.
+			// However, this doesn't really help with readability of the current section. Mark it
+			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
+			// this into separate functions.
 			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 				var performers []*models.Performer

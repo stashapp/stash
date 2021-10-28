@@ -16,7 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-//we use the github REST V3 API as no login is required
+// we use the github REST V3 API as no login is required
 const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
 const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
@@ -120,7 +120,7 @@ func makeGithubRequest(ctx context.Context, url string, output interface{}) erro
 
 	if err != nil {
 		//lint:ignore ST1005 Github is a proper capitalized noun
-		return fmt.Errorf("Github API request failed: %s", err)
+		return fmt.Errorf("Github API request failed: %w", err)
 	}
 
 	if response.StatusCode != http.StatusOK {
@@ -133,12 +133,12 @@ func makeGithubRequest(ctx context.Context, url string, output interface{}) erro
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		//lint:ignore ST1005 Github is a proper capitalized noun
-		return fmt.Errorf("Github API read response failed: %s", err)
+		return fmt.Errorf("Github API read response failed: %w", err)
 	}
 
 	err = json.Unmarshal(data, output)
 	if err != nil {
-		return fmt.Errorf("unmarshalling Github API response failed: %s", err)
+		return fmt.Errorf("unmarshalling Github API response failed: %w", err)
 	}
 
 	return nil
@@ -248,7 +248,15 @@ func getShaFromTags(ctx context.Context, shortHash bool, name string) string {
 	err := makeGithubRequest(ctx, url, &tags)
 
 	if err != nil {
-		logger.Errorf("Github Tags Api %v", err)
+		// If the context is canceled, we don't want to log this as an error
+		// in the path. The function here just gives up and returns "" if
+		// something goes wrong. Hence, log the error at the info-level so
+		// it's still present, but don't treat this as an error.
+		if errors.Is(err, context.Canceled) {
+			logger.Infof("aborting sha request due to context cancellation")
+		} else {
+			logger.Errorf("Github Tags Api: %v", err)
+		}
 		return ""
 	}
 	_, gitShort, _ := GetVersion() // retrieve short hash to check actual length

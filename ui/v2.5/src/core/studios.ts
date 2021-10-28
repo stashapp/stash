@@ -2,9 +2,9 @@ import * as GQL from "src/core/generated-graphql";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { ListFilterModel } from "src/models/list-filter/filter";
 
-export const studioFilterHook = (studio: Partial<GQL.StudioDataFragment>) => {
+export const studioFilterHook = (studio: GQL.StudioDataFragment) => {
   return (filter: ListFilterModel) => {
-    const studioValue = { id: studio.id!, label: studio.name! };
+    const studioValue = { id: studio.id, label: studio.name };
     // if studio is already present, then we modify it, otherwise add
     let studioCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "studios";
