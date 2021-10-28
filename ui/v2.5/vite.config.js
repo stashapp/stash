@@ -1,8 +1,6 @@
 import { defineConfig } from 'vite'
 import tsconfigPaths from "vite-tsconfig-paths";
-//import envCompatible from "vite-plugin-env-compatible";
-// import svgr from 'vite-plugin-svgr'
-// import react from '@vitejs/plugin-react'
+import viteCompression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,9 +12,14 @@ export default defineConfig({
   },
   publicDir: 'public',
   assetsInclude: ['**/*.md'],
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths(), viteCompression({
+    algorithm: 'gzip',
+    disable: false,
+    deleteOriginFile: true,
+    filter: /\.(js|json|css|svg|md)$/i
+  })],
   define: {
     'process.versions': {},
     'process.env': {}
-  }
+ }
 })

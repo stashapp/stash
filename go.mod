@@ -84,6 +84,7 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/match v1.0.3 // indirect
 	github.com/urfave/cli/v2 v2.1.1 // indirect
+	github.com/vearutop/statigz v1.1.5 // indirect
 	github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e // indirect
 	go.uber.org/atomic v1.6.0 // indirect
 	golang.org/x/mod v0.4.1 // indirect
