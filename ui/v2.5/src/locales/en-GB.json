@@ -64,6 +64,7 @@
     "save_delete_settings": "Use these options by default when deleting",
     "save_filter": "Save filter",
     "scan": "Scan",
+    "scrape": "Scrape",
     "scrape_with": "Scrape with…",
     "scrape_query": "Scrape query",
     "scrape_scene_fragment": "Scrape by fragment",
