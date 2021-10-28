@@ -26,6 +26,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
   if (!allowUndefined) {
     return (
       <Form.Check
+        id={id}
         disabled={disabled}
         checked={value}
         label={label}
