@@ -239,6 +239,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 	setBool(config.SoundOnPreview, input.SoundOnPreview)
 	setBool(config.WallShowTitle, input.WallShowTitle)
 
+	setBool(config.NoBrowser, input.NoBrowser)
+
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
 	}
