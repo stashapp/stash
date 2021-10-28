@@ -34,7 +34,6 @@ const usePasteImage = (
   onLoadEnd: (imageData: string) => void,
   isActive: boolean = true
 ) => {
-
   const encodeImage = useCallback(
     (data: string) => {
       onLoadEnd(data);
@@ -51,7 +50,7 @@ const usePasteImage = (
     return () => document.removeEventListener("paste", paste);
   }, [isActive, encodeImage]);
 
-  return false
+  return false;
 };
 
 const Image = {
