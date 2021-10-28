@@ -56,6 +56,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
         {
           count: 1,
           singularEntity: source?.displayName,
+          pluralEntity: source?.displayName,
         }
       )}
       accept={{
