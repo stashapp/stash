@@ -27,7 +27,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [menuItemIds, setMenuItemIds] = useState<string[]>(
     allMenuItems.map((item) => item.id)
   );
-  const [nobrowser, setNoBrowserFlag] = useState<boolean>(false);
+  const [noBrowser, setNoBrowserFlag] = useState<boolean>(false);
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
@@ -51,7 +51,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     wallShowTitle,
     wallPlayback,
     maximumLoopDuration,
-    nobrowser,
+    noBrowser,
     autostartVideo,
     showStudioAsText,
     css,
@@ -70,7 +70,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setWallShowTitle(iCfg?.wallShowTitle ?? true);
     setWallPlayback(iCfg?.wallPlayback ?? "video");
     setMaximumLoopDuration(iCfg?.maximumLoopDuration ?? 0);
-    setNoBrowserFlag(iCfg?.nobrowser ?? false);
+    setNoBrowserFlag(iCfg?.noBrowser ?? false);
     setAutostartVideo(iCfg?.autostartVideo ?? false);
     setShowStudioAsText(iCfg?.showStudioAsText ?? false);
     setCSS(iCfg?.css ?? "");
@@ -168,11 +168,11 @@ export const SettingsInterfacePanel: React.FC = () => {
       <Form.Group>
         <Form.Check
           id="skip-browser"
-          checked={nobrowser}
+          checked={noBrowser}
           label={intl.formatMessage({
             id: "config.ui.desktop_integration.skip_opening_browser",
           })}
-          onChange={() => setNoBrowserFlag(!nobrowser)}
+          onChange={() => setNoBrowserFlag(!noBrowser)}
         />
         <Form.Text className="text-muted">
           {intl.formatMessage({

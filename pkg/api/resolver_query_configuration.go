@@ -107,7 +107,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
-	Nobrowser := config.GetNoBrowserFlag()
+	noBrowser := config.GetNoBrowserFlag()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
 	showStudioAsText := config.GetShowStudioAsText()
@@ -124,7 +124,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		WallShowTitle:          &wallShowTitle,
 		WallPlayback:           &wallPlayback,
 		MaximumLoopDuration:    &maximumLoopDuration,
-		Nobrowser:              &Nobrowser,
+		NoBrowser:              &noBrowser,
 		AutostartVideo:         &autostartVideo,
 		ShowStudioAsText:       &showStudioAsText,
 		CSS:                    &css,

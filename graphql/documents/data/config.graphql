@@ -52,7 +52,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallShowTitle
   wallPlayback
   maximumLoopDuration
-  nobrowser
+  noBrowser
   autostartVideo
   showStudioAsText
   css

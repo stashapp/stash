@@ -223,7 +223,7 @@ input ConfigInterfaceInput {
   """Funscript Time Offset"""
   funscriptOffset: Int
   """True if we should not auto-open a browser window on startup"""
-  nobrowser: Boolean
+  noBrowser: Boolean
 }
 
 type ConfigDisableDropdownCreate {
@@ -244,7 +244,7 @@ type ConfigInterfaceResult {
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
   """"True if we should not auto-open a browser window on startup"""
-  nobrowser: Boolean
+  noBrowser: Boolean
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
   """If true, studio overlays will be shown as text instead of logo images"""

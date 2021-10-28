@@ -158,7 +158,7 @@ const DLNADefaultIPWhitelist = "dlna.default_whitelist"
 const DLNAInterfaces = "dlna.interfaces"
 
 // Desktop Integration Options
-const NoBrowser = "nobrowser"
+const NoBrowser = "noBrowser"
 const NoBrowserDefault = false
 
 // Logging options
