@@ -96,7 +96,18 @@ input ScrapedGalleryInput {
 
 input ScraperSourceInput {
   """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
-  stash_box_index: Int
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  """Stash-box endpoint"""
+  stash_box_endpoint: String
+  """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
+  scraper_id: ID
+}
+
+type ScraperSource {
+  """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  """Stash-box endpoint"""
+  stash_box_endpoint: String
   """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
   scraper_id: ID
 }

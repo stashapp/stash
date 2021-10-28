@@ -75,7 +75,7 @@ func TestImporterPreImport(t *testing.T) {
 	err := i.PreImport()
 	assert.NotNil(t, err)
 
-	i.Input.Cover = image
+	i.Input.Cover = imageBase64
 
 	err = i.PreImport()
 	assert.Nil(t, err)

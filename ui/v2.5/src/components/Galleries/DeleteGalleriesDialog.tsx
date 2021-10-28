@@ -4,10 +4,11 @@ import { useGalleryDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { useIntl } from "react-intl";
+import { ConfigurationContext } from "src/hooks/Config";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IDeleteGalleryDialogProps {
-  selected: Pick<GQL.Gallery, "id">[];
+  selected: GQL.SlimGalleryDataFragment[];
   onClose: (confirmed: boolean) => void;
 }
 
@@ -31,8 +32,14 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
     { count: props.selected.length, singularEntity, pluralEntity }
   );
 
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
+  const [deleteFile, setDeleteFile] = useState<boolean>(
+    config?.defaults.deleteFile ?? false
+  );
+  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(
+    config?.defaults.deleteGenerated ?? true
+  );
 
   const Toast = useToast();
   const [deleteGallery] = useGalleryDestroy(getGalleriesDeleteInput());
@@ -60,6 +67,50 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
     props.onClose(true);
   }
 
+  function maybeRenderDeleteFileAlert() {
+    if (!deleteFile) {
+      return;
+    }
+
+    const fsGalleries = props.selected.filter((g) => g.path);
+    if (fsGalleries.length === 0) {
+      return;
+    }
+
+    return (
+      <div className="delete-dialog alert alert-danger text-break">
+        <p className="font-weight-bold">
+          <FormattedMessage
+            values={{
+              count: fsGalleries.length,
+              singularEntity: intl.formatMessage({ id: "file" }),
+              pluralEntity: intl.formatMessage({ id: "files" }),
+            }}
+            id="dialogs.delete_alert"
+          />
+        </p>
+        <ul>
+          {fsGalleries.slice(0, 5).map((s) => (
+            <li key={s.path}>{s.path}</li>
+          ))}
+          {fsGalleries.length > 5 && (
+            <FormattedMessage
+              values={{
+                count: fsGalleries.length - 5,
+                singularEntity: intl.formatMessage({ id: "file" }),
+                pluralEntity: intl.formatMessage({ id: "files" }),
+              }}
+              id="dialogs.delete_object_overflow"
+            />
+          )}
+          <li>
+            <FormattedMessage id="dialogs.delete_galleries_extra" />
+          </li>
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <Modal
       show
@@ -78,6 +129,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       isRunning={isDeleting}
     >
       <p>{message}</p>
+      {maybeRenderDeleteFileAlert()}
       <Form>
         <Form.Check
           id="delete-file"

@@ -302,12 +302,31 @@ type ConfigScrapingResult {
   excludeTagPatterns: [String!]!
 }
 
+type ConfigDefaultSettingsResult {
+  identify: IdentifyMetadataTaskOptions
+  
+  """If true, delete file checkbox will be checked by default"""
+  deleteFile: Boolean
+  """If true, delete generated supporting files checkbox will be checked by default"""
+  deleteGenerated: Boolean
+}
+
+input ConfigDefaultSettingsInput {
+  identify: IdentifyMetadataInput
+
+  """If true, delete file checkbox will be checked by default"""
+  deleteFile: Boolean
+  """If true, delete generated files checkbox will be checked by default"""
+  deleteGenerated: Boolean
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
   scraping: ConfigScrapingResult!
+  defaults: ConfigDefaultSettingsResult!
 }
 
 """Directory structure of a path"""
