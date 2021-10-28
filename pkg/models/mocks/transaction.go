@@ -7,16 +7,16 @@ import (
 )
 
 type TransactionManager struct {
-	gallery     models.GalleryReaderWriter
-	image       models.ImageReaderWriter
-	movie       models.MovieReaderWriter
-	performer   models.PerformerReaderWriter
-	scene       models.SceneReaderWriter
-	sceneMarker models.SceneMarkerReaderWriter
-	scrapedItem models.ScrapedItemReaderWriter
-	studio      models.StudioReaderWriter
-	tag         models.TagReaderWriter
-	savedFilter models.SavedFilterReaderWriter
+	gallery     *GalleryReaderWriter
+	image       *ImageReaderWriter
+	movie       *MovieReaderWriter
+	performer   *PerformerReaderWriter
+	scene       *SceneReaderWriter
+	sceneMarker *SceneMarkerReaderWriter
+	scrapedItem *ScrapedItemReaderWriter
+	studio      *StudioReaderWriter
+	tag         *TagReaderWriter
+	savedFilter *SavedFilterReaderWriter
 }
 
 func NewTransactionManager() *TransactionManager {
@@ -38,90 +38,130 @@ func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repos
 	return fn(t)
 }
 
-func (t *TransactionManager) Gallery() models.GalleryReaderWriter {
+func (t *TransactionManager) GalleryMock() *GalleryReaderWriter {
 	return t.gallery
 }
 
-func (t *TransactionManager) Image() models.ImageReaderWriter {
+func (t *TransactionManager) ImageMock() *ImageReaderWriter {
 	return t.image
 }
 
-func (t *TransactionManager) Movie() models.MovieReaderWriter {
+func (t *TransactionManager) MovieMock() *MovieReaderWriter {
 	return t.movie
 }
 
-func (t *TransactionManager) Performer() models.PerformerReaderWriter {
+func (t *TransactionManager) PerformerMock() *PerformerReaderWriter {
 	return t.performer
 }
 
-func (t *TransactionManager) SceneMarker() models.SceneMarkerReaderWriter {
+func (t *TransactionManager) SceneMarkerMock() *SceneMarkerReaderWriter {
 	return t.sceneMarker
 }
 
-func (t *TransactionManager) Scene() models.SceneReaderWriter {
+func (t *TransactionManager) SceneMock() *SceneReaderWriter {
 	return t.scene
 }
 
-func (t *TransactionManager) ScrapedItem() models.ScrapedItemReaderWriter {
+func (t *TransactionManager) ScrapedItemMock() *ScrapedItemReaderWriter {
 	return t.scrapedItem
 }
 
-func (t *TransactionManager) Studio() models.StudioReaderWriter {
+func (t *TransactionManager) StudioMock() *StudioReaderWriter {
 	return t.studio
 }
 
-func (t *TransactionManager) Tag() models.TagReaderWriter {
+func (t *TransactionManager) TagMock() *TagReaderWriter {
 	return t.tag
 }
 
-func (t *TransactionManager) SavedFilter() models.SavedFilterReaderWriter {
+func (t *TransactionManager) SavedFilterMock() *SavedFilterReaderWriter {
 	return t.savedFilter
 }
 
+func (t *TransactionManager) Gallery() models.GalleryReaderWriter {
+	return t.GalleryMock()
+}
+
+func (t *TransactionManager) Image() models.ImageReaderWriter {
+	return t.ImageMock()
+}
+
+func (t *TransactionManager) Movie() models.MovieReaderWriter {
+	return t.MovieMock()
+}
+
+func (t *TransactionManager) Performer() models.PerformerReaderWriter {
+	return t.PerformerMock()
+}
+
+func (t *TransactionManager) SceneMarker() models.SceneMarkerReaderWriter {
+	return t.SceneMarkerMock()
+}
+
+func (t *TransactionManager) Scene() models.SceneReaderWriter {
+	return t.SceneMock()
+}
+
+func (t *TransactionManager) ScrapedItem() models.ScrapedItemReaderWriter {
+	return t.ScrapedItemMock()
+}
+
+func (t *TransactionManager) Studio() models.StudioReaderWriter {
+	return t.StudioMock()
+}
+
+func (t *TransactionManager) Tag() models.TagReaderWriter {
+	return t.TagMock()
+}
+
+func (t *TransactionManager) SavedFilter() models.SavedFilterReaderWriter {
+	return t.SavedFilterMock()
+}
+
 type ReadTransaction struct {
-	t *TransactionManager
+	*TransactionManager
 }
 
 func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
-	return fn(&ReadTransaction{t: t})
+	return fn(&ReadTransaction{t})
 }
 
 func (r *ReadTransaction) Gallery() models.GalleryReader {
-	return r.t.gallery
+	return r.GalleryMock()
 }
 
 func (r *ReadTransaction) Image() models.ImageReader {
-	return r.t.image
+	return r.ImageMock()
 }
 
 func (r *ReadTransaction) Movie() models.MovieReader {
-	return r.t.movie
+	return r.MovieMock()
 }
 
 func (r *ReadTransaction) Performer() models.PerformerReader {
-	return r.t.performer
+	return r.PerformerMock()
 }
 
 func (r *ReadTransaction) SceneMarker() models.SceneMarkerReader {
-	return r.t.sceneMarker
+	return r.SceneMarkerMock()
 }
 
 func (r *ReadTransaction) Scene() models.SceneReader {
-	return r.t.scene
+	return r.SceneMock()
 }
 
 func (r *ReadTransaction) ScrapedItem() models.ScrapedItemReader {
-	return r.t.scrapedItem
+	return r.ScrapedItemMock()
 }
 
 func (r *ReadTransaction) Studio() models.StudioReader {
-	return r.t.studio
+	return r.StudioMock()
 }
 
 func (r *ReadTransaction) Tag() models.TagReader {
-	return r.t.tag
+	return r.TagMock()
 }
 
 func (r *ReadTransaction) SavedFilter() models.SavedFilterReader {
-	return r.t.savedFilter
+	return r.SavedFilterMock()
 }

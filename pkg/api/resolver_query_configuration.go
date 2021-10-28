@@ -43,6 +43,7 @@ func makeConfigResult() *models.ConfigResult {
 		Interface: makeConfigInterfaceResult(),
 		Dlna:      makeConfigDLNAResult(),
 		Scraping:  makeConfigScrapingResult(),
+		Defaults:  makeConfigDefaultsResult(),
 	}
 }
 
@@ -157,5 +158,13 @@ func makeConfigScrapingResult() *models.ConfigScrapingResult {
 		ScraperCertCheck:   config.GetScraperCertCheck(),
 		ScraperCDPPath:     &scraperCDPPath,
 		ExcludeTagPatterns: config.GetScraperExcludeTagPatterns(),
+	}
+}
+
+func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
+	config := config.GetInstance()
+
+	return &models.ConfigDefaultSettingsResult{
+		Identify: config.GetDefaultIdentifySettings(),
 	}
 }

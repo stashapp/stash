@@ -302,12 +302,21 @@ type ConfigScrapingResult {
   excludeTagPatterns: [String!]!
 }
 
+type ConfigDefaultSettingsResult {
+  identify: IdentifyMetadataTaskOptions
+}
+
+input ConfigDefaultSettingsInput {
+  identify: IdentifyMetadataInput
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
   scraping: ConfigScrapingResult!
+  defaults: ConfigDefaultSettingsResult!
 }
 
 """Directory structure of a path"""
