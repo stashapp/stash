@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -119,7 +120,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	qb := repo.Scene()
-	scene, err := qb.Update(updatedScene)
+	s, err := qb.Update(updatedScene)
 	if err != nil {
 		return nil, err
 	}
@@ -169,13 +170,13 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		err = manager.SetSceneScreenshot(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
+		err = scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return scene, nil
+	return s, nil
 }
 
 func (r *mutationResolver) updateScenePerformers(qb models.SceneReaderWriter, sceneID int, performerIDs []string) error {

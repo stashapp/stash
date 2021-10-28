@@ -237,6 +237,7 @@ type Mutation {
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
   configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
   configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult!
+  configureDefaults(input: ConfigDefaultSettingsInput!): ConfigDefaultSettingsResult!
 
   """Generate and set (or clear) API key"""
   generateAPIKey(input: GenerateAPIKeyInput!): String!
@@ -259,6 +260,8 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): ID!
   """Clean metadata. Returns the job ID"""
   metadataClean(input: CleanMetadataInput!): ID!
+  """Identifies scenes using scrapers. Returns the job ID"""
+  metadataIdentify(input: IdentifyMetadataInput!): ID!
   """Migrate generated files for the current hash naming"""
   migrateHashNaming: ID!
 
