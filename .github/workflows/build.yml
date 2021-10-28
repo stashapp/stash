@@ -90,7 +90,7 @@ jobs:
 
     - name: Compile for all supported platforms
       run: |
-        docker exec -t build /bin/bash -c "make cross-compile-windows"
+        docker exec -t build /bin/bash -c "GODEBUG=gocachehash=1 make cross-compile-windows"
         
       # docker exec -t build /bin/bash -c "make cross-compile-osx-intel"
       # docker exec -t build /bin/bash -c "make cross-compile-osx-applesilicon"
