@@ -41,6 +41,7 @@
     "generate_thumb_from_current": "Generate thumbnail from current",
     "hash_migration": "hash migration",
     "hide": "Hide",
+    "identify": "Identify",
     "import": "Import…",
     "import_from_file": "Import from file",
     "merge": "Merge",
@@ -60,6 +61,7 @@
     "reshuffle": "Reshuffle",
     "running": "running",
     "save": "Save",
+    "save_delete_settings": "Use these options by default when deleting",
     "save_filter": "Save filter",
     "scan": "Scan",
     "scrape": "Scrape",
@@ -97,6 +99,7 @@
   "actions_name": "Actions",
   "age": "Age",
   "aliases": "Aliases",
+  "all": "all",
   "also_known_as": "Also known as",
   "ascending": "Ascending",
   "average_resolution": "Average Resolution",
@@ -272,6 +275,7 @@
       "entity_scrapers": "{entityType} scrapers",
       "excluded_tag_patterns_desc": "Regexps of tag names to exclude from scraping results",
       "excluded_tag_patterns_head": "Excluded Tag Patterns",
+      "scraper": "Scraper",
       "scrapers": "Scrapers",
       "search_by_name": "Search by name",
       "supported_types": "Supported types",
@@ -303,6 +307,29 @@
       "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
       "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
       "generated_content": "Generated Content",
+      "identify": {
+        "and_create_missing": "and create missing",
+        "create_missing": "Create missing",
+        "heading": "Identify",
+        "description": "Automatically set scene metadata using stash-box and scraper sources.",
+        "default_options": "Default Options",
+        "explicit_set_description": "The following options will be used where not overridden in the source-specific options.",
+        "field_behaviour": "{strategy} {field}",
+        "field_options": "Field Options",
+        "field_strategies": {
+          "ignore": "Ignore",
+          "merge": "Merge",
+          "overwrite": "Overwrite"
+        },
+        "identifying_scenes": "Identifying {num} {scene}",
+        "identifying_from_paths": "Identifying scenes from the following paths",
+        "include_male_performers": "Include male performers",
+        "set_cover_images": "Set cover images",
+        "set_organized": "Set organised flag",
+        "source_options": "{source} Options",
+        "source": "Source",
+        "sources": "Sources"
+      },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
       "job_queue": "Job Queue",
@@ -338,6 +365,14 @@
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "delete_options": {
+        "description": "Default settings when deleting images, galleries, and scenes.",
+        "heading": "Delete Options",
+        "options": {
+          "delete_file": "Delete file by default",
+          "delete_generated_supporting_files": "Delete generated supporting files by default"
+        }
       },
       "editing": {
         "disable_dropdown_create": {
@@ -460,12 +495,14 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
+    "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "delete_galleries_extra": "…plus any image files not attached to any other gallery.",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
@@ -573,7 +610,10 @@
   "ethnicity": "Ethnicity",
   "eye_color": "Eye Colour",
   "fake_tits": "Fake Tits",
+  "false": "False",
   "favourite": "Favourite",
+  "file": "file",
+  "files": "files",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "filesize": "File Size",
@@ -669,6 +709,7 @@
   "settings": "Settings",
   "sub_tag_of": "Sub-tag of {parent}",
   "stash_id": "Stash ID",
+  "stash_ids": "Stash IDs",
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Levels (empty for all)",
@@ -694,10 +735,12 @@
     "updated_entity": "Updated {entity}"
   },
   "total": "Total",
+  "true": "True",
   "twitter": "Twitter",
   "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
+  "use_default": "Use default",
   "weight": "Weight",
   "years_old": "years old",
   "stats": {

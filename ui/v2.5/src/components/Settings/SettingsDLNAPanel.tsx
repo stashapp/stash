@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Formik, useFormikContext } from "formik";
 import { Button, Form } from "react-bootstrap";
-import { Prompt } from "react-router";
+import { Prompt } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 import {

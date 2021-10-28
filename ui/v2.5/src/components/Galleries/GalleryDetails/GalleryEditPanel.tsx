@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory } from "react-router-dom";
+import { useHistory, Prompt } from "react-router-dom";
 import {
   Button,
   Dropdown,
@@ -31,7 +31,6 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { useFormik } from "formik";
-import { Prompt } from "react-router";
 import { FormUtils, TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";

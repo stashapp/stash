@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type GenerateScreenshotTask struct {
@@ -66,7 +67,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 			UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 		}
 
-		if err := SetSceneScreenshot(checksum, coverImageData); err != nil {
+		if err := scene.SetScreenshot(instance.Paths, checksum, coverImageData); err != nil {
 			return fmt.Errorf("error writing screenshot: %v", err)
 		}
 

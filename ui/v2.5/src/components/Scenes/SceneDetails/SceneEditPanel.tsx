@@ -34,7 +34,7 @@ import { useToast } from "src/hooks";
 import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
-import { Prompt } from "react-router";
+import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
