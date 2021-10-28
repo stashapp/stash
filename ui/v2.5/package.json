@@ -6,9 +6,9 @@
   "sideEffects": false,
   "scripts": {
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "build-ci": "yarn validate && yarn build",
-    "validate": "yarn lint && yarn format-check",
+    "validate": "yarn lint && yarn format-check && tsc",
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
