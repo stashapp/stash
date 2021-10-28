@@ -117,8 +117,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	slideshowDelay := config.GetSlideshowDelay()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
-	deleteFileDefault := config.GetDeleteFileDefault()
-	deleteGeneratedDefault := config.GetDeleteGeneratedDefault()
 
 	return &models.ConfigInterfaceResult{
 		MenuItems:              menuItems,
@@ -135,8 +133,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		DisabledDropdownCreate: config.GetDisableDropdownCreate(),
 		HandyKey:               &handyKey,
 		FunscriptOffset:        &scriptOffset,
-		DeleteFileDefault:      &deleteFileDefault,
-		DeleteGeneratedDefault: &deleteGeneratedDefault,
 	}
 }
 
@@ -167,8 +163,12 @@ func makeConfigScrapingResult() *models.ConfigScrapingResult {
 
 func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 	config := config.GetInstance()
+	deleteFileDefault := config.GetDeleteFileDefault()
+	deleteGeneratedDefault := config.GetDeleteGeneratedDefault()
 
 	return &models.ConfigDefaultSettingsResult{
-		Identify: config.GetDefaultIdentifySettings(),
+		Identify:        config.GetDefaultIdentifySettings(),
+		DeleteFile:      &deleteFileDefault,
+		DeleteGenerated: &deleteGeneratedDefault,
 	}
 }

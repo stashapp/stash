@@ -35,10 +35,10 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
   const { configuration: config } = React.useContext(ConfigurationContext);
 
   const [deleteFile, setDeleteFile] = useState<boolean>(
-    config?.interface.deleteFileDefault ?? false
+    config?.defaults.deleteFile ?? false
   );
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(
-    config?.interface.deleteGeneratedDefault ?? true
+    config?.defaults.deleteGenerated ?? true
   );
 
   const Toast = useToast();
@@ -86,7 +86,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
         </p>
         <ul>
           {props.selected.slice(0, 5).map((s) => (
-            <li>{s.path}</li>
+            <li key={s.path}>{s.path}</li>
           ))}
           {props.selected.length > 5 && (
             <FormattedMessage

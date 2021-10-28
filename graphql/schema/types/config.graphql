@@ -222,10 +222,6 @@ input ConfigInterfaceInput {
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
-  """If true, delete file checkbox will be checked by default"""
-  deleteFileDefault: Boolean
-  """If true, delete generated supporting files checkbox will be checked by default"""
-  deleteGeneratedDefault: Boolean
 }
 
 type ConfigDisableDropdownCreate {
@@ -262,10 +258,6 @@ type ConfigInterfaceResult {
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
-  """If true, delete file checkbox will be checked by default"""
-  deleteFileDefault: Boolean
-  """If true, delete generated files checkbox will be checked by default"""
-  deleteGeneratedDefault: Boolean
 }
 
 input ConfigDLNAInput {
@@ -312,10 +304,20 @@ type ConfigScrapingResult {
 
 type ConfigDefaultSettingsResult {
   identify: IdentifyMetadataTaskOptions
+  
+  """If true, delete file checkbox will be checked by default"""
+  deleteFile: Boolean
+  """If true, delete generated supporting files checkbox will be checked by default"""
+  deleteGenerated: Boolean
 }
 
 input ConfigDefaultSettingsInput {
   identify: IdentifyMetadataInput
+
+  """If true, delete file checkbox will be checked by default"""
+  deleteFile: Boolean
+  """If true, delete generated files checkbox will be checked by default"""
+  deleteGenerated: Boolean
 }
 
 """All configuration settings"""
