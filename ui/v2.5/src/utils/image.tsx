@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 
 const readImage = (file: File, onLoadEnd: (imageData: string) => void) => {
   const reader: FileReader = new FileReader();

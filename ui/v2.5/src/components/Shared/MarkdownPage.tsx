@@ -20,6 +20,8 @@ export const MarkdownPage: React.FC<IPageProps> = ({ page }) => {
   }, [page, markdown]);
 
   return (
-    <ReactMarkdown className="markdown" plugins={[gfm]}>{markdown}</ReactMarkdown>
+    <ReactMarkdown className="markdown" plugins={[gfm]}>
+      {markdown}
+    </ReactMarkdown>
   );
 };
