@@ -481,6 +481,13 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 						imgsDeleted = append(imgsDeleted, img)
 					}
 				}
+
+				for _, gallery := range galleries {
+					err = manager.DeleteGalleryFile(gallery)
+					if err != nil {
+						return err
+					}
+				}
 			}
 
 			if err := qb.Destroy(id); err != nil {
@@ -491,17 +498,6 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		return nil
 	}); err != nil {
 		return false, err
-	}
-
-	// Delete gallery folder / Zip archive
-	if input.DeleteFile != nil && *input.DeleteFile {
-
-		for _, gallery := range galleries {
-			err = manager.DeleteGalleryFile(gallery)
-			if err != nil {
-				return false, err
-			}
-		}
 	}
 
 	// call post hook after performing the other actions
