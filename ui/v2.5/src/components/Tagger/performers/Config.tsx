@@ -46,7 +46,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 <span>
                   {excludedFields.length > 0
                     ? excludedFields.map((f) => (
-                        <Badge variant="secondary" className="tag-item">
+                        <Badge variant="secondary" className="tag-item" key={f}>
                           {TextUtils.capitalize(f)}
                         </Badge>
                       ))

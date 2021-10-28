@@ -271,7 +271,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             -1;
 
           return (
-            <div>
+            <div key={performer.id}>
               <InputGroup className="PerformerTagger-box-link">
                 <InputGroup.Text>{link}</InputGroup.Text>
                 <InputGroup.Append>

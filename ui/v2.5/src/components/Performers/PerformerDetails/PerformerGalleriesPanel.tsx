@@ -4,7 +4,7 @@ import { GalleryList } from "src/components/Galleries/GalleryList";
 import { performerFilterHook } from "src/core/performers";
 
 interface IPerformerDetailsProps {
-  performer: Partial<GQL.PerformerDataFragment>;
+  performer: GQL.PerformerDataFragment;
 }
 
 export const PerformerGalleriesPanel: React.FC<IPerformerDetailsProps> = ({

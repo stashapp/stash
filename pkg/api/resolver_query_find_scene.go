@@ -78,7 +78,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 				result.Count = len(scenes)
 				for _, s := range scenes {
 					result.TotalDuration += s.Duration.Float64
-					size, _ := strconv.Atoi(s.Size.String)
+					size, _ := strconv.ParseFloat(s.Size.String, 64)
 					result.TotalSize += size
 				}
 			}

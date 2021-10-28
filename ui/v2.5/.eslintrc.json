@@ -10,18 +10,23 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "jsx-a11y"
   ],
   "extends": [
       "airbnb-typescript",
       "airbnb/hooks",
+      "plugin:react/recommended",
+      "plugin:import/recommended",
       "prettier",
-      "prettier/prettier",
-      "prettier/react",
-      "prettier/@typescript-eslint"
+      "prettier/prettier"
   ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
   "rules": {
-      "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": 2,
       "@typescript-eslint/naming-convention": [
         "error",
@@ -48,37 +53,17 @@
       ],
       "import/named": "off",
       "import/namespace": "off",
-      "import/default": "off",
-      "import/no-named-as-default-member": "off",
-      "import/no-named-as-default": "off",
-      "import/no-cycle": "off",
-      "import/no-unused-modules": "off",
-      "import/no-deprecated": "off",
       "import/no-unresolved": "off",
-      "import/prefer-default-export": "off",
-      "import/no-extraneous-dependencies": "off",
-      "indent": "off",
-      "@typescript-eslint/indent": "off",
+      "react/display-name": "off",
       "react/prop-types": "off",
-      "react/destructuring-assignment": "off",
-      "react/require-default-props": "off",
-      "react/jsx-props-no-spreading": "off",
-      "react/sort-comp": "off",
       "react/style-prop-object": ["error", {
         "allow": ["FormattedNumber"]
       }],
       "spaced-comment": ["error", "always", {
           "markers": ["/"]
       }],
-      "max-classes-per-file": "off",
-      "no-param-reassign": ["error", { "props": false}],
-      "no-plusplus": "off",
       "prefer-destructuring": ["error", {"object": true, "array": false}],
-      "default-case": "off",
-      "consistent-return": "off",
       "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": true }],
-      "no-underscore-dangle": "off",
-      "no-nested-ternary": "off",
-      "jsx-a11y/media-has-caption": "off"
+      "no-nested-ternary": "off"
   }
 }

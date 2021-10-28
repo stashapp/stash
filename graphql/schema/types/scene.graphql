@@ -123,7 +123,7 @@ type FindScenesResultType {
   """Total duration in seconds"""
   duration: Float!
   """Total file size in bytes"""
-  filesize: Int!
+  filesize: Float!
   scenes: [Scene!]!
 }
 

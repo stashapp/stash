@@ -4,7 +4,7 @@ import { SceneList } from "src/components/Scenes/SceneList";
 import { studioFilterHook } from "src/core/studios";
 
 interface IStudioScenesPanel {
-  studio: Partial<GQL.StudioDataFragment>;
+  studio: GQL.StudioDataFragment;
 }
 
 export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
