@@ -3,8 +3,8 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -16,12 +16,17 @@ type GeneratePhashTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GeneratePhashTask) Start() {
+func (t *GeneratePhashTask) GetDescription() string {
+	return fmt.Sprintf("Generating phash for %s", t.Scene.Path)
+}
+
+func (t *GeneratePhashTask) Start(ctx context.Context) {
 	if !t.shouldGenerate() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
+	ffprobe := instance.FFProbe
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

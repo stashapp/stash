@@ -53,9 +53,9 @@ const htmlDoc1 = `
 								<b>Country of Origin:</b>
 							</td>
 							<td class="paramvalue">
-								
+
 								<span class="country-us">
-								
+
 									United States
 								<span>
 							</span></span></td>
@@ -661,7 +661,7 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 			t.Errorf("Expected performer name %s, got %s", expectedName, actualName)
 		}
 		if expectedURL != actualURL {
-			t.Errorf("Expected perfromer URL %s, got %s", expectedName, actualName)
+			t.Errorf("Expected performer URL %s, got %s", expectedName, actualName)
 		}
 		i++
 	}
@@ -741,7 +741,7 @@ func TestLoadXPathScraperFromYAML(t *testing.T) {
 	const yamlStr = `name: Test
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - test.com
     scraper: performerScraper
 xPathScrapers:
@@ -755,11 +755,11 @@ xPathScrapers:
         postProcess:
           - parseDate: January 2, 2006
       Tags:
-        Name: //tags  
+        Name: //tags
       Movies:
-        Name: //movies  
+        Name: //movies
       Performers:
-        Name: //performers  
+        Name: //performers
       Studio:
         Name: //studio
 `
@@ -848,13 +848,13 @@ func TestSubScrape(t *testing.T) {
 	yamlStr := `name: Test
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - ` + ts.URL + `
     scraper: performerScraper
 xPathScrapers:
   performerScraper:
     performer:
-      Name: 
+      Name:
         selector: //div/a/@href
         postProcess:
           - replace:
@@ -874,7 +874,9 @@ xPathScrapers:
 
 	globalConfig := mockGlobalConfig{}
 
-	performer, err := c.ScrapePerformerURL(ts.URL, nil, globalConfig)
+	client := &http.Client{}
+	s := createScraperFromConfig(*c, client, nil, globalConfig)
+	performer, err := s.Performer.scrapeByURL(ts.URL)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())

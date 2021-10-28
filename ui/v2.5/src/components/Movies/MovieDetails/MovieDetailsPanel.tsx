@@ -6,7 +6,7 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { TextField, URLField } from "src/utils/field";
 
 interface IMovieDetailsPanel {
-  movie: Partial<GQL.MovieDataFragment>;
+  movie: GQL.MovieDataFragment;
 }
 
 export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {

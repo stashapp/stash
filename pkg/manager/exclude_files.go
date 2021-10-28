@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -23,14 +22,13 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 			return files, 0
 		}
 
-		for i := 0; i < len(files); i++ {
-			if matchFileSimple(files[i], fileRegexps) {
-				logger.Infof("File matched pattern. Excluding:\"%s\"", files[i])
+		for _, f := range files {
+			if matchFileSimple(f, fileRegexps) {
+				logger.Infof("File matched pattern. Excluding:\"%s\"", f)
 				exclCount++
 			} else {
-
-				//if pattern doesn't match add file to list
-				results = append(results, files[i])
+				// if pattern doesn't match add file to list
+				results = append(results, f)
 			}
 		}
 		logger.Infof("Excluded %d file(s) from scan", exclCount)
@@ -84,16 +82,5 @@ func matchFileSimple(file string, regExps []*regexp.Regexp) bool {
 			return true
 		}
 	}
-	return false
-}
-
-func matchExtension(path string, extensions []string) bool {
-	ext := filepath.Ext(path)
-	for _, e := range extensions {
-		if strings.EqualFold(ext, "."+e) {
-			return true
-		}
-	}
-
 	return false
 }

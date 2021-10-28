@@ -17,13 +17,34 @@ linters:
     - typecheck
     - unused
     - varcheck
-    # Linters added by the stash project
+    # Linters added by the stash project.
+    - dogsled
+    - errorlint
+    # - exhaustive
+    - exportloopref
+    - gocritic
+    # - goerr113
     - gofmt
+    # - gomnd
+    # - ifshort
+    - misspell
+    # - nakedret
+    - noctx
     - revive
+    - rowserrcheck
+    - sqlclosecheck
 
+# Project-specific linter overrides
 linters-settings:
   gofmt:
     simplify: false
+
+  errorlint:
+    # Disable errorf because there are false positives, where you don't want to wrap
+    #  an error.
+    errorf: false
+    asserts: true
+    comparison: true
 
   revive:
     ignore-generated-header: true
@@ -65,3 +86,6 @@ linters-settings:
       - name: unreachable-code
       - name: redefines-builtin-id
 
+  rowserrcheck:
+    packages:
+      - github.com/jmoiron/sqlx

@@ -64,7 +64,7 @@ interface IStashConfigurationProps {
   setStashes: (v: GQL.StashConfig[]) => void;
 }
 
-export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
+const StashConfiguration: React.FC<IStashConfigurationProps> = ({
   stashes,
   setStashes,
 }) => {

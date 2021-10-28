@@ -6,7 +6,7 @@ import { mutateMetadataAutoTag } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 interface IPerformerOperationsProps {
-  performer: Partial<GQL.PerformerDataFragment>;
+  performer: GQL.PerformerDataFragment;
 }
 
 export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
@@ -15,9 +15,6 @@ export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
   const Toast = useToast();
 
   async function onAutoTag() {
-    if (!performer?.id) {
-      return;
-    }
     try {
       await mutateMetadataAutoTag({ performers: [performer.id] });
       Toast.success({ content: "Started auto tagging" });

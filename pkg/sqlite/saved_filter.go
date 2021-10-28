@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -72,7 +73,7 @@ func (qb *savedFilterQueryBuilder) Destroy(id int) error {
 func (qb *savedFilterQueryBuilder) Find(id int) (*models.SavedFilter, error) {
 	var ret models.SavedFilter
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

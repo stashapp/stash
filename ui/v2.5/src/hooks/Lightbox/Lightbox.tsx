@@ -3,11 +3,11 @@ import * as GQL from "src/core/generated-graphql";
 import {
   Button,
   Col,
-  FormControl,
   InputGroup,
-  FormLabel,
-  OverlayTrigger,
+  Overlay,
   Popover,
+  Form,
+  Row,
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -15,15 +15,17 @@ import debounce from "lodash/debounce";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility } from "src/hooks";
-import { useConfiguration } from "src/core/StashService";
+import { FormattedMessage, useIntl } from "react-intl";
+import { DisplayMode, LightboxImage, ScrollMode } from "./LightboxImage";
+import { ConfigurationContext } from "../Config";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
 const CLASSNAME_LEFT_SPACER = `${CLASSNAME_HEADER}-left-spacer`;
 const CLASSNAME_INDICATOR = `${CLASSNAME_HEADER}-indicator`;
-const CLASSNAME_DELAY = `${CLASSNAME_HEADER}-delay`;
-const CLASSNAME_DELAY_ICON = `${CLASSNAME_DELAY}-icon`;
-const CLASSNAME_DELAY_INLINE = `${CLASSNAME_DELAY}-inline`;
+const CLASSNAME_OPTIONS = `${CLASSNAME_HEADER}-options`;
+const CLASSNAME_OPTIONS_ICON = `${CLASSNAME_OPTIONS}-icon`;
+const CLASSNAME_OPTIONS_INLINE = `${CLASSNAME_OPTIONS}-inline`;
 const CLASSNAME_RIGHT = `${CLASSNAME_HEADER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
@@ -31,7 +33,6 @@ const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
 const CLASSNAME_NAVBUTTON = `${CLASSNAME}-navbutton`;
 const CLASSNAME_NAV = `${CLASSNAME}-nav`;
-const CLASSNAME_NAVZONE = `${CLASSNAME}-navzone`;
 const CLASSNAME_NAVIMAGE = `${CLASSNAME_NAV}-image`;
 const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 
@@ -48,7 +49,7 @@ interface IProps {
   showNavigation: boolean;
   slideshowEnabled?: boolean;
   pageHeader?: string;
-  pageCallback?: (direction: number) => boolean;
+  pageCallback?: (direction: number) => void;
   hide: () => void;
 }
 
@@ -63,21 +64,39 @@ export const LightboxComponent: React.FC<IProps> = ({
   pageCallback,
   hide,
 }) => {
-  const index = useRef<number | null>(null);
+  const [index, setIndex] = useState<number | null>(null);
+  const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
-  const [isSwitchingPage, setIsSwitchingPage] = useState(false);
+  const [isSwitchingPage, setIsSwitchingPage] = useState(true);
   const [isFullscreen, setFullscreen] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+
+  const oldImages = useRef<Image[]>([]);
+
+  const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
+  const oldDisplayMode = useRef(displayMode);
+
+  const [scaleUp, setScaleUp] = useState(false);
+  const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
+  const [resetZoomOnNav, setResetZoomOnNav] = useState(true);
+  const [zoom, setZoom] = useState(1);
+  const [resetPosition, setResetPosition] = useState(false);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const overlayTarget = useRef<HTMLButtonElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const clearIntervalCallback = useRef<() => void>();
   const resetIntervalCallback = useRef<() => void>();
-  const config = useConfiguration();
+
+  const allowNavigation = images.length > 1 || pageCallback;
+
+  const intl = useIntl();
+  const { configuration: config } = React.useContext(ConfigurationContext);
 
   const userSelectedSlideshowDelayOrDefault =
-    config?.data?.configuration.interface.slideshowDelay ??
-    DEFAULT_SLIDESHOW_DELAY;
+    config?.interface.slideshowDelay ?? DEFAULT_SLIDESHOW_DELAY;
 
   // slideshowInterval is used for controlling the logic
   // displaySlideshowInterval is for display purposes only
@@ -94,9 +113,12 @@ export const LightboxComponent: React.FC<IProps> = ({
   );
 
   useEffect(() => {
-    setIsSwitchingPage(false);
-    if (index.current === -1) index.current = images.length - 1;
-  }, [images]);
+    if (images !== oldImages.current && isSwitchingPage) {
+      oldImages.current = images;
+      if (index === -1) setIndex(images.length - 1);
+      setIsSwitchingPage(false);
+    }
+  }, [isSwitchingPage, images, index]);
 
   const disableInstantTransition = debounce(
     () => setInstantTransition(false),
@@ -108,35 +130,56 @@ export const LightboxComponent: React.FC<IProps> = ({
     disableInstantTransition();
   }, [disableInstantTransition]);
 
-  const setIndex = useCallback(
-    (i: number) => {
-      if (images.length < 2) return;
+  useEffect(() => {
+    if (images.length < 2) return;
+    if (index === oldIndex.current) return;
+    if (index === null) return;
 
-      index.current = i;
-      if (carouselRef.current) carouselRef.current.style.left = `${i * -100}vw`;
-      if (indicatorRef.current)
-        indicatorRef.current.innerHTML = `${i + 1} / ${images.length}`;
-      if (navRef.current) {
-        const currentThumb = navRef.current.children[i + 1];
-        if (currentThumb instanceof HTMLImageElement) {
-          const offset =
-            -1 *
-            (currentThumb.offsetLeft -
-              document.documentElement.clientWidth / 2);
-          navRef.current.style.left = `${offset}px`;
+    // reset zoom status
+    // setResetZoom((r) => !r);
+    // setZoomed(false);
+    if (resetZoomOnNav) {
+      setZoom(1);
+    }
+    setResetPosition((r) => !r);
 
-          const previouslySelected = navRef.current.getElementsByClassName(
-            CLASSNAME_NAVSELECTED
-          )?.[0];
-          if (previouslySelected)
-            previouslySelected.className = CLASSNAME_NAVIMAGE;
+    if (carouselRef.current)
+      carouselRef.current.style.left = `${index * -100}vw`;
+    if (indicatorRef.current)
+      indicatorRef.current.innerHTML = `${index + 1} / ${images.length}`;
+    if (navRef.current) {
+      const currentThumb = navRef.current.children[index + 1];
+      if (currentThumb instanceof HTMLImageElement) {
+        const offset =
+          -1 *
+          (currentThumb.offsetLeft - document.documentElement.clientWidth / 2);
+        navRef.current.style.left = `${offset}px`;
 
-          currentThumb.className = `${CLASSNAME_NAVIMAGE} ${CLASSNAME_NAVSELECTED}`;
-        }
+        const previouslySelected = navRef.current.getElementsByClassName(
+          CLASSNAME_NAVSELECTED
+        )?.[0];
+        if (previouslySelected)
+          previouslySelected.className = CLASSNAME_NAVIMAGE;
+
+        currentThumb.className = `${CLASSNAME_NAVIMAGE} ${CLASSNAME_NAVSELECTED}`;
       }
-    },
-    [images]
-  );
+    }
+
+    oldIndex.current = index;
+  }, [index, images.length, resetZoomOnNav]);
+
+  useEffect(() => {
+    if (displayMode !== oldDisplayMode.current) {
+      // reset zoom status
+      // setResetZoom((r) => !r);
+      // setZoomed(false);
+      if (resetZoomOnNav) {
+        setZoom(1);
+      }
+      setResetPosition((r) => !r);
+    }
+    oldDisplayMode.current = displayMode;
+  }, [displayMode, resetZoomOnNav]);
 
   const selectIndex = (e: React.MouseEvent, i: number) => {
     setIndex(i);
@@ -145,12 +188,12 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   useEffect(() => {
     if (isVisible) {
-      if (index.current === null) setIndex(initialIndex);
+      if (index === null) setIndex(initialIndex);
       document.body.style.overflow = "hidden";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (Mousetrap as any).pause();
     }
-  }, [initialIndex, isVisible, setIndex]);
+  }, [initialIndex, isVisible, setIndex, index]);
 
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
@@ -185,54 +228,55 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
-    if (className === CLASSNAME_IMAGE) close();
+    if (className && className.includes && className.includes(CLASSNAME_IMAGE))
+      close();
   };
 
   const handleLeft = useCallback(
     (isUserAction = true) => {
-      if (isSwitchingPage || index.current === -1) return;
+      if (isSwitchingPage || index === -1) return;
 
-      if (index.current === 0) {
+      if (index === 0) {
+        // go to next page, or loop back if no callback is set
         if (pageCallback) {
-          setIsSwitchingPage(true);
+          pageCallback(-1);
           setIndex(-1);
-          // Check if calling page wants to swap page
-          const repage = pageCallback(-1);
-          if (!repage) {
-            setIsSwitchingPage(false);
-            setIndex(0);
-          }
+          setIsSwitchingPage(true);
         } else setIndex(images.length - 1);
-      } else setIndex((index.current ?? 0) - 1);
+      } else setIndex((index ?? 0) - 1);
 
       if (isUserAction && resetIntervalCallback.current) {
         resetIntervalCallback.current();
       }
     },
-    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]
+    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
 
-      if (index.current === images.length - 1) {
+      if (index === images.length - 1) {
+        // go to preview page, or loop back if no callback is set
         if (pageCallback) {
+          pageCallback(1);
           setIsSwitchingPage(true);
           setIndex(0);
-          const repage = pageCallback?.(1);
-          if (!repage) {
-            setIsSwitchingPage(false);
-            setIndex(images.length - 1);
-          }
         } else setIndex(0);
-      } else setIndex((index.current ?? 0) + 1);
+      } else setIndex((index ?? 0) + 1);
 
       if (isUserAction && resetIntervalCallback.current) {
         resetIntervalCallback.current();
       }
     },
-    [images, setIndex, pageCallback, isSwitchingPage, resetIntervalCallback]
+    [
+      images,
+      setIndex,
+      pageCallback,
+      isSwitchingPage,
+      resetIntervalCallback,
+      index,
+    ]
   );
 
   const handleKey = useCallback(
@@ -250,51 +294,6 @@ export const LightboxComponent: React.FC<IProps> = ({
       clearIntervalCallback.current();
     }
     setFullscreen(document.fullscreenElement !== null);
-  };
-
-  const handleTouchStart = (ev: React.TouchEvent<HTMLDivElement>) => {
-    setInstantTransition(true);
-
-    const el = ev.currentTarget;
-    if (ev.touches.length !== 1) return;
-
-    const startX = ev.touches[0].clientX;
-    let position = 0;
-
-    const resetPosition = () => {
-      if (carouselRef.current)
-        carouselRef.current.style.left = `${(index.current ?? 0) * -100}vw`;
-    };
-    const handleMove = (e: TouchEvent) => {
-      position = e.touches[0].clientX;
-      if (carouselRef.current)
-        carouselRef.current.style.left = `calc(${
-          (index.current ?? 0) * -100
-        }vw + ${e.touches[0].clientX - startX}px)`;
-    };
-    const handleEnd = () => {
-      const diff = position - startX;
-      if (diff <= -50) handleRight();
-      else if (diff >= 50) handleLeft();
-      else resetPosition();
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      cleanup();
-    };
-    const handleCancel = () => {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      cleanup();
-      resetPosition();
-    };
-    const cleanup = () => {
-      el.removeEventListener("touchmove", handleMove);
-      el.removeEventListener("touchend", handleEnd);
-      el.removeEventListener("touchcancel", handleCancel);
-      setInstantTransition(false);
-    };
-
-    el.addEventListener("touchmove", handleMove);
-    el.addEventListener("touchend", handleEnd);
-    el.addEventListener("touchcancel", handleCancel);
   };
 
   const [clearCallback, resetCallback] = useInterval(
@@ -332,7 +331,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       src={image.paths.thumbnail ?? ""}
       alt=""
       className={cx(CLASSNAME_NAVIMAGE, {
-        [CLASSNAME_NAVSELECTED]: i === index.current,
+        [CLASSNAME_NAVSELECTED]: i === index,
       })}
       onClick={(e: React.MouseEvent) => selectIndex(e, i)}
       role="presentation"
@@ -359,36 +358,142 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   };
 
-  const currentIndex = index.current === null ? initialIndex : index.current;
+  const currentIndex = index === null ? initialIndex : index;
 
-  const DelayForm: React.FC<{}> = () => (
+  const OptionsForm: React.FC<{}> = () => (
     <>
-      <FormLabel column sm="5">
-        Delay (Sec)
-      </FormLabel>
-      <Col sm="4">
-        <FormControl
-          type="number"
-          className="text-input"
-          min={1}
-          value={displayedSlideshowInterval ?? 0}
-          onChange={onDelayChange}
-          size="sm"
-          id="delay-input"
-        />
-      </Col>
+      {slideshowEnabled ? (
+        <Form.Group controlId="delay" as={Row} className="form-container">
+          <Col xs={4}>
+            <Form.Label className="col-form-label">
+              <FormattedMessage id="dialogs.lightbox.delay" />
+            </Form.Label>
+          </Col>
+          <Col xs={8}>
+            <Form.Control
+              type="number"
+              className="text-input"
+              min={1}
+              value={displayedSlideshowInterval ?? 0}
+              onChange={onDelayChange}
+              size="sm"
+            />
+          </Col>
+        </Form.Group>
+      ) : undefined}
+
+      <Form.Group controlId="displayMode" as={Row}>
+        <Col xs={4}>
+          <Form.Label className="col-form-label">
+            <FormattedMessage id="dialogs.lightbox.display_mode.label" />
+          </Form.Label>
+        </Col>
+        <Col xs={8}>
+          <Form.Control
+            as="select"
+            onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
+            value={displayMode}
+            className="btn-secondary mx-1 mb-1"
+          >
+            <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
+              {intl.formatMessage({
+                id: "dialogs.lightbox.display_mode.original",
+              })}
+            </option>
+            <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
+              {intl.formatMessage({
+                id: "dialogs.lightbox.display_mode.fit_to_screen",
+              })}
+            </option>
+            <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
+              {intl.formatMessage({
+                id: "dialogs.lightbox.display_mode.fit_horizontally",
+              })}
+            </option>
+          </Form.Control>
+        </Col>
+      </Form.Group>
+      <Form.Group>
+        <Form.Group controlId="scaleUp" as={Row} className="mb-1">
+          <Col>
+            <Form.Check
+              type="checkbox"
+              label={intl.formatMessage({
+                id: "dialogs.lightbox.scale_up.label",
+              })}
+              checked={scaleUp}
+              disabled={displayMode === DisplayMode.ORIGINAL}
+              onChange={(v) => setScaleUp(v.currentTarget.checked)}
+            />
+          </Col>
+        </Form.Group>
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.lightbox.scale_up.description",
+          })}
+        </Form.Text>
+      </Form.Group>
+      <Form.Group>
+        <Form.Group controlId="resetZoomOnNav" as={Row} className="mb-1">
+          <Col>
+            <Form.Check
+              type="checkbox"
+              label={intl.formatMessage({
+                id: "dialogs.lightbox.reset_zoom_on_nav",
+              })}
+              checked={resetZoomOnNav}
+              onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
+            />
+          </Col>
+        </Form.Group>
+      </Form.Group>
+      <Form.Group controlId="scrollMode">
+        <Form.Group as={Row} className="mb-1">
+          <Col xs={4}>
+            <Form.Label className="col-form-label">
+              <FormattedMessage id="dialogs.lightbox.scroll_mode.label" />
+            </Form.Label>
+          </Col>
+          <Col xs={8}>
+            <Form.Control
+              as="select"
+              onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
+              value={scrollMode}
+              className="btn-secondary mx-1 mb-1"
+            >
+              <option value={ScrollMode.ZOOM} key={ScrollMode.ZOOM}>
+                {intl.formatMessage({
+                  id: "dialogs.lightbox.scroll_mode.zoom",
+                })}
+              </option>
+              <option value={ScrollMode.PAN_Y} key={ScrollMode.PAN_Y}>
+                {intl.formatMessage({
+                  id: "dialogs.lightbox.scroll_mode.pan_y",
+                })}
+              </option>
+            </Form.Control>
+          </Col>
+        </Form.Group>
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.lightbox.scroll_mode.description",
+          })}
+        </Form.Text>
+      </Form.Group>
     </>
   );
 
-  const delayPopover = (
-    <Popover id="basic-bitch">
-      <Popover.Title>Set slideshow delay</Popover.Title>
+  const optionsPopover = (
+    <>
+      <Popover.Title>
+        {intl.formatMessage({
+          id: "dialogs.lightbox.options",
+        })}
+      </Popover.Title>
       <Popover.Content>
-        <InputGroup>
-          <DelayForm />
-        </InputGroup>
+        <OptionsForm />
       </Popover.Content>
-    </Popover>
+    </>
   );
 
   const element = isVisible ? (
@@ -396,7 +501,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       className={CLASSNAME}
       role="presentation"
       ref={containerRef}
-      onMouseDown={handleClose}
+      onClick={handleClose}
     >
       {images.length > 0 && !isLoading && !isSwitchingPage ? (
         <>
@@ -409,34 +514,59 @@ export const LightboxComponent: React.FC<IProps> = ({
               </b>
             </div>
             <div className={CLASSNAME_RIGHT}>
-              {slideshowEnabled && (
-                <>
-                  <div className={CLASSNAME_DELAY}>
-                    <div className={CLASSNAME_DELAY_ICON}>
-                      <OverlayTrigger
-                        trigger="click"
-                        placement="bottom"
-                        overlay={delayPopover}
-                      >
-                        <Button variant="link" title="Slideshow delay settings">
-                          <Icon icon="cog" />
-                        </Button>
-                      </OverlayTrigger>
-                    </div>
-                    <InputGroup className={CLASSNAME_DELAY_INLINE}>
-                      <DelayForm />
-                    </InputGroup>
-                  </div>
+              <div className={CLASSNAME_OPTIONS}>
+                <div className={CLASSNAME_OPTIONS_ICON}>
                   <Button
+                    ref={overlayTarget}
                     variant="link"
-                    onClick={toggleSlideshow}
-                    title="Toggle Slideshow"
+                    title="Options"
+                    onClick={() => setShowOptions(!showOptions)}
                   >
-                    <Icon
-                      icon={slideshowInterval !== null ? "pause" : "play"}
-                    />
+                    <Icon icon="cog" />
                   </Button>
-                </>
+                  <Overlay
+                    target={overlayTarget.current}
+                    show={showOptions}
+                    placement="bottom"
+                    container={containerRef}
+                    rootClose
+                    onHide={() => setShowOptions(false)}
+                  >
+                    {({ placement, arrowProps, show: _show, ...props }) => (
+                      <div
+                        className="popover"
+                        {...props}
+                        style={{ ...props.style }}
+                      >
+                        {optionsPopover}
+                      </div>
+                    )}
+                  </Overlay>
+                </div>
+                <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
+                  <OptionsForm />
+                </InputGroup>
+              </div>
+              {slideshowEnabled && (
+                <Button
+                  variant="link"
+                  onClick={toggleSlideshow}
+                  title="Toggle Slideshow"
+                >
+                  <Icon icon={slideshowInterval !== null ? "pause" : "play"} />
+                </Button>
+              )}
+              {zoom !== 1 && (
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    setResetPosition(!resetPosition);
+                    setZoom(1);
+                  }}
+                  title="Reset zoom"
+                >
+                  <Icon icon="search-minus" />
+                </Button>
               )}
               {document.fullscreenEnabled && (
                 <Button
@@ -456,8 +586,8 @@ export const LightboxComponent: React.FC<IProps> = ({
               </Button>
             </div>
           </div>
-          <div className={CLASSNAME_DISPLAY} onTouchStart={handleTouchStart}>
-            {images.length > 1 && (
+          <div className={CLASSNAME_DISPLAY}>
+            {allowNavigation && (
               <Button
                 variant="link"
                 onClick={handleLeft}
@@ -474,32 +604,26 @@ export const LightboxComponent: React.FC<IProps> = ({
               style={{ left: `${currentIndex * -100}vw` }}
               ref={carouselRef}
             >
-              {images.map((image) => (
-                <div className={CLASSNAME_IMAGE} key={image.paths.image}>
-                  <picture>
-                    <source
-                      srcSet={image.paths.image ?? ""}
-                      media="(min-width: 800px)"
+              {images.map((image, i) => (
+                <div className={`${CLASSNAME_IMAGE}`} key={image.paths.image}>
+                  {i >= currentIndex - 1 && i <= currentIndex + 1 ? (
+                    <LightboxImage
+                      src={image.paths.image ?? ""}
+                      displayMode={displayMode}
+                      scaleUp={scaleUp}
+                      scrollMode={scrollMode}
+                      onLeft={handleLeft}
+                      onRight={handleRight}
+                      zoom={i === currentIndex ? zoom : 1}
+                      setZoom={(v) => setZoom(v)}
+                      resetPosition={resetPosition}
                     />
-                    <img src={image.paths.thumbnail ?? ""} alt="" />
-                    <div>
-                      <div
-                        aria-hidden
-                        className={CLASSNAME_NAVZONE}
-                        onClick={handleLeft}
-                      />
-                      <div
-                        aria-hidden
-                        className={CLASSNAME_NAVZONE}
-                        onClick={handleRight}
-                      />
-                    </div>
-                  </picture>
+                  ) : undefined}
                 </div>
               ))}
             </div>
 
-            {images.length > 1 && (
+            {allowNavigation && (
               <Button
                 variant="link"
                 onClick={handleRight}

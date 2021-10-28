@@ -75,6 +75,8 @@ export type CriterionType =
   | "tags"
   | "sceneTags"
   | "performerTags"
+  | "parentTags"
+  | "childTags"
   | "tag_count"
   | "performers"
   | "studios"
@@ -114,4 +116,6 @@ export type CriterionType =
   | "galleryChecksum"
   | "phash"
   | "director"
-  | "synopsis";
+  | "synopsis"
+  | "parent_tag_count"
+  | "child_tag_count";

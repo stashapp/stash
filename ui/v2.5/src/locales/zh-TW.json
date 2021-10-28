@@ -84,7 +84,13 @@
     "select_folders": "選擇資料夾",
     "browse_for_image": "選擇圖像…",
     "open_random": "隨機開啟",
-    "scrape_query": "爬蟲搜尋關鍵字"
+    "scrape_query": "爬蟲搜尋關鍵字",
+    "stop": "停止",
+    "scrape_scene_fragment": "部分爬取",
+    "clear": "清除",
+    "next_action": "下一步",
+    "previous_action": "上一步",
+    "finish": "完成"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -118,7 +124,8 @@
       "set_tag_label": "標籤設定",
       "show_male_desc": "選擇搜尋時，是否要取得男優資訊。",
       "show_male_label": "顯示男優",
-      "query_mode_metadata": "Metadata"
+      "query_mode_metadata": "Metadata",
+      "source": "來源"
     },
     "noun_query": "關鍵字",
     "results": {
@@ -130,13 +137,16 @@
       "match_failed_no_result": "未找到結果",
       "match_success": "已成功標記短片",
       "duration_off": "片長差至少 {number} 秒",
-      "duration_unknown": "未知片長"
+      "duration_unknown": "未知片長",
+      "unnamed": "未命名",
+      "phash_matches": "{count} 個 PHash 匹配"
     },
     "verb_match_fp": "特徵碼辨別",
     "verb_matched": "符合",
     "verb_submit_fp": "{fpCount, plural, other{提交 # 個特徵碼}}",
     "verb_toggle_config": "{toggle}{configuration}",
-    "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片"
+    "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片",
+    "verb_scrape_all": "爬取所有"
   },
   "config": {
     "about": {
@@ -192,7 +202,9 @@
         "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
         "stash-box_integration": "整合 Stash-box",
         "username": "用戶名",
-        "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
+        "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證",
+        "trusted_proxies": "已信任代理伺服器",
+        "trusted_proxies_desc": "允許代理 stash 流量的代理伺服器列表。留空以允許內網。"
       },
       "cache_location": "快取的檔案位置",
       "cache_path_head": "快取路徑",
@@ -238,7 +250,11 @@
       "video_ext_head": "影片副檔名",
       "video_head": "影片設定",
       "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
-      "include_audio_head": "包含音訊"
+      "include_audio_head": "包含音訊",
+      "metadata_path": {
+        "heading": "Metadata 路徑",
+        "description": "進行完整匯出或匯入時所使用的檔案位置"
+      }
     },
     "logs": {
       "log_level": "日誌級別"
@@ -287,7 +303,8 @@
       "only_dry_run": "僅模擬作業，不要刪除任何東西",
       "plugin_tasks": "插件排程",
       "scan_for_content_desc": "掃描新內容，並將其新增到資料庫中。",
-      "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）"
+      "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）",
+      "generate_thumbnails_during_scan": "掃描圖片時，順便產生縮圖。"
     },
     "tools": {
       "scene_duplicate_checker": "短片相近性檢查工具",
@@ -369,6 +386,25 @@
             "heading": "自訂演員圖像路徑"
           }
         }
+      },
+      "funscript_offset": {
+        "description": "互動式腳本的時間偏移量 (毫秒)。",
+        "heading": "Funscript 偏移量 (毫秒)"
+      },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "heading": "建立圖片縮圖",
+            "description": "建立縮圖時，將檔案寫至磁碟中"
+          }
+        }
+      },
+      "editing": {
+        "heading": "編輯",
+        "disable_dropdown_create": {
+          "description": "關閉下拉選單建立物件功能",
+          "heading": "關閉下拉選單建立"
+        }
       }
     },
     "plugins": {
@@ -440,7 +476,9 @@
       "preview_seg_duration_head": "預覽片段長度",
       "sprites": "時間軸預覽（用於短片中時間軸的預覽圖）",
       "transcodes": "轉碼（將不支援的影片格式轉換成 MP4）",
-      "video_previews": "影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）"
+      "video_previews": "影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）",
+      "marker_image_previews": "章節預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
+      "marker_screenshots": "章節截圖（靜態 JPG 預覽，僅當預覽類型設置為『靜態』時才需要）"
     },
     "scrape_entity_title": "{entity_type}爬取結果",
     "scrape_results_existing": "現有資訊",
@@ -453,7 +491,29 @@
     },
     "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
     "scenes_found": "已找到 {count} 個短片",
-    "scrape_entity_query": "{entity_type}爬蟲搜尋"
+    "scrape_entity_query": "{entity_type}爬蟲搜尋",
+    "lightbox": {
+      "delay": "延遲 (秒)",
+      "display_mode": {
+        "fit_horizontally": "橫向置放",
+        "label": "顯示模式",
+        "fit_to_screen": "適應螢幕大小",
+        "original": "原始"
+      },
+      "options": "選項",
+      "reset_zoom_on_nav": "當更換圖片時，重置縮放大小",
+      "scale_up": {
+        "label": "縮放適應",
+        "description": "將較小的圖片放大，以填滿整個畫面"
+      },
+      "scroll_mode": {
+        "description": "按住 Shift 以暫時使用其他模式。",
+        "pan_y": "Y 軸滑動",
+        "label": "滑動模式",
+        "zoom": "放大"
+      }
+    },
+    "aliases_must_be_unique": "別名不可重複"
   },
   "dimensions": "解析度",
   "director": "導演",
@@ -636,5 +696,85 @@
   "include_sub_studios": "包含子工作室",
   "include_sub_tags": "包含子標籤",
   "parent_tags": "母標籤",
-  "sub_tags": "子標籤"
+  "sub_tags": "子標籤",
+  "include_parent_tags": "包含母標籤",
+  "parent_tag_count": "母標籤數量",
+  "sub_tag_count": "子標籤數量",
+  "parent_of": "{children} 的母物件",
+  "sub_tag_of": "{parent} 的子標籤",
+  "part_of": "{parent} 的一部分",
+  "setup": {
+    "github_repository": "GitHub 版本庫",
+    "welcome_to_stash": "歡迎使用 Stash",
+    "welcome_specific_config": {
+      "config_path": "Stash 將使用下列設定檔案路徑：{path}",
+      "next_step": "當您準備繼續設定時，點擊「下一步」。",
+      "unable_to_locate_specified_config": "如果看到此畫面的話，則代表 Stash 無法找到您在命令列所提供的設定檔路徑。本安裝畫面將帶您建立新的設定檔案。"
+    },
+    "welcome": {
+      "unable_to_locate_config": "如果看到此畫面的話，則代表 Stash 無法找到先前的設定檔案。本安裝畫面將帶您建立新的設定檔案。",
+      "config_path_logic_explained": "Stash 於執行時，會先在執行目錄中找尋其設定檔案 (<code>config.yml</code>)，當找不到時，它將會再試著使用 <code>$HOME/.stash/config.yml</code>（於 Windows 中，此路徑為 <code>%USERPROFILE%\\.stash\\config.yml</code>）。您也可在執行 Stash 時透過 <code>-c <設定檔路徑></code> 提供設定路徑，或者 <code>--config <path to config file></code>。",
+      "unexpected_explained": "如果您覺得此畫面不應該出現的話，請試著在正確的 Stash 資料夾中重新啟動本程式，或者將設定路徑設為  <code>-c</code>。",
+      "next_step": "如果您已準備好繼續安裝本程式，請選擇您想要儲存設定檔案的位置，然後點擊「下一步」。 ",
+      "store_stash_config": "您希望在哪裡儲存您的 Stash 設定呢？",
+      "in_the_current_working_directory": "於目前的工作路徑",
+      "in_current_stash_directory": "於 <code>$HOME/.stash</code> 資料夾中"
+    },
+    "paths": {
+      "set_up_your_paths": "設置你的路徑",
+      "description": "接下來，我們需要確定可以在哪裡找到你的片片，在哪裡儲存資料庫及其生成檔案等等。如果需要，您稍後可以再更改這些設定。",
+      "where_is_your_porn_located": "你的片片都藏哪？",
+      "where_is_your_porn_located_description": "在此選擇你A片及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
+      "where_can_stash_store_its_database": "Stash 可以在哪裡儲存資料庫？",
+      "where_can_stash_store_its_database_description": "Stash 使用 SQLite 數據庫來儲存您片片的資料。預設情況下，Stash 將在您的設定檔路徑下以 <code>stash-go.sqlite</code> 這個檔案來儲存本資料庫內容。如果您想要更改此設定，請在此輸入您所想要的絕對或相對路徑（相對於當前工作目錄）。",
+      "database_filename_empty_for_default": "資料庫檔案名稱（留空以使用預設）",
+      "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其生成內容？",
+      "where_can_stash_store_its_generated_content_description": "為提供縮略圖、預覽和其他預覽資料，Stash 將自動生成圖片和影片資訊。這包括不支援的檔案格式之轉碼。預設情況下，Stash 將在包含您設定檔案的資料夾中建立一個新的 <code>generated</code> 資料夾。如果要更改此生成媒體的儲存位置，請在此輸入絕對或相對路徑（相對於當前工作目錄）。如果該資料夾不存在，Stash 將自動建立此目錄。",
+      "path_to_generated_directory_empty_for_default": "生成媒體資料夾路徑（留空以使用預設）"
+    },
+    "confirm": {
+      "almost_ready": "我們快要設定完了，請確認以下設定是否正確。若有任何不正確的內容，您可以回上一步進行修改。若一切看起來正確，請點選下方的「確認」按鈕以完成設定。",
+      "nearly_there": "快好了！",
+      "configuration_file_location": "設定檔案路徑：",
+      "database_file_path": "資料庫檔案路徑",
+      "generated_directory": "生成媒體路徑",
+      "stash_library_directories": "Stash 多媒體檔案路徑",
+      "default_db_location": "<設定檔案位置>/stash-go.sqlite",
+      "default_generated_content_location": "<設定檔案位置>/generated"
+    },
+    "errors": {
+      "something_went_wrong": "噢不！好像出了些問題！",
+      "something_went_wrong_while_setting_up_your_system": "設定系統時出了些問題。以下是我們收到的錯誤：{error}",
+      "something_went_wrong_description": "如果您所輸入的資料看起來有問題，請點選上一步返回以更正您的資料。否則，請在 {githubLink} 上提出錯誤或在 {discordLink} 中尋求幫助。"
+    },
+    "success": {
+      "your_system_has_been_created": "成功！您的系統已完成安裝！",
+      "next_config_step_one": "接下來您將被帶到設定頁面。此頁面將允許您自訂要包含和排除的文件，設定用戶名和密碼以保護您的系統，以及一大堆其他選項。",
+      "next_config_step_two": "當您對這些設定感到滿意時，您可以點選 <code>{localized_task}</code> 開始將您的內容掃描到 Stash，然後點擊 <code>{localized_scan}</code>。",
+      "thanks_for_trying_stash": "感謝您使用 Stash！",
+      "welcome_contrib": "我們也歡迎以程式碼（錯誤修復、改進和新功能實作）、測試、錯誤報告、改進和功能請求以及用戶支援的形式做出貢獻。詳情請見程式內說明的 Contribution（貢獻）頁面。",
+      "getting_help": "尋求協助",
+      "in_app_manual_explained": "我們鼓勵您查看本程式內建的說明手冊，您可在本程式的右上角的圖案中開啟此手冊，此圖案如下：{icon}",
+      "help_links": "如果您有任何問題或建議，請隨時在 {githubLink} 中建立新的議題（Issue），或在 {discordLink} 中詢求協助。",
+      "open_collective": "您可查看我們的 {open_collective_link}，了解您可以如何為 Stash 的持續發展做出貢獻。",
+      "support_us": "支持我們"
+    },
+    "creating": {
+      "creating_your_system": "建立系統中",
+      "ffmpeg_notice": "如果 <code>ffmpeg</code> 尚未在您的全域路徑中，請耐心等待 Stash 進行其下載。您可在命令提示字元中查看下載進度。"
+    },
+    "stash_setup_wizard": "Stash 安裝精靈",
+    "migrate": {
+      "migrating_database": "遷移資料庫中",
+      "migration_failed": "遷移失敗",
+      "migration_failed_help": "請進行所需的更正並重試。否則，請在 {githubLink} 上提出問題或在 {discordLink} 中尋求協助。",
+      "migration_failed_error": "遷移資料庫時遇到以下錯誤：",
+      "migration_required": "遷移須知",
+      "schema_too_old": "您當前的資料庫版本為 {databaseSchema}，需要遷移至版本 {appSchema}。如果不進行資料庫遷移，此版本的 Stash 將無法運行。",
+      "migration_irreversible_warning": "架構遷移是不可逆的過程。遷移後，您的資料庫將無法與先前的 Stash 版本相容。",
+      "backup_recommended": "建議您在遷移之前備份現有資料庫檔案。如果需要，我們可以替您完成此操作，並將您的備份複製到 <code>{defaultBackupPath}</code>。",
+      "backup_database_path_leave_empty_to_disable_backup": "備份資料庫路徑（留空以關閉備份）：",
+      "perform_schema_migration": "執行架構遷移"
+    }
+  }
 }

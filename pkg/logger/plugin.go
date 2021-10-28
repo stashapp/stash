@@ -112,6 +112,7 @@ func DetectLogLevel(line string) (*PluginLogLevel, string) {
 	var level *PluginLogLevel
 	for _, l := range validLevels {
 		if l.char == char {
+			l := l // Make a copy of the loop variable
 			level = &l
 			break
 		}
@@ -159,16 +160,14 @@ func (log *PluginLogger) HandleStderrLine(line string) {
 		p, err := strconv.ParseFloat(ll, 64)
 		if err != nil {
 			Errorf("Error parsing progress value '%s': %s", ll, err.Error())
-		} else {
-			// only pass progress through if channel present
-			if log.ProgressChan != nil {
-				// don't block on this
-				select {
-				case log.ProgressChan <- p:
-				default:
-				}
+		} else if log.ProgressChan != nil { // only pass progress through if channel present
+			// don't block on this
+			select {
+			case log.ProgressChan <- p:
+			default:
 			}
 		}
+
 	}
 }
 

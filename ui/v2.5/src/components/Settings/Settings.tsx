@@ -2,7 +2,9 @@ import React from "react";
 import queryString from "query-string";
 import { Card, Tab, Nav, Row, Col } from "react-bootstrap";
 import { useHistory, useLocation } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
+import { TITLE_SUFFIX } from "src/components/Shared";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
 import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
@@ -14,14 +16,22 @@ import { SettingsToolsPanel } from "./SettingsToolsPanel";
 import { SettingsDLNAPanel } from "./SettingsDLNAPanel";
 
 export const Settings: React.FC = () => {
+  const intl = useIntl();
   const location = useLocation();
   const history = useHistory();
   const defaultTab = queryString.parse(location.search).tab ?? "tasks";
 
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 
+  const title_template = `${intl.formatMessage({
+    id: "settings",
+  })} ${TITLE_SUFFIX}`;
   return (
     <Card className="col col-lg-9 mx-auto">
+      <Helmet
+        defaultTitle={title_template}
+        titleTemplate={`%s | ${title_template}`}
+      />
       <Tab.Container
         activeKey={defaultTab}
         id="configuration-tabs"

@@ -39,6 +39,8 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to import/export files"""
+  metadataPath: String
   """Path to cache"""
   cachePath: String
   """Whether to calculate MD5 checksums for scene video files"""
@@ -71,6 +73,8 @@ input ConfigGeneralInput {
   password: String
   """Maximum session cookie age"""
   maxSessionAge: Int
+  """Comma separated list of proxies to allow traffic from"""
+  trustedProxies: [String!]
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -110,6 +114,8 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Path to import/export files"""
+  metadataPath: String!
   """Path to the config file used"""
   configFilePath: String!
   """Path to scrapers"""
@@ -148,6 +154,8 @@ type ConfigGeneralResult {
   password: String!
   """Maximum session cookie age"""
   maxSessionAge: Int!
+  """Comma separated list of proxies to allow traffic from"""
+  trustedProxies: [String!]!
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -180,6 +188,12 @@ type ConfigGeneralResult {
   stashBoxes: [StashBox!]!
 }
 
+input ConfigDisableDropdownCreateInput {
+  performer: Boolean
+  tag: Boolean
+  studio: Boolean
+}
+
 input ConfigInterfaceInput {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
@@ -202,10 +216,18 @@ input ConfigInterfaceInput {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Set to true to disable creating new objects via the dropdown menus"""
+  disableDropdownCreate: ConfigDisableDropdownCreateInput
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
+}
+
+type ConfigDisableDropdownCreate {
+  performer: Boolean!
+  tag: Boolean!
+  studio: Boolean!
 }
 
 type ConfigInterfaceResult {
@@ -230,6 +252,8 @@ type ConfigInterfaceResult {
   language: String
   """Slideshow Delay"""
   slideshowDelay: Int
+  """Fields are true if creating via dropdown menus are disabled"""
+  disabledDropdownCreate: ConfigDisableDropdownCreate!
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
@@ -278,12 +302,21 @@ type ConfigScrapingResult {
   excludeTagPatterns: [String!]!
 }
 
+type ConfigDefaultSettingsResult {
+  identify: IdentifyMetadataTaskOptions
+}
+
+input ConfigDefaultSettingsInput {
+  identify: IdentifyMetadataInput
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
   scraping: ConfigScrapingResult!
+  defaults: ConfigDefaultSettingsResult!
 }
 
 """Directory structure of a path"""

@@ -1,6 +1,10 @@
 package scraper
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"net/http"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 type scraperAction string
 
@@ -19,7 +23,7 @@ func (e scraperAction) IsValid() bool {
 	return false
 }
 
-type scraper interface {
+type scraperActionImpl interface {
 	scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error)
 	scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 	scrapePerformerByURL(url string) (*models.ScrapedPerformer, error)
@@ -36,16 +40,16 @@ type scraper interface {
 	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
 }
 
-func getScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) scraper {
+func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraperActionImpl {
 	switch scraper.Action {
 	case scraperActionScript:
-		return newScriptScraper(scraper, config, globalConfig)
+		return newScriptScraper(scraper, c, globalConfig)
 	case scraperActionStash:
-		return newStashScraper(scraper, txnManager, config, globalConfig)
+		return newStashScraper(scraper, client, txnManager, c, globalConfig)
 	case scraperActionXPath:
-		return newXpathScraper(scraper, txnManager, config, globalConfig)
+		return newXpathScraper(scraper, client, txnManager, c, globalConfig)
 	case scraperActionJson:
-		return newJsonScraper(scraper, txnManager, config, globalConfig)
+		return newJsonScraper(scraper, client, txnManager, c, globalConfig)
 	}
 
 	panic("unknown scraper action: " + scraper.Action)

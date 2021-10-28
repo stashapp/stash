@@ -6,6 +6,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   }
   databasePath
   generatedPath
+  metadataPath
   cachePath
   calculateMD5
   videoFileNamingAlgorithm
@@ -23,6 +24,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   username
   password
   maxSessionAge
+  trustedProxies
   logFile
   logOut
   logLevel
@@ -56,6 +58,11 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   cssEnabled
   language
   slideshowDelay
+  disabledDropdownCreate {
+    performer
+    tag
+    studio
+  }
   handyKey
   funscriptOffset
 }
@@ -74,6 +81,43 @@ fragment ConfigScrapingData on ConfigScrapingResult {
   excludeTagPatterns
 }
 
+fragment IdentifyFieldOptionsData on IdentifyFieldOptions {
+  field
+  strategy
+  createMissing
+}
+
+fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
+  fieldOptions {
+    ...IdentifyFieldOptionsData
+  }
+  setCoverImage
+  setOrganized
+  includeMalePerformers
+}
+
+fragment ScraperSourceData on ScraperSource {
+  stash_box_index
+  stash_box_endpoint
+  scraper_id
+}
+
+fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
+  identify {
+    sources {
+      source {
+        ...ScraperSourceData
+      }
+      options {
+        ...IdentifyMetadataOptionsData
+      }
+    }
+    options {
+      ...IdentifyMetadataOptionsData
+    }
+  }
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
@@ -86,5 +130,8 @@ fragment ConfigData on ConfigResult {
   }
   scraping {
     ...ConfigScrapingData
+  }
+  defaults {
+    ...ConfigDefaultSettingsData
   }
 }

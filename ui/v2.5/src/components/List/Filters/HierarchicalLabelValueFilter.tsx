@@ -23,6 +23,8 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     criterion.criterionOption.type !== "tags" &&
     criterion.criterionOption.type !== "sceneTags" &&
     criterion.criterionOption.type !== "performerTags" &&
+    criterion.criterionOption.type !== "parentTags" &&
+    criterion.criterionOption.type !== "childTags" &&
     criterion.criterionOption.type !== "movies"
   )
     return null;
@@ -49,10 +51,22 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
     onValueChanged(value);
   }
 
+  function criterionOptionTypeToIncludeID(): string {
+    if (criterion.criterionOption.type === "studios") {
+      return "include-sub-studios";
+    }
+    if (criterion.criterionOption.type === "childTags") {
+      return "include-parent-tags";
+    }
+    return "include-sub-tags";
+  }
+
   function criterionOptionTypeToIncludeUIString(): MessageDescriptor {
     const optionType =
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
+        : criterion.criterionOption.type === "childTags"
+        ? "include_parent_tags"
         : "include_sub_tags";
     return {
       id: optionType,
@@ -72,6 +86,7 @@ export const HierarchicalLabelValueFilter: React.FC<IHierarchicalLabelValueFilte
 
       <Form.Group>
         <Form.Check
+          id={criterionOptionTypeToIncludeID()}
           checked={criterion.value.depth !== 0}
           label={intl.formatMessage(criterionOptionTypeToIncludeUIString())}
           onChange={() => onDepthChanged(criterion.value.depth !== 0 ? 0 : -1)}

@@ -63,13 +63,13 @@ func Initialize(databasePath string) error {
 	dbPath = databasePath
 
 	if err := getDatabaseSchemaVersion(); err != nil {
-		return fmt.Errorf("error getting database schema version: %s", err.Error())
+		return fmt.Errorf("error getting database schema version: %v", err)
 	}
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
 		if err := RunMigrations(); err != nil {
-			return fmt.Errorf("error running initial schema migrations: %s", err.Error())
+			return fmt.Errorf("error running initial schema migrations: %v", err)
 		}
 		// RunMigrations calls Initialise. Just return
 		return nil
@@ -165,7 +165,7 @@ func Backup(db *sqlx.DB, backupPath string) error {
 		var err error
 		db, err = sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
 		if err != nil {
-			return fmt.Errorf("Open database %s failed:%s", dbPath, err)
+			return fmt.Errorf("open database %s failed: %v", dbPath, err)
 		}
 		defer db.Close()
 	}
@@ -173,7 +173,7 @@ func Backup(db *sqlx.DB, backupPath string) error {
 	logger.Infof("Backing up database into: %s", backupPath)
 	_, err := db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
-		return fmt.Errorf("vacuum failed: %s", err)
+		return fmt.Errorf("vacuum failed: %v", err)
 	}
 
 	return nil
@@ -298,7 +298,7 @@ func registerCustomDriver() {
 				})
 
 				if err != nil {
-					return fmt.Errorf("error registering natural sort collation: %s", err.Error())
+					return fmt.Errorf("error registering natural sort collation: %v", err)
 				}
 
 				return nil

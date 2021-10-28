@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"strconv"
+	"time"
 )
 
 // Scene stores the metadata for a single video scene.
@@ -33,6 +35,58 @@ type Scene struct {
 	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 	Interactive bool                `db:"interactive" json:"interactive"`
+}
+
+func (s *Scene) File() File {
+	ret := File{
+		Path: s.Path,
+	}
+
+	if s.Checksum.Valid {
+		ret.Checksum = s.Checksum.String
+	}
+	if s.OSHash.Valid {
+		ret.OSHash = s.OSHash.String
+	}
+	if s.FileModTime.Valid {
+		ret.FileModTime = s.FileModTime.Timestamp
+	}
+	if s.Size.Valid {
+		ret.Size = s.Size.String
+	}
+
+	return ret
+}
+
+func (s *Scene) SetFile(f File) {
+	path := f.Path
+	s.Path = path
+
+	if f.Checksum != "" {
+		s.Checksum = sql.NullString{
+			String: f.Checksum,
+			Valid:  true,
+		}
+	}
+	if f.OSHash != "" {
+		s.OSHash = sql.NullString{
+			String: f.OSHash,
+			Valid:  true,
+		}
+	}
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
+		s.FileModTime = NullSQLiteTimestamp{
+			Timestamp: f.FileModTime,
+			Valid:     true,
+		}
+	}
+	if f.Size != "" {
+		s.Size = sql.NullString{
+			String: f.Size,
+			Valid:  true,
+		}
+	}
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
@@ -66,6 +120,60 @@ type ScenePartial struct {
 	Interactive *bool                `db:"interactive" json:"interactive"`
 }
 
+// UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
+func (s ScenePartial) UpdateInput() SceneUpdateInput {
+	boolPtrCopy := func(v *bool) *bool {
+		if v == nil {
+			return nil
+		}
+
+		vv := *v
+		return &vv
+	}
+
+	return SceneUpdateInput{
+		ID:        strconv.Itoa(s.ID),
+		Title:     nullStringPtrToStringPtr(s.Title),
+		Details:   nullStringPtrToStringPtr(s.Details),
+		URL:       nullStringPtrToStringPtr(s.URL),
+		Date:      s.Date.StringPtr(),
+		Rating:    nullInt64PtrToIntPtr(s.Rating),
+		Organized: boolPtrCopy(s.Organized),
+		StudioID:  nullInt64PtrToStringPtr(s.StudioID),
+	}
+}
+
+func (s *ScenePartial) SetFile(f File) {
+	path := f.Path
+	s.Path = &path
+
+	if f.Checksum != "" {
+		s.Checksum = &sql.NullString{
+			String: f.Checksum,
+			Valid:  true,
+		}
+	}
+	if f.OSHash != "" {
+		s.OSHash = &sql.NullString{
+			String: f.OSHash,
+			Valid:  true,
+		}
+	}
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
+		s.FileModTime = &NullSQLiteTimestamp{
+			Timestamp: f.FileModTime,
+			Valid:     true,
+		}
+	}
+	if f.Size != "" {
+		s.Size = &sql.NullString{
+			String: f.Size,
+			Valid:  true,
+		}
+	}
+}
+
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (s Scene) GetTitle() string {
@@ -79,13 +187,7 @@ func (s Scene) GetTitle() string {
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
-	if hashAlgorithm == HashAlgorithmMd5 {
-		return s.Checksum.String
-	} else if hashAlgorithm == HashAlgorithmOshash {
-		return s.OSHash.String
-	}
-
-	panic("unknown hash algorithm")
+	return s.File().GetHash(hashAlgorithm)
 }
 
 func (s Scene) GetMinResolution() int64 {

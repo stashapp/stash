@@ -7,7 +7,7 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { TextField, URLField } from "src/utils/field";
 
 interface IStudioDetailsPanel {
-  studio: Partial<GQL.StudioDataFragment>;
+  studio: GQL.StudioDataFragment;
 }
 
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
@@ -31,7 +31,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   }
 
   function renderTagsList() {
-    if (!studio?.aliases?.length) {
+    if (!studio.aliases?.length) {
       return;
     }
 
@@ -42,7 +42,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
         </dt>
         <dd>
           {studio.aliases.map((a) => (
-            <Badge className="tag-item" variant="secondary">
+            <Badge className="tag-item" variant="secondary" key={a}>
               {a}
             </Badge>
           ))}

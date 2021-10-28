@@ -441,7 +441,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 						return err
 					}
 
-					if len(imgGalleries) == 0 {
+					if len(imgGalleries) == 1 {
 						if err := iqb.Destroy(img.ID); err != nil {
 							return err
 						}
@@ -465,12 +465,14 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	// if delete file is true, then delete the file as well
 	// if it fails, just log a message
 	if input.DeleteFile != nil && *input.DeleteFile {
-		for _, gallery := range galleries {
-			manager.DeleteGalleryFile(gallery)
-		}
-
+		// #1804 - delete the image files first, since they must be removed
+		// before deleting a folder
 		for _, img := range imgsToDelete {
 			manager.DeleteImageFile(img)
+		}
+
+		for _, gallery := range galleries {
+			manager.DeleteGalleryFile(gallery)
 		}
 	}
 

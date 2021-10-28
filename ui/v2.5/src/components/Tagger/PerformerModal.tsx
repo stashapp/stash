@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 
@@ -11,26 +11,24 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
-import { genderToString } from "src/utils/gender";
-import { IStashBoxPerformer } from "./utils";
+import { genderToString, stringToGender } from "src/utils/gender";
 
 interface IPerformerModalProps {
-  performer: IStashBoxPerformer;
+  performer: GQL.ScrapedScenePerformerDataFragment;
   modalVisible: boolean;
   closeModal: () => void;
-  handlePerformerCreate: (imageIndex: number, excludedFields: string[]) => void;
+  onSave: (input: GQL.PerformerCreateInput) => void;
   excludedPerformerFields?: string[];
   header: string;
   icon: IconName;
   create?: boolean;
-  endpoint: string;
+  endpoint?: string;
 }
 
 const PerformerModal: React.FC<IPerformerModalProps> = ({
   modalVisible,
   performer,
-  handlePerformerCreate,
+  onSave,
   closeModal,
   excludedPerformerFields = [],
   header,
@@ -39,6 +37,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
   endpoint,
 }) => {
   const intl = useIntl();
+
   const [imageIndex, setImageIndex] = useState(0);
   const [imageState, setImageState] = useState<
     "loading" | "error" | "loaded" | "empty"
@@ -51,7 +50,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     )
   );
 
-  const { images } = performer;
+  const images = performer.images ?? [];
 
   const changeImage = (index: number) => {
     setImageIndex(index);
@@ -94,7 +93,9 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
               <Icon icon={excluded[name] ? "times" : "check"} />
             </Button>
           )}
-          <strong>{TextUtils.capitalize(name)}:</strong>
+          <strong>
+            <FormattedMessage id={name} />:
+          </strong>
         </div>
         {truncate ? (
           <TruncatedText className="col-7" text={text} />
@@ -104,19 +105,77 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       </div>
     );
 
-  const base = endpoint.match(/https?:\/\/.*?\//)?.[0];
-  const link = base ? `${base}performers/${performer.stash_id}` : undefined;
+  const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
+  const link = base
+    ? `${base}performers/${performer.remote_site_id}`
+    : undefined;
+
+  function onSaveClicked() {
+    if (!performer.name) {
+      throw new Error("performer name must set");
+    }
+
+    const performerData: GQL.PerformerCreateInput = {
+      name: performer.name ?? "",
+      aliases: performer.aliases,
+      gender: stringToGender(performer.gender ?? undefined, true),
+      birthdate: performer.birthdate,
+      ethnicity: performer.ethnicity,
+      eye_color: performer.eye_color,
+      country: performer.country,
+      height: performer.height,
+      measurements: performer.measurements,
+      fake_tits: performer.fake_tits,
+      career_length: performer.career_length,
+      tattoos: performer.tattoos,
+      piercings: performer.piercings,
+      url: performer.url,
+      twitter: performer.twitter,
+      instagram: performer.instagram,
+      image: images.length > imageIndex ? images[imageIndex] : undefined,
+      details: performer.details,
+      death_date: performer.death_date,
+      hair_color: performer.hair_color,
+      weight: Number.parseFloat(performer.weight ?? "") ?? undefined,
+    };
+
+    if (Number.isNaN(performerData.weight ?? 0)) {
+      performerData.weight = undefined;
+    }
+
+    if (performer.tags) {
+      performerData.tag_ids = performer.tags
+        .map((t) => t.stored_id)
+        .filter((t) => t) as string[];
+    }
+
+    // stashid handling code
+    const remoteSiteID = performer.remote_site_id;
+    if (remoteSiteID && endpoint) {
+      performerData.stash_ids = [
+        {
+          endpoint,
+          stash_id: remoteSiteID,
+        },
+      ];
+    }
+
+    // handle exclusions
+    Object.keys(performerData).forEach((k) => {
+      if (excluded[k]) {
+        (performerData as Record<string, unknown>)[k] = undefined;
+      }
+    });
+
+    onSave(performerData);
+  }
 
   return (
     <Modal
       show={modalVisible}
       accept={{
         text: intl.formatMessage({ id: "actions.save" }),
-        onClick: () =>
-          handlePerformerCreate(
-            imageIndex,
-            create ? [] : Object.keys(excluded).filter((key) => excluded[key])
-          ),
+        onClick: onSaveClicked,
       }}
       cancel={{ onClick: () => closeModal(), variant: "secondary" }}
       onHide={() => closeModal()}
@@ -127,7 +186,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       <div className="row">
         <div className="col-7">
           {renderField("name", performer.name)}
-          {renderField("gender", genderToString(performer.gender))}
+          {renderField(
+            "gender",
+            performer.gender ? genderToString(performer.gender) : ""
+          )}
           {renderField("birthdate", performer.birthdate)}
           {renderField("death_date", performer.death_date)}
           {renderField("ethnicity", performer.ethnicity)}
@@ -142,6 +204,11 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {renderField("career_length", performer.career_length)}
           {renderField("tattoos", performer.tattoos, false)}
           {renderField("piercings", performer.piercings, false)}
+          {renderField("weight", performer.weight, false)}
+          {renderField("details", performer.details)}
+          {renderField("url", performer.url)}
+          {renderField("twitter", performer.twitter)}
+          {renderField("instagram", performer.instagram)}
           {link && (
             <h6 className="mt-2">
               <a href={link} target="_blank" rel="noopener noreferrer">

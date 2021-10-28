@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Collapse } from "react-bootstrap";
-import {
-  mutateMetadataGenerate,
-  useConfiguration,
-} from "src/core/StashService";
+import { mutateMetadataGenerate } from "src/core/StashService";
 import { Modal, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ISceneGenerateDialogProps {
   selectedIds: string[];
@@ -17,7 +15,7 @@ interface ISceneGenerateDialogProps {
 export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   props: ISceneGenerateDialogProps
 ) => {
-  const { data, error, loading } = useConfiguration();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const [sprites, setSprites] = useState(true);
   const [phashes, setPhashes] = useState(true);
@@ -49,17 +47,16 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   const Toast = useToast();
 
   useEffect(() => {
-    if (!data?.configuration) return;
+    if (!configuration) return;
 
-    const conf = data.configuration;
-    if (conf.general) {
-      setPreviewSegments(conf.general.previewSegments);
-      setPreviewSegmentDuration(conf.general.previewSegmentDuration);
-      setPreviewExcludeStart(conf.general.previewExcludeStart);
-      setPreviewExcludeEnd(conf.general.previewExcludeEnd);
-      setPreviewPreset(conf.general.previewPreset);
+    if (configuration.general) {
+      setPreviewSegments(configuration.general.previewSegments);
+      setPreviewSegmentDuration(configuration.general.previewSegmentDuration);
+      setPreviewExcludeStart(configuration.general.previewExcludeStart);
+      setPreviewExcludeEnd(configuration.general.previewExcludeEnd);
+      setPreviewPreset(configuration.general.previewPreset);
     }
-  }, [data]);
+  }, [configuration]);
 
   async function onGenerate() {
     try {
@@ -88,15 +85,6 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
     } finally {
       props.onClose();
     }
-  }
-
-  if (error) {
-    Toast.error(error);
-    props.onClose();
-  }
-
-  if (loading) {
-    return <></>;
   }
 
   return (

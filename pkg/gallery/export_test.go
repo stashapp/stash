@@ -25,7 +25,7 @@ const (
 
 const (
 	path      = "path"
-	zip       = true
+	isZip     = true
 	url       = "url"
 	checksum  = "checksum"
 	title     = "title"
@@ -48,7 +48,7 @@ func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
 		ID:       id,
 		Path:     models.NullString(path),
-		Zip:      zip,
+		Zip:      isZip,
 		Title:    models.NullString(title),
 		Checksum: checksum,
 		Date: models.SQLiteDate{
@@ -72,7 +72,7 @@ func createFullJSONGallery() *jsonschema.Gallery {
 	return &jsonschema.Gallery{
 		Title:     title,
 		Path:      path,
-		Zip:       zip,
+		Zip:       isZip,
 		Checksum:  checksum,
 		Date:      date,
 		Details:   details,
@@ -107,11 +107,12 @@ func TestToJSON(t *testing.T) {
 		gallery := s.input
 		json, err := ToBasicJSON(&gallery)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
@@ -162,11 +163,12 @@ func TestGetStudioName(t *testing.T) {
 		gallery := s.input
 		json, err := GetStudioName(mockStudioReader, &gallery)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

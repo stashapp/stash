@@ -25,7 +25,7 @@ func performImport(i importer, duplicateBehaviour models.ImportDuplicateEnum) er
 	name := i.Name()
 	existing, err := i.FindExistingID()
 	if err != nil {
-		return fmt.Errorf("error finding existing objects: %s", err.Error())
+		return fmt.Errorf("error finding existing objects: %v", err)
 	}
 
 	var id int
@@ -41,13 +41,13 @@ func performImport(i importer, duplicateBehaviour models.ImportDuplicateEnum) er
 		// must be overwriting
 		id = *existing
 		if err := i.Update(id); err != nil {
-			return fmt.Errorf("error updating existing object: %s", err.Error())
+			return fmt.Errorf("error updating existing object: %v", err)
 		}
 	} else {
 		// creating
 		createdID, err := i.Create()
 		if err != nil {
-			return fmt.Errorf("error creating object: %s", err.Error())
+			return fmt.Errorf("error creating object: %v", err)
 		}
 
 		id = *createdID

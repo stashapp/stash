@@ -119,32 +119,32 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			createFullStudio(studioID, parentStudioID),
 			createFullJSONStudio(parentStudioName, image, []string{"alias"}),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyStudio(noImageID),
 			createEmptyJSONStudio(),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errImageID, parentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(missingParentStudioID, missingStudioID),
 			createFullJSONStudio("", image, nil),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errStudioID, errParentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(errAliasID, parentStudioID),
 			nil,
 			true,
@@ -184,11 +184,12 @@ func TestToJSON(t *testing.T) {
 		studio := s.input
 		json, err := ToJSON(mockStudioReader, &studio)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
