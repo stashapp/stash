@@ -72,12 +72,17 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       return;
     }
 
+    const fsGalleries = props.selected.filter((g) => g.path);
+    if (fsGalleries.length === 0) {
+      return;
+    }
+
     return (
       <div className="delete-dialog alert alert-danger text-break">
         <p className="font-weight-bold">
           <FormattedMessage
             values={{
-              count: props.selected.length,
+              count: fsGalleries.length,
               singularEntity: intl.formatMessage({ id: "file" }),
               pluralEntity: intl.formatMessage({ id: "files" }),
             }}
@@ -85,19 +90,22 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
           />
         </p>
         <ul>
-          {props.selected.slice(0, 5).map((s) => (
+          {fsGalleries.slice(0, 5).map((s) => (
             <li key={s.path}>{s.path}</li>
           ))}
-          {props.selected.length > 5 && (
+          {fsGalleries.length > 5 && (
             <FormattedMessage
               values={{
-                count: props.selected.length - 5,
+                count: fsGalleries.length - 5,
                 singularEntity: intl.formatMessage({ id: "file" }),
                 pluralEntity: intl.formatMessage({ id: "files" }),
               }}
               id="dialogs.delete_object_overflow"
             />
           )}
+          <li>
+            <FormattedMessage id="dialogs.delete_galleries_extra" />
+          </li>
         </ul>
       </div>
     );

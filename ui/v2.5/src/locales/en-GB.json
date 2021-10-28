@@ -501,6 +501,7 @@
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "delete_galleries_extra": "…plus any image files not attached to any other gallery.",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
