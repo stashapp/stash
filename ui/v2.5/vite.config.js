@@ -10,6 +10,9 @@ export default defineConfig({
   optimizeDeps: {
     entries: "src/index.tsx"
   },
+  server: {
+    cors: false
+  },
   publicDir: 'public',
   assetsInclude: ['**/*.md'],
   plugins: [tsconfigPaths(), viteCompression({
