@@ -33,8 +33,9 @@ import { useToast } from "src/hooks";
 import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
-import { Prompt } from "react-router";
+import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
+import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
@@ -396,7 +397,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               key={s.endpoint}
               onClick={() => onScrapeQueryClicked({ stash_box_index: index })}
             >
-              {s.name ?? "Stash-Box"}
+              {stashboxDisplayName(s.name, index)}
             </Dropdown.Item>
           ))}
           {queryableScrapers.map((s) => (
@@ -463,7 +464,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             key={s.endpoint}
             onClick={() => onScrapeClicked({ stash_box_index: index })}
           >
-            {s.name ?? "Stash-Box"}
+            {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
         ))}
         {fragmentScrapers.map((s) => (

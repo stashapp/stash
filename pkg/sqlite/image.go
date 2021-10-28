@@ -330,7 +330,7 @@ func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions
 	out := struct {
 		Total      int
 		Megapixels float64
-		Size       int
+		Size       float64
 	}{}
 	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err

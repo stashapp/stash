@@ -7,7 +7,7 @@ import { TextField, URLField } from "src/utils/field";
 import { genderToString } from "src/utils/gender";
 
 interface IPerformerDetails {
-  performer: Partial<GQL.PerformerDataFragment>;
+  performer: GQL.PerformerDataFragment;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
@@ -17,7 +17,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const intl = useIntl();
 
   function renderTagsField() {
-    if (!performer.tags?.length) {
+    if (!performer.tags.length) {
       return;
     }
 
@@ -38,7 +38,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   }
 
   function renderStashIDs() {
-    if (!performer.stash_ids?.length) {
+    if (!performer.stash_ids.length) {
       return;
     }
 

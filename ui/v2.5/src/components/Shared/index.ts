@@ -18,3 +18,4 @@ export { RatingStars } from "./RatingStars";
 export { ExportDialog } from "./ExportDialog";
 export { default as DeleteEntityDialog } from "./DeleteEntityDialog";
 export { OperationButton } from "./OperationButton";
+export const TITLE_SUFFIX = " | Stash";

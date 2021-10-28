@@ -50,7 +50,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
     >
       <div className="dialog-container">
         {paths.map((p) => (
-          <Row className="align-items-center mb-1">
+          <Row className="align-items-center mb-1" key={p}>
             <Form.Label column xs={10}>
               {p}
             </Form.Label>

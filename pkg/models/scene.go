@@ -11,7 +11,7 @@ type SceneQueryOptions struct {
 type SceneQueryResult struct {
 	QueryResult
 	TotalDuration float64
-	TotalSize     int
+	TotalSize     float64
 
 	finder     SceneFinder
 	scenes     []*Scene
