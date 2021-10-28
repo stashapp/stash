@@ -116,6 +116,9 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
       ...IdentifyMetadataOptionsData
     }
   }
+
+  deleteFile
+  deleteGenerated
 }
 
 fragment ConfigData on ConfigResult {

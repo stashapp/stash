@@ -147,6 +147,9 @@ const FunscriptOffset = "funscript_offset"
 // Default settings
 const (
 	DefaultIdentifySettings = "defaults.identify_task"
+
+	DeleteFileDefault      = "defaults.delete_file"
+	DeleteGeneratedDefault = "defaults.delete_generated"
 )
 
 // Security
@@ -878,6 +881,20 @@ func (i *Instance) GetFunscriptOffset() int {
 	defer i.Unlock()
 	viper.SetDefault(FunscriptOffset, 0)
 	return viper.GetInt(FunscriptOffset)
+}
+
+func (i *Instance) GetDeleteFileDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteFileDefault, false)
+	return viper.GetBool(DeleteFileDefault)
+}
+
+func (i *Instance) GetDeleteGeneratedDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteGeneratedDefault, true)
+	return viper.GetBool(DeleteGeneratedDefault)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.

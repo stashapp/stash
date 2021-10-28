@@ -163,8 +163,12 @@ func makeConfigScrapingResult() *models.ConfigScrapingResult {
 
 func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 	config := config.GetInstance()
+	deleteFileDefault := config.GetDeleteFileDefault()
+	deleteGeneratedDefault := config.GetDeleteGeneratedDefault()
 
 	return &models.ConfigDefaultSettingsResult{
-		Identify: config.GetDefaultIdentifySettings(),
+		Identify:        config.GetDefaultIdentifySettings(),
+		DeleteFile:      &deleteFileDefault,
+		DeleteGenerated: &deleteGeneratedDefault,
 	}
 }

@@ -359,6 +359,14 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.C
 		c.Set(config.DefaultIdentifySettings, input.Identify)
 	}
 
+	if input.DeleteFile != nil {
+		c.Set(config.DeleteFileDefault, *input.DeleteFile)
+	}
+
+	if input.DeleteGenerated != nil {
+		c.Set(config.DeleteGeneratedDefault, *input.DeleteGenerated)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigDefaultsResult(), err
 	}
