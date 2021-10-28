@@ -372,12 +372,12 @@
         "options": {
           "delete_file": "Delete file by default",
           "delete_generated_supporting_files": "Delete generated supporting files by default"
-        },
-        "desktop_integration": {
-          "desktop_integration": "Desktop Integration",
-          "skip_opening_browser": "Skip Opening Browser",
-          "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
         }
+      },
+      "desktop_integration": {
+        "desktop_integration": "Desktop Integration",
+        "skip_opening_browser": "Skip Opening Browser",
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
       },
       "editing": {
         "disable_dropdown_create": {
