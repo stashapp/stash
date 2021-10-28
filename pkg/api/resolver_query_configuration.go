@@ -110,6 +110,8 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	wallPlayback := config.GetWallPlayback()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
+	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
+	continuePlaylistDefault := config.GetContinuePlaylistDefault()
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
@@ -119,20 +121,22 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	scriptOffset := config.GetFunscriptOffset()
 
 	return &models.ConfigInterfaceResult{
-		MenuItems:              menuItems,
-		SoundOnPreview:         &soundOnPreview,
-		WallShowTitle:          &wallShowTitle,
-		WallPlayback:           &wallPlayback,
-		MaximumLoopDuration:    &maximumLoopDuration,
-		AutostartVideo:         &autostartVideo,
-		ShowStudioAsText:       &showStudioAsText,
-		CSS:                    &css,
-		CSSEnabled:             &cssEnabled,
-		Language:               &language,
-		SlideshowDelay:         &slideshowDelay,
-		DisabledDropdownCreate: config.GetDisableDropdownCreate(),
-		HandyKey:               &handyKey,
-		FunscriptOffset:        &scriptOffset,
+		MenuItems:                    menuItems,
+		SoundOnPreview:               &soundOnPreview,
+		WallShowTitle:                &wallShowTitle,
+		WallPlayback:                 &wallPlayback,
+		MaximumLoopDuration:          &maximumLoopDuration,
+		AutostartVideo:               &autostartVideo,
+		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,
+		ContinuePlaylistDefault:      &continuePlaylistDefault,
+		ShowStudioAsText:             &showStudioAsText,
+		CSS:                          &css,
+		CSSEnabled:                   &cssEnabled,
+		Language:                     &language,
+		SlideshowDelay:               &slideshowDelay,
+		DisabledDropdownCreate:       config.GetDisableDropdownCreate(),
+		HandyKey:                     &handyKey,
+		FunscriptOffset:              &scriptOffset,
 	}
 }
 

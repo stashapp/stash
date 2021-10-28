@@ -130,6 +130,8 @@ const WallShowTitle = "wall_show_title"
 const CustomPerformerImageLocation = "custom_performer_image_location"
 const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
+const AutostartVideoOnPlaySelected = "autostart_video_on_play_selected"
+const ContinuePlaylistDefault = "continue_playlist_default"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
@@ -796,6 +798,20 @@ func (i *Instance) GetAutostartVideo() bool {
 	defer i.Unlock()
 	viper.SetDefault(AutostartVideo, false)
 	return viper.GetBool(AutostartVideo)
+}
+
+func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(AutostartVideoOnPlaySelected, true)
+	return viper.GetBool(AutostartVideoOnPlaySelected)
+}
+
+func (i *Instance) GetContinuePlaylistDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(ContinuePlaylistDefault, false)
+	return viper.GetBool(ContinuePlaylistDefault)
 }
 
 func (i *Instance) GetShowStudioAsText() bool {

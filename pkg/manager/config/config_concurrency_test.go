@@ -94,6 +94,8 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(MaxUploadSize, i.GetMaxUploadSize())
 				i.Set(FunscriptOffset, i.GetFunscriptOffset())
 				i.Set(DefaultIdentifySettings, i.GetDefaultIdentifySettings())
+				i.Set(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
+				i.Set(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 			}
 			wg.Done()
 		}(k)
