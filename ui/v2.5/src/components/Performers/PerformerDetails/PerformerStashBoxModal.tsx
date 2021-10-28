@@ -78,7 +78,7 @@ const PerformerStashBoxModal: React.FC<IProps> = ({
         ) : performers.length > 0 ? (
           <ul className={CLASSNAME_LIST}>
             {performers.map((p) => (
-              <li key={p.url}>
+              <li key={p.remote_site_id}>
                 <Button variant="link" onClick={() => onSelectPerformer(p)}>
                   {p.name}
                 </Button>

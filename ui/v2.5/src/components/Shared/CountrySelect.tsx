@@ -1,5 +1,6 @@
 import React from "react";
 import Select from "react-select";
+import { useIntl } from "react-intl";
 import { getCountries } from "src/utils";
 import CountryLabel from "./CountryLabel";
 
@@ -20,7 +21,8 @@ const CountrySelect: React.FC<IProps> = ({
   showFlag,
   className,
 }) => {
-  const options = getCountries();
+  const { locale } = useIntl();
+  const options = getCountries(locale);
   const selected = options.find((opt) => opt.value === value);
 
   return (

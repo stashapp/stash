@@ -400,35 +400,40 @@ interface IScrapedCountryRowProps {
   result: ScrapeResult<string>;
   onChange: (value: ScrapeResult<string>) => void;
   locked?: boolean;
+  locale?: string;
 }
 
-export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = (props) => {
-  return (
-    <ScrapeDialogRow
-      title={props.title}
-      result={props.result}
-      renderOriginalField={() => (
-        <FormControl
-          value={getCountryByISO(props.result.originalValue)}
-          readOnly
-          className="bg-secondary text-white border-secondary"
-        />
-      )}
-      renderNewField={() => (
-        <CountrySelect
-          value={props.result.newValue}
-          disabled={props.locked}
-          onChange={(value) => {
-            if (props.onChange) {
-              props.onChange(props.result.cloneWithValue(value));
-            }
-          }}
-          showFlag={false}
-          isClearable={false}
-          className="flex-grow-1"
-        />
-      )}
-      onChange={props.onChange}
-    />
-  );
-};
+export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
+  title,
+  result,
+  onChange,
+  locked,
+  locale,
+}) => (
+  <ScrapeDialogRow
+    title={title}
+    result={result}
+    renderOriginalField={() => (
+      <FormControl
+        value={getCountryByISO(result.originalValue, locale)}
+        readOnly
+        className="bg-secondary text-white border-secondary"
+      />
+    )}
+    renderNewField={() => (
+      <CountrySelect
+        value={result.newValue}
+        disabled={locked}
+        onChange={(value) => {
+          if (onChange) {
+            onChange(result.cloneWithValue(value));
+          }
+        }}
+        showFlag={false}
+        isClearable={false}
+        className="flex-grow-1"
+      />
+    )}
+    onChange={onChange}
+  />
+);

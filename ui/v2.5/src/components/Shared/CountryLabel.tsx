@@ -1,4 +1,5 @@
 import React from "react";
+import { useIntl } from "react-intl";
 import { CountryFlag } from "src/components/Shared";
 import { getCountryByISO } from "src/utils";
 
@@ -7,11 +8,15 @@ interface IProps {
   showFlag?: boolean;
 }
 
-const CountryLabel: React.FC<IProps> = ({ country, showFlag = true }) => (
-  <div>
-    {showFlag && <CountryFlag country={country} />}
-    <span className="ml-2">{getCountryByISO(country)}</span>
-  </div>
-);
+const CountryLabel: React.FC<IProps> = ({ country, showFlag = true }) => {
+  const { locale } = useIntl();
+
+  return (
+    <div>
+      {showFlag && <CountryFlag country={country} />}
+      <span className="ml-2">{getCountryByISO(country, locale)}</span>
+    </div>
+  );
+};
 
 export default CountryLabel;
