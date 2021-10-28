@@ -47,10 +47,11 @@ jobs:
     - name: Cache go build
       uses: actions/cache@v2
       env:
-        cache-name: cache-go-cache
+        # increment the number suffix to bump the cache
+        cache-name: cache-go-cache-1
       with:
         path: .go-cache
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
     - name: Start build container
       env:

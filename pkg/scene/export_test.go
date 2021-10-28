@@ -93,7 +93,7 @@ var stashIDs = []*models.StashID{
 	&stashID,
 }
 
-const image = "aW1hZ2VCeXRlcw=="
+const imageBase64 = "aW1hZ2VCeXRlcw=="
 
 var (
 	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
@@ -209,7 +209,7 @@ type basicTestScenario struct {
 var scenarios = []basicTestScenario{
 	{
 		createFullScene(sceneID),
-		createFullJSONScene(image),
+		createFullJSONScene(imageBase64),
 		false,
 	},
 	{

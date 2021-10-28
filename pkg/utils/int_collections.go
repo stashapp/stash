@@ -1,5 +1,7 @@
 package utils
 
+import "strconv"
+
 // IntIndex returns the first index of the provided int value in the provided
 // int slice. It returns -1 if it is not found.
 func IntIndex(vs []int, t int) int {
@@ -46,6 +48,16 @@ func IntExclude(vs []int, toExclude []int) []int {
 		if !IntInclude(toExclude, v) {
 			ret = append(ret, v)
 		}
+	}
+
+	return ret
+}
+
+// IntSliceToStringSlice converts a slice of ints to a slice of strings.
+func IntSliceToStringSlice(ss []int) []string {
+	ret := make([]string, len(ss))
+	for i, v := range ss {
+		ret[i] = strconv.Itoa(v)
 	}
 
 	return ret

@@ -23,6 +23,7 @@ import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
+import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -38,6 +39,7 @@ export const SceneList: React.FC<ISceneList> = ({
   const intl = useIntl();
   const history = useHistory();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
@@ -53,8 +55,13 @@ export const SceneList: React.FC<ISceneList> = ({
       onClick: playRandom,
     },
     {
-      text: intl.formatMessage({ id: "actions.generate" }),
+      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
       onClick: generate,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.identify" })}…`,
+      onClick: identify,
       isDisplayed: showWhenSelected,
     },
     {
@@ -138,6 +145,10 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsGenerateDialogOpen(true);
   }
 
+  async function identify() {
+    setIsIdentifyDialogOpen(true);
+  }
+
   async function onExport() {
     setIsExportAll(false);
     setIsExportDialogOpen(true);
@@ -156,6 +167,21 @@ export const SceneList: React.FC<ISceneList> = ({
             selectedIds={Array.from(selectedIds.values())}
             onClose={() => {
               setIsGenerateDialogOpen(false);
+            }}
+          />
+        </>
+      );
+    }
+  }
+
+  function maybeRenderSceneIdentifyDialog(selectedIds: Set<string>) {
+    if (isIdentifyDialogOpen) {
+      return (
+        <>
+          <IdentifyDialog
+            selectedIds={Array.from(selectedIds.values())}
+            onClose={() => {
+              setIsIdentifyDialogOpen(false);
             }}
           />
         </>
@@ -248,6 +274,7 @@ export const SceneList: React.FC<ISceneList> = ({
     return (
       <>
         {maybeRenderSceneGenerateDialog(selectedIds)}
+        {maybeRenderSceneIdentifyDialog(selectedIds)}
         {maybeRenderSceneExportDialog(selectedIds)}
         {renderScenes(result, filter, selectedIds)}
       </>
