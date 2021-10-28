@@ -8,6 +8,7 @@ import {
   ScrapedImageRow,
   ScrapeDialogRow,
   ScrapedTextAreaRow,
+  ScrapedCountryRow,
 } from "src/components/Shared/ScrapeDialog";
 import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
@@ -448,7 +449,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={ethnicity}
           onChange={(value) => setEthnicity(value)}
         />
-        <ScrapedInputGroupRow
+        <ScrapedCountryRow
           title={intl.formatMessage({ id: "country" })}
           result={country}
           onChange={(value) => setCountry(value)}

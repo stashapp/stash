@@ -1,5 +1,5 @@
 import React from "react";
-import { getISOCountry } from "src/utils";
+import { getCountryByISO } from "src/utils";
 
 interface ICountryFlag {
   country?: string | null;
@@ -7,15 +7,14 @@ interface ICountryFlag {
 }
 
 const CountryFlag: React.FC<ICountryFlag> = ({ className, country }) => {
-  const ISOCountry = getISOCountry(country);
-  if (!ISOCountry?.code) return <></>;
+  if (!country) return <></>;
 
   return (
     <span
       className={`${
         className ?? ""
-      } flag-icon flag-icon-${ISOCountry.code.toLowerCase()}`}
-      title={ISOCountry.name}
+      } flag-icon flag-icon-${country.toLowerCase()}`}
+      title={getCountryByISO(country)}
     />
   );
 };

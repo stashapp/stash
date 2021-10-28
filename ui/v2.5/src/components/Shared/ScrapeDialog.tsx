@@ -20,6 +20,8 @@ import {
   faPlus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { getCountryByISO } from "src/utils";
+import CountrySelect from "./CountrySelect";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -390,5 +392,43 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
         </Form>
       </div>
     </Modal>
+  );
+};
+
+interface IScrapedCountryRowProps {
+  title: string;
+  result: ScrapeResult<string>;
+  onChange: (value: ScrapeResult<string>) => void;
+  locked?: boolean;
+}
+
+export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = (props) => {
+  return (
+    <ScrapeDialogRow
+      title={props.title}
+      result={props.result}
+      renderOriginalField={() => (
+        <FormControl
+          value={getCountryByISO(props.result.originalValue)}
+          readOnly
+          className="bg-secondary text-white border-secondary"
+        />
+      )}
+      renderNewField={() => (
+        <CountrySelect
+          value={props.result.newValue}
+          disabled={props.locked}
+          onChange={(value) => {
+            if (props.onChange) {
+              props.onChange(props.result.cloneWithValue(value));
+            }
+          }}
+          showFlag={false}
+          isClearable={false}
+          className="flex-grow-1"
+        />
+      )}
+      onChange={props.onChange}
+    />
   );
 };
