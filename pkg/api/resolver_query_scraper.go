@@ -121,7 +121,7 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
-		return nil, fmt.Errorf("scene ID input %s: %w", scene.ID, ErrInput)
+		return nil, fmt.Errorf("%w: scene.ID is not an integer: '%s'", ErrInput, scene.ID)
 	}
 
 	content, err := r.scraperCache.ScrapeID(ctx, scraperID, id, models.ScrapeContentTypeScene)
@@ -144,7 +144,7 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models
 func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
 	id, err := strconv.Atoi(gallery.ID)
 	if err != nil {
-		return nil, fmt.Errorf("gallery id input %s: %w", gallery.ID, err)
+		return nil, fmt.Errorf("%w: gallery id is not an integer: '%s'", ErrInput, gallery.ID)
 	}
 
 	content, err := r.scraperCache.ScrapeID(ctx, scraperID, id, models.ScrapeContentTypeGallery)
@@ -177,7 +177,7 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
 	}
 
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
@@ -197,7 +197,7 @@ func (r *queryResolver) QueryStashBoxPerformer(ctx context.Context, input models
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
 	}
 
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
@@ -217,7 +217,7 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if index < 0 || index >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", index)
+		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, index)
 	}
 
 	return stashbox.NewClient(*boxes[index], r.txnManager), nil
@@ -234,7 +234,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			var sceneID int
 			sceneID, err = strconv.Atoi(*input.SceneID)
 			if err != nil {
-				return nil, fmt.Errorf("scraper %s: converting input %s: %w", *source.ScraperID, *input.SceneID, err)
+				return nil, fmt.Errorf("%w: sceneID is not an integer: '%s'", ErrInput, *input.SceneID)
 			}
 			c, err = r.scraperCache.ScrapeID(ctx, *source.ScraperID, sceneID, models.ScrapeContentTypeScene)
 			content = []models.ScrapedContent{c}
@@ -244,7 +244,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 		case input.Query != nil:
 			content, err = r.scraperCache.ScrapeName(ctx, *source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
 		default:
-			err = fmt.Errorf("%w: scene_id, scene_input or query must be set", ErrInput)
+			err = fmt.Errorf("%w: scene_id, scene_input, or query must be set", ErrInput)
 		}
 
 		if err != nil {
@@ -366,7 +366,7 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source models.S
 	case input.GalleryID != nil:
 		galleryID, err := strconv.Atoi(*input.GalleryID)
 		if err != nil {
-			return nil, fmt.Errorf("scraper %s: converting gallery id input %s: %w", *source.ScraperID, *input.GalleryID, err)
+			return nil, fmt.Errorf("%w: gallery id is not an integer: '%s'", ErrInput, *input.GalleryID)
 		}
 		c, err = r.scraperCache.ScrapeID(ctx, *source.ScraperID, galleryID, models.ScrapeContentTypeGallery)
 		if err != nil {
