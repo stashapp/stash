@@ -91,16 +91,16 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 		path := scene.Path
 		performers, err := autotagMatchPerformers(path, r.Performer())
 		if err != nil {
-			return err
+			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 		studio, err := autotagMatchStudio(path, r.Studio())
 		if err != nil {
-			return err
+			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 
 		tags, err := autotagMatchTags(path, r.Tag())
 		if err != nil {
-			return err
+			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
@@ -132,16 +132,16 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 		path := gallery.Path.String
 		performers, err := autotagMatchPerformers(path, r.Performer())
 		if err != nil {
-			return err
+			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
 		studio, err := autotagMatchStudio(path, r.Studio())
 		if err != nil {
-			return err
+			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
 
 		tags, err := autotagMatchTags(path, r.Tag())
 		if err != nil {
-			return err
+			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {

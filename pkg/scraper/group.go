@@ -174,7 +174,7 @@ func (g group) viaName(ctx context.Context, client *http.Client, name string, ty
 		return content, nil
 	}
 
-	return nil, fmt.Errorf("loading %v by name: %w", ty, ErrNotSupported)
+	return nil, fmt.Errorf("%w: cannot load %v by name", ErrNotSupported, ty)
 }
 
 func (g group) supports(ty models.ScrapeContentType) bool {

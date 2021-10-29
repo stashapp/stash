@@ -64,7 +64,7 @@ func newClient(gc GlobalConfig) *http.Client {
 		// defaultCheckRedirect code with max changed from 10 to maxRedirects
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= maxRedirects {
-				return fmt.Errorf("after %d redirects: %w", maxRedirects, ErrMaxRedirects)
+				return fmt.Errorf("%w: gave up after %d redirects", ErrMaxRedirects, maxRedirects)
 			}
 			return nil
 		},
@@ -124,7 +124,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 	})
 
 	if err != nil {
-		logger.Errorf("Error reading scraper configs: %s", err.Error())
+		logger.Errorf("Error reading scraper configs: %v", err)
 		return nil, err
 	}
 
@@ -188,15 +188,15 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 	// find scraper with the provided id
 	s := c.findScraper(id)
 	if s == nil {
-		return nil, fmt.Errorf("scraper with id %s: %w", id, ErrNotFound)
+		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)
 	}
 	if !s.supports(ty) {
-		return nil, fmt.Errorf("scraping %v with scraper %s: %w", ty, id, ErrNotSupported)
+		return nil, fmt.Errorf("%w: cannot use scraper %s as a %v scraper", ErrNotSupported, id, ty)
 	}
 
 	ns, ok := s.(nameScraper)
 	if !ok {
-		return nil, fmt.Errorf("name-scraping with scraper %s: %w", id, ErrNotSupported)
+		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape by name", ErrNotSupported, id)
 	}
 
 	return ns.viaName(ctx, c.client, query, ty)
@@ -206,17 +206,17 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (models.ScrapedContent, error) {
 	s := c.findScraper(id)
 	if s == nil {
-		return nil, fmt.Errorf("scraper %s: %w", id, ErrNotFound)
+		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)
 	}
 
 	fs, ok := s.(fragmentScraper)
 	if !ok {
-		return nil, fmt.Errorf("fragment scraping with scraper %s: type assertion: %w", id, ErrNotSupported)
+		return nil, fmt.Errorf("%w: cannot use scraper %s as a fragment scraper", ErrNotSupported, id)
 	}
 
 	content, err := fs.viaFragment(ctx, c.client, input)
 	if err != nil {
-		return nil, fmt.Errorf("fragment scraping with scraper %s: %w", id, err)
+		return nil, fmt.Errorf("error while fragment scraping with scraper %s: %w", id, err)
 	}
 
 	return c.postScrape(ctx, content)
@@ -230,7 +230,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 		if s.supportsURL(url, ty) {
 			ul, ok := s.(urlScraper)
 			if !ok {
-				return nil, fmt.Errorf("scraper with id %s used as url scraper: %w", s.spec().ID, ErrNotSupported)
+				return nil, fmt.Errorf("%w: cannot use scraper %s as an url scraper", ErrNotSupported, s.spec().ID)
 			}
 			ret, err := ul.viaURL(ctx, c.client, url, ty)
 			if err != nil {
@@ -251,11 +251,11 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	s := c.findScraper(scraperID)
 	if s == nil {
-		return nil, fmt.Errorf("scraper %s: %w", scraperID, ErrNotFound)
+		return nil, fmt.Errorf("%w: id %s", ErrNotFound, scraperID)
 	}
 
 	if !s.supports(ty) {
-		return nil, fmt.Errorf("scraper %s: scraping for %v: %w", scraperID, ty, ErrNotSupported)
+		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape %v content", ErrNotSupported, scraperID, ty)
 	}
 
 	var ret models.ScrapedContent
@@ -263,7 +263,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 	case models.ScrapeContentTypeScene:
 		ss, ok := s.(sceneScraper)
 		if !ok {
-			return nil, fmt.Errorf("scraper with id %s used as scene scraper: %w", scraperID, ErrNotSupported)
+			return nil, fmt.Errorf("%w: cannot use scraper %s as a scene scraper", ErrNotSupported, scraperID)
 		}
 
 		scene, err := getScene(id, c.txnManager)
@@ -278,7 +278,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 	case models.ScrapeContentTypeGallery:
 		gs, ok := s.(galleryScraper)
 		if !ok {
-			return nil, fmt.Errorf("scraper with id %s used as a gallery scraper: %w", scraperID, ErrNotSupported)
+			return nil, fmt.Errorf("%w: cannot use scraper %s as a gallery scraper", ErrNotSupported, scraperID)
 		}
 
 		gallery, err := getGallery(id, c.txnManager)
