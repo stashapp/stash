@@ -65,6 +65,18 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 		newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
 	}
 
+	stashIDs, _ := reader.GetStashIDs(scene.ID)
+	var ret []models.StashID
+	for _, stashID := range stashIDs {
+		newJoin := models.StashID{
+			StashID:  stashID.StashID,
+			Endpoint: stashID.Endpoint,
+		}
+		ret = append(ret, newJoin)
+	}
+
+	newSceneJSON.StashIDs = ret
+
 	return &newSceneJSON, nil
 }
 

@@ -22,6 +22,7 @@ var (
 type flagStruct struct {
 	configFilePath string
 	cpuProfilePath string
+	nobrowser      bool
 }
 
 func GetInstance() *Instance {
@@ -56,6 +57,7 @@ func Initialize() (*Instance, error) {
 		}
 
 		if !instance.isNewSystem {
+			setExistingSystemDefaults(instance)
 			err = instance.SetInitialConfig()
 		}
 	})
@@ -112,6 +114,28 @@ func initConfig(instance *Instance, flags flagStruct) error {
 	return nil
 }
 
+// setExistingSystemDefaults sets config options that are new and unset in an existing install,
+// but should have a separate default than for brand-new systems, to maintain behavior.
+func setExistingSystemDefaults(instance *Instance) {
+	if !instance.isNewSystem {
+		configDirtied := false
+
+		// Existing systems as of the introduction of auto-browser open should retain existing
+		// behavior and not start the browser automatically.
+		if !viper.InConfig("nobrowser") {
+			configDirtied = true
+			viper.Set("nobrowser", "true")
+		}
+
+		if configDirtied {
+			err := viper.WriteConfig()
+			if err != nil {
+				logger.Errorf("Could not save existing system defaults: %s", err.Error())
+			}
+		}
+	}
+}
+
 func initFlags() flagStruct {
 	flags := flagStruct{}
 
@@ -119,6 +143,7 @@ func initFlags() flagStruct {
 	pflag.Int("port", 9999, "port to serve from")
 	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
 	pflag.StringVar(&flags.cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
+	pflag.BoolVar(&flags.nobrowser, "nobrowser", false, "Don't open a browser window after launch")
 
 	pflag.Parse()
 

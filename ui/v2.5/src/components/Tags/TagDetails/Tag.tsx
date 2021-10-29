@@ -2,6 +2,7 @@ import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
@@ -248,76 +249,84 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   }
 
   return (
-    <div className="row">
-      <div className="tag-details col-md-4">
-        <div className="text-center logo-container">
-          {imageEncoding ? (
-            <LoadingIndicator message="Encoding image..." />
+    <>
+      <Helmet>
+        <title>{tag.name}</title>
+      </Helmet>
+      <div className="row">
+        <div className="tag-details col-md-4">
+          <div className="text-center logo-container">
+            {imageEncoding ? (
+              <LoadingIndicator message="Encoding image..." />
+            ) : (
+              renderImage()
+            )}
+            <h2>{tag.name}</h2>
+          </div>
+          {!isEditing ? (
+            <>
+              <TagDetailsPanel tag={tag} />
+              {/* HACK - this is also rendered in the TagEditPanel */}
+              <DetailsEditNavbar
+                objectName={tag.name}
+                isNew={false}
+                isEditing={isEditing}
+                onToggleEdit={onToggleEdit}
+                onSave={() => {}}
+                onImageChange={() => {}}
+                onClearImage={() => {}}
+                onAutoTag={onAutoTag}
+                onDelete={onDelete}
+                customButtons={renderMergeButton()}
+              />
+            </>
           ) : (
-            renderImage()
-          )}
-          <h2>{tag.name}</h2>
-        </div>
-        {!isEditing ? (
-          <>
-            <TagDetailsPanel tag={tag} />
-            {/* HACK - this is also rendered in the TagEditPanel */}
-            <DetailsEditNavbar
-              objectName={tag.name}
-              isNew={false}
-              isEditing={isEditing}
-              onToggleEdit={onToggleEdit}
-              onSave={() => {}}
-              onImageChange={() => {}}
-              onClearImage={() => {}}
-              onAutoTag={onAutoTag}
+            <TagEditPanel
+              tag={tag}
+              onSubmit={onSave}
+              onCancel={onToggleEdit}
               onDelete={onDelete}
-              customButtons={renderMergeButton()}
+              setImage={setImage}
             />
-          </>
-        ) : (
-          <TagEditPanel
-            tag={tag}
-            onSubmit={onSave}
-            onCancel={onToggleEdit}
-            onDelete={onDelete}
-            setImage={setImage}
-          />
-        )}
-      </div>
-      <div className="col col-md-8">
-        <Tabs
-          id="tag-tabs"
-          mountOnEnter
-          activeKey={activeTabKey}
-          onSelect={setActiveTabKey}
-        >
-          <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
-            <TagScenesPanel tag={tag} />
-          </Tab>
-          <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
-            <TagImagesPanel tag={tag} />
-          </Tab>
-          <Tab
-            eventKey="galleries"
-            title={intl.formatMessage({ id: "galleries" })}
+          )}
+        </div>
+        <div className="col col-md-8">
+          <Tabs
+            id="tag-tabs"
+            mountOnEnter
+            activeKey={activeTabKey}
+            onSelect={setActiveTabKey}
           >
-            <TagGalleriesPanel tag={tag} />
-          </Tab>
-          <Tab eventKey="markers" title={intl.formatMessage({ id: "markers" })}>
-            <TagMarkersPanel tag={tag} />
-          </Tab>
-          <Tab
-            eventKey="performers"
-            title={intl.formatMessage({ id: "performers" })}
-          >
-            <TagPerformersPanel tag={tag} />
-          </Tab>
-        </Tabs>
+            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+              <TagScenesPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+              <TagImagesPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="galleries"
+              title={intl.formatMessage({ id: "galleries" })}
+            >
+              <TagGalleriesPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="markers"
+              title={intl.formatMessage({ id: "markers" })}
+            >
+              <TagMarkersPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="performers"
+              title={intl.formatMessage({ id: "performers" })}
+            >
+              <TagPerformersPanel tag={tag} />
+            </Tab>
+          </Tabs>
+        </div>
+        {renderDeleteAlert()}
+        {renderMergeDialog()}
       </div>
-      {renderDeleteAlert()}
-      {renderMergeDialog()}
-    </div>
+    </>
   );
 };
 

@@ -157,16 +157,22 @@ const (
 	DLNAInterfaces         = "dlna.interfaces"
 
 	// Logging options
-	LogFile = "logFile"
-
-	LogOut        = "logOut"
-	defaultLogOut = true
-
-	LogLevel        = "logLevel"
-	defaultLogLevel = "Info"
-
+	LogFile          = "logFile"
+	LogOut           = "logOut"
+	defaultLogOut    = true
+	LogLevel         = "logLevel"
+	defaultLogLevel  = "Info"
 	LogAccess        = "logAccess"
 	defaultLogAccess = true
+
+	DefaultIdentifySettings = "defaults.identify_task"
+
+	DeleteFileDefault      = "defaults.delete_file"
+	DeleteGeneratedDefault = "defaults.delete_generated"
+
+	// Desktop Integration Options
+	NoBrowser        = "noBrowser"
+	NoBrowserDefault = false
 
 	// File upload options
 	MaxUploadSize = "max_upload_size"
@@ -251,6 +257,12 @@ func (i *Instance) HasTLSConfig() bool {
 // empty string if not set.
 func (i *Instance) GetCPUProfilePath() string {
 	return i.cpuProfilePath
+}
+
+func (i *Instance) GetNoBrowserFlag() bool {
+	i.Lock()
+	defer i.Unlock()
+	return viper.GetBool(NoBrowser)
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -529,8 +541,8 @@ func (i *Instance) GetScraperExcludeTagPatterns() []string {
 	return i.getStringSlice(ScraperExcludeTagPatterns)
 }
 
-func (i *Instance) GetStashBoxes() []*models.StashBox {
-	var boxes []*models.StashBox
+func (i *Instance) GetStashBoxes() models.StashBoxes {
+	var boxes models.StashBoxes
 	if err := i.unmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
@@ -886,6 +898,38 @@ func (i *Instance) GetFunscriptOffset() int {
 	return i.getInt(FunscriptOffset)
 }
 
+func (i *Instance) GetDeleteFileDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteFileDefault, false)
+	return viper.GetBool(DeleteFileDefault)
+}
+
+func (i *Instance) GetDeleteGeneratedDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteGeneratedDefault, true)
+	return viper.GetBool(DeleteGeneratedDefault)
+}
+
+// GetDefaultIdentifySettings returns the default Identify task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOptions {
+	i.RLock()
+	defer i.RUnlock()
+
+	if viper.IsSet(DefaultIdentifySettings) {
+		var ret models.IdentifyMetadataTaskOptions
+		if err := viper.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
 // GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
 // When empty, allow from any private network
 func (i *Instance) GetTrustedProxies() []string {
@@ -1061,6 +1105,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	// Set generated to the metadata path for backwards compat
 	i.main.SetDefault(Generated, i.main.GetString(Metadata))
+
+	viper.SetDefault(NoBrowser, NoBrowserDefault)
 
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)

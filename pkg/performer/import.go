@@ -123,6 +123,12 @@ func (i *Importer) PostImport(id int) error {
 		}
 	}
 
+	if len(i.Input.StashIDs) > 0 {
+		if err := i.ReaderWriter.UpdateStashIDs(id, i.Input.StashIDs); err != nil {
+			return fmt.Errorf("error setting stash id: %v", err)
+		}
+	}
+
 	return nil
 }
 

@@ -21,7 +21,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         </dt>
         <dd className="col-9 col-xl-10">
           {tag.aliases.map((a) => (
-            <Badge className="tag-item" variant="secondary">
+            <Badge className="tag-item" variant="secondary" key={a}>
               {a}
             </Badge>
           ))}

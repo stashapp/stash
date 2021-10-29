@@ -11,7 +11,7 @@ type ImageQueryOptions struct {
 type ImageQueryResult struct {
 	QueryResult
 	Megapixels float64
-	TotalSize  int
+	TotalSize  float64
 
 	finder     ImageFinder
 	images     []*Image

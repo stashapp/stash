@@ -91,6 +91,8 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(LogLevel, i.GetLogLevel())
 				i.Set(LogAccess, i.GetLogAccess())
 				i.Set(MaxUploadSize, i.GetMaxUploadSize())
+				i.Set(FunscriptOffset, i.GetFunscriptOffset())
+				i.Set(DefaultIdentifySettings, i.GetDefaultIdentifySettings())
 			}
 			wg.Done()
 		}(k)

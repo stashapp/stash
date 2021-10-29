@@ -339,7 +339,7 @@ export const Setup: React.FC = () => {
     return (
       <ul>
         {stashes.map((s) => (
-          <li>
+          <li key={s.path}>
             <code>{s.path} </code>
             {maybeRenderExclusions(s)}
           </li>
@@ -358,7 +358,7 @@ export const Setup: React.FC = () => {
         stashes,
       });
     } catch (e) {
-      setSetupError(e.message ?? e.toString());
+      if (e instanceof Error) setSetupError(e.message ?? e.toString());
     } finally {
       setLoading(false);
       next();

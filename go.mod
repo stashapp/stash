@@ -22,6 +22,7 @@ require (
 	github.com/json-iterator/go v1.1.9
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac
 	github.com/rs/cors v1.6.0

@@ -2,6 +2,7 @@ import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
+import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
@@ -99,7 +100,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     if (isDeleteAlertOpen && gallery) {
       return (
         <DeleteGalleriesDialog
-          selected={[gallery]}
+          selected={[{ ...gallery, image_count: NaN }]}
           onClose={onDeleteDialogClosed}
         />
       );
@@ -270,6 +271,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
 
   return (
     <div className="row">
+      <Helmet>
+        <title>
+          {gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "")}
+        </title>
+      </Helmet>
       {maybeRenderDeleteDialog()}
       <div className="gallery-tabs">
         <div className="d-none d-xl-block">
