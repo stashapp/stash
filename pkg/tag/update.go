@@ -83,8 +83,26 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 	allDescendants := make(map[int]*models.Tag)
 	excludeIDs := []int{id}
 
+	parentsAncestors, err := qb.FindAllAncestors(id, excludeIDs)
+	if err != nil {
+		return err
+	}
+
+	for _, ancestorTag := range parentsAncestors {
+		allAncestors[ancestorTag.ID] = ancestorTag
+	}
+
+	childsDescendants, err := qb.FindAllDescendants(id, excludeIDs)
+	if err != nil {
+		return err
+	}
+
+	for _, descendentTag := range childsDescendants {
+		allDescendants[descendentTag.ID] = descendentTag
+	}
+
 	validateParent := func(testID, applyingID int) error {
-		if parentTag, exists := allAncestors[testID]; exists {
+		if parentTag, exists := allDescendants[testID]; exists {
 			applyingTag, err := qb.Find(applyingID)
 
 			if err != nil {
@@ -102,7 +120,7 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 	}
 
 	validateChild := func(testID, applyingID int) error {
-		if childTag, exists := allDescendants[testID]; exists {
+		if childTag, exists := allAncestors[testID]; exists {
 			applyingTag, err := qb.Find(applyingID)
 
 			if err != nil {
@@ -116,7 +134,7 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 			}
 		}
 
-		return validateParent(testID, applyingID)
+		return nil
 	}
 
 	if parentIDs == nil {
@@ -142,32 +160,14 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 	}
 
 	for _, parentID := range parentIDs {
-		parentsAncestors, err := qb.FindAllAncestors(parentID, excludeIDs)
-		if err != nil {
+		if err := validateParent(parentID, id); err != nil {
 			return err
-		}
-
-		for _, ancestorTag := range parentsAncestors {
-			if err := validateParent(ancestorTag.ID, parentID); err != nil {
-				return err
-			}
-
-			allAncestors[ancestorTag.ID] = ancestorTag
 		}
 	}
 
 	for _, childID := range childIDs {
-		childsDescendants, err := qb.FindAllDescendants(childID, excludeIDs)
-		if err != nil {
+		if err := validateChild(childID, id); err != nil {
 			return err
-		}
-
-		for _, descendentTag := range childsDescendants {
-			if err := validateChild(descendentTag.ID, childID); err != nil {
-				return err
-			}
-
-			allDescendants[descendentTag.ID] = descendentTag
 		}
 	}
 

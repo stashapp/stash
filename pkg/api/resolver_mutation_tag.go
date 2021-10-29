@@ -200,12 +200,6 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			}
 		}
 
-		if parentIDs != nil || childIDs != nil {
-			if err := tag.EnsureUniqueHierarchy(tagID, parentIDs, childIDs, qb); err != nil {
-				return err
-			}
-		}
-
 		if parentIDs != nil {
 			if err := qb.UpdateParentTags(tagID, parentIDs); err != nil {
 				return err
@@ -214,6 +208,12 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 		if childIDs != nil {
 			if err := qb.UpdateChildTags(tagID, childIDs); err != nil {
+				return err
+			}
+		}
+
+		if parentIDs != nil || childIDs != nil {
+			if err := tag.EnsureUniqueHierarchy(tagID, parentIDs, childIDs, qb); err != nil {
 				return err
 			}
 		}

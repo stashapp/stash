@@ -747,8 +747,6 @@ children AS (
 	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
 )
 SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
-UNION
-SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
 `
 
 	var ret models.Tags
@@ -780,8 +778,6 @@ parents AS (
 	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
 )
 SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
-UNION
-SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
 `
 
 	var ret models.Tags
