@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var ErrOverriddenConfig = errors.New("cannot set overridden value: ")
+var ErrOverriddenConfig = errors.New("cannot set overridden value")
 
 func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
 	err := manager.GetInstance().Setup(ctx, input)
