@@ -34,34 +34,30 @@ type testUniqueHierarchyCase struct {
 	parents  []*models.Tag
 	children []*models.Tag
 
-	onFindAllAncestors   map[int][]*models.Tag
-	onFindAllDescendants map[int][]*models.Tag
+	onFindAllAncestors   []*models.Tag
+	onFindAllDescendants []*models.Tag
 
 	expectedError string
 }
 
 var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 	{
-		id:       1,
-		parents:  []*models.Tag{},
-		children: []*models.Tag{},
-		onFindAllAncestors: map[int][]*models.Tag{
-			1: {},
-		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			1: {},
-		},
-		expectedError: "",
+		id:                   1,
+		parents:              []*models.Tag{},
+		children:             []*models.Tag{},
+		onFindAllAncestors:   []*models.Tag{},
+		onFindAllDescendants: []*models.Tag{},
+		expectedError:        "",
 	},
 	{
 		id:       1,
 		parents:  []*models.Tag{testUniqueHierarchyTags[2]},
 		children: []*models.Tag{testUniqueHierarchyTags[3]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3],
 		},
 		expectedError: "",
 	},
@@ -69,11 +65,11 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		id:       2,
 		parents:  []*models.Tag{testUniqueHierarchyTags[3]},
 		children: make([]*models.Tag, 0),
-		onFindAllAncestors: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[3],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
 		expectedError: "",
 	},
@@ -84,24 +80,23 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 			testUniqueHierarchyTags[4],
 		},
 		children: []*models.Tag{},
-		onFindAllAncestors: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3], testUniqueHierarchyTags[4]},
-			4: {testUniqueHierarchyTags[4]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[3], testUniqueHierarchyTags[4],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"four\" as it already is a parent",
+		expectedError: "",
 	},
 	{
 		id:       2,
 		parents:  []*models.Tag{},
 		children: []*models.Tag{testUniqueHierarchyTags[3]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3],
 		},
 		expectedError: "",
 	},
@@ -112,50 +107,49 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 			testUniqueHierarchyTags[3],
 			testUniqueHierarchyTags[4],
 		},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3], testUniqueHierarchyTags[4]},
-			4: {testUniqueHierarchyTags[4]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3], testUniqueHierarchyTags[4],
 		},
-		expectedError: "Cannot apply tag \"four\" as it already is a child",
+		expectedError: "",
 	},
 	{
 		id:       1,
 		parents:  []*models.Tag{testUniqueHierarchyTags[2]},
 		children: []*models.Tag{testUniqueHierarchyTags[3]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2], testUniqueHierarchyTags[3]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2], testUniqueHierarchyTags[3],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3],
 		},
-		expectedError: "Cannot apply tag \"three\" as it already is a parent",
+		expectedError: "Cannot apply tag \"one\" as it is linked to \"three\" which already is a child",
 	},
 	{
 		id:       1,
 		parents:  []*models.Tag{testUniqueHierarchyTags[2]},
 		children: []*models.Tag{testUniqueHierarchyTags[3]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3], testUniqueHierarchyTags[2]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3], testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"three\" as it is linked to \"two\" which already is a parent",
+		expectedError: "Cannot apply tag \"one\" as it is linked to \"two\" which already is a parent",
 	},
 	{
 		id:       1,
 		parents:  []*models.Tag{testUniqueHierarchyTags[3]},
 		children: []*models.Tag{testUniqueHierarchyTags[3]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[3],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3],
 		},
-		expectedError: "Cannot apply tag \"three\" as it already is a parent",
+		expectedError: "Cannot apply tag \"one\" as it is linked to \"three\" which already is a parent",
 	},
 	{
 		id: 1,
@@ -165,37 +159,37 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		children: []*models.Tag{
 			testUniqueHierarchyTags[3],
 		},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3], testUniqueHierarchyTags[2]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3], testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"three\" as it is linked to \"two\" which already is a parent",
+		expectedError: "Cannot apply tag \"one\" as it is linked to \"two\" which already is a parent",
 	},
 	{
 		id:       1,
 		parents:  []*models.Tag{testUniqueHierarchyTags[2]},
 		children: []*models.Tag{testUniqueHierarchyTags[2]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			2: {testUniqueHierarchyTags[2]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as it already is a parent",
+		expectedError: "Cannot apply tag \"one\" as it is linked to \"two\" which already is a parent",
 	},
 	{
 		id:       2,
 		parents:  []*models.Tag{testUniqueHierarchyTags[1]},
 		children: []*models.Tag{testUniqueHierarchyTags[3]},
-		onFindAllAncestors: map[int][]*models.Tag{
-			1: {testUniqueHierarchyTags[1]},
+		onFindAllAncestors: []*models.Tag{
+			testUniqueHierarchyTags[1],
 		},
-		onFindAllDescendants: map[int][]*models.Tag{
-			3: {testUniqueHierarchyTags[3], testUniqueHierarchyTags[1]},
+		onFindAllDescendants: []*models.Tag{
+			testUniqueHierarchyTags[3], testUniqueHierarchyTags[1],
 		},
-		expectedError: "Cannot apply tag \"three\" as it is linked to \"one\" which already is a parent",
+		expectedError: "Cannot apply tag \"two\" as it is linked to \"one\" which already is a parent",
 	},
 }
 
@@ -213,6 +207,7 @@ func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryPa
 
 	var parentIDs, childIDs []int
 	find := make(map[int]*models.Tag)
+	find[tc.id] = testUniqueHierarchyTags[tc.id]
 	if tc.parents != nil {
 		parentIDs = make([]int, 0)
 		for _, parent := range tc.parents {
@@ -255,33 +250,19 @@ func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryPa
 	}).Maybe()
 
 	mockTagReader.On("FindAllAncestors", mock.AnythingOfType("int"), []int{tc.id}).Return(func(tagID int, excludeIDs []int) []*models.Tag {
-		for id, tags := range tc.onFindAllAncestors {
-			if id == tagID {
-				return tags
-			}
-		}
-		return nil
+		return tc.onFindAllAncestors
 	}, func(tagID int, excludeIDs []int) error {
-		for id := range tc.onFindAllAncestors {
-			if id == tagID {
-				return nil
-			}
+		if tc.onFindAllAncestors != nil {
+			return nil
 		}
 		return fmt.Errorf("undefined ancestors for: %d", tagID)
 	}).Maybe()
 
 	mockTagReader.On("FindAllDescendants", mock.AnythingOfType("int"), []int{tc.id}).Return(func(tagID int, excludeIDs []int) []*models.Tag {
-		for id, tags := range tc.onFindAllDescendants {
-			if id == tagID {
-				return tags
-			}
-		}
-		return nil
+		return tc.onFindAllDescendants
 	}, func(tagID int, excludeIDs []int) error {
-		for id := range tc.onFindAllDescendants {
-			if id == tagID {
-				return nil
-			}
+		if tc.onFindAllDescendants != nil {
+			return nil
 		}
 		return fmt.Errorf("undefined descendants for: %d", tagID)
 	}).Maybe()
