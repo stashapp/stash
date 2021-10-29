@@ -125,7 +125,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.Tag{
 			testUniqueHierarchyTags[3],
 		},
-		expectedError: "Cannot apply tag \"one\" as it is linked to \"three\" which already is a child",
+		expectedError: "Cannot apply tag \"three\" as it is already a child or descendent of \"one\"",
 	},
 	{
 		id:       1,
@@ -137,7 +137,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.Tag{
 			testUniqueHierarchyTags[3], testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"one\" as it is linked to \"two\" which already is a parent",
+		expectedError: "Cannot apply tag \"two\" as it is already a parent or ancestor of \"one\"",
 	},
 	{
 		id:       1,
@@ -149,7 +149,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.Tag{
 			testUniqueHierarchyTags[3],
 		},
-		expectedError: "Cannot apply tag \"one\" as it is linked to \"three\" which already is a parent",
+		expectedError: "Cannot apply tag \"three\" as it is already a parent or ancestor of \"one\"",
 	},
 	{
 		id: 1,
@@ -165,7 +165,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.Tag{
 			testUniqueHierarchyTags[3], testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"one\" as it is linked to \"two\" which already is a parent",
+		expectedError: "Cannot apply tag \"two\" as it is already a parent or ancestor of \"one\"",
 	},
 	{
 		id:       1,
@@ -177,7 +177,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.Tag{
 			testUniqueHierarchyTags[2],
 		},
-		expectedError: "Cannot apply tag \"one\" as it is linked to \"two\" which already is a parent",
+		expectedError: "Cannot apply tag \"two\" as it is already a parent or ancestor of \"one\"",
 	},
 	{
 		id:       2,
@@ -189,7 +189,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.Tag{
 			testUniqueHierarchyTags[3], testUniqueHierarchyTags[1],
 		},
-		expectedError: "Cannot apply tag \"two\" as it is linked to \"one\" which already is a parent",
+		expectedError: "Cannot apply tag \"one\" as it is already a parent or ancestor of \"two\"",
 	},
 }
 

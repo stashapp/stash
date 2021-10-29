@@ -30,11 +30,7 @@ type InvalidTagHierarchyError struct {
 }
 
 func (e *InvalidTagHierarchyError) Error() string {
-	if e.InvalidTag == e.ApplyingTag {
-		return fmt.Sprintf("Cannot apply tag \"%s\" as it already is a %s", e.InvalidTag, e.Direction)
-	} else {
-		return fmt.Sprintf("Cannot apply tag \"%s\" as it is linked to \"%s\" which already is a %s", e.ApplyingTag, e.InvalidTag, e.Direction)
-	}
+	return fmt.Sprintf("Cannot apply tag \"%s\" as it is already a %s of \"%s\"", e.InvalidTag, e.Direction, e.ApplyingTag)
 }
 
 // EnsureTagNameUnique returns an error if the tag name provided
@@ -110,7 +106,7 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 			}
 
 			return &InvalidTagHierarchyError{
-				Direction:   "parent",
+				Direction:   "parent or ancestor",
 				InvalidTag:  parentTag.Name,
 				ApplyingTag: applyingTag.Name,
 			}
@@ -128,7 +124,7 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 			}
 
 			return &InvalidTagHierarchyError{
-				Direction:   "child",
+				Direction:   "child or descendent",
 				InvalidTag:  childTag.Name,
 				ApplyingTag: applyingTag.Name,
 			}
