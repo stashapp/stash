@@ -17,7 +17,7 @@ var (
 
 	// ErrNotSupported is returned when a given invocation isn't supported, and there
 	// is a guard function which should be able to guard against it.
-	ErrNotSupported = errors.New("not supported")
+	ErrNotSupported = errors.New("scraper operation not supported")
 )
 
 // Input coalesces inputs of different types into a single structure.

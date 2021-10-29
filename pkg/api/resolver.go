@@ -22,9 +22,6 @@ var (
 
 	// ErrInput signifies errors where the input isn't valid for some reason. And no more specific error exists.
 	ErrInput = errors.New("input error")
-
-	// ErrConversion signifies conversion errors
-	ErrConversion = errors.New("conversion error")
 )
 
 type hookExecutor interface {

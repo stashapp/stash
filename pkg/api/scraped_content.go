@@ -19,7 +19,7 @@ func marshalScrapedScenes(content []models.ScrapedContent) ([]*models.ScrapedSce
 		if s, ok := c.(*models.ScrapedScene); ok {
 			ret = append(ret, s)
 		} else {
-			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedScene: %w", ErrConversion)
+			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedScene: %w", models.ErrConversion)
 		}
 	}
 
@@ -39,7 +39,7 @@ func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.Scrape
 		if p, ok := c.(*models.ScrapedPerformer); ok {
 			ret = append(ret, p)
 		} else {
-			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedPerformer: %w", ErrConversion)
+			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedPerformer: %w", models.ErrConversion)
 		}
 	}
 
@@ -59,7 +59,7 @@ func marshalScrapedGalleries(content []models.ScrapedContent) ([]*models.Scraped
 		if g, ok := c.(*models.ScrapedGallery); ok {
 			ret = append(ret, g)
 		} else {
-			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedGallery: %w", ErrConversion)
+			return nil, fmt.Errorf("cannot turn ScrapedContent into ScrapedGallery: %w", models.ErrConversion)
 		}
 	}
 
@@ -79,7 +79,7 @@ func marshalScrapedMovies(content []models.ScrapedContent) ([]*models.ScrapedMov
 		if m, ok := c.(*models.ScrapedMovie); ok {
 			ret = append(ret, m)
 		} else {
-			return nil, fmt.Errorf("cannot turn ScrapedConetnt into ScrapedMovie: %w", ErrConversion)
+			return nil, fmt.Errorf("cannot turn ScrapedConetnt into ScrapedMovie: %w", models.ErrConversion)
 		}
 	}
 
