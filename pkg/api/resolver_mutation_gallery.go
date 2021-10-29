@@ -453,7 +453,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 
 				// Check if all images are writable first before trying to do delete,
-				// to reduce the footprint of a transaction rollback if it is
+				// to reduce the footprint of a transaction rollback if it is needed
 				imgToImgGalleries := make(map[*models.Image][]*models.Gallery)
 				for _, img := range currGalleryImgs {
 					imgGalleries, err := qb.FindByImageID(img.ID)

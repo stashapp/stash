@@ -54,7 +54,7 @@ func MarkImageFileForDeletion(image *models.Image) error {
 func UnmarkImageFileForDeletion(image *models.Image) {
 	err := os.Rename(image.Path+stashDeletePostfix, image.Path)
 	if err != nil {
-		logger.Debug("Could not unmark file %s: %s", image.Path, err.Error())
+		logger.Debugf("Could not unmark file %s: %s", image.Path, err.Error())
 	}
 }
 
