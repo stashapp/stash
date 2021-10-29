@@ -193,16 +193,16 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 	},
 }
 
-func TestEnsureUniqueHierarchy(t *testing.T) {
+func TestEnsureHierarchy(t *testing.T) {
 	for _, tc := range testUniqueHierarchyCases {
-		testEnsureUniqueHierarchy(t, tc, false, false)
-		testEnsureUniqueHierarchy(t, tc, true, false)
-		testEnsureUniqueHierarchy(t, tc, false, true)
-		testEnsureUniqueHierarchy(t, tc, true, true)
+		testEnsureHierarchy(t, tc, false, false)
+		testEnsureHierarchy(t, tc, true, false)
+		testEnsureHierarchy(t, tc, false, true)
+		testEnsureHierarchy(t, tc, true, true)
 	}
 }
 
-func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents, queryChildren bool) {
+func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents, queryChildren bool) {
 	mockTagReader := &mocks.TagReaderWriter{}
 
 	var parentIDs, childIDs []int
@@ -267,7 +267,7 @@ func testEnsureUniqueHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryPa
 		return fmt.Errorf("undefined descendants for: %d", tagID)
 	}).Maybe()
 
-	res := EnsureUniqueHierarchy(tc.id, parentIDs, childIDs, mockTagReader)
+	res := EnsureHierarchy(tc.id, parentIDs, childIDs, mockTagReader)
 
 	assert := assert.New(t)
 
