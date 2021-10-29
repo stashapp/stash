@@ -55,7 +55,7 @@ export const ThreeStateBoolean: React.FC<IThreeStateBoolean> = ({
         );
       return (
         <span>
-          {intl.formatMessage({ id: "use_default" })}
+          {intl.formatMessage({ id: "actions.use_default" })}
           {defaultVal}
         </span>
       );

@@ -21,7 +21,6 @@
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
     "delete": "Delete",
-    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery.",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
     "delete_generated_supporting_files": "Delete generated supporting files",
@@ -94,7 +93,9 @@
     "open_random": "Open Random",
     "next_action": "Next",
     "previous_action": "Back",
-    "finish": "Finish"
+    "finish": "Finish",
+    "use_default": "Use default",
+    "ignore": "Ignore"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -316,11 +317,6 @@
         "explicit_set_description": "The following options will be used where not overridden in the source-specific options.",
         "field_behaviour": "{strategy} {field}",
         "field_options": "Field Options",
-        "field_strategies": {
-          "ignore": "Ignore",
-          "merge": "Merge",
-          "overwrite": "Overwrite"
-        },
         "identifying_scenes": "Identifying {num} {scene}",
         "identifying_from_paths": "Identifying scenes from the following paths",
         "include_male_performers": "Include male performers",
@@ -328,7 +324,9 @@
         "set_organized": "Set organised flag",
         "source_options": "{source} Options",
         "source": "Source",
-        "sources": "Sources"
+        "sources": "Sources",
+        "field": "Field",
+        "strategy": "Strategy"
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
@@ -465,7 +463,8 @@
     "performers": "{count, plural, one {Performer} other {Performers}}",
     "scenes": "{count, plural, one {Scene} other {Scenes}}",
     "studios": "{count, plural, one {Studio} other {Studios}}",
-    "tags": "{count, plural, one {Tag} other {Tags}}"
+    "tags": "{count, plural, one {Tag} other {Tags}}",
+    "files": "{count, plural, one {File} other {Files}}"
   },
   "country": "Country",
   "cover_image": "Cover Image",
@@ -566,7 +565,8 @@
     "scrape_results_scraped": "Scraped",
     "set_image_url_title": "Image URL",
     "unsaved_changes": "Unsaved changes. Are you sure you want to leave?",
-    "aliases_must_be_unique": "aliases must be unique"
+    "aliases_must_be_unique": "aliases must be unique",
+    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery."
   },
   "dimensions": "Dimensions",
   "director": "Director",
@@ -745,7 +745,6 @@
   "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
-  "use_default": "Use default",
   "weight": "Weight",
   "years_old": "years old",
   "stats": {
