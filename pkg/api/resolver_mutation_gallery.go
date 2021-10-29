@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -396,12 +397,13 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	var galleries []*models.Gallery
 	var imgsDeleted []*models.Image
+	var currGalleryImgs []*models.Image
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Gallery()
-		iqb := repo.Image()
+	for _, id := range galleryIDs {
+		if err := r.withTxn(ctx, func(repo models.Repository) error {
+			qb := repo.Gallery()
+			iqb := repo.Image()
 
-		for _, id := range galleryIDs {
 			gallery, err := qb.Find(id)
 			if err != nil {
 				return err
@@ -422,12 +424,12 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 					}
 				}
 
-				imgs, err := iqb.FindByGalleryID(id)
+				currGalleryImgs, err = iqb.FindByGalleryID(id)
 				if err != nil {
 					return err
 				}
 
-				for _, img := range imgs {
+				for _, img := range currGalleryImgs {
 
 					// if delete generated is true, then delete the generated files
 					// for the gallery
@@ -441,30 +443,37 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 					if err := iqb.Destroy(img.ID); err != nil {
 						return err
 					}
+					imgsDeleted = append(imgsDeleted, img)
 
 				}
 			} else if input.DeleteFile != nil && *input.DeleteFile {
-				// Delete image if it is only attached to this gallery
-				imgs, err := iqb.FindByGalleryID(id)
+				currGalleryImgs, err = iqb.FindByGalleryID(id)
 				if err != nil {
 					return err
 				}
 
-				for _, img := range imgs {
+				// Check if all images are writable first before trying to do delete,
+				// to reduce the footprint of a transaction rollback if it is
+				imgToImgGalleries := make(map[*models.Image][]*models.Gallery)
+				for _, img := range currGalleryImgs {
 					imgGalleries, err := qb.FindByImageID(img.ID)
 					if err != nil {
 						return err
 					}
+					imgToImgGalleries[img] = imgGalleries
 
 					if len(imgGalleries) == 1 {
-
-						// #1804 - delete the image files first, since they must be removed
-						// before deleting a folder
-						err = manager.DeleteImageFile(img)
+						err := manager.MarkImageFileForDeletion(img)
 						if err != nil {
 							return err
 						}
+					}
 
+				}
+				for _, img := range currGalleryImgs {
+					imgGalleries := imgToImgGalleries[img]
+					// Delete image if it is only attached to this gallery
+					if len(imgGalleries) == 1 {
 						// if delete generated is true, then delete the generated files
 						// for the gallery
 						if input.DeleteGenerated != nil && *input.DeleteGenerated {
@@ -472,6 +481,12 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 							if err != nil {
 								return err
 							}
+						}
+						// #1804 - delete the image files first, since they must be removed
+						// before deleting a folder
+						err = manager.DeleteMarkedImageFile(img)
+						if err != nil {
+							return err
 						}
 
 						if err := iqb.Destroy(img.ID); err != nil {
@@ -481,23 +496,23 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 						imgsDeleted = append(imgsDeleted, img)
 					}
 				}
-
-				for _, gallery := range galleries {
-					err = manager.DeleteGalleryFile(gallery)
-					if err != nil {
-						return err
-					}
+				err = manager.DeleteGalleryFile(gallery)
+				if err != nil {
+					logger.Errorf("Failed to delete empty folder: %s", err.Error())
 				}
 			}
 
 			if err := qb.Destroy(id); err != nil {
 				return err
 			}
-		}
 
-		return nil
-	}); err != nil {
-		return false, err
+			return nil
+		}); err != nil {
+			for _, img := range currGalleryImgs {
+				manager.UnmarkImageFileForDeletion(img)
+			}
+			return false, err
+		}
 	}
 
 	// call post hook after performing the other actions

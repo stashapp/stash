@@ -332,20 +332,29 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Image()
 
-		for _, imageID := range imageIDs {
+		images, err := qb.FindMany(imageIDs)
+		if err != nil {
+			return err
+		}
 
-			image, err := qb.Find(imageID)
-			if err != nil {
-				return err
+		if input.DeleteFile != nil && *input.DeleteFile {
+			for _, img := range images {
+				err = manager.MarkImageFileForDeletion(img)
+				if err != nil {
+					return err
+				}
 			}
+		}
+
+		for _, image := range images {
 
 			if image == nil {
-				return fmt.Errorf("image with id %d not found", imageID)
+				return fmt.Errorf("image with id %d not found", image.ID)
 			}
 
 			// if delete file is true, then delete the file as well
 			if input.DeleteFile != nil && *input.DeleteFile {
-				err = manager.DeleteImageFile(image)
+				err = manager.DeleteMarkedImageFile(image)
 				if err != nil {
 					return err
 				}
@@ -361,13 +370,16 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 			}
 
 			images = append(images, image)
-			if err := qb.Destroy(imageID); err != nil {
+			if err := qb.Destroy(image.ID); err != nil {
 				return err
 			}
 		}
 
 		return nil
 	}); err != nil {
+		for _, i := range images {
+			manager.UnmarkImageFileForDeletion(i)
+		}
 		return false, err
 	}
 
