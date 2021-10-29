@@ -317,6 +317,11 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMerge
 			return err
 		}
 
+		err = tag.EnsureUniqueHierarchy(destination, parents, children, qb)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err

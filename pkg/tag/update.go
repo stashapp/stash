@@ -217,10 +217,5 @@ func MergeHierarchy(destination int, sources []int, qb models.TagReader) ([]int,
 		mergedChildren = addTo(mergedChildren, children)
 	}
 
-	err := EnsureUniqueHierarchy(destination, mergedParents, mergedChildren, qb)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	return mergedParents, mergedChildren, nil
 }
