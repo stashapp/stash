@@ -164,6 +164,17 @@ func (c Cache) ListScrapers(k models.ScrapeContentType) []*models.Scraper {
 	return ret
 }
 
+// GetScraper returns the scraper matching the provided id.
+func (c Cache) GetScraper(scraperID string) *models.Scraper {
+	s := c.findScraper(scraperID)
+	if s != nil {
+		spec := s.spec()
+		return &spec
+	}
+
+	return nil
+}
+
 func (c Cache) findScraper(scraperID string) scraper {
 	s, ok := c.scrapers[scraperID]
 	if ok {

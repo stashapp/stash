@@ -641,34 +641,27 @@ func (_m *SceneReaderWriter) IncrementOCounter(id int) (int, error) {
 	return r0, r1
 }
 
-// Query provides a mock function with given fields: sceneFilter, findFilter
-func (_m *SceneReaderWriter) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
-	ret := _m.Called(sceneFilter, findFilter)
+// Query provides a mock function with given fields: options
+func (_m *SceneReaderWriter) Query(options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+	ret := _m.Called(options)
 
-	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(*models.SceneFilterType, *models.FindFilterType) []*models.Scene); ok {
-		r0 = rf(sceneFilter, findFilter)
+	var r0 *models.SceneQueryResult
+	if rf, ok := ret.Get(0).(func(models.SceneQueryOptions) *models.SceneQueryResult); ok {
+		r0 = rf(options)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Scene)
+			r0 = ret.Get(0).(*models.SceneQueryResult)
 		}
 	}
 
-	var r1 int
-	if rf, ok := ret.Get(1).(func(*models.SceneFilterType, *models.FindFilterType) int); ok {
-		r1 = rf(sceneFilter, findFilter)
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.SceneQueryOptions) error); ok {
+		r1 = rf(options)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Error(1)
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(*models.SceneFilterType, *models.FindFilterType) error); ok {
-		r2 = rf(sceneFilter, findFilter)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // ResetOCounter provides a mock function with given fields: id

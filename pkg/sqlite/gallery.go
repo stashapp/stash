@@ -233,8 +233,7 @@ func (qb *galleryQueryBuilder) makeQuery(galleryFilter *models.GalleryFilterType
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(galleryTable)
+	distinctIDs(&query, galleryTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.title", "galleries.path", "galleries.checksum"}

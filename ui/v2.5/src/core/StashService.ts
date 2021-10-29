@@ -757,6 +757,12 @@ export const useGenerateAPIKey = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
+export const useConfigureDefaults = () =>
+  GQL.useConfigureDefaultsMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
 export const useJobsSubscribe = () => GQL.useJobsSubscribeSubscription();
 
 export const useConfigureDLNA = () =>
@@ -989,6 +995,12 @@ export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
 export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
   client.mutate<GQL.MetadataCleanMutation>({
     mutation: GQL.MetadataCleanDocument,
+    variables: { input },
+  });
+
+export const mutateMetadataIdentify = (input: GQL.IdentifyMetadataInput) =>
+  client.mutate<GQL.MetadataIdentifyMutation>({
+    mutation: GQL.MetadataIdentifyDocument,
     variables: { input },
   });
 

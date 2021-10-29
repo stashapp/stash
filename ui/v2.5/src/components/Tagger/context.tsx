@@ -141,7 +141,7 @@ export const TaggerContext: React.FC = ({ children }) => {
       sourceInput: {
         stash_box_index: i,
       },
-      displayName: `stash-box: ${s.name}`,
+      displayName: `stash-box: ${s.name || `#${i + 1}`}`,
       supportSceneFragment: true,
       supportSceneQuery: true,
     }));

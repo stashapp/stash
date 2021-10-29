@@ -18,7 +18,6 @@ import { ConfigurationContext } from "src/hooks/Config";
 import StashSearchResult from "./StashSearchResult";
 import PerformerConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
-import { IStashBoxPerformer, selectPerformers } from "../utils";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 
@@ -51,7 +50,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const intl = useIntl();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    Record<string, IStashBoxPerformer[]>
+    Record<string, GQL.ScrapedPerformerDataFragment[]>
   >({});
   const [searchErrors, setSearchErrors] = useState<
     Record<string, string | undefined>
@@ -87,13 +86,13 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   >({});
   const [loadingUpdate, setLoadingUpdate] = useState<string | undefined>();
   const [modalPerformer, setModalPerformer] = useState<
-    IStashBoxPerformer | undefined
+    GQL.ScrapedPerformerDataFragment | undefined
   >();
 
   const doBoxSearch = (performerID: string, searchVal: string) => {
     stashBoxPerformerQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
-        const s = selectPerformers(queryData.data?.scrapeSinglePerformer ?? []);
+        const s = queryData.data?.scrapeSinglePerformer ?? [];
         setSearchResults({
           ...searchResults,
           [performerID]: s,
@@ -130,13 +129,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     });
     stashBoxPerformerQuery(stashID, endpointIndex)
       .then((queryData) => {
-        const data = selectPerformers(
-          queryData.data?.scrapeSinglePerformer ?? []
-        );
+        const data = queryData.data?.scrapeSinglePerformer ?? [];
         if (data.length > 0) {
           setModalPerformer({
             ...data[0],
-            id: performerID,
+            stored_id: performerID,
           });
         }
       })
@@ -168,20 +165,20 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   const updatePerformer = useUpdatePerformer();
 
   const handlePerformerUpdate = async (input: GQL.PerformerCreateInput) => {
-    const performerData = modalPerformer;
     setModalPerformer(undefined);
-    if (performerData?.id) {
+    const performerID = modalPerformer?.stored_id;
+    if (performerID) {
       const updateData: GQL.PerformerUpdateInput = {
-        id: performerData.id,
         ...input,
+        id: performerID,
       };
 
       const res = await updatePerformer(updateData);
       if (!res.data?.performerUpdate)
         setError({
           ...error,
-          [performerData.id]: {
-            message: `Failed to save performer "${performerData.name}"`,
+          [performerID]: {
+            message: `Failed to save performer "${modalPerformer?.name}"`,
             details:
               res?.errors?.[0].message ===
               "UNIQUE constraint failed: performers.checksum"
@@ -274,7 +271,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             -1;
 
           return (
-            <div>
+            <div key={performer.id}>
               <InputGroup className="PerformerTagger-box-link">
                 <InputGroup.Text>{link}</InputGroup.Text>
                 <InputGroup.Append>

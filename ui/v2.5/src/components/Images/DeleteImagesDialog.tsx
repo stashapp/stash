@@ -4,7 +4,8 @@ import { useImagesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { useIntl } from "react-intl";
+import { ConfigurationContext } from "src/hooks/Config";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IDeleteImageDialogProps {
   selected: GQL.SlimImageDataFragment[];
@@ -31,8 +32,14 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     { count: props.selected.length, singularEntity, pluralEntity }
   );
 
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
+  const [deleteFile, setDeleteFile] = useState<boolean>(
+    config?.defaults.deleteFile ?? false
+  );
+  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(
+    config?.defaults.deleteGenerated ?? true
+  );
 
   const Toast = useToast();
   const [deleteImage] = useImagesDestroy(getImagesDeleteInput());
@@ -60,6 +67,42 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     props.onClose(true);
   }
 
+  function maybeRenderDeleteFileAlert() {
+    if (!deleteFile) {
+      return;
+    }
+
+    return (
+      <div className="delete-dialog alert alert-danger text-break">
+        <p className="font-weight-bold">
+          <FormattedMessage
+            values={{
+              count: props.selected.length,
+              singularEntity: intl.formatMessage({ id: "file" }),
+              pluralEntity: intl.formatMessage({ id: "files" }),
+            }}
+            id="dialogs.delete_alert"
+          />
+        </p>
+        <ul>
+          {props.selected.slice(0, 5).map((s) => (
+            <li key={s.path}>{s.path}</li>
+          ))}
+          {props.selected.length > 5 && (
+            <FormattedMessage
+              values={{
+                count: props.selected.length - 5,
+                singularEntity: intl.formatMessage({ id: "file" }),
+                pluralEntity: intl.formatMessage({ id: "files" }),
+              }}
+              id="dialogs.delete_object_overflow"
+            />
+          )}
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <Modal
       show
@@ -78,6 +121,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
       isRunning={isDeleting}
     >
       <p>{message}</p>
+      {maybeRenderDeleteFileAlert()}
       <Form>
         <Form.Check
           id="delete-image"

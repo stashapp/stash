@@ -44,3 +44,12 @@ func (t SQLiteDate) Value() (driver.Value, error) {
 	}
 	return result, nil
 }
+
+func (t *SQLiteDate) StringPtr() *string {
+	if t == nil || !t.Valid {
+		return nil
+	}
+
+	vv := t.String
+	return &vv
+}

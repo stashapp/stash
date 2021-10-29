@@ -26,6 +26,10 @@ mutation MetadataAutoTag($input: AutoTagMetadataInput!) {
   metadataAutoTag(input: $input)
 }
 
+mutation MetadataIdentify($input: IdentifyMetadataInput!) {
+  metadataIdentify(input: $input)
+}
+
 mutation MetadataClean($input: CleanMetadataInput!) {
   metadataClean(input: $input)
 }

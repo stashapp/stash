@@ -84,12 +84,16 @@ func (j *joins) add(newJoins ...join) {
 }
 
 func (j *joins) toSQL() string {
+	if len(*j) == 0 {
+		return ""
+	}
+
 	var ret []string
 	for _, jj := range *j {
 		ret = append(ret, jj.toSQL())
 	}
 
-	return strings.Join(ret, " ")
+	return " " + strings.Join(ret, " ")
 }
 
 type filterBuilder struct {
