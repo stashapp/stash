@@ -118,53 +118,50 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			performerQuery := r.Performer()
 
-			if performerId == "*" {
-				var err error
-				performers, err = performerQuery.All()
-				if err != nil {
-					return fmt.Errorf("error querying performers: %v", err)
-				}
-			} else {
-				performerIdInt, err := strconv.Atoi(performerId)
-				if err != nil {
-					return fmt.Errorf("error parsing performer id %s: %s", performerId, err.Error())
-				}
-
-				performer, err := performerQuery.Find(performerIdInt)
-				if err != nil {
-					return fmt.Errorf("error finding performer id %s: %s", performerId, err.Error())
-				}
-
-				if performer == nil {
-					return fmt.Errorf("performer with id %s not found", performerId)
-				}
-				performers = append(performers, performer)
+			performerIdInt, err := strconv.Atoi(performerId)
+			if err != nil {
+				return fmt.Errorf("error parsing performer id %s: %s", performerId, err.Error())
 			}
 
-			for _, performer := range performers {
+			performer, err := performerQuery.Find(performerIdInt)
+			if err != nil {
+				return fmt.Errorf("error finding performer id %s: %s", performerId, err.Error())
+			}
+
+			if performer == nil {
+				return fmt.Errorf("performer with id %s not found", performerId)
+			}
+			performers = append(performers, performer)
+
+			if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				if job.IsCancelled(ctx) {
 					logger.Info("Stopping due to user request")
 					return nil
 				}
-
-				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					if err := autotag.PerformerScenes(performer, paths, r.Scene()); err != nil {
-						return err
-					}
-					if err := autotag.PerformerImages(performer, paths, r.Image()); err != nil {
-						return err
-					}
-					if err := autotag.PerformerGalleries(performer, paths, r.Gallery()); err != nil {
-						return err
-					}
-
+				if err := autotag.PerformerScenes(performer, paths, r.Scene()); err != nil {
+					return err
+				}
+				if job.IsCancelled(ctx) {
+					logger.Info("Stopping due to user request")
 					return nil
-				}); err != nil {
-					return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name.String, err.Error())
+				}
+				if err := autotag.PerformerImages(performer, paths, r.Image()); err != nil {
+					return err
+				}
+				if job.IsCancelled(ctx) {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+				if err := autotag.PerformerGalleries(performer, paths, r.Gallery()); err != nil {
+					return err
 				}
 
-				progress.Increment()
+				return nil
+			}); err != nil {
+				return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name.String, err.Error())
 			}
+
+			progress.Increment()
 
 			return nil
 		}); err != nil {
@@ -180,63 +177,55 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 	}
 
 	for _, studioId := range studioIds {
-		var studios []*models.Studio
-
 		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			studioQuery := r.Studio()
-			if studioId == "*" {
-				var err error
-				studios, err = studioQuery.All()
-				if err != nil {
-					return fmt.Errorf("error querying studios: %v", err)
-				}
-			} else {
-				studioIdInt, err := strconv.Atoi(studioId)
-				if err != nil {
-					return fmt.Errorf("error parsing studio id %s: %s", studioId, err.Error())
-				}
-
-				studio, err := studioQuery.Find(studioIdInt)
-				if err != nil {
-					return fmt.Errorf("error finding studio id %s: %s", studioId, err.Error())
-				}
-
-				if studio == nil {
-					return fmt.Errorf("studio with id %s not found", studioId)
-				}
-
-				studios = append(studios, studio)
+			studioIdInt, err := strconv.Atoi(studioId)
+			if err != nil {
+				return fmt.Errorf("error parsing studio id %s: %s", studioId, err.Error())
 			}
 
-			for _, studio := range studios {
+			studio, err := studioQuery.Find(studioIdInt)
+			if err != nil {
+				return fmt.Errorf("error finding studio id %s: %s", studioId, err.Error())
+			}
+
+			if studio == nil {
+				return fmt.Errorf("studio with id %s not found", studioId)
+			}
+
+			if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				aliases, err := r.Studio().GetAliases(studio.ID)
+				if err != nil {
+					return err
+				}
 				if job.IsCancelled(ctx) {
 					logger.Info("Stopping due to user request")
 					return nil
 				}
-
-				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					aliases, err := r.Studio().GetAliases(studio.ID)
-					if err != nil {
-						return err
-					}
-
-					if err := autotag.StudioScenes(studio, paths, aliases, r.Scene()); err != nil {
-						return err
-					}
-					if err := autotag.StudioImages(studio, paths, aliases, r.Image()); err != nil {
-						return err
-					}
-					if err := autotag.StudioGalleries(studio, paths, aliases, r.Gallery()); err != nil {
-						return err
-					}
-
+				if err := autotag.StudioScenes(studio, paths, aliases, r.Scene()); err != nil {
+					return err
+				}
+				if job.IsCancelled(ctx) {
+					logger.Info("Stopping due to user request")
 					return nil
-				}); err != nil {
-					return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name.String, err.Error())
+				}
+				if err := autotag.StudioImages(studio, paths, aliases, r.Image()); err != nil {
+					return err
+				}
+				if job.IsCancelled(ctx) {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+				if err := autotag.StudioGalleries(studio, paths, aliases, r.Gallery()); err != nil {
+					return err
 				}
 
-				progress.Increment()
+				return nil
+			}); err != nil {
+				return fmt.Errorf("error auto-tagging studio '%s': %s", studio.Name.String, err.Error())
 			}
+
+			progress.Increment()
 
 			return nil
 		}); err != nil {
@@ -255,54 +244,53 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 		var tags []*models.Tag
 		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			tagQuery := r.Tag()
-			if tagId == "*" {
-				var err error
-				tags, err = tagQuery.All()
-				if err != nil {
-					return fmt.Errorf("error querying tags: %v", err)
-				}
-			} else {
-				tagIdInt, err := strconv.Atoi(tagId)
-				if err != nil {
-					return fmt.Errorf("error parsing tag id %s: %s", tagId, err.Error())
-				}
+			tagIdInt, err := strconv.Atoi(tagId)
 
-				tag, err := tagQuery.Find(tagIdInt)
-				if err != nil {
-					return fmt.Errorf("error finding tag id %s: %s", tagId, err.Error())
-				}
+			if err != nil {
+				return fmt.Errorf("error parsing tag id %s: %s", tagId, err.Error())
+			}
+
+			tag, err := tagQuery.Find(tagIdInt)
+			if err != nil {
+				return fmt.Errorf("error finding tag id %s: %s", tagId, err.Error())
+			}
+			if tag.AllowAutotag == 1 {
 				tags = append(tags, tag)
 			}
 
-			for _, tag := range tags {
+			if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				aliases, err := r.Tag().GetAliases(tag.ID)
+				if err != nil {
+					return err
+				}
 				if job.IsCancelled(ctx) {
 					logger.Info("Stopping due to user request")
 					return nil
 				}
-
-				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-					aliases, err := r.Tag().GetAliases(tag.ID)
-					if err != nil {
-						return err
-					}
-
-					if err := autotag.TagScenes(tag, paths, aliases, r.Scene()); err != nil {
-						return err
-					}
-					if err := autotag.TagImages(tag, paths, aliases, r.Image()); err != nil {
-						return err
-					}
-					if err := autotag.TagGalleries(tag, paths, aliases, r.Gallery()); err != nil {
-						return err
-					}
-
+				if err := autotag.TagScenes(tag, paths, aliases, r.Scene()); err != nil {
+					return err
+				}
+				if job.IsCancelled(ctx) {
+					logger.Info("Stopping due to user request")
 					return nil
-				}); err != nil {
-					return fmt.Errorf("error auto-tagging tag '%s': %s", tag.Name, err.Error())
+				}
+				if err := autotag.TagImages(tag, paths, aliases, r.Image()); err != nil {
+					return err
+				}
+				if job.IsCancelled(ctx) {
+					logger.Info("Stopping due to user request")
+					return nil
+				}
+				if err := autotag.TagGalleries(tag, paths, aliases, r.Gallery()); err != nil {
+					return err
 				}
 
-				progress.Increment()
+				return nil
+			}); err != nil {
+				return fmt.Errorf("error auto-tagging tag '%s': %s", tag.Name, err.Error())
 			}
+
+			progress.Increment()
 
 			return nil
 		}); err != nil {

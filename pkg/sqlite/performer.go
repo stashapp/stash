@@ -183,6 +183,7 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 	var whereClauses []string
 	var args []interface{}
 
+	// always include names that begin with single letter
 	whereClauses = append(whereClauses, "name regexp ?")
 	args = append(args, "^[\\w][.\\-_ ]")
 
@@ -443,14 +444,13 @@ func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models
 		if studios != nil {
 			var clauseCondition string
 
-			switch studios.Modifier {
-			case models.CriterionModifierIncludes:
+			if studios.Modifier == models.CriterionModifierIncludes {
 				// return performers who appear in scenes/images/galleries with any of the given studios
 				clauseCondition = "NOT"
-			case models.CriterionModifierExcludes:
+			} else if studios.Modifier == models.CriterionModifierExcludes {
 				// exclude performers who appear in scenes/images/galleries with any of the given studios
 				clauseCondition = ""
-			default:
+			} else {
 				return
 			}
 

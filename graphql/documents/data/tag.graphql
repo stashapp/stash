@@ -8,7 +8,8 @@ fragment TagData on Tag {
   image_count
   gallery_count
   performer_count
-
+  allow_autotag
+  
   parents {
     ...SlimTagData
   }

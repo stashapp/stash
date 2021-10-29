@@ -240,6 +240,8 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	whereClauses = append(whereClauses, "tags.name regexp ? OR COALESCE(tag_aliases.alias, '') regexp ?")
 	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
 
+	whereClauses = append(whereClauses, "allow_autotag = 1")
+
 	for _, w := range words {
 		ww := w + "%"
 		whereClauses = append(whereClauses, "tags.name like ?")

@@ -116,3 +116,8 @@ func (r *tagResolver) CreatedAt(ctx context.Context, obj *models.Tag) (*time.Tim
 func (r *tagResolver) UpdatedAt(ctx context.Context, obj *models.Tag) (*time.Time, error) {
 	return &obj.UpdatedAt.Timestamp, nil
 }
+
+func (r *tagResolver) AllowAutotag(ctx context.Context, obj *models.Tag) (*int, error) {
+	val := 1
+	return &val, nil
+}

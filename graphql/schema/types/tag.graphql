@@ -12,6 +12,8 @@ type Tag {
   gallery_count: Int # Resolver
   performer_count: Int
 
+  allow_autotag: Int
+
   parents: [Tag!]!
   children: [Tag!]!
 }
@@ -37,6 +39,8 @@ input TagUpdateInput {
 
   parent_ids: [ID!]
   child_ids: [ID!]
+  allow_autotag: [Int]
+  skip_update_timestamp: Boolean
 }
 
 input TagDestroyInput {

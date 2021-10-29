@@ -53,6 +53,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       }),
     parent_ids: yup.array(yup.string().required()).optional().nullable(),
     child_ids: yup.array(yup.string().required()).optional().nullable(),
+    allow_autotag: yup.string().required()
   });
 
   const initialValues = {
@@ -60,6 +61,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     aliases: tag?.aliases,
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
+    allow_autotag: tag?.allow_autotag,
   };
 
   type InputValues = typeof initialValues;
@@ -211,6 +213,16 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
             />
           </Col>
         </Form.Group>
+        <Form.Group controlId="organized">
+            <Form.Check
+              type="checkbox"
+              label={intl.formatMessage({ id: "allow_autotag" })}
+              onChange={(newValue) =>
+                formik.setFieldValue("allow_autotag", newValue.currentTarget.value)
+              }
+              
+            />
+          </Form.Group>
       </Form>
 
       <DetailsEditNavbar

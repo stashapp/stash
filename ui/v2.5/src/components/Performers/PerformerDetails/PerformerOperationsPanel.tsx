@@ -1,6 +1,6 @@
 import { Button } from "react-bootstrap";
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { mutateMetadataAutoTag } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -12,6 +12,7 @@ interface IPerformerOperationsProps {
 export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
   performer,
 }) => {
+  const intl = useIntl();
   const Toast = useToast();
 
   async function onAutoTag() {
@@ -20,7 +21,7 @@ export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
     }
     try {
       await mutateMetadataAutoTag({ performers: [performer.id] });
-      Toast.success({ content: "Started auto tagging" });
+      Toast.success({ content: intl.formatMessage({ id: "toast.started_auto_tagging" }) });
     } catch (e) {
       Toast.error(e);
     }
