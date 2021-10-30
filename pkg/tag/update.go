@@ -109,7 +109,7 @@ func EnsureHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) err
 
 			return &InvalidTagHierarchyError{
 				Direction:       "parent",
-				CurrentRelation: "a descendent",
+				CurrentRelation: "a descendant",
 				InvalidTag:      parentTag.Name,
 				ApplyingTag:     applyingTag.Name,
 				TagPath:         parentTag.Path,
