@@ -27,10 +27,11 @@ type InvalidTagHierarchyError struct {
 	Direction   string
 	InvalidTag  string
 	ApplyingTag string
+	TagPath     string
 }
 
 func (e *InvalidTagHierarchyError) Error() string {
-	return fmt.Sprintf("Cannot apply tag \"%s\" as it is already a %s of \"%s\"", e.InvalidTag, e.Direction, e.ApplyingTag)
+	return fmt.Sprintf("Cannot apply tag \"%s\" as it is already a %s of \"%s\"\n%s", e.InvalidTag, e.Direction, e.ApplyingTag, e.TagPath)
 }
 
 // EnsureTagNameUnique returns an error if the tag name provided
@@ -75,8 +76,8 @@ func EnsureAliasesUnique(id int, aliases []string, qb models.TagReader) error {
 }
 
 func EnsureHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) error {
-	allAncestors := make(map[int]*models.Tag)
-	allDescendants := make(map[int]*models.Tag)
+	allAncestors := make(map[int]*models.TagPath)
+	allDescendants := make(map[int]*models.TagPath)
 	excludeIDs := []int{id}
 
 	parentsAncestors, err := qb.FindAllAncestors(id, excludeIDs)
@@ -109,6 +110,7 @@ func EnsureHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) err
 				Direction:   "parent or ancestor",
 				InvalidTag:  parentTag.Name,
 				ApplyingTag: applyingTag.Name,
+				TagPath:     parentTag.Path,
 			}
 		}
 
@@ -127,6 +129,7 @@ func EnsureHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) err
 				Direction:   "child or descendent",
 				InvalidTag:  childTag.Name,
 				ApplyingTag: applyingTag.Name,
+				TagPath:     childTag.Path,
 			}
 		}
 
