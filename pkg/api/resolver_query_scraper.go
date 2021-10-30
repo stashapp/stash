@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -55,6 +56,12 @@ func (r *queryResolver) ListScrapers(ctx context.Context, types []models.ScrapeC
 	for _, v := range m {
 		ret = append(ret, v)
 	}
+
+	// Deduplication in the map can reorder to scraper list. To fix an order,
+	// sort the returned scrapers by their ID.
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i].ID < ret[j].ID
+	})
 
 	return ret, nil
 }
