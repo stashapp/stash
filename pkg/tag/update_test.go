@@ -144,7 +144,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3],
 		},
-		expectedError: "Cannot apply tag \"three\" as it is already a child or descendent of \"one\"\n",
+		expectedError: "Cannot apply tag \"three\" as a child of \"one\" as it is already an ancestor\n",
 	},
 	{
 		id:       1,
@@ -156,7 +156,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3], testUniqueHierarchyTagPaths[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as it is already a parent or ancestor of \"one\"\n",
+		expectedError: "Cannot apply tag \"two\" as a parent of \"one\" as it is already a descendent\n",
 	},
 	{
 		id:       1,
@@ -168,7 +168,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3],
 		},
-		expectedError: "Cannot apply tag \"three\" as it is already a parent or ancestor of \"one\"\n",
+		expectedError: "Cannot apply tag \"three\" as a parent of \"one\" as it is already a descendent\n",
 	},
 	{
 		id: 1,
@@ -184,7 +184,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3], testUniqueHierarchyTagPaths[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as it is already a parent or ancestor of \"one\"\n",
+		expectedError: "Cannot apply tag \"two\" as a parent of \"one\" as it is already a descendent\n",
 	},
 	{
 		id:       1,
@@ -196,7 +196,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as it is already a parent or ancestor of \"one\"\n",
+		expectedError: "Cannot apply tag \"two\" as a parent of \"one\" as it is already a descendent\n",
 	},
 	{
 		id:       2,
@@ -208,7 +208,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3], testUniqueHierarchyTagPaths[1],
 		},
-		expectedError: "Cannot apply tag \"one\" as it is already a parent or ancestor of \"two\"\n",
+		expectedError: "Cannot apply tag \"one\" as a parent of \"two\" as it is already a descendent\n",
 	},
 }
 
