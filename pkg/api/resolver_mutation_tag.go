@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/tag"
@@ -214,6 +215,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 		if parentIDs != nil || childIDs != nil {
 			if err := tag.EnsureHierarchy(tagID, parentIDs, childIDs, qb); err != nil {
+				logger.Errorf("Error saving tag: %s", err)
 				return err
 			}
 		}
@@ -319,6 +321,7 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMerge
 
 		err = tag.EnsureHierarchy(destination, parents, children, qb)
 		if err != nil {
+			logger.Errorf("Error merging tag: %s", err)
 			return err
 		}
 
