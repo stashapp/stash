@@ -77,7 +77,7 @@ All fragments are JSON-encoded Strings
 | `sceneByName` | `{"name": "<scene query>"}` | Array of [scene fragments](#scene-fragment) |
 | `sceneByQueryFragment`, `sceneByFragment` | [scene fragment](#scene-fragment) | [scene fragment](#scene-fragment) |
 | `sceneByURL` | `{"url": "<url>"}` | [scene fragment](#scene-fragment) |
-| `movieByURL` | `{"url": "<url>"}` | [gmovie fragment](#movie-fragment) |
+| `movieByURL` | `{"url": "<url>"}` | [movie fragment](#movie-fragment) |
 | `galleryByFragment` | [gallery fragment](#gallery-fragment) | [gallery fragment](#gallery-fragment) |
 | `galleryByURL` | `{"url": "<url>"}` | [gallery fragment](#gallery-fragment) |
 
