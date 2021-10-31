@@ -10,9 +10,12 @@ import { TagList } from "./TagList";
 const Tags: React.FC = () => {
   const intl = useIntl();
 
-  const title_template = `${intl.formatMessage({
-    id: "tags",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.tags",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
   return (
     <>
       <Helmet

@@ -334,9 +334,10 @@ export const SettingsInterfacePanel: React.FC = () => {
           <Form.Check
             id="disableDropdownCreate_performer"
             checked={disableDropdownCreate.performer ?? false}
-            label={intl.formatMessage({
-              id: "performer",
-            })}
+            label={intl.formatMessage(
+              { id: "countables.performers" },
+              { count: 1 }
+            )}
             onChange={() => {
               setDisableDropdownCreate({
                 ...disableDropdownCreate,
@@ -348,9 +349,10 @@ export const SettingsInterfacePanel: React.FC = () => {
           <Form.Check
             id="disableDropdownCreate_studio"
             checked={disableDropdownCreate.studio ?? false}
-            label={intl.formatMessage({
-              id: "studio",
-            })}
+            label={intl.formatMessage(
+              { id: "countables.studios" },
+              { count: 1 }
+            )}
             onChange={() => {
               setDisableDropdownCreate({
                 ...disableDropdownCreate,
@@ -362,9 +364,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <Form.Check
             id="disableDropdownCreate_tag"
             checked={disableDropdownCreate.tag ?? false}
-            label={intl.formatMessage({
-              id: "tag",
-            })}
+            label={intl.formatMessage({ id: "countables.tags" }, { count: 1 })}
             onChange={() => {
               setDisableDropdownCreate({
                 ...disableDropdownCreate,

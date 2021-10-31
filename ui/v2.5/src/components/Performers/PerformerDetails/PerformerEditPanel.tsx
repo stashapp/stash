@@ -742,7 +742,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return (
       <Form.Group controlId="tags" as={Row}>
         <Form.Label column sm={labelXS} xl={labelXL}>
-          <FormattedMessage id="tags" defaultMessage="Tags" />
+          <FormattedMessage
+            id="countables.tags"
+            values={{ count: 100 }}
+            defaultMessage="Tags"
+          />
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <TagSelect
@@ -955,7 +959,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTextField("instagram", "Instagram")}
         <Form.Group controlId="details" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
-            <FormattedMessage id="details" />
+            <FormattedMessage id="countables.details" values={{ count: 100 }} />
           </Form.Label>
           <Col sm={fieldXS} xl={fieldXL}>
             <Form.Control

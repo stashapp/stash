@@ -83,9 +83,12 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
       );
     }
   }
-  const title_template = `${intl.formatMessage({
-    id: "markers",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.markers",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
 
   return (
     <>

@@ -100,7 +100,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           { id: "toast.updated_entity" },
           {
             entity: intl
-              .formatMessage({ id: "performers" })
+              .formatMessage({ id: "countables.performers" }, { count: 100 })
               .toLocaleLowerCase(),
           }
         ),
@@ -232,7 +232,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         <Form>
           <Form.Group controlId="tags">
             <Form.Label>
-              <FormattedMessage id="tags" />
+              <FormattedMessage id="countables.tags" values={{ count: 100 }} />
             </Form.Label>
             <MultiSet
               type="tags"

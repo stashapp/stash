@@ -162,7 +162,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       Toast.success({
         content: intl.formatMessage(
           { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
+          {
+            entity: intl
+              .formatMessage({ id: "countables.scenes" }, { count: 100 })
+              .toLocaleLowerCase(),
+          }
         ),
       });
       props.onClose(true);
@@ -411,8 +415,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           { id: "dialogs.edit_entity_title" },
           {
             count: props?.selected?.length ?? 1,
-            singularEntity: intl.formatMessage({ id: "scene" }),
-            pluralEntity: intl.formatMessage({ id: "scenes" }),
+            singularEntity: intl.formatMessage(
+              { id: "countables.scenes" },
+              { count: 1 }
+            ),
+            pluralEntity: intl.formatMessage(
+              { id: "countables.scenes" },
+              { count: props?.selected?.length ?? 1 }
+            ),
           }
         )}
         accept={{
@@ -442,7 +452,10 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "studio" }),
+              title: intl.formatMessage(
+                { id: "countables.studios" },
+                { count: 1 }
+              ),
             })}
             <Col xs={9}>
               <StudioSelect
@@ -457,21 +470,27 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
           <Form.Group controlId="performers">
             <Form.Label>
-              <FormattedMessage id="performers" />
+              <FormattedMessage
+                id="countables.performers"
+                values={{ count: 100 }}
+              />
             </Form.Label>
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
           <Form.Group controlId="tags">
             <Form.Label>
-              <FormattedMessage id="tags" />
+              <FormattedMessage id="countables.tags" values={{ count: 100 }} />
             </Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
           <Form.Group controlId="movies">
             <Form.Label>
-              <FormattedMessage id="movies" />
+              <FormattedMessage
+                id="countables.movies"
+                values={{ count: 100 }}
+              />
             </Form.Label>
             {renderMultiSelect("movies", movieIds)}
           </Form.Group>

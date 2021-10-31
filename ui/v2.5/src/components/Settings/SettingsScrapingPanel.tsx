@@ -169,7 +169,12 @@ export const SettingsScrapingPanel: React.FC = () => {
         case ScrapeType.Fragment:
           return intl.formatMessage(
             { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "scene" }) }
+            {
+              entityType: intl.formatMessage(
+                { id: "countables.scenes" },
+                { count: 1 }
+              ),
+            }
           );
         default:
           return t;
@@ -191,7 +196,12 @@ export const SettingsScrapingPanel: React.FC = () => {
         case ScrapeType.Fragment:
           return intl.formatMessage(
             { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "gallery" }) }
+            {
+              entityType: intl.formatMessage(
+                { id: "countables.galleries" },
+                { count: 1 }
+              ),
+            }
           );
         default:
           return t;
@@ -213,7 +223,12 @@ export const SettingsScrapingPanel: React.FC = () => {
         case ScrapeType.Fragment:
           return intl.formatMessage(
             { id: "config.scraping.entity_metadata" },
-            { entityType: intl.formatMessage({ id: "movie" }) }
+            {
+              entityType: intl.formatMessage(
+                { id: "countables.movies" },
+                { count: 1 }
+              ),
+            }
           );
         default:
           return t;
@@ -247,7 +262,12 @@ export const SettingsScrapingPanel: React.FC = () => {
     return renderTable(
       intl.formatMessage(
         { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "scene" }) }
+        {
+          entityType: intl.formatMessage(
+            { id: "countables.scenes" },
+            { count: 1 }
+          ),
+        }
       ),
       elements
     );
@@ -269,7 +289,12 @@ export const SettingsScrapingPanel: React.FC = () => {
     return renderTable(
       intl.formatMessage(
         { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "gallery" }) }
+        {
+          entityType: intl.formatMessage(
+            { id: "countables.galleries" },
+            { count: 1 }
+          ),
+        }
       ),
       elements
     );
@@ -293,7 +318,12 @@ export const SettingsScrapingPanel: React.FC = () => {
     return renderTable(
       intl.formatMessage(
         { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "performer" }) }
+        {
+          entityType: intl.formatMessage(
+            { id: "countables.performers" },
+            { count: 1 }
+          ),
+        }
       ),
       elements
     );
@@ -313,7 +343,12 @@ export const SettingsScrapingPanel: React.FC = () => {
     return renderTable(
       intl.formatMessage(
         { id: "config.scraping.entity_scrapers" },
-        { entityType: intl.formatMessage({ id: "movie" }) }
+        {
+          entityType: intl.formatMessage(
+            { id: "countables.movies" },
+            { count: 1 }
+          ),
+        }
       ),
       elements
     );

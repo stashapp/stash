@@ -81,7 +81,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
         { id: "toast.rescanning_entity" },
         {
           count: 1,
-          singularEntity: intl.formatMessage({ id: "gallery" }),
+          singularEntity: intl.formatMessage(
+            { id: "countables.galleries" },
+            { count: 1 }
+          ),
         }
       ),
     });
@@ -135,7 +138,12 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           >
             <FormattedMessage
               id="actions.delete_entity"
-              values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
+              values={{
+                entityType: intl.formatMessage(
+                  { id: "countables.galleries" },
+                  { count: 1 }
+                ),
+              }}
             />
           </Dropdown.Item>
         </Dropdown.Menu>
@@ -157,13 +165,19 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
               <Nav.Link eventKey="gallery-details-panel">
-                <FormattedMessage id="details" />
+                <FormattedMessage
+                  id="countables.details"
+                  values={{ count: 100 }}
+                />
               </Nav.Link>
             </Nav.Item>
             {gallery.scenes.length > 0 && (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-scenes-panel">
-                  <FormattedMessage id="scenes" />
+                  <FormattedMessage
+                    id="countables.scenes"
+                    values={{ count: 100 }}
+                  />
                 </Nav.Link>
               </Nav.Item>
             )}
@@ -233,7 +247,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
               <Nav.Link eventKey="images">
-                <FormattedMessage id="images" />
+                <FormattedMessage
+                  id="countables.images"
+                  values={{ count: 100 }}
+                />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>

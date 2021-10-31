@@ -256,7 +256,12 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
-        { entity_type: intl.formatMessage({ id: "movie" }) }
+        {
+          entity_type: intl.formatMessage(
+            { id: "countables.movies" },
+            { count: 1 }
+          ),
+        }
       )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {

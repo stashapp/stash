@@ -121,8 +121,14 @@ export const StudioList: React.FC<IStudioList> = ({
     <DeleteEntityDialog
       selected={selectedStudios}
       onClose={onClose}
-      singularEntity={intl.formatMessage({ id: "studio" })}
-      pluralEntity={intl.formatMessage({ id: "studios" })}
+      singularEntity={intl.formatMessage(
+        { id: "countables.studios" },
+        { count: 1 }
+      )}
+      pluralEntity={intl.formatMessage(
+        { id: "countables.studios" },
+        { count: 100 }
+      )}
       destroyMutation={useStudiosDestroy}
     />
   );

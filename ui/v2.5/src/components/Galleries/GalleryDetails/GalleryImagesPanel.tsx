@@ -68,7 +68,12 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
       Toast.success({
         content: intl.formatMessage(
           { id: "toast.added_entity" },
-          { entity: intl.formatMessage({ id: "images" }) }
+          {
+            entity: intl.formatMessage(
+              { id: "countables.images" },
+              { count: 100 }
+            ),
+          }
         ),
       });
     } catch (e) {

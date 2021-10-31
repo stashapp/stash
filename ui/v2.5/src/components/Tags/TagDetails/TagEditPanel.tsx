@@ -112,7 +112,12 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         <h2>
           <FormattedMessage
             id="actions.add_entity"
-            values={{ entityType: intl.formatMessage({ id: "tag" }) }}
+            values={{
+              entityType: intl.formatMessage(
+                { id: "countables.tags" },
+                { count: 1 }
+              ),
+            }}
           />
         </h2>
       )}

@@ -357,7 +357,12 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
         <h2>
           {intl.formatMessage(
             { id: "actions.add_entity" },
-            { entityType: intl.formatMessage({ id: "movie" }) }
+            {
+              entityType: intl.formatMessage(
+                { id: "countables.movies" },
+                { count: 1 }
+              ),
+            }
           )}
         </h2>
       )}
@@ -410,7 +415,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
         <Form.Group controlId="studio" as={Row}>
           {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "studio" }),
+            title: intl.formatMessage(
+              { id: "countables.studios" },
+              { count: 1 }
+            ),
           })}
           <Col xs={9}>
             <StudioSelect

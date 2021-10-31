@@ -191,7 +191,11 @@ export const SceneFilenameParser: React.FC = () => {
       Toast.success({
         content: intl.formatMessage(
           { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
+          {
+            entity: intl
+              .formatMessage({ id: "countables.scenes" }, { count: 100 })
+              .toLocaleLowerCase(),
+          }
         ),
       });
     } catch (e) {
@@ -363,17 +367,23 @@ export const SceneFilenameParser: React.FC = () => {
                   onSelectAllRatingSet
                 )}
                 {renderHeader(
-                  intl.formatMessage({ id: "performers" }),
+                  intl.formatMessage(
+                    { id: "countables.performers" },
+                    { count: 100 }
+                  ),
                   allPerformerSet,
                   onSelectAllPerformerSet
                 )}
                 {renderHeader(
-                  intl.formatMessage({ id: "tags" }),
+                  intl.formatMessage({ id: "countables.tags" }, { count: 100 }),
                   allTagSet,
                   onSelectAllTagSet
                 )}
                 {renderHeader(
-                  intl.formatMessage({ id: "studio" }),
+                  intl.formatMessage(
+                    { id: "countables.studios" },
+                    { count: 1 }
+                  ),
                   allStudioSet,
                   onSelectAllStudioSet
                 )}

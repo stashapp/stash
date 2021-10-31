@@ -201,7 +201,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         {
           count: 1,
           singularEntity: intl
-            .formatMessage({ id: "scene" })
+            .formatMessage({ id: "countables.scenes" }, { count: 1 })
             .toLocaleLowerCase(),
         }
       ),
@@ -382,7 +382,12 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         >
           <FormattedMessage
             id="actions.delete_entity"
-            values={{ entityType: intl.formatMessage({ id: "scene" }) }}
+            values={{
+              entityType: intl.formatMessage(
+                { id: "countables.scenes" },
+                { count: 1 }
+              ),
+            }}
           />
         </Dropdown.Item>
       </Dropdown.Menu>
@@ -398,7 +403,10 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         <Nav variant="tabs" className="mr-auto">
           <Nav.Item>
             <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="scenes" />
+              <FormattedMessage
+                id="countables.scenes"
+                values={{ count: 100 }}
+              />
             </Nav.Link>
           </Nav.Item>
           {(queueScenes ?? []).length > 0 ? (
@@ -412,7 +420,10 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
           )}
           <Nav.Item>
             <Nav.Link eventKey="scene-markers-panel">
-              <FormattedMessage id="markers" />
+              <FormattedMessage
+                id="countables.markers"
+                values={{ count: 100 }}
+              />
             </Nav.Link>
           </Nav.Item>
           {scene.movies.length > 0 ? (

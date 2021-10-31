@@ -24,7 +24,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     return (
       <>
         <dt>
-          <FormattedMessage id="tags" />
+          <FormattedMessage id="countables.tags" values={{ count: 100 }} />
         </dt>
         <dd>
           <ul className="pl-0">

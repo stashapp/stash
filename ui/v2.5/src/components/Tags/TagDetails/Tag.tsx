@@ -179,7 +179,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             values={{
               entityName:
                 tag.name ??
-                intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
+                intl
+                  .formatMessage({ id: "countables.tags" }, { count: 1 })
+                  .toLocaleLowerCase(),
             }}
           />
         </p>
@@ -297,27 +299,48 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+            <Tab
+              eventKey="scenes"
+              title={intl.formatMessage(
+                { id: "countables.scenes" },
+                { count: 100 }
+              )}
+            >
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+            <Tab
+              eventKey="images"
+              title={intl.formatMessage(
+                { id: "countables.images" },
+                { count: 100 }
+              )}
+            >
               <TagImagesPanel tag={tag} />
             </Tab>
             <Tab
               eventKey="galleries"
-              title={intl.formatMessage({ id: "galleries" })}
+              title={intl.formatMessage(
+                { id: "countables.galleries" },
+                { count: 100 }
+              )}
             >
               <TagGalleriesPanel tag={tag} />
             </Tab>
             <Tab
               eventKey="markers"
-              title={intl.formatMessage({ id: "markers" })}
+              title={intl.formatMessage(
+                { id: "countables.markers" },
+                { count: 100 }
+              )}
             >
               <TagMarkersPanel tag={tag} />
             </Tab>
             <Tab
               eventKey="performers"
-              title={intl.formatMessage({ id: "performers" })}
+              title={intl.formatMessage(
+                { id: "countables.performers" },
+                { count: 100 }
+              )}
             >
               <TagPerformersPanel tag={tag} />
             </Tab>

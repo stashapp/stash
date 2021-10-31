@@ -16,8 +16,14 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
   props: IDeleteImageDialogProps
 ) => {
   const intl = useIntl();
-  const singularEntity = intl.formatMessage({ id: "image" });
-  const pluralEntity = intl.formatMessage({ id: "images" });
+  const singularEntity = intl.formatMessage(
+    { id: "countables.images" },
+    { count: 1 }
+  );
+  const pluralEntity = intl.formatMessage(
+    { id: "countables.images" },
+    { count: props.selected.length }
+  );
 
   const header = intl.formatMessage(
     { id: "dialogs.delete_entity_title" },
@@ -78,8 +84,15 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
           <FormattedMessage
             values={{
               count: props.selected.length,
-              singularEntity: intl.formatMessage({ id: "file" }),
-              pluralEntity: intl.formatMessage({ id: "files" }),
+              singularEntity: intl
+                .formatMessage({ id: "countables.files" }, { count: 1 })
+                .toLocaleLowerCase(),
+              pluralEntity: intl
+                .formatMessage(
+                  { id: "countables.files" },
+                  { count: props.selected.length }
+                )
+                .toLocaleLowerCase(),
             }}
             id="dialogs.delete_alert"
           />
@@ -92,8 +105,15 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
             <FormattedMessage
               values={{
                 count: props.selected.length - 5,
-                singularEntity: intl.formatMessage({ id: "file" }),
-                pluralEntity: intl.formatMessage({ id: "files" }),
+                singularEntity: intl
+                  .formatMessage({ id: "countables.files" }, { count: 1 })
+                  .toLocaleLowerCase(),
+                pluralEntity: intl
+                  .formatMessage(
+                    { id: "countables.files" },
+                    { count: props.selected.length - 5 }
+                  )
+                  .toLocaleLowerCase(),
               }}
               id="dialogs.delete_object_overflow"
             />

@@ -69,8 +69,14 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
           { id: "toast.added_entity" },
           {
             count: imageCount,
-            singularEntity: intl.formatMessage({ id: "image" }),
-            pluralEntity: intl.formatMessage({ id: "images" }),
+            singularEntity: intl.formatMessage(
+              { id: "countables.images" },
+              { count: 1 }
+            ),
+            pluralEntity: intl.formatMessage(
+              { id: "countables.images" },
+              { count: imageCount }
+            ),
           }
         ),
       });
@@ -83,7 +89,12 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
     {
       text: intl.formatMessage(
         { id: "actions.add_to_entity" },
-        { entityType: intl.formatMessage({ id: "gallery" }) }
+        {
+          entityType: intl.formatMessage(
+            { id: "countables.galleries" },
+            { count: 1 }
+          ),
+        }
       ),
       onClick: addImages,
       isDisplayed: showWhenSelected,

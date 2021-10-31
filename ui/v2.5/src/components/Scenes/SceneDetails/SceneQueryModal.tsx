@@ -192,7 +192,12 @@ export const SceneQueryModal: React.FC<IProps> = ({
       modalProps={{ size: "lg", dialogClassName: "scrape-query-dialog" }}
       header={intl.formatMessage(
         { id: "dialogs.scrape_entity_query" },
-        { entity_type: intl.formatMessage({ id: "scene" }) }
+        {
+          entity_type: intl.formatMessage(
+            { id: "countables.scenes" },
+            { count: 1 }
+          ),
+        }
       )}
       accept={{
         text: intl.formatMessage({ id: "actions.cancel" }),

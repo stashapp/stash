@@ -124,7 +124,9 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
             values={{
               entityName:
                 movie.name ??
-                intl.formatMessage({ id: "movie" }).toLocaleLowerCase(),
+                intl
+                  .formatMessage({ id: "countables.movies" }, { count: 1 })
+                  .toLocaleLowerCase(),
             }}
           />
         </p>

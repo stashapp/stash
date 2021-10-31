@@ -254,7 +254,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
         <Form.Group controlId="details" as={Row}>
           {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "details" }),
+            title: intl.formatMessage(
+              { id: "countables.details" },
+              { count: 100 }
+            ),
           })}
           <Col xs={9}>
             <Form.Control

@@ -61,7 +61,10 @@ export const Image: React.FC = () => {
         { id: "toast.rescanning_entity" },
         {
           count: 1,
-          singularEntity: intl.formatMessage({ id: "image" }),
+          singularEntity: intl.formatMessage(
+            { id: "countables.images" },
+            { count: 1 }
+          ),
         }
       ),
     });
@@ -159,7 +162,12 @@ export const Image: React.FC = () => {
           >
             <FormattedMessage
               id="actions.delete_entity"
-              values={{ entityType: intl.formatMessage({ id: "image" }) }}
+              values={{
+                entityType: intl.formatMessage(
+                  { id: "countables.images" },
+                  { count: 1 }
+                ),
+              }}
             />
           </Dropdown.Item>
         </Dropdown.Menu>
@@ -181,7 +189,10 @@ export const Image: React.FC = () => {
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
               <Nav.Link eventKey="image-details-panel">
-                <FormattedMessage id="details" />
+                <FormattedMessage
+                  id="countables.details"
+                  values={{ count: 100 }}
+                />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>

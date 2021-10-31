@@ -126,7 +126,9 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
             values={{
               entityName:
                 studio.name ??
-                intl.formatMessage({ id: "studio" }).toLocaleLowerCase(),
+                intl
+                  .formatMessage({ id: "countables.studios" }, { count: 1 })
+                  .toLocaleLowerCase(),
             }}
           />
         </p>
@@ -182,12 +184,19 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           <>
             <Helmet>
               <title>
-                {studio.name ?? intl.formatMessage({ id: "studio" })}
+                {studio.name ??
+                  intl.formatMessage(
+                    { id: "countables.studios" },
+                    { count: 1 }
+                  )}
               </title>
             </Helmet>
             <StudioDetailsPanel studio={studio} />
             <DetailsEditNavbar
-              objectName={studio.name ?? intl.formatMessage({ id: "studio" })}
+              objectName={
+                studio.name ??
+                intl.formatMessage({ id: "countables.studios" }, { count: 1 })
+              }
               isNew={false}
               isEditing={isEditing}
               onToggleEdit={onToggleEdit}
@@ -216,25 +225,49 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           activeKey={activeTabKey}
           onSelect={setActiveTabKey}
         >
-          <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+          <Tab
+            eventKey="scenes"
+            title={intl.formatMessage(
+              { id: "countables.scenes" },
+              { count: 100 }
+            )}
+          >
             <StudioScenesPanel studio={studio} />
           </Tab>
           <Tab
             eventKey="galleries"
-            title={intl.formatMessage({ id: "galleries" })}
+            title={intl.formatMessage(
+              { id: "countables.galleries" },
+              { count: 100 }
+            )}
           >
             <StudioGalleriesPanel studio={studio} />
           </Tab>
-          <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+          <Tab
+            eventKey="images"
+            title={intl.formatMessage(
+              { id: "countables.images" },
+              { count: 100 }
+            )}
+          >
             <StudioImagesPanel studio={studio} />
           </Tab>
           <Tab
             eventKey="performers"
-            title={intl.formatMessage({ id: "performers" })}
+            title={intl.formatMessage(
+              { id: "countables.performers" },
+              { count: 100 }
+            )}
           >
             <StudioPerformersPanel studio={studio} />
           </Tab>
-          <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+          <Tab
+            eventKey="movies"
+            title={intl.formatMessage(
+              { id: "countables.movies" },
+              { count: 100 }
+            )}
+          >
             <StudioMoviesPanel studio={studio} />
           </Tab>
           <Tab

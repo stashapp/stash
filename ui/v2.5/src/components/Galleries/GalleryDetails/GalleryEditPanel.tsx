@@ -214,7 +214,7 @@ export const GalleryEditPanel: React.FC<
               { id: "toast.updated_entity" },
               {
                 entity: intl
-                  .formatMessage({ id: "gallery" })
+                  .formatMessage({ id: "countables.galleries" }, { count: 1 })
                   .toLocaleLowerCase(),
               }
             ),
@@ -478,7 +478,10 @@ export const GalleryEditPanel: React.FC<
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "studio" }),
+                title: intl.formatMessage(
+                  { id: "countables.studios" },
+                  { count: 1 }
+                ),
               })}
               <Col xs={9}>
                 <StudioSelect
@@ -495,7 +498,10 @@ export const GalleryEditPanel: React.FC<
 
             <Form.Group controlId="performers" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "performers" }),
+                title: intl.formatMessage(
+                  { id: "countables.performers" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -518,7 +524,10 @@ export const GalleryEditPanel: React.FC<
 
             <Form.Group controlId="tags" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "tags" }),
+                title: intl.formatMessage(
+                  { id: "countables.tags" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -541,7 +550,10 @@ export const GalleryEditPanel: React.FC<
 
             <Form.Group controlId="scenes" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "scenes" }),
+                title: intl.formatMessage(
+                  { id: "countables.scenes" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -559,7 +571,10 @@ export const GalleryEditPanel: React.FC<
           <div className="col-12 col-lg-6 col-xl-12">
             <Form.Group controlId="details">
               <Form.Label>
-                <FormattedMessage id="details" />
+                <FormattedMessage
+                  id="countables.details"
+                  values={{ count: 100 }}
+                />
               </Form.Label>
               <Form.Control
                 as="textarea"

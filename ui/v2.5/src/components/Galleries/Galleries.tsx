@@ -11,9 +11,12 @@ import { GalleryList } from "./GalleryList";
 const Galleries = () => {
   const intl = useIntl();
 
-  const title_template = `${intl.formatMessage({
-    id: "galleries",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.galleries",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
   return (
     <>
       <Helmet

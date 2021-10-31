@@ -74,7 +74,7 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
       <div className="movie-table">
         <Row>
           <Form.Label column xs={9}>
-            {intl.formatMessage({ id: "movie" })}
+            {intl.formatMessage({ id: "countables.movies" }, { count: 1 })}
           </Form.Label>
           <Form.Label column xs={3}>
             {intl.formatMessage({ id: "movie_scene_number" })}

@@ -11,7 +11,12 @@ const GalleryCreate: React.FC = () => {
         <h2>
           <FormattedMessage
             id="actions.create_entity"
-            values={{ entityType: intl.formatMessage({ id: "gallery" }) }}
+            values={{
+              entityType: intl.formatMessage(
+                { id: "countables.galleries" },
+                { count: 1 }
+              ),
+            }}
           />
         </h2>
         <GalleryEditPanel

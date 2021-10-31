@@ -10,9 +10,12 @@ import { MovieList } from "./MovieList";
 const Movies: React.FC = () => {
   const intl = useIntl();
 
-  const title_template = `${intl.formatMessage({
-    id: "movies",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.movies",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
   return (
     <>
       <Helmet

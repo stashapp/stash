@@ -11,9 +11,12 @@ import { PerformerList } from "./PerformerList";
 const Performers: React.FC = () => {
   const intl = useIntl();
 
-  const title_template = `${intl.formatMessage({
-    id: "performers",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.performers",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
   return (
     <>
       <Helmet

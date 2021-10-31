@@ -125,7 +125,11 @@ export const ImageEditPanel: React.FC<IProps> = ({
         Toast.success({
           content: intl.formatMessage(
             { id: "toast.updated_entity" },
-            { entity: intl.formatMessage({ id: "image" }).toLocaleLowerCase() }
+            {
+              entity: intl
+                .formatMessage({ id: "countables.images" }, { count: 1 })
+                .toLocaleLowerCase(),
+            }
           ),
         });
         formik.resetForm({ values: formik.values });
@@ -205,7 +209,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "studio" }),
+                title: intl.formatMessage(
+                  { id: "countables.studios" },
+                  { count: 100 }
+                ),
               })}
               <Col xs={9}>
                 <StudioSelect
@@ -222,7 +229,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="performers" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "performers" }),
+                title: intl.formatMessage(
+                  { id: "countables.performers" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -245,7 +255,10 @@ export const ImageEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="tags" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "tags" }),
+                title: intl.formatMessage(
+                  { id: "countables.tags" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,

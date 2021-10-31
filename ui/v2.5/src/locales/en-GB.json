@@ -456,6 +456,7 @@
   },
   "configuration": "Configuration",
   "countables": {
+    "details": "{count, plural, one {Detail} other {Details}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
     "images": "{count, plural, one {Image} other {Images}}",
     "markers": "{count, plural, one {Marker} other {Markers}}",

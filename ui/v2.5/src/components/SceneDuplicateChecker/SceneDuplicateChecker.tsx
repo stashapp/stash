@@ -444,7 +444,12 @@ export const SceneDuplicateChecker: React.FC = () => {
             <tr>
               <th> </th>
               <th> </th>
-              <th>{intl.formatMessage({ id: "details" })}</th>
+              <th>
+                {intl.formatMessage(
+                  { id: "countables.details" },
+                  { count: 100 }
+                )}
+              </th>
               <th> </th>
               <th>{intl.formatMessage({ id: "duration" })}</th>
               <th>{intl.formatMessage({ id: "filesize" })}</th>

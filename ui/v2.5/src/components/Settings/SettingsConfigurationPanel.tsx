@@ -870,7 +870,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>{intl.formatMessage({ id: "images" })}</h4>
+        <h4>
+          {intl.formatMessage({ id: "countables.images" }, { count: 100 })}
+        </h4>
 
         <Form.Group>
           <Form.Check
@@ -892,7 +894,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <hr />
 
       <Form.Group>
-        <h4>{intl.formatMessage({ id: "performers" })}</h4>
+        <h4>
+          {intl.formatMessage({ id: "countables.performers" }, { count: 100 })}
+        </h4>
         <Form.Group>
           <h6>
             {intl.formatMessage({

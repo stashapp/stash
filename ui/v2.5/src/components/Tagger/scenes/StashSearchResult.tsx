@@ -571,7 +571,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       <div>
         <Form.Group controlId="tags" as={Row}>
           {FormUtils.renderLabel({
-            title: `${intl.formatMessage({ id: "tags" })}:`,
+            title: `${intl.formatMessage(
+              { id: "countables.tags" },
+              { count: 100 }
+            )}:`,
           })}
           <Col sm={9} xl={12}>
             <TagSelect

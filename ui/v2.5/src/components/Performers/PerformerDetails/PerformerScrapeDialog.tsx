@@ -514,12 +514,15 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setInstagram(value)}
         />
         <ScrapedTextAreaRow
-          title={intl.formatMessage({ id: "details" })}
+          title={intl.formatMessage(
+            { id: "countables.details" },
+            { count: 100 }
+          )}
           result={details}
           onChange={(value) => setDetails(value)}
         />
         {renderScrapedTagsRow(
-          intl.formatMessage({ id: "tags" }),
+          intl.formatMessage({ id: "countables.tags" }, { count: 100 }),
           tags,
           (value) => setTags(value),
           newTags,
@@ -545,7 +548,12 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
-        { entity_type: intl.formatMessage({ id: "performer" }) }
+        {
+          entity_type: intl.formatMessage(
+            { id: "countables.performers" },
+            { count: 1 }
+          ),
+        }
       )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {

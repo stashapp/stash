@@ -11,9 +11,12 @@ import { SceneMarkerList } from "./SceneMarkerList";
 const Scenes: React.FC = () => {
   const intl = useIntl();
 
-  const title_template = `${intl.formatMessage({
-    id: "scenes",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.scenes",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
   return (
     <>
       <Helmet

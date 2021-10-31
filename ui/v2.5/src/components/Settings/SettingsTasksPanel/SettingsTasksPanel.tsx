@@ -485,19 +485,28 @@ export const SettingsTasksPanel: React.FC = () => {
             <Form.Check
               id="autotag-performers"
               checked={autoTagPerformers}
-              label={intl.formatMessage({ id: "performers" })}
+              label={intl.formatMessage(
+                { id: "countables.performers" },
+                { count: 100 }
+              )}
               onChange={() => setAutoTagPerformers(!autoTagPerformers)}
             />
             <Form.Check
               id="autotag-studios"
               checked={autoTagStudios}
-              label={intl.formatMessage({ id: "studios" })}
+              label={intl.formatMessage(
+                { id: "countables.studios" },
+                { count: 100 }
+              )}
               onChange={() => setAutoTagStudios(!autoTagStudios)}
             />
             <Form.Check
               id="autotag-tags"
               checked={autoTagTags}
-              label={intl.formatMessage({ id: "tags" })}
+              label={intl.formatMessage(
+                { id: "countables.tags" },
+                { count: 100 }
+              )}
               onChange={() => setAutoTagTags(!autoTagTags)}
             />
           </Form.Group>

@@ -41,7 +41,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.scene_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="scenes" />
+            <FormattedMessage id="countables.scenes" values={{ count: 100 }} />
           </p>
         </div>
         <div className="stats-element">
@@ -49,7 +49,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.movie_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="movies" />
+            <FormattedMessage id="countables.movies" values={{ count: 100 }} />
           </p>
         </div>
         <div className="stats-element">
@@ -63,7 +63,10 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.performer_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="performers" />
+            <FormattedMessage
+              id="countables.performers"
+              values={{ count: 100 }}
+            />
           </p>
         </div>
       </div>
@@ -87,7 +90,10 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.gallery_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="galleries" />
+            <FormattedMessage
+              id="countables.galleries"
+              values={{ count: 100 }}
+            />
           </p>
         </div>
         <div className="stats-element">
@@ -95,7 +101,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.image_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="images" />
+            <FormattedMessage id="countables.images" values={{ count: 100 }} />
           </p>
         </div>
         <div className="stats-element">
@@ -103,7 +109,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.studio_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="studios" />
+            <FormattedMessage id="countables.studios" values={{ count: 100 }} />
           </p>
         </div>
         <div className="stats-element">
@@ -111,7 +117,7 @@ export const Stats: React.FC = () => {
             <FormattedNumber value={data.stats.tag_count} />
           </p>
           <p className="heading">
-            <FormattedMessage id="tags" />
+            <FormattedMessage id="countables.tags" values={{ count: 100 }} />
           </p>
         </div>
       </div>

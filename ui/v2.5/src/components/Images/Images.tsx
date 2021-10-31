@@ -10,9 +10,12 @@ import { ImageList } from "./ImageList";
 const Images: React.FC = () => {
   const intl = useIntl();
 
-  const title_template = `${intl.formatMessage({
-    id: "images",
-  })} ${TITLE_SUFFIX}`;
+  const title_template = `${intl.formatMessage(
+    {
+      id: "countables.images",
+    },
+    { count: 100 }
+  )} ${TITLE_SUFFIX}`;
   return (
     <>
       <Helmet

@@ -64,8 +64,14 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
     <DeleteEntityDialog
       selected={selectedMovies}
       onClose={onClose}
-      singularEntity={intl.formatMessage({ id: "movie" })}
-      pluralEntity={intl.formatMessage({ id: "movies" })}
+      singularEntity={intl.formatMessage(
+        { id: "countables.movies" },
+        { count: 1 }
+      )}
+      pluralEntity={intl.formatMessage(
+        { id: "countables.movies" },
+        { count: 100 }
+      )}
       destroyMutation={useMoviesDestroy}
     />
   );

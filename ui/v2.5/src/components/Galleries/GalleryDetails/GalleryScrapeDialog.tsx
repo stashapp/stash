@@ -305,7 +305,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
             <FormattedMessage
               id="actions.created_entity"
               values={{
-                entity_type: intl.formatMessage({ id: "studio" }),
+                entity_type: intl.formatMessage(
+                  { id: "countables.studios" },
+                  { count: 1 }
+                ),
                 entity_name: <b>{toCreate.name}</b>,
               }}
             />
@@ -346,7 +349,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
             <FormattedMessage
               id="actions.created_entity"
               values={{
-                entity_type: intl.formatMessage({ id: "performer" }),
+                entity_type: intl.formatMessage(
+                  { id: "countables.performers" },
+                  { count: 1 }
+                ),
                 entity_name: <b>{toCreate.name}</b>,
               }}
             />
@@ -388,7 +394,10 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
             <FormattedMessage
               id="actions.created_entity"
               values={{
-                entity_type: intl.formatMessage({ id: "tag" }),
+                entity_type: intl.formatMessage(
+                  { id: "countables.tags" },
+                  { count: 1 }
+                ),
                 entity_name: <b>{toCreate.name}</b>,
               }}
             />
@@ -449,28 +458,31 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
           onChange={(value) => setDate(value)}
         />
         {renderScrapedStudioRow(
-          intl.formatMessage({ id: "studios" }),
+          intl.formatMessage({ id: "countables.studios" }, { count: 100 }),
           studio,
           (value) => setStudio(value),
           newStudio,
           createNewStudio
         )}
         {renderScrapedPerformersRow(
-          intl.formatMessage({ id: "performers" }),
+          intl.formatMessage({ id: "countables.performers" }, { count: 100 }),
           performers,
           (value) => setPerformers(value),
           newPerformers,
           createNewPerformer
         )}
         {renderScrapedTagsRow(
-          intl.formatMessage({ id: "tags" }),
+          intl.formatMessage({ id: "countables.tags" }, { count: 100 }),
           tags,
           (value) => setTags(value),
           newTags,
           createNewTag
         )}
         <ScrapedTextAreaRow
-          title={intl.formatMessage({ id: "details" })}
+          title={intl.formatMessage(
+            { id: "countables.details" },
+            { count: 100 }
+          )}
           result={details}
           onChange={(value) => setDetails(value)}
         />
@@ -482,7 +494,12 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
     <ScrapeDialog
       title={intl.formatMessage(
         { id: "dialogs.scrape_entity_title" },
-        { entity_type: intl.formatMessage({ id: "gallery" }) }
+        {
+          entity_type: intl.formatMessage(
+            { id: "countables.galleries" },
+            { count: 1 }
+          ),
+        }
       )}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {

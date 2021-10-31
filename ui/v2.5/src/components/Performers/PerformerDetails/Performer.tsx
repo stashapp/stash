@@ -144,19 +144,37 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       id="performer-details"
       unmountOnExit
     >
-      <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
+      <Tab
+        eventKey="details"
+        title={intl.formatMessage({ id: "countables.details" }, { count: 100 })}
+      >
         <PerformerDetailsPanel performer={performer} />
       </Tab>
-      <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+      <Tab
+        eventKey="scenes"
+        title={intl.formatMessage({ id: "countables.scenes" }, { count: 100 })}
+      >
         <PerformerScenesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="galleries" title={intl.formatMessage({ id: "galleries" })}>
+      <Tab
+        eventKey="galleries"
+        title={intl.formatMessage(
+          { id: "countables.galleries" },
+          { count: 100 }
+        )}
+      >
         <PerformerGalleriesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+      <Tab
+        eventKey="images"
+        title={intl.formatMessage({ id: "countables.images" }, { count: 100 })}
+      >
         <PerformerImagesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+      <Tab
+        eventKey="movies"
+        title={intl.formatMessage({ id: "countables.movies" }, { count: 100 })}
+      >
         <PerformerMoviesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title={intl.formatMessage({ id: "actions.edit" })}>

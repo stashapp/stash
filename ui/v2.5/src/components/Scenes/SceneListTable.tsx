@@ -128,19 +128,28 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
               <FormattedMessage id="duration" />
             </th>
             <th>
-              <FormattedMessage id="tags" />
+              <FormattedMessage id="countables.tags" values={{ count: 100 }} />
             </th>
             <th>
-              <FormattedMessage id="performers" />
+              <FormattedMessage
+                id="countables.performers"
+                values={{ count: 100 }}
+              />
             </th>
             <th>
-              <FormattedMessage id="studio" />
+              <FormattedMessage id="countables.studios" values={{ count: 1 }} />
             </th>
             <th>
-              <FormattedMessage id="movies" />
+              <FormattedMessage
+                id="countables.movies"
+                values={{ count: 100 }}
+              />
             </th>
             <th>
-              <FormattedMessage id="gallery" />
+              <FormattedMessage
+                id="countables.galleries"
+                values={{ count: 1 }}
+              />
             </th>
           </tr>
         </thead>

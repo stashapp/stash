@@ -54,7 +54,12 @@ const StudioCreate: React.FC = () => {
         <h2>
           {intl.formatMessage(
             { id: "actions.add_entity" },
-            { entityType: intl.formatMessage({ id: "studio" }) }
+            {
+              entityType: intl.formatMessage(
+                { id: "countables.studios" },
+                { count: 1 }
+              ),
+            }
           )}
         </h2>
         <div className="text-center">

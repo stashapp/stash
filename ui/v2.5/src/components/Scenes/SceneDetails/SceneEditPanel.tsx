@@ -245,7 +245,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
         Toast.success({
           content: intl.formatMessage(
             { id: "toast.updated_entity" },
-            { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+            {
+              entity: intl
+                .formatMessage({ id: "countables.scenes" }, { count: 1 })
+                .toLocaleLowerCase(),
+            }
           ),
         });
         // clear the cover image so that it doesn't appear dirty
@@ -668,7 +672,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </Form.Group>
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "galleries" }),
+                title: intl.formatMessage(
+                  { id: "countables.galleries" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -684,7 +691,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "studios" }),
+                title: intl.formatMessage(
+                  { id: "countables.studios" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -705,7 +715,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="performers" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "performers" }),
+                title: intl.formatMessage(
+                  { id: "countables.performers" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -728,9 +741,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="moviesScenes" as={Row}>
               {FormUtils.renderLabel({
-                title: `${intl.formatMessage({
-                  id: "movies",
-                })}/${intl.formatMessage({ id: "scenes" })}`,
+                title: `${intl.formatMessage(
+                  {
+                    id: "countables.movies",
+                  },
+                  { count: 100 }
+                )}/${intl.formatMessage(
+                  { id: "countables.scenes" },
+                  { count: 100 }
+                )}`,
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -751,7 +770,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="tags" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "tags" }),
+                title: intl.formatMessage(
+                  { id: "countables.tags" },
+                  { count: 100 }
+                ),
                 labelProps: {
                   column: true,
                   sm: 3,
@@ -810,7 +832,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
           <div className="col-12 col-lg-5 col-xl-12">
             <Form.Group controlId="details">
               <Form.Label>
-                <FormattedMessage id="details" />
+                <FormattedMessage
+                  id="countables.details"
+                  values={{ count: 100 }}
+                />
               </Form.Label>
               <Form.Control
                 as="textarea"

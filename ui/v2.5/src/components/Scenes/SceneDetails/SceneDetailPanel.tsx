@@ -18,7 +18,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     return (
       <>
         <h6>
-          <FormattedMessage id="details" />
+          <FormattedMessage id="countables: details" values={{ count: 100 }} />
         </h6>
         <p className="pre">{props.scene.details}</p>
       </>

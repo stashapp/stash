@@ -136,8 +136,14 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     <DeleteEntityDialog
       selected={selectedTags}
       onClose={onClose}
-      singularEntity={intl.formatMessage({ id: "tag" })}
-      pluralEntity={intl.formatMessage({ id: "tags" })}
+      singularEntity={intl.formatMessage(
+        { id: "countables.tags" },
+        { count: 1 }
+      )}
+      pluralEntity={intl.formatMessage(
+        { id: "countables.tags" },
+        { count: 100 }
+      )}
       destroyMutation={useTagsDestroy}
       onDeleted={() => {
         selectedTags.forEach((t) =>
@@ -199,8 +205,14 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
           { id: "toast.delete_past_tense" },
           {
             count: 1,
-            singularEntity: intl.formatMessage({ id: "tag" }),
-            pluralEntity: intl.formatMessage({ id: "tags" }),
+            singularEntity: intl.formatMessage(
+              { id: "countables.tags" },
+              { count: 1 }
+            ),
+            pluralEntity: intl.formatMessage(
+              { id: "countables.tags" },
+              { count: 100 }
+            ),
           }
         ),
       });

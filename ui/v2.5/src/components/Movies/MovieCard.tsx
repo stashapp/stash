@@ -27,7 +27,8 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
       <>
         <hr />
         <span className="movie-scene-number">
-          <FormattedMessage id="scene" /> #{props.sceneIndex}
+          <FormattedMessage id="countables.scenes" values={{ count: 1 }} /> #
+          {props.sceneIndex}
         </span>
       </>
     );
