@@ -743,7 +743,7 @@ driver:
 # Last Updated April 7, 2021
 ```
 
-## Object fields
+## Fragmnts JSON Specification
 ### Performer Fragment
 
 ```
@@ -766,7 +766,7 @@ CareerLength
 Tattoos
 Piercings
 Aliases
-Tags [ <Tag Fragment> ]
+Tags [ <TagFragment Object> ]
 Image
 Details
 ```
@@ -780,10 +780,10 @@ Details
 URL
 Date
 Image
-Studio <Studio Fragment>
-Movies [ <Movie Fragment> ]
-Tags [ <Tag Fragment> ]
-Performers [ <Performer Fragment> ]
+Studio <StudioFragment Object>
+Movies [ <MovieFragment Object> ]
+Tags [ <TagFragment Object> ]
+Performers [ <PerformerFragment Object> ]
 ```
 ### Studio Fragment
 ```
@@ -818,7 +818,7 @@ Details
 URL
 Date
 Rating
-Studio <Studio Fragment>
-Tags [ <Tag Fragment> ]
-Performers [ <Performer Fragment> ]
+Studio <StudioFragment Object>
+Tags [ <TagFragment Object> ]
+Performers [ <PerformerFragment Object> ]
 ```
