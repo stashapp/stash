@@ -766,7 +766,7 @@ CareerLength
 Tattoos
 Piercings
 Aliases
-Tags [ <Tag Object> ]
+Tags [ <Tag Fragment> ]
 Image
 Details
 ```
@@ -780,10 +780,10 @@ Details
 URL
 Date
 Image
-Studio <Studio Object>
-Movies [ <Movie Object> ]
-Tags [ <Tag Object> ]
-Performers [ <Performer Object> ]
+Studio <Studio Fragment>
+Movies [ <Movie Fragment> ]
+Tags [ <Tag Fragment> ]
+Performers [ <Performer Fragment> ]
 ```
 ### Studio Fragment
 ```
@@ -818,7 +818,7 @@ Details
 URL
 Date
 Rating
-Studio <Studio Object>
-Tags [ <Tag Object> ]
-Performers [ <Performer Object> ]
+Studio <Studio Fragment>
+Tags [ <Tag Fragment> ]
+Performers [ <Performer Fragment> ]
 ```
