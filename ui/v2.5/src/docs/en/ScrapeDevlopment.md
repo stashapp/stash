@@ -466,7 +466,7 @@ driver:
     - xpath: //button[@data-target="#multiCollapseExample2"] # toggle on second element
 ```
 
-Note that each `click` adds an extra delay of `clicks sleep` seconds, so the above adds `2+4+1+2+2=11` seconds to the loading time of the page.
+> **⚠️ Note:** each `click` adds an extra delay of `clicks sleep` seconds, so the above adds `2+4+1+2+2=11` seconds to the loading time of the page.
 
 ### Cookie support
 
@@ -771,7 +771,7 @@ Image
 Details
 ```
 
-*Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+> **⚠️ Note:** `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
 ### Scene Fragment
 ```
