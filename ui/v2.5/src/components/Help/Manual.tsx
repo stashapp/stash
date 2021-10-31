@@ -7,7 +7,8 @@ import JSONSpec from "src/docs/en/JSONSpec.md";
 import Configuration from "src/docs/en/Configuration.md";
 import Interface from "src/docs/en/Interface.md";
 import Galleries from "src/docs/en/Galleries.md";
-import Scraping from "src/docs/en/Scraping.md";
+import ScrapeOp from "src/docs/en/ScrapeOperation.md";
+import ScrapeDev from "src/docs/en/ScrapeDevlopment.md";
 import Plugins from "src/docs/en/Plugins.md";
 import ExternalPlugins from "src/docs/en/ExternalPlugins.md";
 import EmbeddedPlugins from "src/docs/en/EmbeddedPlugins.md";
@@ -85,9 +86,15 @@ export const Manual: React.FC<IManualProps> = ({
       content: Galleries,
     },
     {
-      key: "Scraping.md",
+      key: "ScrapeOperation.md",
       title: "Metadata Scraping",
-      content: Scraping,
+      content: ScrapeOp,
+    },
+    {
+      key: "ScrapeDevlopment.md",
+      title: "Scraping Devlopment",
+      content: ScrapeDev,
+      className: "indent-1",
     },
     {
       key: "Plugins.md",

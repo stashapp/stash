@@ -1,37 +1,6 @@
-# Metadata Scraping
+# Creating Scrapers 
 
-Stash supports scraping of performer, scene and movie details.
-
-Stash includes a freeones.xxx performer scraper built in.
-
-# Adding custom scrapers
-
-By default, Stash looks for scraper configurations in the `scrapers` sub-directory of the directory where the stash `config.yml` is read. This will either be the `$HOME/.stash` directory or the current working directory.
-
-Custom scrapers are added by adding configuration yaml files (format: `scrapername.yml`) to the `scrapers` directory.
-
-After scrapers are added, removed or edited while stash is running, they can be reloaded by clicking the `Scrape With...` button in New/Edit Performer or Scene page and clicking `Reload Scrapers`.
-
-# Using custom scrapers
-
-Scrapers support a number of different scraping types.
-
-Performer details can be scraped from the new/edit Performer page in two different ways:
-
-* click on the `Scrape With...` button and select the scraper to scrape with. You will be presented with a search dialog to search for the performer by their name
-* enter the URL containing the Performer's details in the URL field. If the URL matches a pattern known to one of the scrapers, then a button will appear to scrape the details.
-
-Scene details can be scraped using URL as above, or via the `Scrape With...` button, which scrapes using the current scene metadata.
-
-Movie details can currently only be scraped using URL as above.
-
-# Community Scrapers
-The stash community maintains a number of custom scraper configuration files that can be found [here](https://github.com/stashapp/CommunityScrapers).
-
-# Scraper configuration file format
-
-## Basic scraper configuration file structure
-
+  
 ```yaml
 name: <site>
 performerByName:
@@ -76,9 +45,10 @@ The scraping types and their required fields are outlined in the following table
 
 URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field. 
 
-## Scraper Actions
+    
+## Actions
 
-### Script
+### Python Script
 
 Executes a script to perform the scrape. The `script` field is required for this action and accepts a list of string arguments. For example:
 
@@ -97,22 +67,24 @@ Stash sends data to the script process's `stdin` stream and expects the output t
 
 The script is sent input and expects output based on the scraping type, as detailed in the following table:
 
+All fragments are JSON-encoded Strings
+
 | Scrape type | Input | Output |
 |-------------|-------|--------|
-| `performerByName` | `{"name": "<performer query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
-| `performerByFragment` | JSON-encoded performer fragment | JSON-encoded performer fragment |
-| `performerByURL` | `{"url": "<url>"}` | JSON-encoded performer fragment |
-| `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded scene fragments |
-| `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
-| `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
-| `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
-| `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
-| `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
+| `performerByName` | `{"name": "<performer query>"}` | Array of [performer fragments](#performer-fragment) (`name` Required) |
+| `performerByFragment` | [performer fragment](#performer-fragment)  | [performer fragment](#performer-fragment)  |
+| `performerByURL` | `{"url": "<url>"}` | [performer fragment](#performer-fragment) |
+| `sceneByName` | `{"name": "<scene query>"}` | Array of [scene fragments](#scene-fragment) |
+| `sceneByQueryFragment`, `sceneByFragment` | [scene fragment](#scene-fragment) | [scene fragment](#scene-fragment) |
+| `sceneByURL` | `{"url": "<url>"}` | [scene fragment](#scene-fragment) |
+| `movieByURL` | `{"url": "<url>"}` | [gmovie fragment](#movie-fragment) |
+| `galleryByFragment` | [gallery fragment](#gallery-fragment) | [gallery fragment](#gallery-fragment) |
+| `galleryByURL` | `{"url": "<url>"}` | [gallery fragment](#gallery-fragment) |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
-
-As an example, the following python code snippet can be used to scrape a performer:
-
+  
+Python example of a performer Scraper:
+  
 ```python
 import json
 import sys
@@ -121,6 +93,7 @@ import string
 def readJSONInput():
 	input = sys.stdin.read()
 	return json.loads(input)
+
 
 def searchPerformer(name):
     # perform scraping here - using name for the query
@@ -192,12 +165,14 @@ sceneByURL:
 The above configuration requires that `sceneScraper` exists in the `xPathScrapers` configuration.
 
 XPath scraping configurations specify the mapping between object fields and an xpath selector. The xpath scraper scrapes the applicable URL and uses xpath to populate the object fields.
+>
 
 ### scrapeJson
 
 This action works in the same way as `scrapeXPath`, but uses a mapped json configuration to parse. It uses the top-level `jsonScrapers` configuration. This action is **not valid** for `performerByFragment`.
 
 JSON scraping configurations specify the mapping between object fields and a GJSON selector. The JSON scraper scrapes the applicable URL and uses [GJSON](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) to parse the returned JSON object and populate the object fields.
+
 
 ### scrapeXPath and scrapeJson use with `performerByName`
 
@@ -286,7 +261,7 @@ sceneByFragment:
 stashServer:
   url: http://stashserver.com:9999
 ```
-
+  
 ## Xpath and JSON scrapers configuration
 
 The top-level `xPathScrapers` field contains xpath scraping configurations, freely named. These are referenced in the `scraper` field for `scrapeXPath` scrapers. 
@@ -769,7 +744,7 @@ driver:
 ```
 
 ## Object fields
-### Performer
+### Performer Fragment
 
 ```
 Name
@@ -791,37 +766,37 @@ CareerLength
 Tattoos
 Piercings
 Aliases
-Tags (see Tag fields)
+Tags [ <Tag Object> ]
 Image
 Details
 ```
 
 *Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
-### Scene
+### Scene Fragment
 ```
 Title
 Details
 URL
 Date
 Image
-Studio (see Studio Fields)
-Movies (see Movie Fields)
-Tags (see Tag fields)
-Performers (list of Performer fields)
+Studio <Studio Object>
+Movies [ <Movie Object> ]
+Tags [ <Tag Object> ]
+Performers [ <Performer Object> ]
 ```
-### Studio
+### Studio Fragment
 ```
 Name
 URL
 ```
 
-### Tag
+### Tag Fragment
 ```
 Name
 ```
 
-### Movie
+### Movie Fragment
 ```
 Name
 Aliases
@@ -836,14 +811,14 @@ FrontImage
 BackImage
 ```
 
-### Gallery
+### Gallery Fragment
 ```
 Title
 Details
 URL
 Date
 Rating
-Studio (see Studio Fields)
-Tags (see Tag fields)
-Performers (list of Performer fields)
+Studio <Studio Object>
+Tags [ <Tag Object> ]
+Performers [ <Performer Object> ]
 ```
