@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -41,45 +40,23 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 }
 
 func (r *queryResolver) ListScrapers(ctx context.Context, types []models.ScrapeContentType) ([]*models.Scraper, error) {
-	// Collect all scrapers in a map so they occur at-most-once
-	m := make(map[string]*models.Scraper)
-	for _, ty := range types {
-		scrapers := r.scraperCache.ListScrapers(ty)
-		for _, s := range scrapers {
-			if _, ok := m[s.ID]; !ok {
-				m[s.ID] = s
-			}
-		}
-	}
-
-	var ret []*models.Scraper
-	for _, v := range m {
-		ret = append(ret, v)
-	}
-
-	// Deduplication in the map can reorder to scraper list. To fix an order,
-	// sort the returned scrapers by their ID.
-	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].ID < ret[j].ID
-	})
-
-	return ret, nil
+	return r.scraperCache.ListScrapers(types), nil
 }
 
 func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(models.ScrapeContentTypePerformer), nil
+	return r.scraperCache.ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypePerformer}), nil
 }
 
 func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(models.ScrapeContentTypeScene), nil
+	return r.scraperCache.ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypeScene}), nil
 }
 
 func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(models.ScrapeContentTypeGallery), nil
+	return r.scraperCache.ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypeGallery}), nil
 }
 
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return r.scraperCache.ListScrapers(models.ScrapeContentTypeMovie), nil
+	return r.scraperCache.ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypeMovie}), nil
 }
 
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -151,15 +152,23 @@ func (c *Cache) UpdateConfig(globalConfig GlobalConfig) {
 	c.globalConfig = globalConfig
 }
 
-// ListScrapers returns scrapers matching a given kind
-func (c Cache) ListScrapers(k models.ScrapeContentType) []*models.Scraper {
+// ListScrapers lists scrapers matching one of the given types.
+// Returns a list of scrapers, sorted by their ID.
+func (c Cache) ListScrapers(tys []models.ScrapeContentType) []*models.Scraper {
 	var ret []*models.Scraper
 	for _, s := range c.scrapers {
-		if s.supports(k) {
-			spec := s.spec()
-			ret = append(ret, &spec)
+		for _, t := range tys {
+			if s.supports(t) {
+				spec := s.spec()
+				ret = append(ret, &spec)
+				break
+			}
 		}
 	}
+
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i].ID < ret[j].ID
+	})
 
 	return ret
 }
