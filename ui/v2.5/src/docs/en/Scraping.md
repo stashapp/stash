@@ -5,7 +5,7 @@ Stash supports scraping of metadata from various external sources
 ## Terminology
 
 | Term | Description |
-|---|:---|:---|
+|---|:---|
 | URL Scraper | This is a scraper that attempts to extract metadata from a given URL |
 | Fragment Scraper | This scraper will attempt to use all existing metadata for an Item and match it to a result from a metadata source automatically |
 | Search/By Name Scraper | This type of scraper will use the current name of the Item to search a given metadata source for a list of matches for the user to pick from|
