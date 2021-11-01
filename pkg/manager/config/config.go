@@ -167,8 +167,9 @@ const (
 
 	DefaultIdentifySettings = "defaults.identify_task"
 
-	DeleteFileDefault      = "defaults.delete_file"
-	DeleteGeneratedDefault = "defaults.delete_generated"
+	DeleteFileDefault             = "defaults.delete_file"
+	DeleteGeneratedDefault        = "defaults.delete_generated"
+	deleteGeneratedDefaultDefault = true
 
 	// Desktop Integration Options
 	NoBrowser        = "noBrowser"
@@ -259,10 +260,8 @@ func (i *Instance) GetCPUProfilePath() string {
 	return i.cpuProfilePath
 }
 
-func (i *Instance) GetNoBrowserFlag() bool {
-	i.Lock()
-	defer i.Unlock()
-	return viper.GetBool(NoBrowser)
+func (i *Instance) GetNoBrowser() bool {
+	return i.getBool(NoBrowser)
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -875,9 +874,9 @@ func (i *Instance) GetCSS() string {
 }
 
 func (i *Instance) SetCSS(css string) {
+	fn := i.GetCSSPath()
 	i.Lock()
 	defer i.Unlock()
-	fn := i.GetCSSPath()
 
 	buf := []byte(css)
 
@@ -899,17 +898,20 @@ func (i *Instance) GetFunscriptOffset() int {
 }
 
 func (i *Instance) GetDeleteFileDefault() bool {
-	i.Lock()
-	defer i.Unlock()
-	viper.SetDefault(DeleteFileDefault, false)
-	return viper.GetBool(DeleteFileDefault)
+	return i.getBool(DeleteFileDefault)
 }
 
 func (i *Instance) GetDeleteGeneratedDefault() bool {
-	i.Lock()
-	defer i.Unlock()
-	viper.SetDefault(DeleteGeneratedDefault, true)
-	return viper.GetBool(DeleteGeneratedDefault)
+	i.RLock()
+	defer i.RUnlock()
+	ret := deleteGeneratedDefaultDefault
+
+	v := i.viper(DeleteGeneratedDefault)
+	if v.IsSet(DeleteGeneratedDefault) {
+		ret = v.GetBool(DeleteGeneratedDefault)
+	}
+
+	return ret
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
@@ -1113,6 +1115,29 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
 	if write {
 		return i.main.WriteConfig()
+	}
+
+	return nil
+}
+
+// setExistingSystemDefaults sets config options that are new and unset in an existing install,
+// but should have a separate default than for brand-new systems, to maintain behavior.
+func (i *Instance) setExistingSystemDefaults() error {
+	i.Lock()
+	defer i.Unlock()
+	if !i.isNewSystem {
+		configDirtied := false
+
+		// Existing systems as of the introduction of auto-browser open should retain existing
+		// behavior and not start the browser automatically.
+		if !i.main.InConfig(NoBrowser) {
+			configDirtied = true
+			i.main.Set(NoBrowser, true)
+		}
+
+		if configDirtied {
+			return i.main.WriteConfig()
+		}
 	}
 
 	return nil
