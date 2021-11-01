@@ -31,20 +31,16 @@ var testUniqueHierarchyTags = map[int]*models.Tag{
 
 var testUniqueHierarchyTagPaths = map[int]*models.TagPath{
 	1: {
-		ID:   1,
-		Name: "one",
+		Tag: *testUniqueHierarchyTags[1],
 	},
 	2: {
-		ID:   2,
-		Name: "two",
+		Tag: *testUniqueHierarchyTags[2],
 	},
 	3: {
-		ID:   3,
-		Name: "three",
+		Tag: *testUniqueHierarchyTags[3],
 	},
 	4: {
-		ID:   4,
-		Name: "four",
+		Tag: *testUniqueHierarchyTags[4],
 	},
 }
 
