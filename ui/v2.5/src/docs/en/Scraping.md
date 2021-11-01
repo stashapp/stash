@@ -40,11 +40,17 @@ The stash community maintains a number of custom scraper configuration files tha
   
 ## Using Scrapers
 
-URL Scraper
-* Enter the URL into the `edit` tab of an Item, If a scraper is installed that supports that url then a button will appear to scrape the metadata.
+#### URL Scraper
+Enter the URL into the `edit` tab of an Item, If a scraper is installed that supports that url then a button will appear to scrape the metadata.
 
-Fragment Scraper
-* click on the `Scrape With...` button and select the scraper you wish to use.
+#### Fragment Scraper
+click on the `Scrape With...` button in the `edit` tab of an item, then select the scraper you wish to use.
 
-Search Scraper
-* Click on the :mag: button, You will be presented with a search dialog with a pre-populated query to search for, after searching you will be presented with a list of results to pick from
+#### Search Scraper
+Click on the :mag: button `edit` tab of an item, You will be presented with a search dialog with a pre-populated query to search for, after searching you will be presented with a list of results to pick from
+
+#### The "Tagger"
+The Tagger refers to a specific view in the `/scenes` tab of stash that allows running scrapers on scenes a page at a time
+
+#### Identify Task
+The Identify task can be found under `Settings > Tasks > Identify...` this task will run a scraper against a group of files/folders and set the corresponding scene metadata automatically without user input
