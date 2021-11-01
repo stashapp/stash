@@ -732,6 +732,8 @@ func (qb *tagQueryBuilder) UpdateChildTags(tagID int, childIDs []int) error {
 	return nil
 }
 
+// FindAllAncestors returns a slice of TagPath objects, representing all
+// ancestors of the tag with the provided id.
 func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	inBinding := getInBinding(len(excludeIDs) + 1)
 
@@ -758,6 +760,8 @@ SELECT t.*, p.path FROM tags t INNER JOIN parents p ON t.id = p.parent_id
 	return ret, nil
 }
 
+// FindAllDescendants returns a slice of TagPath objects, representing all
+// descendants of the tag with the provided id.
 func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	inBinding := getInBinding(len(excludeIDs) + 1)
 

@@ -144,7 +144,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3],
 		},
-		expectedError: "Cannot apply tag \"three\" as a child of \"one\" as it is already an ancestor\n",
+		expectedError: "cannot apply tag \"three\" as a child of \"one\" as it is already an ancestor ()",
 	},
 	{
 		id:       1,
@@ -156,7 +156,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3], testUniqueHierarchyTagPaths[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as a parent of \"one\" as it is already a descendant\n",
+		expectedError: "cannot apply tag \"two\" as a parent of \"one\" as it is already a descendant ()",
 	},
 	{
 		id:       1,
@@ -168,7 +168,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3],
 		},
-		expectedError: "Cannot apply tag \"three\" as a parent of \"one\" as it is already a descendant\n",
+		expectedError: "cannot apply tag \"three\" as a parent of \"one\" as it is already a descendant ()",
 	},
 	{
 		id: 1,
@@ -184,7 +184,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3], testUniqueHierarchyTagPaths[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as a parent of \"one\" as it is already a descendant\n",
+		expectedError: "cannot apply tag \"two\" as a parent of \"one\" as it is already a descendant ()",
 	},
 	{
 		id:       1,
@@ -196,7 +196,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[2],
 		},
-		expectedError: "Cannot apply tag \"two\" as a parent of \"one\" as it is already a descendant\n",
+		expectedError: "cannot apply tag \"two\" as a parent of \"one\" as it is already a descendant ()",
 	},
 	{
 		id:       2,
@@ -208,7 +208,7 @@ var testUniqueHierarchyCases = []testUniqueHierarchyCase{
 		onFindAllDescendants: []*models.TagPath{
 			testUniqueHierarchyTagPaths[3], testUniqueHierarchyTagPaths[1],
 		},
-		expectedError: "Cannot apply tag \"one\" as a parent of \"two\" as it is already a descendant\n",
+		expectedError: "cannot apply tag \"one\" as a parent of \"two\" as it is already a descendant ()",
 	},
 }
 
@@ -257,18 +257,7 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		mockTagReader.On("FindByParentTagID", tc.id).Return(tc.children, nil).Once()
 	}
 
-	mockTagReader.On("Find", mock.AnythingOfType("int")).Return(func(tagID int) *models.Tag {
-		for id, tag := range find {
-			if id == tagID {
-				return tag
-			}
-		}
-		return nil
-	}, func(tagID int) error {
-		return nil
-	}).Maybe()
-
-	mockTagReader.On("FindAllAncestors", mock.AnythingOfType("int"), []int{tc.id}).Return(func(tagID int, excludeIDs []int) []*models.TagPath {
+	mockTagReader.On("FindAllAncestors", mock.AnythingOfType("int"), []int(nil)).Return(func(tagID int, excludeIDs []int) []*models.TagPath {
 		return tc.onFindAllAncestors
 	}, func(tagID int, excludeIDs []int) error {
 		if tc.onFindAllAncestors != nil {
@@ -277,7 +266,7 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		return fmt.Errorf("undefined ancestors for: %d", tagID)
 	}).Maybe()
 
-	mockTagReader.On("FindAllDescendants", mock.AnythingOfType("int"), []int{tc.id}).Return(func(tagID int, excludeIDs []int) []*models.TagPath {
+	mockTagReader.On("FindAllDescendants", mock.AnythingOfType("int"), []int(nil)).Return(func(tagID int, excludeIDs []int) []*models.TagPath {
 		return tc.onFindAllDescendants
 	}, func(tagID int, excludeIDs []int) error {
 		if tc.onFindAllDescendants != nil {
@@ -286,7 +275,7 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		return fmt.Errorf("undefined descendants for: %d", tagID)
 	}).Maybe()
 
-	res := ValidateHierarchy(tc.id, parentIDs, childIDs, mockTagReader)
+	res := ValidateHierarchy(testUniqueHierarchyTags[tc.id], parentIDs, childIDs, mockTagReader)
 
 	assert := assert.New(t)
 
