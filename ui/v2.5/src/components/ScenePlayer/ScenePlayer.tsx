@@ -2,8 +2,8 @@
 import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration } from "src/core/StashService";
 import { JWUtils, ScreenUtils } from "src/utils";
+import { ConfigurationContext } from "src/hooks/Config";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { Interactive } from "../../utils/interactive";
 
@@ -310,6 +310,7 @@ export class ScenePlayerImpl extends React.Component<
       height: "100%",
       cast: {},
       primary: "html5",
+      preload: "none",
       autostart:
         this.props.autoplay ||
         (this.props.config ? this.props.config.autostartVideo : false) ||
@@ -365,16 +366,12 @@ export class ScenePlayerImpl extends React.Component<
 export const ScenePlayer: React.FC<IScenePlayerProps> = (
   props: IScenePlayerProps
 ) => {
-  const config = useConfiguration();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   return (
     <ScenePlayerImpl
       {...props}
-      config={
-        config.data && config.data.configuration
-          ? config.data.configuration.interface
-          : undefined
-      }
+      config={configuration ? configuration.interface : undefined}
     />
   );
 };

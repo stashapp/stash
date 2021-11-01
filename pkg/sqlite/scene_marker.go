@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -105,13 +106,13 @@ func (qb *sceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
-		query = query + " WHERE title LIKE '%" + *q + "%'"
+		query += " WHERE title LIKE '%" + *q + "%'"
 	}
-	query = query + " GROUP BY title"
+	query += " GROUP BY title"
 	if sort != nil && *sort == "count" {
-		query = query + " ORDER BY `count` DESC"
+		query += " ORDER BY `count` DESC"
 	} else {
-		query = query + " ORDER BY title ASC"
+		query += " ORDER BY title ASC"
 	}
 	var args []interface{}
 	return qb.queryMarkerStringsResultType(query, args)
@@ -146,8 +147,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs("scene_markers")
+	distinctIDs(&query, sceneMarkerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scene_markers.title", "scenes.title"}
@@ -302,7 +302,7 @@ func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interf
 
 func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
 	rows, err := database.DB.Queryx(query, args...)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 	defer rows.Close()

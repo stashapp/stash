@@ -3,14 +3,48 @@ run:
   timeout: 3m
   modules-download-mode: vendor
 
-issues:
-  # Rev at which the linter was introduced. Older bugs are still
-  # present, but should not be considered validation errors for now
-  new-from-rev: b14d5c56504dfcea2f5a7b86706b0ecdafd0b68c
+linters:
+  disable-all: true
+  enable:
+    # Default set of linters from golangci-lint
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # Linters added by the stash project.
+    - dogsled
+    - errorlint
+    # - exhaustive
+    - exportloopref
+    - gocritic
+    # - goerr113
+    - gofmt
+    # - gomnd
+    # - ifshort
+    - misspell
+    # - nakedret
+    - noctx
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
 
+# Project-specific linter overrides
 linters-settings:
   gofmt:
     simplify: false
+
+  errorlint:
+    # Disable errorf because there are false positives, where you don't want to wrap
+    #  an error.
+    errorf: false
+    asserts: true
+    comparison: true
 
   revive:
     ignore-generated-header: true
@@ -52,21 +86,6 @@ linters-settings:
       - name: unreachable-code
       - name: redefines-builtin-id
 
-linters:
-  disable-all: true
-  enable:
-    # Default set of linters from golangci-lint
-    - deadcode
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - structcheck
-    - typecheck
-    - unused
-    - varcheck
-    # Linters added by the stash project
-    - gofmt
-    - revive
-
+  rowserrcheck:
+    packages:
+      - github.com/jmoiron/sqlx

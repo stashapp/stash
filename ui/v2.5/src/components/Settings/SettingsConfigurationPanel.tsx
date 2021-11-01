@@ -9,10 +9,12 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import StashBoxConfiguration, {
+import {
+  StashBoxConfiguration,
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
+import { StringListInput } from "../Shared/StringListInput";
 
 interface IExclusionPatternsProps {
   excludes: string[];
@@ -46,7 +48,7 @@ export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
       <Form.Group>
         {props.excludes &&
           props.excludes.map((regexp, i) => (
-            <InputGroup>
+            <InputGroup key={regexp}>
               <Form.Control
                 className="col col-sm-6 text-input"
                 value={regexp}
@@ -80,6 +82,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(
     undefined
   );
+  const [metadataPath, setMetadataPath] = useState<string | undefined>(
+    undefined
+  );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
   const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
@@ -110,6 +115,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
+  const [trustedProxies, setTrustedProxies] = useState<string[] | undefined>(
+    undefined
+  );
   const [logFile, setLogFile] = useState<string | undefined>();
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
@@ -145,6 +153,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     })),
     databasePath,
     generatedPath,
+    metadataPath,
     cachePath,
     calculateMD5,
     videoFileNamingAlgorithm:
@@ -162,6 +171,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     username,
     password,
     maxSessionAge,
+    trustedProxies,
     logFile,
     logOut,
     logLevel,
@@ -191,6 +201,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setStashes(conf.general.stashes ?? []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
+      setMetadataPath(conf.general.metadataPath);
       setCachePath(conf.general.cachePath);
       setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
       setCalculateMD5(conf.general.calculateMD5);
@@ -209,6 +220,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
+      setTrustedProxies(conf.general.trustedProxies ?? undefined);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
@@ -419,6 +431,24 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Text className="text-muted">
             {intl.formatMessage({
               id: "config.general.generated_files_location",
+            })}
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="metadata-path">
+          <h6>
+            <FormattedMessage id="config.general.metadata_path.heading" />
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={metadataPath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setMetadataPath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.general.metadata_path.description",
             })}
           </Form.Text>
         </Form.Group>
@@ -985,6 +1015,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
+      </Form.Group>
+
+      <Form.Group id="trusted-proxies">
+        <h6>
+          {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
+        </h6>
+        <StringListInput
+          value={trustedProxies ?? []}
+          setValue={(value) => setTrustedProxies(value)}
+          defaultNewValue=""
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.general.auth.trusted_proxies_desc",
+          })}
+        </Form.Text>
       </Form.Group>
 
       <hr />

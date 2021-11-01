@@ -6,6 +6,8 @@ import {
   ParentStudiosCriterion,
 } from "src/models/list-filter/criteria/studios";
 import {
+  ChildTagsCriterionOption,
+  ParentTagsCriterionOption,
   TagsCriterion,
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
@@ -167,6 +169,40 @@ const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   return `/scenes?${filter.makeQueryParameters()}`;
 };
 
+const makeParentTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
+  if (!tag.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Tags);
+  const criterion = new TagsCriterion(ChildTagsCriterionOption);
+  criterion.value = {
+    items: [
+      {
+        id: tag.id,
+        label: tag.name || `Tag ${tag.id}`,
+      },
+    ],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/tags?${filter.makeQueryParameters()}`;
+};
+
+const makeChildTagsUrl = (tag: Partial<GQL.TagDataFragment>) => {
+  if (!tag.id) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Tags);
+  const criterion = new TagsCriterion(ParentTagsCriterionOption);
+  criterion.value = {
+    items: [
+      {
+        id: tag.id,
+        label: tag.name || `Tag ${tag.id}`,
+      },
+    ],
+    depth: 0,
+  };
+  filter.criteria.push(criterion);
+  return `/tags?${filter.makeQueryParameters()}`;
+};
+
 const makeTagScenesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   if (!tag.id) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes);
@@ -259,6 +295,8 @@ export default {
   makeStudioImagesUrl,
   makeStudioGalleriesUrl,
   makeStudioMoviesUrl,
+  makeParentTagsUrl,
+  makeChildTagsUrl,
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeTagPerformersUrl,

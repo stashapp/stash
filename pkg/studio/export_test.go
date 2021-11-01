@@ -39,10 +39,20 @@ var parentStudio models.Studio = models.Studio{
 
 var imageBytes = []byte("imageBytes")
 
+var stashID = models.StashID{
+	StashID:  "StashID",
+	Endpoint: "Endpoint",
+}
+var stashIDs = []*models.StashID{
+	&stashID,
+}
+
 const image = "aW1hZ2VCeXRlcw=="
 
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+var (
+	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
+)
 
 func createFullStudio(id int, parentID int) models.Studio {
 	ret := models.Studio{
@@ -93,6 +103,9 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		Image:        image,
 		Rating:       rating,
 		Aliases:      aliases,
+		StashIDs: []models.StashID{
+			stashID,
+		},
 	}
 }
 
@@ -117,32 +130,32 @@ var scenarios []testScenario
 
 func initTestTable() {
 	scenarios = []testScenario{
-		testScenario{
+		{
 			createFullStudio(studioID, parentStudioID),
 			createFullJSONStudio(parentStudioName, image, []string{"alias"}),
 			false,
 		},
-		testScenario{
+		{
 			createEmptyStudio(noImageID),
 			createEmptyJSONStudio(),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errImageID, parentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(missingParentStudioID, missingStudioID),
 			createFullJSONStudio("", image, nil),
 			false,
 		},
-		testScenario{
+		{
 			createFullStudio(errStudioID, errParentStudioID),
 			nil,
 			true,
 		},
-		testScenario{
+		{
 			createFullStudio(errAliasID, parentStudioID),
 			nil,
 			true,
@@ -178,15 +191,20 @@ func TestToJSON(t *testing.T) {
 	mockStudioReader.On("GetAliases", missingParentStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("GetAliases", errAliasID).Return(nil, aliasErr).Once()
 
+	mockStudioReader.On("GetStashIDs", studioID).Return(stashIDs, nil).Once()
+	mockStudioReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
+	mockStudioReader.On("GetStashIDs", missingParentStudioID).Return(stashIDs, nil).Once()
+
 	for i, s := range scenarios {
 		studio := s.input
 		json, err := ToJSON(mockStudioReader, &studio)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

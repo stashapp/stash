@@ -3,12 +3,14 @@ package manager
 import (
 	"database/sql"
 	"errors"
-	"github.com/stashapp/stash/pkg/studio"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/studio"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/tag"
@@ -80,8 +82,6 @@ func initParserFields() {
 
 	ret["title"] = newParserField("title", ".*", true)
 	ret["ext"] = newParserField("ext", ".*$", false)
-
-	//I = new ParserField("i", undefined, "Matches any ignored word", false);
 
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
 	ret["rating"] = newParserField("rating", `\d`, true)
@@ -466,7 +466,7 @@ func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.Sce
 
 	p.Filter.Q = nil
 
-	scenes, total, err := repo.Scene().Query(sceneFilter, p.Filter)
+	scenes, total, err := scene.QueryWithCount(repo.Scene(), sceneFilter, p.Filter)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -10,19 +10,12 @@ import {
 import {
   LoadingIndicator,
   StudioSelect,
-  Icon,
   DetailsEditNavbar,
   DurationInput,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import {
-  Modal as BSModal,
-  Form,
-  Button,
-  Col,
-  Row,
-  InputGroup,
-} from "react-bootstrap";
+import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
 import { DurationUtils, FormUtils, ImageUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
@@ -257,21 +250,6 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     );
   }
 
-  function maybeRenderScrapeButton() {
-    const { url } = formik.values;
-    if (!url || !urlScrapable(url)) {
-      return undefined;
-    }
-    return (
-      <Button
-        className="minimal scrape-url-button"
-        onClick={() => onScrapeMovieURL()}
-      >
-        <Icon icon="file-upload" />
-      </Button>
-    );
-  }
-
   function maybeRenderScrapeDialog() {
     if (!scrapedMovie) {
       return;
@@ -386,7 +364,12 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
       <Prompt
         when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
+        message={(location, action) => {
+          // Check if it's a redirect after movie creation
+          if (action === "PUSH" && location.pathname.startsWith("/movies/"))
+            return true;
+          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
+        }}
       />
 
       <Form noValidate onSubmit={formik.handleSubmit} id="movie-edit">
@@ -463,14 +446,11 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
             title: intl.formatMessage({ id: "url" }),
           })}
           <Col xs={9}>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                placeholder={intl.formatMessage({ id: "url" })}
-                {...formik.getFieldProps("url")}
-              />
-              <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
-            </InputGroup>
+            <URLField
+              {...formik.getFieldProps("url")}
+              onScrapeClick={onScrapeMovieURL}
+              urlScrapable={urlScrapable}
+            />
           </Col>
         </Form.Group>
 

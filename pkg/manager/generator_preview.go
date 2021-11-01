@@ -57,7 +57,7 @@ func (g *PreviewGenerator) Generate() error {
 		return err
 	}
 
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	encoder := instance.FFMPEG
 	if g.GenerateVideo {
 		if err := g.generateVideo(&encoder, false); err != nil {
 			logger.Warnf("[generator] failed generating scene preview, trying fallback")

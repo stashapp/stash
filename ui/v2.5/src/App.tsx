@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
-import { IntlProvider } from "react-intl";
+import { IntlProvider, CustomFormats } from "react-intl";
+import { Helmet } from "react-helmet";
 import { mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
@@ -30,7 +31,8 @@ import Images from "./components/Images/Images";
 import { Setup } from "./components/Setup/Setup";
 import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
-import { LoadingIndicator } from "./components/Shared";
+import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
+import { ConfigurationProvider } from "./hooks/Config";
 
 initPolyfills();
 
@@ -39,7 +41,7 @@ MousetrapPause(Mousetrap);
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
 
-const intlFormats = {
+const intlFormats: CustomFormats = {
   date: {
     long: { year: "numeric", month: "long", day: "numeric" },
   },
@@ -138,12 +140,21 @@ export const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <IntlProvider locale={language} messages={messages} formats={intlFormats}>
-        <ToastProvider>
-          <LightboxProvider>
-            {maybeRenderNavbar()}
-            <div className="main container-fluid">{renderContent()}</div>
-          </LightboxProvider>
-        </ToastProvider>
+        <ConfigurationProvider
+          configuration={config.data?.configuration}
+          loading={config.loading}
+        >
+          <ToastProvider>
+            <LightboxProvider>
+              <Helmet
+                titleTemplate={`%s ${TITLE_SUFFIX}`}
+                defaultTitle="Stash"
+              />
+              {maybeRenderNavbar()}
+              <div className="main container-fluid">{renderContent()}</div>
+            </LightboxProvider>
+          </ToastProvider>
+        </ConfigurationProvider>
       </IntlProvider>
     </ErrorBoundary>
   );

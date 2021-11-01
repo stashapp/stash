@@ -1,13 +1,15 @@
 package sqlite
 
 import (
+	"fmt"
 	"strings"
 )
 
 type queryBuilder struct {
 	repository *repository
 
-	body string
+	columns []string
+	from    string
 
 	joins         joins
 	whereClauses  []string
@@ -21,13 +23,45 @@ type queryBuilder struct {
 	err error
 }
 
+func (qb queryBuilder) body() string {
+	return fmt.Sprintf("SELECT %s FROM %s%s", strings.Join(qb.columns, ", "), qb.from, qb.joins.toSQL())
+}
+
+func (qb *queryBuilder) addColumn(column string) {
+	qb.columns = append(qb.columns, column)
+}
+
+func (qb queryBuilder) toSQL(includeSortPagination bool) string {
+	body := qb.body()
+
+	withClause := ""
+	if len(qb.withClauses) > 0 {
+		var recursive string
+		if qb.recursiveWith {
+			recursive = " RECURSIVE "
+		}
+		withClause = "WITH " + recursive + strings.Join(qb.withClauses, ", ") + " "
+	}
+
+	body = withClause + qb.repository.buildQueryBody(body, qb.whereClauses, qb.havingClauses)
+	if includeSortPagination {
+		body += qb.sortAndPagination
+	}
+
+	return body
+}
+
+func (qb queryBuilder) findIDs() ([]int, error) {
+	const includeSortPagination = true
+	return qb.repository.runIdsQuery(qb.toSQL(includeSortPagination), qb.args)
+}
+
 func (qb queryBuilder) executeFind() ([]int, int, error) {
 	if qb.err != nil {
 		return nil, 0, qb.err
 	}
 
-	body := qb.body
-	body += qb.joins.toSQL()
+	body := qb.body()
 
 	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses, qb.withClauses, qb.recursiveWith)
 }
@@ -37,8 +71,7 @@ func (qb queryBuilder) executeCount() (int, error) {
 		return 0, qb.err
 	}
 
-	body := qb.body
-	body += qb.joins.toSQL()
+	body := qb.body()
 
 	withClause := ""
 	if len(qb.withClauses) > 0 {

@@ -47,15 +47,18 @@ jobs:
     - name: Cache go build
       uses: actions/cache@v2
       env:
-        cache-name: cache-go-cache
+        # increment the number suffix to bump the cache
+        cache-name: cache-go-cache-1
       with:
         path: .go-cache
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
     - name: Start build container
+      env:
+        official-build: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop') }}
       run: |
         mkdir -p .go-cache
-        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
 
     - name: Pre-install
       run: docker exec -t build /bin/bash -c "make pre-ui"
@@ -68,7 +71,15 @@ jobs:
       if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
       run: docker exec -t build /bin/bash -c "make validate-frontend"
 
-    # Backend validation happens in parallel to the build in the golangci-lint action
+    # Static validation happens in the linter workflow in parallel to this workflow
+    # Run Dynamic validation here, to make sure we pass all the projects integration tests
+    #
+    # create UI file so that the embed doesn't fail
+    - name: Test Backend
+      run: |
+        mkdir -p ui/v2.5/build
+        touch ui/v2.5/build/index.html
+        docker exec -t build /bin/bash -c "make it"
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)

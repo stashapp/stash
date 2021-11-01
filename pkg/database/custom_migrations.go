@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -21,7 +22,7 @@ func createImagesChecksumIndex() error {
 	return WithTxn(func(tx *sqlx.Tx) error {
 		row := tx.QueryRow("SELECT 1 AS found FROM sqlite_master WHERE type = 'index' AND name = 'images_checksum_unique'")
 		err := row.Err()
-		if err != nil && err != sql.ErrNoRows {
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err
 		}
 
@@ -55,7 +56,7 @@ func createImagesChecksumIndex() error {
 		}
 
 		err = tx.Select(&result, "SELECT checksum FROM images GROUP BY checksum HAVING COUNT(1) > 1")
-		if err != nil && err != sql.ErrNoRows {
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			logger.Errorf("Unable to determine non-unique image checksums: %s", err)
 			return nil
 		}

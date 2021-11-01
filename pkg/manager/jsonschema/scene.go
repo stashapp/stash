@@ -36,26 +36,27 @@ type SceneMovie struct {
 }
 
 type Scene struct {
-	Title      string          `json:"title,omitempty"`
-	Checksum   string          `json:"checksum,omitempty"`
-	OSHash     string          `json:"oshash,omitempty"`
-	Phash      string          `json:"phash,omitempty"`
-	Studio     string          `json:"studio,omitempty"`
-	URL        string          `json:"url,omitempty"`
-	Date       string          `json:"date,omitempty"`
-	Rating     int             `json:"rating,omitempty"`
-	Organized  bool            `json:"organized,omitempty"`
-	OCounter   int             `json:"o_counter,omitempty"`
-	Details    string          `json:"details,omitempty"`
-	Galleries  []string        `json:"galleries,omitempty"`
-	Performers []string        `json:"performers,omitempty"`
-	Movies     []SceneMovie    `json:"movies,omitempty"`
-	Tags       []string        `json:"tags,omitempty"`
-	Markers    []SceneMarker   `json:"markers,omitempty"`
-	File       *SceneFile      `json:"file,omitempty"`
-	Cover      string          `json:"cover,omitempty"`
-	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
+	Title      string           `json:"title,omitempty"`
+	Checksum   string           `json:"checksum,omitempty"`
+	OSHash     string           `json:"oshash,omitempty"`
+	Phash      string           `json:"phash,omitempty"`
+	Studio     string           `json:"studio,omitempty"`
+	URL        string           `json:"url,omitempty"`
+	Date       string           `json:"date,omitempty"`
+	Rating     int              `json:"rating,omitempty"`
+	Organized  bool             `json:"organized,omitempty"`
+	OCounter   int              `json:"o_counter,omitempty"`
+	Details    string           `json:"details,omitempty"`
+	Galleries  []string         `json:"galleries,omitempty"`
+	Performers []string         `json:"performers,omitempty"`
+	Movies     []SceneMovie     `json:"movies,omitempty"`
+	Tags       []string         `json:"tags,omitempty"`
+	Markers    []SceneMarker    `json:"markers,omitempty"`
+	File       *SceneFile       `json:"file,omitempty"`
+	Cover      string           `json:"cover,omitempty"`
+	CreatedAt  models.JSONTime  `json:"created_at,omitempty"`
+	UpdatedAt  models.JSONTime  `json:"updated_at,omitempty"`
+	StashIDs   []models.StashID `json:"stash_ids,omitempty"`
 }
 
 func LoadSceneFile(filePath string) (*Scene, error) {

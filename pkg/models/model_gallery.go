@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"time"
 )
 
 type Gallery struct {
@@ -38,6 +39,40 @@ type GalleryPartial struct {
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+}
+
+func (s *Gallery) File() File {
+	ret := File{
+		Path: s.Path.String,
+	}
+
+	ret.Checksum = s.Checksum
+
+	if s.FileModTime.Valid {
+		ret.FileModTime = s.FileModTime.Timestamp
+	}
+
+	return ret
+}
+
+func (s *Gallery) SetFile(f File) {
+	path := f.Path
+	s.Path = sql.NullString{
+		String: path,
+		Valid:  true,
+	}
+
+	if f.Checksum != "" {
+		s.Checksum = f.Checksum
+	}
+
+	zeroTime := time.Time{}
+	if f.FileModTime != zeroTime {
+		s.FileModTime = NullSQLiteTimestamp{
+			Timestamp: f.FileModTime,
+			Valid:     true,
+		}
+	}
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,

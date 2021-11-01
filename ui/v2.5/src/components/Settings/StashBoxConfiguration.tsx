@@ -140,5 +140,3 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
     </Form.Group>
   );
 };
-
-export default StashBoxConfiguration;
