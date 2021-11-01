@@ -1,6 +1,7 @@
 # Creating Scrapers 
 
-  
+You can contribute scrapers to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls)
+
 ```yaml
 name: <site>
 performerByName:
@@ -32,7 +33,7 @@ A scraper configuration in any of the top-level fields must at least have an `ac
 
 The scraping types and their required fields are outlined in the following table:
 
-| Behaviour | Required configuration |
+| Behavior | Required configuration |
 |-----------|------------------------|
 | Scraper in `Scrape...` dropdown button in Performer Edit page | Valid `performerByName` and `performerByFragment` configurations. |
 | Scrape performer from URL | Valid `performerByURL` configuration with matching URL. |
@@ -48,7 +49,7 @@ URL-based scraping accepts multiple scrape configurations, and each configuratio
     
 ## Actions
 
-### Python Script
+### Script
 
 Executes a script to perform the scrape. The `script` field is required for this action and accepts a list of string arguments. For example:
 
@@ -326,7 +327,7 @@ The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="in
 ### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
-* `feetToCm`: converts a string containing feet and inches numbers into centimetres. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimetres.
+* `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
 * `lbToKg`: converts a string containing lbs to kg.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
 
@@ -426,7 +427,7 @@ driver:
 
 Optionally, you can add a `sleep` value under the `driver` section. This specifies the amount of time (in seconds) that the scraper should wait after loading the website to perform the scrape. This is needed as some sites need more time for loading scripts to finish. If unset, this value defaults to 2 seconds.
 
-When `useCDP` is set to true, stash will execute or connect to an instance of Chrome. The behaviour is dictated by the `Chrome CDP path` setting in the user configuration. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
+When `useCDP` is set to true, stash will execute or connect to an instance of Chrome. The behavior is dictated by the `Chrome CDP path` setting in the user configuration. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`). As remote instance a docker container can also be used with the `chromedp/headless-shell` image being highly recommended.
 
@@ -663,7 +664,7 @@ sceneByFragment:
   scraper: sceneQueryScraper
   queryURLReplace:
     filename:
-      - regex: "[^a-zA-Z\\d\\-._~]" # clean filename so that it can contruct a valid url
+      - regex: "[^a-zA-Z\\d\\-._~]" # clean filename so that it can construct a valid url
         with: "." # "%20"
       - regex: HEVC
         with:
@@ -743,7 +744,7 @@ driver:
 # Last Updated April 7, 2021
 ```
 
-## Fragmnts JSON Specification
+## Fragments JSON Specification
 ### Performer Fragment
 
 ```
