@@ -286,7 +286,7 @@ func testEnsureHierarchy(t *testing.T, tc testUniqueHierarchyCase, queryParents,
 		return fmt.Errorf("undefined descendants for: %d", tagID)
 	}).Maybe()
 
-	res := EnsureHierarchy(tc.id, parentIDs, childIDs, mockTagReader)
+	res := ValidateHierarchy(tc.id, parentIDs, childIDs, mockTagReader)
 
 	assert := assert.New(t)
 

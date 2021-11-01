@@ -76,7 +76,7 @@ func EnsureAliasesUnique(id int, aliases []string, qb models.TagReader) error {
 	return nil
 }
 
-func EnsureHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) error {
+func ValidateHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) error {
 	allAncestors := make(map[int]*models.TagPath)
 	allDescendants := make(map[int]*models.TagPath)
 	excludeIDs := []int{id}
