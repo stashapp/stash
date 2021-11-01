@@ -68,19 +68,17 @@ Stash sends data to the script process's `stdin` stream and expects the output t
 
 The script is sent input and expects output based on the scraping type, as detailed in the following table:
 
-All fragments are JSON-encoded Strings
-
 | Scrape type | Input | Output |
 |-------------|-------|--------|
-| `performerByName` | `{"name": "<performer query>"}` | Array of [performer fragments](#performer-fragment) (`name` Required) |
-| `performerByFragment` | [performer fragment](#performer-fragment)  | [performer fragment](#performer-fragment)  |
-| `performerByURL` | `{"url": "<url>"}` | [performer fragment](#performer-fragment) |
-| `sceneByName` | `{"name": "<scene query>"}` | Array of [scene fragments](#scene-fragment) |
-| `sceneByQueryFragment`, `sceneByFragment` | [scene fragment](#scene-fragment) | [scene fragment](#scene-fragment) |
-| `sceneByURL` | `{"url": "<url>"}` | [scene fragment](#scene-fragment) |
-| `movieByURL` | `{"url": "<url>"}` | [movie fragment](#movie-fragment) |
-| `galleryByFragment` | [gallery fragment](#gallery-fragment) | [gallery fragment](#gallery-fragment) |
-| `galleryByURL` | `{"url": "<url>"}` | [gallery fragment](#gallery-fragment) |
+| `performerByName` | `{"name": "<performer query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
+| `performerByFragment` | JSON-encoded performer fragment | JSON-encoded performer fragment |
+| `performerByURL` | `{"url": "<url>"}` | JSON-encoded performer fragment |
+| `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded scene fragments |
+| `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
+| `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
+| `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
+| `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
+| `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
   
@@ -744,8 +742,8 @@ driver:
 # Last Updated April 7, 2021
 ```
 
-## Fragments JSON Specification
-### Performer Fragment
+## Object fields
+### Performer
 
 ```
 Name
@@ -767,37 +765,37 @@ CareerLength
 Tattoos
 Piercings
 Aliases
-Tags [ <TagFragment Object> ]
+Tags (see Tag fields)
 Image
 Details
 ```
 
-> **⚠️ Note:** `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+*Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
-### Scene Fragment
+### Scene
 ```
 Title
 Details
 URL
 Date
 Image
-Studio <StudioFragment Object>
-Movies [ <MovieFragment Object> ]
-Tags [ <TagFragment Object> ]
-Performers [ <PerformerFragment Object> ]
+Studio (see Studio Fields)
+Movies (see Movie Fields)
+Tags (see Tag fields)
+Performers (list of Performer fields)
 ```
-### Studio Fragment
+### Studio
 ```
 Name
 URL
 ```
 
-### Tag Fragment
+### Tag
 ```
 Name
 ```
 
-### Movie Fragment
+### Movie
 ```
 Name
 Aliases
@@ -812,14 +810,14 @@ FrontImage
 BackImage
 ```
 
-### Gallery Fragment
+### Gallery
 ```
 Title
 Details
 URL
 Date
 Rating
-Studio <StudioFragment Object>
-Tags [ <TagFragment Object> ]
-Performers [ <PerformerFragment Object> ]
+Studio (see Studio Fields)
+Tags (see Tag fields)
+Performers (list of Performer fields)
 ```
