@@ -200,7 +200,7 @@ func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.H
 
 				f.addJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
 
-				f.addWhere(fmt.Sprintf("%s (scene_markers.primary_tag_id IS NULL AND scene_markers_tags.tag_id IS NULL)", notClause))
+				f.addWhere(fmt.Sprintf("%s scene_markers_tags.tag_id IS NULL", notClause))
 				return
 			}
 
