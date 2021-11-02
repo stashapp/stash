@@ -825,6 +825,29 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdx1WithImage], galleries[0].ID)
+
+		q = getGalleryStringValue(galleryIdxWithPerformerTag, titleField)
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTag], galleries[0].ID)
+
+		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
 		return nil
 	})
 }

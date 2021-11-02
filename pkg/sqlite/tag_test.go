@@ -18,7 +18,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Tag()
 
-		markerID := markerIDs[markerIdxWithScene]
+		markerID := markerIDs[markerIdxWithTag]
 
 		tags, err := tqb.FindBySceneMarkerID(markerID)
 
@@ -27,7 +27,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 		}
 
 		assert.Len(t, tags, 1)
-		assert.Equal(t, tagIDs[tagIdxWithMarker], tags[0].ID)
+		assert.Equal(t, tagIDs[tagIdxWithMarkers], tags[0].ID)
 
 		tags, err = tqb.FindBySceneMarkerID(0)
 
@@ -168,7 +168,7 @@ func TestTagQuerySort(t *testing.T) {
 
 		sortBy = "scene_markers_count"
 		tags = queryTags(t, sqb, nil, findFilter)
-		assert.Equal(tagIDs[tagIdxWithMarker], tags[0].ID)
+		assert.Equal(tagIDs[tagIdxWithMarkers], tags[0].ID)
 
 		sortBy = "images_count"
 		tags = queryTags(t, sqb, nil, findFilter)
@@ -842,8 +842,8 @@ func TestTagMerge(t *testing.T) {
 		srcIdxs := []int{
 			tagIdx1WithScene,
 			tagIdx2WithScene,
-			tagIdxWithPrimaryMarker,
-			tagIdxWithMarker,
+			tagIdxWithPrimaryMarkers,
+			tagIdxWithMarkers,
 			tagIdxWithCoverImage,
 			tagIdxWithImage,
 			tagIdx1WithImage,
@@ -893,7 +893,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(sceneTagIDs, destID)
 
 		// ensure marker points to new tag
-		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithScene])
+		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithTag])
 		if err != nil {
 			return err
 		}
