@@ -44,7 +44,20 @@ func WaitAndDeregisterStream(filepath string, w *http.ResponseWriter, r *http.Re
 	}()
 }
 
-func KillRunningStreams(path string) {
+func KillRunningStreams(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) {
+	killRunningStreams(scene.Path)
+
+	sceneHash := scene.GetHash(fileNamingAlgo)
+
+	if sceneHash == "" {
+		return
+	}
+
+	transcodePath := GetInstance().Paths.Scene.GetTranscodePath(sceneHash)
+	killRunningStreams(transcodePath)
+}
+
+func killRunningStreams(path string) {
 	ffmpeg.KillRunningEncoders(path)
 
 	streamingFilesMutex.RLock()

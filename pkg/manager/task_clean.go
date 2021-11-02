@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -370,26 +371,43 @@ func (j *cleanJob) shouldCleanImage(s *models.Image) bool {
 }
 
 func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.HashAlgorithm, sceneID int) {
-	var postCommitFunc func()
-	var scene *models.Scene
+	fileNamingAlgo := GetInstance().Config.GetVideoFileNamingAlgorithm()
+
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        *file.NewDeleter(),
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          GetInstance().Paths,
+	}
+	var s *models.Scene
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
 		qb := repo.Scene()
 
 		var err error
-		scene, err = qb.Find(sceneID)
+		s, err = qb.Find(sceneID)
 		if err != nil {
 			return err
 		}
-		postCommitFunc, err = DestroyScene(scene, repo)
-		return err
+
+		if err := fileDeleter.MarkGeneratedFiles(s); err != nil {
+			return err
+		}
+
+		return scene.Destroy(s, repo, fileDeleter)
 	}); err != nil {
+		errs := fileDeleter.Abort()
+		for _, delErr := range errs {
+			logger.Warn(delErr)
+		}
+
 		logger.Errorf("Error deleting scene from database: %s", err.Error())
 		return
 	}
 
-	postCommitFunc()
-
-	DeleteGeneratedSceneFiles(scene, fileNamingAlgorithm)
+	// perform the post-commit actions
+	errs := fileDeleter.Complete()
+	for _, delErr := range errs {
+		logger.Warn(delErr)
+	}
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, nil, nil)
 }
