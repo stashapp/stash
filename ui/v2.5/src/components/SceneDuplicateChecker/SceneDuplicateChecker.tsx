@@ -537,7 +537,7 @@ export const SceneDuplicateChecker: React.FC = () => {
         {scenes.length === 0 && (
           <h4 className="text-center mt-4">No duplicates found.</h4>
         )}
-        <div className="d-flex mb-2">
+        <div className="d-flex mt-2 mb-2">
           <h6 className="mr-auto align-self-center">
             <FormattedMessage
               id="dupe_check.found_sets"
