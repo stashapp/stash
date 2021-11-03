@@ -336,6 +336,10 @@
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
       "plugin_tasks": "Plugin Tasks",
+      "scan": {
+        "scanning_paths": "Scanning the following paths",
+        "scanning_all_paths": "Scanning all paths"
+      },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from metadata (if present)"
     },
