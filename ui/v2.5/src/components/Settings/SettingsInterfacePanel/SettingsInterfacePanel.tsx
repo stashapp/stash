@@ -274,8 +274,9 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.ui.scene_player.heading" })}</h5>
-        <Form.Group id="auto-start-video">
+        <Form.Group>
           <Form.Check
+            id="auto-start-video"
             checked={autostartVideo}
             label={intl.formatMessage({
               id: "config.ui.scene_player.options.auto_start_video",

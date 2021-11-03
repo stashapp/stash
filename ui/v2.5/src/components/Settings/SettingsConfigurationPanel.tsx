@@ -592,6 +592,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <h4>{intl.formatMessage({ id: "config.general.hashing" })}</h4>
         <Form.Group>
           <Form.Check
+            id="calculate-md5-and-ohash"
             checked={calculateMD5}
             label={intl.formatMessage({
               id: "config.general.calculate_md5_and_ohash_label",
