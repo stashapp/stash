@@ -35,6 +35,10 @@ input GeneratePreviewOptionsInput {
 
 input ScanMetadataInput {
   paths: [String!]
+
+  "If set, files created or modified more than maxAge ago are ignored"
+  maxAge: Duration
+
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean
   """Strip file extension from title"""
@@ -71,11 +75,11 @@ enum IdentifyFieldStrategy {
   """Never sets the field value"""
   IGNORE
   """
-  For multi-value fields, merge with existing. 
+  For multi-value fields, merge with existing.
   For single-value fields, ignore if already set
   """
   MERGE
-  """Always replaces the value if a value is found. 
+  """Always replaces the value if a value is found.
   For multi-value fields, any existing values are removed and replaced with the
   scraped values.
   """

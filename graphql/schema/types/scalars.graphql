@@ -1,0 +1,2 @@
+"Durations are elapsed time between two instants. Either an integer, in which case it is seconds, or a string, which is parsed as a Go duration. Ex. 4d7h3m8s"
+scalar Duration

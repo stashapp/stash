@@ -14,6 +14,10 @@ resolver:
 struct_tag: gqlgen
 
 models:
+  # Scalars
+  Duration:
+    model: github.com/stashapp/stash/pkg/models.Duration
+  # Objects
   Gallery:
     model: github.com/stashapp/stash/pkg/models.Gallery
   Image:
