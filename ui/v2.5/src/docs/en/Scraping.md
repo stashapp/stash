@@ -44,16 +44,16 @@ The stash community maintains a number of custom scraper configuration files tha
 Click on the `Scrape With...` button in the `edit` tab of an item, then select the scraper you wish to use.
 
 #### Search Scraper
-Click on the 🔍 button in the `edit` tab of an item, You will be presented with a search dialog with a pre-populated query to search for, after searching you will be presented with a list of results to pick from
+Click on the 🔍 button in the `edit` tab of an item. You will be presented with a search dialog with a pre-populated query to search for, after searching you will be presented with a list of results to pick from
 
 #### URL Scraper
-Enter the URL in the `edit` tab of an Item, If a scraper is installed that supports that url then a button will appear to scrape the metadata.
+Enter the URL in the `edit` tab of an Item. If a scraper is installed that supports that url, then a button will appear to scrape the metadata.
 
 ## Tagger View
 
-The Tagger refers to a specific view for items in stash stash that allows the user to run scrapers on those items, a page at a time, the tagger will present the user with potential matches for an item from a stash-box instance or from a selected metadata source if supported. The user is needed to select and save the correct metadata information to stash. 
+The Tagger refers to a specific view for items in stash that allows the user to run scrapers on those items one page at a time. The Tagger presents the user with potential matches for an item from a stash-box instance or from a selected metadata source if supported. The user needs to select the correct metadata information to save. 
 
-When used in combination with stash-box the user can optionally submit fingerprints for scenes to contribute to a stash-box instance. Doing so will submit generated hashes (`phash`, `oshash`, `md5`) and the duration of the scene to assist others in matching their files based off these fingerprints. These are the only values stash submits to a stash-box instance, fingerprint submissions are anonymous.
+When used in combination with stash-box, the user can optionally submit scene fingerprints to contribute to a stash-box instance. A scene fingerprint consists of any generated hashes (`phash`, `oshash`, `md5`) and the scene duration. Fingerprint submissions are anonymous and these are the only values stash submits to a stash-box instance. Submitting fingerprints assists others in matching their files, because stash-box returns a count of matching user submitted fingerprints with every potential match.
 
 | | Has Tagger | Source Selection |
 |---|:---:|:---:|
@@ -64,4 +64,4 @@ When used in combination with stash-box the user can optionally submit fingerpri
 
 
 ## Identify Task
-The Identify task will automatically run a scraper against a group of files/folders and set the corresponding item metadata without user input for each item. This task can be found under `Settings -> Tasks -> "Identify..." (Button)` for more information see `Tasks > Identify` in this manual
+The Identify task will automatically run a scraper against a group of files/folders and set the corresponding item metadata without user input for each item. This task can be found under `Settings -> Tasks -> "Identify..." (Button)`. For more information see `Tasks > Identify` in this manual.
