@@ -1,4 +1,6 @@
-#selected-scan-folders {
+@import "IdentifyDialog/styles.scss";
+
+.dialog-selected-folders {
   & > div {
     display: flex;
     justify-content: space-between;

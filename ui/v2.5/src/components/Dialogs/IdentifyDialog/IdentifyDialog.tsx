@@ -159,7 +159,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     }
 
     return (
-      <Form.Group id="selected-identify-folders">
+      <Form.Group className="dialog-selected-folders">
         <div>
           {message}
           <div>

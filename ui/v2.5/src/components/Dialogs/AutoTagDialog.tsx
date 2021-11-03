@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 import {
-  mutateMetadataScan,
+  mutateMetadataAutoTag,
   useConfiguration,
   // useConfigureDefaults,
 } from "src/core/StashService";
@@ -11,13 +11,61 @@ import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
 import { Manual } from "src/components/Help/Manual";
-import { ScanOptions } from "./Options";
 
-interface IScanDialogProps {
+interface IAutoTagOptions {
+  options: GQL.AutoTagMetadataInput;
+  setOptions: (s: GQL.AutoTagMetadataInput) => void;
+}
+
+const AutoTagOptions: React.FC<IAutoTagOptions> = ({
+  options,
+  setOptions: setOptionsState,
+}) => {
+  const intl = useIntl();
+
+  const { performers, studios, tags } = options;
+  const wildcard = ["*"];
+
+  function toggle(v?: GQL.Maybe<string[]>) {
+    if (!v) {
+      return wildcard;
+    }
+    return [];
+  }
+
+  function setOptions(input: Partial<GQL.AutoTagMetadataInput>) {
+    setOptionsState({ ...options, ...input });
+  }
+
+  return (
+    <Form.Group>
+      <Form.Check
+        id="autotag-performers"
+        checked={!!performers?.length}
+        label={intl.formatMessage({ id: "performers" })}
+        onChange={() => setOptions({ performers: toggle(performers) })}
+      />
+      <Form.Check
+        id="autotag-studios"
+        checked={!!studios?.length}
+        label={intl.formatMessage({ id: "studios" })}
+        onChange={() => setOptions({ studios: toggle(studios) })}
+      />
+      <Form.Check
+        id="autotag-tags"
+        checked={!!tags?.length}
+        label={intl.formatMessage({ id: "tags" })}
+        onChange={() => setOptions({ tags: toggle(tags) })}
+      />
+    </Form.Group>
+  );
+};
+
+interface IAutoTagDialogProps {
   onClose: () => void;
 }
 
-export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
+export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
   // TODO - add setting defaults
   // const [configureDefaults] = useConfigureDefaults();
 
@@ -36,7 +84,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
   const selectionStatus = useMemo(() => {
     const message = paths.length ? (
       <div>
-        <FormattedMessage id="config.tasks.scan.scanning_paths" />:
+        <FormattedMessage id="config.tasks.auto_tag.auto_tagging_paths" />:
         <ul>
           {paths.map((p) => (
             <li key={p}>{p}</li>
@@ -45,7 +93,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
       </div>
     ) : (
       <span>
-        <FormattedMessage id="config.tasks.scan.scanning_all_paths" />.
+        <FormattedMessage id="config.tasks.auto_tag.auto_tagging_all_paths" />.
       </span>
     );
 
@@ -80,14 +128,14 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
   //   return withoutSpecifics;
   // }
 
-  async function onScan() {
+  async function onAutoTag() {
     try {
-      await mutateMetadataScan(options);
+      await mutateMetadataAutoTag(options);
 
       Toast.success({
         content: intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.scan" }) }
+          { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
         ),
       });
     } catch (e) {
@@ -108,7 +156,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
   //     await configureDefaults({
   //       variables: {
   //         input: {
-  //           scan: makeDefaultScanInput(),
+  //           autoTag: makeDefaultAutoTagInput(),
   //         },
   //       },
   //     });
@@ -141,7 +189,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
         animation={false}
         show
         onClose={() => setShowManual(false)}
-        defaultActiveTab="Tasks.md"
+        defaultActiveTab="AutoTagging.md"
       />
     );
   }
@@ -151,10 +199,10 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
       modalProps={{ animation, size: "lg" }}
       show
       icon="cogs"
-      header={intl.formatMessage({ id: "actions.scan" })}
+      header={intl.formatMessage({ id: "actions.auto_tag" })}
       accept={{
-        onClick: onScan,
-        text: intl.formatMessage({ id: "actions.scan" }),
+        onClick: onAutoTag,
+        text: intl.formatMessage({ id: "actions.auto_tag" }),
       }}
       cancel={{
         onClick: () => onClose(),
@@ -185,10 +233,10 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
     >
       <Form>
         {selectionStatus}
-        <ScanOptions options={options} setOptions={(o) => setOptions(o)} />
+        <AutoTagOptions options={options} setOptions={(o) => setOptions(o)} />
       </Form>
     </Modal>
   );
 };
 
-export default ScanDialog;
+export default AutoTagDialog;

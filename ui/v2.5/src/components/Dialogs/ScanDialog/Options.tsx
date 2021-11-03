@@ -3,12 +3,12 @@ import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
-interface IScanOptionsEditor {
+interface IScanOptions {
   options: GQL.ScanMetadataInput;
   setOptions: (s: GQL.ScanMetadataInput) => void;
 }
 
-export const ScanOptions: React.FC<IScanOptionsEditor> = ({
+export const ScanOptions: React.FC<IScanOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {

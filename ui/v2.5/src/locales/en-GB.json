@@ -70,8 +70,6 @@
     "search": "Search",
     "select_all": "Select All",
     "select_none": "Select None",
-    "selective_auto_tag": "Selective Auto Tag",
-    "selective_scan": "Selective Scan",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
@@ -293,6 +291,10 @@
     },
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
+      "auto_tag": {
+        "auto_tagging_paths": "Auto Tagging the following paths",
+        "auto_tagging_all_paths": "Auto Tagging all paths"
+      },
       "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",

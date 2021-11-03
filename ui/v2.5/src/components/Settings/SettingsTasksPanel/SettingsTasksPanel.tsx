@@ -4,7 +4,6 @@ import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataImport,
   mutateMetadataClean,
-  mutateMetadataAutoTag,
   mutateMetadataExport,
   mutateMigrateHashNaming,
   usePlugins,
@@ -18,9 +17,9 @@ import { downloadFile } from "src/utils";
 import IdentifyDialog from "src/components/Dialogs/IdentifyDialog/IdentifyDialog";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
-import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { JobTable } from "./JobTable";
 import ScanDialog from "src/components/Dialogs/ScanDialog/ScanDialog";
+import AutoTagDialog from "src/components/Dialogs/AutoTagDialog";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -42,9 +41,6 @@ export const SettingsTasksPanel: React.FC = () => {
 
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
   const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
-  const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
-  const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
-  const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
 
   const plugins = usePlugins();
 
@@ -144,7 +140,7 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+    return <AutoTagDialog onClose={() => setDialogOpen({ autoTag: false })} />;
   }
 
   function maybeRenderIdentifyDialog() {
@@ -153,38 +149,6 @@ export const SettingsTasksPanel: React.FC = () => {
     return (
       <IdentifyDialog onClose={() => setDialogOpen({ identify: false })} />
     );
-  }
-
-  function onAutoTagDialogClosed(paths?: string[]) {
-    if (paths) {
-      onAutoTag(paths);
-    }
-
-    setDialogOpen({ autoTag: false });
-  }
-
-  function getAutoTagInput(paths?: string[]) {
-    const wildcard = ["*"];
-    return {
-      paths,
-      performers: autoTagPerformers ? wildcard : [],
-      studios: autoTagStudios ? wildcard : [],
-      tags: autoTagTags ? wildcard : [],
-    };
-  }
-
-  async function onAutoTag(paths?: string[]) {
-    try {
-      await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
   }
 
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
@@ -352,50 +316,19 @@ export const SettingsTasksPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group>
-          <h6>{intl.formatMessage({ id: "config.tasks.auto_tagging" })}</h6>
-
-          <Form.Group>
-            <Form.Check
-              id="autotag-performers"
-              checked={autoTagPerformers}
-              label={intl.formatMessage({ id: "performers" })}
-              onChange={() => setAutoTagPerformers(!autoTagPerformers)}
-            />
-            <Form.Check
-              id="autotag-studios"
-              checked={autoTagStudios}
-              label={intl.formatMessage({ id: "studios" })}
-              onChange={() => setAutoTagStudios(!autoTagStudios)}
-            />
-            <Form.Check
-              id="autotag-tags"
-              checked={autoTagTags}
-              label={intl.formatMessage({ id: "tags" })}
-              onChange={() => setAutoTagTags(!autoTagTags)}
-            />
-          </Form.Group>
-          <Form.Group>
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => onAutoTag()}
-            >
-              <FormattedMessage id="actions.auto_tag" />
-            </Button>
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => setDialogOpen({ autoTag: true })}
-            >
-              <FormattedMessage id="actions.selective_auto_tag" />
-            </Button>
-            <Form.Text className="text-muted">
-              {intl.formatMessage({
-                id: "config.tasks.auto_tag_based_on_filenames",
-              })}
-            </Form.Text>
-          </Form.Group>
+          <Button
+            variant="secondary"
+            type="submit"
+            className="mr-2"
+            onClick={() => setDialogOpen({ autoTag: true })}
+          >
+            <FormattedMessage id="actions.auto_tag" />…
+          </Button>
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.tasks.auto_tag_based_on_filenames",
+            })}
+          </Form.Text>
         </Form.Group>
       </Form.Group>
 
