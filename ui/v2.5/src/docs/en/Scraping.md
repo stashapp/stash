@@ -6,18 +6,18 @@ Stash supports scraping of metadata from various external sources
 
 | Term | Description |
 |---|:---|
-| URL Scraper | This is a scraper that attempts to extract metadata from a given URL |
 | Fragment Scraper | This scraper will attempt to use all existing metadata for an Item and match it to a result from a metadata source automatically |
 | Search/By Name Scraper | This type of scraper will use the current name of the Item to search a given metadata source for a list of matches for the user to pick from|
+| URL Scraper | This is a scraper that attempts to extract metadata from a given URL |
 
 ## Supported Scrapers
 
-|   | URL | Search | Fragment |
+|   | Fragment | Search | URL |
 |---|:---:|:---:|:---:|
 | gallery | :heavy_check_mark: | | :heavy_check_mark: |
-| movie | :heavy_check_mark: | | |
-| performer | :heavy_check_mark: | :heavy_check_mark: |   |
-| scene | :heavy_check_mark: | :heavy_check_mark:| :heavy_check_mark: |
+| movie | | | :heavy_check_mark: |
+| performer | | :heavy_check_mark: | :heavy_check_mark: |
+| scene | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
 
 # Scraper Operation
 
@@ -40,14 +40,14 @@ The stash community maintains a number of custom scraper configuration files tha
   
 ## Using Scrapers
 
-#### URL Scraper
-Enter the URL in the `edit` tab of an Item, If a scraper is installed that supports that url then a button will appear to scrape the metadata.
-
 #### Fragment Scraper
 Click on the `Scrape With...` button in the `edit` tab of an item, then select the scraper you wish to use.
 
 #### Search Scraper
 Click on the :mag: button in the `edit` tab of an item, You will be presented with a search dialog with a pre-populated query to search for, after searching you will be presented with a list of results to pick from
+
+#### URL Scraper
+Enter the URL in the `edit` tab of an Item, If a scraper is installed that supports that url then a button will appear to scrape the metadata.
 
 #### The "Tagger"
 The Tagger refers to a specific view in the `/scenes` tab of stash that allows running scrapers on scenes a page at a time
