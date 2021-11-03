@@ -1,6 +1,8 @@
-# Creating Scrapers 
+# Contributing Scrapers 
 
-You can contribute scrapers to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls)
+Scrapers can be contributed to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls).
+
+# Scraper configuration file format
 
 ```yaml
 name: <site>
@@ -61,7 +63,7 @@ script:
   - query
 ```
 
-Stash will find the correct python executable for your system, either `python` or `python3`. So for example. this configuration could execute `python iafdScrape.py query` or `python3 iafdScrape.py query`.
+If the script specifies the python executable, Stash will find the correct python executable for your system, either `python` or `python3`. So for example. this configuration could execute `python iafdScrape.py query` or `python3 iafdScrape.py query`.
 `python3` will be looked for first and if it's not found, we'll check for `python`. In the case neither are found, you will get an error.
 
 Stash sends data to the script process's `stdin` stream and expects the output to be streamed to the `stdout` stream. Any errors and progress messages should be output to `stderr`.

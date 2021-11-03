@@ -92,7 +92,7 @@ export const Manual: React.FC<IManualProps> = ({
     },
     {
       key: "ScraperDevelopment.md",
-      title: "Scraping Development",
+      title: "Scraper Development",
       content: ScraperDevelopment,
       className: "indent-1",
     },

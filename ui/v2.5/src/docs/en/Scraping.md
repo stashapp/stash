@@ -1,29 +1,34 @@
 # Metadata Scraping
 
-Stash supports scraping of metadata from various external sources
+Stash supports scraping of metadata from various external sources.
 
-## Terminology
+## Scraper Types
 
-| Term | Description |
+| Type | Description |
 |---|:---|
-| Fragment Scraper | This scraper will attempt to use all existing metadata for an Item and match it to a result from a metadata source automatically |
-| Search/By Name Scraper | This type of scraper will use the current name of the Item to search a given metadata source for a list of matches for the user to pick from|
-| URL Scraper | This is a scraper that attempts to extract metadata from a given URL |
+| Fragment | Uses existing metadata for an Item and match it to a result from a metadata source. |
+| Search/By Name | Uses a provided query string to search a metadata source for a list of matches for the user to pick from. |
+| URL | Extracts metadata from a given URL. |
 
 ## Supported Scrapers
 
 |   | Fragment | Search | URL |
 |---|:---:|:---:|:---:|
-| gallery | :heavy_check_mark: | | :heavy_check_mark: |
-| movie | | | :heavy_check_mark: |
-| performer | | :heavy_check_mark: | :heavy_check_mark: |
-| scene | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
+| gallery | ✔️ | | ✔️ |
+| movie | | | ✔️ |
+| performer | | ✔️ | ✔️ |
+| scene | ✔️  | ✔️ | ✔️ |
 
 # Scraper Operation
 
 ## Included Scrapers
 
-Stash has a built-in performer `search` scraper for freeones.xxx.
+Stash provides the following built-in scrapers:
+
+| Scraper | Description |
+|---|--|
+| Freeones | `search` Performer scraper for freeones.xxx. |
+| Auto Tag | Scene `fragment` scraper that matches existing performers, studio and tags using the filename. |
 
 ## Adding Scrapers
 
@@ -36,7 +41,7 @@ Scrapers are added by placing yaml configuration files (format: `scrapername.yml
 
 After the yaml files are added, removed or edited while stash is running, they can be reloaded going to `Settings > Scrapers` and clicking `Reload Scrapers`.
 
-The stash community maintains a number of custom scraper configuration files that can be found [here](https://github.com/stashapp/CommunityScrapers)
+The stash community maintains a number of custom scraper configuration files that can be found [here](https://github.com/stashapp/CommunityScrapers).
   
 ## Using Scrapers
 
@@ -51,17 +56,18 @@ Enter the URL in the `edit` tab of an Item. If a scraper is installed that suppo
 
 ## Tagger View
 
-The Tagger refers to a specific view for items in stash that allows the user to run scrapers on those items one page at a time. The Tagger presents the user with potential matches for an item from a stash-box instance or from a selected metadata source if supported. The user needs to select the correct metadata information to save. 
+The Tagger view is accessed from the scenes page. It allows the user to run scrapers on all items on the current page. The Tagger presents the user with potential matches for an item from a selected stash-box instance or metadata source if supported. The user needs to select the correct metadata information to save. 
 
-When used in combination with stash-box, the user can optionally submit scene fingerprints to contribute to a stash-box instance. A scene fingerprint consists of any generated hashes (`phash`, `oshash`, `md5`) and the scene duration. Fingerprint submissions are anonymous and these are the only values stash submits to a stash-box instance. Submitting fingerprints assists others in matching their files, because stash-box returns a count of matching user submitted fingerprints with every potential match.
+When used in combination with stash-box, the user can optionally submit scene fingerprints to contribute to a stash-box instance. A scene fingerprint consists of any generated hashes (`phash`, `oshash`, `md5`) and the scene duration. Fingerprint submissions are associated with your stash-box account. Submitting fingerprints assists others in matching their files, because stash-box returns a count of matching user submitted fingerprints with every potential match.
 
 | | Has Tagger | Source Selection |
 |---|:---:|:---:|
 | gallery | | |
 | movie | | |
-| performer | :heavy_check_mark: | |
-| scene | :heavy_check_mark: | :heavy_check_mark: |
+| performer | ✔️ | |
+| scene | ✔️ | ✔️ |
 
 
 ## Identify Task
-The Identify task will automatically run a scraper against a group of files/folders and set the corresponding item metadata without user input for each item. This task can be found under `Settings -> Tasks -> "Identify..." (Button)`. For more information see `Tasks > Identify` in this manual.
+
+This task iterates through your Scenes and attempts to identify the scene using a selection of scraping sources. This task can be found under `Settings -> Tasks -> "Identify..." (Button)`. For more information see the [Tasks > Identify](/help/Identify.md) page.
