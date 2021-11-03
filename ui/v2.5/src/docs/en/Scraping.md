@@ -49,8 +49,19 @@ Click on the :mag: button in the `edit` tab of an item, You will be presented wi
 #### URL Scraper
 Enter the URL in the `edit` tab of an Item, If a scraper is installed that supports that url then a button will appear to scrape the metadata.
 
-#### The "Tagger"
-The Tagger refers to a specific view in the `/scenes` tab of stash that allows running scrapers on scenes a page at a time
+## Tagger View
 
-#### Identify Task
-The Identify task can be found under `Settings > Tasks > Identify...` this task will run a scraper against a group of files/folders and set the corresponding scene metadata automatically without user input
+The Tagger refers to a specific view for items in stash stash that allows the user to run scrapers on those items, a page at a time, the tagger will present the user with potential matches for an item from a stash-box instance or from a selected metadata source if supported. The user is needed to select and save the correct metadata information to stash. 
+
+When used in combination with stash-box the user can optionally submit fingerprints for scenes to contribute to a stash-box instance. Doing so will submit generated hashes (`phash`, `oshash`, `md5`) and the duration of the scene to assist others in matching their files based off these fingerprints. These are the only values stash submits to a stash-box instance, fingerprint submissions are anonymous.
+
+| | Has Tagger | Source Selection |
+|---|:---:|:---:|
+| gallery | | |
+| movie | | |
+| performer | :heavy_check_mark: | |
+| scene | :heavy_check_mark: | :heavy_check_mark: |
+
+
+## Identify Task
+The Identify task will automatically run a scraper against a group of files/folders and set the corresponding item metadata without user input for each item. This task can be found under `Settings -> Tasks -> "Identify..." (Button)` for more information see `Tasks > Identify` in this manual
