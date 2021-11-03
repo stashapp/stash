@@ -569,7 +569,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
         <Form.Group>
           <Form.Check
-            id="log-terminal"
+            id="create-galleries-from-folders"
             checked={createGalleriesFromFolders}
             label={intl.formatMessage({
               id: "config.general.create_galleries_from_folders_label",
