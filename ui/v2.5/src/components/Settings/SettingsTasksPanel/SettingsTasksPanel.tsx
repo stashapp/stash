@@ -15,11 +15,11 @@ import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
 import { downloadFile } from "src/utils";
 import IdentifyDialog from "src/components/Dialogs/IdentifyDialog/IdentifyDialog";
-import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
 import { JobTable } from "./JobTable";
 import ScanDialog from "src/components/Dialogs/ScanDialog/ScanDialog";
 import AutoTagDialog from "src/components/Dialogs/AutoTagDialog";
+import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -35,6 +35,7 @@ export const SettingsTasksPanel: React.FC = () => {
     scan: false,
     autoTag: false,
     identify: false,
+    generate: false,
   });
 
   type DialogOpenState = typeof dialogOpen;
@@ -148,6 +149,14 @@ export const SettingsTasksPanel: React.FC = () => {
 
     return (
       <IdentifyDialog onClose={() => setDialogOpen({ identify: false })} />
+    );
+  }
+
+  function maybeRenderGenerateDialog() {
+    if (!dialogOpen.generate) return;
+
+    return (
+      <GenerateDialog onClose={() => setDialogOpen({ generate: false })} />
     );
   }
 
@@ -278,6 +287,7 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
+      {maybeRenderGenerateDialog()}
 
       <h4>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h4>
 
@@ -334,8 +344,20 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
 
-      <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
-      <GenerateButton />
+      <Form.Group>
+        <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
+        <Button
+          id="generate"
+          variant="secondary"
+          type="submit"
+          onClick={() => setDialogOpen({ generate: true })}
+        >
+          <FormattedMessage id="actions.generate" />…
+        </Button>
+        <Form.Text className="text-muted">
+          {intl.formatMessage({ id: "config.tasks.generate_desc" })}
+        </Form.Text>
+      </Form.Group>
 
       <hr />
       <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>

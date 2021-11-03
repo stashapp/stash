@@ -35,7 +35,7 @@ import { ExternalPlayerButton } from "./ExternalPlayerButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { SceneGalleriesPanel } from "./SceneGalleriesPanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
-import { SceneGenerateDialog } from "../SceneGenerateDialog";
+import { GenerateDialog } from "../../Dialogs/GenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
 
@@ -324,7 +324,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
   function maybeRenderSceneGenerateDialog() {
     if (isGenerateDialogOpen) {
       return (
-        <SceneGenerateDialog
+        <GenerateDialog
           selectedIds={[scene.id]}
           onClose={() => {
             setIsGenerateDialogOpen(false);
