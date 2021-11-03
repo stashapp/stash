@@ -3,7 +3,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataImport,
-  mutateMetadataClean,
   mutateMetadataExport,
   mutateMigrateHashNaming,
   usePlugins,
@@ -20,6 +19,7 @@ import { JobTable } from "./JobTable";
 import ScanDialog from "src/components/Dialogs/ScanDialog/ScanDialog";
 import AutoTagDialog from "src/components/Dialogs/AutoTagDialog";
 import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
+import CleanDialog from "src/components/Dialogs/CleanDialog";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -29,7 +29,6 @@ export const SettingsTasksPanel: React.FC = () => {
   const Toast = useToast();
   const [dialogOpen, setDialogOpenState] = useState({
     importAlert: false,
-    cleanAlert: false,
     import: false,
     clean: false,
     scan: false,
@@ -41,7 +40,6 @@ export const SettingsTasksPanel: React.FC = () => {
   type DialogOpenState = typeof dialogOpen;
 
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
-  const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
 
   const plugins = usePlugins();
 
@@ -83,41 +81,12 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
-  function onClean() {
-    setDialogOpen({ cleanAlert: false });
-    mutateMetadataClean({
-      dryRun: cleanDryRun,
-    });
-  }
-
-  function renderCleanAlert() {
-    let msg;
-    if (cleanDryRun) {
-      msg = (
-        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
-      );
-    } else {
-      msg = (
-        <p>
-          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
-        </p>
-      );
+  function renderCleanDialog() {
+    if (!dialogOpen.clean) {
+      return;
     }
 
-    return (
-      <Modal
-        show={dialogOpen.cleanAlert}
-        icon="trash-alt"
-        accept={{
-          text: intl.formatMessage({ id: "actions.clean" }),
-          variant: "danger",
-          onClick: onClean,
-        }}
-        cancel={{ onClick: () => setDialogOpen({ cleanAlert: false }) }}
-      >
-        {msg}
-      </Modal>
-    );
+    return <CleanDialog onClose={() => setDialogOpen({ clean: false })} />;
   }
 
   function renderImportDialog() {
@@ -282,7 +251,7 @@ export const SettingsTasksPanel: React.FC = () => {
   return (
     <>
       {renderImportAlert()}
-      {renderCleanAlert()}
+      {renderCleanDialog()}
       {renderImportDialog()}
       {renderScanDialog()}
       {renderAutoTagDialog()}
@@ -340,6 +309,19 @@ export const SettingsTasksPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
+
+        <Form.Group>
+          <Button
+            id="clean"
+            variant="danger"
+            onClick={() => setDialogOpen({ clean: true })}
+          >
+            <FormattedMessage id="actions.clean" />…
+          </Button>
+          <Form.Text className="text-muted">
+            {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
+          </Form.Text>
+        </Form.Group>
       </Form.Group>
 
       <hr />
@@ -356,29 +338,6 @@ export const SettingsTasksPanel: React.FC = () => {
         </Button>
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.tasks.generate_desc" })}
-        </Form.Text>
-      </Form.Group>
-
-      <hr />
-      <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
-      <Form.Group>
-        <Form.Check
-          id="clean-dryrun"
-          checked={cleanDryRun}
-          label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
-          onChange={() => setCleanDryRun(!cleanDryRun)}
-        />
-      </Form.Group>
-      <Form.Group>
-        <Button
-          id="clean"
-          variant="danger"
-          onClick={() => setDialogOpen({ cleanAlert: true })}
-        >
-          <FormattedMessage id="actions.clean" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
         </Form.Text>
       </Form.Group>
 
