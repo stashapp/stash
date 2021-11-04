@@ -10,21 +10,21 @@ import (
 )
 
 func TestTimestampSymmetry(t *testing.T) {
-	initialTime := time.Now()
+	n := time.Now()
 	buf := bytes.NewBuffer([]byte{})
-	MarshalTimestamp(initialTime).MarshalGQL(buf)
+	MarshalTimestamp(n).MarshalGQL(buf)
 
 	str, err := strconv.Unquote(buf.String())
 	if err != nil {
 		t.Fatal("could not unquote string")
 	}
-	newTime, err := UnmarshalTimestamp(str)
+	got, err := UnmarshalTimestamp(str)
 	if err != nil {
 		t.Fatalf("could not unmarshal time: %v", err)
 	}
 
-	if !initialTime.Equal(newTime) {
-		t.Fatalf("have %v, want %v", newTime, initialTime)
+	if !n.Equal(got) {
+		t.Fatalf("have %v, want %v", got, n)
 	}
 }
 
