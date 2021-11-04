@@ -121,7 +121,7 @@ function SceneParserStringField(props: ISceneParserFieldProps<string>) {
       <td>
         <Form.Group>
           <Form.Control
-            readOnly
+            disabled
             className={props.className}
             defaultValue={result.originalValue || ""}
           />
@@ -164,7 +164,7 @@ function SceneParserRatingField(
       <td>
         <Form.Group>
           <Form.Control
-            readOnly
+            disabled
             className={props.className}
             defaultValue={result.originalValue || ""}
           />
@@ -216,8 +216,9 @@ function SceneParserPerformerField(props: ISceneParserFieldProps<string[]>) {
       </td>
       <td>
         <Form.Group className={props.className}>
-          <PerformerSelect isDisabled isMulti ids={originalPerformers} />
+          <PerformerSelect isDisabled isMulti ids={originalPerformers} className="parser-field-performers-select" />
           <PerformerSelect
+            className="parser-field-performers-select"
             isMulti
             isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
@@ -253,8 +254,9 @@ function SceneParserTagField(props: ISceneParserFieldProps<string[]>) {
       </td>
       <td>
         <Form.Group className={props.className}>
-          <TagSelect isDisabled isMulti ids={originalTags} />
+          <TagSelect isDisabled isMulti ids={originalTags} className="parser-field-tags-select" />
           <TagSelect
+            className="parser-field-tags-select"
             isMulti
             isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
@@ -292,8 +294,9 @@ function SceneParserStudioField(props: ISceneParserFieldProps<string>) {
       </td>
       <td>
         <Form.Group className={props.className}>
-          <StudioSelect isDisabled ids={originalStudio} />
+          <StudioSelect isDisabled ids={originalStudio} className="parser-field-studio-select" />
           <StudioSelect
+            className="parser-field-studio-select"
             isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
               maybeValueChanged(items[0].id);
@@ -403,7 +406,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Performers") && (
         <SceneParserPerformerField
           key="performers"
-          className="parser-field-performers input-control text-input"
+          className="parser-field-performers"
           parserResult={props.scene.performers}
           originalParserResult={props.scene.performers}
           onSetChanged={(set) =>
@@ -417,7 +420,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Tags") && (
         <SceneParserTagField
           key="tags"
-          className="parser-field-tags input-control text-input"
+          className="parser-field-tags"
           parserResult={props.scene.tags}
           originalParserResult={props.scene.tags}
           onSetChanged={(isSet) =>
@@ -431,7 +434,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Studio") && (
         <SceneParserStudioField
           key="studio"
-          className="parser-field-studio input-control text-input"
+          className="parser-field-studio"
           parserResult={props.scene.studio}
           originalParserResult={props.scene.studio}
           onSetChanged={(set) =>
