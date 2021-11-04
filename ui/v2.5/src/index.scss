@@ -474,6 +474,8 @@ div.dropdown-menu {
   padding: 0.25rem 1rem;
 
   @include media-breakpoint-down(xs) {
+    padding: 0.25rem 1.5rem;
+
     @media (orientation: portrait) {
       bottom: 0;
       top: auto;
