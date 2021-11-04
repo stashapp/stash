@@ -167,6 +167,10 @@ const DLNADefaultEnabled = "dlna.default_enabled"
 const DLNADefaultIPWhitelist = "dlna.default_whitelist"
 const DLNAInterfaces = "dlna.interfaces"
 
+// Desktop Integration Options
+const NoBrowser = "noBrowser"
+const NoBrowserDefault = false
+
 // Logging options
 const LogFile = "logFile"
 const LogOut = "logOut"
@@ -247,6 +251,12 @@ func (i *Instance) HasTLSConfig() bool {
 // empty string if not set.
 func (i *Instance) GetCPUProfilePath() string {
 	return i.cpuProfilePath
+}
+
+func (i *Instance) GetNoBrowserFlag() bool {
+	i.Lock()
+	defer i.Unlock()
+	return viper.GetBool(NoBrowser)
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -1113,6 +1123,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
+
+	viper.SetDefault(NoBrowser, NoBrowserDefault)
 
 	// Set default scrapers and plugins paths
 	viper.SetDefault(ScrapersPath, defaultScrapersPath)

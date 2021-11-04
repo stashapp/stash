@@ -569,7 +569,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
         <Form.Group>
           <Form.Check
-            id="log-terminal"
+            id="create-galleries-from-folders"
             checked={createGalleriesFromFolders}
             label={intl.formatMessage({
               id: "config.general.create_galleries_from_folders_label",
@@ -592,6 +592,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <h4>{intl.formatMessage({ id: "config.general.hashing" })}</h4>
         <Form.Group>
           <Form.Check
+            id="calculate-md5-and-ohash"
             checked={calculateMD5}
             label={intl.formatMessage({
               id: "config.general.calculate_md5_and_ohash_label",

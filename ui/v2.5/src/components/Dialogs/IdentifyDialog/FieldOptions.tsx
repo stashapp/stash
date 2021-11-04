@@ -77,12 +77,12 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
 
     if (!editing) {
       if (strategy === undefined) {
-        return intl.formatMessage({ id: "use_default" });
+        return intl.formatMessage({ id: "actions.use_default" });
       }
 
       const f = strategies.find((s) => s[1] === strategy);
       return intl.formatMessage({
-        id: `config.tasks.identify.field_strategies.${f![0].toLowerCase()}`,
+        id: `actions.${f![0].toLowerCase()}`,
       });
     }
 
@@ -104,7 +104,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
               })
             }
             disabled={!editing}
-            label={intl.formatMessage({ id: "use_default" })}
+            label={intl.formatMessage({ id: "actions.use_default" })}
           />
         ) : undefined}
         {strategies.map((f) => (
@@ -121,7 +121,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
             }
             disabled={!editing}
             label={intl.formatMessage({
-              id: `config.tasks.identify.field_strategies.${f[0].toLowerCase()}`,
+              id: `actions.${f[0].toLowerCase()}`,
             })}
           />
         ))}
@@ -145,7 +145,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
 
       if (!editing) {
         if (value === undefined && allowSetDefault) {
-          return intl.formatMessage({ id: "use_default" });
+          return intl.formatMessage({ id: "actions.use_default" });
         }
         if (value) {
           return <Icon icon="check" className="text-success" />;
@@ -311,9 +311,15 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
       <Table responsive className="field-options-table">
         <thead>
           <tr>
-            <th className="w-25">Field</th>
-            <th className="w-25">Strategy</th>
-            <th className="w-25">Create missing</th>
+            <th className="w-25">
+              <FormattedMessage id="config.tasks.identify.field" />
+            </th>
+            <th className="w-25">
+              <FormattedMessage id="config.tasks.identify.strategy" />
+            </th>
+            <th className="w-25">
+              <FormattedMessage id="config.tasks.identify.create_missing" />
+            </th>
             {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <th className="w-25" />
           </tr>

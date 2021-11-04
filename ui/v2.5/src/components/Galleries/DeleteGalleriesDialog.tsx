@@ -135,7 +135,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
           id="delete-file"
           checked={deleteFile}
           label={intl.formatMessage({
-            id: "actions.delete_gallery_files",
+            id: "dialogs.delete_gallery_files",
           })}
           onChange={() => setDeleteFile(!deleteFile)}
         />

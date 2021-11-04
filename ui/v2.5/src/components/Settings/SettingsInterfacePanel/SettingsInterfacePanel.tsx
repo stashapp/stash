@@ -32,7 +32,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [menuItemIds, setMenuItemIds] = useState<string[]>(
     allMenuItems.map((item) => item.id)
   );
-
+  const [noBrowser, setNoBrowserFlag] = useState<boolean>(false);
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
@@ -65,6 +65,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     wallShowTitle,
     wallPlayback,
     maximumLoopDuration,
+    noBrowser,
     autostartVideo,
     autostartVideoOnPlaySelected,
     continuePlaylistDefault,
@@ -88,6 +89,7 @@ export const SettingsInterfacePanel: React.FC = () => {
       setWallShowTitle(iCfg.wallShowTitle ?? true);
       setWallPlayback(iCfg.wallPlayback ?? "video");
       setMaximumLoopDuration(iCfg.maximumLoopDuration ?? 0);
+      setNoBrowserFlag(iCfg?.noBrowser ?? false);
       setAutostartVideo(iCfg.autostartVideo ?? false);
       setAutostartVideoOnPlaySelected(
         iCfg.autostartVideoOnPlaySelected ?? true
@@ -192,6 +194,30 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
 
+      <hr />
+
+      <h4>
+        {intl.formatMessage({
+          id: "config.ui.desktop_integration.desktop_integration",
+        })}
+      </h4>
+      <Form.Group>
+        <Form.Check
+          id="skip-browser"
+          checked={noBrowser}
+          label={intl.formatMessage({
+            id: "config.ui.desktop_integration.skip_opening_browser",
+          })}
+          onChange={() => setNoBrowserFlag(!noBrowser)}
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.ui.desktop_integration.skip_opening_browser_on_startup",
+          })}
+        </Form.Text>
+      </Form.Group>
+      <hr />
+
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.ui.scene_wall.heading" })}</h5>
         <Form.Check
@@ -259,8 +285,9 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.ui.scene_player.heading" })}</h5>
-        <Form.Group id="auto-start-video">
+        <Form.Group>
           <Form.Check
+            id="auto-start-video"
             checked={autostartVideo}
             label={intl.formatMessage({
               id: "config.ui.scene_player.options.auto_start_video",
