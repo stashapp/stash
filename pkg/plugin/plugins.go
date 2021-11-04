@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/event"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -25,10 +26,11 @@ import (
 
 // Cache stores plugin details.
 type Cache struct {
-	config       *config.Instance
-	plugins      []Config
-	sessionStore *session.Store
-	gqlHandler   http.Handler
+	config          *config.Instance
+	plugins         []Config
+	sessionStore    *session.Store
+	gqlHandler      http.Handler
+	eventDispatcher *event.Dispatcher
 }
 
 // NewCache returns a new Cache.
@@ -38,9 +40,10 @@ type Cache struct {
 //
 // Does not load plugins. Plugins will need to be
 // loaded explicitly using ReloadPlugins.
-func NewCache(config *config.Instance) *Cache {
+func NewCache(config *config.Instance, ed *event.Dispatcher) *Cache {
 	return &Cache{
-		config: config,
+		config:          config,
+		eventDispatcher: ed,
 	}
 }
 
@@ -178,6 +181,8 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}); err != nil {
 		logger.Errorf("error executing post hooks: %s", err.Error())
 	}
+
+	c.eventDispatcher.Publish(event.Change{ID: id, Type: changeFromHookTrigger(hookType)})
 }
 
 func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {

@@ -15,6 +15,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/dlna"
+	"github.com/stashapp/stash/pkg/event"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -36,7 +37,8 @@ type singleton struct {
 	FFMPEG  ffmpeg.Encoder
 	FFProbe ffmpeg.FFProbe
 
-	SessionStore *session.Store
+	eventDispatcher *event.Dispatcher
+	SessionStore    *session.Store
 
 	JobManager *job.Manager
 
@@ -72,11 +74,14 @@ func Initialize() *singleton {
 		initLog()
 		initProfiling(cfg.GetCPUProfilePath())
 
+		dispatcher := event.NewDispatcher()
+
 		instance = &singleton{
-			Config:        cfg,
-			JobManager:    job.NewManager(),
-			DownloadStore: NewDownloadStore(),
-			PluginCache:   plugin.NewCache(cfg),
+			Config:          cfg,
+			JobManager:      job.NewManager(),
+			DownloadStore:   NewDownloadStore(),
+			eventDispatcher: dispatcher,
+			PluginCache:     plugin.NewCache(cfg, dispatcher),
 
 			TxnManager: sqlite.NewTransactionManager(),
 
