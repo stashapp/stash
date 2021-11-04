@@ -36,8 +36,8 @@ input GeneratePreviewOptionsInput {
 input ScanMetadataInput {
   paths: [String!]
 
-  "If set, files created or modified more than maxAge ago are ignored"
-  maxAge: Duration
+  "If set, files with a modification time before this time point are ignored by the scan"
+  minModTime: Timestamp
 
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean

@@ -1,2 +1,7 @@
-"Durations are elapsed time between two instants. Either an integer, in which case it is seconds, or a string, which is parsed as a Go duration. Ex. 4d7h3m8s"
-scalar Duration
+
+"""
+Timestamp is a point in time. It is always output as RFC3339-compatible time points.
+It can be input as a RFC3339 string, as "@1636031328" for a UNIX timestamp, or
+as "<4h" for "4 hours in the past" or ">5m" for "5 minutes in the future"
+"""
+scalar Timestamp
