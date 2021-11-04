@@ -16,61 +16,6 @@ import {
 import StashConfiguration from "./StashConfiguration";
 import { StringListInput } from "../Shared/StringListInput";
 
-interface IExclusionPatternsProps {
-  excludes: string[];
-  setExcludes: (value: string[]) => void;
-  demo: string;
-}
-
-export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
-  function excludeRegexChanged(idx: number, value: string) {
-    const newExcludes = props.excludes.map((regex, i) => {
-      const ret = idx !== i ? regex : value;
-      return ret;
-    });
-    props.setExcludes(newExcludes);
-  }
-
-  function excludeRemoveRegex(idx: number) {
-    const newExcludes = props.excludes.filter((_regex, i) => i !== idx);
-
-    props.setExcludes(newExcludes);
-  }
-
-  function excludeAddRegex() {
-    const newExcludes = props.excludes.concat(props.demo);
-
-    props.setExcludes(newExcludes);
-  }
-
-  return (
-    <>
-      <Form.Group>
-        {props.excludes &&
-          props.excludes.map((regexp, i) => (
-            <InputGroup key={regexp}>
-              <Form.Control
-                className="col col-sm-6 text-input"
-                value={regexp}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  excludeRegexChanged(i, e.currentTarget.value)
-                }
-              />
-              <InputGroup.Append>
-                <Button variant="danger" onClick={() => excludeRemoveRegex(i)}>
-                  <Icon icon="minus" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
-          ))}
-      </Form.Group>
-      <Button className="minimal" onClick={() => excludeAddRegex()}>
-        <Icon icon="plus" />
-      </Button>
-    </>
-  );
-};
-
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
@@ -523,10 +468,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
               id: "config.general.excluded_video_patterns_head",
             })}
           </h6>
-          <ExclusionPatterns
-            excludes={excludes}
-            setExcludes={setExcludes}
-            demo="sample\.mp4$"
+          <StringListInput
+            className="w-50"
+            value={excludes}
+            setValue={setExcludes}
+            defaultNewValue="sample\.mp4$"
           />
           <Form.Text className="text-muted">
             {intl.formatMessage({
@@ -548,10 +494,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
               id: "config.general.excluded_image_gallery_patterns_head",
             })}
           </h6>
-          <ExclusionPatterns
-            excludes={imageExcludes}
-            setExcludes={setImageExcludes}
-            demo="sample\.jpg$"
+          <StringListInput
+            className="w-50"
+            value={imageExcludes}
+            setValue={setImageExcludes}
+            defaultNewValue="sample\.jpg$"
           />
           <Form.Text className="text-muted">
             {intl.formatMessage({
