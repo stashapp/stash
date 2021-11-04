@@ -2,33 +2,10 @@ package manager
 
 import (
 	"archive/zip"
-	"os"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
-
-// DeleteGeneratedImageFiles deletes generated files for the provided image.
-func DeleteGeneratedImageFiles(image *models.Image) {
-	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
-	exists, _ := utils.FileExists(thumbPath)
-	if exists {
-		err := os.Remove(thumbPath)
-		if err != nil {
-			logger.Warnf("Could not delete file %s: %s", thumbPath, err.Error())
-		}
-	}
-}
-
-// DeleteImageFile deletes the image file from the filesystem.
-func DeleteImageFile(image *models.Image) {
-	err := os.Remove(image.Path)
-	if err != nil {
-		logger.Warnf("Could not delete file %s: %s", image.Path, err.Error())
-	}
-}
 
 func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
 	readCloser, err := zip.OpenReader(path)

@@ -5,9 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/image"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -395,8 +399,14 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	}
 
 	var galleries []*models.Gallery
-	var imgsToPostProcess []*models.Image
-	var imgsToDelete []*models.Image
+	var imgsDestroyed []*models.Image
+	fileDeleter := &image.FileDeleter{
+		Deleter: *file.NewDeleter(),
+		Paths:   manager.GetInstance().Paths,
+	}
+
+	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	deleteFile := utils.IsTrue(input.DeleteFile)
 
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Gallery()
@@ -422,13 +432,19 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 
 				for _, img := range imgs {
-					if err := iqb.Destroy(img.ID); err != nil {
+					if err := image.Destroy(img, iqb, fileDeleter, deleteGenerated, false); err != nil {
 						return err
 					}
 
-					imgsToPostProcess = append(imgsToPostProcess, img)
+					imgsDestroyed = append(imgsDestroyed, img)
 				}
-			} else if input.DeleteFile != nil && *input.DeleteFile {
+
+				if deleteFile {
+					if err := fileDeleter.Files([]string{gallery.Path.String}); err != nil {
+						return err
+					}
+				}
+			} else if deleteFile {
 				// Delete image if it is only attached to this gallery
 				imgs, err := iqb.FindByGalleryID(id)
 				if err != nil {
@@ -442,14 +458,16 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 					}
 
 					if len(imgGalleries) == 1 {
-						if err := iqb.Destroy(img.ID); err != nil {
+						if err := image.Destroy(img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
 							return err
 						}
 
-						imgsToDelete = append(imgsToDelete, img)
-						imgsToPostProcess = append(imgsToPostProcess, img)
+						imgsDestroyed = append(imgsDestroyed, img)
 					}
 				}
+
+				// we only want to delete a folder-based gallery if it is empty.
+				// don't do this with the file deleter
 			}
 
 			if err := qb.Destroy(id); err != nil {
@@ -459,28 +477,25 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 		return nil
 	}); err != nil {
+		errs := fileDeleter.Abort()
+		for _, delErr := range errs {
+			logger.Warn(delErr)
+		}
+
 		return false, err
 	}
 
-	// if delete file is true, then delete the file as well
-	// if it fails, just log a message
-	if input.DeleteFile != nil && *input.DeleteFile {
-		// #1804 - delete the image files first, since they must be removed
-		// before deleting a folder
-		for _, img := range imgsToDelete {
-			manager.DeleteImageFile(img)
-		}
-
-		for _, gallery := range galleries {
-			manager.DeleteGalleryFile(gallery)
-		}
+	// perform the post-commit actions
+	errs := fileDeleter.Complete()
+	for _, delErr := range errs {
+		logger.Warn(delErr)
 	}
 
-	// if delete generated is true, then delete the generated files
-	// for the gallery
-	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		for _, img := range imgsToPostProcess {
-			manager.DeleteGeneratedImageFiles(img)
+	for _, gallery := range galleries {
+		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path.Valid {
+			// try to remove the folder - it is possible that it is not empty
+			// so swallow the error if present
+			_ = os.Remove(gallery.Path.String)
 		}
 	}
 
@@ -490,7 +505,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	}
 
 	// call image destroy post hook as well
-	for _, img := range imgsToDelete {
+	for _, img := range imgsDestroyed {
 		r.hookExecutor.ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, nil, nil)
 	}
 
