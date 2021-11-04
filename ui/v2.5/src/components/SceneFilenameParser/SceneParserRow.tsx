@@ -217,7 +217,12 @@ function SceneParserPerformerField(props: ISceneParserFieldProps<string[]>) {
       </td>
       <td>
         <Form.Group className={props.className}>
-          <PerformerSelect isDisabled isMulti ids={originalPerformers} className="parser-field-performers-select" />
+          <PerformerSelect
+            isDisabled
+            isMulti
+            ids={originalPerformers}
+            className="parser-field-performers-select"
+          />
           <PerformerSelect
             className="parser-field-performers-select"
             isMulti
@@ -255,7 +260,12 @@ function SceneParserTagField(props: ISceneParserFieldProps<string[]>) {
       </td>
       <td>
         <Form.Group className={props.className}>
-          <TagSelect isDisabled isMulti ids={originalTags} className="parser-field-tags-select" />
+          <TagSelect
+            isDisabled
+            isMulti
+            ids={originalTags}
+            className="parser-field-tags-select"
+          />
           <TagSelect
             className="parser-field-tags-select"
             isMulti
@@ -295,7 +305,11 @@ function SceneParserStudioField(props: ISceneParserFieldProps<string>) {
       </td>
       <td>
         <Form.Group className={props.className}>
-          <StudioSelect isDisabled ids={originalStudio} className="parser-field-studio-select" />
+          <StudioSelect
+            isDisabled
+            ids={originalStudio}
+            className="parser-field-studio-select"
+          />
           <StudioSelect
             className="parser-field-studio-select"
             isDisabled={!props.parserResult.isSet}
