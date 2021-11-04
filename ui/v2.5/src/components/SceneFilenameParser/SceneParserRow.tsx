@@ -11,6 +11,7 @@ import {
   StudioSelect,
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
+import cx from "classnames";
 
 class ParserResult<T> {
   public value?: T;
@@ -165,12 +166,12 @@ function SceneParserRatingField(
         <Form.Group>
           <Form.Control
             disabled
-            className={props.className}
+            className={cx("input-control text-input", props.className)}
             defaultValue={result.originalValue || ""}
           />
           <Form.Control
             as="select"
-            className={props.className}
+            className={cx("input-control", props.className)}
             disabled={!props.parserResult.isSet}
             value={props.parserResult.value?.toString()}
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
@@ -393,7 +394,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
       {props.showFields.get("Rating") && (
         <SceneParserRatingField
           key="rating"
-          className="parser-field-rating input-control text-input"
+          className="parser-field-rating"
           parserResult={props.scene.rating}
           onSetChanged={(isSet) =>
             onRatingChanged(isSet, props.scene.rating.value ?? undefined)
