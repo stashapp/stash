@@ -470,6 +470,7 @@ div.dropdown-menu {
 }
 
 .top-nav {
+  justify-content: start;
   padding: 0.25rem 1rem;
 
   @include media-breakpoint-down(xs) {
@@ -490,12 +491,47 @@ div.dropdown-menu {
   }
 
   .navbar-collapse {
+    justify-content: space-between;
     max-height: calc(100vh - 4rem);
 
     @include media-breakpoint-down(xs) {
       @media (orientation: landscape) {
         overflow-y: scroll;
       }
+    }
+
+    .navbar-nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-bottom: 0.5rem;
+
+      @include media-breakpoint-up(xl) {
+        flex-wrap: nowrap;
+        padding-bottom: 0;
+      }
+
+      &:last-child {
+        display: none;
+      }
+
+      @include media-breakpoint-down(xs) {
+        &:last-child {
+          display: flex;
+          min-height: 3rem;
+        }
+      }
+    }
+  }
+
+  .navbar-buttons .btn {
+    align-items: center;
+    display: flex;
+  }
+
+  @include media-breakpoint-down(xs) {
+    .navbar-buttons .nav-utility {
+      display: none;
     }
   }
 
@@ -504,7 +540,7 @@ div.dropdown-menu {
   }
 
   .fa-icon {
-    @include media-breakpoint-down(lg) {
+    @include media-breakpoint-down(xs) {
       margin: 0;
     }
 
@@ -536,11 +572,17 @@ div.dropdown-menu {
   }
 }
 
-.donate svg {
-  color: #ff7373;
+.donate {
+  align-items: center;
+  display: flex;
+  height: 100%;
 
-  @include media-breakpoint-down(xs) {
-    margin: 0;
+  svg {
+    color: #ff7373;
+
+    @include media-breakpoint-down(xs) {
+      margin: 0;
+    }
   }
 }
 

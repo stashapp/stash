@@ -240,6 +240,47 @@ export const MainNavbar: React.FC = () => {
 
   const handleDismiss = useCallback(() => setExpanded(false), [setExpanded]);
 
+  function renderUtilityButtons() {
+    return (
+      <>
+        <Nav.Link
+          className="nav-utility"
+          href="https://opencollective.com/stashapp"
+          target="_blank"
+          onClick={handleDismiss}
+        >
+          <Button className="minimal donate" title="Donate">
+            <Icon icon="heart" />
+            <span className="d-none d-sm-inline">
+              {intl.formatMessage(messages.donate)}
+            </span>
+          </Button>
+        </Nav.Link>
+        <NavLink
+          className="nav-utility"
+          exact
+          to="/settings"
+          onClick={handleDismiss}
+        >
+          <Button
+            className="minimal d-flex align-items-center h-100"
+            title="Settings"
+          >
+            <Icon icon="cog" />
+          </Button>
+        </NavLink>
+        <Button
+          className="nav-utility minimal"
+          onClick={() => setShowManual(true)}
+          title="Help"
+        >
+          <Icon icon="question-circle" />
+        </Button>
+        {maybeRenderLogout()}
+      </>
+    );
+  }
+
   return (
     <>
       <Manual show={showManual} onClose={() => setShowManual(false)} />
@@ -248,7 +289,7 @@ export const MainNavbar: React.FC = () => {
         fixed="top"
         variant="dark"
         bg="dark"
-        className="top-nav justify-content-start"
+        className="top-nav"
         expand="xl"
         expanded={expanded}
         onToggle={setExpanded}
@@ -256,26 +297,29 @@ export const MainNavbar: React.FC = () => {
       >
         <Navbar.Collapse className="bg-dark order-sm-1">
           <Fade in={!loading}>
-            <Nav className="mr-md-auto flex-row flex-wrap flex-xl-nowrap justify-content-center pb-2 pb-xl-0">
-              {menuItems.map(({ href, icon, message }) => (
-                <Nav.Link
-                  eventKey={href}
-                  as="div"
-                  key={href}
-                  className="col-4 col-sm-3 col-md-2 col-lg-auto"
-                >
-                  <LinkContainer activeClassName="active" exact to={href}>
-                    <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
-                      <Icon
-                        {...{ icon }}
-                        className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
-                      />
-                      <span>{intl.formatMessage(message)}</span>
-                    </Button>
-                  </LinkContainer>
-                </Nav.Link>
-              ))}
-            </Nav>
+            <>
+              <Nav>
+                {menuItems.map(({ href, icon, message }) => (
+                  <Nav.Link
+                    eventKey={href}
+                    as="div"
+                    key={href}
+                    className="col-4 col-sm-3 col-md-2 col-lg-auto"
+                  >
+                    <LinkContainer activeClassName="active" exact to={href}>
+                      <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
+                        <Icon
+                          {...{ icon }}
+                          className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
+                        />
+                        <span>{intl.formatMessage(message)}</span>
+                      </Button>
+                    </LinkContainer>
+                  </Nav.Link>
+                ))}
+              </Nav>
+              <Nav>{renderUtilityButtons()}</Nav>
+            </>
           </Fade>
         </Navbar.Collapse>
 
@@ -295,37 +339,7 @@ export const MainNavbar: React.FC = () => {
               </Link>
             </div>
           )}
-          <Nav.Link
-            href="https://opencollective.com/stashapp"
-            target="_blank"
-            onClick={handleDismiss}
-          >
-            <Button
-              className="minimal donate d-flex align-items-center h-100"
-              title="Donate"
-            >
-              <Icon icon="heart" />
-              <span className="d-none d-sm-inline">
-                {intl.formatMessage(messages.donate)}
-              </span>
-            </Button>
-          </Nav.Link>
-          <NavLink exact to="/settings" onClick={handleDismiss}>
-            <Button
-              className="minimal d-flex align-items-center h-100"
-              title="Settings"
-            >
-              <Icon icon="cog" />
-            </Button>
-          </NavLink>
-          <Button
-            className="minimal d-flex align-items-center"
-            onClick={() => setShowManual(true)}
-            title="Help"
-          >
-            <Icon icon="question-circle" />
-          </Button>
-          {maybeRenderLogout()}
+          {renderUtilityButtons()}
           <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
             <Icon icon={expanded ? "times" : "bars"} />
           </Navbar.Toggle>
