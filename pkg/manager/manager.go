@@ -75,6 +75,7 @@ func Initialize() *singleton {
 		initProfiling(cfg.GetCPUProfilePath())
 
 		dispatcher := event.NewDispatcher()
+		dispatcher.Start(ctx)
 
 		instance = &singleton{
 			Config:          cfg,
