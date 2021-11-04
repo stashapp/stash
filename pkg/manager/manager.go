@@ -24,6 +24,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/search"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
@@ -38,6 +39,7 @@ type singleton struct {
 	FFProbe ffmpeg.FFProbe
 
 	eventDispatcher *event.Dispatcher
+	search          *search.Engine
 	SessionStore    *session.Store
 
 	JobManager *job.Manager
@@ -77,11 +79,15 @@ func Initialize() *singleton {
 		dispatcher := event.NewDispatcher()
 		dispatcher.Start(ctx)
 
+		search := search.NewEngine()
+		search.Start(ctx, dispatcher)
+
 		instance = &singleton{
 			Config:          cfg,
 			JobManager:      job.NewManager(),
 			DownloadStore:   NewDownloadStore(),
 			eventDispatcher: dispatcher,
+			search:          search,
 			PluginCache:     plugin.NewCache(cfg, dispatcher),
 
 			TxnManager: sqlite.NewTransactionManager(),
