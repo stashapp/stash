@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,7 +9,7 @@ import (
 	"strings"
 
 	"sync"
-	//"github.com/sasha-s/go-deadlock" // if you have deadlock issues
+	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -145,6 +144,14 @@ const (
 const HandyKey = "handy_key"
 const FunscriptOffset = "funscript_offset"
 
+// Default settings
+const (
+	DefaultIdentifySettings = "defaults.identify_task"
+
+	DeleteFileDefault      = "defaults.delete_file"
+	DeleteGeneratedDefault = "defaults.delete_generated"
+)
+
 // Security
 const TrustedProxies = "trusted_proxies"
 const dangerousAllowPublicWithoutAuth = "dangerous_allow_public_without_auth"
@@ -157,6 +164,10 @@ const DLNAServerName = "dlna.server_name"
 const DLNADefaultEnabled = "dlna.default_enabled"
 const DLNADefaultIPWhitelist = "dlna.default_whitelist"
 const DLNAInterfaces = "dlna.interfaces"
+
+// Desktop Integration Options
+const NoBrowser = "noBrowser"
+const NoBrowserDefault = false
 
 // Logging options
 const LogFile = "logFile"
@@ -175,13 +186,23 @@ func (e MissingConfigError) Error() string {
 	return fmt.Sprintf("missing the following mandatory settings: %s", strings.Join(e.missingFields, ", "))
 }
 
+// StashBoxError represents configuration errors of Stash-Box
+type StashBoxError struct {
+	msg string
+}
+
+func (s *StashBoxError) Error() string {
+	// "Stash-box" is a proper noun and is therefore capitcalized
+	return "Stash-box: " + s.msg
+}
+
 type Instance struct {
 	cpuProfilePath string
 	isNewSystem    bool
 	certFile       string
 	keyFile        string
 	sync.RWMutex
-	//deadlock.RWMutex // for deadlock testing/issues
+	// deadlock.RWMutex // for deadlock testing/issues
 }
 
 var instance *Instance
@@ -228,6 +249,12 @@ func (i *Instance) HasTLSConfig() bool {
 // empty string if not set.
 func (i *Instance) GetCPUProfilePath() string {
 	return i.cpuProfilePath
+}
+
+func (i *Instance) GetNoBrowserFlag() bool {
+	i.Lock()
+	defer i.Unlock()
+	return viper.GetBool(NoBrowser)
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -467,10 +494,10 @@ func (i *Instance) GetScraperExcludeTagPatterns() []string {
 	return ret
 }
 
-func (i *Instance) GetStashBoxes() []*models.StashBox {
+func (i *Instance) GetStashBoxes() models.StashBoxes {
 	i.RLock()
 	defer i.RUnlock()
-	var boxes []*models.StashBox
+	var boxes models.StashBoxes
 	if err := viper.UnmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
@@ -680,29 +707,30 @@ func (i *Instance) ValidateCredentials(username string, password string) bool {
 	return username == authUser && err == nil
 }
 
+var stashBoxRe = regexp.MustCompile("^http.*graphql$")
+
 func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
-	re, err := regexp.Compile("^http.*graphql$")
-	if err != nil {
-		return errors.New("failure to generate regular expression")
-	}
-
 	for _, box := range boxes {
+		// Validate each stash-box configuration field, return on error
 		if box.APIKey == "" {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box API Key cannot be blank")
-		} else if box.Endpoint == "" {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box Endpoint cannot be blank")
-		} else if !re.Match([]byte(box.Endpoint)) {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box Endpoint is invalid")
-		} else if isMulti && box.Name == "" {
-			//lint:ignore ST1005 Stash-box is a name
-			return errors.New("Stash-box Name cannot be blank")
+			return &StashBoxError{msg: "API Key cannot be blank"}
+		}
+
+		if box.Endpoint == "" {
+			return &StashBoxError{msg: "endpoint cannot be blank"}
+		}
+
+		if !stashBoxRe.Match([]byte(box.Endpoint)) {
+			return &StashBoxError{msg: "endpoint is invalid"}
+		}
+
+		if isMulti && box.Name == "" {
+			return &StashBoxError{msg: "name cannot be blank"}
 		}
 	}
+
 	return nil
 }
 
@@ -859,8 +887,42 @@ func (i *Instance) GetHandyKey() string {
 }
 
 func (i *Instance) GetFunscriptOffset() int {
+	i.Lock()
+	defer i.Unlock()
 	viper.SetDefault(FunscriptOffset, 0)
 	return viper.GetInt(FunscriptOffset)
+}
+
+func (i *Instance) GetDeleteFileDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteFileDefault, false)
+	return viper.GetBool(DeleteFileDefault)
+}
+
+func (i *Instance) GetDeleteGeneratedDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(DeleteGeneratedDefault, true)
+	return viper.GetBool(DeleteGeneratedDefault)
+}
+
+// GetDefaultIdentifySettings returns the default Identify task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOptions {
+	i.RLock()
+	defer i.RUnlock()
+
+	if viper.IsSet(DefaultIdentifySettings) {
+		var ret models.IdentifyMetadataTaskOptions
+		if err := viper.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
 }
 
 // GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
@@ -1045,6 +1107,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(Generated, viper.GetString(Metadata))
+
+	viper.SetDefault(NoBrowser, NoBrowserDefault)
 
 	// Set default scrapers and plugins paths
 	viper.SetDefault(ScrapersPath, defaultScrapersPath)

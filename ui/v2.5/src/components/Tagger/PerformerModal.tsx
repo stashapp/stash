@@ -118,7 +118,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
     const performerData: GQL.PerformerCreateInput = {
       name: performer.name ?? "",
       aliases: performer.aliases,
-      gender: stringToGender(performer.gender ?? undefined),
+      gender: stringToGender(performer.gender ?? undefined, true),
       birthdate: performer.birthdate,
       ethnicity: performer.ethnicity,
       eye_color: performer.eye_color,
@@ -162,7 +162,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
     // handle exclusions
     Object.keys(performerData).forEach((k) => {
-      if (excludedPerformerFields.includes(k) || excluded[k]) {
+      if (excluded[k]) {
         (performerData as Record<string, unknown>)[k] = undefined;
       }
     });

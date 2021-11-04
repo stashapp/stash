@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type GenerateScreenshotTask struct {
@@ -18,7 +19,7 @@ type GenerateScreenshotTask struct {
 	txnManager          models.TransactionManager
 }
 
-func (t *GenerateScreenshotTask) Start() {
+func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 	ffprobe := instance.FFProbe
 	probeResult, err := ffprobe.NewVideoFile(scenePath, false)
@@ -66,7 +67,7 @@ func (t *GenerateScreenshotTask) Start() {
 			UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 		}
 
-		if err := SetSceneScreenshot(checksum, coverImageData); err != nil {
+		if err := scene.SetScreenshot(instance.Paths, checksum, coverImageData); err != nil {
 			return fmt.Errorf("error writing screenshot: %v", err)
 		}
 

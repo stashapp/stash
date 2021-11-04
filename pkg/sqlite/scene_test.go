@@ -141,9 +141,19 @@ func TestSceneQueryQ(t *testing.T) {
 
 func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
 	t.Helper()
-	scenes, _, err := sqb.Query(sceneFilter, findFilter)
+	result, err := sqb.Query(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+		},
+		SceneFilter: sceneFilter,
+	})
 	if err != nil {
-		t.Errorf("Error querying scene: %s", err.Error())
+		t.Errorf("Error querying scene: %v", err)
+	}
+
+	scenes, err := result.Resolve()
+	if err != nil {
+		t.Errorf("Error resolving scenes: %v", err)
 	}
 
 	return scenes
@@ -346,17 +356,21 @@ func TestSceneIllegalQuery(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
 
-		_, _, err := sqb.Query(sceneFilter, nil)
+		queryOptions := models.SceneQueryOptions{
+			SceneFilter: sceneFilter,
+		}
+
+		_, err := sqb.Query(queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.Or = nil
 		sceneFilter.Not = &subFilter
-		_, _, err = sqb.Query(sceneFilter, nil)
+		_, err = sqb.Query(queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.And = nil
 		sceneFilter.Or = &subFilter
-		_, _, err = sqb.Query(sceneFilter, nil)
+		_, err = sqb.Query(queryOptions)
 		assert.NotNil(err)
 
 		return nil

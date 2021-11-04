@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory } from "react-router-dom";
+import { useHistory, Prompt } from "react-router-dom";
 import {
   Button,
   Dropdown,
@@ -27,10 +27,10 @@ import {
   StudioSelect,
   Icon,
   LoadingIndicator,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { useFormik } from "formik";
-import { Prompt } from "react-router";
 import { FormUtils, TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
@@ -385,21 +385,6 @@ export const GalleryEditPanel: React.FC<
     }
   }
 
-  function maybeRenderScrapeButton() {
-    if (!formik.values.url || !urlScrapable(formik.values.url)) {
-      return undefined;
-    }
-    return (
-      <Button
-        className="minimal scrape-url-button"
-        onClick={onScrapeGalleryURL}
-        title="Scrape"
-      >
-        <Icon className="fa-fw" icon="file-download" />
-      </Button>
-    );
-  }
-
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={title} as={Row}>
@@ -462,15 +447,12 @@ export const GalleryEditPanel: React.FC<
                 <Form.Label className="col-form-label">
                   <FormattedMessage id="url" />
                 </Form.Label>
-                <div className="float-right scrape-button-container">
-                  {maybeRenderScrapeButton()}
-                </div>
               </Col>
               <Col xs={9}>
-                <Form.Control
-                  className="text-input"
-                  placeholder={intl.formatMessage({ id: "url" })}
+                <URLField
                   {...formik.getFieldProps("url")}
+                  onScrapeClick={onScrapeGalleryURL}
+                  urlScrapable={urlScrapable}
                   isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>

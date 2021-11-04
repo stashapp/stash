@@ -10,7 +10,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 	i := GetInstance()
 
 	const workers = 8
-	//const loops = 1000
 	const loops = 200
 	var wg sync.WaitGroup
 	for k := 0; k < workers; k++ {
@@ -93,6 +92,8 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(LogLevel, i.GetLogLevel())
 				i.Set(LogAccess, i.GetLogAccess())
 				i.Set(MaxUploadSize, i.GetMaxUploadSize())
+				i.Set(FunscriptOffset, i.GetFunscriptOffset())
+				i.Set(DefaultIdentifySettings, i.GetDefaultIdentifySettings())
 			}
 			wg.Done()
 		}(k)

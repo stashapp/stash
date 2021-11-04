@@ -41,8 +41,13 @@ ifndef STASH_VERSION
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
 endif
 
+ifndef OFFICIAL_BUILD
+    $(eval OFFICIAL_BUILD := false)
+endif
+
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.officialBuild=$(OFFICIAL_BUILD)')
 	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
@@ -195,5 +200,5 @@ validate-backend: lint it
 
 # locally builds and tags a 'stash/build' docker image
 .PHONY: docker-build
-docker-build:
-	docker build -t stash/build -f docker/build/x86_64/Dockerfile .
+docker-build: pre-build
+	docker build --build-arg GITHASH=$(GITHASH) --build-arg STASH_VERSION=$(STASH_VERSION) -t stash/build -f docker/build/x86_64/Dockerfile .

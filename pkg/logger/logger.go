@@ -80,13 +80,14 @@ func SetLogLevel(level string) {
 func logLevelFromString(level string) logrus.Level {
 	ret := logrus.InfoLevel
 
-	if level == "Debug" {
+	switch level {
+	case "Debug":
 		ret = logrus.DebugLevel
-	} else if level == "Warning" {
+	case "Warning":
 		ret = logrus.WarnLevel
-	} else if level == "Error" {
+	case "Error":
 		ret = logrus.ErrorLevel
-	} else if level == "Trace" {
+	case "Trace":
 		ret = logrus.TraceLevel
 	}
 
@@ -294,7 +295,3 @@ func Fatal(args ...interface{}) {
 func Fatalf(format string, args ...interface{}) {
 	logger.Fatalf(format, args...)
 }
-
-//func WithRequest(req *http.Request) *logrus.Entry {
-//	return logger.WithFields(RequestFields(req))
-//}

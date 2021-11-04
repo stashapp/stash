@@ -23,6 +23,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/browser"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
@@ -34,6 +35,7 @@ import (
 var version string
 var buildstamp string
 var githash string
+var officialBuild string
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
@@ -242,12 +244,26 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		printVersion()
 		printLatestVersion(context.TODO())
 		logger.Infof("stash is listening on " + address)
+		if tlsConfig != nil {
+			displayAddress = "https://" + displayAddress + "/"
+		} else {
+			displayAddress = "http://" + displayAddress + "/"
+		}
+
+		// This can be done before actually starting the server, as modern browsers will
+		// automatically reload the page if a local port is closed at page load and then opened.
+		if !c.GetNoBrowserFlag() && manager.GetInstance().IsDesktop() {
+			err = browser.OpenURL(displayAddress)
+			if err != nil {
+				logger.Error("Could not open browser: " + err.Error())
+			}
+		}
 
 		if tlsConfig != nil {
-			logger.Infof("stash is running at https://" + displayAddress + "/")
+			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServeTLS("", ""))
 		} else {
-			logger.Infof("stash is running at http://" + displayAddress + "/")
+			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServe())
 		}
 	}()
@@ -255,10 +271,19 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 func printVersion() {
 	versionString := githash
+	if IsOfficialBuild() {
+		versionString += " - Official Build"
+	} else {
+		versionString += " - Unofficial Build"
+	}
 	if version != "" {
 		versionString = version + " (" + versionString + ")"
 	}
 	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
+}
+
+func IsOfficialBuild() bool {
+	return officialBuild == "true"
 }
 
 func GetVersion() (string, string, string) {

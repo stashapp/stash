@@ -9,7 +9,8 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import StashBoxConfiguration, {
+import {
+  StashBoxConfiguration,
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
@@ -47,7 +48,7 @@ export const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
       <Form.Group>
         {props.excludes &&
           props.excludes.map((regexp, i) => (
-            <InputGroup>
+            <InputGroup key={regexp}>
               <Form.Control
                 className="col col-sm-6 text-input"
                 value={regexp}
@@ -568,7 +569,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
         <Form.Group>
           <Form.Check
-            id="log-terminal"
+            id="create-galleries-from-folders"
             checked={createGalleriesFromFolders}
             label={intl.formatMessage({
               id: "config.general.create_galleries_from_folders_label",
@@ -591,6 +592,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <h4>{intl.formatMessage({ id: "config.general.hashing" })}</h4>
         <Form.Group>
           <Form.Check
+            id="calculate-md5-and-ohash"
             checked={calculateMD5}
             label={intl.formatMessage({
               id: "config.general.calculate_md5_and_ohash_label",

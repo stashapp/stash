@@ -4,8 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
@@ -65,16 +67,34 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var scenes []*models.Scene
-		var total int
 		var err error
+
+		fields := graphql.CollectAllFields(ctx)
+		result := &models.SceneQueryResult{}
 
 		if len(sceneIDs) > 0 {
 			scenes, err = repo.Scene().FindMany(sceneIDs)
 			if err == nil {
-				total = len(scenes)
+				result.Count = len(scenes)
+				for _, s := range scenes {
+					result.TotalDuration += s.Duration.Float64
+					size, _ := strconv.ParseFloat(s.Size.String, 64)
+					result.TotalSize += size
+				}
 			}
 		} else {
-			scenes, total, err = repo.Scene().Query(sceneFilter, filter)
+			result, err = repo.Scene().Query(models.SceneQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: filter,
+					Count:      utils.StrInclude(fields, "count"),
+				},
+				SceneFilter:   sceneFilter,
+				TotalDuration: utils.StrInclude(fields, "duration"),
+				TotalSize:     utils.StrInclude(fields, "filesize"),
+			})
+			if err == nil {
+				scenes, err = result.Resolve()
+			}
 		}
 
 		if err != nil {
@@ -82,8 +102,10 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:  total,
-			Scenes: scenes,
+			Count:    result.Count,
+			Scenes:   scenes,
+			Duration: result.TotalDuration,
+			Filesize: result.TotalSize,
 		}
 
 		return nil
@@ -114,14 +136,31 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			queryFilter.Q = nil
 		}
 
-		scenes, total, err := repo.Scene().Query(sceneFilter, queryFilter)
+		fields := graphql.CollectAllFields(ctx)
+
+		result, err := repo.Scene().Query(models.SceneQueryOptions{
+			QueryOptions: models.QueryOptions{
+				FindFilter: queryFilter,
+				Count:      utils.StrInclude(fields, "count"),
+			},
+			SceneFilter:   sceneFilter,
+			TotalDuration: utils.StrInclude(fields, "duration"),
+			TotalSize:     utils.StrInclude(fields, "filesize"),
+		})
+		if err != nil {
+			return err
+		}
+
+		scenes, err := result.Resolve()
 		if err != nil {
 			return err
 		}
 
 		ret = &models.FindScenesResultType{
-			Count:  total,
-			Scenes: scenes,
+			Count:    result.Count,
+			Scenes:   scenes,
+			Duration: result.TotalDuration,
+			Filesize: result.TotalSize,
 		}
 
 		return nil

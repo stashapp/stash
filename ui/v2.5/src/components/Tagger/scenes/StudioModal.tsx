@@ -2,9 +2,9 @@ import React, { useContext } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 
-import { Icon, Modal, TruncatedText } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { TaggerStateContext } from "./context";
+import { Icon, Modal, TruncatedText } from "src/components/Shared";
+import { TaggerStateContext } from "../context";
 
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;

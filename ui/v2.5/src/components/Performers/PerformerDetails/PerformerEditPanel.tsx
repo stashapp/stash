@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Col,
-  InputGroup,
-  Row,
-  Badge,
-  Dropdown,
-} from "react-bootstrap";
+import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -28,6 +20,7 @@ import {
   CollapseButton,
   Modal,
   TagSelect,
+  URLField,
 } from "src/components/Shared";
 import { ImageUtils, getStashIDs } from "src/utils";
 import { getCountryByISO } from "src/utils/country";
@@ -40,6 +33,7 @@ import {
   stringToGender,
 } from "src/utils/gender";
 import { ConfigurationContext } from "src/hooks/Config";
+import { stashboxDisplayName } from "src/utils/stashbox";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
@@ -580,7 +574,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             className="minimal"
             onClick={() => onScraperSelected({ ...s, index })}
           >
-            {s.name ?? "Stash-Box"}
+            {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
         ))}
         {queryableScrapers
@@ -659,19 +653,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
     setScrapedPerformer(undefined);
     setScraper(undefined);
-  }
-
-  function maybeRenderScrapeButton() {
-    return (
-      <Button
-        variant="secondary"
-        disabled={!urlScrapable(formik.values.url)}
-        className="scrape-url-button text-input"
-        onClick={() => onScrapePerformerURL()}
-      >
-        <Icon icon="file-upload" />
-      </Button>
-    );
   }
 
   function renderButtons() {
@@ -962,14 +943,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="url" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                placeholder="URL"
-                {...formik.getFieldProps("url")}
-              />
-              <InputGroup.Append>{maybeRenderScrapeButton()}</InputGroup.Append>
-            </InputGroup>
+            <URLField
+              {...formik.getFieldProps("url")}
+              onScrapeClick={onScrapePerformerURL}
+              urlScrapable={urlScrapable}
+            />
           </Col>
         </Form.Group>
 

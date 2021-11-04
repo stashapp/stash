@@ -386,6 +386,12 @@ func (i *Importer) PostImport(id int) error {
 		}
 	}
 
+	if len(i.Input.StashIDs) > 0 {
+		if err := i.ReaderWriter.UpdateStashIDs(id, i.Input.StashIDs); err != nil {
+			return fmt.Errorf("error setting stash id: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -396,11 +402,13 @@ func (i *Importer) Name() string {
 func (i *Importer) FindExistingID() (*int, error) {
 	var existing *models.Scene
 	var err error
-	if i.FileNamingAlgorithm == models.HashAlgorithmMd5 {
+
+	switch i.FileNamingAlgorithm {
+	case models.HashAlgorithmMd5:
 		existing, err = i.ReaderWriter.FindByChecksum(i.Input.Checksum)
-	} else if i.FileNamingAlgorithm == models.HashAlgorithmOshash {
+	case models.HashAlgorithmOshash:
 		existing, err = i.ReaderWriter.FindByOSHash(i.Input.OSHash)
-	} else {
+	default:
 		panic("unknown file naming algorithm")
 	}
 

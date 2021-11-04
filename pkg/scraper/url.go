@@ -3,12 +3,10 @@ package scraper
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -18,53 +16,38 @@ import (
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/net/html/charset"
-	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-// Timeout for the scrape http request. Includes transfer time. May want to make this
-// configurable at some point.
-const scrapeGetTimeout = time.Second * 60
 const scrapeDefaultSleep = time.Second * 2
 
-func loadURL(ctx context.Context, url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
+func loadURL(ctx context.Context, loadURL string, client *http.Client, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
-		return urlFromCDP(ctx, url, *driverOptions, globalConfig)
+		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
 	}
 
-	// get the page using http.Client
-	options := cookiejar.Options{
-		PublicSuffixList: publicsuffix.List,
-	}
-	jar, er := cookiejar.New(&options)
-	if er != nil {
-		return nil, er
-	}
-
-	setCookies(jar, scraperConfig)
-	printCookies(jar, scraperConfig, "Jar cookies set from scraper")
-
-	client := &http.Client{
-		Transport: &http.Transport{ // ignore insecure certificates
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: !globalConfig.GetScraperCertCheck()},
-		},
-		Timeout: scrapeGetTimeout,
-		// defaultCheckRedirect code with max changed from 10 to 20
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 20 {
-				return errors.New("stopped after 20 redirects")
-			}
-			return nil
-		},
-		Jar: jar,
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	jar, err := scraperConfig.jar()
+	if err != nil {
+		return nil, fmt.Errorf("error creating cookie jar: %w", err)
+	}
+
+	u, err := url.Parse(loadURL)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing url %s: %w", loadURL, err)
+	}
+
+	// Fetch relevant cookies from the jar for url u and add them to the request
+	cookies := jar.Cookies(u)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
 	}
 
 	userAgent := globalConfig.GetScraperUserAgent()
@@ -98,7 +81,6 @@ func loadURL(ctx context.Context, url string, scraperConfig config, globalConfig
 
 	bodyReader := bytes.NewReader(body)
 	printCookies(jar, scraperConfig, "Jar cookies found for scraper urls")
-
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
 

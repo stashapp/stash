@@ -6,6 +6,7 @@ interface IPaginationProps {
   itemsPerPage: number;
   currentPage: number;
   totalItems: number;
+  metadataByline?: React.ReactNode;
   onChangePage: (page: number) => void;
 }
 
@@ -13,6 +14,7 @@ interface IPaginationIndexProps {
   itemsPerPage: number;
   currentPage: number;
   totalItems: number;
+  metadataByline?: React.ReactNode;
 }
 
 export const Pagination: React.FC<IPaginationProps> = ({
@@ -115,6 +117,7 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
   itemsPerPage,
   currentPage,
   totalItems,
+  metadataByline,
 }) => {
   const intl = useIntl();
 
@@ -132,8 +135,10 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
   )}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
   return (
-    <span className="filter-container text-muted paginationIndex">
+    <span className="filter-container text-muted paginationIndex center-text">
       {indexText}
+      <br />
+      {metadataByline}
     </span>
   );
 };

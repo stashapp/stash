@@ -228,8 +228,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs("studios")
+	distinctIDs(&query, studioTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")

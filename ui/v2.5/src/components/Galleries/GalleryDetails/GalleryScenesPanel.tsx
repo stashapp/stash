@@ -11,7 +11,7 @@ export const GalleryScenesPanel: React.FC<IGalleryScenesPanelProps> = ({
 }) => (
   <div className="container gallery-scenes">
     {scenes.map((scene) => (
-      <SceneCard scene={scene} />
+      <SceneCard scene={scene} key={scene.id} />
     ))}
   </div>
 );

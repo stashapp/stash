@@ -2,6 +2,7 @@ package tag
 
 import (
 	"fmt"
+
 	"github.com/stashapp/stash/pkg/models"
 )
 
