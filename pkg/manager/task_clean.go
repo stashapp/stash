@@ -406,20 +406,14 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 
 		return scene.Destroy(s, repo, fileDeleter)
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
+		fileDeleter.Rollback()
 
 		logger.Errorf("Error deleting scene from database: %s", err.Error())
 		return
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, nil, nil)
 }
@@ -456,21 +450,14 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 
 		return image.Destroy(i, qb, fileDeleter, true, false)
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
+		fileDeleter.Rollback()
 
 		logger.Errorf("Error deleting image from database: %s", err.Error())
 		return
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
-
+	fileDeleter.Commit()
 	GetInstance().PluginCache.ExecutePostHooks(ctx, imageID, plugin.ImageDestroyPost, nil, nil)
 }
 

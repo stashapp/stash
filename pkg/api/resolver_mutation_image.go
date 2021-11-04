@@ -8,7 +8,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -303,19 +302,12 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 		return image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
-
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, i.ID, plugin.ImageDestroyPost, input, nil)
@@ -357,19 +349,12 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 		return nil
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
-
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	for _, image := range images {
 		// call post hook after performing the other actions

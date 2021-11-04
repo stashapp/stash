@@ -3,6 +3,8 @@ package file
 import (
 	"fmt"
 	"os"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const deleteFileSuffix = ".delete"
@@ -32,11 +34,13 @@ func (r renamerRemoverImpl) RemoveAll(name string) error {
 	return r.RemoveAllFn(name)
 }
 
-// Deleter is used to safely delete files from the filesystem.
-// During a transaction, files are marked for deletion using the Mark method.
-// This will rename the files to be deleted. If the transaction is rolled back,
-// then the files are restored to their original state. If the transaction is
-// committed, the marked files are then deleted from the filesystem.
+// Deleter is used to safely delete files and directories from the filesystem.
+// During a transaction, files and directories are marked for deletion using
+// the Files and Dirs methods. This will rename the files/directories to be
+// deleted. If the transaction is rolled back, then the files/directories can
+// be restored to their original state with the Abort method. If the
+// transaction is committed, the marked files are then deleted from the
+// filesystem using the Complete method.
 type Deleter struct {
 	RenamerRemover RenamerRemover
 	files          []string
@@ -85,48 +89,38 @@ func (d *Deleter) Dirs(paths []string) error {
 	return nil
 }
 
-// Abort tries to rename all marked files and directories back to their
-// original names. It returns a slice of errors for each file/directory
-// that fails. All files will be attempted regardless of any errors occurred.
-// All files and directories will be unmarked.
-func (d *Deleter) Abort() []error {
-	var ret []error
+// Rollback tries to rename all marked files and directories back to their
+// original names and clears the marked list. Any errors encountered are
+// logged. All files will be attempted regardless of any errors occurred.
+func (d *Deleter) Rollback() {
 	for _, f := range append(d.files, d.dirs...) {
 		if err := d.renameForRestore(f); err != nil {
-			err = fmt.Errorf("restoring %q: %w", f, err)
-			ret = append(ret, err)
+			logger.Warnf("Error restoring %q: %v", f, err)
 		}
 	}
 
 	d.files = nil
 	d.dirs = nil
-
-	return ret
 }
 
-// Complete deletes all files marked for deletion and clears the marked list.
-// It returns a slice of errors for each file that failed to be deleted. All
-// files will be attempted, regardless of the errors encountered.
-func (d *Deleter) Complete() []error {
-	var ret []error
+// Commit deletes all files marked for deletion and clears the marked list.
+// Any errors encountered are logged. All files will be attempted, regardless
+// of the errors encountered.
+func (d *Deleter) Commit() {
 	for _, f := range d.files {
 		if err := d.RenamerRemover.Remove(f + deleteFileSuffix); err != nil {
-			err = fmt.Errorf("deleting file %q: %w", f+deleteFileSuffix, err)
-			ret = append(ret, err)
+			logger.Warnf("Error deleting file %q: %v", f+deleteFileSuffix, err)
 		}
 	}
 
 	for _, f := range d.dirs {
 		if err := d.RenamerRemover.RemoveAll(f + deleteFileSuffix); err != nil {
-			err = fmt.Errorf("deleting directory %q: %w", f+deleteFileSuffix, err)
-			ret = append(ret, err)
+			logger.Warnf("Error deleting directory %q: %v", f+deleteFileSuffix, err)
 		}
 	}
 
 	d.files = nil
 	d.dirs = nil
-
-	return ret
 }
 
 func (d *Deleter) renameForDelete(path string) error {

@@ -11,7 +11,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -477,19 +476,12 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 		return nil
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
-
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	for _, gallery := range galleries {
 		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path.Valid {

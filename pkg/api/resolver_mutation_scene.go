@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -496,18 +495,12 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 
 		return scene.Destroy(s, repo, fileDeleter)
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, input, nil)
@@ -560,19 +553,12 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 		return nil
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
-
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	for _, scene := range scenes {
 		// call post hook after performing the other actions
@@ -706,19 +692,12 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 
 		return scene.DestroyMarker(s, marker, qb, fileDeleter)
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
-
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
+	fileDeleter.Commit()
 
 	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
 
@@ -777,20 +756,12 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 		tagIDs = utils.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
 		return qb.UpdateTags(sceneMarker.ID, tagIDs)
 	}); err != nil {
-		errs := fileDeleter.Abort()
-		for _, delErr := range errs {
-			logger.Warn(delErr)
-		}
-
+		fileDeleter.Rollback()
 		return nil, err
 	}
 
 	// perform the post-commit actions
-	errs := fileDeleter.Complete()
-	for _, delErr := range errs {
-		logger.Warn(delErr)
-	}
-
+	fileDeleter.Commit()
 	return sceneMarker, nil
 }
 
