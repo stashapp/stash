@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 var ErrTimestamp = errors.New("cannot parse Timestamp")
@@ -18,7 +19,10 @@ func MarshalTimestamp(t time.Time) graphql.Marshaler {
 	}
 
 	return graphql.WriterFunc(func(w io.Writer) {
-		io.WriteString(w, strconv.Quote(t.Format(time.RFC3339Nano)))
+		_, err := io.WriteString(w, strconv.Quote(t.Format(time.RFC3339Nano)))
+		if err != nil {
+			logger.Warnf("could not marshal timestamp: %v", err)
+		}
 	})
 }
 
