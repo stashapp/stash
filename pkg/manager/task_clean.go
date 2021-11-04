@@ -400,11 +400,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 			return err
 		}
 
-		if err := fileDeleter.MarkGeneratedFiles(s); err != nil {
-			return err
-		}
-
-		return scene.Destroy(s, repo, fileDeleter)
+		return scene.Destroy(s, repo, fileDeleter, true, false)
 	}); err != nil {
 		fileDeleter.Rollback()
 

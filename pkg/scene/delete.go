@@ -110,7 +110,7 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDeleter) error {
+func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	qb := repo.Scene()
 	mqb := repo.SceneMarker()
 
@@ -121,6 +121,18 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 
 	for _, m := range markers {
 		if err := DestroyMarker(scene, m, mqb, fileDeleter); err != nil {
+			return err
+		}
+	}
+
+	if deleteFile {
+		if err := fileDeleter.Files([]string{scene.Path}); err != nil {
+			return err
+		}
+	}
+
+	if deleteGenerated {
+		if err := fileDeleter.MarkGeneratedFiles(scene); err != nil {
 			return err
 		}
 	}

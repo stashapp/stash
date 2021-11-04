@@ -466,6 +466,9 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		Paths:          manager.GetInstance().Paths,
 	}
 
+	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	deleteFile := utils.IsTrue(input.DeleteFile)
+
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
 		var err error
@@ -481,19 +484,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		// kill any running encoders
 		manager.KillRunningStreams(s, fileNamingAlgo)
 
-		if utils.IsTrue(input.DeleteFile) {
-			if err := fileDeleter.Files([]string{s.Path}); err != nil {
-				return err
-			}
-		}
-
-		if utils.IsTrue(input.DeleteGenerated) {
-			if err := fileDeleter.MarkGeneratedFiles(s); err != nil {
-				return err
-			}
-		}
-
-		return scene.Destroy(s, repo, fileDeleter)
+		return scene.Destroy(s, repo, fileDeleter, deleteGenerated, deleteFile)
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -517,6 +508,10 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
+
+	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	deleteFile := utils.IsTrue(input.DeleteFile)
+
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
 
@@ -534,19 +529,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			// kill any running encoders
 			manager.KillRunningStreams(s, fileNamingAlgo)
 
-			if utils.IsTrue(input.DeleteFile) {
-				if err := fileDeleter.Files([]string{s.Path}); err != nil {
-					return err
-				}
-			}
-
-			if utils.IsTrue(input.DeleteGenerated) {
-				if err := fileDeleter.MarkGeneratedFiles(s); err != nil {
-					return err
-				}
-			}
-
-			if err := scene.Destroy(s, repo, fileDeleter); err != nil {
+			if err := scene.Destroy(s, repo, fileDeleter, deleteGenerated, deleteFile); err != nil {
 				return err
 			}
 		}
