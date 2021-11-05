@@ -161,3 +161,36 @@
     }
   }
 }
+
+.card.task-group {
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.task-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid $dark-gray2;
+  }
+
+  :last-child {
+    margin-left: 1rem;
+  }
+}
+
+.ellipsis-button {
+  .btn:first-child {
+    border-right: 1px solid $card-bg;
+  }
+
+  .btn:last-child {
+    border-left: 1px solid $card-bg;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+}

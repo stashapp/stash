@@ -376,7 +376,7 @@ div.dropdown-menu {
 }
 
 .card {
-  background-color: #30404d;
+  background-color: $card-bg;
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.4), 0 0 0 rgba(16, 22, 26, 0),
     0 0 0 rgba(16, 22, 26, 0);
@@ -584,7 +584,7 @@ div.dropdown-menu {
   }
 
   code {
-    background-color: darken($color: #30404d, $amount: 3);
+    background-color: darken($color: $card-bg, $amount: 3);
     color: $text-color;
     padding: 0.2em 0.4em;
   }
@@ -602,7 +602,7 @@ div.dropdown-menu {
       padding: 0;
     }
 
-    background-color: darken($color: #30404d, $amount: 3);
+    background-color: darken($color: $card-bg, $amount: 3);
     border-radius: 3px;
     padding: 16px;
   }
@@ -624,7 +624,7 @@ div.dropdown-menu {
     }
 
     tr:nth-child(2n) {
-      background-color: darken($color: #30404d, $amount: 2);
+      background-color: darken($color: $card-bg, $amount: 2);
     }
 
     td,

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Form, Row } from "react-bootstrap";
 import {
   mutateMetadataImport,
   mutateMetadataExport,
@@ -146,18 +146,15 @@ export const SettingsTasksPanel: React.FC = () => {
 
     return pluginTasks.map((o) => {
       return (
-        <div key={o.name}>
+        <div className="task-row" key={o.name}>
+          <span>{o.description}</span>
           <Button
             onClick={() => onPluginTaskClicked(plugin, o)}
-            className="mt-3"
             variant="secondary"
             size="sm"
           >
             {o.name}
           </Button>
-          {o.description ? (
-            <Form.Text className="text-muted">{o.description}</Form.Text>
-          ) : undefined}
         </div>
       );
     });
@@ -194,16 +191,20 @@ export const SettingsTasksPanel: React.FC = () => {
     return (
       <>
         <hr />
-        <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
-        {taskPlugins.map((o) => {
-          return (
-            <div key={`${o.id}`} className="mb-3">
-              <h6>{o.name}</h6>
-              {renderPluginTasks(o, o.tasks ?? [])}
-              <hr />
-            </div>
-          );
-        })}
+
+        <Form.Group>
+          <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
+          {taskPlugins.map((o) => {
+            return (
+              <Form.Group key={`${o.id}`}>
+                <h6>{o.name}</h6>
+                <Card className="task-group">
+                  {renderPluginTasks(o, o.tasks ?? [])}
+                </Card>
+              </Form.Group>
+            );
+          })}
+        </Form.Group>
       </>
     );
   }
@@ -266,181 +267,232 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "library" })}</h5>
-        <Form.Group>
-          <Button
-            className="mr-2"
-            variant="secondary"
-            type="submit"
-            onClick={() => setDialogOpen({ scan: true })}
-          >
-            <FormattedMessage id="actions.scan" />…
-          </Button>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <Card className="task-group">
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
+            </span>
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => setDialogOpen({ scan: true })}
+              >
+                <FormattedMessage id="actions.scan" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ scan: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </div>
 
-        <Form.Group>
-          <Button
-            className="mr-2"
-            variant="secondary"
-            type="submit"
-            onClick={() => setDialogOpen({ identify: true })}
-          >
-            <FormattedMessage id="actions.identify" />…
-          </Button>
-          <Form.Text className="text-muted">
-            <FormattedMessage id="config.tasks.identify.description" />
-          </Form.Text>
-        </Form.Group>
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.identify.description" })}
+            </span>
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => setDialogOpen({ identify: true })}
+              >
+                <FormattedMessage id="actions.identify" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ identify: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </div>
 
-        <Form.Group>
-          <Button
-            variant="secondary"
-            type="submit"
-            className="mr-2"
-            onClick={() => setDialogOpen({ autoTag: true })}
-          >
-            <FormattedMessage id="actions.auto_tag" />…
-          </Button>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.tasks.auto_tag_based_on_filenames",
-            })}
-          </Form.Text>
-        </Form.Group>
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({
+                id: "config.tasks.auto_tag_based_on_filenames",
+              })}
+            </span>
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => setDialogOpen({ autoTag: true })}
+              >
+                <FormattedMessage id="actions.auto_tag" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ autoTag: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </div>
 
-        <Form.Group>
-          <Button
-            id="clean"
-            variant="danger"
-            onClick={() => setDialogOpen({ clean: true })}
-          >
-            <FormattedMessage id="actions.clean" />…
-          </Button>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
-          </Form.Text>
-        </Form.Group>
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
+            </span>
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ clean: true })}
+            >
+              <FormattedMessage id="actions.clean" />…
+            </Button>
+          </div>
+        </Card>
       </Form.Group>
 
       <hr />
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
-        <Button
-          id="generate"
-          variant="secondary"
-          type="submit"
-          onClick={() => setDialogOpen({ generate: true })}
-        >
-          <FormattedMessage id="actions.generate" />…
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.generate_desc" })}
-        </Form.Text>
+
+        <Card className="task-group">
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.generate_desc" })}
+            </span>
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => setDialogOpen({ generate: true })}
+              >
+                <FormattedMessage id="actions.generate" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ generate: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </div>
+        </Card>
       </Form.Group>
 
       <hr />
 
-      <h5>{intl.formatMessage({ id: "metadata" })}</h5>
       <Form.Group>
-        <Button
-          id="export"
-          variant="secondary"
-          type="submit"
-          onClick={() => onExport()}
-        >
-          <FormattedMessage id="actions.full_export" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.export_to_json" })}
-        </Form.Text>
-      </Form.Group>
+        <h5>{intl.formatMessage({ id: "metadata" })}</h5>
+        <Card className="task-group">
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.export_to_json" })}
+            </span>
+            <Button
+              id="export"
+              variant="secondary"
+              type="submit"
+              onClick={() => onExport()}
+            >
+              <FormattedMessage id="actions.full_export" />
+            </Button>
+          </div>
 
-      <Form.Group>
-        <Button
-          id="import"
-          variant="danger"
-          onClick={() => setDialogOpen({ importAlert: true })}
-        >
-          <FormattedMessage id="actions.full_import" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.import_from_exported_json" })}
-        </Form.Text>
-      </Form.Group>
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({
+                id: "config.tasks.import_from_exported_json",
+              })}
+            </span>
+            <Button
+              id="import"
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ importAlert: true })}
+            >
+              <FormattedMessage id="actions.full_import" />
+            </Button>
+          </div>
 
-      <Form.Group>
-        <Button
-          id="partial-import"
-          variant="danger"
-          onClick={() => setDialogOpen({ import: true })}
-        >
-          <FormattedMessage id="actions.import_from_file" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.incremental_import" })}
-        </Form.Text>
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.incremental_import" })}
+            </span>
+            <Button
+              id="partial-import"
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ import: true })}
+            >
+              <FormattedMessage id="actions.import_from_file" />
+            </Button>
+          </div>
+        </Card>
       </Form.Group>
 
       <hr />
 
-      <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
       <Form.Group>
-        <Button
-          id="backup"
-          variant="secondary"
-          type="submit"
-          onClick={() => onBackup()}
-        >
-          <FormattedMessage id="actions.backup" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage(
-            { id: "config.tasks.backup_database" },
-            {
-              filename_format: (
-                <code>
-                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
-                </code>
-              ),
-            }
-          )}
-        </Form.Text>
-      </Form.Group>
+        <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
+        <Card className="task-group">
+          <div className="task-row">
+            <span>
+              {intl.formatMessage(
+                { id: "config.tasks.backup_database" },
+                {
+                  filename_format: (
+                    <code>
+                      [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                    </code>
+                  ),
+                }
+              )}
+            </span>
+            <Button
+              id="backup"
+              variant="secondary"
+              type="submit"
+              onClick={() => onBackup()}
+            >
+              <FormattedMessage id="actions.backup" />
+            </Button>
+          </div>
 
-      <Form.Group>
-        <Button
-          id="backupDownload"
-          variant="secondary"
-          type="submit"
-          onClick={() => onBackup(true)}
-        >
-          <FormattedMessage id="actions.download_backup" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.backup_and_download" })}
-        </Form.Text>
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.backup_and_download" })}
+            </span>
+            <Button
+              id="backupDownload"
+              variant="secondary"
+              type="submit"
+              onClick={() => onBackup(true)}
+            >
+              <FormattedMessage id="actions.download_backup" />
+            </Button>
+          </div>
+        </Card>
       </Form.Group>
 
       {renderPlugins()}
 
       <hr />
 
-      <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
-
       <Form.Group>
-        <Button
-          id="migrateHashNaming"
-          variant="danger"
-          onClick={() => onMigrateHashNaming()}
-        >
-          <FormattedMessage id="actions.rename_gen_files" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.migrate_hash_files" })}
-        </Form.Text>
+        <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
+
+        <Card className="task-group">
+          <div className="task-row">
+            <span>
+              {intl.formatMessage({ id: "config.tasks.migrate_hash_files" })}
+            </span>
+            <Button
+              id="migrateHashNaming"
+              variant="danger"
+              onClick={() => onMigrateHashNaming()}
+            >
+              <FormattedMessage id="actions.rename_gen_files" />
+            </Button>
+          </div>
+        </Card>
       </Form.Group>
     </>
   );
