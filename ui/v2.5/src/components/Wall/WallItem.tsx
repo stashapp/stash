@@ -161,11 +161,16 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     }
   };
 
+  const cont = config?.interface.continuePlaylistDefault ?? false;
+
   let linkSrc: string = "#";
   if (!props.clickHandler) {
     if (props.scene) {
       linkSrc = props.sceneQueue
-        ? props.sceneQueue.makeLink(props.scene.id, { sceneIndex: props.index })
+        ? props.sceneQueue.makeLink(props.scene.id, {
+            sceneIndex: props.index,
+            continue: cont,
+          })
         : `/scenes/${props.scene.id}`;
     } else if (props.sceneMarker) {
       linkSrc = NavUtils.makeSceneMarkerUrl(props.sceneMarker);
