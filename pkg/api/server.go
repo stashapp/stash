@@ -68,9 +68,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	txnManager := manager.GetInstance().TxnManager
 	pluginCache := manager.GetInstance().PluginCache
+	searchEngine := manager.GetInstance().Search
 	resolver := &Resolver{
 		txnManager:   txnManager,
 		hookExecutor: pluginCache,
+		searchEngine: searchEngine,
 	}
 
 	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))

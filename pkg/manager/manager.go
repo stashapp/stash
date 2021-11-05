@@ -39,7 +39,7 @@ type singleton struct {
 	FFProbe ffmpeg.FFProbe
 
 	eventDispatcher *event.Dispatcher
-	search          *search.Engine
+	Search          *search.Engine
 	SessionStore    *session.Store
 
 	JobManager *job.Manager
@@ -88,7 +88,7 @@ func Initialize() *singleton {
 			JobManager:      job.NewManager(),
 			DownloadStore:   NewDownloadStore(),
 			eventDispatcher: dispatcher,
-			search:          search,
+			Search:          search,
 			PluginCache:     plugin.NewCache(cfg, dispatcher),
 
 			TxnManager: txnManager,

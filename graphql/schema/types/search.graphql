@@ -1,0 +1,16 @@
+enum SearchType {
+    SEARCH_SCENE
+}
+
+type SearchResult {
+    content: [SearchItem]
+    took: Float!
+}
+
+interface SearchItem {
+    id: ID!
+}
+
+type SearchSceneItem implements SearchItem {
+    id: ID!
+}
