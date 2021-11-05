@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, ButtonGroup, Card, Form, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import {
   mutateMetadataImport,
   mutateMetadataExport,
