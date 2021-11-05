@@ -196,7 +196,7 @@ export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
 
   return (
     <Modal
-      modalProps={{ animation, size: "lg" }}
+      modalProps={{ animation }}
       show
       icon="cogs"
       header={intl.formatMessage({ id: "actions.auto_tag" })}
