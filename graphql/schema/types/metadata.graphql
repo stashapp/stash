@@ -34,7 +34,6 @@ input GeneratePreviewOptionsInput {
 }
 
 input ScanMetadataInput {
-  paths: [String!]
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean
   """Strip file extension from title"""
@@ -49,6 +48,23 @@ input ScanMetadataInput {
   scanGeneratePhashes: Boolean
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean
+}
+
+type ScanMetadataOptions {
+  """Set name, date, details from metadata (if present)"""
+  useFileMetadata: Boolean!
+  """Strip file extension from title"""
+  stripFileExtension: Boolean!
+  """Generate previews during scan"""
+  scanGeneratePreviews: Boolean!
+  """Generate image previews during scan"""
+  scanGenerateImagePreviews: Boolean!
+  """Generate sprites during scan"""
+  scanGenerateSprites: Boolean!
+  """Generate phashes during scan"""
+  scanGeneratePhashes: Boolean!
+  """Generate image thumbnails during scan"""
+  scanGenerateThumbnails: Boolean!
 }
 
 input CleanMetadataInput {

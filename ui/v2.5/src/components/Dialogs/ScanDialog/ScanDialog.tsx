@@ -3,9 +3,9 @@ import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataScan,
   useConfiguration,
-  // useConfigureDefaults,
+  useConfigureDefaults,
 } from "src/core/StashService";
-import { Icon, Modal } from "src/components/Shared";
+import { Icon, Modal, OperationButton } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -18,15 +18,14 @@ interface IScanDialogProps {
 }
 
 export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
-  // TODO - add setting defaults
-  // const [configureDefaults] = useConfigureDefaults();
+  const [configureDefaults] = useConfigureDefaults();
 
   const [options, setOptions] = useState<GQL.ScanMetadataInput>({});
   const [paths, setPaths] = useState<string[]>([]);
   const [showManual, setShowManual] = useState(false);
   const [settingPaths, setSettingPaths] = useState(false);
   const [animation, setAnimation] = useState(true);
-  const [savingDefaults /* setSavingDefaults */] = useState(false);
+  const [savingDefaults, setSavingDefaults] = useState(false);
 
   const intl = useIntl();
   const Toast = useToast();
@@ -74,11 +73,11 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
   if (configError) return <div>{configError}</div>;
   if (!configData) return <div />;
 
-  // function makeDefaultScanInput() {
-  //   const ret = options;
-  //   const { paths: _paths, ...withoutSpecifics } = ret;
-  //   return withoutSpecifics;
-  // }
+  function makeDefaultScanInput() {
+    const ret = options;
+    const { paths: _paths, ...withoutSpecifics } = ret;
+    return withoutSpecifics;
+  }
 
   async function onScan() {
     try {
@@ -102,22 +101,29 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
     setShowManual(true);
   }
 
-  // async function setAsDefault() {
-  //   try {
-  //     setSavingDefaults(true);
-  //     await configureDefaults({
-  //       variables: {
-  //         input: {
-  //           scan: makeDefaultScanInput(),
-  //         },
-  //       },
-  //     });
-  //   } catch (e) {
-  //     Toast.error(e);
-  //   } finally {
-  //     setSavingDefaults(false);
-  //   }
-  // }
+  async function setAsDefault() {
+    try {
+      setSavingDefaults(true);
+      await configureDefaults({
+        variables: {
+          input: {
+            scan: makeDefaultScanInput(),
+          },
+        },
+      });
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.defaults_set" },
+          { action: intl.formatMessage({ id: "actions.scan" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setSavingDefaults(false);
+    }
+  }
 
   if (settingPaths) {
     return (
@@ -162,17 +168,11 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
         variant: "secondary",
       }}
       disabled={savingDefaults}
-      footerButtons={undefined}
-      // <Button
-      //   variant="secondary"
-      //   disabled={savingDefaults}
-      //   onClick={() => setAsDefault()}
-      // >
-      //   {savingDefaults && (
-      //     <Spinner animation="border" role="status" size="sm" />
-      //   )}
-      //   <FormattedMessage id="actions.set_as_default" />
-      // </Button>
+      footerButtons={
+        <OperationButton variant="secondary" operation={setAsDefault}>
+          <FormattedMessage id="actions.set_as_default" />
+        </OperationButton>
+      }
       leftFooterButtons={
         <Button
           title="Help"

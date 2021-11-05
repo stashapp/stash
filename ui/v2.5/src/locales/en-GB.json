@@ -301,6 +301,7 @@
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
       "backup_database": "Performs a backup of the database to the same directory as the database, with the filename format {filename_format}",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
+      "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
       "generate": {

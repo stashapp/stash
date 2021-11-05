@@ -33,7 +33,7 @@ export const OperationButton: React.FC<IOperationButton> = (props) => {
     externalLoading !== undefined ? externalLoading : internalLoading;
 
   async function handleClick() {
-    if (operation) {
+    if (operation && !loading) {
       setLoading(true);
       await operation();
 

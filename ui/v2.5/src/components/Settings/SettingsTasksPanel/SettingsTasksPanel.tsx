@@ -8,11 +8,13 @@ import {
   usePlugins,
   mutateRunPluginTask,
   mutateBackupDatabase,
+  mutateMetadataScan,
+  mutateMetadataIdentify,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
-import { downloadFile } from "src/utils";
+import { downloadFile, withoutTypename } from "src/utils";
 import IdentifyDialog from "src/components/Dialogs/IdentifyDialog/IdentifyDialog";
 import { ImportDialog } from "./ImportDialog";
 import { JobTable } from "./JobTable";
@@ -20,6 +22,7 @@ import ScanDialog from "src/components/Dialogs/ScanDialog/ScanDialog";
 import AutoTagDialog from "src/components/Dialogs/AutoTagDialog";
 import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
 import CleanDialog from "src/components/Dialogs/CleanDialog";
+import { ConfigurationContext } from "src/hooks/Config";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -40,6 +43,8 @@ export const SettingsTasksPanel: React.FC = () => {
   type DialogOpenState = typeof dialogOpen;
 
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
+
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const plugins = usePlugins();
 
@@ -241,6 +246,36 @@ export const SettingsTasksPanel: React.FC = () => {
     }
   }
 
+  async function onScanClicked() {
+    // check if defaults are set for scan
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { scan } = configuration?.defaults;
+    if (!scan) {
+      setDialogOpen({ scan: true });
+    } else {
+      mutateMetadataScan(withoutTypename(scan));
+    }
+  }
+
+  async function onIdentifyClicked() {
+    // check if defaults are set for identify
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { identify } = configuration?.defaults;
+    if (!identify) {
+      setDialogOpen({ identify: true });
+    } else {
+      mutateMetadataIdentify(withoutTypename(identify));
+    }
+  }
+
   if (isBackupRunning) {
     return (
       <LoadingIndicator
@@ -276,7 +311,7 @@ export const SettingsTasksPanel: React.FC = () => {
               <Button
                 variant="secondary"
                 type="submit"
-                onClick={() => setDialogOpen({ scan: true })}
+                onClick={() => onScanClicked()}
               >
                 <FormattedMessage id="actions.scan" />
               </Button>
@@ -297,7 +332,7 @@ export const SettingsTasksPanel: React.FC = () => {
               <Button
                 variant="secondary"
                 type="submit"
-                onClick={() => setDialogOpen({ identify: true })}
+                onClick={() => onIdentifyClicked()}
               >
                 <FormattedMessage id="actions.identify" />
               </Button>

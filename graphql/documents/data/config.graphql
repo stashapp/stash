@@ -104,6 +104,16 @@ fragment ScraperSourceData on ScraperSource {
 }
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
+  scan {
+    useFileMetadata
+    stripFileExtension
+    scanGeneratePreviews
+    scanGenerateImagePreviews
+    scanGenerateSprites
+    scanGeneratePhashes
+    scanGenerateThumbnails
+  }
+  
   identify {
     sources {
       source {
