@@ -33,7 +33,7 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
 
   return (
     <>
-      <div className={props.errors && "is-invalid"}>
+      <div className={`string-list-input ${props.errors ? "is-invalid" : ""}`}>
         {props.value && props.value.length > 0 && (
           <Form.Group>
             {props.value &&

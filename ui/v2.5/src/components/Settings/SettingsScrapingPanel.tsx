@@ -14,7 +14,7 @@ import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 import { ScrapeType } from "src/core/generated-graphql";
-import { ExclusionPatterns } from "./SettingsConfigurationPanel";
+import { StringListInput } from "../Shared/StringListInput";
 
 interface IURLList {
   urls: string[];
@@ -408,10 +408,11 @@ export const SettingsScrapingPanel: React.FC = () => {
             id: "config.scraping.excluded_tag_patterns_head",
           })}
         </h6>
-        <ExclusionPatterns
-          excludes={excludeTagPatterns}
-          setExcludes={setExcludeTagPatterns}
-          demo="4K"
+        <StringListInput
+          className="w-50"
+          value={excludeTagPatterns}
+          setValue={setExcludeTagPatterns}
+          defaultNewValue="4K"
         />
         <Form.Text className="text-muted">
           {intl.formatMessage({
