@@ -523,8 +523,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  async function onScrapePerformerURL() {
-    const { url } = formik.values;
+  async function onScrapePerformerURL(url: string) {
     if (!url) return;
     setIsLoading(true);
     try {
@@ -835,6 +834,11 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   };
 
+  const editUrl = (url: string) => {
+    urlInputRef!.current!.value = url;
+    removeUrl(url);
+  };
+
   const addUrl = (url: string) => {
     if (urlInputRef.current?.value) {
       urlInputRef.current.value = "";
@@ -856,18 +860,43 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <ul className="pl-0">
             {formik.values.urls.map((url) => {
               return (
-                <li key={url} className="row no-gutters mb-1">
+                <li key={url} className="row no-gutters mb-1 d-flex">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mr-auto"
+                  >
+                    {url}
+                  </a>
+                  {urlScrapable(url) ? (
+                    <Button
+                      variant="secondary"
+                      className="mr-2 py-0"
+                      title="Scrape URL"
+                      onClick={() => onScrapePerformerURL(url)}
+                    >
+                      <Icon icon="file-download" />
+                    </Button>
+                  ) : (
+                    ""
+                  )}
+                  <Button
+                    variant="secondary"
+                    className="mr-2 py-0"
+                    title="Edit URL"
+                    onClick={() => editUrl(url)}
+                  >
+                    <Icon icon="pencil-alt" />
+                  </Button>
                   <Button
                     variant="danger"
-                    className="mr-2 py-0"
+                    className="py-0"
                     title="Delete URL"
                     onClick={() => removeUrl(url)}
                   >
                     <Icon icon="trash-alt" />
                   </Button>
-                  <a href={url} target="_blank" rel="noopener noreferrer">
-                    {url}
-                  </a>
                 </li>
               );
             })}
@@ -1005,7 +1034,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <Col xs={fieldXS} xl={fieldXL}>
             <URLField
               {...formik.getFieldProps("url")}
-              onScrapeClick={onScrapePerformerURL}
+              onScrapeClick={onScrapePerformerURL.bind(this, formik.values.url)}
               urlScrapable={urlScrapable}
             />
           </Col>
