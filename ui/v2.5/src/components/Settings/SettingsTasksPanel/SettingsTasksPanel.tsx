@@ -11,6 +11,7 @@ import {
   mutateMetadataScan,
   mutateMetadataIdentify,
   mutateMetadataAutoTag,
+  mutateMetadataGenerate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
@@ -292,6 +293,21 @@ export const SettingsTasksPanel: React.FC = () => {
     }
   }
 
+  async function onGenerateClicked() {
+    // check if defaults are set for generate
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { generate } = configuration?.defaults;
+    if (!generate) {
+      setDialogOpen({ generate: true });
+    } else {
+      mutateMetadataGenerate(withoutTypename(generate));
+    }
+  }
+
   if (isBackupRunning) {
     return (
       <LoadingIndicator
@@ -413,7 +429,7 @@ export const SettingsTasksPanel: React.FC = () => {
               <Button
                 variant="secondary"
                 type="submit"
-                onClick={() => setDialogOpen({ generate: true })}
+                onClick={() => onGenerateClicked()}
               >
                 <FormattedMessage id="actions.generate" />
               </Button>

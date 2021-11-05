@@ -134,6 +134,24 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     tags
   }
 
+  generate {
+    sprites
+    previews
+    imagePreviews
+    previewOptions {
+      previewSegments
+      previewSegmentDuration
+      previewExcludeStart
+      previewExcludeEnd
+      previewPreset
+    }
+    markers
+    markerImagePreviews
+    markerScreenshots
+    transcodes
+    phashes
+  }
+
   deleteFile
   deleteGenerated
 }

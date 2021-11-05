@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataScan,
-  useConfiguration,
   useConfigureDefaults,
 } from "src/core/StashService";
 import { Icon, Modal, OperationButton } from "src/components/Shared";
@@ -13,6 +12,7 @@ import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksP
 import { Manual } from "src/components/Help/Manual";
 import { ScanOptions } from "./Options";
 import { withoutTypename } from "src/utils";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IScanDialogProps {
   onClose: () => void;
@@ -31,19 +31,19 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
   const intl = useIntl();
   const Toast = useToast();
 
-  const { data: configData, error: configError } = useConfiguration();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   useEffect(() => {
-    if (!configData?.configuration.defaults) {
+    if (!configuration?.defaults) {
       return;
     }
 
-    const { scan } = configData.configuration.defaults;
+    const { scan } = configuration.defaults;
 
     if (scan) {
       setOptions(withoutTypename(scan));
     }
-  }, [configData]);
+  }, [configuration]);
 
   const selectionStatus = useMemo(() => {
     const message = paths.length ? (
@@ -83,8 +83,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
     );
   }, [intl, paths]);
 
-  if (configError) return <div>{configError}</div>;
-  if (!configData) return <div />;
+  if (!configuration) return <div />;
 
   function makeDefaultScanInput() {
     const ret = options;

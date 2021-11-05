@@ -33,6 +33,31 @@ input GeneratePreviewOptionsInput {
   previewPreset: PreviewPreset
 }
 
+type GenerateMetadataOptions {
+  sprites: Boolean
+  previews: Boolean
+  imagePreviews: Boolean
+  previewOptions: GeneratePreviewOptions
+  markers: Boolean
+  markerImagePreviews: Boolean
+  markerScreenshots: Boolean
+  transcodes: Boolean
+  phashes: Boolean
+}
+
+type GeneratePreviewOptions {
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
+}
+
 input ScanMetadataInput {
   paths: [String!]
   """Set name, date, details from metadata (if present)"""

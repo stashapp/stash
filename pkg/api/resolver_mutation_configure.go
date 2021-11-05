@@ -369,6 +369,10 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.C
 		c.Set(config.DefaultAutoTagSettings, input.AutoTag)
 	}
 
+	if input.Generate != nil {
+		c.Set(config.DefaultGenerateSettings, input.Generate)
+	}
+
 	if input.DeleteFile != nil {
 		c.Set(config.DeleteFileDefault, *input.DeleteFile)
 	}

@@ -172,6 +172,7 @@ func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 		Identify:        config.GetDefaultIdentifySettings(),
 		Scan:            config.GetDefaultScanSettings(),
 		AutoTag:         config.GetDefaultAutoTagSettings(),
+		Generate:        config.GetDefaultGenerateSettings(),
 		DeleteFile:      &deleteFileDefault,
 		DeleteGenerated: &deleteGeneratedDefault,
 	}
