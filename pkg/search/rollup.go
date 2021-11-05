@@ -30,6 +30,15 @@ func (m *changeMap) track(e event.Change) {
 	}
 }
 
+func (m *changeMap) sceneIds() []int {
+	var ret []int
+	for k := range m.scenes {
+		ret = append(ret, k)
+	}
+
+	return ret
+}
+
 // hasContent returns true if there are changes to process.
 func (m *changeMap) hasContent() bool {
 	return len(m.scenes) > 0

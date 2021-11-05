@@ -79,7 +79,8 @@ func Initialize() *singleton {
 		dispatcher := event.NewDispatcher()
 		dispatcher.Start(ctx)
 
-		search := search.NewEngine()
+		txnManager := sqlite.NewTransactionManager()
+		search := search.NewEngine(txnManager, cfg)
 		search.Start(ctx, dispatcher)
 
 		instance = &singleton{
@@ -90,7 +91,7 @@ func Initialize() *singleton {
 			search:          search,
 			PluginCache:     plugin.NewCache(cfg, dispatcher),
 
-			TxnManager: sqlite.NewTransactionManager(),
+			TxnManager: txnManager,
 
 			scanSubs: &subscriptionManager{},
 		}

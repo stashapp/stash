@@ -24,6 +24,7 @@ import (
 const Stash = "stash"
 const Cache = "cache"
 const Generated = "generated"
+const Search = "search"
 const Metadata = "metadata"
 const Downloads = "downloads"
 const ApiKey = "api_key"
@@ -332,6 +333,13 @@ func (i *Instance) GetGeneratedPath() string {
 	i.RLock()
 	defer i.RUnlock()
 	return viper.GetString(Generated)
+}
+
+func (i *Instance) GetSearchPath() string {
+	i.RLock()
+	defer i.RUnlock()
+
+	return viper.GetString(Search)
 }
 
 func (i *Instance) GetMetadataPath() string {

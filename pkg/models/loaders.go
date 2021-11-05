@@ -38,7 +38,7 @@ func NewSceneLoaderConfig(ctx context.Context, mgr TransactionManager) SceneLoad
 				// Txn failure, build error result set
 				scenes = nil
 				errors = nil
-				for _ = range keys {
+				for range keys {
 					scenes = append(scenes, nil)
 					errors = append(errors, ErrTxn)
 				}
