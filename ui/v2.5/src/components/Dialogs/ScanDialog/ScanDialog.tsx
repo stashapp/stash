@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataScan,
@@ -12,6 +12,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
 import { Manual } from "src/components/Help/Manual";
 import { ScanOptions } from "./Options";
+import { withoutTypename } from "src/utils";
 
 interface IScanDialogProps {
   onClose: () => void;
@@ -31,6 +32,18 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
   const Toast = useToast();
 
   const { data: configData, error: configError } = useConfiguration();
+
+  useEffect(() => {
+    if (!configData?.configuration.defaults) {
+      return;
+    }
+
+    const { scan } = configData.configuration.defaults;
+
+    if (scan) {
+      setOptions(withoutTypename(scan));
+    }
+  }, [configData]);
 
   const selectionStatus = useMemo(() => {
     const message = paths.length ? (
