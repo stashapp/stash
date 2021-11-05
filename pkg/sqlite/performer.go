@@ -14,6 +14,8 @@ const performerTable = "performers"
 const performerIDColumn = "performer_id"
 const performersTagsTable = "performers_tags"
 const performersImageTable = "performers_image" // performer cover image
+const performersUrlsTable = "performers_urls"
+const performersUrlColumn = "url"
 
 var countPerformersForTagQuery = `
 SELECT tag_id AS id FROM performers_tags
@@ -606,4 +608,23 @@ func (qb *performerQueryBuilder) FindByStashIDStatus(hasStashID bool, stashboxEn
 
 	args := []interface{}{stashboxEndpoint}
 	return qb.queryPerformers(query, args)
+}
+
+func (qb *performerQueryBuilder) urlRepository() *stringRepository {
+	return &stringRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: performersUrlsTable,
+			idColumn:  performerIDColumn,
+		},
+		stringColumn: performersUrlColumn,
+	}
+}
+
+func (qb *performerQueryBuilder) GetUrls(performerID int) ([]string, error) {
+	return qb.urlRepository().get(performerID)
+}
+
+func (qb *performerQueryBuilder) UpdateUrls(performerID int, urls []string) error {
+	return qb.urlRepository().replace(performerID, urls)
 }

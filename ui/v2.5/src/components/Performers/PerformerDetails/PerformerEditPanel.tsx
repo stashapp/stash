@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Form,
+  Col,
+  Row,
+  Badge,
+  Dropdown,
+  InputGroup,
+} from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -68,6 +76,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const urlInputRef = useRef<HTMLInputElement>(null);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -118,6 +127,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     death_date: yup.string().optional(),
     hair_color: yup.string().optional(),
     weight: yup.number().optional(),
+    urls: yup.array(yup.string().required()).optional(),
   });
 
   const initialValues = {
@@ -144,6 +154,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     death_date: performer.death_date ?? "",
     hair_color: performer.hair_color ?? "",
     weight: performer.weight ?? undefined,
+    urls: performer.urls ?? [],
   };
 
   type InputValues = typeof initialValues;
@@ -817,6 +828,55 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  const removeUrl = (url: string) => {
+    formik.setFieldValue(
+      "urls",
+      (formik.values.urls ?? []).filter((s) => !(s === url))
+    );
+  };
+
+  const addUrl = (url: string) => {
+    if (urlInputRef.current?.value) {
+      urlInputRef.current.value = "";
+      if (formik.values.urls.indexOf(url) === -1) {
+        formik.setFieldValue("urls", [...formik.values.urls, url]);
+      }
+    }
+  };
+
+  function renderUrls() {
+    if (!formik.values.urls?.length) {
+      return;
+    }
+
+    return (
+      <Row>
+        <Form.Label column sm={labelXS} xl={labelXL}></Form.Label>
+        <Col sm={fieldXS} xl={fieldXL}>
+          <ul className="pl-0">
+            {formik.values.urls.map((url) => {
+              return (
+                <li key={url} className="row no-gutters mb-1">
+                  <Button
+                    variant="danger"
+                    className="mr-2 py-0"
+                    title="Delete URL"
+                    onClick={() => removeUrl(url)}
+                  >
+                    <Icon icon="trash-alt" />
+                  </Button>
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    {url}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </Col>
+      </Row>
+    );
+  }
+
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={field} as={Row}>
@@ -969,6 +1029,30 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTagsField()}
 
         {renderStashIDs()}
+
+        <Form.Group controlId="urls" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="urls" defaultMessage="Additional URLs" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <InputGroup>
+              <Form.Control
+                className="text-input"
+                placeholder="URL"
+                ref={urlInputRef}
+              />
+              <InputGroup.Append>
+                <Button
+                  variant="secondary"
+                  onClick={() => addUrl(urlInputRef.current?.value ?? "")}
+                >
+                  <Icon icon="plus" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </Col>
+        </Form.Group>
+        {renderUrls()}
 
         {renderButtons()}
       </Form>

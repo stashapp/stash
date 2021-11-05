@@ -277,3 +277,14 @@ func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performe
 
 	return &res, nil
 }
+
+func (r *performerResolver) Urls(ctx context.Context, obj *models.Performer) (ret []string, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Performer().GetUrls(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, err
+}

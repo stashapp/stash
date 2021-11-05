@@ -72,6 +72,31 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  function renderUrls() {
+    if (!performer.urls.length) {
+      return;
+    }
+
+    return (
+      <>
+        <dt>Additional URLs</dt>
+        <dd>
+          <ul className="pl-0">
+            {performer.urls.map((url) => {
+              return (
+                <li key={url} className="row no-gutters">
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    {url}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </dd>
+      </>
+    );
+  }
+
   const formatHeight = (height?: string | null) => {
     if (!height) {
       return "";
@@ -143,6 +168,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       />
       {renderTagsField()}
       {renderStashIDs()}
+      {renderUrls()}
     </dl>
   );
 };

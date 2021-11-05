@@ -13,4 +13,5 @@ fragment SlimPerformerData on Performer {
     stash_id
   }
   rating
+  urls
 }

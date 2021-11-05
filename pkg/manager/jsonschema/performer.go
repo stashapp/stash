@@ -36,6 +36,7 @@ type Performer struct {
 	HairColor    string           `json:"hair_color,omitempty"`
 	Weight       int              `json:"weight,omitempty"`
 	StashIDs     []models.StashID `json:"stash_ids,omitempty"`
+	Urls         []string         `json:"urls,omitempty"`
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

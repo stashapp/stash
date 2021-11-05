@@ -275,6 +275,13 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			}
 		}
 
+		// Save the urls
+		if translator.hasField("urls") {
+			if err := qb.UpdateUrls(performerID, input.Urls); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err

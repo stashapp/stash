@@ -19,6 +19,7 @@ type PerformerReader interface {
 	GetImage(performerID int) ([]byte, error)
 	GetStashIDs(performerID int) ([]*StashID, error)
 	GetTagIDs(performerID int) ([]int, error)
+	GetUrls(performerID int) ([]string, error)
 }
 
 type PerformerWriter interface {
@@ -30,6 +31,7 @@ type PerformerWriter interface {
 	DestroyImage(performerID int) error
 	UpdateStashIDs(performerID int, stashIDs []StashID) error
 	UpdateTags(performerID int, tagIDs []int) error
+	UpdateUrls(performerID int, urls []string) error
 }
 
 type PerformerReaderWriter interface {

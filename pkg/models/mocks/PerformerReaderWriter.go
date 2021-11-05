@@ -381,6 +381,29 @@ func (_m *PerformerReaderWriter) GetTagIDs(performerID int) ([]int, error) {
 	return r0, r1
 }
 
+// GetUrls provides a mock function with given fields: performerID
+func (_m *PerformerReaderWriter) GetUrls(performerID int) ([]string, error) {
+	ret := _m.Called(performerID)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(int) []string); ok {
+		r0 = rf(performerID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(performerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Query provides a mock function with given fields: performerFilter, findFilter
 func (_m *PerformerReaderWriter) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	ret := _m.Called(performerFilter, findFilter)
@@ -515,6 +538,20 @@ func (_m *PerformerReaderWriter) UpdateTags(performerID int, tagIDs []int) error
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
 		r0 = rf(performerID, tagIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateUrls provides a mock function with given fields: performerID, urls
+func (_m *PerformerReaderWriter) UpdateUrls(performerID int, urls []string) error {
+	ret := _m.Called(performerID, urls)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []string) error); ok {
+		r0 = rf(performerID, urls)
 	} else {
 		r0 = ret.Error(0)
 	}
