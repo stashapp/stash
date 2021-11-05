@@ -10,6 +10,7 @@ import {
   mutateBackupDatabase,
   mutateMetadataScan,
   mutateMetadataIdentify,
+  mutateMetadataAutoTag,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
@@ -276,6 +277,21 @@ export const SettingsTasksPanel: React.FC = () => {
     }
   }
 
+  async function onAutoTagClicked() {
+    // check if defaults are set for auto tag
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { autoTag } = configuration?.defaults;
+    if (!autoTag) {
+      setDialogOpen({ autoTag: true });
+    } else {
+      mutateMetadataAutoTag(withoutTypename(autoTag));
+    }
+  }
+
   if (isBackupRunning) {
     return (
       <LoadingIndicator
@@ -355,7 +371,7 @@ export const SettingsTasksPanel: React.FC = () => {
               <Button
                 variant="secondary"
                 type="submit"
-                onClick={() => setDialogOpen({ autoTag: true })}
+                onClick={() => onAutoTagClicked()}
               >
                 <FormattedMessage id="actions.auto_tag" />
               </Button>

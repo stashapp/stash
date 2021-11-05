@@ -148,6 +148,7 @@ const FunscriptOffset = "funscript_offset"
 const (
 	DefaultScanSettings     = "defaults.scan_task"
 	DefaultIdentifySettings = "defaults.identify_task"
+	DefaultAutoTagSettings  = "defaults.auto_tag_task"
 
 	DeleteFileDefault      = "defaults.delete_file"
 	DeleteGeneratedDefault = "defaults.delete_generated"
@@ -936,6 +937,24 @@ func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
 	if viper.IsSet(DefaultScanSettings) {
 		var ret models.ScanMetadataOptions
 		if err := viper.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultAutoTagSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultAutoTagSettings() *models.AutoTagMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+
+	if viper.IsSet(DefaultAutoTagSettings) {
+		var ret models.AutoTagMetadataOptions
+		if err := viper.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret

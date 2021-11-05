@@ -309,6 +309,7 @@ type ConfigScrapingResult {
 type ConfigDefaultSettingsResult {
   scan: ScanMetadataOptions
   identify: IdentifyMetadataTaskOptions
+  autoTag: AutoTagMetadataOptions
   
   """If true, delete file checkbox will be checked by default"""
   deleteFile: Boolean
@@ -319,6 +320,7 @@ type ConfigDefaultSettingsResult {
 input ConfigDefaultSettingsInput {
   scan: ScanMetadataInput
   identify: IdentifyMetadataInput
+  autoTag: AutoTagMetadataInput
 
   """If true, delete file checkbox will be checked by default"""
   deleteFile: Boolean

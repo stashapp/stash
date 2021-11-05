@@ -1,16 +1,17 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataAutoTag,
   useConfiguration,
-  // useConfigureDefaults,
+  useConfigureDefaults,
 } from "src/core/StashService";
-import { Icon, Modal } from "src/components/Shared";
+import { Icon, Modal, OperationButton } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
 import { Manual } from "src/components/Help/Manual";
+import { withoutTypename } from "src/utils";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -66,20 +67,35 @@ interface IAutoTagDialogProps {
 }
 
 export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
-  // TODO - add setting defaults
-  // const [configureDefaults] = useConfigureDefaults();
+  const [configureDefaults] = useConfigureDefaults();
 
-  const [options, setOptions] = useState<GQL.ScanMetadataInput>({});
+  const [options, setOptions] = useState<GQL.AutoTagMetadataInput>({
+    performers: ["*"],
+    studios: ["*"],
+    tags: ["*"],
+  });
   const [paths, setPaths] = useState<string[]>([]);
   const [showManual, setShowManual] = useState(false);
   const [settingPaths, setSettingPaths] = useState(false);
   const [animation, setAnimation] = useState(true);
-  const [savingDefaults /* setSavingDefaults */] = useState(false);
+  const [savingDefaults, setSavingDefaults] = useState(false);
 
   const intl = useIntl();
   const Toast = useToast();
 
   const { data: configData, error: configError } = useConfiguration();
+
+  useEffect(() => {
+    if (!configData?.configuration.defaults) {
+      return;
+    }
+
+    const { autoTag } = configData.configuration.defaults;
+
+    if (autoTag) {
+      setOptions(withoutTypename(autoTag));
+    }
+  }, [configData]);
 
   const selectionStatus = useMemo(() => {
     const message = paths.length ? (
@@ -122,11 +138,11 @@ export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
   if (configError) return <div>{configError}</div>;
   if (!configData) return <div />;
 
-  // function makeDefaultScanInput() {
-  //   const ret = options;
-  //   const { paths: _paths, ...withoutSpecifics } = ret;
-  //   return withoutSpecifics;
-  // }
+  function makeDefaultAutoTagInput() {
+    const ret = options;
+    const { paths: _paths, ...withoutSpecifics } = ret;
+    return withoutSpecifics;
+  }
 
   async function onAutoTag() {
     try {
@@ -150,22 +166,29 @@ export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
     setShowManual(true);
   }
 
-  // async function setAsDefault() {
-  //   try {
-  //     setSavingDefaults(true);
-  //     await configureDefaults({
-  //       variables: {
-  //         input: {
-  //           autoTag: makeDefaultAutoTagInput(),
-  //         },
-  //       },
-  //     });
-  //   } catch (e) {
-  //     Toast.error(e);
-  //   } finally {
-  //     setSavingDefaults(false);
-  //   }
-  // }
+  async function setAsDefault() {
+    try {
+      setSavingDefaults(true);
+      await configureDefaults({
+        variables: {
+          input: {
+            autoTag: makeDefaultAutoTagInput(),
+          },
+        },
+      });
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.defaults_set" },
+          { action: intl.formatMessage({ id: "actions.auto_tag" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setSavingDefaults(false);
+    }
+  }
 
   if (settingPaths) {
     return (
@@ -210,17 +233,11 @@ export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
         variant: "secondary",
       }}
       disabled={savingDefaults}
-      footerButtons={undefined}
-      // <Button
-      //   variant="secondary"
-      //   disabled={savingDefaults}
-      //   onClick={() => setAsDefault()}
-      // >
-      //   {savingDefaults && (
-      //     <Spinner animation="border" role="status" size="sm" />
-      //   )}
-      //   <FormattedMessage id="actions.set_as_default" />
-      // </Button>
+      footerButtons={
+        <OperationButton variant="secondary" operation={setAsDefault}>
+          <FormattedMessage id="actions.set_as_default" />
+        </OperationButton>
+      }
       leftFooterButtons={
         <Button
           title="Help"

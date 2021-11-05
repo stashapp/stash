@@ -365,6 +365,10 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.C
 		c.Set(config.DefaultScanSettings, input.Scan)
 	}
 
+	if input.AutoTag != nil {
+		c.Set(config.DefaultAutoTagSettings, input.AutoTag)
+	}
+
 	if input.DeleteFile != nil {
 		c.Set(config.DeleteFileDefault, *input.DeleteFile)
 	}

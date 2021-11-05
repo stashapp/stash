@@ -34,6 +34,7 @@ input GeneratePreviewOptionsInput {
 }
 
 input ScanMetadataInput {
+  paths: [String!]
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean
   """Strip file extension from title"""
@@ -75,6 +76,15 @@ input CleanMetadataInput {
 input AutoTagMetadataInput {
   """Paths to tag, null for all files"""
   paths: [String!]
+  """IDs of performers to tag files with, or "*" for all"""
+  performers: [String!]
+  """IDs of studios to tag files with, or "*" for all"""
+  studios: [String!]
+  """IDs of tags to tag files with, or "*" for all"""
+  tags: [String!]
+}
+
+type AutoTagMetadataOptions {
   """IDs of performers to tag files with, or "*" for all"""
   performers: [String!]
   """IDs of studios to tag files with, or "*" for all"""
