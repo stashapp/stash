@@ -2,15 +2,15 @@ enum SearchType {
     SEARCH_SCENE
 }
 
-type SearchResult {
-    content: [SearchItem]
+type SearchResultItemConnection {
+    edges: [SearchItemEdge]
     took: Float!
 }
 
-interface SearchItem {
-    id: ID!
+type SearchItemEdge {
+    node: SearchResultItem
 }
 
-type SearchSceneItem implements SearchItem {
+interface SearchResultItem {
     id: ID!
 }

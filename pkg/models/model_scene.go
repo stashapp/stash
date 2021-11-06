@@ -37,6 +37,8 @@ type Scene struct {
 	Interactive bool                `db:"interactive" json:"interactive"`
 }
 
+func (s *Scene) IsSearchResultItem() {}
+
 func (s *Scene) File() File {
 	ret := File{
 		Path: s.Path,

@@ -25,7 +25,7 @@ type SceneMovie {
   scene_index: Int
 }
 
-type Scene {
+type Scene implements SearchResultItem {
   id: ID!
   checksum: String
   oshash: String
