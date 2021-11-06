@@ -1,13 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Button,
-  Form,
-  Col,
-  Row,
-  Badge,
-  Dropdown,
-  InputGroup,
-} from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
@@ -45,6 +37,10 @@ import { stashboxDisplayName } from "src/utils/stashbox";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+import {
+  PerformerURLInput,
+  IPerformerURLInputInstance,
+} from "./PerformerURLInput";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -76,7 +72,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const urlInputRef = useRef<HTMLInputElement>(null);
+  const [additionalURLs, setAdditionalURLs] = useState<
+    IPerformerURLInputInstance[]
+  >(
+    (performer!.urls ?? []).map((url, i) => ({
+      url,
+      index: i,
+    }))
+  );
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -827,84 +830,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  const removeUrl = (url: string) => {
+  const saveAdditionalURLs = (instances: IPerformerURLInputInstance[]) => {
+    setAdditionalURLs(instances);
     formik.setFieldValue(
       "urls",
-      (formik.values.urls ?? []).filter((s) => !(s === url))
+      instances.map((instance) => instance.url ?? "").filter((s) => s !== "")
     );
   };
-
-  const editUrl = (url: string) => {
-    urlInputRef!.current!.value = url;
-    removeUrl(url);
-  };
-
-  const addUrl = (url: string) => {
-    if (urlInputRef.current?.value) {
-      urlInputRef.current.value = "";
-      if (formik.values.urls.indexOf(url) === -1) {
-        formik.setFieldValue("urls", [...formik.values.urls, url]);
-      }
-    }
-  };
-
-  function renderUrls() {
-    if (!formik.values.urls?.length) {
-      return;
-    }
-
-    return (
-      <Row>
-        <Form.Label column sm={labelXS} xl={labelXL}></Form.Label>
-        <Col sm={fieldXS} xl={fieldXL}>
-          <ul className="pl-0">
-            {formik.values.urls.map((url) => {
-              return (
-                <li key={url} className="row no-gutters mb-1 d-flex">
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mr-auto"
-                  >
-                    {url}
-                  </a>
-                  {urlScrapable(url) ? (
-                    <Button
-                      variant="secondary"
-                      className="mr-2 py-0"
-                      title="Scrape URL"
-                      onClick={() => onScrapePerformerURL(url)}
-                    >
-                      <Icon icon="file-download" />
-                    </Button>
-                  ) : (
-                    ""
-                  )}
-                  <Button
-                    variant="secondary"
-                    className="mr-2 py-0"
-                    title="Edit URL"
-                    onClick={() => editUrl(url)}
-                  >
-                    <Icon icon="pencil-alt" />
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="py-0"
-                    title="Delete URL"
-                    onClick={() => removeUrl(url)}
-                  >
-                    <Icon icon="trash-alt" />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </Col>
-      </Row>
-    );
-  }
 
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
@@ -1064,24 +996,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <FormattedMessage id="urls" defaultMessage="Additional URLs" />
           </Form.Label>
           <Col xs={fieldXS} xl={fieldXL}>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                placeholder="URL"
-                ref={urlInputRef}
-              />
-              <InputGroup.Append>
-                <Button
-                  variant="secondary"
-                  onClick={() => addUrl(urlInputRef.current?.value ?? "")}
-                >
-                  <Icon icon="plus" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
+            <PerformerURLInput
+              urls={additionalURLs}
+              saveURLs={saveAdditionalURLs}
+              onScrapeClick={onScrapePerformerURL}
+              urlScrapable={urlScrapable}
+            />
           </Col>
         </Form.Group>
-        {renderUrls()}
 
         {renderButtons()}
       </Form>
