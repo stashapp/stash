@@ -6,11 +6,31 @@ import (
 
 	"github.com/blevesearch/bleve/v2"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
+type Item struct {
+	ID    string
+	Type  string
+	Score float64
+}
+
 type Result struct {
-	Content []string
-	Took    time.Duration
+	Items []Item
+	Took  time.Duration
+}
+
+func newItem(nodeID string, score float64) *Item {
+	ty, id, ok := utils.Cut(nodeID, ":")
+	if !ok {
+		return nil
+	}
+
+	return &Item{
+		ID:    id,
+		Type:  ty,
+		Score: score,
+	}
 }
 
 func (e *Engine) Search(ctx context.Context, in string, ty models.SearchType) (*Result, error) {
@@ -24,14 +44,14 @@ func (e *Engine) Search(ctx context.Context, in string, ty models.SearchType) (*
 		return nil, err
 	}
 
-	var content []string
+	var items []Item
 	for _, match := range searchResult.Hits {
-		id := match.ID
-		content = append(content, id)
+		i := newItem(match.ID, match.Score)
+		items = append(items, *i)
 	}
 	res := Result{
-		Content: content,
-		Took:    searchResult.Took,
+		Items: items,
+		Took:  searchResult.Took,
 	}
 
 	return &res, nil

@@ -9,6 +9,7 @@ type SearchResultItemConnection {
 
 type SearchItemEdge {
     node: SearchResultItem
+    score: Float!
 }
 
 interface SearchResultItem {
