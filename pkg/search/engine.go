@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/blevesearch/bleve/v2"
@@ -22,6 +23,7 @@ type Engine struct {
 	rollUp     *rollUp
 	txnManager models.TransactionManager
 
+	mu       sync.RWMutex // Mu protects the index fields
 	sceneIdx bleve.Index
 }
 
@@ -66,7 +68,9 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 			}
 		}
 
+		e.mu.Lock()
 		e.sceneIdx = sceneIdx
+		e.mu.Unlock()
 
 		// How often to process batches.
 		tick := time.NewTicker(1 * time.Minute)
@@ -85,6 +89,9 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 }
 
 func (e *Engine) batchProcess(ctx context.Context, sceneIdx bleve.Index, m *changeMap) {
+	// sceneIdx is thread-safe, this protects against changes to the index pointer itself
+	e.mu.RLock()
+	defer e.mu.RUnlock()
 	if !m.hasContent() {
 		return
 	}

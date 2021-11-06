@@ -14,9 +14,12 @@ type Result struct {
 }
 
 func (e *Engine) Search(ctx context.Context, in string, ty models.SearchType) (*Result, error) {
+	// Hold e.mu for as short as possible
+	e.mu.RLock()
 	query := bleve.NewQueryStringQuery(in)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchResult, err := e.sceneIdx.SearchInContext(ctx, searchRequest)
+	e.mu.RUnlock()
 	if err != nil {
 		return nil, err
 	}
