@@ -732,26 +732,21 @@ func (qb *tagQueryBuilder) UpdateChildTags(tagID int, childIDs []int) error {
 	return nil
 }
 
-func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+// FindAllAncestors returns a slice of TagPath objects, representing all
+// ancestors of the tag with the provided id.
+func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	inBinding := getInBinding(len(excludeIDs) + 1)
 
 	query := `WITH RECURSIVE
 parents AS (
-	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	SELECT t.id AS parent_id, t.id AS child_id, t.name as path FROM tags t WHERE t.id = ?
 	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
-),
-children AS (
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
-	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+	SELECT tr.parent_id, tr.child_id, t.name || '->' || p.path as path FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id JOIN tags t ON t.id = tr.parent_id WHERE tr.parent_id NOT IN` + inBinding + `
 )
-SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
-UNION
-SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+SELECT t.*, p.path FROM tags t INNER JOIN parents p ON t.id = p.parent_id
 `
 
-	var ret models.Tags
+	var ret models.TagPaths
 	excludeArgs := []interface{}{tagID}
 	for _, excludeID := range excludeIDs {
 		excludeArgs = append(excludeArgs, excludeID)
@@ -765,26 +760,21 @@ SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
 	return ret, nil
 }
 
-func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+// FindAllDescendants returns a slice of TagPath objects, representing all
+// descendants of the tag with the provided id.
+func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	inBinding := getInBinding(len(excludeIDs) + 1)
 
 	query := `WITH RECURSIVE
 children AS (
-	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	SELECT t.id AS parent_id, t.id AS child_id, t.name as path FROM tags t WHERE t.id = ?
 	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
-),
-parents AS (
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
-	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+	SELECT tr.parent_id, tr.child_id, c.path || '->' || t.name as path FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id JOIN tags t ON t.id = tr.child_id WHERE tr.child_id NOT IN` + inBinding + `
 )
-SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
-UNION
-SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+SELECT t.*, c.path FROM tags t INNER JOIN children c ON t.id = c.child_id
 `
 
-	var ret models.Tags
+	var ret models.TagPaths
 	excludeArgs := []interface{}{tagID}
 	for _, excludeID := range excludeIDs {
 		excludeArgs = append(excludeArgs, excludeID)
