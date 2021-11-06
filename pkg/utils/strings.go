@@ -19,6 +19,20 @@ func RandomSequence(n int) string {
 	return string(b)
 }
 
+// Cut cuts s around the first instance of sep,
+// returning the text before and after sep.
+// The found result reports whether sep appears in s.
+// If sep does not appear in s, cut returns s, "", false.
+// TODO: This function will be present in go 1.18. When it
+// appears, replace calls to utils.Cut with strings.Cut
+// replace
+func Cut(s, sep string) (before, after string, found bool) {
+	if i := strings.Index(s, sep); i >= 0 {
+		return s[:i], s[i+len(sep):], true
+	}
+	return s, "", false
+}
+
 // FlipCaseSingle flips the case ( lower<->upper ) of a single char from the string s
 // If the string cannot be flipped, the original string value and an error are returned
 func FlipCaseSingle(s string) (string, error) {
