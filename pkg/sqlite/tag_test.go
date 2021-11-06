@@ -18,7 +18,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Tag()
 
-		markerID := markerIDs[markerIdxWithScene]
+		markerID := markerIDs[markerIdxWithTag]
 
 		tags, err := tqb.FindBySceneMarkerID(markerID)
 
@@ -27,7 +27,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 		}
 
 		assert.Len(t, tags, 1)
-		assert.Equal(t, tagIDs[tagIdxWithMarker], tags[0].ID)
+		assert.Equal(t, tagIDs[tagIdxWithMarkers], tags[0].ID)
 
 		tags, err = tqb.FindBySceneMarkerID(0)
 
@@ -168,7 +168,7 @@ func TestTagQuerySort(t *testing.T) {
 
 		sortBy = "scene_markers_count"
 		tags = queryTags(t, sqb, nil, findFilter)
-		assert.Equal(tagIDs[tagIdxWithMarker], tags[0].ID)
+		assert.Equal(tagIDs[tagIdxWithMarkers], tags[0].ID)
 
 		sortBy = "images_count"
 		tags = queryTags(t, sqb, nil, findFilter)
@@ -613,6 +613,7 @@ func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 
 func TestTagQueryParent(t *testing.T) {
 	withTxn(func(r models.Repository) error {
+		const nameField = "Name"
 		sqb := r.Tag()
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -634,7 +635,7 @@ func TestTagQueryParent(t *testing.T) {
 
 		tagCriterion.Modifier = models.CriterionModifierExcludes
 
-		q := getTagStringValue(tagIdxWithParentTag, titleField)
+		q := getTagStringValue(tagIdxWithParentTag, nameField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
@@ -660,12 +661,37 @@ func TestTagQueryParent(t *testing.T) {
 		tags = queryTags(t, sqb, &tagFilter, nil)
 		assert.Len(t, tags, 2)
 
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		q = getTagStringValue(tagIdxWithGallery, nameField)
+
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithGallery], tags[0].ID)
+
+		q = getTagStringValue(tagIdxWithParentTag, nameField)
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithParentTag], tags[0].ID)
+
+		q = getTagStringValue(tagIdxWithGallery, nameField)
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 0)
+
 		return nil
 	})
 }
 
 func TestTagQueryChild(t *testing.T) {
 	withTxn(func(r models.Repository) error {
+		const nameField = "Name"
+
 		sqb := r.Tag()
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -687,7 +713,7 @@ func TestTagQueryChild(t *testing.T) {
 
 		tagCriterion.Modifier = models.CriterionModifierExcludes
 
-		q := getTagStringValue(tagIdxWithChildTag, titleField)
+		q := getTagStringValue(tagIdxWithChildTag, nameField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
@@ -712,6 +738,29 @@ func TestTagQueryChild(t *testing.T) {
 
 		tags = queryTags(t, sqb, &tagFilter, nil)
 		assert.Len(t, tags, 2)
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		q = getTagStringValue(tagIdxWithGallery, nameField)
+
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithGallery], tags[0].ID)
+
+		q = getTagStringValue(tagIdxWithChildTag, nameField)
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithChildTag], tags[0].ID)
+
+		q = getTagStringValue(tagIdxWithGallery, nameField)
+		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		assert.Len(t, tags, 0)
 
 		return nil
 	})
@@ -842,8 +891,8 @@ func TestTagMerge(t *testing.T) {
 		srcIdxs := []int{
 			tagIdx1WithScene,
 			tagIdx2WithScene,
-			tagIdxWithPrimaryMarker,
-			tagIdxWithMarker,
+			tagIdxWithPrimaryMarkers,
+			tagIdxWithMarkers,
 			tagIdxWithCoverImage,
 			tagIdxWithImage,
 			tagIdx1WithImage,
@@ -893,7 +942,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(sceneTagIDs, destID)
 
 		// ensure marker points to new tag
-		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithScene])
+		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithTag])
 		if err != nil {
 			return err
 		}

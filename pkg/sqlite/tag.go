@@ -443,7 +443,23 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 
 func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
+
+				f.addWhere(fmt.Sprintf("parent_relations.parent_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, val := range tags.Value {
 				args = append(args, val)
@@ -476,7 +492,23 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 
 func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
+
+				f.addWhere(fmt.Sprintf("child_relations.child_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, val := range tags.Value {
 				args = append(args, val)
