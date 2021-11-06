@@ -140,7 +140,7 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*models.SceneMovie, err error) {
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		qb := repo.Scene()
 		mqb := repo.Movie()
 
