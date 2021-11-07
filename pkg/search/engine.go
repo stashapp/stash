@@ -179,7 +179,7 @@ func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSe
 
 	sceneIds := m.sceneIds()
 
-	// Set up a b
+	// Set up a batch
 	b := sceneIdx.NewBatch()
 
 	scenes, errors := loaders.scene.LoadAll(sceneIds)
