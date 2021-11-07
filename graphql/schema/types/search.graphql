@@ -9,7 +9,18 @@ enum SearchFacet {
 type SearchResultItemConnection {
     edges: [SearchItemEdge]
     facets: [SearchFacetResult]
+
     took: Float!
+    maxScore: Float!
+    total: Int!
+
+    status: SearchResultStatus
+}
+
+type SearchResultStatus {
+    successful: Int!
+    failed: Int!
+    total: Int!
 }
 
 type SearchItemEdge {

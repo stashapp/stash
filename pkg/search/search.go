@@ -19,7 +19,11 @@ type Item struct {
 type Result struct {
 	Items  []Item
 	Facets search.FacetResults
-	Took   time.Duration
+
+	Total    uint64
+	MaxScore float64
+	Status   *models.SearchResultStatus
+	Took     time.Duration
 }
 
 func newItem(nodeID string, score float64) *Item {
@@ -69,10 +73,26 @@ func (e *Engine) Search(ctx context.Context, in string, ty models.SearchType, fa
 		items = append(items, *i)
 	}
 
+	var status *models.SearchResultStatus
+	if searchResult.Status != nil {
+		st := searchResult.Status
+
+		status = &models.SearchResultStatus{
+			Successful: st.Successful,
+			Failed:     st.Failed,
+			Total:      st.Total,
+		}
+	}
+
 	res := Result{
 		Items:  items,
-		Took:   searchResult.Took,
 		Facets: searchResult.Facets,
+
+		Took:     searchResult.Took,
+		Total:    searchResult.Total,
+		MaxScore: searchResult.MaxScore,
+
+		Status: status,
 	}
 
 	return &res, nil

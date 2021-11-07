@@ -49,9 +49,13 @@ func (r *queryResolver) Search(ctx context.Context, query string, ty models.Sear
 	}
 
 	res := models.SearchResultItemConnection{
-		Edges:  edges,
-		Facets: facetResults,
-		Took:   s.Took.Seconds(),
+		Edges:    edges,
+		Facets:   facetResults,
+		Took:     s.Took.Seconds(),
+		MaxScore: s.MaxScore,
+		Total:    int(s.Total),
+
+		Status: s.Status,
 	}
 
 	return &res, nil
