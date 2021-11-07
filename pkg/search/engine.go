@@ -88,7 +88,7 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 				tick.Stop()
 				return
 			case <-e.reIndex:
-				logger.Warnf("reindexing...")
+				logger.Infof("reindexing...")
 				err := e.batchReIndex(ctx)
 				if err != nil {
 					logger.Warnf("could not reindex: %v", err)
@@ -96,8 +96,11 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 			case <-tick.C:
 				// Perform batch insert
 				m := e.rollUp.batch()
-				loaders := newLoaders(ctx, e.txnManager)
-				e.batchProcess(loaders, sceneIdx, m)
+				if m.hasContent() {
+					loaders := newLoaders(ctx, e.txnManager)
+					stats := e.batchProcess(loaders, sceneIdx, m)
+					logger.Infof("updated search indexes: %v", stats)
+				}
 			}
 		}
 	}()
@@ -132,7 +135,18 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 
 	findFilter := models.BatchFindFilter(batchSz)
 
+	progressTicker := time.NewTicker(15 * time.Second)
+	defer progressTicker.Stop()
+
+	stats := report{}
 	for more := true; more; {
+		select {
+		case <-progressTicker.C:
+			logger.Infof("reindexing progress: %v", stats)
+			stats = report{}
+		default:
+		}
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -160,22 +174,24 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 			return err
 		}
 
-		e.batchProcess(loaders, e.sceneIdx, cm)
+		s := e.batchProcess(loaders, e.sceneIdx, cm)
+		stats.merge(s)
+
 		if loaderCount--; loaderCount < 0 {
 			loaders = newLoaders(ctx, e.txnManager)
 		}
 	}
 
+	logger.Infof("reindexing finished, progress: %v", stats)
+
 	return nil
 }
 
-func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSet) {
+func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSet) report {
+	stats := report{}
 	// sceneIdx is thread-safe, this protects against changes to the index pointer itself
 	e.mu.RLock()
 	defer e.mu.RUnlock()
-	if !m.hasContent() {
-		return
-	}
 
 	sceneIds := m.sceneIds()
 
@@ -184,8 +200,6 @@ func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSe
 
 	scenes, errors := loaders.scene.LoadAll(sceneIds)
 
-	deleted := 0
-	updated := 0
 	for i := range scenes {
 		if scenes[i] == nil {
 			if errors[i] != nil {
@@ -193,12 +207,12 @@ func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSe
 			}
 
 			b.Delete(sceneID(sceneIds[i]))
-			deleted++
+			stats.deleted++
 
 			continue
 		}
 
-		updated++
+		stats.updated++
 		s := documents.NewScene(*scenes[i])
 		err := b.Index(sceneID(sceneIds[i]), s)
 		if err != nil {
@@ -207,9 +221,23 @@ func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSe
 	}
 
 	sceneIdx.Batch(b)
-	logger.Infof("processed %d deleted scenes and %d updated scenes", deleted, updated)
+	return stats
 }
 
 func sceneID(id int) string {
 	return fmt.Sprintf("Scene:%d", id)
+}
+
+type report struct {
+	deleted int
+	updated int
+}
+
+func (r *report) merge(s report) {
+	r.deleted += s.deleted
+	r.updated += s.updated
+}
+
+func (r report) String() string {
+	return fmt.Sprintf("%d updated entries, %d deleted entries", r.updated, r.deleted)
 }
