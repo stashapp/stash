@@ -38,6 +38,11 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [wallPlayback, setWallPlayback] = useState<string>("video");
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
   const [autostartVideo, setAutostartVideo] = useState<boolean>(false);
+  const [
+    autostartVideoOnPlaySelected,
+    setAutostartVideoOnPlaySelected,
+  ] = useState(true);
+  const [continuePlaylistDefault, setContinuePlaylistDefault] = useState(false);
   const [slideshowDelay, setSlideshowDelay] = useState<number>(0);
   const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
   const [css, setCSS] = useState<string>();
@@ -62,6 +67,8 @@ export const SettingsInterfacePanel: React.FC = () => {
     maximumLoopDuration,
     noBrowser,
     autostartVideo,
+    autostartVideoOnPlaySelected,
+    continuePlaylistDefault,
     showStudioAsText,
     css,
     cssEnabled,
@@ -84,6 +91,10 @@ export const SettingsInterfacePanel: React.FC = () => {
       setMaximumLoopDuration(iCfg.maximumLoopDuration ?? 0);
       setNoBrowserFlag(iCfg?.noBrowser ?? false);
       setAutostartVideo(iCfg.autostartVideo ?? false);
+      setAutostartVideoOnPlaySelected(
+        iCfg.autostartVideoOnPlaySelected ?? true
+      );
+      setContinuePlaylistDefault(iCfg.continuePlaylistDefault ?? false);
       setShowStudioAsText(iCfg.showStudioAsText ?? false);
       setCSS(iCfg.css ?? "");
       setCSSEnabled(iCfg.cssEnabled ?? false);
@@ -274,8 +285,9 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.ui.scene_player.heading" })}</h5>
-        <Form.Group id="auto-start-video">
+        <Form.Group>
           <Form.Check
+            id="auto-start-video"
             checked={autostartVideo}
             label={intl.formatMessage({
               id: "config.ui.scene_player.options.auto_start_video",
@@ -284,6 +296,43 @@ export const SettingsInterfacePanel: React.FC = () => {
               setAutostartVideo(!autostartVideo);
             }}
           />
+        </Form.Group>
+        <Form.Group id="auto-start-video-on-play-selected">
+          <Form.Check
+            checked={autostartVideoOnPlaySelected}
+            label={intl.formatMessage({
+              id:
+                "config.ui.scene_player.options.auto_start_video_on_play_selected.heading",
+            })}
+            onChange={() => {
+              setAutostartVideoOnPlaySelected(!autostartVideoOnPlaySelected);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id:
+                "config.ui.scene_player.options.auto_start_video_on_play_selected.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="continue-playlist-default">
+          <Form.Check
+            checked={continuePlaylistDefault}
+            label={intl.formatMessage({
+              id:
+                "config.ui.scene_player.options.continue_playlist_default.heading",
+            })}
+            onChange={() => {
+              setContinuePlaylistDefault(!continuePlaylistDefault);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id:
+                "config.ui.scene_player.options.continue_playlist_default.description",
+            })}
+          </Form.Text>
         </Form.Group>
 
         <Form.Group id="max-loop-duration">

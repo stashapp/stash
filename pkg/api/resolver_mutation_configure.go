@@ -282,6 +282,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	setBool(config.AutostartVideo, input.AutostartVideo)
 	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
+	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
+	setBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)

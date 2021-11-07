@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/tag"
@@ -43,7 +44,24 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		}
 	}
 
-	// Start the transaction and save the t
+	var parentIDs []int
+	var childIDs []int
+
+	if len(input.ParentIds) > 0 {
+		parentIDs, err = utils.StringSliceToIntSlice(input.ParentIds)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(input.ChildIds) > 0 {
+		childIDs, err = utils.StringSliceToIntSlice(input.ChildIds)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Start the transaction and save the tag
 	var t *models.Tag
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Tag()
@@ -75,24 +93,22 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 			}
 		}
 
-		if input.ParentIds != nil && len(input.ParentIds) > 0 {
-			ids, err := utils.StringSliceToIntSlice(input.ParentIds)
-			if err != nil {
-				return err
-			}
-
-			if err := qb.UpdateParentTags(t.ID, ids); err != nil {
+		if len(parentIDs) > 0 {
+			if err := qb.UpdateParentTags(t.ID, parentIDs); err != nil {
 				return err
 			}
 		}
 
-		if input.ChildIds != nil && len(input.ChildIds) > 0 {
-			ids, err := utils.StringSliceToIntSlice(input.ChildIds)
-			if err != nil {
+		if len(childIDs) > 0 {
+			if err := qb.UpdateChildTags(t.ID, childIDs); err != nil {
 				return err
 			}
+		}
 
-			if err := qb.UpdateChildTags(t.ID, ids); err != nil {
+		// FIXME: This should be called before any changes are made, but
+		// requires a rewrite of ValidateHierarchy.
+		if len(parentIDs) > 0 || len(childIDs) > 0 {
+			if err := tag.ValidateHierarchy(t, parentIDs, childIDs, qb); err != nil {
 				return err
 			}
 		}
@@ -123,6 +139,23 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	if input.Image != nil {
 		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var parentIDs []int
+	var childIDs []int
+
+	if translator.hasField("parent_ids") {
+		parentIDs, err = utils.StringSliceToIntSlice(input.ParentIds)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if translator.hasField("child_ids") {
+		childIDs, err = utils.StringSliceToIntSlice(input.ChildIds)
 		if err != nil {
 			return nil, err
 		}
@@ -183,29 +216,6 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 			}
 		}
 
-		var parentIDs []int
-		var childIDs []int
-
-		if translator.hasField("parent_ids") {
-			parentIDs, err = utils.StringSliceToIntSlice(input.ParentIds)
-			if err != nil {
-				return err
-			}
-		}
-
-		if translator.hasField("child_ids") {
-			childIDs, err = utils.StringSliceToIntSlice(input.ChildIds)
-			if err != nil {
-				return err
-			}
-		}
-
-		if parentIDs != nil || childIDs != nil {
-			if err := tag.EnsureUniqueHierarchy(tagID, parentIDs, childIDs, qb); err != nil {
-				return err
-			}
-		}
-
 		if parentIDs != nil {
 			if err := qb.UpdateParentTags(tagID, parentIDs); err != nil {
 				return err
@@ -214,6 +224,15 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 		if childIDs != nil {
 			if err := qb.UpdateChildTags(tagID, childIDs); err != nil {
+				return err
+			}
+		}
+
+		// FIXME: This should be called before any changes are made, but
+		// requires a rewrite of ValidateHierarchy.
+		if parentIDs != nil || childIDs != nil {
+			if err := tag.ValidateHierarchy(t, parentIDs, childIDs, qb); err != nil {
+				logger.Errorf("Error saving tag: %s", err)
 				return err
 			}
 		}
@@ -314,6 +333,12 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMerge
 		}
 		err = qb.UpdateChildTags(destination, children)
 		if err != nil {
+			return err
+		}
+
+		err = tag.ValidateHierarchy(t, parents, children, qb)
+		if err != nil {
+			logger.Errorf("Error merging tag: %s", err)
 			return err
 		}
 

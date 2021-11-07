@@ -34,10 +34,11 @@ const (
 	sceneIdxWithTwoPerformers
 	sceneIdxWithTag
 	sceneIdxWithTwoTags
+	sceneIdxWithMarkerAndTag
 	sceneIdxWithStudio
 	sceneIdx1WithStudio
 	sceneIdx2WithStudio
-	sceneIdxWithMarker
+	sceneIdxWithMarkers
 	sceneIdxWithPerformerTag
 	sceneIdxWithPerformerTwoTags
 	sceneIdxWithSpacedName
@@ -139,8 +140,9 @@ const (
 	tagIdxWithScene = iota
 	tagIdx1WithScene
 	tagIdx2WithScene
-	tagIdxWithPrimaryMarker
-	tagIdxWithMarker
+	tagIdx3WithScene
+	tagIdxWithPrimaryMarkers
+	tagIdxWithMarkers
 	tagIdxWithCoverImage
 	tagIdxWithImage
 	tagIdx1WithImage
@@ -191,6 +193,9 @@ const (
 
 const (
 	markerIdxWithScene = iota
+	markerIdxWithTag
+	markerIdxWithSceneTag
+	totalMarkers
 )
 
 const (
@@ -239,6 +244,7 @@ var (
 		{sceneIdxWithTag, tagIdxWithScene},
 		{sceneIdxWithTwoTags, tagIdx1WithScene},
 		{sceneIdxWithTwoTags, tagIdx2WithScene},
+		{sceneIdxWithMarkerAndTag, tagIdx3WithScene},
 	}
 
 	scenePerformerLinks = [][2]int{
@@ -266,6 +272,21 @@ var (
 		{sceneIdx2WithStudio, studioIdxWithTwoScenes},
 		{sceneIdxWithStudioPerformer, studioIdxWithScenePerformer},
 		{sceneIdxWithGrandChildStudio, studioIdxWithGrandParent},
+	}
+)
+
+type markerSpec struct {
+	sceneIdx      int
+	primaryTagIdx int
+	tagIdxs       []int
+}
+
+var (
+	// indexed by marker
+	markerSpecs = []markerSpec{
+		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers}},
+		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
 	}
 )
 
@@ -516,8 +537,10 @@ func populateDB() error {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
-		if err := createMarker(r.SceneMarker(), sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
-			return fmt.Errorf("error creating scene marker: %s", err.Error())
+		for _, ms := range markerSpecs {
+			if err := createMarker(r.SceneMarker(), ms); err != nil {
+				return fmt.Errorf("error creating scene marker: %s", err.Error())
+			}
 		}
 
 		return nil
@@ -687,6 +710,7 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
 			Path:     models.NullString(getGalleryStringValue(i, pathField)),
+			Title:    models.NullString(getGalleryStringValue(i, titleField)),
 			URL:      getGalleryNullStringValue(i, urlField),
 			Checksum: getGalleryStringValue(i, checksumField),
 			Rating:   getRating(i),
@@ -843,7 +867,7 @@ func getTagStringValue(index int, field string) string {
 }
 
 func getTagSceneCount(id int) int {
-	if id == tagIDs[tagIdx1WithScene] || id == tagIDs[tagIdx2WithScene] || id == tagIDs[tagIdxWithScene] {
+	if id == tagIDs[tagIdx1WithScene] || id == tagIDs[tagIdx2WithScene] || id == tagIDs[tagIdxWithScene] || id == tagIDs[tagIdx3WithScene] {
 		return 1
 	}
 
@@ -851,7 +875,11 @@ func getTagSceneCount(id int) int {
 }
 
 func getTagMarkerCount(id int) int {
-	if id == tagIDs[tagIdxWithMarker] || id == tagIDs[tagIdxWithPrimaryMarker] {
+	if id == tagIDs[tagIdxWithPrimaryMarkers] {
+		return 3
+	}
+
+	if id == tagIDs[tagIdxWithMarkers] {
 		return 1
 	}
 
@@ -1008,28 +1036,30 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 	return nil
 }
 
-func createMarker(mqb models.SceneMarkerReaderWriter, sceneIdx, primaryTagIdx int, tagIdxs []int) error {
+func createMarker(mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
 	marker := models.SceneMarker{
-		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[sceneIdx]), Valid: true},
-		PrimaryTagID: tagIDs[primaryTagIdx],
+		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[markerSpec.sceneIdx]), Valid: true},
+		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
 	}
 
 	created, err := mqb.Create(marker)
 
 	if err != nil {
-		return fmt.Errorf("Error creating marker %v+: %s", marker, err.Error())
+		return fmt.Errorf("error creating marker %v+: %w", marker, err)
 	}
 
 	markerIDs = append(markerIDs, created.ID)
 
-	newTagIDs := []int{}
+	if len(markerSpec.tagIdxs) > 0 {
+		newTagIDs := []int{}
 
-	for _, tagIdx := range tagIdxs {
-		newTagIDs = append(newTagIDs, tagIDs[tagIdx])
-	}
+		for _, tagIdx := range markerSpec.tagIdxs {
+			newTagIDs = append(newTagIDs, tagIDs[tagIdx])
+		}
 
-	if err := mqb.UpdateTags(created.ID, newTagIDs); err != nil {
-		return fmt.Errorf("Error creating marker/tag join: %s", err.Error())
+		if err := mqb.UpdateTags(created.ID, newTagIDs); err != nil {
+			return fmt.Errorf("error creating marker/tag join: %w", err)
+		}
 	}
 
 	return nil

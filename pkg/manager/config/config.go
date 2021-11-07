@@ -127,6 +127,8 @@ const (
 	CustomPerformerImageLocation = "custom_performer_image_location"
 	MaximumLoopDuration          = "maximum_loop_duration"
 	AutostartVideo               = "autostart_video"
+	AutostartVideoOnPlaySelected = "autostart_video_on_play_selected"
+	ContinuePlaylistDefault      = "continue_playlist_default"
 	ShowStudioAsText             = "show_studio_as_text"
 	CSSEnabled                   = "cssEnabled"
 
@@ -819,6 +821,20 @@ func (i *Instance) GetMaximumLoopDuration() int {
 
 func (i *Instance) GetAutostartVideo() bool {
 	return i.getBool(AutostartVideo)
+}
+
+func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(AutostartVideoOnPlaySelected, true)
+	return viper.GetBool(AutostartVideoOnPlaySelected)
+}
+
+func (i *Instance) GetContinuePlaylistDefault() bool {
+	i.Lock()
+	defer i.Unlock()
+	viper.SetDefault(ContinuePlaylistDefault, false)
+	return viper.GetBool(ContinuePlaylistDefault)
 }
 
 func (i *Instance) GetShowStudioAsText() bool {

@@ -465,6 +465,7 @@ export const SettingsDLNAPanel: React.FC = () => {
           </Form.Group>
           <Form.Group>
             <Form.Check
+              id="dlna-enabled-by-default"
               checked={values.enabled}
               label={intl.formatMessage({
                 id: "config.dlna.enabled_by_default",

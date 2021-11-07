@@ -106,6 +106,8 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(DisableDropdownCreateStudio, i.GetDisableDropdownCreate().Studio)
 				i.Set(DisableDropdownCreateTag, i.GetDisableDropdownCreate().Tag)
 				i.SetChecksumDefaultValues(i.GetVideoFileNamingAlgorithm(), i.IsCalculateMD5())
+				i.Set(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
+				i.Set(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 			}
 			wg.Done()
 		}(k)

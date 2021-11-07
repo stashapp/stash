@@ -437,7 +437,15 @@
       "scene_player": {
         "heading": "Scene Player",
         "options": {
-          "auto_start_video": "Auto-start video"
+          "auto_start_video": "Auto-start video",
+          "auto_start_video_on_play_selected": {
+            "heading": "Auto-start video when playing selected",
+            "description": "Auto-start scene videos when playing selected or random from Scenes page"
+          },
+          "continue_playlist_default": {
+            "heading": "Continue playlist by default",
+            "description": "Play next scene in queue when video finishes"
+          }
         }
       },
       "scene_wall": {
@@ -455,6 +463,7 @@
     }
   },
   "configuration": "Configuration",
+  "continue": "Continue",
   "countables": {
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
     "images": "{count, plural, one {Image} other {Images}}",
