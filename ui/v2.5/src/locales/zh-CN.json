@@ -166,7 +166,7 @@
       "default_ip_whitelist_desc": "默认IP地址允许连接到DLNA，使用 {wildcard} 以允许所有IP地址连接。",
       "enabled_by_default": "默认启用",
       "network_interfaces": "网络接口",
-      "network_interfaces_desc": "选择要在哪个接口上暴露 DLAN 服务，如果为空，则表示所有接口都可用，更改之后需要重启。",
+      "network_interfaces_desc": "选择要在哪个接口上暴露 DLNA 服务，如果为空，则表示所有接口都可用，更改之后需要重启。",
       "recent_ip_addresses": "最近连接的IP地址",
       "server_display_name": "服务器名称",
       "server_display_name_desc": "DLAN服务器的名称。如果为空，则默认为 {server_name}。",
