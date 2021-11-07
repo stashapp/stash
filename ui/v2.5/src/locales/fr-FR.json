@@ -132,8 +132,8 @@
       "set_tag_desc": "Ajoute les Tags à la vidéo, en fusionnant avec ou en écrasant les Tags existants.",
       "set_tag_label": "Enregistrer les Tags",
       "source": "Source",
-      "show_male_desc": "Cochez si vous voulez Taguer également les acteurs hommes.",
-      "show_male_label": "Affiche égalements les acteurs hommes"
+      "show_male_desc": "Cochez si vous voulez Taguer également les Acteurs (hommes).",
+      "show_male_label": "Montrer également les Acteurs"
     },
     "noun_query": "Requête",
     "results": {
