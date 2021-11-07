@@ -2,14 +2,38 @@ enum SearchType {
     SEARCH_SCENE
 }
 
+enum SearchFacet {
+    DATE_RANGE
+}
+
 type SearchResultItemConnection {
     edges: [SearchItemEdge]
+    facets: [SearchFacetResult]
     took: Float!
 }
 
 type SearchItemEdge {
     node: SearchResultItem
     score: Float!
+}
+
+type SearchFacetResult {
+    name: String!
+    total: Int!
+    missing: Int!
+    other: Int!
+
+    dateRanges: [SearchDateRangeFacetResult]
+
+}
+
+type SearchDateRangeFacetResult {
+    name: String!
+
+    count: Int!
+
+    start: String
+    end: String
 }
 
 interface SearchResultItem {

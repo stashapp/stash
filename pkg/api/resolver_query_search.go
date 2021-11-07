@@ -7,8 +7,8 @@ import (
 	"github.com/stashapp/stash/pkg/search"
 )
 
-func (r *queryResolver) Search(ctx context.Context, query string, ty models.SearchType) (*models.SearchResultItemConnection, error) {
-	s, err := r.searchEngine.Search(ctx, query, ty)
+func (r *queryResolver) Search(ctx context.Context, query string, ty models.SearchType, facets []*models.SearchFacet) (*models.SearchResultItemConnection, error) {
+	s, err := r.searchEngine.Search(ctx, query, ty, facets)
 	if err != nil {
 		return nil, err
 	}
@@ -23,9 +23,35 @@ func (r *queryResolver) Search(ctx context.Context, query string, ty models.Sear
 			})
 		}
 	}
+
+	var facetResults []*models.SearchFacetResult
+	for k, f := range s.Facets {
+		var dateRanges []*models.SearchDateRangeFacetResult
+		for _, dr := range f.DateRanges {
+			drRes := &models.SearchDateRangeFacetResult{
+				Name:  dr.Name,
+				Count: dr.Count,
+				Start: dr.Start,
+				End:   dr.End,
+			}
+
+			dateRanges = append(dateRanges, drRes)
+		}
+
+		facetResults = append(facetResults, &models.SearchFacetResult{
+			Name:    k,
+			Total:   f.Total,
+			Missing: f.Missing,
+			Other:   f.Other,
+
+			DateRanges: dateRanges,
+		})
+	}
+
 	res := models.SearchResultItemConnection{
-		Edges: edges,
-		Took:  s.Took.Seconds(),
+		Edges:  edges,
+		Facets: facetResults,
+		Took:   s.Took.Seconds(),
 	}
 
 	return &res, nil
