@@ -64,7 +64,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:                 config.GetDatabasePath(),
 		GeneratedPath:                config.GetGeneratedPath(),
 		MetadataPath:                 config.GetMetadataPath(),
-		ConfigFilePath:               config.GetConfigFilePath(),
+		ConfigFilePath:               config.GetConfigFile(),
 		ScrapersPath:                 config.GetScrapersPath(),
 		CachePath:                    config.GetCachePath(),
 		CalculateMd5:                 config.IsCalculateMD5(),
@@ -108,7 +108,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
-	noBrowser := config.GetNoBrowserFlag()
+	noBrowser := config.GetNoBrowser()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
 	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()

@@ -252,7 +252,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 		// This can be done before actually starting the server, as modern browsers will
 		// automatically reload the page if a local port is closed at page load and then opened.
-		if !c.GetNoBrowserFlag() && manager.GetInstance().IsDesktop() {
+		if !c.GetNoBrowser() && manager.GetInstance().IsDesktop() {
 			err = browser.OpenURL(displayAddress)
 			if err != nil {
 				logger.Error("Could not open browser: " + err.Error())
