@@ -389,7 +389,7 @@
         "heading": "Clé de connexion Handy"
       },
       "funscript_offset": {
-        "description": "Décalage temporel (en millisecondes) a appliquer lors de la lecture des scripts interactifs.",
+        "description": "Décalage temporel (en millisecondes) à appliquer lors de la lecture des scripts interactifs.",
         "heading": "Décalage Funscript (ms)"
       },
       "images": {
@@ -415,7 +415,7 @@
         "options": {
           "image_location": {
             "heading": "Image par défaut personalisée pour les actrices/acteurs",
-            "description": "Chemin vers l'image à utiliser pour les Acteur.trice.s Custom path for default performer images. Leave empty to use in-built defaults"
+            "description": "Chemin vers l'image à utiliser pour les Actrices/Acteurs qui n'ont pas d'image. Laissez vide pour utiliser l'image par défaut de Stash."
           }
         }
       },
@@ -574,7 +574,7 @@
     "grid": "Grille",
     "list": "Liste",
     "tagger": "Taggueur",
-    "unknown": "Unknown",
+    "unknown": "Inconnu",
     "wall": "Mur"
   },
   "donate": "Faire un don",
@@ -705,10 +705,10 @@
   "sceneTagger": "Taggueur de Scène",
   "sceneTags": "Tags de Scène",
   "search_filter": {
-    "add_filter": "Add Filter",
-    "name": "Filter",
-    "saved_filters": "Saved filters",
-    "update_filter": "Update Filter"
+    "add_filter": "Ajouter un filtre",
+    "name": "Filtres",
+    "saved_filters": "Filtres sauvegardés",
+    "update_filter": "Mise à jour du filtre"
   },
   "seconds": "Secondes",
   "settings": "Paramètres",
