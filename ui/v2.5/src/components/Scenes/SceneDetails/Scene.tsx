@@ -398,7 +398,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         <Nav variant="tabs" className="mr-auto">
           <Nav.Item>
             <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="scenes" />
+              <FormattedMessage id="details" />
             </Nav.Link>
           </Nav.Item>
           {(queueScenes ?? []).length > 0 ? (
