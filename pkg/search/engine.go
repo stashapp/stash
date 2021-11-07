@@ -107,7 +107,7 @@ func (e *Engine) ReIndex() {
 	e.reIndex <- struct{}{}
 }
 
-func batchSceneChangeMap(r models.ReaderRepository, f *models.FindFilterType) (*changeMap, int, error) {
+func batchSceneChangeMap(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
 	scenes, err := scene.Query(r.Scene(), nil, f)
 	if err != nil {
 		return nil, 0, err
@@ -139,7 +139,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 		default:
 		}
 
-		var cm *changeMap
+		var cm *changeSet
 		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			res, sz, err := batchSceneChangeMap(r, findFilter)
 			if err != nil {
@@ -169,7 +169,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 	return nil
 }
 
-func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeMap) {
+func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeSet) {
 	// sceneIdx is thread-safe, this protects against changes to the index pointer itself
 	e.mu.RLock()
 	defer e.mu.RUnlock()

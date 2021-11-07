@@ -7,21 +7,21 @@ import (
 	"github.com/stashapp/stash/pkg/event"
 )
 
-// changeMap is a rollup structure for changes. These are handed off to
+// changeSet is a rollup structure for changes. These are handed off to
 // a batch processor when it requests them.
-type changeMap struct {
+type changeSet struct {
 	scenes map[int]struct{}
 }
 
 // newChangemap creates a new initialized empty changeMap.
-func newChangeMap() *changeMap {
-	return &changeMap{
+func newChangeMap() *changeSet {
+	return &changeSet{
 		scenes: make(map[int]struct{}),
 	}
 }
 
 // track records the given change to the changeMap.
-func (m *changeMap) track(e event.Change) {
+func (m *changeSet) track(e event.Change) {
 	switch e.Type {
 	case event.Scene:
 		m.scenes[e.ID] = struct{}{}
@@ -30,7 +30,7 @@ func (m *changeMap) track(e event.Change) {
 	}
 }
 
-func (m *changeMap) sceneIds() []int {
+func (m *changeSet) sceneIds() []int {
 	var ret []int
 	for k := range m.scenes {
 		ret = append(ret, k)
@@ -40,12 +40,12 @@ func (m *changeMap) sceneIds() []int {
 }
 
 // hasContent returns true if there are changes to process.
-func (m *changeMap) hasContent() bool {
+func (m *changeSet) hasContent() bool {
 	return len(m.scenes) > 0
 }
 
 // String implements the Stringer interface for changeMaps.
-func (m *changeMap) String() string {
+func (m *changeSet) String() string {
 	return fmt.Sprintf("(%d scenes)", len(m.scenes))
 }
 
@@ -58,17 +58,17 @@ type rollUp struct {
 	// handoff is an (unbuffered) channel used for batch processing.
 	// Used for communication when the batch process is ready to work
 	// on a new batch of data.
-	handoff chan *changeMap
+	handoff chan *changeSet
 
 	// cur is the current changemap
-	cur *changeMap
+	cur *changeSet
 }
 
 // newRollup creates a new rollup service.
 func newRollup() *rollUp {
 	return &rollUp{
 		eventCh: make(chan event.Change, 1),
-		handoff: make(chan *changeMap),
+		handoff: make(chan *changeSet),
 		cur:     newChangeMap(),
 	}
 }
@@ -96,6 +96,6 @@ func (r *rollUp) start(ctx context.Context, d *event.Dispatcher) {
 }
 
 // batch receives a batch from the rollup service.
-func (r *rollUp) batch() *changeMap {
+func (r *rollUp) batch() *changeSet {
 	return <-r.handoff
 }
