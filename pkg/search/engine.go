@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/event"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/search/documents"
 )
 
@@ -23,7 +24,8 @@ type Engine struct {
 	rollUp     *rollUp
 	txnManager models.TransactionManager
 
-	mu       sync.RWMutex // Mu protects the index fields
+	reIndex  chan struct{} // Ask the system to reIndex
+	mu       sync.RWMutex  // Mu protects the index fields
 	sceneIdx bleve.Index
 }
 
@@ -37,6 +39,7 @@ func NewEngine(txnManager models.TransactionManager, config EngineConfig) *Engin
 		config:     config,
 		rollUp:     newRollup(),
 		txnManager: txnManager,
+		reIndex:    make(chan struct{}),
 	}
 }
 
@@ -66,6 +69,11 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 			if err != nil {
 				logger.Fatal(err)
 			}
+
+			go func() {
+				time.Sleep(5 * time.Second)
+				e.ReIndex()
+			}()
 		}
 
 		e.mu.Lock()
@@ -79,16 +87,89 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 			case <-ctx.Done():
 				tick.Stop()
 				return
+			case <-e.reIndex:
+				logger.Warnf("reindexing...")
+				err := e.batchReIndex(ctx)
+				if err != nil {
+					logger.Warnf("could not reindex: %v", err)
+				}
 			case <-tick.C:
 				// Perform batch insert
 				m := e.rollUp.batch()
-				e.batchProcess(ctx, sceneIdx, m)
+				loaders := newLoaders(ctx, e.txnManager)
+				e.batchProcess(loaders, sceneIdx, m)
 			}
 		}
 	}()
 }
 
-func (e *Engine) batchProcess(ctx context.Context, sceneIdx bleve.Index, m *changeMap) {
+func (e *Engine) ReIndex() {
+	e.reIndex <- struct{}{}
+}
+
+func batchSceneChangeMap(r models.ReaderRepository, f *models.FindFilterType) (*changeMap, int, error) {
+	scenes, err := scene.Query(r.Scene(), nil, f)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	cm := newChangeMap()
+	for _, s := range scenes {
+		cm.track(event.Change{
+			ID:   s.ID,
+			Type: event.Scene,
+		})
+	}
+
+	return cm, len(scenes), nil
+}
+
+func (e *Engine) batchReIndex(ctx context.Context) error {
+	loaders := newLoaders(ctx, e.txnManager)
+	loaderCount := 10 // Only use the loader cache for this many rounds
+
+	batchSz := 1000
+
+	findFilter := models.BatchFindFilter(batchSz)
+
+	for more := true; more; {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		var cm *changeMap
+		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+			res, sz, err := batchSceneChangeMap(r, findFilter)
+			if err != nil {
+				return err
+			}
+
+			// Update next iteration
+			if sz != batchSz {
+				more = false
+			} else {
+				*findFilter.Page++
+			}
+			cm = res
+			return nil
+		})
+
+		if err != nil {
+			return err
+		}
+
+		e.batchProcess(loaders, e.sceneIdx, cm)
+		if loaderCount--; loaderCount < 0 {
+			loaders = newLoaders(ctx, e.txnManager)
+		}
+	}
+
+	return nil
+}
+
+func (e *Engine) batchProcess(loaders loaders, sceneIdx bleve.Index, m *changeMap) {
 	// sceneIdx is thread-safe, this protects against changes to the index pointer itself
 	e.mu.RLock()
 	defer e.mu.RUnlock()
@@ -96,16 +177,12 @@ func (e *Engine) batchProcess(ctx context.Context, sceneIdx bleve.Index, m *chan
 		return
 	}
 
-	logger.Infof("Process batch %v", m)
-
-	// Set up a data loader for the processing
-	sceneLoader := models.NewSceneLoader(models.NewSceneLoaderConfig(ctx, e.txnManager))
 	sceneIds := m.sceneIds()
 
 	// Set up a b
 	b := sceneIdx.NewBatch()
 
-	scenes, errors := sceneLoader.LoadAll(sceneIds)
+	scenes, errors := loaders.scene.LoadAll(sceneIds)
 
 	deleted := 0
 	updated := 0

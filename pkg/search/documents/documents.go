@@ -33,7 +33,7 @@ func NewScene(in models.Scene) Scene {
 	}
 }
 
-func (s Scene) Classifier() string {
+func (s Scene) Type() string {
 	return "scene"
 }
 
