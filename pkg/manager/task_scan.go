@@ -47,14 +47,9 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 
-	var minModTime time.Time
-	if input.MinModTime != nil {
-		minModTime = *input.MinModTime
-	}
-
 	fileQueue := make(chan scanFile, scanQueueSize)
 	go func() {
-		total, newFiles := j.queueFiles(ctx, paths, fileQueue, minModTime, parallelTasks)
+		total, newFiles := j.queueFiles(ctx, paths, fileQueue, parallelTasks)
 
 		if !job.IsCancelled(ctx) {
 			progress.SetTotal(total)
@@ -148,8 +143,13 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.subscriptions.notify()
 }
 
-func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile, minModTime time.Time, parallelTasks int) (total int, newFiles int) {
+func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile, parallelTasks int) (total int, newFiles int) {
 	defer close(scanQueue)
+
+	var minModTime time.Time
+	if j.input.MinModTime != nil {
+		minModTime = *j.input.MinModTime
+	}
 
 	wg := sizedwaitgroup.New(parallelTasks)
 
