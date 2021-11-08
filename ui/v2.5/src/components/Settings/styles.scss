@@ -165,21 +165,14 @@
 .card.task-group {
   padding-bottom: 0.5rem;
   padding-top: 0.5rem;
-}
 
-.task-row {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 0.5rem;
-  padding-top: 0.5rem;
+  .task {
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
 
-  &:not(:last-child) {
-    border-bottom: 1px solid $dark-gray2;
-  }
-
-  :last-child {
-    margin-left: 1rem;
+    &:not(:last-child) {
+      border-bottom: 1px solid $dark-gray2;
+    }
   }
 }
 

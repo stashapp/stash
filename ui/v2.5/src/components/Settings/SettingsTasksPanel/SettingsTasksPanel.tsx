@@ -25,9 +25,26 @@ import AutoTagDialog from "src/components/Dialogs/AutoTagDialog";
 import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
 import CleanDialog from "src/components/Dialogs/CleanDialog";
 import { ConfigurationContext } from "src/hooks/Config";
+import { PropsWithChildren } from "react-router/node_modules/@types/react";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
+
+interface ITask {
+  description?: React.ReactNode;
+}
+
+const Task: React.FC<PropsWithChildren<ITask>> = ({
+  children,
+  description,
+}) => (
+  <div className="task">
+    {children}
+    {description ? (
+      <Form.Text className="text-muted">{description}</Form.Text>
+    ) : undefined}
+  </div>
+);
 
 export const SettingsTasksPanel: React.FC = () => {
   const intl = useIntl();
@@ -153,8 +170,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
     return pluginTasks.map((o) => {
       return (
-        <div className="task-row" key={o.name}>
-          <span>{o.description}</span>
+        <Task description={o.description} key={o.name}>
           <Button
             onClick={() => onPluginTaskClicked(plugin, o)}
             variant="secondary"
@@ -162,7 +178,7 @@ export const SettingsTasksPanel: React.FC = () => {
           >
             {o.name}
           </Button>
-        </div>
+        </Task>
       );
     });
   }
@@ -335,10 +351,11 @@ export const SettingsTasksPanel: React.FC = () => {
       <Form.Group>
         <h5>{intl.formatMessage({ id: "library" })}</h5>
         <Card className="task-group">
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.scan_for_content_desc",
+            })}
+          >
             <ButtonGroup className="ellipsis-button">
               <Button
                 variant="secondary"
@@ -354,12 +371,13 @@ export const SettingsTasksPanel: React.FC = () => {
                 …
               </Button>
             </ButtonGroup>
-          </div>
+          </Task>
 
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.identify.description" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.identify.description",
+            })}
+          >
             <ButtonGroup className="ellipsis-button">
               <Button
                 variant="secondary"
@@ -375,14 +393,13 @@ export const SettingsTasksPanel: React.FC = () => {
                 …
               </Button>
             </ButtonGroup>
-          </div>
+          </Task>
 
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({
-                id: "config.tasks.auto_tag_based_on_filenames",
-              })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.auto_tag_based_on_filenames",
+            })}
+          >
             <ButtonGroup className="ellipsis-button">
               <Button
                 variant="secondary"
@@ -398,12 +415,13 @@ export const SettingsTasksPanel: React.FC = () => {
                 …
               </Button>
             </ButtonGroup>
-          </div>
+          </Task>
 
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.cleanup_desc",
+            })}
+          >
             <Button
               variant="danger"
               type="submit"
@@ -411,7 +429,7 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.clean" />…
             </Button>
-          </div>
+          </Task>
         </Card>
       </Form.Group>
 
@@ -421,10 +439,11 @@ export const SettingsTasksPanel: React.FC = () => {
         <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
 
         <Card className="task-group">
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.generate_desc" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.generate_desc",
+            })}
+          >
             <ButtonGroup className="ellipsis-button">
               <Button
                 variant="secondary"
@@ -440,7 +459,7 @@ export const SettingsTasksPanel: React.FC = () => {
                 …
               </Button>
             </ButtonGroup>
-          </div>
+          </Task>
         </Card>
       </Form.Group>
 
@@ -449,10 +468,11 @@ export const SettingsTasksPanel: React.FC = () => {
       <Form.Group>
         <h5>{intl.formatMessage({ id: "metadata" })}</h5>
         <Card className="task-group">
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.export_to_json" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.export_to_json",
+            })}
+          >
             <Button
               id="export"
               variant="secondary"
@@ -461,14 +481,13 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.full_export" />
             </Button>
-          </div>
+          </Task>
 
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({
-                id: "config.tasks.import_from_exported_json",
-              })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.import_from_exported_json",
+            })}
+          >
             <Button
               id="import"
               variant="danger"
@@ -477,12 +496,13 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.full_import" />
             </Button>
-          </div>
+          </Task>
 
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.incremental_import" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.incremental_import",
+            })}
+          >
             <Button
               id="partial-import"
               variant="danger"
@@ -491,7 +511,7 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.import_from_file" />
             </Button>
-          </div>
+          </Task>
         </Card>
       </Form.Group>
 
@@ -500,19 +520,18 @@ export const SettingsTasksPanel: React.FC = () => {
       <Form.Group>
         <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
         <Card className="task-group">
-          <div className="task-row">
-            <span>
-              {intl.formatMessage(
-                { id: "config.tasks.backup_database" },
-                {
-                  filename_format: (
-                    <code>
-                      [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
-                    </code>
-                  ),
-                }
-              )}
-            </span>
+          <Task
+            description={intl.formatMessage(
+              { id: "config.tasks.backup_database" },
+              {
+                filename_format: (
+                  <code>
+                    [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                  </code>
+                ),
+              }
+            )}
+          >
             <Button
               id="backup"
               variant="secondary"
@@ -521,12 +540,13 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.backup" />
             </Button>
-          </div>
+          </Task>
 
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.backup_and_download" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.backup_and_download",
+            })}
+          >
             <Button
               id="backupDownload"
               variant="secondary"
@@ -535,7 +555,7 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.download_backup" />
             </Button>
-          </div>
+          </Task>
         </Card>
       </Form.Group>
 
@@ -547,10 +567,11 @@ export const SettingsTasksPanel: React.FC = () => {
         <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
 
         <Card className="task-group">
-          <div className="task-row">
-            <span>
-              {intl.formatMessage({ id: "config.tasks.migrate_hash_files" })}
-            </span>
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.migrate_hash_files",
+            })}
+          >
             <Button
               id="migrateHashNaming"
               variant="danger"
@@ -558,7 +579,7 @@ export const SettingsTasksPanel: React.FC = () => {
             >
               <FormattedMessage id="actions.rename_gen_files" />
             </Button>
-          </div>
+          </Task>
         </Card>
       </Form.Group>
     </>
