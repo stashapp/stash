@@ -33,12 +33,6 @@ func UnmarshalTimestamp(v interface{}) (time.Time, error) {
 		}
 
 		switch tmpStr[0] {
-		case '@':
-			i, err := strconv.ParseInt(tmpStr[1:], 10, 64)
-			if err != nil {
-				return time.Time{}, fmt.Errorf("%w: cannot parse @UNIXTIME: %v", ErrTimestamp, err)
-			}
-			return time.Unix(i, 0), nil
 		case '>', '<':
 			d, err := time.ParseDuration(tmpStr[1:])
 			if err != nil {

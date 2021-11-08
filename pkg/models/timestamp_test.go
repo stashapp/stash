@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
 func TestTimestampSymmetry(t *testing.T) {
@@ -37,7 +35,6 @@ func TestTimestamp(t *testing.T) {
 	}{
 		{"reflexivity", n.Format(time.RFC3339Nano), n.Format(time.RFC3339Nano)},
 		{"date-only", "2021-11-04T00:00:00Z", "2021-11-04T00:00:00Z"},
-		{"unix", "@1636035887", "2021-11-04T15:24:47+01:00"},
 	}
 
 	for _, tc := range testCases {
@@ -81,7 +78,6 @@ func TestTimestampRelative(t *testing.T) {
 				t.Fatalf("could not unmarshal time: %v", err)
 			}
 
-			log.Infof("got: %v", got)
 			if got.Sub(tc.want) > epsilon {
 				t.Errorf("not within bound of %v; got %s; want %s", epsilon, got, tc.want)
 			}
