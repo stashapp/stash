@@ -73,13 +73,6 @@ dd {
   }
 }
 
-.text-input,
-.text-input:focus,
-.text-input[readonly],
-.text-input:disabled {
-  background-color: $textfield-bg;
-}
-
 .input-control,
 .input-control:focus,
 .input-control:disabled {
@@ -88,6 +81,13 @@ dd {
 
 .input-control:disabled {
   opacity: 0.8;
+}
+
+.text-input,
+.text-input:focus,
+.text-input[readonly],
+.text-input:disabled {
+  background-color: $textfield-bg;
 }
 
 textarea.text-input {
