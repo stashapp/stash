@@ -101,6 +101,30 @@ export class ScenePlayerImpl extends React.Component<
   private onReady() {
     this.player = JWUtils.getPlayer();
 
+    // add forward button: https://github.com/jwplayer/jwplayer/issues/3894
+    const playerContainer = document.querySelector(`#${JWUtils.playerID}`) as HTMLElement;
+    // display icon
+    const rewindContainer = playerContainer.querySelector('.jw-display-icon-rewind') as HTMLElement;
+    const forwardContainer = rewindContainer.cloneNode(true) as HTMLElement;
+    const forwardDisplayButton = forwardContainer.querySelector('.jw-icon-rewind') as HTMLElement;
+    forwardDisplayButton.style.transform = "scaleX(-1)";
+    forwardDisplayButton.ariaLabel = "Forward 10 Seconds"
+    const nextContainer = playerContainer.querySelector('.jw-display-icon-next') as HTMLElement;
+    (nextContainer.parentNode as HTMLElement).insertBefore(forwardContainer, nextContainer);
+    // control bar icon
+    const buttonContainer = playerContainer.querySelector('.jw-button-container') as HTMLElement;
+    const rewindControlBarButton = buttonContainer.querySelector(".jw-icon-rewind") as HTMLElement;
+    const forwardControlBarButton = rewindControlBarButton.cloneNode(true) as HTMLElement;
+    forwardControlBarButton.style.transform = "scaleX(-1)";
+    forwardControlBarButton.ariaLabel = "Forward 10 Seconds";
+    (rewindControlBarButton.parentNode as HTMLElement).insertBefore(forwardControlBarButton, rewindControlBarButton.nextElementSibling);
+    // add onclick handlers
+    [forwardDisplayButton, forwardControlBarButton].forEach(button => {
+      button.onclick = () => {
+        this.player.seek((this.player.getPosition() + 10));
+      }
+    })
+
     this.player.on("error", (err: any) => {
       if (err && err.code === 224003) {
         // When jwplayer has been requested to play but the browser doesn't support the video format.
