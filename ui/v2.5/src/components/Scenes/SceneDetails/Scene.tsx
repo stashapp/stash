@@ -1,6 +1,6 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -79,10 +79,13 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
+  const [continuePlaylist, setContinuePlaylist] = useState(false);
 
   const [rerenderPlayer, setRerenderPlayer] = useState(false);
 
-  const queryParams = queryString.parse(location.search);
+  const queryParams = useMemo(() => queryString.parse(location.search), [
+    location.search,
+  ]);
   const autoplay = queryParams?.autoplay === "true";
   const currentQueueIndex = queueScenes.findIndex((s) => s.id === scene.id);
 
@@ -101,6 +104,10 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     setQueueTotal(count);
     setQueueStart(1);
   }
+
+  useEffect(() => {
+    setContinuePlaylist(queryParams?.continue === "true");
+  }, [queryParams]);
 
   // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
   // a rerender by not drawing it
@@ -262,6 +269,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     sceneQueue.playScene(history, sceneID, {
       newPage: page,
       autoPlay: true,
+      continue: continuePlaylist,
     });
   }
 
@@ -301,7 +309,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
 
   function onComplete() {
     // load the next scene if we're autoplaying
-    if (autoplay) {
+    if (continuePlaylist) {
       onQueueNext();
     }
   }
@@ -398,7 +406,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         <Nav variant="tabs" className="mr-auto">
           <Nav.Item>
             <Nav.Link eventKey="scene-details-panel">
-              <FormattedMessage id="scenes" />
+              <FormattedMessage id="details" />
             </Nav.Link>
           </Nav.Item>
           {(queueScenes ?? []).length > 0 ? (
@@ -485,6 +493,8 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
           <QueueViewer
             scenes={queueScenes}
             currentID={scene.id}
+            continue={continuePlaylist}
+            setContinue={(v) => setContinuePlaylist(v)}
             onSceneClicked={(sceneID) => playScene(sceneID)}
             onNext={onQueueNext}
             onPrevious={onQueuePrevious}

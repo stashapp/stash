@@ -655,9 +655,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       defaultFilter?.findDefaultFilter
     ) {
       newFilter.currentPage = 1;
-      newFilter.configureFromQueryParameters(
-        JSON.parse(defaultFilter.findDefaultFilter.filter)
-      );
+      try {
+        newFilter.configureFromQueryParameters(
+          JSON.parse(defaultFilter.findDefaultFilter.filter)
+        );
+      } catch (err) {
+        console.log(err);
+        // ignore
+      }
       // #1507 - reset random seed when loaded
       newFilter.randomSeed = -1;
       update = true;

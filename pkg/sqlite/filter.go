@@ -425,15 +425,35 @@ type joinedMultiCriterionHandlerBuilder struct {
 
 func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
-			var args []interface{}
-			for _, tagID := range criterion.Value {
-				args = append(args, tagID)
-			}
-
+		if criterion != nil {
 			joinAlias := m.joinAs
 			if joinAlias == "" {
 				joinAlias = m.joinTable
+			}
+
+			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if criterion.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				m.addJoinTable(f)
+
+				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
+					"table":  joinAlias,
+					"column": m.foreignFK,
+					"not":    notClause,
+				}))
+				return
+			}
+
+			if len(criterion.Value) == 0 {
+				return
+			}
+
+			var args []interface{}
+			for _, tagID := range criterion.Value {
+				args = append(args, tagID)
 			}
 
 			whereClause := ""
@@ -475,7 +495,27 @@ type multiCriterionHandlerBuilder struct {
 
 func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
+		if criterion != nil {
+			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if criterion.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				table := m.primaryTable
+				if m.joinTable != "" {
+					table = m.joinTable
+					f.addJoin(table, "", fmt.Sprintf("%s.%s = %s.id", table, m.primaryFK, m.primaryTable))
+				}
+
+				f.addWhere(fmt.Sprintf("%s.%s IS %s NULL", table, m.foreignFK, notClause))
+				return
+			}
+
+			if len(criterion.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, tagID := range criterion.Value {
 				args = append(args, tagID)
@@ -637,7 +677,25 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.Hierarc
 
 func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
+		if criterion != nil {
+			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if criterion.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
+					"table":  m.primaryTable,
+					"column": m.foreignFK,
+					"not":    notClause,
+				}))
+				return
+			}
+
+			if len(criterion.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 			f.addJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
@@ -664,10 +722,31 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 
 func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
+		if criterion != nil {
+			joinAlias := m.joinAs
+
+			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if criterion.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin(m.joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+
+				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
+					"table":  joinAlias,
+					"column": m.foreignFK,
+					"not":    notClause,
+				}))
+				return
+			}
+
+			if len(criterion.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			joinAlias := m.joinAs
 			joinTable := utils.StrFormat(`(
 	SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j
 	INNER JOIN ({valuesClause}) AS d ON j.{foreignFK} = d.column2

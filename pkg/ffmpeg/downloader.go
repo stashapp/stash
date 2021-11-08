@@ -154,9 +154,14 @@ func getFFMPEGURL() []string {
 	case "darwin":
 		urls = []string{"https://evermeet.cx/ffmpeg/ffmpeg-4.3.1.zip", "https://evermeet.cx/ffmpeg/ffprobe-4.3.1.zip"}
 	case "linux":
-		// TODO: get appropriate arch (arm,arm64,amd64) and xz untar from https://johnvansickle.com/ffmpeg/
-		//       or get the ffmpeg,ffprobe zip repackaged ones from  https://ffbinaries.com/downloads
-		urls = []string{""}
+		switch runtime.GOARCH {
+		case "amd64":
+			urls = []string{"https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffmpeg-4.2.1-linux-64.zip", "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffprobe-4.2.1-linux-64.zip"}
+		case "arm":
+			urls = []string{"https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffmpeg-4.2.1-linux-armhf-32.zip", "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffprobe-4.2.1-linux-armhf-32.zip"}
+		case "arm64":
+			urls = []string{"https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffmpeg-4.2.1-linux-arm-64.zip", "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffprobe-4.2.1-linux-arm-64.zip"}
+		}
 	case "windows":
 		urls = []string{"https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"}
 	default:

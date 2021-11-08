@@ -680,11 +680,7 @@ func TestImageQueryPerformers(t *testing.T) {
 			Performers: &performerCriterion,
 		}
 
-		images, _, err := queryImagesWithCount(sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-
+		images := queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 2)
 
 		// ensure ids are correct
@@ -700,11 +696,7 @@ func TestImageQueryPerformers(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		images, _, err = queryImagesWithCount(sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-
+		images = queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 1)
 		assert.Equal(t, imageIDs[imageIdxWithTwoPerformers], images[0].ID)
 
@@ -720,10 +712,30 @@ func TestImageQueryPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		images, _, err = queryImagesWithCount(sqb, &imageFilter, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		performerCriterion = models.MultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
 		}
+		q = getImageStringValue(imageIdxWithGallery, titleField)
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithGallery], images[0].ID)
+
+		q = getImageStringValue(imageIdxWithPerformerTag, titleField)
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		performerCriterion.Modifier = models.CriterionModifierNotNull
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithPerformerTag], images[0].ID)
+
+		q = getImageStringValue(imageIdxWithGallery, titleField)
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
 
 		return nil
@@ -745,11 +757,7 @@ func TestImageQueryTags(t *testing.T) {
 			Tags: &tagCriterion,
 		}
 
-		images, _, err := queryImagesWithCount(sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-
+		images := queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 2)
 
 		// ensure ids are correct
@@ -765,11 +773,7 @@ func TestImageQueryTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		images, _, err = queryImagesWithCount(sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-
+		images = queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 1)
 		assert.Equal(t, imageIDs[imageIdxWithTwoTags], images[0].ID)
 
@@ -785,10 +789,30 @@ func TestImageQueryTags(t *testing.T) {
 			Q: &q,
 		}
 
-		images, _, err = queryImagesWithCount(sqb, &imageFilter, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
 		}
+		q = getImageStringValue(imageIdxWithGallery, titleField)
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithGallery], images[0].ID)
+
+		q = getImageStringValue(imageIdxWithTag, titleField)
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithTag], images[0].ID)
+
+		q = getImageStringValue(imageIdxWithGallery, titleField)
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
 
 		return nil
@@ -959,6 +983,29 @@ func TestImageQueryPerformerTags(t *testing.T) {
 			Q: &q,
 		}
 
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		q = getImageStringValue(imageIdxWithGallery, titleField)
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithGallery], images[0].ID)
+
+		q = getImageStringValue(imageIdxWithPerformerTag, titleField)
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithPerformerTag], images[0].ID)
+
+		q = getImageStringValue(imageIdxWithGallery, titleField)
 		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
 

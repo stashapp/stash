@@ -54,6 +54,8 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   maximumLoopDuration
   noBrowser
   autostartVideo
+  autostartVideoOnPlaySelected
+  continuePlaylistDefault
   showStudioAsText
   css
   cssEnabled
