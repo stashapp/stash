@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   Alert,
@@ -11,11 +11,16 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { mutateSetup, useSystemStatus } from "src/core/StashService";
 import { Link } from "react-router-dom";
+import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon, LoadingIndicator } from "../Shared";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 
 export const Setup: React.FC = () => {
+  const { configuration, loading: configLoading } = useContext(
+    ConfigurationContext
+  );
+
   const [step, setStep] = useState(0);
   const [configLocation, setConfigLocation] = useState("");
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
@@ -35,6 +40,23 @@ export const Setup: React.FC = () => {
       setConfigLocation(systemStatus.systemStatus.configPath);
     }
   }, [systemStatus]);
+
+  useEffect(() => {
+    if (configuration) {
+      const { stashes: configStashes, generatedPath } = configuration.general;
+      if (configStashes.length > 0) {
+        setStashes(
+          configStashes.map((s) => {
+            const { __typename, ...withoutTypename } = s;
+            return withoutTypename;
+          })
+        );
+      }
+      if (generatedPath) {
+        setGeneratedLocation(generatedPath);
+      }
+    }
+  }, [configuration]);
 
   const discordLink = (
     <a href="https://discord.gg/2TsNFKt" target="_blank" rel="noreferrer">
@@ -179,6 +201,47 @@ export const Setup: React.FC = () => {
     return <FolderSelectDialog onClose={onGeneratedClosed} />;
   }
 
+  function maybeRenderGenerated() {
+    if (!configuration?.general.generatedPath) {
+      return (
+        <Form.Group id="generated">
+          <h3>
+            <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content" />
+          </h3>
+          <p>
+            <FormattedMessage
+              id="setup.paths.where_can_stash_store_its_generated_content_description"
+              values={{
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
+          </p>
+          <InputGroup>
+            <Form.Control
+              className="text-input"
+              value={generatedLocation}
+              placeholder={intl.formatMessage({
+                id: "setup.paths.path_to_generated_directory_empty_for_default",
+              })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setGeneratedLocation(e.currentTarget.value)
+              }
+            />
+            <InputGroup.Append>
+              <Button
+                variant="secondary"
+                className="text-input"
+                onClick={() => setShowGeneratedDialog(true)}
+              >
+                <Icon icon="ellipsis-h" />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form.Group>
+      );
+    }
+  }
+
   function renderSetPaths() {
     return (
       <>
@@ -228,41 +291,7 @@ export const Setup: React.FC = () => {
               }
             />
           </Form.Group>
-          <Form.Group id="generated">
-            <h3>
-              <FormattedMessage id="setup.paths.where_can_stash_store_its_generated_content" />
-            </h3>
-            <p>
-              <FormattedMessage
-                id="setup.paths.where_can_stash_store_its_generated_content_description"
-                values={{
-                  code: (chunks: string) => <code>{chunks}</code>,
-                }}
-              />
-            </p>
-            <InputGroup>
-              <Form.Control
-                className="text-input"
-                value={generatedLocation}
-                placeholder={intl.formatMessage({
-                  id:
-                    "setup.paths.path_to_generated_directory_empty_for_default",
-                })}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setGeneratedLocation(e.currentTarget.value)
-                }
-              />
-              <InputGroup.Append>
-                <Button
-                  variant="secondary"
-                  className="text-input"
-                  onClick={() => setShowGeneratedDialog(true)}
-                >
-                  <Icon icon="ellipsis-h" />
-                </Button>
-              </InputGroup.Append>
-            </InputGroup>
-          </Form.Group>
+          {maybeRenderGenerated()}
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
@@ -524,7 +553,7 @@ export const Setup: React.FC = () => {
   }
 
   // only display setup wizard if system is not setup
-  if (statusLoading) {
+  if (statusLoading || configLoading) {
     return <LoadingIndicator />;
   }
 
