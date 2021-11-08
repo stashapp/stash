@@ -2,6 +2,8 @@
 package documents
 
 import (
+	"time"
+
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/analysis/lang/en"
 	"github.com/blevesearch/bleve/v2/mapping"
@@ -13,6 +15,7 @@ type Scene struct {
 	Details string `json:"details"`
 
 	Date *string `json:"date"`
+	Year *int    `json:"year"` // Computed from Date
 }
 
 func NewScene(in models.Scene) Scene {
@@ -22,14 +25,24 @@ func NewScene(in models.Scene) Scene {
 	}
 
 	var date *string
+	var year *int
 	if in.Date.Valid {
 		date = &in.Date.String
+		layout := "2006-01-02"
+		t, err := time.Parse(layout, in.Date.String)
+		if err != nil {
+			year = nil
+		}
+
+		y := t.Year()
+		year = &y
 	}
 
 	return Scene{
 		Title:   in.GetTitle(),
 		Details: details,
 		Date:    date,
+		Year:    year,
 	}
 }
 
