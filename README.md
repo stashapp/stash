@@ -62,6 +62,6 @@ You can also make Stash interface fit your desired style with [Custom CSS snippe
 
 # For Developers
 
-Pull requests are accepted! 
+Pull requests are welcome! 
 
 See [Development](docs/DEVELOPMENT.md) and [Contributing](docs/CONTRIBUTING.md) for information on working with the codebase, getting a local development setup, and contributing changes.
