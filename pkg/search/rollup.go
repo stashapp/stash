@@ -35,13 +35,22 @@ func (s *changeSet) track(e event.Change) {
 	}
 }
 
-func (s *changeSet) sceneIds() []int {
+// cutSceneIds returns a slice of sceneIds from the changeSet.
+// The limit argument sets an upper bound on the number of elements
+// in the slice. Returns if there's any more elements to cut as well.
+func (s *changeSet) cutSceneIds(limit int) ([]int, bool) {
 	var ret []int
 	for k := range s.scenes {
+		if limit == 0 {
+			return ret, true
+		}
+
 		ret = append(ret, k)
+		delete(s.scenes, k)
+		limit--
 	}
 
-	return ret
+	return ret, false
 }
 
 func (s *changeSet) performerIds() []int {

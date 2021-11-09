@@ -239,7 +239,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 		default:
 		}
 
-		var cm *changeSet
+		var cs *changeSet
 		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			res, sz, err := batchSceneChangeSet(r, findFilter)
 			if err != nil {
@@ -252,7 +252,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 			} else {
 				*findFilter.Page++
 			}
-			cm = res
+			cs = res
 			return nil
 		})
 
@@ -260,7 +260,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 			return err
 		}
 
-		s := e.batchProcess(ctx, loaders, e.sceneIdx, batch, cm)
+		s := e.batchProcess(ctx, loaders, e.sceneIdx, batch, cs)
 		batch.Reset()
 		stats.merge(s)
 
@@ -278,9 +278,9 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 // batchProcess indexes a single change set batch. This function makes no attempt
 // at limiting or batching the amount of work that has to be done. It is on a caller
 // to ensure the changeset batch is small enough that it fits in memory.
-func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, sceneIdx bleve.Index, b *bleve.Batch, cs *changeSet) report {
+func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.Index, b *bleve.Batch, cs *changeSet) report {
 	stats := report{}
-	// sceneIdx is thread-safe, this protects against changes to the index pointer itself
+	// idx is thread-safe, this protects against changes to the index pointer itself
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
@@ -316,68 +316,96 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, sceneIdx bl
 		}
 	}
 
-	// Process scenes
-	sceneIds := cs.sceneIds()
-	scenes, errors := loaders.scene.LoadAll(sceneIds)
-
-	// This following piece of code likely lives somewhere else in the control-flow,
-	// perhaps further up the call stack.
-	scenePerformers := make(map[int][]int)
+	// Preprocess performers into scenes. If a performer is updated, the underlying
+	// scene has to update as well.
 	err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		for _, s := range scenes {
-			performers, err := r.Performer().FindBySceneID(s.ID)
+		repo := r.Scene()
+
+		for _, p := range performerIds {
+			scenes, err := repo.FindByPerformerID(p)
 			if err != nil {
 				return err
 			}
 
-			var pIDs []int
-			for _, p := range performers {
-				pIDs = append(pIDs, p.ID)
-				// Prime these into the loader
-				loaders.performer.Prime(p.ID, p)
+			for _, s := range scenes {
+				cs.track(event.Change{ID: s.ID, Type: event.Scene})
 			}
-
-			scenePerformers[s.ID] = pIDs
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		logger.Warnf("batch reindex: reading scene performers: %v", err)
+		logger.Infof("batch reindex: could not complete performer preprocessing: %v", err)
 	}
 
-	for i := range scenes {
-		if scenes[i] == nil {
-			if errors[i] != nil {
-				logger.Infof("scene %d error: %v", sceneIds[i], errors[i])
+	// Process scenes
+	for more := true; more; {
+		var sceneIds []int
+		sceneIds, more = cs.cutSceneIds(1000)
+		scenes, errors := loaders.scene.LoadAll(sceneIds)
+
+		// This following piece of code likely lives somewhere else in the control-flow,
+		// perhaps further up the call stack.
+		scenePerformers := make(map[int][]int)
+		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+			for _, s := range scenes {
+				performers, err := r.Performer().FindBySceneID(s.ID)
+				if err != nil {
+					return err
+				}
+
+				var pIDs []int
+				for _, p := range performers {
+					pIDs = append(pIDs, p.ID)
+					// Prime these into the loader
+					loaders.performer.Prime(p.ID, p)
+				}
+
+				scenePerformers[s.ID] = pIDs
 			}
 
-			b.Delete(sceneID(sceneIds[i]))
-			stats.deleted++
+			return nil
+		})
 
-			continue
-		}
-
-		stats.updated++
-
-		performers := []*documents.Performer{}
-		for _, key := range scenePerformers[scenes[i].ID] {
-			p, err := loaders.performer.Load(key)
-			if err != nil {
-				logger.Warnf("batch indexing: could not load performer %d", key)
-			}
-			doc := documents.NewPerformer(*p)
-			performers = append(performers, &doc)
-		}
-		s := documents.NewScene(*scenes[i], performers)
-		err := b.Index(sceneID(sceneIds[i]), s)
 		if err != nil {
-			logger.Warnf("error while indexing scene %d: (%v): %v", sceneIds[i], s, err)
+			logger.Warnf("batch reindex: reading scene performers: %v", err)
 		}
+
+		for i := range scenes {
+			if scenes[i] == nil {
+				if errors[i] != nil {
+					logger.Infof("scene %d error: %v", sceneIds[i], errors[i])
+				}
+
+				b.Delete(sceneID(sceneIds[i]))
+				stats.deleted++
+
+				continue
+			}
+
+			stats.updated++
+
+			performers := []*documents.Performer{}
+			for _, key := range scenePerformers[scenes[i].ID] {
+				p, err := loaders.performer.Load(key)
+				if err != nil {
+					logger.Warnf("batch indexing: could not load performer %d", key)
+				}
+				doc := documents.NewPerformer(*p)
+				performers = append(performers, &doc)
+			}
+			s := documents.NewScene(*scenes[i], performers)
+			err := b.Index(sceneID(sceneIds[i]), s)
+			if err != nil {
+				logger.Warnf("error while indexing scene %d: (%v): %v", sceneIds[i], s, err)
+			}
+		}
+
+		idx.Batch(b)
+		b.Reset()
 	}
 
-	sceneIdx.Batch(b)
 	return stats
 }
 
