@@ -1,36 +1,5 @@
 package models
 
-type PerformerQueryOptions struct {
-	QueryOptions
-	PerformerFilter *PerformerFilterType
-
-	TotalDuration bool
-	TotalSize     bool
-}
-
-type PerformerQueryResult struct {
-	QueryResult
-	TotalDuration float64
-	TotalSize     float64
-
-	finder     PerformerFinder
-	performers []*Performer
-	resolveErr error
-}
-
-type PerformerFinder interface {
-	// TODO - rename this to Find and remove existing method
-	FindMany(ids []int) ([]*Performer, error)
-}
-
-func (r *PerformerQueryResult) Resolve() ([]*Performer, error) {
-	// cache results
-	if r.performers == nil && r.resolveErr == nil {
-		r.performers, r.resolveErr = r.finder.FindMany(r.IDs)
-	}
-	return r.performers, r.resolveErr
-}
-
 type PerformerReader interface {
 	Find(id int) (*Performer, error)
 	FindMany(ids []int) ([]*Performer, error)
