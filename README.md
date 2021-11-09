@@ -1,13 +1,12 @@
 # Stash
-
 [![Build](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
 [![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash.svg)](https://hub.docker.com/r/stashapp/Stash 'DockerHub')
 [![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
-
 https://stashapp.cc
 
-**Stash is a self-hosted webapp written in Go which organizes and serves your porn.**
+### **Stash is a self-hosted webapp written in Go which organizes and serves your porn.**
+
 <p align="center">
 <img src="docs/readme_assets/demo_image.png" height="350">
 </p>
@@ -65,4 +64,4 @@ You can also make Stash interface fit your desired style with [Custom CSS snippe
 
 Pull requests are accepted! 
 
-See [Hacking](docs/HACKING.md) and [Contributing](docs/CONTRIBUTING.md) for information on working with the codebase, getting a local development setup, and contributing changes.
+See [Development](docs/DEVELOPMENT.md) and [Contributing](docs/CONTRIBUTING.md) for information on working with the codebase, getting a local development setup, and contributing changes.
