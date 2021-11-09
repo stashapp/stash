@@ -936,10 +936,11 @@ func (i *Instance) GetDeleteGeneratedDefault() bool {
 func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOptions {
 	i.RLock()
 	defer i.RUnlock()
+	v := i.viper(DefaultIdentifySettings)
 
-	if viper.IsSet(DefaultIdentifySettings) {
+	if v.IsSet(DefaultIdentifySettings) {
 		var ret models.IdentifyMetadataTaskOptions
-		if err := viper.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
