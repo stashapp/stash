@@ -9,13 +9,13 @@ https://stashapp.cc
 
 **Stash is a self-hosted webapp written in Go which organizes and serves your porn.**
 <p align="center">
-<img src="docs/readme_assets/demo_image.png" height="250">
+<img src="docs/readme_assets/demo_image.png" height="350">
 </p>
 
-* It can gather information about videos in your collection from the internet, and is extensible through the use of community-built plugins for a large number of content producers.
-* It supports a wide variety of both video and image formats.
+* Stash gathers information about videos in your collection from the internet, and is extensible through the use of community-built plugins for a large number of content producers and sites.
+* Stash supports a wide variety of both video and image formats.
 * You can tag videos and find them later.
-* It provides statistics about performers, tags, studios and other things.
+* Stash provides statistics about performers, tags, studios and more.
 
 You can [watch a SFW demo video](https://vimeo.com/545323354) to see it in action.
 
