@@ -600,6 +600,10 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		sp.EyeColor = enumToStringPtr(p.EyeColor, true)
 	}
 
+	if p.HairColor != nil {
+		sp.HairColor = enumToStringPtr(p.HairColor, true)
+	}
+
 	if p.BreastType != nil {
 		sp.FakeTits = enumToStringPtr(p.BreastType, true)
 	}

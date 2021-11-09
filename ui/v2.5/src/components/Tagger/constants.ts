@@ -60,6 +60,7 @@ export const PERFORMER_FIELDS = [
   "ethnicity",
   "country",
   "eye_color",
+  "hair_color",
   "height",
   "measurements",
   "fake_tits",
