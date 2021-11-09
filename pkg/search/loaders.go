@@ -6,7 +6,19 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// loaders contain all data loaders the search system uses
+// loaders contain all data loaders the search system uses. The general
+// strategy is to reset the loaders once in a while if processing large
+// batch jobs to keep the cache somewhat reasonable. However, we only
+// reset data which is likely to grow.
+//
+// As an example, scenes contains performers, but nothing contains scenes.
+// They are a leaf in the topological sorting. Hence, scenes are a prime
+// candidate for cleaning once in a while: one used, it isn't going to be
+// reused, ever.
+//
+// As another example, performers are likely to be a small table in the
+// database. Just caching it over the batch processing seems correct as it
+// drops database query pressure by quite a lot.
 type loaders struct {
 	mgr       models.TransactionManager
 	scene     *models.SceneLoader
