@@ -7,7 +7,7 @@ enum GenderEnum {
   NON_BINARY
 }
 
-type Performer {
+type Performer implements SearchResultItem {
   id: ID!
   checksum: String!
   name: String

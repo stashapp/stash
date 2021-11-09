@@ -36,6 +36,8 @@ type Performer struct {
 	Weight       sql.NullInt64   `db:"weight" json:"weight"`
 }
 
+func (s *Performer) IsSearchResultItem() {}
+
 type PerformerPartial struct {
 	ID           int              `db:"id" json:"id"`
 	Checksum     *string          `db:"checksum" json:"checksum"`

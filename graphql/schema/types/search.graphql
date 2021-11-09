@@ -1,5 +1,6 @@
 enum SearchType {
     SEARCH_SCENE
+    SEARCH_PERFORMER
 }
 
 enum SearchFacet {

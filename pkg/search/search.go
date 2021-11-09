@@ -6,6 +6,7 @@ import (
 
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/search"
+	"github.com/blevesearch/bleve/v2/search/query"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -39,9 +40,27 @@ func newItem(nodeID string, score float64) *Item {
 	}
 }
 
-func (e *Engine) Search(ctx context.Context, in string, ty models.SearchType, facets []*models.SearchFacet) (*Result, error) {
-	query := bleve.NewQueryStringQuery(in)
-	searchRequest := bleve.NewSearchRequest(query)
+func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, facets []*models.SearchFacet) (*Result, error) {
+	queryString := bleve.NewQueryStringQuery(in)
+
+	var q query.Query
+	if ty == nil {
+		q = queryString
+	} else {
+		var filter *query.MatchQuery
+
+		switch *ty {
+		case models.SearchTypeSearchScene:
+			filter = bleve.NewMatchQuery("scene")
+		case models.SearchTypeSearchPerformer:
+			filter = bleve.NewMatchQuery("performer")
+		}
+
+		filter.SetField("stash_type")
+		q = bleve.NewConjunctionQuery(queryString, filter)
+	}
+
+	searchRequest := bleve.NewSearchRequest(q)
 
 	for _, f := range facets {
 		if f == nil {

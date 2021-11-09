@@ -2,12 +2,16 @@ package api
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/search"
 )
 
-func (r *queryResolver) Search(ctx context.Context, query string, ty models.SearchType, facets []*models.SearchFacet) (*models.SearchResultItemConnection, error) {
+var ErrUnknownType = errors.New("unknown item type")
+
+func (r *queryResolver) Search(ctx context.Context, query string, ty *models.SearchType, facets []*models.SearchFacet) (*models.SearchResultItemConnection, error) {
 	s, err := r.searchEngine.Search(ctx, query, ty, facets)
 	if err != nil {
 		return nil, err
@@ -15,13 +19,16 @@ func (r *queryResolver) Search(ctx context.Context, query string, ty models.Sear
 
 	var edges []*models.SearchItemEdge
 	for _, item := range s.Items {
-		h := r.hydrate(ctx, item)
-		if h != nil {
-			edges = append(edges, &models.SearchItemEdge{
-				Score: item.Score,
-				Node:  h,
-			})
+		h, err := r.hydrate(ctx, item)
+		if err != nil {
+			edges = append(edges, nil)
+			continue
 		}
+
+		edges = append(edges, &models.SearchItemEdge{
+			Score: item.Score,
+			Node:  h,
+		})
 	}
 
 	var facetResults []*models.SearchFacetResult
@@ -61,16 +68,23 @@ func (r *queryResolver) Search(ctx context.Context, query string, ty models.Sear
 	return &res, nil
 }
 
-func (r *queryResolver) hydrate(ctx context.Context, item search.Item) models.SearchResultItem {
+func (r *queryResolver) hydrate(ctx context.Context, item search.Item) (models.SearchResultItem, error) {
 	switch item.Type {
-	case "Scene":
+	case "scene":
 		scene, err := r.FindScene(ctx, &item.ID, nil)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
-		return scene
-	}
+		return scene, nil
+	case "performer":
+		performer, err := r.FindPerformer(ctx, item.ID)
+		if err != nil {
+			return nil, err
+		}
 
-	return nil
+		return performer, nil
+	default:
+		return nil, fmt.Errorf("%w: %v", ErrUnknownType, item.Type)
+	}
 }

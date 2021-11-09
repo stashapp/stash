@@ -3,6 +3,7 @@ package search
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/event"
 )
@@ -10,29 +11,42 @@ import (
 // changeSet is a rollup structure for changes. These are handed off to
 // a batch processor when it requests them.
 type changeSet struct {
-	scenes map[int]struct{}
+	scenes     map[int]struct{}
+	performers map[int]struct{}
 }
 
 // newChangemap creates a new initialized empty changeMap.
-func newChangeMap() *changeSet {
+func newChangeSet() *changeSet {
 	return &changeSet{
-		scenes: make(map[int]struct{}),
+		scenes:     make(map[int]struct{}),
+		performers: make(map[int]struct{}),
 	}
 }
 
 // track records the given change to the changeMap.
-func (m *changeSet) track(e event.Change) {
+func (s *changeSet) track(e event.Change) {
 	switch e.Type {
 	case event.Scene:
-		m.scenes[e.ID] = struct{}{}
+		s.scenes[e.ID] = struct{}{}
+	case event.Performer:
+		s.performers[e.ID] = struct{}{}
 	default:
 		// Ignore changes we don't currently track
 	}
 }
 
-func (m *changeSet) sceneIds() []int {
+func (s *changeSet) sceneIds() []int {
 	var ret []int
-	for k := range m.scenes {
+	for k := range s.scenes {
+		ret = append(ret, k)
+	}
+
+	return ret
+}
+
+func (s *changeSet) performerIds() []int {
+	var ret []int
+	for k := range s.performers {
 		ret = append(ret, k)
 	}
 
@@ -40,13 +54,25 @@ func (m *changeSet) sceneIds() []int {
 }
 
 // hasContent returns true if there are changes to process.
-func (m *changeSet) hasContent() bool {
-	return len(m.scenes) > 0
+func (s *changeSet) hasContent() bool {
+	return len(s.scenes) > 0 || len(s.performers) > 0
 }
 
 // String implements the Stringer interface for changeMaps.
-func (m *changeSet) String() string {
-	return fmt.Sprintf("(%d scenes)", len(m.scenes))
+func (s *changeSet) String() string {
+	var elems []string
+	if len(s.scenes) > 0 {
+		elems = append(elems, fmt.Sprintf("(%d scenes)", len(s.scenes)))
+	}
+	if len(s.performers) > 0 {
+		elems = append(elems, fmt.Sprintf("(%d performers)", len(s.performers)))
+	}
+
+	if len(elems) == 0 {
+		return "empty changeset"
+	}
+
+	return strings.Join(elems, ", ")
 }
 
 // rollUp is the type used by the rollup engine.
@@ -69,7 +95,7 @@ func newRollup() *rollUp {
 	return &rollUp{
 		eventCh: make(chan event.Change, 1),
 		handoff: make(chan *changeSet),
-		cur:     newChangeMap(),
+		cur:     newChangeSet(),
 	}
 }
 
@@ -87,7 +113,7 @@ func (r *rollUp) start(ctx context.Context, d *event.Dispatcher) {
 				// If we can hand off to a waiting receiver, we can't use
 				// the current map anymore. Create a new one for the next
 				// batch.
-				r.cur = newChangeMap()
+				r.cur = newChangeSet()
 			case c := <-r.eventCh:
 				r.cur.track(c)
 			}
