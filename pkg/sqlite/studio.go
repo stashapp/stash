@@ -234,9 +234,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")
 		searchColumns := []string{"studios.name", "studio_aliases.alias"}
 
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(studioFilter); err != nil {

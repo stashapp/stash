@@ -308,9 +308,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"performers.name", "performers.aliases"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(performerFilter); err != nil {

@@ -265,9 +265,7 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"images.title", "images.path", "images.checksum"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(imageFilter); err != nil {
