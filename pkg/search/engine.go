@@ -122,7 +122,7 @@ func performerQuery(r models.PerformerReader, performerFilter *models.PerformerF
 	return result, nil
 }
 
-func batchPerformerChangeMap(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
+func batchPerformerChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
 	performers, err := performerQuery(r.Performer(), nil, f)
 	if err != nil {
 		return nil, 0, err
@@ -139,7 +139,7 @@ func batchPerformerChangeMap(r models.ReaderRepository, f *models.FindFilterType
 	return cs, len(performers), nil
 }
 
-func batchSceneChangeMap(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
+func batchSceneChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
 	scenes, err := scene.Query(r.Scene(), nil, f)
 	if err != nil {
 		return nil, 0, err
@@ -192,7 +192,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 
 		var cm *changeSet
 		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			res, sz, err := batchPerformerChangeMap(r, findFilter)
+			res, sz, err := batchPerformerChangeSet(r, findFilter)
 			if err != nil {
 				return err
 			}
@@ -241,7 +241,7 @@ func (e *Engine) batchReIndex(ctx context.Context) error {
 
 		var cm *changeSet
 		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			res, sz, err := batchSceneChangeMap(r, findFilter)
+			res, sz, err := batchSceneChangeSet(r, findFilter)
 			if err != nil {
 				return err
 			}
