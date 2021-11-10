@@ -292,6 +292,9 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 	// In general, theres a topological sort of the different entities, and
 	// you want to follow said topological sorting when processing.
 
+	// Pre-process performers to inflate scenes
+	cs.preprocessPerformers(ctx, e.txnManager)
+
 	// Process performers
 	performerIds := cs.performerIds()
 	performers, errors := loaders.performer.LoadAll(performerIds)
@@ -314,31 +317,6 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		if err != nil {
 			logger.Warnf("error while indexing scene %d: (%v): %v", performerIds[i], s, err)
 		}
-	}
-
-	// Preprocess performers into scenes. If a performer is updated, the underlying
-	// scene has to update as well.
-	err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		repo := r.Scene()
-
-		for _, p := range performerIds {
-			scenes, err := repo.FindByPerformerID(p)
-			if err != nil {
-				return err
-			}
-
-			for _, s := range scenes {
-				if s != nil {
-					cs.track(event.Change{ID: s.ID, Type: event.Scene})
-				}
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		logger.Infof("batch reindex: could not complete performer preprocessing: %v", err)
 	}
 
 	// Process scenes

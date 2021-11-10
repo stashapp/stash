@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/event"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 // changeSet is a rollup structure for changes. These are handed off to
@@ -13,6 +15,7 @@ import (
 type changeSet struct {
 	scenes     map[int]struct{}
 	performers map[int]struct{}
+	tags       map[int]struct{}
 }
 
 // newChangemap creates a new initialized empty changeMap.
@@ -20,6 +23,7 @@ func newChangeSet() *changeSet {
 	return &changeSet{
 		scenes:     make(map[int]struct{}),
 		performers: make(map[int]struct{}),
+		tags:       make(map[int]struct{}),
 	}
 }
 
@@ -30,6 +34,8 @@ func (s *changeSet) track(e event.Change) {
 		s.scenes[e.ID] = struct{}{}
 	case event.Performer:
 		s.performers[e.ID] = struct{}{}
+	case event.Tag:
+		s.tags[e.ID] = struct{}{}
 	default:
 		// Ignore changes we don't currently track
 	}
@@ -60,6 +66,34 @@ func (s *changeSet) performerIds() []int {
 	}
 
 	return ret
+}
+
+func (cs *changeSet) preprocessPerformers(ctx context.Context, mgr models.TransactionManager) {
+	// Preprocess performers into scenes. If a performer is updated, the underlying
+	// scene has to update as well.
+
+	err := mgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		repo := r.Scene()
+
+		for p := range cs.performers {
+			scenes, err := repo.FindByPerformerID(p)
+			if err != nil {
+				return err
+			}
+
+			for _, s := range scenes {
+				if s != nil {
+					cs.track(event.Change{ID: s.ID, Type: event.Scene})
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		logger.Infof("rollup: could not complete performer preprocessing: %v", err)
+	}
 }
 
 // hasContent returns true if there are changes to process.
