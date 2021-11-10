@@ -788,7 +788,8 @@
       "database_filename_empty_for_default": "database filename (empty for default)",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
-      "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)"
+      "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
+      "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?"
     },
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
