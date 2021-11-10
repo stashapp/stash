@@ -54,6 +54,8 @@ func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, f
 			filter = bleve.NewMatchQuery("scene")
 		case models.SearchTypeSearchPerformer:
 			filter = bleve.NewMatchQuery("performer")
+		case models.SearchTypeSearchTag:
+			filter = bleve.NewMatchQuery("tag")
 		}
 
 		filter.SetField("stash_type")

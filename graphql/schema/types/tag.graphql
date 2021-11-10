@@ -1,4 +1,4 @@
-type Tag {
+type Tag implements SearchResultItem {
   id: ID!
   name: String!
   aliases: [String!]!

@@ -1,6 +1,7 @@
 enum SearchType {
     SEARCH_SCENE
     SEARCH_PERFORMER
+    SEARCH_TAG
 }
 
 enum SearchFacet {

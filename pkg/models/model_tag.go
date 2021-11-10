@@ -9,6 +9,8 @@ type Tag struct {
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+func (t *Tag) IsSearchResultItem() {}
+
 type TagPartial struct {
 	ID        int              `db:"id" json:"id"`
 	Name      *string          `db:"name" json:"name"` // TODO make schema not null

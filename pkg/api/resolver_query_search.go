@@ -84,6 +84,13 @@ func (r *queryResolver) hydrate(ctx context.Context, item search.Item) (models.S
 		}
 
 		return performer, nil
+	case "tag":
+		tag, err := r.FindTag(ctx, item.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		return tag, err
 	default:
 		return nil, fmt.Errorf("%w: %v", ErrUnknownType, item.Type)
 	}

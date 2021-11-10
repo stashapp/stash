@@ -10,6 +10,35 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type Tag struct {
+	Name string `json:"name,omitempty"`
+
+	StashType string `json:"stash_type"`
+}
+
+func NewTag(in models.Tag) Tag {
+	return Tag{
+		Name: in.Name,
+
+		StashType: "tag",
+	}
+}
+
+func (t Tag) Type() string {
+	return "tag"
+}
+
+func BuildTagDocumentMapping() *mapping.DocumentMapping {
+	englishTextFieldMapping := bleve.NewTextFieldMapping()
+	englishTextFieldMapping.Analyzer = en.AnalyzerName
+
+	performerMapping := bleve.NewDocumentMapping()
+
+	performerMapping.AddFieldMappingsAt("name", englishTextFieldMapping)
+
+	return performerMapping
+}
+
 type Performer struct {
 	Name string `json:"name"`
 
@@ -38,17 +67,17 @@ func BuildPerformerDocumentMapping() *mapping.DocumentMapping {
 
 	performerMapping := bleve.NewDocumentMapping()
 
-	performerMapping.AddFieldMappingsAt("title", englishTextFieldMapping)
+	performerMapping.AddFieldMappingsAt("name", englishTextFieldMapping)
 
 	return performerMapping
 }
 
 type Scene struct {
-	Title   string `json:"title"`
-	Details string `json:"details"`
+	Title   string `json:"title,omitempty"`
+	Details string `json:"details,omitempty"`
 
-	Date *string `json:"date"`
-	Year *int    `json:"year"` // Computed from Date
+	Date *string `json:"date,omitempty"`
+	Year *int    `json:"year,omitempty"` // Computed from Date
 
 	Performer []*Performer `json:"performer"`
 
@@ -109,11 +138,13 @@ func BuildSceneDocumentMapping() *mapping.DocumentMapping {
 func BuildIndexMapping() (mapping.IndexMapping, error) {
 	sceneMapping := BuildSceneDocumentMapping()
 	performerMapping := BuildPerformerDocumentMapping()
+	tagMapping := BuildTagDocumentMapping()
+
 	indexMapping := bleve.NewIndexMapping()
 
 	indexMapping.AddDocumentMapping("scene", sceneMapping)
 	indexMapping.AddDocumentMapping("performer", performerMapping)
-
+	indexMapping.AddDocumentMapping("tag", tagMapping)
 	indexMapping.TypeField = "Type"
 	indexMapping.DefaultAnalyzer = "en"
 

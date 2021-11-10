@@ -350,6 +350,12 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		scenePerformers := make(map[int][]int)
 		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			for _, s := range scenes {
+				if s == nil {
+					// Scene has been deleted, so it doesn't need to be added to
+					// scenePerformers
+					continue
+				}
+
 				performers, err := r.Performer().FindBySceneID(s.ID)
 				if err != nil {
 					return err
@@ -407,6 +413,10 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 	}
 
 	return stats
+}
+
+func tagID(id int) string {
+	return fmt.Sprintf("tag:%d", id)
 }
 
 func sceneID(id int) string {
