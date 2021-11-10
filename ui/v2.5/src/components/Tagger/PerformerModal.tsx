@@ -115,7 +115,9 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       throw new Error("performer name must set");
     }
 
-    const performerData: GQL.PerformerCreateInput = {
+    const performerData: GQL.PerformerCreateInput & {
+      [index: string]: unknown;
+    } = {
       name: performer.name ?? "",
       aliases: performer.aliases,
       gender: stringToGender(performer.gender ?? undefined, true),
@@ -129,9 +131,19 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       career_length: performer.career_length,
       tattoos: performer.tattoos,
       piercings: performer.piercings,
+      url: performer.url,
+      twitter: performer.twitter,
+      instagram: performer.instagram,
       image: images.length > imageIndex ? images[imageIndex] : undefined,
+      details: performer.details,
+      death_date: performer.death_date,
       hair_color: performer.hair_color,
+      weight: Number.parseFloat(performer.weight ?? "") ?? undefined,
     };
+
+    if (Number.isNaN(performerData.weight ?? 0)) {
+      performerData.weight = undefined;
+    }
 
     if (performer.tags) {
       performerData.tag_ids = performer.tags
@@ -152,8 +164,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
     // handle exclusions
     Object.keys(performerData).forEach((k) => {
-      if (excluded[k]) {
-        (performerData as Record<string, unknown>)[k] = undefined;
+      if (excluded[k] || !performerData[k]) {
+        performerData[k] = undefined;
       }
     });
 

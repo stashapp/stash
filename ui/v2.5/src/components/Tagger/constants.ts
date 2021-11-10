@@ -67,4 +67,10 @@ export const PERFORMER_FIELDS = [
   "career_length",
   "tattoos",
   "piercings",
+  "url",
+  "twitter",
+  "instagram",
+  "details",
+  "death_date",
+  "weight",
 ];
