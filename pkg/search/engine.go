@@ -328,7 +328,9 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 			}
 
 			for _, s := range scenes {
-				cs.track(event.Change{ID: s.ID, Type: event.Scene})
+				if s != nil {
+					cs.track(event.Change{ID: s.ID, Type: event.Scene})
+				}
 			}
 		}
 
@@ -397,6 +399,9 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 				p, err := loaders.performer.Load(key)
 				if err != nil {
 					logger.Warnf("batch indexing: could not load performer %d", key)
+				}
+				if p == nil {
+					continue // Failed to load performer, skip
 				}
 				doc := documents.NewPerformer(*p)
 				performers = append(performers, &doc)
