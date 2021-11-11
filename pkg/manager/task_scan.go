@@ -147,8 +147,8 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 	defer close(scanQueue)
 
 	var minModTime time.Time
-	if j.input.MinModTime != nil {
-		minModTime = *j.input.MinModTime
+	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
+		minModTime = *j.input.Filter.MinModTime
 	}
 
 	wg := sizedwaitgroup.New(parallelTasks)

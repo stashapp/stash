@@ -33,11 +33,14 @@ input GeneratePreviewOptionsInput {
   previewPreset: PreviewPreset
 }
 
-input ScanMetadataInput {
-  paths: [String!]
-
+"Filter options for meta data scannning"
+input ScanMetaDataFilterInput {
   "If set, files with a modification time before this time point are ignored by the scan"
   minModTime: Timestamp
+}
+
+input ScanMetadataInput {
+  paths: [String!]
 
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean
@@ -53,6 +56,9 @@ input ScanMetadataInput {
   scanGeneratePhashes: Boolean
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean
+
+  "Filter options for the scan"
+  filter: ScanMetaDataFilterInput
 }
 
 input CleanMetadataInput {
