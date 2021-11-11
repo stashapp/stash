@@ -10,7 +10,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
-	"github.com/stashapp/stash/pkg/scraper"
 )
 
 type rawTaskBuilder struct{}
@@ -30,6 +29,19 @@ type rawPluginTask struct {
 	done      chan bool
 }
 
+func FindPythonExecutable() (string, error) {
+	_, err := exec.LookPath("python3")
+
+	if err != nil {
+		_, err = exec.LookPath("python")
+		if err != nil {
+			return "", err
+		}
+		return "python", nil
+	}
+	return "python3", nil
+}
+
 func (t *rawPluginTask) Start() error {
 	if t.started {
 		return errors.New("task already started")
@@ -41,7 +53,7 @@ func (t *rawPluginTask) Start() error {
 	}
 
 	if command[0] == "python" || command[0] == "python3" {
-		executable, err := scraper.FindPythonExecutable()
+		executable, err := FindPythonExecutable()
 		if err == nil {
 			command[0] = executable
 		}
