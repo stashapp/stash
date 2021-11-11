@@ -1,5 +1,7 @@
 //go:generate go run -mod=vendor github.com/vektah/dataloaden SceneLoader int *github.com/stashapp/stash/pkg/models.Scene
 //go:generate go run -mod=vendor github.com/vektah/dataloaden PerformerLoader int *github.com/stashappp/stash/pkg/models.Performer
+//go:generate go run -mod=vendor github.com/vektah/dataloaden TagLoader int *github.com/stashappp/stash/pkg/models.Tag
+
 package models
 
 import (
@@ -86,6 +88,46 @@ func NewPerformerLoaderConfig(ctx context.Context, mgr TransactionManager) Perfo
 			}
 
 			return performers, errors
+		},
+	}
+}
+
+func NewTagLoaderConfig(ctx context.Context, mgr TransactionManager) TagLoaderConfig {
+	return TagLoaderConfig{
+		Wait:     2 * time.Millisecond,
+		MaxBatch: 100,
+		Fetch: func(keys []int) ([]*Tag, []error) {
+			var tags []*Tag
+			var errors []error
+			err := mgr.WithReadTxn(ctx, func(repo ReaderRepository) error {
+				// The right implementation here would be a FindMany which return
+				// all errors it finds, and optimizes the query to be a batch query:
+				// either via sql IN, or via a temporary table join. At the time of
+				// this writing, however, FindMany is just a wrapper around Find(),
+				// so we mimic FindMany here to grab all errors and satisfy the dataloaden
+				// fetch interface.
+				r := repo.Tag()
+
+				for _, k := range keys {
+					s, e := r.Find(k)
+					tags = append(tags, s)
+					errors = append(errors, e)
+				}
+
+				return nil
+			})
+
+			if err != nil {
+				// Txn failure, build error result set
+				tags = nil
+				errors = nil
+				for range keys {
+					tags = append(tags, nil)
+					errors = append(errors, ErrTxn)
+				}
+			}
+
+			return tags, errors
 		},
 	}
 }

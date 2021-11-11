@@ -68,7 +68,16 @@ func (s *changeSet) performerIds() []int {
 	return ret
 }
 
-func (cs *changeSet) preprocessPerformers(ctx context.Context, mgr models.TransactionManager) {
+func (s *changeSet) tagIds() []int {
+	var ret []int
+	for k := range s.tags {
+		ret = append(ret, k)
+	}
+
+	return ret
+}
+
+func (cs *changeSet) preprocessPerformers(ctx context.Context, mgr models.TransactionManager, loaders *loaders) {
 	// Preprocess performers into scenes. If a performer is updated, the underlying
 	// scene has to update as well.
 
@@ -84,6 +93,7 @@ func (cs *changeSet) preprocessPerformers(ctx context.Context, mgr models.Transa
 			for _, s := range scenes {
 				if s != nil {
 					cs.track(event.Change{ID: s.ID, Type: event.Scene})
+					loaders.scene.Prime(s.ID, s) // Prime the dataloader as we walk
 				}
 			}
 		}

@@ -23,17 +23,20 @@ type loaders struct {
 	mgr       models.TransactionManager
 	scene     *models.SceneLoader
 	performer *models.PerformerLoader
+	tag       *models.TagLoader
 }
 
 // newLoaders creates a new loader struct for the given transaction manager
 func newLoaders(ctx context.Context, mgr models.TransactionManager) *loaders {
 	scene := models.NewSceneLoader(models.NewSceneLoaderConfig(ctx, mgr))
 	performer := models.NewPerformerLoader(models.NewPerformerLoaderConfig(ctx, mgr))
+	tag := models.NewTagLoader(models.NewTagLoaderConfig(ctx, mgr))
 
 	return &loaders{
 		mgr:       mgr,
 		scene:     scene,
 		performer: performer,
+		tag:       tag,
 	}
 }
 

@@ -79,12 +79,13 @@ type Scene struct {
 	Date *string `json:"date,omitempty"`
 	Year *int    `json:"year,omitempty"` // Computed from Date
 
-	Performer []*Performer `json:"performer"`
+	Performer []*Performer `json:"performer,omitempty"`
+	Tag       []*Tag       `json:"tag,omitempty"`
 
 	StashType string `json:"stash_type"`
 }
 
-func NewScene(in models.Scene, performers []*Performer) Scene {
+func NewScene(in models.Scene, performers []*Performer, tags []*Tag) Scene {
 	details := ""
 	if in.Details.Valid {
 		details = in.Details.String
@@ -110,6 +111,7 @@ func NewScene(in models.Scene, performers []*Performer) Scene {
 		Date:      date,
 		Year:      year,
 		Performer: performers,
+		Tag:       tags,
 
 		StashType: "scene",
 	}
@@ -132,6 +134,8 @@ func BuildSceneDocumentMapping() *mapping.DocumentMapping {
 	sceneMapping.AddFieldMappingsAt("date", dateMapping)
 
 	sceneMapping.AddSubDocumentMapping("performer", BuildPerformerDocumentMapping())
+	sceneMapping.AddSubDocumentMapping("tag", BuildTagDocumentMapping())
+
 	return sceneMapping
 }
 
