@@ -42,6 +42,8 @@ func BuildTagDocumentMapping() *mapping.DocumentMapping {
 }
 
 type Performer struct {
+	ID int `json:"id"`
+
 	Name string `json:"name"`
 
 	StashType string `json:"stash_type"`
@@ -54,8 +56,9 @@ func NewPerformer(in models.Performer) Performer {
 	}
 
 	return Performer{
-		StashType: "performer",
+		ID:        in.ID,
 		Name:      name,
+		StashType: "performer",
 	}
 }
 
@@ -67,8 +70,10 @@ func BuildPerformerDocumentMapping() *mapping.DocumentMapping {
 	englishTextFieldMapping := bleve.NewTextFieldMapping()
 	englishTextFieldMapping.Analyzer = en.AnalyzerName
 
+	numericFieldMapping := bleve.NewNumericFieldMapping()
 	performerMapping := bleve.NewDocumentMapping()
 
+	performerMapping.AddFieldMappingsAt("id", numericFieldMapping)
 	performerMapping.AddFieldMappingsAt("name", englishTextFieldMapping)
 
 	return performerMapping

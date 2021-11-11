@@ -82,7 +82,7 @@ func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, f
 
 	// Hold e.mu for as short as possible
 	e.mu.RLock()
-	searchResult, err := e.sceneIdx.SearchInContext(ctx, searchRequest)
+	searchResult, err := e.idx.SearchInContext(ctx, searchRequest)
 	e.mu.RUnlock()
 
 	if err != nil {

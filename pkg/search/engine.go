@@ -20,9 +20,9 @@ import (
 
 // Engine represents a search engine service.
 type Engine struct {
-	config     EngineConfig
-	rollUp     *rollUp
-	txnManager models.TransactionManager
+	config EngineConfig
+	rollUp *rollUp
+	txnMgr models.TransactionManager
 
 	reIndex chan struct{} // Ask the system to reIndex
 	mu      sync.RWMutex  // Mu protects the index fields
@@ -36,10 +36,10 @@ type EngineConfig interface {
 // NewEngine creates a new search engine.
 func NewEngine(txnManager models.TransactionManager, config EngineConfig) *Engine {
 	return &Engine{
-		config:     config,
-		rollUp:     newRollup(),
-		txnManager: txnManager,
-		reIndex:    make(chan struct{}),
+		config:  config,
+		rollUp:  newRollup(),
+		txnMgr:  txnManager,
+		reIndex: make(chan struct{}),
 	}
 }
 
@@ -99,13 +99,13 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 				}
 			case <-tick.C:
 				// Perform batch insert
-				m := e.rollUp.batch()
-				if m.hasContent() {
-					loaders := newLoaders(ctx, e.txnManager)
-					// Pre-process performers to inflate scenes
-					m.preprocessPerformers(ctx, e.txnManager, loaders)
+				cs := e.rollUp.batch()
+				if cs.hasContent() {
+					loaders := newLoaders(ctx, e.txnMgr)
+					// Pre-process performers to make sure the changeset is covering
+					e.preprocess(ctx, cs, loaders)
 					batch := idx.NewBatch()
-					stats := e.batchProcess(ctx, loaders, idx, batch, m)
+					stats := e.batchProcess(ctx, loaders, idx, batch, cs)
 					batch.Reset()
 					logger.Infof("updated search indexes: %v", stats)
 				}
@@ -197,7 +197,7 @@ func batchSceneChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*
 // We are touching every object in the database, so relationships will be
 // picked up as we walk over the data set.
 func (e *Engine) batchReindex(ctx context.Context) error {
-	loaders := newLoaders(ctx, e.txnManager)
+	loaders := newLoaders(ctx, e.txnMgr)
 	loaderCount := 10 // Only use the loader cache for this many rounds
 
 	batchSz := 1000
@@ -227,7 +227,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 		}
 
 		var cm *changeSet
-		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			res, sz, err := batchTagChangeSet(r, findFilter)
 			if err != nil {
 				return err
@@ -268,7 +268,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 		}
 
 		var cm *changeSet
-		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			res, sz, err := batchPerformerChangeSet(r, findFilter)
 			if err != nil {
 				return err
@@ -312,7 +312,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 		}
 
 		var cs *changeSet
-		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			res, sz, err := batchSceneChangeSet(r, findFilter)
 			if err != nil {
 				return err
@@ -424,7 +424,7 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		// This following piece of code likely lives somewhere else in the control-flow,
 		// perhaps further up the call stack.
 		scenePerformers := make(map[int][]int)
-		err := e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			for _, s := range scenes {
 				if s == nil {
 					// Scene has been deleted, so it doesn't need to be added to
@@ -457,7 +457,7 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		// This following piece of code likely lives somewhere else in the control-flow,
 		// perhaps further up the call stack.
 		sceneTags := make(map[int][]int)
-		err = e.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			for _, s := range scenes {
 				if s == nil {
 					// Scene has been deleted, so it doesn't need to be added to
@@ -499,8 +499,6 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 				continue
 			}
 
-			stats.updated++
-
 			performers := []documents.Performer{}
 			for _, key := range scenePerformers[s.ID] {
 				p, err := loaders.performer.Load(key)
@@ -531,6 +529,8 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 			if err != nil {
 				logger.Warnf("error while indexing scene %d: (%v): %v", sceneIds[i], s, err)
 			}
+
+			stats.updated++
 		}
 
 		idx.Batch(b)

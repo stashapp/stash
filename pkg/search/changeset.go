@@ -1,13 +1,10 @@
 package search
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/event"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 )
 
 // changeSet is a rollup structure for changes. These are handed off to
@@ -75,35 +72,6 @@ func (s *changeSet) tagIds() []int {
 	}
 
 	return ret
-}
-
-func (cs *changeSet) preprocessPerformers(ctx context.Context, mgr models.TransactionManager, loaders *loaders) {
-	// Preprocess performers into scenes. If a performer is updated, the underlying
-	// scene has to update as well.
-
-	err := mgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		repo := r.Scene()
-
-		for p := range cs.performers {
-			scenes, err := repo.FindByPerformerID(p)
-			if err != nil {
-				return err
-			}
-
-			for _, s := range scenes {
-				if s != nil {
-					cs.track(event.Change{ID: s.ID, Type: event.Scene})
-					loaders.scene.Prime(s.ID, s) // Prime the dataloader as we walk
-				}
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		logger.Infof("rollup: could not complete performer preprocessing: %v", err)
-	}
 }
 
 // hasContent returns true if there are changes to process.

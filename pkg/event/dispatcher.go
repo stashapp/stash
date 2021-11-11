@@ -3,6 +3,7 @@ package event
 
 import (
 	"context"
+	"fmt"
 	"sync"
 )
 
@@ -20,10 +21,37 @@ const (
 	Tag
 )
 
+func (ct ChangeType) String() string {
+	switch ct {
+	case SceneMarker:
+		return "SceneMarker"
+	case Scene:
+		return "Scene"
+	case Image:
+		return "Image"
+	case Gallery:
+		return "Gallery"
+	case Movie:
+		return "Movie"
+	case Performer:
+		return "Performer"
+	case Studio:
+		return "Studio"
+	case Tag:
+		return "Tag"
+	default:
+		panic("Unhandled ChangeType case")
+	}
+}
+
 // Change represents a pair of a Type and the ID which has changed
 type Change struct {
 	Type ChangeType
 	ID   int
+}
+
+func (c Change) String() string {
+	return fmt.Sprintf("Change[%v(%v)]", c.Type, c.ID)
 }
 
 // Dispatcher represents a single event dispatcher
