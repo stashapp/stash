@@ -501,7 +501,7 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 
 			stats.updated++
 
-			performers := []*documents.Performer{}
+			performers := []documents.Performer{}
 			for _, key := range scenePerformers[s.ID] {
 				p, err := loaders.performer.Load(key)
 				if err != nil {
@@ -511,9 +511,9 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 					continue // Failed to load performer, skip
 				}
 				doc := documents.NewPerformer(*p)
-				performers = append(performers, &doc)
+				performers = append(performers, doc)
 			}
-			tags := []*documents.Tag{}
+			tags := []documents.Tag{}
 			for _, key := range sceneTags[s.ID] {
 				t, err := loaders.tag.Load(key)
 				if err != nil {
@@ -524,7 +524,7 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 				}
 
 				doc := documents.NewTag(*t)
-				tags = append(tags, &doc)
+				tags = append(tags, doc)
 			}
 			s := documents.NewScene(*s, performers, tags)
 			err := b.Index(sceneID(sceneIds[i]), s)

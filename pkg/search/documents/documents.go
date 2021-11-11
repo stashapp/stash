@@ -11,6 +11,7 @@ import (
 )
 
 type Tag struct {
+	ID   int    `json:"id"`
 	Name string `json:"name,omitempty"`
 
 	StashType string `json:"stash_type"`
@@ -18,6 +19,7 @@ type Tag struct {
 
 func NewTag(in models.Tag) Tag {
 	return Tag{
+		ID:   in.ID,
 		Name: in.Name,
 
 		StashType: "tag",
@@ -79,13 +81,14 @@ type Scene struct {
 	Date *string `json:"date,omitempty"`
 	Year *int    `json:"year,omitempty"` // Computed from Date
 
-	Performer []*Performer `json:"performer,omitempty"`
-	Tag       []*Tag       `json:"tag,omitempty"`
+	Performer []Performer `json:"performer,omitempty"`
+	Tag       []string    `json:"tag,omitempty"`
+	TagID     []int       `json:"tag_id,omitempty"`
 
 	StashType string `json:"stash_type"`
 }
 
-func NewScene(in models.Scene, performers []*Performer, tags []*Tag) Scene {
+func NewScene(in models.Scene, inPerformers []Performer, inTags []Tag) Scene {
 	details := ""
 	if in.Details.Valid {
 		details = in.Details.String
@@ -105,13 +108,22 @@ func NewScene(in models.Scene, performers []*Performer, tags []*Tag) Scene {
 		year = &y
 	}
 
+	var tags []string
+	var tagIDs []int
+
+	for _, t := range inTags {
+		tags = append(tags, t.Name)
+		tagIDs = append(tagIDs, t.ID)
+	}
+
 	return Scene{
 		Title:     in.GetTitle(),
 		Details:   details,
 		Date:      date,
 		Year:      year,
-		Performer: performers,
+		Performer: inPerformers,
 		Tag:       tags,
+		TagID:     tagIDs,
 
 		StashType: "scene",
 	}
@@ -125,6 +137,8 @@ func BuildSceneDocumentMapping() *mapping.DocumentMapping {
 	englishTextFieldMapping := bleve.NewTextFieldMapping()
 	englishTextFieldMapping.Analyzer = en.AnalyzerName
 
+	numericalFieldMapping := bleve.NewNumericFieldMapping()
+
 	dateMapping := bleve.NewDateTimeFieldMapping()
 
 	sceneMapping := bleve.NewDocumentMapping()
@@ -133,8 +147,13 @@ func BuildSceneDocumentMapping() *mapping.DocumentMapping {
 	sceneMapping.AddFieldMappingsAt("details", englishTextFieldMapping)
 	sceneMapping.AddFieldMappingsAt("date", dateMapping)
 
-	sceneMapping.AddSubDocumentMapping("performer", BuildPerformerDocumentMapping())
 	sceneMapping.AddSubDocumentMapping("tag", BuildTagDocumentMapping())
+
+	// Tags are flattened into the structure
+	sceneMapping.AddFieldMappingsAt("tag", englishTextFieldMapping)
+	sceneMapping.AddFieldMappingsAt("tag_id", numericalFieldMapping)
+
+	sceneMapping.AddSubDocumentMapping("performer", BuildPerformerDocumentMapping())
 
 	return sceneMapping
 }
