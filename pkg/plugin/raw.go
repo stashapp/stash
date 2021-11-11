@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/scraper"
 )
 
 type rawTaskBuilder struct{}
@@ -37,6 +38,13 @@ func (t *rawPluginTask) Start() error {
 	command := t.plugin.getExecCommand(t.operation)
 	if len(command) == 0 {
 		return fmt.Errorf("empty exec value in operation %s", t.operation.Name)
+	}
+
+	if command[0] == "python" || command[0] == "python3" {
+		executable, err := scraper.FindPythonExecutable()
+		if err == nil {
+			command[0] = executable
+		}
 	}
 
 	cmd := exec.Command(command[0], command[1:]...)

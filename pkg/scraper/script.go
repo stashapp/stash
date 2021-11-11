@@ -31,7 +31,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	command := s.scraper.Script
 
 	if command[0] == "python" || command[0] == "python3" {
-		executable, err := findPythonExecutable()
+		executable, err := FindPythonExecutable()
 		if err == nil {
 			command[0] = executable
 		}
@@ -235,7 +235,7 @@ func (s *scriptScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, erro
 	return &ret, err
 }
 
-func findPythonExecutable() (string, error) {
+func FindPythonExecutable() (string, error) {
 	_, err := exec.LookPath("python3")
 
 	if err != nil {
