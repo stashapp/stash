@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/blevesearch/bleve/v2"
@@ -17,16 +18,6 @@ type Item struct {
 	Score float64
 }
 
-type Result struct {
-	Items  []Item
-	Facets search.FacetResults
-
-	Total    uint64
-	MaxScore float64
-	Status   *models.SearchResultStatus
-	Took     time.Duration
-}
-
 func newItem(nodeID string, score float64) *Item {
 	ty, id, ok := utils.Cut(nodeID, ":")
 	if !ok {
@@ -38,6 +29,16 @@ func newItem(nodeID string, score float64) *Item {
 		Type:  ty,
 		Score: score,
 	}
+}
+
+type Result struct {
+	Items  []Item
+	Facets search.FacetResults
+
+	Total    uint64
+	MaxScore float64
+	Status   *models.SearchResultStatus
+	Took     time.Duration
 }
 
 func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, facets []*models.SearchFacet) (*Result, error) {
@@ -117,4 +118,16 @@ func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, f
 	}
 
 	return &res, nil
+}
+
+func tagID(id int) string {
+	return fmt.Sprintf("tag:%d", id)
+}
+
+func sceneID(id int) string {
+	return fmt.Sprintf("scene:%d", id)
+}
+
+func performerID(id int) string {
+	return fmt.Sprintf("performer:%d", id)
 }

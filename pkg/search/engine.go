@@ -24,9 +24,9 @@ type Engine struct {
 	rollUp     *rollUp
 	txnManager models.TransactionManager
 
-	reIndex  chan struct{} // Ask the system to reIndex
-	mu       sync.RWMutex  // Mu protects the index fields
-	sceneIdx bleve.Index
+	reIndex chan struct{} // Ask the system to reIndex
+	mu      sync.RWMutex  // Mu protects the index fields
+	idx     bleve.Index
 }
 
 type EngineConfig interface {
@@ -77,7 +77,7 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 		}
 
 		e.mu.Lock()
-		e.sceneIdx = idx
+		e.idx = idx
 		e.mu.Unlock()
 
 		// How often to process batches.
@@ -202,7 +202,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 
 	batchSz := 1000
 
-	batch := e.sceneIdx.NewBatch()
+	batch := e.idx.NewBatch()
 
 	findFilter := models.BatchFindFilter(batchSz)
 
@@ -247,7 +247,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 			return err
 		}
 
-		s := e.batchProcess(ctx, loaders, e.sceneIdx, batch, cm)
+		s := e.batchProcess(ctx, loaders, e.idx, batch, cm)
 		batch.Reset()
 		stats.merge(s)
 	}
@@ -288,7 +288,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 			return err
 		}
 
-		s := e.batchProcess(ctx, loaders, e.sceneIdx, batch, cm)
+		s := e.batchProcess(ctx, loaders, e.idx, batch, cm)
 		batch.Reset()
 		stats.merge(s)
 	}
@@ -332,7 +332,7 @@ func (e *Engine) batchReindex(ctx context.Context) error {
 			return err
 		}
 
-		s := e.batchProcess(ctx, loaders, e.sceneIdx, batch, cs)
+		s := e.batchProcess(ctx, loaders, e.idx, batch, cs)
 		batch.Reset()
 		stats.merge(s)
 
@@ -538,18 +538,6 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 	}
 
 	return stats
-}
-
-func tagID(id int) string {
-	return fmt.Sprintf("tag:%d", id)
-}
-
-func sceneID(id int) string {
-	return fmt.Sprintf("scene:%d", id)
-}
-
-func performerID(id int) string {
-	return fmt.Sprintf("performer:%d", id)
 }
 
 type report struct {
