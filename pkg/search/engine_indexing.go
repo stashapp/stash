@@ -271,7 +271,8 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 			// Here is a fun slight problem: If the tag is deleted, how do you know
 			// which scenes the tag is on? By searching the index, and tracking any
 			// document we find in the changeset.
-			b.Delete(tagID(tagIds[i])) // TODO: Need to remove the tag from scenes
+			b.Delete(tagID(tagIds[i]))
+			logger.Infof("Deleting tag %v", tagIds[i])
 			stats.deleted++
 
 			continue
@@ -295,7 +296,7 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 				logger.Infof("indexing batch: performer %d error: %v", performerIds[i], errors[i])
 			}
 
-			b.Delete(performerID(performerIds[i])) // TODO: Need to remove performer from scenes
+			b.Delete(performerID(performerIds[i]))
 			stats.deleted++
 
 			continue

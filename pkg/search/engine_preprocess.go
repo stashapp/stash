@@ -30,7 +30,60 @@ func (e *Engine) preprocess(ctx context.Context, cs *changeSet, loaders *loaders
 	// The order in which we process matters. It must follow a topological sorting of
 	// the data dependencies. I.e., performers must be preprocessed before scenes in
 	// the above example.
+	e.preprocessTags(ctx, cs, loaders)
 	e.preprocessPerformers(ctx, cs, loaders)
+}
+
+func (e *Engine) preprocessTags(ctx context.Context, cs *changeSet, loaders *loaders) {
+	// Preprocess tags into scenes. If a tag is updated or deleted, the underlying
+	// scene has to update as well.
+
+	keys := cs.tagIds()
+	tags, _ := loaders.tag.LoadAll(keys)
+
+	var deleted []int
+	err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		repo := r.Scene()
+
+		for i, t := range tags {
+			logger.Infof("Preprocessing tag %v", keys[i])
+			if t == nil {
+				// Could not load, deleted performer
+				deleted = append(deleted, keys[i])
+				continue
+			}
+
+			idStr := strconv.Itoa(t.ID)
+			tagInput := models.HierarchicalMultiCriterionInput{
+				Value:    []string{idStr},
+				Modifier: models.CriterionModifierIncludesAll,
+			}
+			sceneFilter := models.SceneFilterType{
+				Tags: &tagInput,
+			}
+
+			scenesQueryResult, err := repo.Query(models.SceneQueryOptions{SceneFilter: &sceneFilter})
+			if err != nil {
+				return err
+			}
+
+			for _, s := range scenesQueryResult.IDs {
+				cs.track(event.Change{ID: s, Type: event.Scene})
+			}
+
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		logger.Infof("changeset: could not complete performer preprocessing: %v", err)
+	}
+
+	err = e.addDeleted(ctx, cs, deleted, "tag_id")
+	if err != nil {
+		logger.Infof("changeset: could not perform performer deletion preprocessing: %v", err)
+	}
 }
 
 func (e *Engine) preprocessPerformers(ctx context.Context, cs *changeSet, loaders *loaders) {
@@ -59,7 +112,10 @@ func (e *Engine) preprocessPerformers(ctx context.Context, cs *changeSet, loader
 			for _, s := range scenes {
 				if s != nil {
 					cs.track(event.Change{ID: s.ID, Type: event.Scene})
-					loaders.scene.Prime(s.ID, s) // Prime the dataloader as we walk
+					// Since we get the scene in hand, prime it into the dataloader
+					// as we walk over them. This avoids some fetching later on if
+					// the data loader happens to have the element already.
+					loaders.scene.Prime(s.ID, s)
 				}
 			}
 		}
@@ -110,7 +166,7 @@ func (e *Engine) addDeleted(ctx context.Context, cs *changeSet, deleted []int, f
 						ID:   sceneId,
 						Type: event.Scene,
 					}
-
+					logger.Infof("Adding %v to the changeset", e)
 					cs.track(e)
 				default:
 					panic(fmt.Sprintf("unknown type %v, should be handled", i.Type))

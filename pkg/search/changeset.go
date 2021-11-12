@@ -76,7 +76,7 @@ func (s *changeSet) tagIds() []int {
 
 // hasContent returns true if there are changes to process.
 func (s *changeSet) hasContent() bool {
-	return len(s.scenes) > 0 || len(s.performers) > 0
+	return len(s.scenes) > 0 || len(s.performers) > 0 || len(s.tags) > 0
 }
 
 // String implements the Stringer interface for changeMaps.

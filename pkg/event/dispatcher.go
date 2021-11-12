@@ -51,7 +51,7 @@ type Change struct {
 }
 
 func (c Change) String() string {
-	return fmt.Sprintf("Change[%v(%v)]", c.Type, c.ID)
+	return fmt.Sprintf("%v(%v)", c.Type, c.ID)
 }
 
 // Dispatcher represents a single event dispatcher
