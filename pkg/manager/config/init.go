@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/spf13/pflag"
@@ -72,8 +73,8 @@ func initConfig(instance *Instance, flags flagStruct) error {
 	// The config file is called config.  Leave off the file extension.
 	v.SetConfigName("config")
 
-	v.AddConfigPath(".")            // Look for config in the working directory
-	v.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
+	v.AddConfigPath(".")                                // Look for config in the working directory
+	v.AddConfigPath(filepath.FromSlash("$HOME/.stash")) // Look for the config in the home directory
 
 	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
