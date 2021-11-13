@@ -203,9 +203,11 @@ export const GalleryEditPanel: React.FC<
           Toast.success({
             content: intl.formatMessage(
               { id: "toast.created_entity" },
-              { entity: intl
-                .formatMessage({ id: "gallery" })
-                .toLocaleLowerCase() }
+              {
+                entity: intl
+                  .formatMessage({ id: "gallery" })
+                  .toLocaleLowerCase(),
+              }
             ),
           });
         }
