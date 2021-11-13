@@ -95,7 +95,8 @@
     "previous_action": "Back",
     "finish": "Finish",
     "use_default": "Use default",
-    "ignore": "Ignore"
+    "ignore": "Ignore",
+    "continue": "Continue"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -463,7 +464,6 @@
     }
   },
   "configuration": "Configuration",
-  "continue": "Continue",
   "countables": {
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
     "images": "{count, plural, one {Image} other {Images}}",
