@@ -746,6 +746,8 @@
     "started_auto_tagging": "Started auto tagging",
     "saved_entity": "Saved {entity}",
     "updated_entity": "Updated {entity}",
+    "started_generating": "Started generating",
+    "started_importing": "Started importing",
     "created_entity": "Created {entity}"
   },
   "total": "Total",
