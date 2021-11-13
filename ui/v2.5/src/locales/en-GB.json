@@ -737,7 +737,6 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
-    "create_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -746,7 +745,8 @@
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Started auto tagging",
     "saved_entity": "Saved {entity}",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "created_entity": "Created {entity}"
   },
   "total": "Total",
   "true": "True",
