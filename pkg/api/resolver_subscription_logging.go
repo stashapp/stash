@@ -11,6 +11,8 @@ func getLogLevel(logType string) models.LogLevel {
 	switch logType {
 	case "progress":
 		return models.LogLevelProgress
+	case "trace":
+		return models.LogLevelTrace
 	case "debug":
 		return models.LogLevelDebug
 	case "info":
