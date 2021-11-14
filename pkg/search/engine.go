@@ -46,6 +46,8 @@ func NewEngine(txnManager models.TransactionManager, config EngineConfig) *Engin
 func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 	go func() {
 		e.rollUp.start(ctx, d)
+		et := newEventTrack()
+		et.start(ctx, d)
 
 		workDir := e.config.GetSearchPath()
 		logger.Infof("search work directory: %s", workDir)
