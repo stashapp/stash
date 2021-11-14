@@ -37,7 +37,7 @@ Stash requires ffmpeg. If you don't have it installed, Stash will download a cop
 ## Quickstart Guide
 Download and run Stash. It will prompt you for some configuration options and a directory to index (you can also do this step afterward)
 
-**If you'd like to automatically retrieve and organize information about your entire library,**  You will need to download some [scrapers](blob/develop/ui/v2.5/src/docs/en/Scraping.md). The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers).
+**If you'd like to automatically retrieve and organize information about your entire library,**  You will need to download some [scrapers](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en/Scraping.md). The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers).
 
 The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) which uses filename keywords to help identify the file and pull in scene and performer information from our stash-box database. Note that this data source is not comprehensive and you may need to use the scrapers to identify some of your media.
 
