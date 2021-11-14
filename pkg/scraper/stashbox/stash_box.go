@@ -21,6 +21,7 @@ import (
 type Client struct {
 	client     *graphql.Client
 	txnManager models.TransactionManager
+	box        models.StashBox
 }
 
 // NewClient returns a new instance of a stash-box client.
@@ -36,6 +37,7 @@ func NewClient(box models.StashBox, txnManager models.TransactionManager) *Clien
 	return &Client{
 		client:     client,
 		txnManager: txnManager,
+		box:        box,
 	}
 }
 
@@ -54,7 +56,7 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*mod
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(context.TODO(), c.getHTTPClient(), c.txnManager, s)
+		ss, err := c.sceneFragmentToScrapedScene(context.TODO(), s)
 		if err != nil {
 			return nil, err
 		}
@@ -217,7 +219,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, fingerprin
 		sceneFragments := scenes.FindScenesByFullFingerprints
 
 		for _, s := range sceneFragments {
-			ss, err := sceneFragmentToScrapedScene(ctx, c.getHTTPClient(), c.txnManager, s)
+			ss, err := c.sceneFragmentToScrapedScene(ctx, s)
 			if err != nil {
 				return nil, err
 			}
@@ -633,7 +635,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	return fingerprints
 }
 
-func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnManager models.TransactionManager, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
+func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	stashID := s.ID
 	ss := &models.ScrapedScene{
 		Title:        s.Title,
@@ -650,10 +652,10 @@ func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnMa
 	if len(s.Images) > 0 {
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
-		ss.Image = getFirstImage(ctx, client, s.Images)
+		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
-	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		tqb := r.Tag()
 
@@ -665,7 +667,7 @@ func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnMa
 				RemoteSiteID: &studioID,
 			}
 
-			err := match.ScrapedStudio(r.Studio(), ss.Studio)
+			err := match.ScrapedStudio(r.Studio(), ss.Studio, &c.box.Endpoint)
 			if err != nil {
 				return err
 			}
@@ -674,7 +676,7 @@ func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnMa
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := match.ScrapedPerformer(pqb, sp)
+			err := match.ScrapedPerformer(pqb, sp, &c.box.Endpoint)
 			if err != nil {
 				return err
 			}

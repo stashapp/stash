@@ -153,6 +153,29 @@ func (_m *StudioReaderWriter) FindByName(name string, nocase bool) (*models.Stud
 	return r0, r1
 }
 
+// FindByStashID provides a mock function with given fields: stashID
+func (_m *StudioReaderWriter) FindByStashID(stashID models.StashID) ([]*models.Studio, error) {
+	ret := _m.Called(stashID)
+
+	var r0 []*models.Studio
+	if rf, ok := ret.Get(0).(func(models.StashID) []*models.Studio); ok {
+		r0 = rf(stashID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.StashID) error); ok {
+		r1 = rf(stashID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindChildren provides a mock function with given fields: id
 func (_m *StudioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
 	ret := _m.Called(id)
