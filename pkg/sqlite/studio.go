@@ -117,6 +117,15 @@ func (qb *studioQueryBuilder) FindByName(name string, nocase bool) (*models.Stud
 	return qb.queryStudio(query, args)
 }
 
+func (qb *studioQueryBuilder) FindByStashID(stashID string) ([]*models.Studio, error) {
+	query := selectAll("studios") + `
+		LEFT JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
+		WHERE studio_stash_ids.stash_id = ?
+	`
+	args := []interface{}{stashID}
+	return qb.queryStudios(query, args)
+}
+
 func (qb *studioQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT studios.id FROM studios"), nil)
 }

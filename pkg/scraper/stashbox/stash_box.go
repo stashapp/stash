@@ -665,7 +665,7 @@ func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnMa
 				RemoteSiteID: &studioID,
 			}
 
-			err := match.ScrapedStudio(r.Studio(), ss.Studio)
+			err := match.ScrapedStudio(r.Studio(), ss.Studio, true)
 			if err != nil {
 				return err
 			}
@@ -674,7 +674,7 @@ func sceneFragmentToScrapedScene(ctx context.Context, client *http.Client, txnMa
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := match.ScrapedPerformer(pqb, sp)
+			err := match.ScrapedPerformer(pqb, sp, true)
 			if err != nil {
 				return err
 			}
