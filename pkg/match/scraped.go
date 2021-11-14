@@ -10,14 +10,17 @@ import (
 
 // ScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func ScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer, matchStashID bool) error {
+func ScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer, stashBoxEndpoint *string) error {
 	if p.StoredID != nil || p.Name == nil {
 		return nil
 	}
 
 	// Check if a performer with the StashID already exists
-	if matchStashID && p.RemoteSiteID != nil {
-		performers, err := qb.FindByStashID(*p.RemoteSiteID)
+	if stashBoxEndpoint != nil && p.RemoteSiteID != nil {
+		performers, err := qb.FindByStashID(models.StashID{
+			StashID:  *p.RemoteSiteID,
+			Endpoint: *stashBoxEndpoint,
+		})
 		if err != nil {
 			return err
 		}
@@ -46,14 +49,17 @@ func ScrapedPerformer(qb models.PerformerReader, p *models.ScrapedPerformer, mat
 
 // ScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func ScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio, matchStashID bool) error {
+func ScrapedStudio(qb models.StudioReader, s *models.ScrapedStudio, stashBoxEndpoint *string) error {
 	if s.StoredID != nil {
 		return nil
 	}
 
 	// Check if a studio with the StashID already exists
-	if matchStashID && s.RemoteSiteID != nil {
-		studios, err := qb.FindByStashID(*s.RemoteSiteID)
+	if stashBoxEndpoint != nil && s.RemoteSiteID != nil {
+		studios, err := qb.FindByStashID(models.StashID{
+			StashID:  *s.RemoteSiteID,
+			Endpoint: *stashBoxEndpoint,
+		})
 		if err != nil {
 			return err
 		}

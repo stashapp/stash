@@ -244,11 +244,11 @@ func (_m *PerformerReaderWriter) FindBySceneID(sceneID int) ([]*models.Performer
 }
 
 // FindByStashID provides a mock function with given fields: stashID
-func (_m *PerformerReaderWriter) FindByStashID(stashID string) ([]*models.Performer, error) {
+func (_m *PerformerReaderWriter) FindByStashID(stashID models.StashID) ([]*models.Performer, error) {
 	ret := _m.Called(stashID)
 
 	var r0 []*models.Performer
-	if rf, ok := ret.Get(0).(func(string) []*models.Performer); ok {
+	if rf, ok := ret.Get(0).(func(models.StashID) []*models.Performer); ok {
 		r0 = rf(stashID)
 	} else {
 		if ret.Get(0) != nil {
@@ -257,7 +257,7 @@ func (_m *PerformerReaderWriter) FindByStashID(stashID string) ([]*models.Perfor
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
+	if rf, ok := ret.Get(1).(func(models.StashID) error); ok {
 		r1 = rf(stashID)
 	} else {
 		r1 = ret.Error(1)

@@ -117,12 +117,13 @@ func (qb *studioQueryBuilder) FindByName(name string, nocase bool) (*models.Stud
 	return qb.queryStudio(query, args)
 }
 
-func (qb *studioQueryBuilder) FindByStashID(stashID string) ([]*models.Studio, error) {
+func (qb *studioQueryBuilder) FindByStashID(stashID models.StashID) ([]*models.Studio, error) {
 	query := selectAll("studios") + `
 		LEFT JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
 		WHERE studio_stash_ids.stash_id = ?
+		AND studio_stash_ids.endpoint = ?
 	`
-	args := []interface{}{stashID}
+	args := []interface{}{stashID.StashID, stashID.Endpoint}
 	return qb.queryStudios(query, args)
 }
 
