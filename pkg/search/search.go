@@ -9,6 +9,7 @@ import (
 	"github.com/blevesearch/bleve/v2/search"
 	"github.com/blevesearch/bleve/v2/search/query"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/search/documents"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -51,12 +52,14 @@ func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, f
 		var filter *query.MatchQuery
 
 		switch *ty {
-		case models.SearchTypeSearchScene:
-			filter = bleve.NewMatchQuery("scene")
 		case models.SearchTypeSearchPerformer:
-			filter = bleve.NewMatchQuery("performer")
+			filter = bleve.NewMatchQuery(documents.TypePerformer)
+		case models.SearchTypeSearchScene:
+			filter = bleve.NewMatchQuery(documents.TypeScene)
+		case models.SearchTypeSearchStudio:
+			filter = bleve.NewMatchQuery(documents.TypeStudio)
 		case models.SearchTypeSearchTag:
-			filter = bleve.NewMatchQuery("tag")
+			filter = bleve.NewMatchQuery(documents.TypeTag)
 		}
 
 		filter.SetField("stash_type")
@@ -130,4 +133,8 @@ func sceneID(id int) string {
 
 func performerID(id int) string {
 	return fmt.Sprintf("performer:%d", id)
+}
+
+func studioID(id int) string {
+	return fmt.Sprintf("studio:%d", id)
 }

@@ -94,7 +94,7 @@ func (e *Engine) Start(ctx context.Context, d *event.Dispatcher) {
 				// being recorded by the rollup system. After re-indexing,
 				// that record will be applied, making sure that we'll
 				// have eventual consistency on every document.
-				err := e.batchReindex(ctx)
+				err := e.fullReindex(ctx)
 				if err != nil {
 					logger.Warnf("could not reindex: %v", err)
 				}

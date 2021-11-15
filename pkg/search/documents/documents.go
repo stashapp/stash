@@ -22,15 +22,15 @@ func NewTag(in models.Tag) Tag {
 		ID:   in.ID,
 		Name: in.Name,
 
-		StashType: "tag",
+		StashType: TypeTag,
 	}
 }
 
 func (t Tag) Type() string {
-	return "tag"
+	return TypeTag
 }
 
-func BuildTagDocumentMapping() *mapping.DocumentMapping {
+func buildTagDocumentMapping() *mapping.DocumentMapping {
 	englishTextFieldMapping := bleve.NewTextFieldMapping()
 	englishTextFieldMapping.Analyzer = en.AnalyzerName
 
@@ -58,15 +58,15 @@ func NewPerformer(in models.Performer) Performer {
 	return Performer{
 		ID:        in.ID,
 		Name:      name,
-		StashType: "performer",
+		StashType: TypePerformer,
 	}
 }
 
 func (p Performer) Type() string {
-	return "performer"
+	return TypePerformer
 }
 
-func BuildPerformerDocumentMapping() *mapping.DocumentMapping {
+func buildPerformerDocumentMapping() *mapping.DocumentMapping {
 	englishTextFieldMapping := bleve.NewTextFieldMapping()
 	englishTextFieldMapping.Analyzer = en.AnalyzerName
 
@@ -77,6 +77,53 @@ func BuildPerformerDocumentMapping() *mapping.DocumentMapping {
 	performerMapping.AddFieldMappingsAt("name", englishTextFieldMapping)
 
 	return performerMapping
+}
+
+type Studio struct {
+	ID int `json:"id"`
+
+	Name    *string `json:"name,omitempty"`
+	Details *string `json:"details,omitempty"`
+
+	StashType string `json:"stash_type"`
+}
+
+func NewStudio(in models.Studio) Studio {
+	var name, details *string
+	if in.Name.Valid {
+		name = &in.Name.String
+	}
+
+	if in.Details.Valid {
+		details = &in.Details.String
+	}
+
+	return Studio{
+		ID:      in.ID,
+		Name:    name,
+		Details: details,
+
+		StashType: TypeStudio,
+	}
+}
+
+func (s Studio) Type() string {
+	return TypeStudio
+}
+
+func buildStudioDocumentMapping() *mapping.DocumentMapping {
+	englishTextFieldMapping := bleve.NewTextFieldMapping()
+	englishTextFieldMapping.Analyzer = en.AnalyzerName
+
+	numericFieldMapping := bleve.NewNumericFieldMapping()
+	studioMapping := bleve.NewDocumentMapping()
+
+	studioMapping.AddFieldMappingsAt("id", numericFieldMapping)
+
+	studioMapping.AddFieldMappingsAt("name", englishTextFieldMapping)
+	studioMapping.AddFieldMappingsAt("details", englishTextFieldMapping)
+
+	return studioMapping
 }
 
 type Scene struct {
@@ -130,15 +177,15 @@ func NewScene(in models.Scene, inPerformers []Performer, inTags []Tag) Scene {
 		Tag:       tags,
 		TagID:     tagIDs,
 
-		StashType: "scene",
+		StashType: TypeScene,
 	}
 }
 
 func (s Scene) Type() string {
-	return "scene"
+	return TypeScene
 }
 
-func BuildSceneDocumentMapping() *mapping.DocumentMapping {
+func buildSceneDocumentMapping() *mapping.DocumentMapping {
 	englishTextFieldMapping := bleve.NewTextFieldMapping()
 	englishTextFieldMapping.Analyzer = en.AnalyzerName
 
@@ -152,27 +199,28 @@ func BuildSceneDocumentMapping() *mapping.DocumentMapping {
 	sceneMapping.AddFieldMappingsAt("details", englishTextFieldMapping)
 	sceneMapping.AddFieldMappingsAt("date", dateMapping)
 
-	sceneMapping.AddSubDocumentMapping("tag", BuildTagDocumentMapping())
-
 	// Tags are flattened into the structure
 	sceneMapping.AddFieldMappingsAt("tag", englishTextFieldMapping)
 	sceneMapping.AddFieldMappingsAt("tag_id", numericalFieldMapping)
 
-	sceneMapping.AddSubDocumentMapping("performer", BuildPerformerDocumentMapping())
+	sceneMapping.AddSubDocumentMapping(TypePerformer, buildPerformerDocumentMapping())
 
 	return sceneMapping
 }
 
 func BuildIndexMapping() (mapping.IndexMapping, error) {
-	sceneMapping := BuildSceneDocumentMapping()
-	performerMapping := BuildPerformerDocumentMapping()
-	tagMapping := BuildTagDocumentMapping()
+	sceneMapping := buildSceneDocumentMapping()
+	performerMapping := buildPerformerDocumentMapping()
+	tagMapping := buildTagDocumentMapping()
+	studioMapping := buildStudioDocumentMapping()
 
 	indexMapping := bleve.NewIndexMapping()
 
-	indexMapping.AddDocumentMapping("scene", sceneMapping)
-	indexMapping.AddDocumentMapping("performer", performerMapping)
-	indexMapping.AddDocumentMapping("tag", tagMapping)
+	indexMapping.AddDocumentMapping(TypeScene, sceneMapping)
+	indexMapping.AddDocumentMapping(TypePerformer, performerMapping)
+	indexMapping.AddDocumentMapping(TypeTag, tagMapping)
+	indexMapping.AddDocumentMapping(TypeStudio, studioMapping)
+
 	indexMapping.TypeField = "Type"
 	indexMapping.DefaultAnalyzer = "en"
 
