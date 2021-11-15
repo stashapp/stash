@@ -1,8 +1,9 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
@@ -38,12 +39,12 @@ import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
 
-interface ISceneParams {
-  id?: string;
+interface IProps {
+  scene: GQL.SceneDataFragment;
+  refetch: () => void;
 }
 
-export const Scene: React.FC = () => {
-  const { id = "new" } = useParams<ISceneParams>();
+const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
@@ -53,18 +54,16 @@ export const Scene: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
 
-  const { data, error, loading, refetch } = useFindScene(id);
-  const scene = data?.findScene;
   const {
     data: sceneStreams,
     error: streamableError,
     loading: streamableLoading,
-  } = useSceneStreams(id);
+  } = useSceneStreams(scene.id);
 
   const [oLoading, setOLoading] = useState(false);
-  const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
-  const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
-  const [resetO] = useSceneResetO(scene?.id ?? "0");
+  const [incrementO] = useSceneIncrementO(scene.id);
+  const [decrementO] = useSceneDecrementO(scene.id);
+  const [resetO] = useSceneResetO(scene.id);
 
   const [organizedLoading, setOrganizedLoading] = useState(false);
 
@@ -80,12 +79,15 @@ export const Scene: React.FC = () => {
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
+  const [continuePlaylist, setContinuePlaylist] = useState(false);
 
   const [rerenderPlayer, setRerenderPlayer] = useState(false);
 
-  const queryParams = queryString.parse(location.search);
+  const queryParams = useMemo(() => queryString.parse(location.search), [
+    location.search,
+  ]);
   const autoplay = queryParams?.autoplay === "true";
-  const currentQueueIndex = queueScenes.findIndex((s) => s.id === id);
+  const currentQueueIndex = queueScenes.findIndex((s) => s.id === scene.id);
 
   async function getQueueFilterScenes(filter: ListFilterModel) {
     const query = await queryFindScenes(filter);
@@ -103,6 +105,10 @@ export const Scene: React.FC = () => {
     setQueueStart(1);
   }
 
+  useEffect(() => {
+    setContinuePlaylist(queryParams?.continue === "true");
+  }, [queryParams]);
+
   // HACK - jwplayer doesn't handle re-rendering when scene changes, so force
   // a rerender by not drawing it
   useEffect(() => {
@@ -113,7 +119,7 @@ export const Scene: React.FC = () => {
 
   useEffect(() => {
     setRerenderPlayer(true);
-  }, [id]);
+  }, [scene.id]);
 
   useEffect(() => {
     setSceneQueue(SceneQueue.fromQueryParameters(location.search));
@@ -142,8 +148,8 @@ export const Scene: React.FC = () => {
       await updateScene({
         variables: {
           input: {
-            id: scene?.id ?? "",
-            organized: !scene?.organized,
+            id: scene.id,
+            organized: !scene.organized,
           },
         },
       });
@@ -192,10 +198,6 @@ export const Scene: React.FC = () => {
   }
 
   async function onRescan() {
-    if (!scene) {
-      return;
-    }
-
     await mutateMetadataScan({
       paths: [scene.path],
     });
@@ -214,10 +216,6 @@ export const Scene: React.FC = () => {
   }
 
   async function onGenerateScreenshot(at?: number) {
-    if (!scene) {
-      return;
-    }
-
     await generateScreenshot({
       variables: {
         id: scene.id,
@@ -271,6 +269,7 @@ export const Scene: React.FC = () => {
     sceneQueue.playScene(history, sceneID, {
       newPage: page,
       autoPlay: true,
+      continue: continuePlaylist,
     });
   }
 
@@ -310,7 +309,7 @@ export const Scene: React.FC = () => {
 
   function onComplete() {
     // load the next scene if we're autoplaying
-    if (autoplay) {
+    if (continuePlaylist) {
       onQueueNext();
     }
   }
@@ -323,7 +322,7 @@ export const Scene: React.FC = () => {
   }
 
   function maybeRenderDeleteDialog() {
-    if (isDeleteAlertOpen && scene) {
+    if (isDeleteAlertOpen) {
       return (
         <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
       );
@@ -331,7 +330,7 @@ export const Scene: React.FC = () => {
   }
 
   function maybeRenderSceneGenerateDialog() {
-    if (isGenerateDialogOpen && scene) {
+    if (isGenerateDialogOpen) {
       return (
         <SceneGenerateDialog
           selectedIds={[scene.id]}
@@ -343,215 +342,206 @@ export const Scene: React.FC = () => {
     }
   }
 
-  function renderOperations() {
-    return (
-      <Dropdown>
-        <Dropdown.Toggle
-          variant="secondary"
-          id="operation-menu"
-          className="minimal"
-          title="Operations"
-        >
-          <Icon icon="ellipsis-v" />
-        </Dropdown.Toggle>
-        <Dropdown.Menu className="bg-secondary text-white">
-          <Dropdown.Item
-            key="rescan"
-            className="bg-secondary text-white"
-            onClick={() => onRescan()}
-          >
-            <FormattedMessage id="actions.rescan" />
-          </Dropdown.Item>
-          <Dropdown.Item
-            key="generate"
-            className="bg-secondary text-white"
-            onClick={() => setIsGenerateDialogOpen(true)}
-          >
-            <FormattedMessage id="actions.generate" />
-          </Dropdown.Item>
-          <Dropdown.Item
-            key="generate-screenshot"
-            className="bg-secondary text-white"
-            onClick={() =>
-              onGenerateScreenshot(JWUtils.getPlayer().getPosition())
-            }
-          >
-            <FormattedMessage id="actions.generate_thumb_from_current" />
-          </Dropdown.Item>
-          <Dropdown.Item
-            key="generate-default"
-            className="bg-secondary text-white"
-            onClick={() => onGenerateScreenshot()}
-          >
-            <FormattedMessage id="actions.generate_thumb_default" />
-          </Dropdown.Item>
-          <Dropdown.Item
-            key="delete-scene"
-            className="bg-secondary text-white"
-            onClick={() => setIsDeleteAlertOpen(true)}
-          >
-            <FormattedMessage
-              id="actions.delete_entity"
-              values={{ entityType: intl.formatMessage({ id: "scene" }) }}
-            />
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-    );
-  }
-
-  function renderTabs() {
-    if (!scene) {
-      return;
-    }
-
-    return (
-      <Tab.Container
-        activeKey={activeTabKey}
-        onSelect={(k) => k && setActiveTabKey(k)}
+  const renderOperations = () => (
+    <Dropdown>
+      <Dropdown.Toggle
+        variant="secondary"
+        id="operation-menu"
+        className="minimal"
+        title="Operations"
       >
-        <div>
-          <Nav variant="tabs" className="mr-auto">
-            <Nav.Item>
-              <Nav.Link eventKey="scene-details-panel">
-                <FormattedMessage id="scenes" />
-              </Nav.Link>
-            </Nav.Item>
-            {(queueScenes ?? []).length > 0 ? (
-              <Nav.Item>
-                <Nav.Link eventKey="scene-queue-panel">
-                  <FormattedMessage id="queue" />
-                </Nav.Link>
-              </Nav.Item>
-            ) : (
-              ""
-            )}
-            <Nav.Item>
-              <Nav.Link eventKey="scene-markers-panel">
-                <FormattedMessage id="markers" />
-              </Nav.Link>
-            </Nav.Item>
-            {scene.movies.length > 0 ? (
-              <Nav.Item>
-                <Nav.Link eventKey="scene-movie-panel">
-                  <FormattedMessage
-                    id="countables.movies"
-                    values={{ count: scene.movies.length }}
-                  />
-                </Nav.Link>
-              </Nav.Item>
-            ) : (
-              ""
-            )}
-            {scene.galleries.length >= 1 ? (
-              <Nav.Item>
-                <Nav.Link eventKey="scene-galleries-panel">
-                  <FormattedMessage
-                    id="countables.galleries"
-                    values={{ count: scene.galleries.length }}
-                  />
-                </Nav.Link>
-              </Nav.Item>
-            ) : undefined}
-            <Nav.Item>
-              <Nav.Link eventKey="scene-video-filter-panel">
-                <FormattedMessage id="effect_filters.name" />
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="scene-file-info-panel">
-                <FormattedMessage id="file_info" />
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="scene-edit-panel">
-                <FormattedMessage id="actions.edit" />
-              </Nav.Link>
-            </Nav.Item>
-            <ButtonGroup className="ml-auto">
-              <Nav.Item className="ml-auto">
-                <ExternalPlayerButton scene={scene} />
-              </Nav.Item>
-              <Nav.Item className="ml-auto">
-                <OCounterButton
-                  loading={oLoading}
-                  value={scene.o_counter || 0}
-                  onIncrement={onIncrementClick}
-                  onDecrement={onDecrementClick}
-                  onReset={onResetClick}
-                />
-              </Nav.Item>
-              <Nav.Item>
-                <OrganizedButton
-                  loading={organizedLoading}
-                  organized={scene.organized}
-                  onClick={onOrganizedClick}
-                />
-              </Nav.Item>
-              <Nav.Item>{renderOperations()}</Nav.Item>
-            </ButtonGroup>
-          </Nav>
-        </div>
+        <Icon icon="ellipsis-v" />
+      </Dropdown.Toggle>
+      <Dropdown.Menu className="bg-secondary text-white">
+        <Dropdown.Item
+          key="rescan"
+          className="bg-secondary text-white"
+          onClick={() => onRescan()}
+        >
+          <FormattedMessage id="actions.rescan" />
+        </Dropdown.Item>
+        <Dropdown.Item
+          key="generate"
+          className="bg-secondary text-white"
+          onClick={() => setIsGenerateDialogOpen(true)}
+        >
+          <FormattedMessage id="actions.generate" />
+        </Dropdown.Item>
+        <Dropdown.Item
+          key="generate-screenshot"
+          className="bg-secondary text-white"
+          onClick={() =>
+            onGenerateScreenshot(JWUtils.getPlayer().getPosition())
+          }
+        >
+          <FormattedMessage id="actions.generate_thumb_from_current" />
+        </Dropdown.Item>
+        <Dropdown.Item
+          key="generate-default"
+          className="bg-secondary text-white"
+          onClick={() => onGenerateScreenshot()}
+        >
+          <FormattedMessage id="actions.generate_thumb_default" />
+        </Dropdown.Item>
+        <Dropdown.Item
+          key="delete-scene"
+          className="bg-secondary text-white"
+          onClick={() => setIsDeleteAlertOpen(true)}
+        >
+          <FormattedMessage
+            id="actions.delete_entity"
+            values={{ entityType: intl.formatMessage({ id: "scene" }) }}
+          />
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+  );
 
-        <Tab.Content>
-          <Tab.Pane eventKey="scene-details-panel">
-            <SceneDetailPanel scene={scene} />
-          </Tab.Pane>
-          <Tab.Pane eventKey="scene-queue-panel">
-            <QueueViewer
-              scenes={queueScenes}
-              currentID={scene.id}
-              onSceneClicked={(sceneID) => playScene(sceneID)}
-              onNext={onQueueNext}
-              onPrevious={onQueuePrevious}
-              onRandom={onQueueRandom}
-              start={queueStart}
-              hasMoreScenes={queueHasMoreScenes()}
-              onLessScenes={() => onQueueLessScenes()}
-              onMoreScenes={() => onQueueMoreScenes()}
-            />
-          </Tab.Pane>
-          <Tab.Pane eventKey="scene-markers-panel">
-            <SceneMarkersPanel
-              scene={scene}
-              onClickMarker={onClickMarker}
-              isVisible={activeTabKey === "scene-markers-panel"}
-            />
-          </Tab.Pane>
-          <Tab.Pane eventKey="scene-movie-panel">
-            <SceneMoviePanel scene={scene} />
-          </Tab.Pane>
-          {scene.galleries.length === 1 && (
-            <Tab.Pane eventKey="scene-galleries-panel">
-              <GalleryViewer galleryId={scene.galleries[0].id} />
-            </Tab.Pane>
+  const renderTabs = () => (
+    <Tab.Container
+      activeKey={activeTabKey}
+      onSelect={(k) => k && setActiveTabKey(k)}
+    >
+      <div>
+        <Nav variant="tabs" className="mr-auto">
+          <Nav.Item>
+            <Nav.Link eventKey="scene-details-panel">
+              <FormattedMessage id="details" />
+            </Nav.Link>
+          </Nav.Item>
+          {(queueScenes ?? []).length > 0 ? (
+            <Nav.Item>
+              <Nav.Link eventKey="scene-queue-panel">
+                <FormattedMessage id="queue" />
+              </Nav.Link>
+            </Nav.Item>
+          ) : (
+            ""
           )}
-          {scene.galleries.length > 1 && (
-            <Tab.Pane eventKey="scene-galleries-panel">
-              <SceneGalleriesPanel galleries={scene.galleries} />
-            </Tab.Pane>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-markers-panel">
+              <FormattedMessage id="markers" />
+            </Nav.Link>
+          </Nav.Item>
+          {scene.movies.length > 0 ? (
+            <Nav.Item>
+              <Nav.Link eventKey="scene-movie-panel">
+                <FormattedMessage
+                  id="countables.movies"
+                  values={{ count: scene.movies.length }}
+                />
+              </Nav.Link>
+            </Nav.Item>
+          ) : (
+            ""
           )}
-          <Tab.Pane eventKey="scene-video-filter-panel">
-            <SceneVideoFilterPanel scene={scene} />
+          {scene.galleries.length >= 1 ? (
+            <Nav.Item>
+              <Nav.Link eventKey="scene-galleries-panel">
+                <FormattedMessage
+                  id="countables.galleries"
+                  values={{ count: scene.galleries.length }}
+                />
+              </Nav.Link>
+            </Nav.Item>
+          ) : undefined}
+          <Nav.Item>
+            <Nav.Link eventKey="scene-video-filter-panel">
+              <FormattedMessage id="effect_filters.name" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-file-info-panel">
+              <FormattedMessage id="file_info" />
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="scene-edit-panel">
+              <FormattedMessage id="actions.edit" />
+            </Nav.Link>
+          </Nav.Item>
+          <ButtonGroup className="ml-auto">
+            <Nav.Item className="ml-auto">
+              <ExternalPlayerButton scene={scene} />
+            </Nav.Item>
+            <Nav.Item className="ml-auto">
+              <OCounterButton
+                loading={oLoading}
+                value={scene.o_counter || 0}
+                onIncrement={onIncrementClick}
+                onDecrement={onDecrementClick}
+                onReset={onResetClick}
+              />
+            </Nav.Item>
+            <Nav.Item>
+              <OrganizedButton
+                loading={organizedLoading}
+                organized={scene.organized}
+                onClick={onOrganizedClick}
+              />
+            </Nav.Item>
+            <Nav.Item>{renderOperations()}</Nav.Item>
+          </ButtonGroup>
+        </Nav>
+      </div>
+
+      <Tab.Content>
+        <Tab.Pane eventKey="scene-details-panel">
+          <SceneDetailPanel scene={scene} />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-queue-panel">
+          <QueueViewer
+            scenes={queueScenes}
+            currentID={scene.id}
+            continue={continuePlaylist}
+            setContinue={(v) => setContinuePlaylist(v)}
+            onSceneClicked={(sceneID) => playScene(sceneID)}
+            onNext={onQueueNext}
+            onPrevious={onQueuePrevious}
+            onRandom={onQueueRandom}
+            start={queueStart}
+            hasMoreScenes={queueHasMoreScenes()}
+            onLessScenes={() => onQueueLessScenes()}
+            onMoreScenes={() => onQueueMoreScenes()}
+          />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-markers-panel">
+          <SceneMarkersPanel
+            scene={scene}
+            onClickMarker={onClickMarker}
+            isVisible={activeTabKey === "scene-markers-panel"}
+          />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-movie-panel">
+          <SceneMoviePanel scene={scene} />
+        </Tab.Pane>
+        {scene.galleries.length === 1 && (
+          <Tab.Pane eventKey="scene-galleries-panel">
+            <GalleryViewer galleryId={scene.galleries[0].id} />
           </Tab.Pane>
-          <Tab.Pane
-            className="file-info-panel"
-            eventKey="scene-file-info-panel"
-          >
-            <SceneFileInfoPanel scene={scene} />
+        )}
+        {scene.galleries.length > 1 && (
+          <Tab.Pane eventKey="scene-galleries-panel">
+            <SceneGalleriesPanel galleries={scene.galleries} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-edit-panel">
-            <SceneEditPanel
-              isVisible={activeTabKey === "scene-edit-panel"}
-              scene={scene}
-              onDelete={() => setIsDeleteAlertOpen(true)}
-              onUpdate={() => refetch()}
-            />
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
-    );
-  }
+        )}
+        <Tab.Pane eventKey="scene-video-filter-panel">
+          <SceneVideoFilterPanel scene={scene} />
+        </Tab.Pane>
+        <Tab.Pane className="file-info-panel" eventKey="scene-file-info-panel">
+          <SceneFileInfoPanel scene={scene} />
+        </Tab.Pane>
+        <Tab.Pane eventKey="scene-edit-panel">
+          <SceneEditPanel
+            isVisible={activeTabKey === "scene-edit-panel"}
+            scene={scene}
+            onDelete={() => setIsDeleteAlertOpen(true)}
+            onUpdate={() => refetch()}
+          />
+        </Tab.Pane>
+      </Tab.Content>
+    </Tab.Container>
+  );
 
   // set up hotkeys
   useEffect(() => {
@@ -582,13 +572,14 @@ export const Scene: React.FC = () => {
     return collapsed ? ">" : "<";
   }
 
-  if (loading || streamableLoading) return <LoadingIndicator />;
-  if (error) return <ErrorMessage error={error.message} />;
+  if (streamableLoading) return <LoadingIndicator />;
   if (streamableError) return <ErrorMessage error={streamableError.message} />;
-  if (!scene) return <ErrorMessage error={`No scene found with id ${id}.`} />;
 
   return (
     <div className="row">
+      <Helmet>
+        <title>{scene.title ?? TextUtils.fileNameFromPath(scene.path)}</title>
+      </Helmet>
       {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
       <div
@@ -638,3 +629,17 @@ export const Scene: React.FC = () => {
     </div>
   );
 };
+
+const SceneLoader: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { data, loading, error, refetch } = useFindScene(id ?? "");
+
+  if (loading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!data?.findScene)
+    return <ErrorMessage error={`No scene found with id ${id}.`} />;
+
+  return <ScenePage scene={data.findScene} refetch={refetch} />;
+};
+
+export default SceneLoader;

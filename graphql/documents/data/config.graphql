@@ -52,12 +52,20 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallShowTitle
   wallPlayback
   maximumLoopDuration
+  noBrowser
   autostartVideo
+  autostartVideoOnPlaySelected
+  continuePlaylistDefault
   showStudioAsText
   css
   cssEnabled
   language
   slideshowDelay
+  disabledDropdownCreate {
+    performer
+    tag
+    studio
+  }
   handyKey
   funscriptOffset
 }
@@ -76,6 +84,46 @@ fragment ConfigScrapingData on ConfigScrapingResult {
   excludeTagPatterns
 }
 
+fragment IdentifyFieldOptionsData on IdentifyFieldOptions {
+  field
+  strategy
+  createMissing
+}
+
+fragment IdentifyMetadataOptionsData on IdentifyMetadataOptions {
+  fieldOptions {
+    ...IdentifyFieldOptionsData
+  }
+  setCoverImage
+  setOrganized
+  includeMalePerformers
+}
+
+fragment ScraperSourceData on ScraperSource {
+  stash_box_index
+  stash_box_endpoint
+  scraper_id
+}
+
+fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
+  identify {
+    sources {
+      source {
+        ...ScraperSourceData
+      }
+      options {
+        ...IdentifyMetadataOptionsData
+      }
+    }
+    options {
+      ...IdentifyMetadataOptionsData
+    }
+  }
+
+  deleteFile
+  deleteGenerated
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
@@ -88,5 +136,8 @@ fragment ConfigData on ConfigResult {
   }
   scraping {
     ...ConfigScrapingData
+  }
+  defaults {
+    ...ConfigDefaultSettingsData
   }
 }

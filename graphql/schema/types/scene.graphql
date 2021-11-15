@@ -120,6 +120,10 @@ input ScenesDestroyInput {
 
 type FindScenesResultType {
   count: Int!
+  """Total duration in seconds"""
+  duration: Float!
+  """Total file size in bytes"""
+  filesize: Float!
   scenes: [Scene!]!
 }
 

@@ -4,6 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
 import { GridCard } from "src/components/Shared";
 import { ButtonGroup } from "react-bootstrap";
+import { FormattedMessage } from "react-intl";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 
@@ -22,11 +23,16 @@ function maybeRenderParent(
   if (!hideParent && studio.parent_studio) {
     return (
       <div>
-        Part of&nbsp;
-        <Link to={`/studios/${studio.parent_studio.id}`}>
-          {studio.parent_studio.name}
-        </Link>
-        .
+        <FormattedMessage
+          id="part_of"
+          values={{
+            parent: (
+              <Link to={`/studios/${studio.parent_studio.id}`}>
+                {studio.parent_studio.name}
+              </Link>
+            ),
+          }}
+        />
       </div>
     );
   }
@@ -36,11 +42,16 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   if (studio.child_studios.length > 0) {
     return (
       <div>
-        Parent of&nbsp;
-        <Link to={NavUtils.makeChildStudiosUrl(studio)}>
-          {studio.child_studios.length} studios
-        </Link>
-        .
+        <FormattedMessage
+          id="parent_of"
+          values={{
+            children: (
+              <Link to={NavUtils.makeChildStudiosUrl(studio)}>
+                {studio.child_studios.length} studios
+              </Link>
+            ),
+          }}
+        />
       </div>
     );
   }

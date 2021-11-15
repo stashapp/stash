@@ -141,9 +141,19 @@ func TestSceneQueryQ(t *testing.T) {
 
 func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
 	t.Helper()
-	scenes, _, err := sqb.Query(sceneFilter, findFilter)
+	result, err := sqb.Query(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+		},
+		SceneFilter: sceneFilter,
+	})
 	if err != nil {
-		t.Errorf("Error querying scene: %s", err.Error())
+		t.Errorf("Error querying scene: %v", err)
+	}
+
+	scenes, err := result.Resolve()
+	if err != nil {
+		t.Errorf("Error resolving scenes: %v", err)
 	}
 
 	return scenes
@@ -346,17 +356,21 @@ func TestSceneIllegalQuery(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
 
-		_, _, err := sqb.Query(sceneFilter, nil)
+		queryOptions := models.SceneQueryOptions{
+			SceneFilter: sceneFilter,
+		}
+
+		_, err := sqb.Query(queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.Or = nil
 		sceneFilter.Not = &subFilter
-		_, _, err = sqb.Query(sceneFilter, nil)
+		_, err = sqb.Query(queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.And = nil
 		sceneFilter.Or = &subFilter
-		_, _, err = sqb.Query(sceneFilter, nil)
+		_, err = sqb.Query(queryOptions)
 		assert.NotNil(err)
 
 		return nil
@@ -761,7 +775,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 			HasMarkers: &hasMarkers,
 		}
 
-		q := getSceneStringValue(sceneIdxWithMarker, titleField)
+		q := getSceneStringValue(sceneIdxWithMarkers, titleField)
 		findFilter := models.FindFilterType{
 			Q: &q,
 		}
@@ -769,7 +783,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 1)
-		assert.Equal(t, sceneIDs[sceneIdxWithMarker], scenes[0].ID)
+		assert.Equal(t, sceneIDs[sceneIdxWithMarkers], scenes[0].ID)
 
 		hasMarkers = "false"
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
@@ -782,7 +796,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 
 		// ensure non of the ids equal the one with gallery
 		for _, scene := range scenes {
-			assert.NotEqual(t, sceneIDs[sceneIdxWithMarker], scene.ID)
+			assert.NotEqual(t, sceneIDs[sceneIdxWithMarkers], scene.ID)
 		}
 
 		return nil
@@ -1134,6 +1148,29 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			Q: &q,
 		}
 
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
+
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdx1WithPerformer], scenes[0].ID)
+
+		q = getSceneStringValue(sceneIdxWithPerformerTag, titleField)
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTag], scenes[0].ID)
+
+		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
 		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 

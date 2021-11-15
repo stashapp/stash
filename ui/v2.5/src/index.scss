@@ -20,6 +20,7 @@
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
 @import "src/components/Tagger/styles.scss";
 @import "src/hooks/Lightbox/lightbox.scss";
+@import "src/components/Dialogs/IdentifyDialog/styles.scss";
 
 /* stylelint-disable */
 #root {
@@ -37,6 +38,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 4rem 0 0 0;
+
+  @include media-breakpoint-down(xs) {
+    @media (orientation: portrait) {
+      padding: 1rem 0 5rem;
+    }
+  }
 }
 
 code,
@@ -66,13 +73,6 @@ dd {
   }
 }
 
-.text-input,
-.text-input:focus,
-.text-input[readonly],
-.text-input:disabled {
-  background-color: $textfield-bg;
-}
-
 .input-control,
 .input-control:focus,
 .input-control:disabled {
@@ -81,6 +81,13 @@ dd {
 
 .input-control:disabled {
   opacity: 0.8;
+}
+
+.text-input,
+.text-input:focus,
+.text-input[readonly],
+.text-input:disabled {
+  background-color: $textfield-bg;
 }
 
 textarea.text-input {
@@ -414,6 +421,10 @@ div.dropdown-menu {
       text-shadow: none;
     }
   }
+
+  .toast-body {
+    white-space: pre-wrap;
+  }
 }
 
 .image-input {
@@ -463,44 +474,122 @@ div.dropdown-menu {
 }
 
 .top-nav {
+  justify-content: start;
   padding: 0.25rem 1rem;
+
+  @include media-breakpoint-down(xs) {
+    padding: 0.25rem 2rem;
+
+    @media (orientation: portrait) {
+      bottom: 0;
+      top: auto;
+    }
+  }
+
+  .navbar-toggler {
+    padding: 0.5em 0;
+    text-align: center;
+    width: 3em;
+
+    svg {
+      margin: auto;
+    }
+  }
+
+  .navbar-collapse {
+    justify-content: space-between;
+    max-height: calc(100vh - 4rem);
+
+    @include media-breakpoint-down(xs) {
+      @media (orientation: landscape) {
+        overflow-y: scroll;
+      }
+    }
+
+    .navbar-nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-bottom: 0.5rem;
+
+      @include media-breakpoint-up(xl) {
+        flex-wrap: nowrap;
+        padding-bottom: 0;
+      }
+
+      &:last-child {
+        display: none;
+      }
+
+      @include media-breakpoint-down(xs) {
+        &:last-child {
+          display: flex;
+          min-height: 3rem;
+        }
+      }
+    }
+  }
+
+  .navbar-buttons .btn {
+    align-items: center;
+    display: flex;
+  }
+
+  @include media-breakpoint-down(xs) {
+    .navbar-buttons .nav-utility {
+      display: none;
+    }
+  }
 
   .nav-link {
     padding: 0;
   }
 
   .fa-icon {
-    margin-left: 0;
+    @include media-breakpoint-down(xs) {
+      margin: 0;
+    }
+
+    &.nav-menu-icon {
+      @include media-breakpoint-down(lg) {
+        height: 100%;
+        max-height: min(10vw, 55px);
+        width: 100%;
+      }
+    }
   }
 
   .btn {
     white-space: nowrap;
   }
 
-  @media (max-width: 576px) {
+  @include media-breakpoint-down(lg) {
+    .navbar-brand {
+      margin-left: -8px;
+    }
+
+    .navbar-buttons {
+      margin: 0 -8px;
+    }
+
     .btn {
-      padding: 6px;
-    }
-
-    .settings-button {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-
-    .donate {
-      span {
-        display: none;
-      }
-
-      svg {
-        margin: 0;
-      }
+      padding: 6px 12px;
     }
   }
 }
 
-.donate svg {
-  color: #ff7373;
+.donate {
+  align-items: center;
+  display: flex;
+  height: 100%;
+
+  svg {
+    color: #ff7373;
+
+    @include media-breakpoint-down(xs) {
+      margin: 0;
+    }
+  }
 }
 
 .error-message {

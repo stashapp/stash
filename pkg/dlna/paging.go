@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type scenePager struct {
@@ -36,7 +37,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 		if pages <= 10 || (page-1)%(pages/10) == 0 {
 			thisPage := ((page - 1) * pageSize) + 1
 			findFilter.Page = &thisPage
-			scenes, _, err := r.Scene().Query(p.sceneFilter, findFilter)
+			scenes, err := scene.Query(r.Scene(), p.sceneFilter, findFilter)
 			if err != nil {
 				return nil, err
 			}
@@ -48,7 +49,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 				sceneTitle = sceneTitle[0:3]
 			}
 
-			title = title + fmt.Sprintf(" (%s...)", sceneTitle)
+			title += fmt.Sprintf(" (%s...)", sceneTitle)
 		}
 
 		objs = append(objs, makeStorageFolder(p.getPageID(page), title, p.parentID))
@@ -67,7 +68,7 @@ func (p *scenePager) getPageVideos(r models.ReaderRepository, page int, host str
 		Sort:    &sort,
 	}
 
-	scenes, _, err := r.Scene().Query(p.sceneFilter, findFilter)
+	scenes, err := scene.Query(r.Scene(), p.sceneFilter, findFilter)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 import TruncatedText from "./TruncatedText";
 
 interface ICardProps {
@@ -77,7 +78,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
 
   return (
     <Card
-      className={`${props.className} grid-card`}
+      className={cx(props.className, "grid-card")}
       onClick={handleImageClick}
       onDragStart={handleDrag}
       onDragOver={handleDragOver}
@@ -85,7 +86,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     >
       {maybeRenderCheckbox()}
 
-      <div className={`${props.thumbnailSectionClassName} thumbnail-section`}>
+      <div className={cx(props.thumbnailSectionClassName, "thumbnail-section")}>
         <Link
           to={props.url}
           className={props.linkClassName}

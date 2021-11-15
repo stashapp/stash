@@ -1,3 +1,17 @@
+import { ScraperSourceInput } from "src/core/generated-graphql";
+
+export const STASH_BOX_PREFIX = "stashbox:";
+export const SCRAPER_PREFIX = "scraper:";
+
+export interface ITaggerSource {
+  id: string;
+  stashboxEndpoint?: string;
+  sourceInput: ScraperSourceInput;
+  displayName: string;
+  supportSceneQuery?: boolean;
+  supportSceneFragment?: boolean;
+}
+
 export const LOCAL_FORAGE_KEY = "tagger";
 export const DEFAULT_BLACKLIST = [
   "\\sXXX\\s",
@@ -46,10 +60,17 @@ export const PERFORMER_FIELDS = [
   "ethnicity",
   "country",
   "eye_color",
+  "hair_color",
   "height",
   "measurements",
   "fake_tits",
   "career_length",
   "tattoos",
   "piercings",
+  "url",
+  "twitter",
+  "instagram",
+  "details",
+  "death_date",
+  "weight",
 ];

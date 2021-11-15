@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Row, Col } from "react-bootstrap";
 import { useIntl } from "react-intl";
 
 import { Modal, Icon } from "src/components/Shared";
@@ -30,7 +30,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
     });
 
   const renderField = (name: string) => (
-    <div className="mb-1" key={name}>
+    <Col xs={6} className="mb-1" key={name}>
       <Button
         onClick={() => toggleField(name)}
         variant="secondary"
@@ -39,7 +39,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
         <Icon icon={excluded[name] ? "times" : "check"} />
       </Button>
       <span className="ml-3">{TextUtils.capitalize(name)}</span>
-    </div>
+    </Col>
   );
 
   return (
@@ -57,7 +57,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
       <div className="mb-2">
         These fields will be tagged by default. Click the button to toggle.
       </div>
-      {fields.map((f) => renderField(f))}
+      <Row>{fields.map((f) => renderField(f))}</Row>
     </Modal>
   );
 };

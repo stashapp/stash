@@ -71,7 +71,7 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 			args = append(args, "/dev/null")
 		}
 
-		command := exec.Command(instance.FFMPEGPath, args...)
+		command := exec.Command(string(instance.FFMPEG), args...)
 		var stdErrBuffer bytes.Buffer
 		command.Stderr = &stdErrBuffer // Frames go to stderr rather than stdout
 		if err := command.Run(); err == nil {

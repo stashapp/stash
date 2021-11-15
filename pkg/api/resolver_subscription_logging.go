@@ -8,20 +8,22 @@ import (
 )
 
 func getLogLevel(logType string) models.LogLevel {
-	if logType == "progress" {
+	switch logType {
+	case "progress":
 		return models.LogLevelProgress
-	} else if logType == "debug" {
+	case "trace":
+		return models.LogLevelTrace
+	case "debug":
 		return models.LogLevelDebug
-	} else if logType == "info" {
+	case "info":
 		return models.LogLevelInfo
-	} else if logType == "warn" {
+	case "warn":
 		return models.LogLevelWarning
-	} else if logType == "error" {
+	case "error":
 		return models.LogLevelError
+	default:
+		return models.LogLevelDebug
 	}
-
-	// default to debug
-	return models.LogLevelDebug
 }
 
 func logEntriesFromLogItems(logItems []logger.LogItem) []*models.LogEntry {

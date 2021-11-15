@@ -22,6 +22,9 @@ import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
+import { TaggerContext } from "../Tagger/context";
+import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -36,7 +39,9 @@ export const SceneList: React.FC<ISceneList> = ({
 }) => {
   const intl = useIntl();
   const history = useHistory();
+  const config = React.useContext(ConfigurationContext);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
@@ -52,8 +57,13 @@ export const SceneList: React.FC<ISceneList> = ({
       onClick: playRandom,
     },
     {
-      text: intl.formatMessage({ id: "actions.generate" }),
+      text: `${intl.formatMessage({ id: "actions.generate" })}…`,
       onClick: generate,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.identify" })}…`,
+      onClick: identify,
       isDisplayed: showWhenSelected,
     },
     {
@@ -106,7 +116,11 @@ export const SceneList: React.FC<ISceneList> = ({
     // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
-    queue.playScene(history, sceneIDs[0], { autoPlay: true });
+    const autoPlay =
+      config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+    const cont =
+      config.configuration?.interface.continuePlaylistDefault ?? false;
+    queue.playScene(history, sceneIDs[0], { autoPlay, continue: cont });
   }
 
   async function playRandom(
@@ -119,7 +133,10 @@ export const SceneList: React.FC<ISceneList> = ({
 
       const pages = Math.ceil(count / filter.itemsPerPage);
       const page = Math.floor(Math.random() * pages) + 1;
-      const index = Math.floor(Math.random() * filter.itemsPerPage);
+
+      const indexMax =
+        filter.itemsPerPage < count ? filter.itemsPerPage : count;
+      const index = Math.floor(Math.random() * indexMax);
       const filterCopy = _.cloneDeep(filter);
       filterCopy.currentPage = page;
       filterCopy.sortBy = "random";
@@ -128,13 +145,25 @@ export const SceneList: React.FC<ISceneList> = ({
         const { id } = queryResults!.data!.findScenes!.scenes[index];
         // navigate to the image player page
         const queue = SceneQueue.fromListFilterModel(filterCopy);
-        queue.playScene(history, id, { sceneIndex: index, autoPlay: true });
+        const autoPlay =
+          config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
+        const cont =
+          config.configuration?.interface.continuePlaylistDefault ?? false;
+        queue.playScene(history, id, {
+          sceneIndex: index,
+          autoPlay,
+          continue: cont,
+        });
       }
     }
   }
 
   async function generate() {
     setIsGenerateDialogOpen(true);
+  }
+
+  async function identify() {
+    setIsIdentifyDialogOpen(true);
   }
 
   async function onExport() {
@@ -155,6 +184,21 @@ export const SceneList: React.FC<ISceneList> = ({
             selectedIds={Array.from(selectedIds.values())}
             onClose={() => {
               setIsGenerateDialogOpen(false);
+            }}
+          />
+        </>
+      );
+    }
+  }
+
+  function maybeRenderSceneIdentifyDialog(selectedIds: Set<string>) {
+    if (isIdentifyDialogOpen) {
+      return (
+        <>
+          <IdentifyDialog
+            selectedIds={Array.from(selectedIds.values())}
+            onClose={() => {
+              setIsIdentifyDialogOpen(false);
             }}
           />
         </>
@@ -247,11 +291,12 @@ export const SceneList: React.FC<ISceneList> = ({
     return (
       <>
         {maybeRenderSceneGenerateDialog(selectedIds)}
+        {maybeRenderSceneIdentifyDialog(selectedIds)}
         {maybeRenderSceneExportDialog(selectedIds)}
         {renderScenes(result, filter, selectedIds)}
       </>
     );
   }
 
-  return listData.template;
+  return <TaggerContext>{listData.template}</TaggerContext>;
 };

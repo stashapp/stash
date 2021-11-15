@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -75,7 +76,7 @@ func (qb *galleryQueryBuilder) Destroy(id int) error {
 func (qb *galleryQueryBuilder) Find(id int) (*models.Gallery, error) {
 	var ret models.Gallery
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -232,8 +233,7 @@ func (qb *galleryQueryBuilder) makeQuery(galleryFilter *models.GalleryFilterType
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(galleryTable)
+	distinctIDs(&query, galleryTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.title", "galleries.path", "galleries.checksum"}
@@ -390,7 +390,24 @@ func galleryStudioCriterionHandler(qb *galleryQueryBuilder, studios *models.Hier
 
 func galleryPerformerTagsCriterionHandler(qb *galleryQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
+				f.addJoin("performers_tags", "", "performers_galleries.performer_id = performers_tags.performer_id")
+
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (
@@ -417,13 +434,14 @@ func galleryAverageResolutionCriterionHandler(qb *galleryQueryBuilder, resolutio
 
 			const widthHeight = "avg(MIN(images.width, images.height))"
 
-			if resolution.Modifier == models.CriterionModifierEquals {
+			switch resolution.Modifier {
+			case models.CriterionModifierEquals:
 				f.addHaving(fmt.Sprintf("%s BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierNotEquals {
+			case models.CriterionModifierNotEquals:
 				f.addHaving(fmt.Sprintf("%s NOT BETWEEN %d AND %d", widthHeight, min, max))
-			} else if resolution.Modifier == models.CriterionModifierLessThan {
+			case models.CriterionModifierLessThan:
 				f.addHaving(fmt.Sprintf("%s < %d", widthHeight, min))
-			} else if resolution.Modifier == models.CriterionModifierGreaterThan {
+			case models.CriterionModifierGreaterThan:
 				f.addHaving(fmt.Sprintf("%s > %d", widthHeight, max))
 			}
 		}

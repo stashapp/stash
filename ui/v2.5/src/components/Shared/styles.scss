@@ -2,9 +2,12 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: 70vh;
   justify-content: center;
   width: 100%;
+
+  &:not(.card-based) {
+    height: 70vh;
+  }
 
   &-message {
     margin-top: 1rem;
@@ -204,4 +207,58 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
       fill: gold;
     }
   }
+}
+
+.three-state-checkbox {
+  align-items: center;
+  display: flex;
+
+  button.btn {
+    font-size: 12.67px;
+    margin-left: -0.2em;
+    margin-right: 0.25rem;
+    padding: 0;
+
+    &:not(:disabled):active,
+    &:not(:disabled):active:focus,
+    &:not(:disabled):hover,
+    &:not(:disabled):not(:hover) {
+      background-color: initial;
+      box-shadow: none;
+    }
+  }
+
+  &.unset {
+    .label {
+      color: #bfccd6;
+      text-decoration: line-through;
+    }
+  }
+
+  &.checked svg {
+    color: #0f9960;
+  }
+
+  &.not-checked svg {
+    color: #db3737;
+  }
+}
+
+.input-group-prepend {
+  .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+.ModalComponent .modal-footer {
+  justify-content: space-between;
+}
+
+.scrape-url-button:disabled {
+  opacity: 0.5;
+}
+
+.string-list-input .input-group {
+  margin-bottom: 0.25rem;
 }

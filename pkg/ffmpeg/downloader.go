@@ -2,6 +2,7 @@ package ffmpeg
 
 import (
 	"archive/zip"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -36,9 +37,9 @@ func GetPaths(paths []string) (string, string) {
 	return ffmpegPath, ffprobePath
 }
 
-func Download(configDirectory string) error {
+func Download(ctx context.Context, configDirectory string) error {
 	for _, url := range getFFMPEGURL() {
-		err := DownloadSingle(configDirectory, url)
+		err := DownloadSingle(ctx, configDirectory, url)
 		if err != nil {
 			return err
 		}
@@ -69,7 +70,7 @@ func (r *progressReader) Read(p []byte) (int, error) {
 	return read, err
 }
 
-func DownloadSingle(configDirectory, url string) error {
+func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 	if url == "" {
 		return fmt.Errorf("no ffmpeg url for this platform")
 	}
@@ -88,7 +89,12 @@ func DownloadSingle(configDirectory, url string) error {
 	logger.Infof("Downloading %s...", url)
 
 	// Make the HTTP request
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -148,9 +154,14 @@ func getFFMPEGURL() []string {
 	case "darwin":
 		urls = []string{"https://evermeet.cx/ffmpeg/ffmpeg-4.3.1.zip", "https://evermeet.cx/ffmpeg/ffprobe-4.3.1.zip"}
 	case "linux":
-		// TODO: get appropriate arch (arm,arm64,amd64) and xz untar from https://johnvansickle.com/ffmpeg/
-		//       or get the ffmpeg,ffprobe zip repackaged ones from  https://ffbinaries.com/downloads
-		urls = []string{""}
+		switch runtime.GOARCH {
+		case "amd64":
+			urls = []string{"https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffmpeg-4.2.1-linux-64.zip", "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffprobe-4.2.1-linux-64.zip"}
+		case "arm":
+			urls = []string{"https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffmpeg-4.2.1-linux-armhf-32.zip", "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffprobe-4.2.1-linux-armhf-32.zip"}
+		case "arm64":
+			urls = []string{"https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffmpeg-4.2.1-linux-arm-64.zip", "https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.2.1/ffprobe-4.2.1-linux-arm-64.zip"}
+		}
 	case "windows":
 		urls = []string{"https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"}
 	default:

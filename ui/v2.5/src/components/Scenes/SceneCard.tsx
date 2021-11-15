@@ -3,7 +3,6 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { useConfiguration } from "src/core/StashService";
 import {
   Icon,
   TagLink,
@@ -13,6 +12,7 @@ import {
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
+import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
@@ -80,15 +80,14 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
-  const config = useConfiguration();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   // studio image is missing if it uses the default
   const missingStudioImage = props.scene.studio?.image_path?.endsWith(
     "?default=true"
   );
   const showStudioAsText =
-    missingStudioImage ||
-    (config?.data?.configuration.interface.showStudioAsText ?? false);
+    missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
 
   function maybeRenderSceneSpecsOverlay() {
     return (
@@ -306,8 +305,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  const cont = configuration?.interface.continuePlaylistDefault ?? false;
+
   const sceneLink = props.queue
-    ? props.queue.makeLink(props.scene.id, { sceneIndex: props.index })
+    ? props.queue.makeLink(props.scene.id, {
+        sceneIndex: props.index,
+        continue: cont,
+      })
     : `/scenes/${props.scene.id}`;
 
   return (
@@ -327,9 +331,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             image={props.scene.paths.screenshot ?? undefined}
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
-            soundActive={
-              config.data?.configuration?.interface?.soundOnPreview ?? false
-            }
+            soundActive={configuration?.interface?.soundOnPreview ?? false}
           />
           <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}

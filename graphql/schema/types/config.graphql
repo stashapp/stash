@@ -188,56 +188,102 @@ type ConfigGeneralResult {
   stashBoxes: [StashBox!]!
 }
 
+input ConfigDisableDropdownCreateInput {
+  performer: Boolean
+  tag: Boolean
+  studio: Boolean
+}
+
 input ConfigInterfaceInput {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
+
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
+  
   """Show title and tags in wall view"""
   wallShowTitle: Boolean
   """Wall playback type"""
   wallPlayback: String
+  
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
+  """If true, video will autostart when loading from play random or play selected"""
+  autostartVideoOnPlaySelected: Boolean
+  """If true, next scene in playlist will be played at video end by default"""
+  continuePlaylistDefault: Boolean
+  
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
+  
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+  
   """Interface language"""
   language: String
+  
   """Slideshow Delay"""
   slideshowDelay: Int
+  
+  """Set to true to disable creating new objects via the dropdown menus"""
+  disableDropdownCreate: ConfigDisableDropdownCreateInput
+  
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
   funscriptOffset: Int
+  """True if we should not auto-open a browser window on startup"""
+  noBrowser: Boolean
+}
+
+type ConfigDisableDropdownCreate {
+  performer: Boolean!
+  tag: Boolean!
+  studio: Boolean!
 }
 
 type ConfigInterfaceResult {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
+
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
+
   """Show title and tags in wall view"""
   wallShowTitle: Boolean
   """Wall playback type"""
   wallPlayback: String
+
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
+  """"True if we should not auto-open a browser window on startup"""
+  noBrowser: Boolean
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
+  """If true, video will autostart when loading from play random or play selected"""
+  autostartVideoOnPlaySelected: Boolean
+  """If true, next scene in playlist will be played at video end by default"""
+  continuePlaylistDefault: Boolean
+
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
+
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+
   """Interface language"""
   language: String
+
   """Slideshow Delay"""
   slideshowDelay: Int
+
+  """Fields are true if creating via dropdown menus are disabled"""
+  disabledDropdownCreate: ConfigDisableDropdownCreate!
+
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
@@ -286,12 +332,31 @@ type ConfigScrapingResult {
   excludeTagPatterns: [String!]!
 }
 
+type ConfigDefaultSettingsResult {
+  identify: IdentifyMetadataTaskOptions
+  
+  """If true, delete file checkbox will be checked by default"""
+  deleteFile: Boolean
+  """If true, delete generated supporting files checkbox will be checked by default"""
+  deleteGenerated: Boolean
+}
+
+input ConfigDefaultSettingsInput {
+  identify: IdentifyMetadataInput
+
+  """If true, delete file checkbox will be checked by default"""
+  deleteFile: Boolean
+  """If true, delete generated files checkbox will be checked by default"""
+  deleteGenerated: Boolean
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
   dlna: ConfigDLNAResult!
   scraping: ConfigScrapingResult!
+  defaults: ConfigDefaultSettingsResult!
 }
 
 """Directory structure of a path"""

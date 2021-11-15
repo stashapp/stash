@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -68,7 +69,7 @@ func (qb *studioQueryBuilder) Destroy(id int) error {
 func (qb *studioQueryBuilder) Find(id int) (*models.Studio, error) {
 	var ret models.Studio
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -116,6 +117,16 @@ func (qb *studioQueryBuilder) FindByName(name string, nocase bool) (*models.Stud
 	return qb.queryStudio(query, args)
 }
 
+func (qb *studioQueryBuilder) FindByStashID(stashID models.StashID) ([]*models.Studio, error) {
+	query := selectAll("studios") + `
+		LEFT JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
+		WHERE studio_stash_ids.stash_id = ?
+		AND studio_stash_ids.endpoint = ?
+	`
+	args := []interface{}{stashID.StashID, stashID.Endpoint}
+	return qb.queryStudios(query, args)
+}
+
 func (qb *studioQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
@@ -132,6 +143,11 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 
 	var whereClauses []string
 	var args []interface{}
+
+	// always include names that begin with a single character
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "studios.name regexp ? OR COALESCE(studio_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		ww := w + "%"
@@ -222,8 +238,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs("studios")
+	distinctIDs(&query, studioTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")

@@ -2,6 +2,7 @@ package tag
 
 import (
 	"fmt"
+
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -23,17 +24,15 @@ func (e *NameUsedByAliasError) Error() string {
 }
 
 type InvalidTagHierarchyError struct {
-	Direction   string
-	InvalidTag  string
-	ApplyingTag string
+	Direction       string
+	CurrentRelation string
+	InvalidTag      string
+	ApplyingTag     string
+	TagPath         string
 }
 
 func (e *InvalidTagHierarchyError) Error() string {
-	if e.InvalidTag == e.ApplyingTag {
-		return fmt.Sprintf("Cannot apply tag \"%s\" as it already is a %s", e.InvalidTag, e.Direction)
-	} else {
-		return fmt.Sprintf("Cannot apply tag \"%s\" as it is linked to \"%s\" which already is a %s", e.ApplyingTag, e.InvalidTag, e.Direction)
-	}
+	return fmt.Sprintf("cannot apply tag \"%s\" as a %s of \"%s\" as it is already %s (%s)", e.InvalidTag, e.Direction, e.ApplyingTag, e.CurrentRelation, e.TagPath)
 }
 
 // EnsureTagNameUnique returns an error if the tag name provided
@@ -77,45 +76,55 @@ func EnsureAliasesUnique(id int, aliases []string, qb models.TagReader) error {
 	return nil
 }
 
-func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReader) error {
-	allAncestors := make(map[int]*models.Tag)
-	allDescendants := make(map[int]*models.Tag)
-	excludeIDs := []int{id}
+func ValidateHierarchy(tag *models.Tag, parentIDs, childIDs []int, qb models.TagReader) error {
+	id := tag.ID
+	allAncestors := make(map[int]*models.TagPath)
+	allDescendants := make(map[int]*models.TagPath)
 
-	validateParent := func(testID, applyingID int) error {
-		if parentTag, exists := allAncestors[testID]; exists {
-			applyingTag, err := qb.Find(applyingID)
+	parentsAncestors, err := qb.FindAllAncestors(id, nil)
+	if err != nil {
+		return err
+	}
 
-			if err != nil {
-				return nil
-			}
+	for _, ancestorTag := range parentsAncestors {
+		allAncestors[ancestorTag.ID] = ancestorTag
+	}
 
+	childsDescendants, err := qb.FindAllDescendants(id, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, descendentTag := range childsDescendants {
+		allDescendants[descendentTag.ID] = descendentTag
+	}
+
+	validateParent := func(testID int) error {
+		if parentTag, exists := allDescendants[testID]; exists {
 			return &InvalidTagHierarchyError{
-				Direction:   "parent",
-				InvalidTag:  parentTag.Name,
-				ApplyingTag: applyingTag.Name,
+				Direction:       "parent",
+				CurrentRelation: "a descendant",
+				InvalidTag:      parentTag.Name,
+				ApplyingTag:     tag.Name,
+				TagPath:         parentTag.Path,
 			}
 		}
 
 		return nil
 	}
 
-	validateChild := func(testID, applyingID int) error {
-		if childTag, exists := allDescendants[testID]; exists {
-			applyingTag, err := qb.Find(applyingID)
-
-			if err != nil {
-				return nil
-			}
-
+	validateChild := func(testID int) error {
+		if childTag, exists := allAncestors[testID]; exists {
 			return &InvalidTagHierarchyError{
-				Direction:   "child",
-				InvalidTag:  childTag.Name,
-				ApplyingTag: applyingTag.Name,
+				Direction:       "child",
+				CurrentRelation: "an ancestor",
+				InvalidTag:      childTag.Name,
+				ApplyingTag:     tag.Name,
+				TagPath:         childTag.Path,
 			}
 		}
 
-		return validateParent(testID, applyingID)
+		return nil
 	}
 
 	if parentIDs == nil {
@@ -141,32 +150,14 @@ func EnsureUniqueHierarchy(id int, parentIDs, childIDs []int, qb models.TagReade
 	}
 
 	for _, parentID := range parentIDs {
-		parentsAncestors, err := qb.FindAllAncestors(parentID, excludeIDs)
-		if err != nil {
+		if err := validateParent(parentID); err != nil {
 			return err
-		}
-
-		for _, ancestorTag := range parentsAncestors {
-			if err := validateParent(ancestorTag.ID, parentID); err != nil {
-				return err
-			}
-
-			allAncestors[ancestorTag.ID] = ancestorTag
 		}
 	}
 
 	for _, childID := range childIDs {
-		childsDescendants, err := qb.FindAllDescendants(childID, excludeIDs)
-		if err != nil {
+		if err := validateChild(childID); err != nil {
 			return err
-		}
-
-		for _, descendentTag := range childsDescendants {
-			if err := validateChild(descendentTag.ID, childID); err != nil {
-				return err
-			}
-
-			allDescendants[descendentTag.ID] = descendentTag
 		}
 	}
 
@@ -214,11 +205,6 @@ func MergeHierarchy(destination int, sources []int, qb models.TagReader) ([]int,
 		}
 
 		mergedChildren = addTo(mergedChildren, children)
-	}
-
-	err := EnsureUniqueHierarchy(destination, mergedParents, mergedChildren, qb)
-	if err != nil {
-		return nil, nil, err
 	}
 
 	return mergedParents, mergedChildren, nil

@@ -10,7 +10,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 	i := GetInstance()
 
 	const workers = 8
-	//const loops = 1000
 	const loops = 200
 	var wg sync.WaitGroup
 	for k := 0; k < workers; k++ {
@@ -22,12 +21,15 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				}
 
 				i.HasCredentials()
+				i.ValidateCredentials("", "")
 				i.GetCPUProfilePath()
 				i.GetConfigFile()
 				i.GetConfigPath()
 				i.GetDefaultDatabaseFilePath()
 				i.GetStashPaths()
-				i.GetConfigFilePath()
+				_ = i.ValidateStashBoxes(nil)
+				_ = i.Validate()
+				_ = i.ActivatePublicAccessTripwire("")
 				i.Set(Cache, i.GetCachePath())
 				i.Set(Generated, i.GetGeneratedPath())
 				i.Set(Metadata, i.GetMetadataPath())
@@ -93,6 +95,19 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(LogLevel, i.GetLogLevel())
 				i.Set(LogAccess, i.GetLogAccess())
 				i.Set(MaxUploadSize, i.GetMaxUploadSize())
+				i.Set(FunscriptOffset, i.GetFunscriptOffset())
+				i.Set(DefaultIdentifySettings, i.GetDefaultIdentifySettings())
+				i.Set(DeleteGeneratedDefault, i.GetDeleteGeneratedDefault())
+				i.Set(DeleteFileDefault, i.GetDeleteFileDefault())
+				i.Set(TrustedProxies, i.GetTrustedProxies())
+				i.Set(dangerousAllowPublicWithoutAuth, i.GetDangerousAllowPublicWithoutAuth())
+				i.Set(SecurityTripwireAccessedFromPublicInternet, i.GetSecurityTripwireAccessedFromPublicInternet())
+				i.Set(DisableDropdownCreatePerformer, i.GetDisableDropdownCreate().Performer)
+				i.Set(DisableDropdownCreateStudio, i.GetDisableDropdownCreate().Studio)
+				i.Set(DisableDropdownCreateTag, i.GetDisableDropdownCreate().Tag)
+				i.SetChecksumDefaultValues(i.GetVideoFileNamingAlgorithm(), i.IsCalculateMD5())
+				i.Set(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
+				i.Set(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 			}
 			wg.Done()
 		}(k)

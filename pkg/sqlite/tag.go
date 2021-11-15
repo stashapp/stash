@@ -87,7 +87,7 @@ func (qb *tagQueryBuilder) Destroy(id int) error {
 func (qb *tagQueryBuilder) Find(id int) (*models.Tag, error) {
 	var ret models.Tag
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -235,6 +235,11 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 	var whereClauses []string
 	var args []interface{}
 
+	// always include names that begin with a single character
+	singleFirstCharacterRegex := "^[\\w][.\\-_ ]"
+	whereClauses = append(whereClauses, "tags.name regexp ? OR COALESCE(tag_aliases.alias, '') regexp ?")
+	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
+
 	for _, w := range words {
 		ww := w + "%"
 		whereClauses = append(whereClauses, "tags.name like ?")
@@ -319,8 +324,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs(tagTable)
+	distinctIDs(&query, tagTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
@@ -439,7 +443,23 @@ func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.Int
 
 func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
+
+				f.addWhere(fmt.Sprintf("parent_relations.parent_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, val := range tags.Value {
 				args = append(args, val)
@@ -472,7 +492,23 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 
 func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
+
+				f.addWhere(fmt.Sprintf("child_relations.child_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, val := range tags.Value {
 				args = append(args, val)
@@ -644,13 +680,13 @@ func (qb *tagQueryBuilder) Merge(source []int, destination int) error {
 		"performers_tags":    "performer_id",
 	}
 
-	tagArgs := append(args, destination)
+	args = append(args, destination)
 	for table, idColumn := range tagTables {
 		_, err := qb.tx.Exec(`UPDATE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
-			tagArgs...,
+			args...,
 		)
 		if err != nil {
 			return err
@@ -728,26 +764,21 @@ func (qb *tagQueryBuilder) UpdateChildTags(tagID int, childIDs []int) error {
 	return nil
 }
 
-func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+// FindAllAncestors returns a slice of TagPath objects, representing all
+// ancestors of the tag with the provided id.
+func (qb *tagQueryBuilder) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	inBinding := getInBinding(len(excludeIDs) + 1)
 
 	query := `WITH RECURSIVE
 parents AS (
-	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	SELECT t.id AS parent_id, t.id AS child_id, t.name as path FROM tags t WHERE t.id = ?
 	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
-),
-children AS (
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
-	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
+	SELECT tr.parent_id, tr.child_id, t.name || '->' || p.path as path FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id JOIN tags t ON t.id = tr.parent_id WHERE tr.parent_id NOT IN` + inBinding + `
 )
-SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
-UNION
-SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
+SELECT t.*, p.path FROM tags t INNER JOIN parents p ON t.id = p.parent_id
 `
 
-	var ret models.Tags
+	var ret models.TagPaths
 	excludeArgs := []interface{}{tagID}
 	for _, excludeID := range excludeIDs {
 		excludeArgs = append(excludeArgs, excludeID)
@@ -761,26 +792,21 @@ SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
 	return ret, nil
 }
 
-func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+// FindAllDescendants returns a slice of TagPath objects, representing all
+// descendants of the tag with the provided id.
+func (qb *tagQueryBuilder) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	inBinding := getInBinding(len(excludeIDs) + 1)
 
 	query := `WITH RECURSIVE
 children AS (
-	SELECT t.id AS parent_id, t.id AS child_id FROM tags t WHERE t.id = ?
+	SELECT t.id AS parent_id, t.id AS child_id, t.name as path FROM tags t WHERE t.id = ?
 	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id WHERE tr.child_id NOT IN` + inBinding + `
-),
-parents AS (
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
-	UNION
-	SELECT tr.parent_id, tr.child_id FROM tags_relations tr INNER JOIN parents p ON p.parent_id = tr.child_id WHERE tr.parent_id NOT IN` + inBinding + `
+	SELECT tr.parent_id, tr.child_id, c.path || '->' || t.name as path FROM tags_relations tr INNER JOIN children c ON c.child_id = tr.parent_id JOIN tags t ON t.id = tr.child_id WHERE tr.child_id NOT IN` + inBinding + `
 )
-SELECT t.* FROM tags t INNER JOIN children c ON t.id = c.child_id
-UNION
-SELECT t.* FROM tags t INNER JOIN parents p ON t.id = p.parent_id
+SELECT t.*, c.path FROM tags t INNER JOIN children c ON t.id = c.child_id
 `
 
-	var ret models.Tags
+	var ret models.TagPaths
 	excludeArgs := []interface{}{tagID}
 	for _, excludeID := range excludeIDs {
 		excludeArgs = append(excludeArgs, excludeID)

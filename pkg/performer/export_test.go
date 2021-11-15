@@ -44,6 +44,14 @@ const (
 
 var imageBytes = []byte("imageBytes")
 
+var stashID = models.StashID{
+	StashID:  "StashID",
+	Endpoint: "Endpoint",
+}
+var stashIDs = []*models.StashID{
+	&stashID,
+}
+
 const image = "aW1hZ2VCeXRlcw=="
 
 var birthDate = models.SQLiteDate{
@@ -144,6 +152,9 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		DeathDate: deathDate.String,
 		HairColor: hairColor,
 		Weight:    weight,
+		StashIDs: []models.StashID{
+			stashID,
+		},
 	}
 }
 
@@ -197,15 +208,19 @@ func TestToJSON(t *testing.T) {
 	mockPerformerReader.On("GetImage", noImageID).Return(nil, nil).Once()
 	mockPerformerReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
 
+	mockPerformerReader.On("GetStashIDs", performerID).Return(stashIDs, nil).Once()
+	mockPerformerReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
+
 	for i, s := range scenarios {
 		tag := s.input
 		json, err := ToJSON(mockPerformerReader, &tag)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

@@ -13,18 +13,21 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var ErrOverriddenConfig = errors.New("cannot set overridden value")
+
 func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
-	err := manager.GetInstance().Setup(input)
+	err := manager.GetInstance().Setup(ctx, input)
 	return err == nil, err
 }
 
 func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInput) (bool, error) {
-	err := manager.GetInstance().Migrate(input)
+	err := manager.GetInstance().Migrate(ctx, input)
 	return err == nil, err
 }
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	c := config.GetInstance()
+
 	existingPaths := c.GetStashPaths()
 	if len(input.Stashes) > 0 {
 		for _, s := range input.Stashes {
@@ -46,7 +49,20 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Stash, input.Stashes)
 	}
 
-	if input.DatabasePath != nil {
+	checkConfigOverride := func(key string) error {
+		if c.HasOverride(key) {
+			return fmt.Errorf("%w: %s", ErrOverriddenConfig, key)
+		}
+
+		return nil
+	}
+
+	existingDBPath := c.GetDatabasePath()
+	if input.DatabasePath != nil && existingDBPath != *input.DatabasePath {
+		if err := checkConfigOverride(config.Database); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		ext := filepath.Ext(*input.DatabasePath)
 		if ext != ".db" && ext != ".sqlite" && ext != ".sqlite3" {
 			return makeConfigGeneralResult(), fmt.Errorf("invalid database path, use extension db, sqlite, or sqlite3")
@@ -54,14 +70,24 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Database, input.DatabasePath)
 	}
 
-	if input.GeneratedPath != nil {
+	existingGeneratedPath := c.GetGeneratedPath()
+	if input.GeneratedPath != nil && existingGeneratedPath != *input.GeneratedPath {
+		if err := checkConfigOverride(config.Generated); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		if err := utils.EnsureDir(*input.GeneratedPath); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 		c.Set(config.Generated, input.GeneratedPath)
 	}
 
-	if input.MetadataPath != nil {
+	existingMetadataPath := c.GetMetadataPath()
+	if input.MetadataPath != nil && existingMetadataPath != *input.MetadataPath {
+		if err := checkConfigOverride(config.Metadata); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		if *input.MetadataPath != "" {
 			if err := utils.EnsureDir(*input.MetadataPath); err != nil {
 				return makeConfigGeneralResult(), err
@@ -70,7 +96,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
-	if input.CachePath != nil {
+	existingCachePath := c.GetCachePath()
+	if input.CachePath != nil && existingCachePath != *input.CachePath {
+		if err := checkConfigOverride(config.Metadata); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		if *input.CachePath != "" {
 			if err := utils.EnsureDir(*input.CachePath); err != nil {
 				return makeConfigGeneralResult(), err
@@ -225,17 +256,21 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
 	c := config.GetInstance()
+
+	setBool := func(key string, v *bool) {
+		if v != nil {
+			c.Set(key, *v)
+		}
+	}
+
 	if input.MenuItems != nil {
 		c.Set(config.MenuItems, input.MenuItems)
 	}
 
-	if input.SoundOnPreview != nil {
-		c.Set(config.SoundOnPreview, *input.SoundOnPreview)
-	}
+	setBool(config.SoundOnPreview, input.SoundOnPreview)
+	setBool(config.WallShowTitle, input.WallShowTitle)
 
-	if input.WallShowTitle != nil {
-		c.Set(config.WallShowTitle, *input.WallShowTitle)
-	}
+	setBool(config.NoBrowser, input.NoBrowser)
 
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
@@ -245,13 +280,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}
 
-	if input.AutostartVideo != nil {
-		c.Set(config.AutostartVideo, *input.AutostartVideo)
-	}
-
-	if input.ShowStudioAsText != nil {
-		c.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
-	}
+	setBool(config.AutostartVideo, input.AutostartVideo)
+	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
+	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
+	setBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
@@ -269,8 +301,13 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	c.SetCSS(css)
 
-	if input.CSSEnabled != nil {
-		c.Set(config.CSSEnabled, *input.CSSEnabled)
+	setBool(config.CSSEnabled, input.CSSEnabled)
+
+	if input.DisableDropdownCreate != nil {
+		ddc := input.DisableDropdownCreate
+		setBool(config.DisableDropdownCreatePerformer, ddc.Performer)
+		setBool(config.DisableDropdownCreateStudio, ddc.Studio)
+		setBool(config.DisableDropdownCreateTag, ddc.Tag)
 	}
 
 	if input.HandyKey != nil {
@@ -348,6 +385,28 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.C
 	}
 
 	return makeConfigScrapingResult(), nil
+}
+
+func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.ConfigDefaultSettingsInput) (*models.ConfigDefaultSettingsResult, error) {
+	c := config.GetInstance()
+
+	if input.Identify != nil {
+		c.Set(config.DefaultIdentifySettings, input.Identify)
+	}
+
+	if input.DeleteFile != nil {
+		c.Set(config.DeleteFileDefault, *input.DeleteFile)
+	}
+
+	if input.DeleteGenerated != nil {
+		c.Set(config.DeleteGeneratedDefault, *input.DeleteGenerated)
+	}
+
+	if err := c.Write(); err != nil {
+		return makeConfigDefaultsResult(), err
+	}
+
+	return makeConfigDefaultsResult(), nil
 }
 
 func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {

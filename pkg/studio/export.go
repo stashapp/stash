@@ -30,7 +30,7 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 	if studio.ParentID.Valid {
 		parent, err := reader.Find(int(studio.ParentID.Int64))
 		if err != nil {
-			return nil, fmt.Errorf("error getting parent studio: %s", err.Error())
+			return nil, fmt.Errorf("error getting parent studio: %v", err)
 		}
 
 		if parent != nil {
@@ -44,19 +44,31 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 
 	aliases, err := reader.GetAliases(studio.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting studio aliases: %s", err.Error())
+		return nil, fmt.Errorf("error getting studio aliases: %v", err)
 	}
 
 	newStudioJSON.Aliases = aliases
 
 	image, err := reader.GetImage(studio.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting studio image: %s", err.Error())
+		return nil, fmt.Errorf("error getting studio image: %v", err)
 	}
 
 	if len(image) > 0 {
 		newStudioJSON.Image = utils.GetBase64StringFromData(image)
 	}
+
+	stashIDs, _ := reader.GetStashIDs(studio.ID)
+	var ret []models.StashID
+	for _, stashID := range stashIDs {
+		newJoin := models.StashID{
+			StashID:  stashID.StashID,
+			Endpoint: stashID.Endpoint,
+		}
+		ret = append(ret, newJoin)
+	}
+
+	newStudioJSON.StashIDs = ret
 
 	return &newStudioJSON, nil
 }

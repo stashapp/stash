@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -177,6 +178,15 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}); err != nil {
 		logger.Errorf("error executing post hooks: %s", err.Error())
 	}
+}
+
+func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
+		logger.Errorf("error converting id in SceneUpdatePostHooks: %v", err)
+		return
+	}
+	c.ExecutePostHooks(ctx, id, SceneUpdatePost, input, inputFields)
 }
 
 func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, hookContext common.HookContext) error {

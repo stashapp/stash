@@ -6,23 +6,26 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"golang.org/x/text/collate"
 )
 
 func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult, error) {
 	return makeConfigResult(), nil
 }
 
-func (r *queryResolver) Directory(ctx context.Context, path *string) (*models.Directory, error) {
+func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*models.Directory, error) {
 
 	directory := &models.Directory{}
 	var err error
+
+	col := newCollator(locale, collate.IgnoreCase, collate.Numeric)
 
 	var dirPath = ""
 	if path != nil {
 		dirPath = *path
 	}
 	currentDir := utils.GetDir(dirPath)
-	directories, err := utils.ListDir(currentDir)
+	directories, err := utils.ListDir(col, currentDir)
 	if err != nil {
 		return directory, err
 	}
@@ -40,6 +43,7 @@ func makeConfigResult() *models.ConfigResult {
 		Interface: makeConfigInterfaceResult(),
 		Dlna:      makeConfigDLNAResult(),
 		Scraping:  makeConfigScrapingResult(),
+		Defaults:  makeConfigDefaultsResult(),
 	}
 }
 
@@ -60,7 +64,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:                 config.GetDatabasePath(),
 		GeneratedPath:                config.GetGeneratedPath(),
 		MetadataPath:                 config.GetMetadataPath(),
-		ConfigFilePath:               config.GetConfigFilePath(),
+		ConfigFilePath:               config.GetConfigFile(),
 		ScrapersPath:                 config.GetScrapersPath(),
 		CachePath:                    config.GetCachePath(),
 		CalculateMd5:                 config.IsCalculateMD5(),
@@ -104,8 +108,11 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
+	noBrowser := config.GetNoBrowser()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
+	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
+	continuePlaylistDefault := config.GetContinuePlaylistDefault()
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
@@ -115,19 +122,23 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	scriptOffset := config.GetFunscriptOffset()
 
 	return &models.ConfigInterfaceResult{
-		MenuItems:           menuItems,
-		SoundOnPreview:      &soundOnPreview,
-		WallShowTitle:       &wallShowTitle,
-		WallPlayback:        &wallPlayback,
-		MaximumLoopDuration: &maximumLoopDuration,
-		AutostartVideo:      &autostartVideo,
-		ShowStudioAsText:    &showStudioAsText,
-		CSS:                 &css,
-		CSSEnabled:          &cssEnabled,
-		Language:            &language,
-		SlideshowDelay:      &slideshowDelay,
-		HandyKey:            &handyKey,
-		FunscriptOffset:     &scriptOffset,
+		MenuItems:                    menuItems,
+		SoundOnPreview:               &soundOnPreview,
+		WallShowTitle:                &wallShowTitle,
+		WallPlayback:                 &wallPlayback,
+		MaximumLoopDuration:          &maximumLoopDuration,
+		NoBrowser:                    &noBrowser,
+		AutostartVideo:               &autostartVideo,
+		ShowStudioAsText:             &showStudioAsText,
+		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,
+		ContinuePlaylistDefault:      &continuePlaylistDefault,
+		CSS:                          &css,
+		CSSEnabled:                   &cssEnabled,
+		Language:                     &language,
+		SlideshowDelay:               &slideshowDelay,
+		DisabledDropdownCreate:       config.GetDisableDropdownCreate(),
+		HandyKey:                     &handyKey,
+		FunscriptOffset:              &scriptOffset,
 	}
 }
 
@@ -153,5 +164,17 @@ func makeConfigScrapingResult() *models.ConfigScrapingResult {
 		ScraperCertCheck:   config.GetScraperCertCheck(),
 		ScraperCDPPath:     &scraperCDPPath,
 		ExcludeTagPatterns: config.GetScraperExcludeTagPatterns(),
+	}
+}
+
+func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
+	config := config.GetInstance()
+	deleteFileDefault := config.GetDeleteFileDefault()
+	deleteGeneratedDefault := config.GetDeleteGeneratedDefault()
+
+	return &models.ConfigDefaultSettingsResult{
+		Identify:        config.GetDefaultIdentifySettings(),
+		DeleteFile:      &deleteFileDefault,
+		DeleteGenerated: &deleteGeneratedDefault,
 	}
 }

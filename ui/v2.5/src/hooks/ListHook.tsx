@@ -58,6 +58,8 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
+import { TextUtils } from "src/utils";
+import { FormattedNumber } from "react-intl";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -159,6 +161,7 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   useData: (filter: ListFilterModel) => T;
   getData: (data: T) => T2[];
   getCount: (data: T) => number;
+  getMetadataByline: (data: T) => React.ReactNode;
 }
 
 interface IRenderListProps {
@@ -179,6 +182,7 @@ const RenderList = <
   useData,
   getCount,
   getData,
+  getMetadataByline,
   otherOperations,
   renderContent,
   zoomable,
@@ -203,6 +207,7 @@ const RenderList = <
 
   const result = useData(filter);
   const totalCount = getCount(result);
+  const metadataByline = getMetadataByline(result);
   const items = getData(result);
   const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
@@ -397,6 +402,7 @@ const RenderList = <
       itemsPerPage={filter.itemsPerPage}
       currentPage={filter.currentPage}
       totalItems={totalCount}
+      metadataByline={metadataByline}
       onChangePage={onChangePage}
     />
   );
@@ -409,11 +415,18 @@ const RenderList = <
     return (
       <>
         {renderPagination()}
+        <PaginationIndex
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          metadataByline={metadataByline}
+        />
         {renderContent(result, filter, selectedIds, onChangePage, pages)}
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
           totalItems={totalCount}
+          metadataByline={metadataByline}
         />
         {renderPagination()}
       </>
@@ -642,9 +655,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       defaultFilter?.findDefaultFilter
     ) {
       newFilter.currentPage = 1;
-      newFilter.configureFromQueryParameters(
-        JSON.parse(defaultFilter.findDefaultFilter.filter)
-      );
+      try {
+        newFilter.configureFromQueryParameters(
+          JSON.parse(defaultFilter.findDefaultFilter.filter)
+        );
+      } catch (err) {
+        console.log(err);
+        // ignore
+      }
       // #1507 - reset random seed when loaded
       newFilter.randomSeed = -1;
       update = true;
@@ -732,6 +750,41 @@ export const useScenesList = (
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
+    getMetadataByline: (result: FindScenesQueryResult) => {
+      const duration = result?.data?.findScenes?.duration;
+      const size = result?.data?.findScenes?.filesize;
+      const filesize = size ? TextUtils.fileSize(size) : undefined;
+
+      if (!duration && !size) {
+        return;
+      }
+
+      const separator = duration && size ? " - " : "";
+
+      return (
+        <span className="scenes-stats">
+          &nbsp;(
+          {duration ? (
+            <span className="scenes-duration">
+              {TextUtils.secondsAsTimeString(duration, 3)}
+            </span>
+          ) : undefined}
+          {separator}
+          {size && filesize ? (
+            <span className="scenes-size">
+              <FormattedNumber
+                value={filesize.size}
+                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                  filesize.unit
+                )}
+              />
+              {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+            </span>
+          ) : undefined}
+          )
+        </span>
+      );
+    },
   });
 
 export const useSceneMarkersList = (
@@ -745,6 +798,7 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useImagesList = (
@@ -758,6 +812,41 @@ export const useImagesList = (
       result?.data?.findImages?.images ?? [],
     getCount: (result: FindImagesQueryResult) =>
       result?.data?.findImages?.count ?? 0,
+    getMetadataByline: (result: FindImagesQueryResult) => {
+      const megapixels = result?.data?.findImages?.megapixels;
+      const size = result?.data?.findImages?.filesize;
+      const filesize = size ? TextUtils.fileSize(size) : undefined;
+
+      if (!megapixels && !size) {
+        return;
+      }
+
+      const separator = megapixels && size ? " - " : "";
+
+      return (
+        <span className="images-stats">
+          &nbsp;(
+          {megapixels ? (
+            <span className="images-megapixels">
+              <FormattedNumber value={megapixels} /> Megapixels
+            </span>
+          ) : undefined}
+          {separator}
+          {size && filesize ? (
+            <span className="images-size">
+              <FormattedNumber
+                value={filesize.size}
+                maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                  filesize.unit
+                )}
+              />
+              {` ${TextUtils.formatFileSizeUnit(filesize.unit)}`}
+            </span>
+          ) : undefined}
+          )
+        </span>
+      );
+    },
   });
 
 export const useGalleriesList = (
@@ -771,6 +860,7 @@ export const useGalleriesList = (
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useStudiosList = (
@@ -784,6 +874,7 @@ export const useStudiosList = (
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const usePerformersList = (
@@ -797,6 +888,7 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useMoviesList = (
@@ -810,6 +902,7 @@ export const useMoviesList = (
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const useTagsList = (
@@ -823,6 +916,7 @@ export const useTagsList = (
       result?.data?.findTags?.tags ?? [],
     getCount: (result: FindTagsQueryResult) =>
       result?.data?.findTags?.count ?? 0,
+    getMetadataByline: () => [],
   });
 
 export const showWhenSelected = <T extends IQueryResult>(

@@ -49,7 +49,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
         test: (value: any) => {
           return (value ?? []).length === new Set(value).size;
         },
-        message: "aliases must be unique",
+        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
       }),
     parent_ids: yup.array(yup.string().required()).optional().nullable(),
     child_ids: yup.array(yup.string().required()).optional().nullable(),
@@ -123,7 +123,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           if (!isNew && location.pathname.startsWith(`/tags/${tag?.id}`)) {
             return true;
           }
-          return "Unsaved changes. Are you sure you want to leave?";
+          return intl.formatMessage({ id: "dialogs.unsaved_changes" });
         }}
       />
 

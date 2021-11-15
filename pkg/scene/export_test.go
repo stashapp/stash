@@ -85,7 +85,15 @@ var names = []string{
 
 var imageBytes = []byte("imageBytes")
 
-const image = "aW1hZ2VCeXRlcw=="
+var stashID = models.StashID{
+	StashID:  "StashID",
+	Endpoint: "Endpoint",
+}
+var stashIDs = []*models.StashID{
+	&stashID,
+}
+
+const imageBase64 = "aW1hZ2VCeXRlcw=="
 
 var (
 	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
@@ -174,6 +182,9 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 			Time: updateTime,
 		},
 		Cover: image,
+		StashIDs: []models.StashID{
+			stashID,
+		},
 	}
 }
 
@@ -198,7 +209,7 @@ type basicTestScenario struct {
 var scenarios = []basicTestScenario{
 	{
 		createFullScene(sceneID),
-		createFullJSONScene(image),
+		createFullJSONScene(imageBase64),
 		false,
 	},
 	{
@@ -222,15 +233,19 @@ func TestToJSON(t *testing.T) {
 	mockSceneReader.On("GetCover", noImageID).Return(nil, nil).Once()
 	mockSceneReader.On("GetCover", errImageID).Return(nil, imageErr).Once()
 
+	mockSceneReader.On("GetStashIDs", sceneID).Return(stashIDs, nil).Once()
+	mockSceneReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
+
 	for i, s := range scenarios {
 		scene := s.input
 		json, err := ToBasicJSON(mockSceneReader, &scene)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
@@ -283,11 +298,12 @@ func TestGetStudioName(t *testing.T) {
 		scene := s.input
 		json, err := GetStudioName(mockStudioReader, &scene)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
@@ -343,11 +359,12 @@ func TestGetTagNames(t *testing.T) {
 		scene := s.input
 		json, err := GetTagNames(mockTagReader, &scene)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
@@ -435,11 +452,12 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 		scene := s.input
 		json, err := GetSceneMoviesJSON(mockMovieReader, mockSceneReader, &scene)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
@@ -617,11 +635,12 @@ func TestGetSceneMarkersJSON(t *testing.T) {
 		scene := s.input
 		json, err := GetSceneMarkersJSON(mockMarkerReader, mockTagReader, &scene)
 
-		if !s.err && err != nil {
+		switch {
+		case !s.err && err != nil:
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
+		case s.err && err == nil:
 			t.Errorf("[%d] expected error not returned", i)
-		} else {
+		default:
 			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}

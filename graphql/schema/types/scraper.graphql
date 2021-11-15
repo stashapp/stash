@@ -31,6 +31,7 @@ type ScrapedStudio {
   stored_id: ID
   name: String!
   url: String
+  image: String
 
   remote_site_id: String
 }
@@ -95,7 +96,18 @@ input ScrapedGalleryInput {
 
 input ScraperSourceInput {
   """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
-  stash_box_index: Int
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  """Stash-box endpoint"""
+  stash_box_endpoint: String
+  """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
+  scraper_id: ID
+}
+
+type ScraperSource {
+  """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
+  stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
+  """Stash-box endpoint"""
+  stash_box_endpoint: String
   """Scraper ID to scrape with. Should be unset if stash_box_index is set"""
   scraper_id: ID
 }
@@ -175,10 +187,16 @@ type StashBoxFingerprint {
   duration: Int!
 }
 
+"""If neither performer_ids nor performer_names are set, tag all performers"""
 input StashBoxBatchPerformerTagInput {
+  "Stash endpoint to use for the performer tagging"
   endpoint: Int!
+  "Fields to exclude when executing the performer tagging"
   exclude_fields: [String!]
+  "Refresh performers already tagged by StashBox if true. Only tag performers with no StashBox tagging if false"
   refresh: Boolean!
+  "If set, only tag these performer ids"
   performer_ids: [ID!]
+  "If set, only tag these performer names"
   performer_names: [String!]
 }

@@ -17,6 +17,7 @@ export interface IPlaySceneOptions {
   sceneIndex?: number;
   newPage?: number;
   autoPlay?: boolean;
+  continue?: boolean;
 }
 
 export class SceneQueue {
@@ -125,6 +126,7 @@ export class SceneQueue {
       options?.newPage
     );
     const autoplayParam = options?.autoPlay ? "&autoplay=true" : "";
-    return `/scenes/${sceneID}?${paramStr}${autoplayParam}`;
+    const continueParam = options?.continue ? "&continue=true" : "";
+    return `/scenes/${sceneID}?${paramStr}${autoplayParam}${continueParam}`;
   }
 }

@@ -1,5 +1,6 @@
 import _, { debounce } from "lodash";
 import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
+import cx from "classnames";
 import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -23,6 +24,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { SavedFilterList } from "./SavedFilterList";
 
+const maxPageSize = 1000;
 interface IListFilterProps {
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   filter: ListFilterModel;
@@ -44,6 +46,9 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 }) => {
   const [customPageSizeShowing, setCustomPageSizeShowing] = useState(false);
   const [queryRef, setQueryFocus] = useFocus();
+  const [queryClearShowing, setQueryClearShowing] = useState(
+    !!filter.searchTerm
+  );
   const perPageSelect = useRef(null);
   const [perPageInput, perPageFocus] = useFocus();
 
@@ -86,9 +91,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     setCustomPageSizeShowing(false);
 
-    const pp = parseInt(val, 10);
+    let pp = parseInt(val, 10);
     if (Number.isNaN(pp) || pp <= 0) {
       return;
+    }
+
+    // don't allow page sizes over 1000
+    if (pp > maxPageSize) {
+      pp = maxPageSize;
     }
 
     const newFilter = _.cloneDeep(filter);
@@ -99,6 +109,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
     searchCallback(event.currentTarget.value);
+    setQueryClearShowing(!!event.currentTarget.value);
+  }
+
+  function onClearQuery() {
+    queryRef.current.value = "";
+    searchCallback("");
+    setQueryFocus();
+    setQueryClearShowing(false);
   }
 
   function onChangeSortDirection() {
@@ -150,7 +168,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   const SavedFilterDropdown = React.forwardRef<
     HTMLDivElement,
     HTMLAttributes<HTMLDivElement>
-  >(({ style, className }, ref) => (
+  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
     <div ref={ref} style={style} className={className}>
       <SavedFilterList
         filter={filter}
@@ -161,6 +179,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       />
     </div>
   ));
+  SavedFilterDropdown.displayName = "SavedFilterDropdown";
 
   function render() {
     const currentSortBy = filterOptions.sortByOptions.find(
@@ -217,7 +236,17 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               onInput={onChangeQuery}
               className="query-text-field bg-secondary text-white border-secondary"
             />
-
+            <Button
+              variant="secondary"
+              onClick={onClearQuery}
+              title={intl.formatMessage({ id: "actions.clear" })}
+              className={cx(
+                "query-text-field-clear",
+                queryClearShowing ? "" : "d-none"
+              )}
+            >
+              <Icon icon="times" />
+            </Button>
             <InputGroup.Append>
               <OverlayTrigger
                 placement="top"
@@ -240,11 +269,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
         </div>
 
         <Dropdown as={ButtonGroup} className="mr-2 mb-1">
-          <Dropdown.Toggle variant="secondary">
-            {currentSortBy
-              ? intl.formatMessage({ id: currentSortBy.messageID })
-              : ""}
-          </Dropdown.Toggle>
+          <InputGroup.Prepend>
+            <Dropdown.Toggle variant="secondary">
+              {currentSortBy
+                ? intl.formatMessage({ id: currentSortBy.messageID })
+                : ""}
+            </Dropdown.Toggle>
+          </InputGroup.Prepend>
           <Dropdown.Menu className="bg-secondary text-white">
             {renderSortByOptions()}
           </Dropdown.Menu>
@@ -309,6 +340,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                   <Form.Control
                     type="number"
                     min={1}
+                    max={maxPageSize}
                     className="text-input"
                     ref={perPageInput}
                     onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {

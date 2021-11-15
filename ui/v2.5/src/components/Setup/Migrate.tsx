@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Container, Form } from "react-bootstrap";
+import { useIntl, FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useSystemStatus, mutateMigrate } from "src/core/StashService";
 import { LoadingIndicator } from "../Shared";
@@ -9,6 +10,8 @@ export const Migrate: React.FC = () => {
   const [backupPath, setBackupPath] = useState<string | undefined>();
   const [migrateLoading, setMigrateLoading] = useState(false);
   const [migrateError, setMigrateError] = useState("");
+
+  const intl = useIntl();
 
   // make suffix based on current time
   const now = new Date()
@@ -32,7 +35,7 @@ export const Migrate: React.FC = () => {
       target="_blank"
       rel="noreferrer"
     >
-      Github repository
+      <FormattedMessage id="setup.github_repository" />
     </a>
   );
 
@@ -48,7 +51,11 @@ export const Migrate: React.FC = () => {
   }
 
   if (migrateLoading) {
-    return <LoadingIndicator message="Migrating database" />;
+    return (
+      <LoadingIndicator
+        message={intl.formatMessage({ id: "setup.migrate.migrating_database" })}
+      />
+    );
   }
 
   if (
@@ -73,7 +80,7 @@ export const Migrate: React.FC = () => {
       const newURL = new URL("/", window.location.toString());
       window.location.href = newURL.toString();
     } catch (e) {
-      setMigrateError(e.message ?? e.toString());
+      if (e instanceof Error) setMigrateError(e.message ?? e.toString());
       setMigrateLoading(false);
     }
   }
@@ -85,17 +92,23 @@ export const Migrate: React.FC = () => {
 
     return (
       <section>
-        <h2 className="text-danger">Migration failed</h2>
+        <h2 className="text-danger">
+          <FormattedMessage id="setup.migrate.migration_failed" />
+        </h2>
 
-        <p>The following error was encountered while migrating the database:</p>
+        <p>
+          <FormattedMessage id="setup.migrate.migration_failed_error" />
+        </p>
 
         <Card>
           <pre>{migrateError}</pre>
         </Card>
 
         <p>
-          Please make any necessary corrections and try again. Otherwise, raise
-          a bug on the {githubLink} or seek help in the {discordLink}.
+          <FormattedMessage
+            id="setup.migrate.migration_failed_help"
+            values={{ discordLink, githubLink }}
+          />
         </p>
       </section>
     );
@@ -103,39 +116,50 @@ export const Migrate: React.FC = () => {
 
   return (
     <Container>
-      <h1 className="text-center mb-3">Migration required</h1>
+      <h1 className="text-center mb-3">
+        <FormattedMessage id="setup.migrate.migration_required" />
+      </h1>
       <Card>
         <section>
           <p>
-            Your current stash database is schema version{" "}
-            <strong>{status.databaseSchema}</strong> and needs to be migrated to
-            version <strong>{status.appSchema}</strong>. This version of Stash
-            will not function without migrating the database.
+            <FormattedMessage
+              id="setup.migrate.schema_too_old"
+              values={{
+                databaseSchema: <strong>{status.databaseSchema}</strong>,
+                appSchema: <strong>{status.appSchema}</strong>,
+                strong: (chunks: string) => <strong>{chunks}</strong>,
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
           </p>
 
           <p className="lead text-center my-5">
-            The schema migration process is not reversible. Once the migration
-            is performed, your database will be incompatible with previous
-            versions of stash.
+            <FormattedMessage id="setup.migrate.migration_irreversible_warning" />
           </p>
 
           <p>
-            It is recommended that you backup your existing database before you
-            migrate. We can do this for you, making a copy of your writing a
-            backup to <code>{defaultBackupPath}</code> if required.
+            <FormattedMessage
+              id="setup.migrate.backup_recommended"
+              values={{
+                defaultBackupPath,
+                code: (chunks: string) => <code>{chunks}</code>,
+              }}
+            />
           </p>
         </section>
 
         <section>
           <Form.Group id="migrate">
             <Form.Label>
-              Backup database path (leave empty to disable backup):
+              <FormattedMessage id="setup.migrate.backup_database_path_leave_empty_to_disable_backup" />
             </Form.Label>
             <Form.Control
               className="text-input"
               name="backupPath"
               defaultValue={backupPath}
-              placeholder="database filename (empty for default)"
+              placeholder={intl.formatMessage({
+                id: "setup.paths.database_filename_empty_for_default",
+              })}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setBackupPath(e.currentTarget.value)
               }
@@ -146,7 +170,7 @@ export const Migrate: React.FC = () => {
         <section>
           <div className="d-flex justify-content-center">
             <Button variant="primary mx-2 p-5" onClick={() => onMigrate()}>
-              Perform schema migration
+              <FormattedMessage id="setup.migrate.perform_schema_migration" />
             </Button>
           </div>
         </section>

@@ -3,9 +3,10 @@ package api
 import (
 	"context"
 	"database/sql"
-	"github.com/stashapp/stash/pkg/studio"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/studio"
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
@@ -33,7 +34,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	// Process the base 64 encoded image string
 	if input.Image != nil {
-		imageData, err = utils.ProcessImageInput(*input.Image)
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
 			return nil, err
 		}
@@ -129,7 +130,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
 		var err error
-		imageData, err = utils.ProcessImageInput(*input.Image)
+		imageData, err = utils.ProcessImageInput(ctx, *input.Image)
 		if err != nil {
 			return nil, err
 		}

@@ -61,11 +61,12 @@ func (p *Progress) SetProcessed(processed int) {
 }
 
 func (p *Progress) calculatePercent() {
-	if p.total <= 0 {
+	switch {
+	case p.total <= 0:
 		p.percent = ProgressIndefinite
-	} else if p.processed < 0 {
+	case p.processed < 0:
 		p.percent = 0
-	} else {
+	default:
 		p.percent = float64(p.processed) / float64(p.total)
 		if p.percent > 1 {
 			p.percent = 1
@@ -92,16 +93,31 @@ func (p *Progress) SetPercent(percent float64) {
 	p.updated()
 }
 
-// Increment increments the number of processed work units, if this does not
-// exceed the total units. This is used to calculate the percentage.
+// Increment increments the number of processed work units. This is used to calculate the percentage.
+// If total is set already, then the number of processed work units will not exceed the total.
 func (p *Progress) Increment() {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	if p.processed < p.total {
+	if p.total <= 0 || p.processed < p.total {
 		p.processed++
 		p.calculatePercent()
 	}
+}
+
+// AddProcessed increments the number of processed work units by the provided
+// amount. This is used to calculate the percentage.
+func (p *Progress) AddProcessed(v int) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	newVal := v
+	if newVal > p.total {
+		newVal = p.total
+	}
+
+	p.processed = newVal
+	p.calculatePercent()
 }
 
 func (p *Progress) addTask(t *task) {

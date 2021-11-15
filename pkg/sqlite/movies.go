@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -58,7 +59,7 @@ func (qb *movieQueryBuilder) Destroy(id int) error {
 func (qb *movieQueryBuilder) Find(id int) (*models.Movie, error) {
 	var ret models.Movie
 	if err := qb.get(id, &ret); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -140,8 +141,7 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 	}
 
 	query := qb.newQuery()
-
-	query.body = selectDistinctIDs("movies")
+	distinctIDs(&query, movieTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
@@ -209,7 +209,24 @@ func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.Hierarch
 
 func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if performers != nil && len(performers.Value) > 0 {
+		if performers != nil {
+			if performers.Modifier == models.CriterionModifierIsNull || performers.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if performers.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("movies_scenes", "", "movies.id = movies_scenes.movie_id")
+				f.addJoin("performers_scenes", "", "movies_scenes.scene_id = performers_scenes.scene_id")
+
+				f.addWhere(fmt.Sprintf("performers_scenes.performer_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(performers.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, arg := range performers.Value {
 				args = append(args, arg)
@@ -224,12 +241,13 @@ func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.M
 			)`, args...)
 			f.addJoin("movies_performers", "", "movies.id = movies_performers.movie_id")
 
-			if performers.Modifier == models.CriterionModifierIncludes {
+			switch performers.Modifier {
+			case models.CriterionModifierIncludes:
 				f.addWhere("movies_performers.performer_id IS NOT NULL")
-			} else if performers.Modifier == models.CriterionModifierIncludesAll {
+			case models.CriterionModifierIncludesAll:
 				f.addWhere("movies_performers.performer_id IS NOT NULL")
 				f.addHaving("COUNT(DISTINCT movies_performers.performer_id) = ?", len(performers.Value))
-			} else if performers.Modifier == models.CriterionModifierExcludes {
+			case models.CriterionModifierExcludes:
 				f.addWhere("movies_performers.performer_id IS NULL")
 			}
 		}

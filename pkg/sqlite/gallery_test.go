@@ -825,6 +825,29 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
+		tagCriterion = models.HierarchicalMultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdx1WithImage], galleries[0].ID)
+
+		q = getGalleryStringValue(galleryIdxWithPerformerTag, titleField)
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
+		tagCriterion.Modifier = models.CriterionModifierNotNull
+
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTag], galleries[0].ID)
+
+		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
+		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
+
 		return nil
 	})
 }
@@ -962,18 +985,24 @@ func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCrite
 		for _, gallery := range galleries {
 			pp := 0
 
-			_, count, err := r.Image().Query(&models.ImageFilterType{
-				Galleries: &models.MultiCriterionInput{
-					Value:    []string{strconv.Itoa(gallery.ID)},
-					Modifier: models.CriterionModifierIncludes,
+			result, err := r.Image().Query(models.ImageQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						PerPage: &pp,
+					},
+					Count: true,
 				},
-			}, &models.FindFilterType{
-				PerPage: &pp,
+				ImageFilter: &models.ImageFilterType{
+					Galleries: &models.MultiCriterionInput{
+						Value:    []string{strconv.Itoa(gallery.ID)},
+						Modifier: models.CriterionModifierIncludes,
+					},
+				},
 			})
 			if err != nil {
 				return err
 			}
-			verifyInt(t, count, imageCountCriterion)
+			verifyInt(t, result.Count, imageCountCriterion)
 		}
 
 		return nil

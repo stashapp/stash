@@ -43,6 +43,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     Array.isArray(size) ? size[0] : size ?? "20",
     10
   );
+  const [currentPageSize, setCurrentPageSize] = useState(pageSize);
   const hashDistance = Number.parseInt(
     Array.isArray(distance) ? distance[0] : distance ?? "0",
     10
@@ -312,6 +313,75 @@ export const SceneDuplicateChecker: React.FC = () => {
     }
   }
 
+  function renderPagination() {
+    return (
+      <div className="d-flex mt-2 mb-2">
+        <h6 className="mr-auto align-self-center">
+          <FormattedMessage
+            id="dupe_check.found_sets"
+            values={{ setCount: scenes.length }}
+          />
+        </h6>
+        {checkCount > 0 && (
+          <ButtonGroup>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="edit">
+                  {intl.formatMessage({ id: "actions.edit" })}
+                </Tooltip>
+              }
+            >
+              <Button variant="secondary" onClick={onEdit}>
+                <Icon icon="pencil-alt" />
+              </Button>
+            </OverlayTrigger>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="delete">
+                  {intl.formatMessage({ id: "actions.delete" })}
+                </Tooltip>
+              }
+            >
+              <Button variant="danger" onClick={handleDeleteChecked}>
+                <Icon icon="trash" />
+              </Button>
+            </OverlayTrigger>
+          </ButtonGroup>
+        )}
+        <Pagination
+          itemsPerPage={pageSize}
+          currentPage={currentPage}
+          totalItems={scenes.length}
+          metadataByline={[]}
+          onChangePage={(newPage) =>
+            setQuery({ page: newPage === 1 ? undefined : newPage })
+          }
+        />
+        <Form.Control
+          as="select"
+          className="w-auto ml-2 btn-secondary"
+          defaultValue={pageSize}
+          value={currentPageSize}
+          onChange={(e) => {
+            setCurrentPageSize(parseInt(e.currentTarget.value, 10));
+            setQuery({
+              size:
+                e.currentTarget.value === "20"
+                  ? undefined
+                  : e.currentTarget.value,
+            });
+          }}
+        >
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={40}>40</option>
+          <option value={60}>60</option>
+          <option value={80}>80</option>
+        </Form.Control>
+      </div>
+    );
+  }
+
   return (
     <Card id="scene-duplicate-checker" className="col col-xl-10 mx-auto">
       <div className={CLASSNAME}>
@@ -364,68 +434,10 @@ export const SceneDuplicateChecker: React.FC = () => {
             <FormattedMessage id="dupe_check.description" />
           </Form.Text>
         </Form.Group>
+
         {maybeRenderMissingPhashWarning()}
-        <div className="d-flex mb-2">
-          <h6 className="mr-auto align-self-center">
-            <FormattedMessage
-              id="dupe_check.found_sets"
-              values={{ setCount: scenes.length }}
-            />
-          </h6>
-          {checkCount > 0 && (
-            <ButtonGroup>
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="edit">
-                    {intl.formatMessage({ id: "actions.edit" })}
-                  </Tooltip>
-                }
-              >
-                <Button variant="secondary" onClick={onEdit}>
-                  <Icon icon="pencil-alt" />
-                </Button>
-              </OverlayTrigger>
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="delete">
-                    {intl.formatMessage({ id: "actions.delete" })}
-                  </Tooltip>
-                }
-              >
-                <Button variant="danger" onClick={handleDeleteChecked}>
-                  <Icon icon="trash" />
-                </Button>
-              </OverlayTrigger>
-            </ButtonGroup>
-          )}
-          <Pagination
-            itemsPerPage={pageSize}
-            currentPage={currentPage}
-            totalItems={scenes.length}
-            onChangePage={(newPage) =>
-              setQuery({ page: newPage === 1 ? undefined : newPage })
-            }
-          />
-          <Form.Control
-            as="select"
-            className="w-auto ml-2 btn-secondary"
-            defaultValue={pageSize}
-            onChange={(e) =>
-              setQuery({
-                size:
-                  e.currentTarget.value === "20"
-                    ? undefined
-                    : e.currentTarget.value,
-              })
-            }
-          >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={40}>40</option>
-            <option value={60}>60</option>
-            <option value={80}>80</option>
-          </Form.Control>
-        </div>
+        {renderPagination()}
+
         <Table responsive striped className={`${CLASSNAME}-table`}>
           <colgroup>
             <col className={`${CLASSNAME}-checkbox`} />
@@ -533,6 +545,7 @@ export const SceneDuplicateChecker: React.FC = () => {
         {scenes.length === 0 && (
           <h4 className="text-center mt-4">No duplicates found.</h4>
         )}
+        {renderPagination()}
       </div>
     </Card>
   );

@@ -12,3 +12,10 @@ type StashID struct {
 	StashID  string `db:"stash_id" json:"stash_id"`
 	Endpoint string `db:"endpoint" json:"endpoint"`
 }
+
+func (s StashID) StashIDInput() StashIDInput {
+	return StashIDInput{
+		Endpoint: s.Endpoint,
+		StashID:  s.StashID,
+	}
+}

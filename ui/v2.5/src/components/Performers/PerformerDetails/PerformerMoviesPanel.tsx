@@ -4,7 +4,7 @@ import { MovieList } from "src/components/Movies/MovieList";
 import { performerFilterHook } from "src/core/performers";
 
 interface IPerformerDetailsProps {
-  performer: Partial<GQL.PerformerDataFragment>;
+  performer: GQL.PerformerDataFragment;
 }
 
 export const PerformerMoviesPanel: React.FC<IPerformerDetailsProps> = ({

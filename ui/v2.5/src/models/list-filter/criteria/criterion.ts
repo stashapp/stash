@@ -364,6 +364,8 @@ export class ILabeledIdCriterionOption extends CriterionOption {
     const modifierOptions = [
       CriterionModifier.Includes,
       CriterionModifier.Excludes,
+      CriterionModifier.IsNull,
+      CriterionModifier.NotNull,
     ];
 
     let defaultModifier = CriterionModifier.Includes;

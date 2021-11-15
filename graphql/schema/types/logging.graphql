@@ -2,6 +2,7 @@
 scalar Time
 
 enum LogLevel {
+    Trace
     Debug
     Info
     Progress
