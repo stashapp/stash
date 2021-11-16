@@ -741,7 +741,7 @@
     "github_repository": "Github repository",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Backup database path (leave empty to disable backup):",
-      "backup_recommended": "It is recommended that you backup your existing database before you migrate. We can do this for you, by making a copy of your databse to <code>{defaultBackupPath}</code>.",
+      "backup_recommended": "It is recommended that you backup your existing database before you migrate. We can do this for you, by making a copy of your database to <code>{defaultBackupPath}</code>.",
       "migrating_database": "Migrating database",
       "migration_failed": "Migration failed",
       "migration_failed_error": "The following error was encountered while migrating the database:",
