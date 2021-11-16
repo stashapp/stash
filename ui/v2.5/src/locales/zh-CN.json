@@ -769,7 +769,10 @@
       "next_config_step_one": "接下来你会被带到配置页面。此页面会让你设定哪些文件被包括或者不包括，设定用户名和密码来保护你的系统，以及其它的一些选项。",
       "next_config_step_two": "当你对这些选项都满意后，你可以开始按下<code>{localized_task}</code>，然后按下<code>{localized_scan}</code>来开始扫描你的收藏.",
       "open_collective": "看看我们的{open_collective_link}来了解一下你可以如何对Stash的继续发展作出贡献。",
-      "support_us": "支持我们"
+      "support_us": "支持我们",
+      "thanks_for_trying_stash": "感激你尝试Stash!",
+      "welcome_contrib": "我们也欢迎以代码的方式来做出贡献(修正毛病，改善和新功能)，测试，毛病报告，改善和请求功能，以及用户支持。详情请看内置手册的“贡献”区。",
+      "your_system_has_been_created": "成功！你的系统建立了！"
     }
   },
   "stash_id": "Stash ID",
