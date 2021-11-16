@@ -13,7 +13,7 @@
     "cancel": "取消",
     "clean": "清除",
     "clear": "清除",
-    "clear_back_image": "清除背景图片",
+    "clear_back_image": "清除背面图片",
     "clear_front_image": "清除正面图片",
     "clear_image": "清除图片",
     "close": "关闭",
@@ -41,7 +41,7 @@
     "generate": "生成",
     "generate_thumb_default": "生成默认预览图",
     "generate_thumb_from_current": "从现在的画面生成预览图",
-    "hash_migration": "重新生成hash值",
+    "hash_migration": "识别码迁移",
     "hide": "隐藏",
     "identify": "识别",
     "ignore": "略过",
@@ -60,7 +60,7 @@
     "previous_action": "回去",
     "refresh": "刷新",
     "reload_plugins": "重新加载插件",
-    "reload_scrapers": "重新加载爬虫",
+    "reload_scrapers": "重新加载网页挖掘器",
     "remove": "移除",
     "rename_gen_files": "重命名生成的文件",
     "rescan": "重新扫描",
@@ -73,7 +73,7 @@
     "scrape": "挖掘",
     "scrape_query": "挖掘 查询指令",
     "scrape_scene_fragment": "以部分名字挖掘",
-    "scrape_with": "使用爬虫...",
+    "scrape_with": "使用挖掘器…",
     "search": "搜索",
     "select_all": "选择所有",
     "select_folders": "选择目录",
@@ -81,7 +81,7 @@
     "selective_auto_tag": "选择性自动生成标签",
     "selective_scan": "选择性扫描",
     "set_as_default": "设置为默认",
-    "set_back_image": "设置背景图...",
+    "set_back_image": "设置背面图…",
     "set_front_image": "设置正面图...",
     "set_image": "设置图片...",
     "show": "展示",
@@ -89,7 +89,7 @@
     "stop": "停止",
     "tasks": {
       "clean_confirm_message": "确定要清除吗？ 这将删除系统中不存在的所有短片和图库的数据库信息和已经生成的内容。",
-      "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会进行模拟删除。",
+      "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会写下记录。",
       "import_warning": "确定要导入吗？ 这将删除现有数据库并从导出的元数据中重新导入。"
     },
     "temp_disable": "暂时关闭...",
@@ -103,7 +103,7 @@
   "all": "所有",
   "also_known_as": "又称作",
   "ascending": "升序",
-  "average_resolution": "平均时长",
+  "average_resolution": "平均分辨率",
   "birth_year": "出生年份",
   "birthdate": "出生日期",
   "bitrate": "比特率",
@@ -611,6 +611,14 @@
   },
   "seconds": "秒",
   "settings": "设置",
+  "setup": {
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "数据库备份路径  (留空代表不备份):",
+      "backup_recommended": "在迁移前推荐你先备份现有数据库. 我们可以帮你做，需要的话会做一备份到<code>{defaultBackupPath}</code>.",
+      "migration_irreversible_warning": "数据库结构迁移的过程是不可逆的。迁移完成后，你的数据库将会无法和更早版本的stash兼容。",
+      "perform_schema_migration": "进行数据库结构迁移"
+    }
+  },
   "stash_id": "Stash ID",
   "stats": {
     "image_size": "图片大小",
