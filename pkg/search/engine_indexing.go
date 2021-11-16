@@ -15,20 +15,17 @@ import (
 // Query queries for scenes using the provided filters.
 func performerQuery(r models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, error) {
 	result, _, err := r.Query(performerFilter, findFilter)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return result, err
 }
 
 func tagQuery(r models.TagReader, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, error) {
 	result, _, err := r.Query(tagFilter, findFilter)
-	if err != nil {
-		return nil, err
-	}
+	return result, err
+}
 
-	return result, nil
+func studioQuery(r models.StudioReader, tagFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, error) {
+	result, _, err := r.Query(tagFilter, findFilter)
+	return result, err
 }
 
 func batchPerformerChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
@@ -46,6 +43,23 @@ func batchPerformerChangeSet(r models.ReaderRepository, f *models.FindFilterType
 	}
 
 	return cs, len(performers), nil
+}
+
+func batchStudioChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
+	studios, err := studioQuery(r.Studio(), nil, f)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	cs := newChangeSet()
+	for _, s := range studios {
+		cs.track(event.Change{
+			ID:   s.ID,
+			Type: event.Studio,
+		})
+	}
+
+	return cs, len(studios), nil
 }
 
 func batchTagChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*changeSet, int, error) {
@@ -87,12 +101,11 @@ func batchSceneChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*
 // strategy for reindexing. But to get there, we have to write it in ugly
 // before we can write it in neat.
 //
-// Note that in batchReindexing, we don't have to preprocess the changeset.
+// Note that in full indexing, we don't have to preprocess the changeset.
 // We are touching every object in the database, so relationships will be
 // picked up as we walk over the data set.
 func (e *Engine) fullReindex(ctx context.Context) error {
 	loaders := newLoaders(ctx, e.txnMgr)
-	loaderCount := 10 // Only use the loader cache for this many rounds
 
 	batchSz := 1000
 
@@ -105,49 +118,19 @@ func (e *Engine) fullReindex(ctx context.Context) error {
 
 	stats := report{}
 
-	// Index tags
-	for more := true; more; {
-		select {
-		case <-progressTicker.C:
-			logger.Infof("reindexing progress: %v", stats)
-			stats = report{}
-		default:
-		}
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
-		var cm *changeSet
-		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			res, sz, err := batchTagChangeSet(r, findFilter)
-			if err != nil {
-				return err
-			}
-
-			// Update next iteration
-			if sz != batchSz {
-				more = false
-			} else {
-				*findFilter.Page++
-			}
-			cm = res
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		s := e.batchProcess(ctx, loaders, e.idx, batch, cm)
-		batch.Reset()
-		stats.merge(s)
+	// Set up a worklist of document types to index
+	toIndex := []string{
+		documents.TypeTag,
+		documents.TypePerformer,
+		documents.TypeStudio,
+		documents.TypeScene,
 	}
 
-	// Index performers
-	for more := true; more; {
+	// Index the different types of data we have. We om-nom-nom the worklist
+	// and update the front of it whenever we reach the point where there's
+	// no more work to do for the given type of document.
+	for len(toIndex) > 0 {
+		// Handle reporting and exit
 		select {
 		case <-progressTicker.C:
 			logger.Infof("reindexing progress: %v", stats)
@@ -161,81 +144,51 @@ func (e *Engine) fullReindex(ctx context.Context) error {
 		default:
 		}
 
-		var cm *changeSet
-		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			res, sz, err := batchPerformerChangeSet(r, findFilter)
-			if err != nil {
-				return err
-			}
-
-			// Update next iteration
-			if sz != batchSz {
-				more = false
-			} else {
-				*findFilter.Page++
-			}
-			cm = res
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		s := e.batchProcess(ctx, loaders, e.idx, batch, cm)
-		batch.Reset()
-		stats.merge(s)
-	}
-
-	// Reset the findFilter
-	*findFilter.Page = 0
-
-	// Index scenes
-	for more := true; more; {
-		select {
-		case <-progressTicker.C:
-			logger.Infof("reindexing progress: %v", stats)
-			stats = report{}
-		default:
-		}
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
+		var err error
 		var cs *changeSet
-		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			res, sz, err := batchSceneChangeSet(r, findFilter)
-			if err != nil {
+		var sz int
+		switch toIndex[0] {
+		case documents.TypeTag:
+			err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+				cs, sz, err = batchTagChangeSet(r, findFilter)
 				return err
-			}
-
-			// Update next iteration
-			if sz != batchSz {
-				more = false
-			} else {
-				*findFilter.Page++
-			}
-			cs = res
-			return nil
-		})
+			})
+		case documents.TypePerformer:
+			err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+				cs, sz, err = batchPerformerChangeSet(r, findFilter)
+				return err
+			})
+		case documents.TypeStudio:
+			err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+				cs, sz, err = batchStudioChangeSet(r, findFilter)
+				return err
+			})
+		case documents.TypeScene:
+			err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+				cs, sz, err = batchSceneChangeSet(r, findFilter)
+				return err
+			})
+		default:
+			panic("unhandled full-reindex case")
+		}
 
 		if err != nil {
 			return err
+		}
+
+		// Update next iteration
+		if sz != batchSz {
+			toIndex = toIndex[1:]
+			*findFilter.Page = 0
+		} else {
+			loaders.reset(ctx)
+			*findFilter.Page++
 		}
 
 		s := e.batchProcess(ctx, loaders, e.idx, batch, cs)
 		batch.Reset()
 		stats.merge(s)
-
-		if loaderCount--; loaderCount < 0 {
-			loaders.reset(ctx)
-			loaderCount = 10
-		}
 	}
-
 	logger.Infof("reindexing finished, progress: %v", stats)
 
 	return nil

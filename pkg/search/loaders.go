@@ -43,10 +43,11 @@ func newLoaders(ctx context.Context, mgr models.TransactionManager) *loaders {
 	}
 }
 
+// reset resets the loaders carrying lots of data which are also leaf nodes
+// in a dependency graph. This keeps the amount of memory down, while still
+// retaining usefulness of the data loader abstraction. Search often touch
+// certain items once, so keeping them around in the data loader is just
+// waste of memory.
 func (l *loaders) reset(ctx context.Context) {
-	// We only reset the large loaders. The volume is often on either Scene
-	// and or Image. So they are the large data sets. Other tables tend to
-	// be relatively small in size, so we can just keep them around for the
-	// loaders run.
 	l.scene = models.NewSceneLoader(models.NewSceneLoaderConfig(ctx, l.mgr))
 }
