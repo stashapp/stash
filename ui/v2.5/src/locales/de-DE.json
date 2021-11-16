@@ -115,15 +115,15 @@
       "query_mode_auto": "Automatisch",
       "query_mode_auto_desc": "Nutzt Metadaten sofern verfügbar bzw. Dateinamen",
       "query_mode_dir": "Verzeichnis",
-      "query_mode_dir_desc": "Nutzt nur den übergeordneten Ornder ",
+      "query_mode_dir_desc": "Nutzt nur den übergeordneten Ornder",
       "query_mode_filename": "Dateiname",
       "query_mode_filename_desc": "Nutzt nur den Dateinamen",
       "query_mode_label": "Anfragemodus",
       "query_mode_metadata": "Metadaten",
       "query_mode_metadata_desc": "Nutzt nur Metadaten",
-      "query_mode_path": "Pfad  ",
+      "query_mode_path": "Pfad",
       "query_mode_path_desc": "Nutzt vollständigen Dateipfad",
-      "set_cover_desc": "Überschreibe Cover-Bild, sofern verfügbar",
+      "set_cover_desc": "Überschreibe Titelbild sofern verfügbar.",
       "set_cover_label": "Setze Cover-Bild",
       "set_tag_desc": "Hänge Tags der Szene an, entweder durch Überschreiben oder Zusammenführen mit bereits angehängten Tags.",
       "set_tag_label": "Tags anhängen",
@@ -202,11 +202,11 @@
         "maximum_session_age": "Maximale Sitzungsdauer",
         "maximum_session_age_desc": "Maximale Wartezeit bis eine Login-Sitzung ausläuft, in Sekunden.",
         "password": "Passwort",
-        "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren.",
+        "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
         "stash-box_integration": "Stash-box Einbindung",
         "trusted_proxies": "Vertrauenswürdige Proxys",
         "username": "Benutzername",
-        "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren."
+        "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
       },
       "cache_location": "Verzeichnis für den Cache.",
       "cache_path_head": "Cache Pfad",
@@ -303,7 +303,16 @@
         "create_missing": "Erstelle Fehlende",
         "default_options": "Standardoptionen",
         "description": "Automatisches erstellen der Szenen Metadaten durch Stash-Box und Scraper Quellen.",
-        "field": "Feld"
+        "field": "Feld",
+        "field_behaviour": "{strategy} {field}",
+        "heading": "Identifizieren",
+        "identifying_from_paths": "Identifizieren von Szenen durch den folgenden Pfad",
+        "identifying_scenes": "Identifiziere {num} {scene}",
+        "include_male_performers": "Männliche Darsteller einbeziehen",
+        "set_cover_images": "Titelbild festlegen",
+        "source": "Quelle",
+        "sources": "Quellen",
+        "strategy": "Strategie"
       },
       "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
       "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -325,6 +334,7 @@
         "escape_chars": "Verwenden Sie \\, um Literale zu maskieren",
         "filename": "Dateiname",
         "filename_pattern": "Dateinamenmuster",
+        "ignore_organized": "Ignoriere organizierte Szenen",
         "ignored_words": "Ignorierte Wörter",
         "matches_with": "Stimmt mit {i} überein",
         "select_parser_recipe": "Parser-Rezept auswählen",
@@ -339,6 +349,9 @@
         "description": "Die Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
         "heading": "Benutzerdefinierte CSS",
         "option_label": "Benutzerdefiniertes CSS aktiviert"
+      },
+      "delete_options": {
+        "description": "Standardeinstellungen wenn Bilder, Galerien und Szenen gelöscht werden."
       },
       "handy_connection_key": {
         "description": "Handy Verbindungsschlüssel für interaktive Szenen.",
@@ -427,7 +440,7 @@
   "developmentVersion": "Entwicklungsversion",
   "dialogs": {
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
-    "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} other {Möchten Sie diese {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
+    "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} Oder{Möchten Sie diese {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
     "delete_entity_title": "{count, plural, one {Lösche {singularEntity}} other {Lösche {pluralEntity}}}",
     "delete_object_desc": "Möchten Sie {count, plural, one {diese {singularEntity}} other {diese {pluralEntity}}} wirklich löschen?",
     "delete_object_overflow": "…und {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
