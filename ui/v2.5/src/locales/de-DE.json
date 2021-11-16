@@ -302,7 +302,8 @@
         "and_create_missing": "und erstelle fehlende",
         "create_missing": "Erstelle Fehlende",
         "default_options": "Standardoptionen",
-        "description": "Automatisches erstellen der Szenen Metadaten durch Stash-Box und Scraper Quellen."
+        "description": "Automatisches erstellen der Szenen Metadaten durch Stash-Box und Scraper Quellen.",
+        "field": "Feld"
       },
       "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
       "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
