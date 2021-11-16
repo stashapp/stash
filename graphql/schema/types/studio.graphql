@@ -1,4 +1,4 @@
-type Studio {
+type Studio implements SearchResultItem {
   id: ID!
   checksum: String!
   name: String!

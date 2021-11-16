@@ -19,6 +19,8 @@ type Studio struct {
 	Details   sql.NullString  `db:"details" json:"details"`
 }
 
+func (s Studio) IsSearchResultItem() {}
+
 type StudioPartial struct {
 	ID        int              `db:"id" json:"id"`
 	Checksum  *string          `db:"checksum" json:"checksum"`

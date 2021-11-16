@@ -71,26 +71,13 @@ func (r *queryResolver) Search(ctx context.Context, query string, ty *models.Sea
 func (r *queryResolver) hydrate(ctx context.Context, item search.Item) (models.SearchResultItem, error) {
 	switch item.Type {
 	case "scene":
-		scene, err := r.FindScene(ctx, &item.ID, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		return scene, nil
+		return r.FindScene(ctx, &item.ID, nil)
 	case "performer":
-		performer, err := r.FindPerformer(ctx, item.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		return performer, nil
+		return r.FindPerformer(ctx, item.ID)
 	case "tag":
-		tag, err := r.FindTag(ctx, item.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		return tag, err
+		return r.FindTag(ctx, item.ID)
+	case "studio":
+		return r.FindStudio(ctx, item.ID)
 	default:
 		return nil, fmt.Errorf("%w: %v", ErrUnknownType, item.Type)
 	}
