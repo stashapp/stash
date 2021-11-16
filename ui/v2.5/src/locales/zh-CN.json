@@ -773,11 +773,28 @@
       "thanks_for_trying_stash": "感激你尝试Stash!",
       "welcome_contrib": "我们也欢迎以代码的方式来做出贡献(修正毛病，改善和新功能)，测试，毛病报告，改善和请求功能，以及用户支持。详情请看内置手册的“贡献”区。",
       "your_system_has_been_created": "成功！你的系统建立了！"
-    }
+    },
+    "welcome": {
+      "config_path_logic_explained": "Stash首先尝试从当前工作目录中找配置文件 (<code>config.yml</code>)，如果没找到，会退回到 <code>$HOME/.stash/config.yml</code> (在微软视窗里，目录是<code>%USERPROFILE%\\.stash\\config.yml</code>). 你也可以让Stash读特定的配置文件，只要运行它时加上<code>-c <配置文件目录></code>或者<code>--config <配置文件目录></code>的选项。",
+      "in_current_stash_directory": "在 <code>$HOMT/.stash</code>目录里",
+      "in_the_current_working_directory": "在当前工作目录里",
+      "next_step": "之前的问题都解决了，如果你准备好建立一个新的系统，选择你想在哪里存放你的配置文件，然后点击“下一个”。",
+      "store_stash_config": "你想在哪里存放你的Stash配置？",
+      "unable_to_locate_config": "如果你看到这，就意味着Stash无法找到一个现有的配置。这个向导会指引你建立一个新的配置。",
+      "unexpected_explained": "如果你意外地看到这个屏幕显示，请在正确的工作目录下重新启动Stash，或者使用<code>-c</code>参数。"
+    },
+    "welcome_specific_config": {
+      "config_path": "Stash会使用以下配置文件的路径:<code>{path}</code>",
+      "next_step": "当你准备好建立一个新系统时，点击“下一个”。",
+      "unable_to_locate_specified_config": "如果你看到这，就意味着Stash无法用命令行或者环境变量找到配置文件。这个向导将指引你去建立一个新的配置。"
+    },
+    "welcome_to_stash": "欢迎使用Stash"
   },
-  "stash_id": "Stash ID",
+  "stash_id": "Stash 号",
+  "stash_ids": "Stash号",
   "stats": {
     "image_size": "图片大小",
+    "scenes_duration": "短片长度",
     "scenes_size": "短片大小"
   },
   "status": "状态：{statusText}",
@@ -785,9 +802,10 @@
   "studio_depth": "深度（为空时显示所有）",
   "studios": "工作室",
   "sub_tag_count": "副标签 数量",
+  "sub_tag_of": "{parent}的副标签",
   "sub_tags": "副标签",
-  "subsidiary_studios": "子工作室",
-  "synopsis": "该要",
+  "subsidiary_studios": "旗下的工作室",
+  "synopsis": "影片概要",
   "tag": "标签",
   "tag_count": "标签数量",
   "tags": "标签",
@@ -795,7 +813,7 @@
   "title": "标题",
   "toast": {
     "added_entity": "已添加{entity}",
-    "added_generation_job_to_queue": "已添加至队列",
+    "added_generation_job_to_queue": "已添加生成工作至队列",
     "create_entity": "已经创建{entity}",
     "default_filter_set": "默认过滤器",
     "delete_entity": "删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -807,8 +825,9 @@
     "started_auto_tagging": "已经开始自动生成标签",
     "updated_entity": "已经更新 {entity}"
   },
-  "total": "数量",
-  "twitter": "Twitter",
+  "total": "总共",
+  "true": "真",
+  "twitter": "推特",
   "up-dir": "上级目录",
   "updated_at": "更新时间",
   "url": "链接",
