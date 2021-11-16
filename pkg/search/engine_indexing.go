@@ -97,9 +97,6 @@ func batchSceneChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*
 }
 
 // fullReindex does a full reindexing in batches.
-// TODO: This function is going to be a mess until we figure out a decent
-// strategy for reindexing. But to get there, we have to write it in ugly
-// before we can write it in neat.
 //
 // Note that in full indexing, we don't have to preprocess the changeset.
 // We are touching every object in the database, so relationships will be
