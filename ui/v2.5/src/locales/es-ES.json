@@ -308,19 +308,24 @@
       "identify": {
         "default_options": "Opciones por defecto",
         "description": "Obtener automáticamente metadatos para las escenas utilizando una instancia stash-box y los rastreadores instalados.",
+        "explicit_set_description": "Estas opciones se usarán predeterminadamente si no se sobreescriben en las opciones específicas para cada fuente.",
         "field": "Campo",
+        "field_behaviour": "{strategy} {field}",
+        "field_options": "Opciones de campo",
         "heading": "Identificar",
-        "identifying_from_paths": "Identificación de las escenas que se encuentren en las siguientes rutas",
+        "identifying_from_paths": "Identificación de las escenas que se encuentren en las siguientes rutas relativas",
+        "identifying_scenes": "Identificando {num} {scene}",
         "include_male_performers": "Incluir actores (varones)",
-        "set_organized": "Marcar escena como \"organizada\"",
+        "set_cover_images": "Selección automática de carátula de escena",
+        "set_organized": "Marcar escena como \"clasificada\"",
         "source": "Fuente",
-        "source_options": "Opciones para {source}",
+        "source_options": "Opciones de {source}",
         "sources": "Fuentes",
         "strategy": "Estrategia"
       },
       "import_from_exported_json": "Importar desde el fichero JSON exportado en el directorio de metadatos. Borrará la base de datos existente.",
       "incremental_import": "Importación gradual o progresiva desde un archivo zip de exportación aportado por el usuario.",
-      "job_queue": "Cola de trabajo",
+      "job_queue": "Pila de tareas",
       "maintenance": "Mantenimiento",
       "migrate_hash_files": "Se ejecutará tras realizar un cambio de tipo de hash para renombrar los ficheros generados al nuevo formato hash.",
       "migrations": "Migraciones",
@@ -353,6 +358,19 @@
         "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados.",
         "heading": "CSS personalizado",
         "option_label": "Habilitar CSS personalizado"
+      },
+      "delete_options": {
+        "description": "Opciones por defecto al borrar escenas, imágenes y galerías.",
+        "heading": "Opciones de eliminación",
+        "options": {
+          "delete_file": "Eliminar fichero por defecto",
+          "delete_generated_supporting_files": "Eliminar por defecto ficheros generados"
+        }
+      },
+      "desktop_integration": {
+        "desktop_integration": "Integración de escritorio",
+        "skip_opening_browser": "Saltar apertura del navegador",
+        "skip_opening_browser_on_startup": "Saltar auto-apertura del navegador durante el inicio"
       },
       "editing": {
         "disable_dropdown_create": {
@@ -414,7 +432,15 @@
       "scene_player": {
         "heading": "Reproductor de vídeo",
         "options": {
-          "auto_start_video": "Iniciar vídeo automáticamente"
+          "auto_start_video": "Iniciar vídeo automáticamente",
+          "auto_start_video_on_play_selected": {
+            "description": "Empezar automáticamente el fichero de vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
+            "heading": "Comenzar automáticamente el vídeo cuando \"reproducir\" esté seleccionado"
+          },
+          "continue_playlist_default": {
+            "description": "Reproducir la siguiente escena cuando el fichero en reproducción finalice",
+            "heading": "(Por defecto) Continuar lista de reproducción"
+          }
         }
       },
       "scene_wall": {
@@ -432,7 +458,9 @@
     }
   },
   "configuration": "Configuración",
+  "continue": "Continuar",
   "countables": {
+    "files": "{count, plural, one {Archivo} other {Archivos}}",
     "galleries": "{count, plural, one {Galería} other {Galerías}}",
     "images": "{count, plural, one {Imagen} other {Imágenes}}",
     "markers": "{count, plural, one {Marcador} other {Marcadores}}",
@@ -475,9 +503,13 @@
   "details": "Info",
   "developmentVersion": "Versión de desarrollo",
   "dialogs": {
+    "aliases_must_be_unique": "Los alias deben ser únicos",
+    "delete_alert": "El/los siguiente/s {count, plural, one {{singularEntity}} other {{pluralEntity}}} se eliminará/n de forma permanente:",
     "delete_confirm": "¿Estás seguro que deseas eliminar {entityName}?",
     "delete_entity_desc": "{count, plural, one {¿Estás seguro que deseas eliminar esta {singularEntity}? Hasta que el archivo sea eliminado también, esta {singularEntity} se volverá a añadir cuando se lleve a cabo un escaneo.} other {¿Estás seguro que deseas eliminar {pluralEntity}? Hasta que los archivos sean eliminados del sistema de ficheros también, estas {pluralEntity} se volverán a añadir cuando se lleve a cabo un escaneo.}}",
     "delete_entity_title": "{count, plural, one {Eliminar {singularEntity}} other {Eliminar {pluralEntity}}}",
+    "delete_galleries_extra": "...y cualquier imagen no adjunta a alguna otra galería.",
+    "delete_gallery_files": "Eliminar directorio, fichero zip y cualquier imagen que no hayan sido adjuntadas a alguna galería.",
     "delete_object_desc": "¿Estás seguro que deseas eliminar {count, plural, one {esta {singularEntity}} other {estas {pluralEntity}}}?",
     "delete_object_overflow": "…y {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Eliminar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -587,9 +619,12 @@
   "ethnicity": "Origen étnico",
   "eye_color": "Color de ojos",
   "fake_tits": "Pecho operado",
+  "false": "No",
   "favourite": "Favorita",
-  "file_info": "Fichero",
+  "file": "fichero",
+  "file_info": "Info",
   "file_mod_time": "Hora de modificación del fichero",
+  "files": "ficheros",
   "filesize": "Tamaño de archivo",
   "filter": "Filtro",
   "filter_name": "Filtrar por nombre",
@@ -681,7 +716,71 @@
   },
   "seconds": "Segundos",
   "settings": "Preferencias",
+  "setup": {
+    "confirm": {
+      "almost_ready": "Casi estamos listos para completar la configuración. Por favor, confirma las siguientes opciones. Puedes hacer clic en volver para cambiar cualquier dato incorrecto. Si todo parece estar bien pulsa en Confirmar para crear tu nuevo entorno.",
+      "configuration_file_location": "Ruta relativa para el fichero de configuración:",
+      "database_file_path": "Ruta para la base de datos",
+      "default_db_location": "<ruta donde se encuentra el fichero de configuración>/stash-go.sqlite",
+      "default_generated_content_location": "<ruta donde se encuentra el fichero de configuración>/generated",
+      "generated_directory": "Directorio donde se almacenan los ficheros multimedia generados por Stash",
+      "nearly_there": "¡Casi estamos!",
+      "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash"
+    },
+    "creating": {
+      "creating_your_system": "Creando tu nuevo entorno",
+      "ffmpeg_notice": "Si <code>ffmpeg</code> no está presente, por favor, ten paciencia mientras Stash lo descarga. Puede ver el progreso de la descarga en la consola de la sección de registros."
+    },
+    "errors": {
+      "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",
+      "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}"
+    },
+    "github_repository": "Repositorio en Github",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "Ruta para las copias de seguridad (dejar en blanco para deshabilitar las copias de seguridad):",
+      "backup_recommended": "Es recomendable que realices una copia de seguridad de tu base de datos existente antes de la migración. Podemos encargarnos nosotros en tu lugar haciendo una copia de seguridad de tu base de datos en <code>{defaultBackupPath}</code>.",
+      "migrating_database": "Migrando base de datos",
+      "migration_failed": "Migración fallida",
+      "migration_failed_error": "Se ha producido el siguiente error mientras se migraba la base de datos:",
+      "migration_failed_help": "Por favor, haz las correcciones oportunas y vuelve a intentarlo. Si no, puedes avisarnos del error en {githubLink} o pedir ayuda en {discordLink}.",
+      "migration_irreversible_warning": "El proceso de migración no es reversible. Una vez se lleve a cabo la migración tu base de datos será incompatible con las versiones previas de Stash.",
+      "migration_required": "Migración requerida",
+      "perform_schema_migration": "Realizar migración",
+      "schema_too_old": "La versión de la base de datos es <strong>{databaseSchema}</strong> y necesita ser actualizada a la <strong>{appSchema}</strong>. Esta versión de Stash no funcionará sin la migración de la base de datos."
+    },
+    "paths": {
+      "database_filename_empty_for_default": "nombre para el archivo de la base de datos (en blanco para usar opción por defecto)",
+      "path_to_generated_directory_empty_for_default": "ruta al directorio de ficheros multimedia generados (dejar en blanco para usar opción por defecto)",
+      "set_up_your_paths": "Selecciona tus rutas",
+      "stash_alert": "No se han seleccionado rutas para tu biblioteca. Ningún fichero multimedia podrá ser seleccionado para su inclusión en Stash. ¿Estás seguro?",
+      "where_can_stash_store_its_database": "¿Dónde guarda Stash su base de datos?",
+      "where_can_stash_store_its_generated_content": "¿Dónde guarda Stash los ficheros multimedia de soporte generados?",
+      "where_is_your_porn_located": "¿Dónde guardas el porno?",
+      "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo."
+    },
+    "stash_setup_wizard": "Asistente de configuración de Stash",
+    "success": {
+      "getting_help": "Obtener ayuda",
+      "open_collective": "Visite {open_collective_link} para ver cómo puede contribuir al desarrollo de Stash.",
+      "support_us": "Apóyanos",
+      "thanks_for_trying_stash": "¡Gracias por usar Stash!",
+      "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!"
+    },
+    "welcome": {
+      "in_current_stash_directory": "En el directorio <code>$HOME/.stash</code>",
+      "in_the_current_working_directory": "En el directorio de trabajo actual",
+      "store_stash_config": "¿Dónde quieres guardar el fichero de configuración de Stash?",
+      "unable_to_locate_config": "Si estás leyendo esto es que Stash no ha podido encontrar una configuración existente. Este asistente te guiará durante el proceso de creación de una nueva configuración."
+    },
+    "welcome_specific_config": {
+      "config_path": "Stash usará la siguiente ruta para el fichero de configuración: <code>{path}</code>",
+      "next_step": "Cuando estés preparado para la creación de un nuevo entorno pulsa Siguiente.",
+      "unable_to_locate_specified_config": "Si estás leyendo esto es que Stash no ha podido encontrar el fichero de configuración especificado en la línea de comandos o en el entorno en el que está instalado. Este asistente te guiará durante el proceso de creación de una nueva configuración."
+    },
+    "welcome_to_stash": "Bienvenido a Stash"
+  },
   "stash_id": "Identificador único Stash",
+  "stash_ids": "Stash IDs",
   "stats": {
     "image_size": "Tamaño de las imágenes",
     "scenes_duration": "Duración de las escenas",
@@ -716,6 +815,7 @@
     "updated_entity": "{entity} actualizada"
   },
   "total": "Total",
+  "true": "Sí",
   "twitter": "Twitter",
   "up-dir": "Ascender en el árbol de directorios",
   "updated_at": "Actualizado a las",
