@@ -360,6 +360,19 @@
         "heading": "自定义样式",
         "option_label": "自定义样式已启用"
       },
+      "delete_options": {
+        "description": "删除图片，图库和短片时的默认设置。",
+        "heading": "删除选项",
+        "options": {
+          "delete_file": "默认删除文件",
+          "delete_generated_supporting_files": "默认删除生成的附加文件"
+        }
+      },
+      "desktop_integration": {
+        "desktop_integration": "桌面一体化",
+        "skip_opening_browser": "不打开浏览器",
+        "skip_opening_browser_on_startup": "启动时不自动打开浏览器"
+      },
       "funscript_offset": {
         "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
         "heading": "Funscript偏移量（毫秒）"
