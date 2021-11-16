@@ -373,6 +373,13 @@
         "skip_opening_browser": "不打开浏览器",
         "skip_opening_browser_on_startup": "启动时不自动打开浏览器"
       },
+      "editing": {
+        "disable_dropdown_create": {
+          "description": "禁止下拉的选择器建立新的对象",
+          "heading": "禁止下拉菜单建立"
+        },
+        "heading": "编辑"
+      },
       "funscript_offset": {
         "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
         "heading": "Funscript偏移量（毫秒）"
@@ -380,6 +387,14 @@
       "handy_connection_key": {
         "description": "用于互动场景的快速连接密钥",
         "heading": "快速连接密钥"
+      },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "description": "即时生成时把图片缩略写入硬盘",
+            "heading": "写图片缩略"
+          }
+        }
       },
       "language": {
         "heading": "语言"
