@@ -260,6 +260,30 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		stats.updated++
 	}
 
+	// Process studios
+	studioIds := cs.studioIds()
+	studios, errors := loaders.studio.LoadAll(studioIds)
+
+	for i, s := range studios {
+		if s == nil {
+			if errors[i] != nil {
+				logger.Infof("indexing batch: performer %d error: %v", studioIds[i], errors[i])
+			}
+
+			b.Delete(studioID(studioIds[i]))
+			stats.deleted++
+
+			continue
+		}
+
+		doc := documents.NewStudio(*s)
+		err := b.Index(studioID(s.ID), doc)
+		if err != nil {
+			logger.Warnf("error while indexing performer %d: (%v): %v", s.ID, doc, err)
+		}
+		stats.updated++
+	}
+
 	// Process scenes
 	for more := true; more; {
 		var sceneIds []int
