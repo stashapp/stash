@@ -154,10 +154,10 @@ func NewScene(in models.Scene, inPerformers []Performer, inTags []Tag) Scene {
 		t, err := time.Parse(layout, in.Date.String)
 		if err != nil {
 			year = nil
+		} else {
+			y := t.Year()
+			year = &y
 		}
-
-		y := t.Year()
-		year = &y
 	}
 
 	var tags []string

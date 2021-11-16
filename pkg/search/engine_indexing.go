@@ -378,7 +378,10 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 			stats.updated++
 		}
 
-		idx.Batch(b)
+		err = idx.Batch(b)
+		if err != nil {
+			logger.Warnf("batch index error: %v", err)
+		}
 		b.Reset()
 	}
 
