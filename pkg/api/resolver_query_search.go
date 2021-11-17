@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/search"
+	"github.com/stashapp/stash/pkg/search/documents"
 )
 
 var ErrUnknownType = errors.New("unknown item type")
@@ -70,13 +71,13 @@ func (r *queryResolver) Search(ctx context.Context, query string, ty *models.Sea
 
 func (r *queryResolver) hydrate(ctx context.Context, item search.Item) (models.SearchResultItem, error) {
 	switch item.Type {
-	case "scene":
+	case documents.TypeScene:
 		return r.FindScene(ctx, &item.ID, nil)
-	case "performer":
+	case documents.TypePerformer:
 		return r.FindPerformer(ctx, item.ID)
-	case "tag":
+	case documents.TypeTag:
 		return r.FindTag(ctx, item.ID)
-	case "studio":
+	case documents.TypeStudio:
 		return r.FindStudio(ctx, item.ID)
 	default:
 		return nil, fmt.Errorf("%w: %v", ErrUnknownType, item.Type)

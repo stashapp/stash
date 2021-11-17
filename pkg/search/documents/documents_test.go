@@ -20,7 +20,7 @@ func TestNewScene(t *testing.T) {
 		},
 	}
 
-	got := NewScene(have, nil, nil)
+	got := NewScene(have, nil, nil, nil)
 
 	if have.Title.String != got.Title {
 		t.Errorf("[title] want: %v; got: %v", have.Title, got.Title)

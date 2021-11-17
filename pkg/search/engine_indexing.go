@@ -117,7 +117,7 @@ func (e *Engine) fullReindex(ctx context.Context) error {
 	stats := report{}
 
 	// Set up a worklist of document types to index
-	toIndex := []string{
+	toIndex := []documents.DocType{
 		documents.TypeTag,
 		documents.TypePerformer,
 		documents.TypeStudio,
@@ -431,7 +431,21 @@ func (e *Engine) batchProcessScenes(ctx context.Context, cs *changeSet, b *bleve
 		performers := scenePerformers.load(s.ID, loaders)
 		tags := sceneTags.load(s.ID, loaders)
 
-		s := documents.NewScene(*s, performers, tags)
+		var studioDoc *documents.Studio
+		if s.StudioID.Valid {
+			var studio *models.Studio
+			err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+				studio, err = r.Studio().Find(int(s.StudioID.Int64))
+				return err
+			})
+			if err != nil {
+				logger.Warnf("could not fetch studio %v: %v", s.StudioID.Int64, err)
+			}
+			doc := documents.NewStudio(*studio)
+			studioDoc = &doc
+		}
+
+		s := documents.NewScene(*s, performers, tags, studioDoc)
 		err := b.Index(sceneID(sceneIds[i]), s)
 		if err != nil {
 			logger.Warnf("error while indexing scene %d: (%v): %v", sceneIds[i], s, err)

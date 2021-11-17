@@ -14,7 +14,7 @@ type Tag struct {
 	ID   int    `json:"id"`
 	Name string `json:"name,omitempty"`
 
-	StashType string `json:"stash_type"`
+	StashType DocType `json:"stash_type"`
 }
 
 func NewTag(in models.Tag) Tag {
@@ -27,7 +27,7 @@ func NewTag(in models.Tag) Tag {
 }
 
 func (t Tag) Type() string {
-	return TypeTag
+	return string(TypeTag)
 }
 
 func buildTagDocumentMapping() *mapping.DocumentMapping {
@@ -46,7 +46,7 @@ type Performer struct {
 
 	Name string `json:"name"`
 
-	StashType string `json:"stash_type"`
+	StashType DocType `json:"stash_type"`
 }
 
 func NewPerformer(in models.Performer) Performer {
@@ -63,7 +63,7 @@ func NewPerformer(in models.Performer) Performer {
 }
 
 func (p Performer) Type() string {
-	return TypePerformer
+	return string(TypePerformer)
 }
 
 func buildPerformerDocumentMapping() *mapping.DocumentMapping {
@@ -85,7 +85,7 @@ type Studio struct {
 	Name    *string `json:"name,omitempty"`
 	Details *string `json:"details,omitempty"`
 
-	StashType string `json:"stash_type"`
+	StashType DocType `json:"stash_type"`
 }
 
 func NewStudio(in models.Studio) Studio {
@@ -108,7 +108,7 @@ func NewStudio(in models.Studio) Studio {
 }
 
 func (s Studio) Type() string {
-	return TypeStudio
+	return string(TypeStudio)
 }
 
 func buildStudioDocumentMapping() *mapping.DocumentMapping {
@@ -136,11 +136,12 @@ type Scene struct {
 	Performer []Performer `json:"performer,omitempty"`
 	Tag       []string    `json:"tag,omitempty"`
 	TagID     []int       `json:"tag_id,omitempty"`
+	Studio    *Studio     `json:"studio,omitempty"`
 
-	StashType string `json:"stash_type"`
+	StashType DocType `json:"stash_type"`
 }
 
-func NewScene(in models.Scene, inPerformers []Performer, inTags []Tag) Scene {
+func NewScene(in models.Scene, inPerformers []Performer, inTags []Tag, inStudio *Studio) Scene {
 	details := ""
 	if in.Details.Valid {
 		details = in.Details.String
@@ -176,13 +177,14 @@ func NewScene(in models.Scene, inPerformers []Performer, inTags []Tag) Scene {
 		Performer: inPerformers,
 		Tag:       tags,
 		TagID:     tagIDs,
+		Studio:    inStudio,
 
 		StashType: TypeScene,
 	}
 }
 
 func (s Scene) Type() string {
-	return TypeScene
+	return string(TypeScene)
 }
 
 func buildSceneDocumentMapping() *mapping.DocumentMapping {
@@ -203,7 +205,7 @@ func buildSceneDocumentMapping() *mapping.DocumentMapping {
 	sceneMapping.AddFieldMappingsAt("tag", englishTextFieldMapping)
 	sceneMapping.AddFieldMappingsAt("tag_id", numericalFieldMapping)
 
-	sceneMapping.AddSubDocumentMapping(TypePerformer, buildPerformerDocumentMapping())
+	sceneMapping.AddSubDocumentMapping(string(TypePerformer), buildPerformerDocumentMapping())
 
 	return sceneMapping
 }
@@ -216,10 +218,10 @@ func BuildIndexMapping() (mapping.IndexMapping, error) {
 
 	indexMapping := bleve.NewIndexMapping()
 
-	indexMapping.AddDocumentMapping(TypeScene, sceneMapping)
-	indexMapping.AddDocumentMapping(TypePerformer, performerMapping)
-	indexMapping.AddDocumentMapping(TypeTag, tagMapping)
-	indexMapping.AddDocumentMapping(TypeStudio, studioMapping)
+	indexMapping.AddDocumentMapping(string(TypeScene), sceneMapping)
+	indexMapping.AddDocumentMapping(string(TypePerformer), performerMapping)
+	indexMapping.AddDocumentMapping(string(TypeTag), tagMapping)
+	indexMapping.AddDocumentMapping(string(TypeStudio), studioMapping)
 
 	indexMapping.TypeField = "Type"
 	indexMapping.DefaultAnalyzer = "en"

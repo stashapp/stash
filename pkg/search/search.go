@@ -15,7 +15,7 @@ import (
 
 type Item struct {
 	ID    string
-	Type  string
+	Type  documents.DocType
 	Score float64
 }
 
@@ -27,7 +27,7 @@ func newItem(nodeID string, score float64) *Item {
 
 	return &Item{
 		ID:    id,
-		Type:  ty,
+		Type:  documents.NewDocType(ty),
 		Score: score,
 	}
 }
@@ -53,13 +53,13 @@ func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, f
 
 		switch *ty {
 		case models.SearchTypeSearchPerformer:
-			filter = bleve.NewMatchQuery(documents.TypePerformer)
+			filter = bleve.NewMatchQuery(string(documents.TypePerformer))
 		case models.SearchTypeSearchScene:
-			filter = bleve.NewMatchQuery(documents.TypeScene)
+			filter = bleve.NewMatchQuery(string(documents.TypeScene))
 		case models.SearchTypeSearchStudio:
-			filter = bleve.NewMatchQuery(documents.TypeStudio)
+			filter = bleve.NewMatchQuery(string(documents.TypeStudio))
 		case models.SearchTypeSearchTag:
-			filter = bleve.NewMatchQuery(documents.TypeTag)
+			filter = bleve.NewMatchQuery(string(documents.TypeTag))
 		}
 
 		filter.SetField("stash_type")
