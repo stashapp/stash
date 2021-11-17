@@ -97,7 +97,7 @@ func batchSceneChangeSet(r models.ReaderRepository, f *models.FindFilterType) (*
 	return cs, len(scenes), nil
 }
 
-// fullReindex does a full reindexing in batches.
+// fullReindex does a full reindexing of the database in batches.
 //
 // Note that in full indexing, we don't have to preprocess the changeset.
 // We are touching every object in the database, so relationships will be
@@ -192,6 +192,7 @@ func (e *Engine) fullReindex(ctx context.Context) error {
 	return nil
 }
 
+// batchProcessTags adds the changeset tags to the bleve.Batch.
 func batchProcessTags(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
 	stats := report{}
 
@@ -222,6 +223,7 @@ func batchProcessTags(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
 	return stats
 }
 
+// batchProcessPerformers adds the changeset performers to the bleve.Batch.
 func batchProcessPerformers(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
 	stats := report{}
 
@@ -251,6 +253,7 @@ func batchProcessPerformers(cs *changeSet, b *bleve.Batch, loaders *loaders) rep
 	return stats
 }
 
+// batchProcessStudios adds the changeset studios to the bleve.Batch.
 func batchProcessStudios(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
 	stats := report{}
 	studioIds := cs.studioIds()
@@ -361,9 +364,8 @@ func (pm performerMap) load(id int, loaders *loaders) []documents.Performer {
 	return performers
 }
 
+// newPerformerMap creates a performerMap out of a slice of scenes.
 func (e *Engine) newPerformerMap(ctx context.Context, loaders *loaders, scenes []*models.Scene) (performerMap, error) {
-	// This following piece of code likely lives somewhere else in the control-flow,
-	// perhaps further up the call stack.
 	scenePerformers := make(map[int][]int)
 	err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		for _, s := range scenes {
@@ -398,6 +400,7 @@ func (e *Engine) newPerformerMap(ctx context.Context, loaders *loaders, scenes [
 	return scenePerformers, nil
 }
 
+// batchProcessScenes updates the bleve.Batch with the given sceneIds.
 func (e *Engine) batchProcessScenes(ctx context.Context, cs *changeSet, b *bleve.Batch, loaders *loaders, sceneIds []int) report {
 	stats := report{}
 
@@ -464,11 +467,14 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 	stats.merge(statsPerformers)
 	stats.merge(statsStudios)
 
-	// Process scenes
+	// Process scenes, always run at least one round to get the bleve.Batch
+	// indexed.
 	for more := true; more; {
 		var sceneIds []int
 		sceneIds, more = cs.cutSceneIds(1000)
 
+		// If we have 0 sceneIds, it's the empty slice. This function call
+		// is essentially a no-op.
 		statsScenes := e.batchProcessScenes(ctx, cs, b, loaders, sceneIds)
 		stats.merge(statsScenes)
 
