@@ -148,7 +148,7 @@
       "unnamed": "Sin nombre"
     },
     "verb_match_fp": "huellas dactilares",
-    "verb_matched": "Matched",
+    "verb_matched": "Coincidencia",
     "verb_scrape_all": "Rastrear todo",
     "verb_submit_fp": "Enviar {fpCount, plural, one{# huella dactilar} other{# huellas dactilares}}",
     "verb_toggle_config": "{toggle} {configuration}",
@@ -435,7 +435,7 @@
         "options": {
           "auto_start_video": "Iniciar vídeo automáticamente",
           "auto_start_video_on_play_selected": {
-            "description": "Empezar automáticamente el fichero de vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
+            "description": "Comenzar automáticamente la reproducción del vídeo de la escena cuando \"reproducir\" esté seleccionado o se seleccione una escena aleatoria desde la página de escenas",
             "heading": "Comenzar automáticamente el vídeo cuando \"reproducir\" esté seleccionado"
           },
           "continue_playlist_default": {
@@ -591,7 +591,7 @@
       "low": "Bajo",
       "medium": "Medio"
     },
-    "search_accuracy_label": "Search Accuracy",
+    "search_accuracy_label": "Precisión de búsqueda",
     "title": "Escenas duplicadas"
   },
   "duration": "Duración",
@@ -723,7 +723,7 @@
       "database_file_path": "Ruta para la base de datos",
       "default_db_location": "<ruta donde se encuentra el fichero de configuración>/stash-go.sqlite",
       "default_generated_content_location": "<ruta donde se encuentra el fichero de configuración>/generated",
-      "generated_directory": "Directorio donde se almacenan los ficheros multimedia generados por Stash",
+      "generated_directory": "Directorio donde se almacenan los ficheros multimedia de soporte generados por Stash",
       "nearly_there": "¡Casi estamos!",
       "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash"
     },
@@ -750,10 +750,12 @@
     },
     "paths": {
       "database_filename_empty_for_default": "nombre para el archivo de la base de datos (en blanco para usar opción por defecto)",
+      "description": "A continuación necesitamos saber dónde se encuentra tu colección de porno, y dónde guardar la base de datos de Stash y los ficheros multimedia de soporte generados. Estos ajustes se pueden modificar posteriormente.",
       "path_to_generated_directory_empty_for_default": "ruta al directorio de ficheros multimedia generados (dejar en blanco para usar opción por defecto)",
       "set_up_your_paths": "Selecciona tus rutas",
       "stash_alert": "No se han seleccionado rutas para tu biblioteca. Ningún fichero multimedia podrá ser seleccionado para su inclusión en Stash. ¿Estás seguro?",
       "where_can_stash_store_its_database": "¿Dónde guarda Stash su base de datos?",
+      "where_can_stash_store_its_database_description": "Stash emplea una base de datos SQLite para almacenar los metadatos de tu colección. Por defecto será creada como <code>stash-go.sqlite</code> en el directorio en el que se encuentra tu archivo de configuración. Si quieres cambiar esto, por favor, introduce un nombre de archivo con ruta absoluta o relativa al directorio de trabajo actual.",
       "where_can_stash_store_its_generated_content": "¿Dónde guarda Stash los ficheros multimedia de soporte generados?",
       "where_is_your_porn_located": "¿Dónde guardas el porno?",
       "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo."
@@ -769,8 +771,10 @@
     "welcome": {
       "in_current_stash_directory": "En el directorio <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "En el directorio de trabajo actual",
+      "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración y haz clic en siguiente.",
       "store_stash_config": "¿Dónde quieres guardar el fichero de configuración de Stash?",
-      "unable_to_locate_config": "Si estás leyendo esto es que Stash no ha podido encontrar una configuración existente. Este asistente te guiará durante el proceso de creación de una nueva configuración."
+      "unable_to_locate_config": "Si estás leyendo esto es que Stash no ha podido encontrar una configuración existente. Este asistente te guiará durante el proceso de creación de una nueva configuración.",
+      "unexpected_explained": "Si has llegado hasta esta ventana de forma inesperada, por favor, intenta reiniciar Stash en el directorio de trabajo correcto o con la opción <code>-c</code> ."
     },
     "welcome_specific_config": {
       "config_path": "Stash usará la siguiente ruta para el fichero de configuración: <code>{path}</code>",
@@ -818,7 +822,7 @@
   "true": "Sí",
   "twitter": "Twitter",
   "up-dir": "Ascender en el árbol de directorios",
-  "updated_at": "Actualizado a las",
+  "updated_at": "Fecha de modificación",
   "url": "URL",
   "weight": "Peso",
   "years_old": "años"
