@@ -41,6 +41,12 @@ Download and run Stash. It will prompt you for some configuration options and a 
 
 The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) which uses filename keywords to help identify the file and pull in scene and performer information from our stash-box database. Note that this data source is not comprehensive and you may need to use the scrapers to identify some of your media.
 
+# Translation
+[![Translate](https://translate.stashapp.cc/widgets/stash/-/stash-desktop-client/svg-badge.svg)](https://translate.stashapp.cc/engage/stash/)
+🇧🇷 🇨🇳 🇬🇧 🇫🇷 🇩🇪 🇮🇹 🇪🇸 🇸🇪 🇹🇼
+
+Stash is available in 9 languages (so far!) and it could be in your language too. If you want to help us translate Stash into your language, you can make an account at [translate.stashapp.cc](https://translate.stashapp.cc/projects/stash/stash-desktop-client/) to get started contributing new languages or improving existing ones. Thanks!
+
 # Support (FAQ)
 
 Answers to other Frequently Asked Questions can be found [on our Wiki](https://github.com/stashapp/stash/wiki/FAQ)
