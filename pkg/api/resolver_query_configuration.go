@@ -64,7 +64,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:                 config.GetDatabasePath(),
 		GeneratedPath:                config.GetGeneratedPath(),
 		MetadataPath:                 config.GetMetadataPath(),
-		ConfigFilePath:               config.GetConfigFilePath(),
+		ConfigFilePath:               config.GetConfigFile(),
 		ScrapersPath:                 config.GetScrapersPath(),
 		CachePath:                    config.GetCachePath(),
 		CalculateMd5:                 config.IsCalculateMD5(),
@@ -108,8 +108,11 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
+	noBrowser := config.GetNoBrowser()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
+	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
+	continuePlaylistDefault := config.GetContinuePlaylistDefault()
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
@@ -119,20 +122,23 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	scriptOffset := config.GetFunscriptOffset()
 
 	return &models.ConfigInterfaceResult{
-		MenuItems:              menuItems,
-		SoundOnPreview:         &soundOnPreview,
-		WallShowTitle:          &wallShowTitle,
-		WallPlayback:           &wallPlayback,
-		MaximumLoopDuration:    &maximumLoopDuration,
-		AutostartVideo:         &autostartVideo,
-		ShowStudioAsText:       &showStudioAsText,
-		CSS:                    &css,
-		CSSEnabled:             &cssEnabled,
-		Language:               &language,
-		SlideshowDelay:         &slideshowDelay,
-		DisabledDropdownCreate: config.GetDisableDropdownCreate(),
-		HandyKey:               &handyKey,
-		FunscriptOffset:        &scriptOffset,
+		MenuItems:                    menuItems,
+		SoundOnPreview:               &soundOnPreview,
+		WallShowTitle:                &wallShowTitle,
+		WallPlayback:                 &wallPlayback,
+		MaximumLoopDuration:          &maximumLoopDuration,
+		NoBrowser:                    &noBrowser,
+		AutostartVideo:               &autostartVideo,
+		ShowStudioAsText:             &showStudioAsText,
+		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,
+		ContinuePlaylistDefault:      &continuePlaylistDefault,
+		CSS:                          &css,
+		CSSEnabled:                   &cssEnabled,
+		Language:                     &language,
+		SlideshowDelay:               &slideshowDelay,
+		DisabledDropdownCreate:       config.GetDisableDropdownCreate(),
+		HandyKey:                     &handyKey,
+		FunscriptOffset:              &scriptOffset,
 	}
 }
 

@@ -1,13 +1,13 @@
 # Introduction
 
-This dockerfile is used to build a stash docker container using the current source code.
+This dockerfile is used to build a stash docker container using the current source code. This is ideal for testing your current branch in docker. Note that it does not include python, so python-based scrapers will not work in this image. The production docker images distributed by the project contain python and the necessary packages.
 
 # Building the docker container
 
 From the top-level directory (should contain `main.go` file):
 
 ```
-docker build -t stash/build -f ./docker/build/x86_64/Dockerfile .
+make docker-build
 
 ```
 

@@ -21,7 +21,6 @@
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
     "delete": "Delete",
-    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery.",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
     "delete_generated_supporting_files": "Delete generated supporting files",
@@ -64,6 +63,7 @@
     "save_delete_settings": "Use these options by default when deleting",
     "save_filter": "Save filter",
     "scan": "Scan",
+    "scrape": "Scrape",
     "scrape_with": "Scrape with…",
     "scrape_query": "Scrape query",
     "scrape_scene_fragment": "Scrape by fragment",
@@ -93,7 +93,10 @@
     "open_random": "Open Random",
     "next_action": "Next",
     "previous_action": "Back",
-    "finish": "Finish"
+    "finish": "Finish",
+    "use_default": "Use default",
+    "ignore": "Ignore",
+    "continue": "Continue"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -315,11 +318,6 @@
         "explicit_set_description": "The following options will be used where not overridden in the source-specific options.",
         "field_behaviour": "{strategy} {field}",
         "field_options": "Field Options",
-        "field_strategies": {
-          "ignore": "Ignore",
-          "merge": "Merge",
-          "overwrite": "Overwrite"
-        },
         "identifying_scenes": "Identifying {num} {scene}",
         "identifying_from_paths": "Identifying scenes from the following paths",
         "include_male_performers": "Include male performers",
@@ -327,7 +325,9 @@
         "set_organized": "Set organised flag",
         "source_options": "{source} Options",
         "source": "Source",
-        "sources": "Sources"
+        "sources": "Sources",
+        "field": "Field",
+        "strategy": "Strategy"
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
@@ -372,6 +372,11 @@
           "delete_file": "Delete file by default",
           "delete_generated_supporting_files": "Delete generated supporting files by default"
         }
+      },
+      "desktop_integration": {
+        "desktop_integration": "Desktop Integration",
+        "skip_opening_browser": "Skip Opening Browser",
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
       },
       "editing": {
         "disable_dropdown_create": {
@@ -433,7 +438,15 @@
       "scene_player": {
         "heading": "Scene Player",
         "options": {
-          "auto_start_video": "Auto-start video"
+          "auto_start_video": "Auto-start video",
+          "auto_start_video_on_play_selected": {
+            "heading": "Auto-start video when playing selected",
+            "description": "Auto-start scene videos when playing selected or random from Scenes page"
+          },
+          "continue_playlist_default": {
+            "heading": "Continue playlist by default",
+            "description": "Play next scene in queue when video finishes"
+          }
         }
       },
       "scene_wall": {
@@ -459,7 +472,8 @@
     "performers": "{count, plural, one {Performer} other {Performers}}",
     "scenes": "{count, plural, one {Scene} other {Scenes}}",
     "studios": "{count, plural, one {Studio} other {Studios}}",
-    "tags": "{count, plural, one {Tag} other {Tags}}"
+    "tags": "{count, plural, one {Tag} other {Tags}}",
+    "files": "{count, plural, one {File} other {Files}}"
   },
   "country": "Country",
   "cover_image": "Cover Image",
@@ -560,7 +574,8 @@
     "scrape_results_scraped": "Scraped",
     "set_image_url_title": "Image URL",
     "unsaved_changes": "Unsaved changes. Are you sure you want to leave?",
-    "aliases_must_be_unique": "aliases must be unique"
+    "aliases_must_be_unique": "aliases must be unique",
+    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery."
   },
   "dimensions": "Dimensions",
   "director": "Director",
@@ -722,7 +737,6 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
-    "create_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -731,7 +745,10 @@
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Started auto tagging",
     "saved_entity": "Saved {entity}",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "started_generating": "Started generating",
+    "started_importing": "Started importing",
+    "created_entity": "Created {entity}"
   },
   "total": "Total",
   "true": "True",
@@ -739,7 +756,6 @@
   "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
-  "use_default": "Use default",
   "weight": "Weight",
   "years_old": "years old",
   "stats": {
@@ -774,7 +790,8 @@
       "database_filename_empty_for_default": "database filename (empty for default)",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
-      "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)"
+      "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
+      "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?"
     },
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",

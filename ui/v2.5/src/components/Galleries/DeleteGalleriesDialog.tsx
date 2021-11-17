@@ -24,7 +24,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
     { count: props.selected.length, singularEntity, pluralEntity }
   );
   const toastMessage = intl.formatMessage(
-    { id: "toast.delete_entity" },
+    { id: "toast.delete_past_tense" },
     { count: props.selected.length, singularEntity, pluralEntity }
   );
   const message = intl.formatMessage(
@@ -135,7 +135,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
           id="delete-file"
           checked={deleteFile}
           label={intl.formatMessage({
-            id: "actions.delete_gallery_files",
+            id: "dialogs.delete_gallery_files",
           })}
           onChange={() => setDeleteFile(!deleteFile)}
         />

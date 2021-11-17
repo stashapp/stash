@@ -3,6 +3,7 @@ import enGB from "./en-GB.json";
 import enUS from "./en-US.json";
 import esES from "./es-ES.json";
 import ptBR from "./pt-BR.json";
+import frFR from "./fr-FR.json";
 import itIT from "./it-IT.json";
 import svSE from "./sv-SE.json";
 import zhTW from "./zh-TW.json";
@@ -14,6 +15,7 @@ export default {
   enUS,
   esES,
   ptBR,
+  frFR,
   itIT,
   svSE,
   zhTW,

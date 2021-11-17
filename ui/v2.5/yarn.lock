@@ -7293,9 +7293,9 @@ hoist-non-react-statics@^3.1.0, hoist-non-react-statics@^3.3.0, hoist-non-react-
     react-is "^16.7.0"
 
 hosted-git-info@^2.1.4:
-  version "2.8.8"
-  resolved "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.8.tgz"
-  integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
+  integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 hosted-git-info@^4.0.1:
   version "4.0.1"
@@ -9723,9 +9723,9 @@ object-keys@^1.0.12, object-keys@^1.1.1:
   integrity sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
 
 object-path@^0.11.4:
-  version "0.11.5"
-  resolved "https://registry.npmjs.org/object-path/-/object-path-0.11.5.tgz"
-  integrity sha512-jgSbThcoR/s+XumvGMTMf81QVBmah+/Q7K7YduKeKVWL7N111unR2d6pZZarSk6kY/caeNxUDyxOvMWyzoU2eg==
+  version "0.11.8"
+  resolved "https://registry.yarnpkg.com/object-path/-/object-path-0.11.8.tgz#ed002c02bbdd0070b78a27455e8ae01fc14d4742"
+  integrity sha512-YJjNZrlXJFM42wTBn6zgOJVar9KFJvzx6sTWDte8sWZF//cnjl0BxHNpfZx+ZffXX63A9q0b1zsFiBX4g4X5KA==
 
 object.assign@^4.1.0, object.assign@^4.1.2:
   version "4.1.2"
@@ -10069,6 +10069,9 @@ path-parse@^1.0.6:
   version "1.0.6"
   resolved "https://registry.npmjs.org/path-parse/-/path-parse-1.0.6.tgz"
   integrity sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
+  integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
 path-root-regex@^0.1.0:
   version "0.1.2"
@@ -10666,7 +10669,7 @@ postcss@7.0.36:
     source-map "^0.6.1"
     supports-color "^6.1.0"
 
-postcss@^7, postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.27, postcss@^7.0.5:
+postcss@^7, postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.14, postcss@^7.0.17, postcss@^7.0.2, postcss@^7.0.21, postcss@^7.0.26, postcss@^7.0.27, postcss@^7.0.31, postcss@^7.0.32, postcss@^7.0.35, postcss@^7.0.5, postcss@^7.0.6:
   version "7.0.39"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-7.0.39.tgz#9624375d965630e2e1f2c02a935c82a59cb48309"
   integrity sha512-yioayjNbHn6z1/Bywyb2Y4s3yvDAeXGOyxqD+LnVOinq6Mdmd++SW2wUNVzavyyHxd6+DxzWGIuosg6P1Rj8uA==
@@ -12463,6 +12466,16 @@ tmp@^0.0.33:
   dependencies:
     os-tmpdir "~1.0.2"
 
+tmpl@1.0.x:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.5.tgz#8683e0b902bb9c20c4f726e3c0b69f36518c07cc"
+  integrity sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==
+
+to-arraybuffer@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/to-arraybuffer/-/to-arraybuffer-1.0.1.tgz#7d229b1fcc637e466ca081180836a7aabff83f43"
+  integrity sha1-fSKbH8xjfkZsoIEYCDanqr/4P0M=
+
 to-fast-properties@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/to-fast-properties/-/to-fast-properties-2.0.0.tgz"
@@ -12507,9 +12520,9 @@ tr46@^2.1.0:
     punycode "^2.1.1"
 
 trim-newlines@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmjs.org/trim-newlines/-/trim-newlines-3.0.0.tgz"
-  integrity sha512-C4+gOpvmxaSMKuEf9Qc134F1ZuOHVXKRbtEflf4NTtuuJDEIJ9p5PXsalL8SkeRw+qit1Mo+yuvMPAKwWg/1hA==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
+  integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
 
 trough@^1.0.0:
   version "1.0.5"
@@ -12874,15 +12887,7 @@ url-parse-lax@^3.0.0:
   dependencies:
     prepend-http "^2.0.0"
 
-url-parse@^1.4.3:
-  version "1.5.1"
-  resolved "https://registry.npmjs.org/url-parse/-/url-parse-1.5.1.tgz"
-  integrity sha512-HOfCOUJt7iSYzEx/UqgtwKRMC6EU91NFhsCHMv9oM03VJcVo2Qrp8T8kI9D7amFf1cu+/3CEhgb3rF9zL7k85Q==
-  dependencies:
-    querystringify "^2.1.1"
-    requires-port "^1.0.0"
-
-url-parse@^1.5.3:
+url-parse@^1.4.3, url-parse@^1.5.3:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.3.tgz#71c1303d38fb6639ade183c2992c8cc0686df862"
   integrity sha512-IIORyIQD9rvj0A4CLWsHkBBJuNqWpFQe224b6j9t/ABmquIS0qDU2pY6kl6AuOrL5OkCXHMCFNe1jBcuAggjvQ==
@@ -13155,9 +13160,9 @@ ws@7.4.4:
   integrity sha512-Qm8k8ojNQIMx7S+Zp8u/uHOx7Qazv3Yv4q68MiWWWOJhiwG5W3x7iqmRtJo8xxrciZUY4vRxUTJCKuRnF28ZZw==
 
 ws@^5.2.0:
-  version "5.2.2"
-  resolved "https://registry.npmjs.org/ws/-/ws-5.2.2.tgz"
-  integrity sha512-jaHFD6PFv6UgoIVda6qZllptQsMlDEJkTQcybzzXDYM1XO9Y8em691FGMPmM46WGyLU4z9KMgQN+qrux/nhlHA==
+  version "5.2.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-5.2.3.tgz#05541053414921bc29c63bee14b8b0dd50b07b3d"
+  integrity sha512-jZArVERrMsKUatIdnLzqvcfydI85dvd/Fp1u/VOpfdDWQ4c9qWXe+VIeAbQ5FrDwciAkr+lzofXLz3Kuf26AOA==
   dependencies:
     async-limiter "~1.0.0"
 

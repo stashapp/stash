@@ -27,6 +27,7 @@ import {
   StudioSelect,
   Icon,
   LoadingIndicator,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { useFormik } from "formik";
@@ -199,7 +200,16 @@ export const GalleryEditPanel: React.FC<
         });
         if (result.data?.galleryCreate) {
           history.push(`/galleries/${result.data.galleryCreate.id}`);
-          Toast.success({ content: "Created gallery" });
+          Toast.success({
+            content: intl.formatMessage(
+              { id: "toast.created_entity" },
+              {
+                entity: intl
+                  .formatMessage({ id: "gallery" })
+                  .toLocaleLowerCase(),
+              }
+            ),
+          });
         }
       } else {
         const result = await updateGallery({
@@ -384,21 +394,6 @@ export const GalleryEditPanel: React.FC<
     }
   }
 
-  function maybeRenderScrapeButton() {
-    if (!formik.values.url || !urlScrapable(formik.values.url)) {
-      return undefined;
-    }
-    return (
-      <Button
-        className="minimal scrape-url-button"
-        onClick={onScrapeGalleryURL}
-        title="Scrape"
-      >
-        <Icon className="fa-fw" icon="file-download" />
-      </Button>
-    );
-  }
-
   function renderTextField(field: string, title: string, placeholder?: string) {
     return (
       <Form.Group controlId={title} as={Row}>
@@ -461,15 +456,12 @@ export const GalleryEditPanel: React.FC<
                 <Form.Label className="col-form-label">
                   <FormattedMessage id="url" />
                 </Form.Label>
-                <div className="float-right scrape-button-container">
-                  {maybeRenderScrapeButton()}
-                </div>
               </Col>
               <Col xs={9}>
-                <Form.Control
-                  className="text-input"
-                  placeholder={intl.formatMessage({ id: "url" })}
+                <URLField
                   {...formik.getFieldProps("url")}
+                  onScrapeClick={onScrapeGalleryURL}
+                  urlScrapable={urlScrapable}
                   isInvalid={!!formik.getFieldMeta("url").error}
                 />
               </Col>

@@ -131,15 +131,15 @@ func (_m *TagReaderWriter) Find(id int) (*models.Tag, error) {
 }
 
 // FindAllAncestors provides a mock function with given fields: tagID, excludeIDs
-func (_m *TagReaderWriter) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+func (_m *TagReaderWriter) FindAllAncestors(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	ret := _m.Called(tagID, excludeIDs)
 
-	var r0 []*models.Tag
-	if rf, ok := ret.Get(0).(func(int, []int) []*models.Tag); ok {
+	var r0 []*models.TagPath
+	if rf, ok := ret.Get(0).(func(int, []int) []*models.TagPath); ok {
 		r0 = rf(tagID, excludeIDs)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Tag)
+			r0 = ret.Get(0).([]*models.TagPath)
 		}
 	}
 
@@ -154,15 +154,15 @@ func (_m *TagReaderWriter) FindAllAncestors(tagID int, excludeIDs []int) ([]*mod
 }
 
 // FindAllDescendants provides a mock function with given fields: tagID, excludeIDs
-func (_m *TagReaderWriter) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.Tag, error) {
+func (_m *TagReaderWriter) FindAllDescendants(tagID int, excludeIDs []int) ([]*models.TagPath, error) {
 	ret := _m.Called(tagID, excludeIDs)
 
-	var r0 []*models.Tag
-	if rf, ok := ret.Get(0).(func(int, []int) []*models.Tag); ok {
+	var r0 []*models.TagPath
+	if rf, ok := ret.Get(0).(func(int, []int) []*models.TagPath); ok {
 		r0 = rf(tagID, excludeIDs)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Tag)
+			r0 = ret.Get(0).([]*models.TagPath)
 		}
 	}
 

@@ -39,6 +39,14 @@ var parentStudio models.Studio = models.Studio{
 
 var imageBytes = []byte("imageBytes")
 
+var stashID = models.StashID{
+	StashID:  "StashID",
+	Endpoint: "Endpoint",
+}
+var stashIDs = []*models.StashID{
+	&stashID,
+}
+
 const image = "aW1hZ2VCeXRlcw=="
 
 var (
@@ -95,6 +103,9 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		Image:        image,
 		Rating:       rating,
 		Aliases:      aliases,
+		StashIDs: []models.StashID{
+			stashID,
+		},
 	}
 }
 
@@ -179,6 +190,10 @@ func TestToJSON(t *testing.T) {
 	mockStudioReader.On("GetAliases", errImageID).Return(nil, nil).Once()
 	mockStudioReader.On("GetAliases", missingParentStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("GetAliases", errAliasID).Return(nil, aliasErr).Once()
+
+	mockStudioReader.On("GetStashIDs", studioID).Return(stashIDs, nil).Once()
+	mockStudioReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
+	mockStudioReader.On("GetStashIDs", missingParentStudioID).Return(stashIDs, nil).Once()
 
 	for i, s := range scenarios {
 		studio := s.input

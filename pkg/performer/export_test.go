@@ -44,6 +44,14 @@ const (
 
 var imageBytes = []byte("imageBytes")
 
+var stashID = models.StashID{
+	StashID:  "StashID",
+	Endpoint: "Endpoint",
+}
+var stashIDs = []*models.StashID{
+	&stashID,
+}
+
 const image = "aW1hZ2VCeXRlcw=="
 
 var birthDate = models.SQLiteDate{
@@ -144,6 +152,9 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		DeathDate: deathDate.String,
 		HairColor: hairColor,
 		Weight:    weight,
+		StashIDs: []models.StashID{
+			stashID,
+		},
 	}
 }
 
@@ -196,6 +207,9 @@ func TestToJSON(t *testing.T) {
 	mockPerformerReader.On("GetImage", performerID).Return(imageBytes, nil).Once()
 	mockPerformerReader.On("GetImage", noImageID).Return(nil, nil).Once()
 	mockPerformerReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
+
+	mockPerformerReader.On("GetStashIDs", performerID).Return(stashIDs, nil).Once()
+	mockPerformerReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		tag := s.input

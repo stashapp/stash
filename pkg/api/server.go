@@ -23,6 +23,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/browser"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
@@ -241,12 +242,26 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		printVersion()
 		printLatestVersion(context.TODO())
 		logger.Infof("stash is listening on " + address)
+		if tlsConfig != nil {
+			displayAddress = "https://" + displayAddress + "/"
+		} else {
+			displayAddress = "http://" + displayAddress + "/"
+		}
+
+		// This can be done before actually starting the server, as modern browsers will
+		// automatically reload the page if a local port is closed at page load and then opened.
+		if !c.GetNoBrowser() && manager.GetInstance().IsDesktop() {
+			err = browser.OpenURL(displayAddress)
+			if err != nil {
+				logger.Error("Could not open browser: " + err.Error())
+			}
+		}
 
 		if tlsConfig != nil {
-			logger.Infof("stash is running at https://" + displayAddress + "/")
+			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServeTLS("", ""))
 		} else {
-			logger.Infof("stash is running at http://" + displayAddress + "/")
+			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServe())
 		}
 	}()
@@ -335,7 +350,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 
 		port := ""
 		forwardedPort := r.Header.Get("X-Forwarded-Port")
-		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" {
+		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" && forwardedPort != "443" && !strings.Contains(r.Host, ":") {
 			port = ":" + forwardedPort
 		}
 

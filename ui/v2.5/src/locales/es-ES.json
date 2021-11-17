@@ -676,7 +676,6 @@
   "toast": {
     "added_entity": "{entity} añadida",
     "added_generation_job_to_queue": "Tarea de generación añadida a la cola",
-    "create_entity": "{entity} creada",
     "default_filter_set": "Establecer como filtro por defecto",
     "delete_entity": "Eliminar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -685,7 +684,8 @@
     "rescanning_entity": "Reescanear {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Auto-etiquetado iniciado",
     "saved_entity": "{entity} guardada",
-    "updated_entity": "{entity} actualizada"
+    "updated_entity": "{entity} actualizada",
+    "created_entity": "{entity} creada"
   },
   "total": "Total",
   "twitter": "Twitter",
