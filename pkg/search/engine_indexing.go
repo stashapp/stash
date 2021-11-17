@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/blevesearch/bleve/v2"
@@ -191,24 +192,9 @@ func (e *Engine) fullReindex(ctx context.Context) error {
 	return nil
 }
 
-// batchProcess indexes a single change set batch. This function makes no attempt
-// at limiting or batching the amount of work that has to be done. It is on a caller
-// to ensure the changeset batch is small enough that it fits in memory.
-func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.Index, b *bleve.Batch, cs *changeSet) report {
+func batchProcessTags(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
 	stats := report{}
-	// idx is thread-safe, this protects against changes to the index pointer itself
-	e.mu.RLock()
-	defer e.mu.RUnlock()
 
-	// The order in which we process matters. For intance, performers
-	// are contained in scenes, so it makes sense to process them first.
-	// This populates the data loader, with performers, so scene processing
-	// is going to run faster.
-	//
-	// In general, theres a topological sort of the different entities, and
-	// you want to follow said topological sorting when processing.
-
-	// Process tags
 	tagIds := cs.tagIds()
 	tags, errors := loaders.tag.LoadAll(tagIds)
 
@@ -218,9 +204,6 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 				logger.Infof("indexing batch: performer %d error: %v", tagIds[i], errors[i])
 			}
 
-			// Here is a fun slight problem: If the tag is deleted, how do you know
-			// which scenes the tag is on? By searching the index, and tracking any
-			// document we find in the changeset.
 			b.Delete(tagID(tagIds[i]))
 			logger.Infof("Deleting tag %v", tagIds[i])
 			stats.deleted++
@@ -236,7 +219,12 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		stats.updated++
 	}
 
-	// Process performers
+	return stats
+}
+
+func batchProcessPerformers(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
+	stats := report{}
+
 	performerIds := cs.performerIds()
 	performers, errors := loaders.performer.LoadAll(performerIds)
 
@@ -260,7 +248,11 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		stats.updated++
 	}
 
-	// Process studios
+	return stats
+}
+
+func batchProcessStudios(cs *changeSet, b *bleve.Batch, loaders *loaders) report {
+	stats := report{}
 	studioIds := cs.studioIds()
 	studios, errors := loaders.studio.LoadAll(studioIds)
 
@@ -284,125 +276,205 @@ func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.I
 		stats.updated++
 	}
 
+	return stats
+}
+
+// tagMap maps SceneID -> []TagID. It is used to populate a scene with Tag information.
+type tagMap map[int][]int
+
+// load turns a sceneID into the tag documents for the given scene.
+func (tm tagMap) load(id int, loaders *loaders) []documents.Tag {
+	tags := []documents.Tag{}
+	for _, key := range tm[id] {
+		t, err := loaders.tag.Load(key)
+		if err != nil {
+			logger.Warnf("batch indexing: could not load tag %d: %v", key, err)
+		}
+		if t == nil {
+			continue // Failed to load tag, skip
+		}
+
+		doc := documents.NewTag(*t)
+		tags = append(tags, doc)
+	}
+
+	return tags
+}
+
+// newTagMap constructs a new tagMap from a slice of scenes
+func (e *Engine) newTagMap(ctx context.Context, loaders *loaders, scenes []*models.Scene) (tagMap, error) {
+	// This following piece of code likely lives somewhere else in the control-flow,
+	// perhaps further up the call stack.
+	sceneTags := make(map[int][]int)
+	err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		for _, s := range scenes {
+			if s == nil {
+				// Scene has been deleted, so it doesn't need to be added to
+				// scenePerformers
+				continue
+			}
+
+			tags, err := r.Tag().FindBySceneID(s.ID)
+			if err != nil {
+				return err
+			}
+
+			var ts []int
+			for _, t := range tags {
+				ts = append(ts, t.ID)
+				// Prime these into the loader
+				loaders.tag.Prime(t.ID, t)
+			}
+
+			sceneTags[s.ID] = ts
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("batch reindex: reading scene performers: %w", err)
+	}
+
+	return sceneTags, nil
+}
+
+// performerMap is a map SceneID -> []PerformerID. It is used to populate scenes
+// with performers.
+type performerMap map[int][]int
+
+// load constructs performer documents for a given scene.
+func (pm performerMap) load(id int, loaders *loaders) []documents.Performer {
+	performers := []documents.Performer{}
+	for _, key := range pm[id] {
+		p, err := loaders.performer.Load(key)
+		if err != nil {
+			logger.Warnf("batch indexing: could not load performer %d: %v", key, err)
+		}
+		if p == nil {
+			continue // Failed to load performer, skip
+		}
+		doc := documents.NewPerformer(*p)
+		performers = append(performers, doc)
+	}
+
+	return performers
+}
+
+func (e *Engine) newPerformerMap(ctx context.Context, loaders *loaders, scenes []*models.Scene) (performerMap, error) {
+	// This following piece of code likely lives somewhere else in the control-flow,
+	// perhaps further up the call stack.
+	scenePerformers := make(map[int][]int)
+	err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		for _, s := range scenes {
+			if s == nil {
+				// Scene has been deleted, so it doesn't need to be added to
+				// scenePerformers
+				continue
+			}
+
+			performers, err := r.Performer().FindBySceneID(s.ID)
+			if err != nil {
+				return err
+			}
+
+			var ps []int
+			for _, p := range performers {
+				ps = append(ps, p.ID)
+				// Prime these into the loader
+				loaders.performer.Prime(p.ID, p)
+			}
+
+			scenePerformers[s.ID] = ps
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("batch reindex: reading scene performers: %w", err)
+	}
+
+	return scenePerformers, nil
+}
+
+func (e *Engine) batchProcessScenes(ctx context.Context, cs *changeSet, b *bleve.Batch, loaders *loaders, sceneIds []int) report {
+	stats := report{}
+
+	scenes, errors := loaders.scene.LoadAll(sceneIds)
+
+	scenePerformers, err := e.newPerformerMap(ctx, loaders, scenes)
+	if err != nil {
+		logger.Warn(err)
+	}
+
+	sceneTags, err := e.newTagMap(ctx, loaders, scenes)
+	if err != nil {
+		logger.Warn(err)
+	}
+
+	for i, s := range scenes {
+		if s == nil {
+			if errors[i] != nil {
+				logger.Infof("scene %d error: %v", sceneIds[i], errors[i])
+			}
+
+			b.Delete(sceneID(sceneIds[i]))
+			stats.deleted++
+
+			continue
+		}
+
+		performers := scenePerformers.load(s.ID, loaders)
+		tags := sceneTags.load(s.ID, loaders)
+
+		s := documents.NewScene(*s, performers, tags)
+		err := b.Index(sceneID(sceneIds[i]), s)
+		if err != nil {
+			logger.Warnf("error while indexing scene %d: (%v): %v", sceneIds[i], s, err)
+		}
+
+		stats.updated++
+	}
+
+	return stats
+}
+
+// batchProcess indexes a single change set batch. This function makes no attempt
+// at limiting or batching the amount of work that has to be done. It is on a caller
+// to ensure the changeset batch is small enough that it fits in memory.
+func (e *Engine) batchProcess(ctx context.Context, loaders *loaders, idx bleve.Index, b *bleve.Batch, cs *changeSet) report {
+	stats := report{}
+	// idx is thread-safe, this protects against changes to the index pointer itself
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	// The order in which we process matters. For intance, performers
+	// are contained in scenes, so it makes sense to process them first.
+	// This populates the data loader, with performers, so scene processing
+	// is going to run faster.
+	//
+	// In general, there's a topological sort of the different entities, and
+	// you want to follow said topological sorting when processing.
+
+	statsTags := batchProcessTags(cs, b, loaders)
+	statsPerformers := batchProcessPerformers(cs, b, loaders)
+	statsStudios := batchProcessStudios(cs, b, loaders)
+	stats.merge(statsTags)
+	stats.merge(statsPerformers)
+	stats.merge(statsStudios)
+
 	// Process scenes
 	for more := true; more; {
 		var sceneIds []int
 		sceneIds, more = cs.cutSceneIds(1000)
-		scenes, errors := loaders.scene.LoadAll(sceneIds)
 
-		// This following piece of code likely lives somewhere else in the control-flow,
-		// perhaps further up the call stack.
-		scenePerformers := make(map[int][]int)
-		err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			for _, s := range scenes {
-				if s == nil {
-					// Scene has been deleted, so it doesn't need to be added to
-					// scenePerformers
-					continue
-				}
+		statsScenes := e.batchProcessScenes(ctx, cs, b, loaders, sceneIds)
+		stats.merge(statsScenes)
 
-				performers, err := r.Performer().FindBySceneID(s.ID)
-				if err != nil {
-					return err
-				}
-
-				var ps []int
-				for _, p := range performers {
-					ps = append(ps, p.ID)
-					// Prime these into the loader
-					loaders.performer.Prime(p.ID, p)
-				}
-
-				scenePerformers[s.ID] = ps
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			logger.Warnf("batch reindex: reading scene performers: %v", err)
-		}
-
-		// This following piece of code likely lives somewhere else in the control-flow,
-		// perhaps further up the call stack.
-		sceneTags := make(map[int][]int)
-		err = e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			for _, s := range scenes {
-				if s == nil {
-					// Scene has been deleted, so it doesn't need to be added to
-					// scenePerformers
-					continue
-				}
-
-				tags, err := r.Tag().FindBySceneID(s.ID)
-				if err != nil {
-					return err
-				}
-
-				var ts []int
-				for _, t := range tags {
-					ts = append(ts, t.ID)
-					// Prime these into the loader
-					loaders.tag.Prime(t.ID, t)
-				}
-
-				sceneTags[s.ID] = ts
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			logger.Warnf("batch reindex: reading scene performers: %v", err)
-		}
-
-		for i, s := range scenes {
-			if s == nil {
-				if errors[i] != nil {
-					logger.Infof("scene %d error: %v", sceneIds[i], errors[i])
-				}
-
-				b.Delete(sceneID(sceneIds[i]))
-				stats.deleted++
-
-				continue
-			}
-
-			performers := []documents.Performer{}
-			for _, key := range scenePerformers[s.ID] {
-				p, err := loaders.performer.Load(key)
-				if err != nil {
-					logger.Warnf("batch indexing: could not load performer %d: %v", key, err)
-				}
-				if p == nil {
-					continue // Failed to load performer, skip
-				}
-				doc := documents.NewPerformer(*p)
-				performers = append(performers, doc)
-			}
-			tags := []documents.Tag{}
-			for _, key := range sceneTags[s.ID] {
-				t, err := loaders.tag.Load(key)
-				if err != nil {
-					logger.Warnf("batch indexing: could not load tag %d: %v", key, err)
-				}
-				if t == nil {
-					continue // Failed to load tag, skip
-				}
-
-				doc := documents.NewTag(*t)
-				tags = append(tags, doc)
-			}
-			s := documents.NewScene(*s, performers, tags)
-			err := b.Index(sceneID(sceneIds[i]), s)
-			if err != nil {
-				logger.Warnf("error while indexing scene %d: (%v): %v", sceneIds[i], s, err)
-			}
-
-			stats.updated++
-		}
-
-		err = idx.Batch(b)
+		// Index the batch we have up until now. First round will also batch
+		// index Tags, Performers, Studios, ...
+		err := idx.Batch(b)
 		if err != nil {
 			logger.Warnf("batch index error: %v", err)
 		}
