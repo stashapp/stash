@@ -823,7 +823,8 @@
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "已经保存 {entity}",
     "started_auto_tagging": "已经开始自动生成标签",
-    "updated_entity": "已经更新 {entity}"
+    "updated_entity": "已经更新 {entity}",
+    "created_entity": "已经创建{entity}"
   },
   "total": "总共",
   "true": "真",

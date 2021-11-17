@@ -95,7 +95,8 @@
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
     "use_default": "Use default",
-    "view_random": "View Random"
+    "view_random": "View Random",
+    "continue": "Continue"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -460,7 +461,6 @@
     }
   },
   "configuration": "Configuration",
-  "continue": "Continue",
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
@@ -817,7 +817,6 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
-    "create_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -826,7 +825,10 @@
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Saved {entity}",
     "started_auto_tagging": "Started auto tagging",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "started_generating": "Started generating",
+    "started_importing": "Started importing",
+    "created_entity": "Created {entity}"
   },
   "total": "Total",
   "true": "True",
