@@ -12,7 +12,6 @@ import (
 )
 
 // preprocess form a closure over changes to the documents affected by the current changeset
-// TODO: Much argues this lives in struct engine
 func (e *Engine) preprocess(ctx context.Context, cs *changeSet, loaders *loaders) {
 	// Preprocessing generally runs on the following principle.
 	//
@@ -32,6 +31,55 @@ func (e *Engine) preprocess(ctx context.Context, cs *changeSet, loaders *loaders
 	// the above example.
 	e.preprocessTags(ctx, cs, loaders)
 	e.preprocessPerformers(ctx, cs, loaders)
+	e.preprocessStudios(ctx, cs, loaders)
+}
+
+func (e *Engine) preprocessStudios(ctx context.Context, cs *changeSet, loaders *loaders) {
+	keys := cs.studioIds()
+	studios, _ := loaders.studio.LoadAll(keys)
+
+	var deleted []int
+	err := e.txnMgr.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		repo := r.Scene()
+
+		for i, s := range studios {
+			logger.Infof("Proprocessing studio %v", keys[i])
+			if s == nil {
+				// Could not load, deleted studio
+				deleted = append(deleted, keys[i])
+				continue
+			}
+
+			idStr := strconv.Itoa(s.ID)
+			studioInput := models.HierarchicalMultiCriterionInput{
+				Value:    []string{idStr},
+				Modifier: models.CriterionModifierIncludesAll,
+			}
+			sceneFilter := models.SceneFilterType{
+				Studios: &studioInput,
+			}
+
+			scenesQueryResult, err := repo.Query(models.SceneQueryOptions{SceneFilter: &sceneFilter})
+			if err != nil {
+				return err
+			}
+
+			for _, s := range scenesQueryResult.IDs {
+				cs.track(event.Change{ID: s, Type: event.Scene})
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		logger.Infof("changeset: could not complete performer preprocessing: %v", err)
+	}
+
+	err = e.addDeleted(ctx, cs, deleted, "studio.id")
+	if err != nil {
+		logger.Infof("changeset: could not perform performer deletion preprocessing: %v", err)
+	}
 }
 
 func (e *Engine) preprocessTags(ctx context.Context, cs *changeSet, loaders *loaders) {
@@ -48,7 +96,7 @@ func (e *Engine) preprocessTags(ctx context.Context, cs *changeSet, loaders *loa
 		for i, t := range tags {
 			logger.Infof("Preprocessing tag %v", keys[i])
 			if t == nil {
-				// Could not load, deleted performer
+				// Could not load, deleted tag
 				deleted = append(deleted, keys[i])
 				continue
 			}
