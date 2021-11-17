@@ -46,7 +46,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/vektah/gqlparser/v2 v2.0.1
+require (
+	github.com/vearutop/statigz v1.1.5
+	github.com/vektah/gqlparser/v2 v2.0.1
+)
 
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
@@ -86,7 +89,6 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/urfave/cli/v2 v2.1.1 // indirect
-	github.com/vearutop/statigz v1.1.5 // indirect
 	github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/mod v0.4.2 // indirect
