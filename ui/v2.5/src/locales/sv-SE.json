@@ -9,12 +9,15 @@
     "apply": "Tillämpa",
     "auto_tag": "Tagga automatiskt",
     "backup": "Säkerhetskopiera",
+    "browse_for_image": "Bläddra efter bild…",
     "cancel": "Avbryt",
     "clean": "Rensa",
+    "clear": "TEST TRANSLATION",
     "clear_back_image": "Rensa bakbild",
     "clear_front_image": "Rensa frambild",
     "clear_image": "Rensa bild",
     "close": "Stäng",
+    "confirm": "Bekräfta",
     "create": "Skapa",
     "create_entity": "Skapa {entityType}",
     "create_marker": "Skapa markör",
@@ -45,6 +48,7 @@
     "merge_from": "Slå samman från",
     "merge_into": "Slå samman till",
     "not_running": "körs ej",
+    "open_random": "Öppna slumpad",
     "overwrite": "Ersätt",
     "play_random": "Spela slumpad",
     "play_selected": "Spela vald",
@@ -63,6 +67,7 @@
     "scrape_with": "Skrapa med…",
     "search": "Sök",
     "select_all": "Välj alla",
+    "select_folders": "Välj mappar",
     "select_none": "Välj inga",
     "selective_auto_tag": "Selektiv Auto Tag",
     "selective_scan": "Selektiv skanning",
@@ -79,11 +84,7 @@
     },
     "temp_disable": "Inaktivera tillfälligt…",
     "temp_enable": "Aktivera tillfälligt…",
-    "view_random": "Visa slumpad",
-    "confirm": "Bekräfta",
-    "select_folders": "Välj mappar",
-    "browse_for_image": "Bläddra efter bild…",
-    "open_random": "Öppna slumpad"
+    "view_random": "Visa slumpad"
   },
   "actions_name": "Handlingar",
   "age": "Ålder",
@@ -120,15 +121,15 @@
     },
     "noun_query": "Query",
     "results": {
+      "duration_off": "Speltiden fel med minst {number}s",
+      "duration_unknown": "Okänd speltid",
       "fp_found": "{fpCount, plural, =0 {Inga nya fingeravtryck hittades} other {# Nya fingeravtryck hittades}}",
       "fp_matches": "Speltid matchar",
       "fp_matches_multi": "Speltiden matchar {matchCount}/{durationsLength} fingeravtryck",
       "hash_matches": "{hash_type} matchar",
       "match_failed_already_tagged": "Scen redan taggad",
       "match_failed_no_result": "Inga resultat hittades",
-      "match_success": "Scen taggad",
-      "duration_off": "Speltiden fel med minst {number}s",
-      "duration_unknown": "Okänd speltid"
+      "match_success": "Scen taggad"
     },
     "verb_match_fp": "Matcha fingeravtryck",
     "verb_matched": "Matchad",
@@ -154,9 +155,9 @@
       "interface": "Gränssnitt",
       "logs": "Loggar",
       "plugins": "Tillägg",
+      "scraping": "Skrapare",
       "tasks": "Uppgifter",
-      "tools": "Verktyg",
-      "scraping": "Skrapare"
+      "tools": "Verktyg"
     },
     "dlna": {
       "allow_temp_ip": "Tillåt {tempIP}",
@@ -314,13 +315,13 @@
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
       },
-      "handy_connection_key": {
-        "description": "Handy anslutningsnyckel för interaktiva scener.",
-        "heading": "Handy Connection Key"
-      },
       "funscript_offset": {
         "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
         "heading": "Funscript fördröjning (ms)"
+      },
+      "handy_connection_key": {
+        "description": "Handy anslutningsnyckel för interaktiva scener.",
+        "heading": "Handy Connection Key"
       },
       "language": {
         "heading": "Språk"
@@ -336,8 +337,8 @@
       "performers": {
         "options": {
           "image_location": {
-            "heading": "Sökväg för egna stjärnbilder",
-            "description": "Sökväg för egna standardstjärnbilder. Lämna blank för att använda inbyggd standard"
+            "description": "Sökväg för egna standardstjärnbilder. Lämna blank för att använda inbyggd standard",
+            "heading": "Sökväg för egna stjärnbilder"
           }
         }
       },
@@ -396,6 +397,7 @@
     "value": "Värde"
   },
   "criterion_modifier": {
+    "between": "mellan",
     "equals": "är",
     "excludes": "exkluderar",
     "format_string": "{criterion} {modifierString} {valueString}",
@@ -405,11 +407,10 @@
     "is_null": "är null",
     "less_than": "är mindre än",
     "matches_regex": "matchar regex",
+    "not_between": "inte mellan",
     "not_equals": "är inte",
     "not_matches_regex": "matchar ej regex",
-    "not_null": "är inte null",
-    "between": "mellan",
-    "not_between": "inte mellan"
+    "not_null": "är inte null"
   },
   "custom": "Anpassad",
   "date": "Datum",
@@ -571,22 +572,22 @@
   "parent_studios": "Överordnad studio",
   "path": "Sökväg",
   "performer": "Stjärna",
+  "performerTags": "Stjärntagg",
   "performer_count": "Antal stjärnor",
   "performer_image": "Stjärnbild",
   "performers": "Stjärnor",
-  "performerTags": "Stjärntagg",
   "piercings": "Piercingar",
   "queue": "Kö",
   "random": "Slumpad",
   "rating": "Betyg",
   "resolution": "Upplösning",
   "scene": "Scen",
+  "sceneTagger": "Scentaggaren",
+  "sceneTags": "Scentaggar",
   "scene_count": "Antal scener",
   "scene_id": "Scenens ID",
   "scenes": "Scener",
   "scenes_updated_at": "Scen uppdaterad vid",
-  "sceneTagger": "Scentaggaren",
-  "sceneTags": "Scentaggar",
   "search_filter": {
     "add_filter": "Lägg till filter",
     "name": "Filter",
@@ -596,6 +597,11 @@
   "seconds": "Sekunder",
   "settings": "Inställningar",
   "stash_id": "Stash ID",
+  "stats": {
+    "image_size": "Bildstorlek",
+    "scenes_duration": "Total speltid",
+    "scenes_size": "Scenens storlek"
+  },
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Nivåer (tom för allt)",
@@ -609,16 +615,16 @@
   "toast": {
     "added_entity": "Lade till {entity}",
     "added_generation_job_to_queue": "Köade genereringsjobb",
+    "created_entity": "Skapade {entity}",
     "default_filter_set": "Standardfilter valt",
     "delete_entity": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Raderade {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Genererar skärmbild…",
     "merged_tags": "Slog samman taggar",
     "rescanning_entity": "Återskannar {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
-    "started_auto_tagging": "Började auto-tagga",
     "saved_entity": "Sparade {entity}",
-    "updated_entity": "Uppdaterade {entity}",
-    "created_entity": "Skapade {entity}"
+    "started_auto_tagging": "Började auto-tagga",
+    "updated_entity": "Uppdaterade {entity}"
   },
   "total": "Total",
   "twitter": "Twitter",
@@ -626,10 +632,5 @@
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "weight": "Vikt",
-  "years_old": "år gammal",
-  "stats": {
-    "image_size": "Bildstorlek",
-    "scenes_duration": "Total speltid",
-    "scenes_size": "Scenens storlek"
-  }
+  "years_old": "år gammal"
 }
