@@ -235,6 +235,7 @@
       "hashing": "Hashing",
       "image_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Bilder identifiziert werden.",
       "image_ext_head": "Bilderweiterungen",
+      "include_audio_head": "Audio einbeziehen",
       "logging": "Protokollierung",
       "maximum_streaming_transcode_size_desc": "Maximale Größe für transcodierte Streams",
       "maximum_streaming_transcode_size_head": "Maximale Streaming-Transcode-Größe",
@@ -631,6 +632,7 @@
   "toast": {
     "added_entity": "{entity} hinzugefügt",
     "added_generation_job_to_queue": "Generierungsaufgabe zur Warteschlange hinzugefügt",
+    "created_entity": "{entity} erstellt",
     "default_filter_set": "Standardfiltersatz",
     "delete_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
@@ -639,8 +641,7 @@
     "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} gespeichert",
     "started_auto_tagging": "Automatisches Tagging gestartet",
-    "updated_entity": "{entity} aktualisiert",
-    "created_entity": "{entity} erstellt"
+    "updated_entity": "{entity} aktualisiert"
   },
   "total": "Gesamt",
   "twitter": "Twitter",
