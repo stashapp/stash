@@ -460,7 +460,6 @@
     }
   },
   "configuration": "Configurazione",
-  "continue": "Continua",
   "countables": {
     "files": "{count, plural, one {File} other {File}}",
     "galleries": "{count, plural, one {Galleria} other {Gallerie}}",
@@ -817,6 +816,7 @@
   "toast": {
     "added_entity": "Aggiunto {entity}",
     "added_generation_job_to_queue": "Aggiunto lavoro di creazione alla coda",
+    "created_entity": "Creato/a {entity}",
     "default_filter_set": "Filtro predefinito impostato",
     "delete_entity": "Cancella {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Cancellato/a {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -825,8 +825,7 @@
     "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Salvato/a {entity}",
     "started_auto_tagging": "Inizato il tag automatico",
-    "updated_entity": "Aggiornato/a {entity}",
-    "created_entity": "Creato/a {entity}"
+    "updated_entity": "Aggiornato/a {entity}"
   },
   "total": "Totale",
   "true": "Vero",
