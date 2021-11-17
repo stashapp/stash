@@ -95,7 +95,8 @@
     "previous_action": "Back",
     "finish": "Finish",
     "use_default": "Use default",
-    "ignore": "Ignore"
+    "ignore": "Ignore",
+    "continue": "Continue"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -463,7 +464,6 @@
     }
   },
   "configuration": "Configuration",
-  "continue": "Continue",
   "countables": {
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
     "images": "{count, plural, one {Image} other {Images}}",
@@ -737,7 +737,6 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
-    "create_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -746,7 +745,10 @@
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Started auto tagging",
     "saved_entity": "Saved {entity}",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "started_generating": "Started generating",
+    "started_importing": "Started importing",
+    "created_entity": "Created {entity}"
   },
   "total": "Total",
   "true": "True",

@@ -610,7 +610,6 @@
   "toast": {
     "added_entity": "已添加{entity}",
     "added_generation_job_to_queue": "已添加至队列",
-    "create_entity": "已经创建{entity}",
     "default_filter_set": "默认过滤器",
     "delete_entity": "删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -619,7 +618,8 @@
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "已经开始自动生成标签",
     "saved_entity": "已经保存 {entity}",
-    "updated_entity": "已经更新 {entity}"
+    "updated_entity": "已经更新 {entity}",
+    "created_entity": "已经创建{entity}"
   },
   "total": "数量",
   "twitter": "Twitter",

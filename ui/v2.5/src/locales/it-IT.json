@@ -675,7 +675,6 @@
   "toast": {
     "added_entity": "Aggiunto {entity}",
     "added_generation_job_to_queue": "Aggiunto lavoro di creazione alla coda",
-    "create_entity": "Creato/a {entity}",
     "default_filter_set": "Filtro predefinito impostato",
     "delete_entity": "Cancella {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Cancellato/a {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -684,7 +683,8 @@
     "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Inizato il tag automatico",
     "saved_entity": "Salvato/a {entity}",
-    "updated_entity": "Aggiornato/a {entity}"
+    "updated_entity": "Aggiornato/a {entity}",
+    "created_entity": "Creato/a {entity}"
   },
   "total": "Totale",
   "twitter": "Twitter",
