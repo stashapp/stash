@@ -90,10 +90,10 @@ export const getBaseURL = () => {
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin + getBaseURL());
 
-  if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-    platformUrl.port = process.env.VITE_APP_PLATFORM_PORT ?? "9999";
+  if (import.meta.env.DEV) {
+    platformUrl.port = import.meta.env.VITE_APP_PLATFORM_PORT ?? "9999";
 
-    if (process.env.VITE_APP_HTTPS === "true") {
+    if (import.meta.env.VITE_APP_HTTPS === "true") {
       platformUrl.protocol = "https:";
     }
   }
