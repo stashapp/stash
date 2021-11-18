@@ -39,7 +39,7 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 * `make fmt` - Run `go fmt`
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
-* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Runs on port 3000 or the next available port.
+* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash server port can be changed from the default of `9999` using environment variable `VITE_APP_PLATFORM_PORT`. UI runs on port `3000` or the next available port.
 
 ## Building a release
 
