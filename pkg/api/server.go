@@ -214,6 +214,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
+
+			prefix := getProxyPrefix(r.Header)
+			if prefix != "" {
+				r.URL.Path = strings.Replace(r.URL.Path, prefix, "", 1)
+			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
 			statigz.FileServer(uiBox).ServeHTTP(w, r)
