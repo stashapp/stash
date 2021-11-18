@@ -188,7 +188,6 @@
         "maximum_session_age_desc": "Maximal väntetid innan inloggingen upphör, i sekunder.",
         "password": "Lösenord",
         "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
-        "stash-box_integration": "",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
       },
@@ -248,7 +247,6 @@
       "entity_scrapers": "{entityType} skrapare",
       "excluded_tag_patterns_desc": "Regexps av tagg-namn att exkludera från skrapresultat",
       "excluded_tag_patterns_head": "Exkluderade tagg-mönster",
-      "scrapers": "",
       "search_by_name": "Sök med namn",
       "supported_types": "Stöttade typer",
       "supported_urls": "URL:er"
@@ -319,8 +317,7 @@
         "heading": "Funscript fördröjning (ms)"
       },
       "handy_connection_key": {
-        "description": "Handy anslutningsnyckel för interaktiva scener.",
-        "heading": ""
+        "description": "Handy anslutningsnyckel för interaktiva scener."
       },
       "language": {
         "heading": "Språk"
@@ -547,7 +544,6 @@
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} i den här scenen"
     },
-    "phash": "",
     "stream": "Ström",
     "video_codec": "Videokodek"
   },
