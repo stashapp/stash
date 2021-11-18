@@ -18,6 +18,7 @@
     "clear_image": "Bild entfernen",
     "close": "Schließen",
     "confirm": "Bestätigen",
+    "continue": "Fortsetzen",
     "create": "Erstellen",
     "create_entity": "Erstelle {entityType}",
     "create_marker": "Erstelle Marke",
@@ -115,7 +116,7 @@
       "query_mode_auto": "Automatisch",
       "query_mode_auto_desc": "Nutzt Metadaten sofern verfügbar bzw. Dateinamen",
       "query_mode_dir": "Verzeichnis",
-      "query_mode_dir_desc": "Nutzt nur den übergeordneten Ornder",
+      "query_mode_dir_desc": "Nutzt nur den übergeordneten Ordner",
       "query_mode_filename": "Dateiname",
       "query_mode_filename_desc": "Nutzt nur den Dateinamen",
       "query_mode_label": "Anfragemodus",
@@ -531,6 +532,7 @@
   "eye_color": "Augenfarbe",
   "fake_tits": "Gemachte Brüste",
   "favourite": "Favorit",
+  "file": "Datei",
   "file_info": "Datei",
   "file_mod_time": "Dateiänderungszeit",
   "filesize": "Dateigröße",
@@ -538,6 +540,7 @@
   "filter_name": "Filtername",
   "filters": "Filter",
   "framerate": "Bildrate",
+  "frames_per_second": "{value} Bilder pro Sekunde",
   "galleries": "Galerien",
   "gallery": "Galerie",
   "gallery_count": "Galerienanzahl",
@@ -549,7 +552,9 @@
   "image": "Bild",
   "image_count": "Bilderanzahl",
   "images": "Bilder",
+  "include_parent_tags": "Übergeordnete Tags einbeziehen",
   "include_sub_studios": "Tochterstudios einbeziehen",
+  "include_sub_tags": "Sub-Tags einbeziehen",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
   "isMissing": "Wird vermisst",
@@ -616,15 +621,32 @@
   },
   "seconds": "Sekunden",
   "settings": "Einstellungen",
+  "setup": {
+    "success": {
+      "support_us": "Unterstütze uns"
+    },
+    "welcome": {
+      "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>",
+      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis"
+    },
+    "welcome_specific_config": {
+      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>"
+    },
+    "welcome_to_stash": "Willkommen zu Stash"
+  },
   "stash_id": "Stash-ID",
   "stats": {
     "image_size": "Bildgröße",
+    "scenes_duration": "Szenendauer",
     "scenes_size": "Szenengröße"
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Ebenen (leer für alle)",
   "studios": "Studios",
+  "sub_tag_count": "Anzahl an Sub-Tags",
+  "sub_tag_of": "Sub-Tag von {parent}",
+  "sub_tags": "Sub-Tags",
   "subsidiary_studios": "Tochterstudios",
   "synopsis": "Zusammenfassung",
   "tag": "Tag",
@@ -644,6 +666,8 @@
     "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} gespeichert",
     "started_auto_tagging": "Automatisches Tagging gestartet",
+    "started_generating": "Generierung gestartet",
+    "started_importing": "Import gestartet",
     "updated_entity": "{entity} aktualisiert"
   },
   "total": "Gesamt",
