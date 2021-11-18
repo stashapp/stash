@@ -24,7 +24,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
     { count: props.selected.length, singularEntity, pluralEntity }
   );
   const toastMessage = intl.formatMessage(
-    { id: "toast.delete_entity" },
+    { id: "toast.delete_past_tense" },
     { count: props.selected.length, singularEntity, pluralEntity }
   );
   const message = intl.formatMessage(

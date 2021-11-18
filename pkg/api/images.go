@@ -17,14 +17,31 @@ type imageBox struct {
 	files []string
 }
 
+var imageExtensions = []string{
+	".jpg",
+	".jpeg",
+	".png",
+	".gif",
+	".svg",
+	".webp",
+}
+
 func newImageBox(box fs.FS) (*imageBox, error) {
 	ret := &imageBox{
 		box: box,
 	}
 
 	err := fs.WalkDir(box, ".", func(path string, d fs.DirEntry, err error) error {
-		if !d.IsDir() {
-			ret.files = append(ret.files, path)
+		if d.IsDir() {
+			return nil
+		}
+
+		baseName := strings.ToLower(d.Name())
+		for _, ext := range imageExtensions {
+			if strings.HasSuffix(baseName, ext) {
+				ret.files = append(ret.files, path)
+				break
+			}
 		}
 
 		return nil

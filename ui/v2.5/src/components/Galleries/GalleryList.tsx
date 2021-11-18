@@ -88,13 +88,8 @@ export const GalleryList: React.FC<IGalleryList> = ({
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindGalleries(filterCopy);
-      if (
-        singleResult &&
-        singleResult.data &&
-        singleResult.data.findGalleries &&
-        singleResult.data.findGalleries.galleries.length === 1
-      ) {
-        const { id } = singleResult!.data!.findGalleries!.galleries[0];
+      if (singleResult.data.findGalleries.galleries.length === 1) {
+        const { id } = singleResult.data.findGalleries.galleries[0];
         // navigate to the image player page
         history.push(`/galleries/${id}`);
       }

@@ -347,7 +347,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) er
 				return err
 			}
 
-			if err := match.ScrapedPerformer(pqb, p); err != nil {
+			if err := match.ScrapedPerformer(pqb, p, nil); err != nil {
 				return err
 			}
 		}
@@ -366,7 +366,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) er
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := match.ScrapedStudio(sqb, ret.Studio)
+			err := match.ScrapedStudio(sqb, ret.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -392,7 +392,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			err := match.ScrapedPerformer(pqb, p)
+			err := match.ScrapedPerformer(pqb, p, nil)
 			if err != nil {
 				return err
 			}
@@ -405,7 +405,7 @@ func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := match.ScrapedStudio(sqb, ret.Studio)
+			err := match.ScrapedStudio(sqb, ret.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -599,7 +599,7 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 
 			if ret.Studio != nil {
 				if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-					return match.ScrapedStudio(r.Studio(), ret.Studio)
+					return match.ScrapedStudio(r.Studio(), ret.Studio, nil)
 				}); err != nil {
 					return nil, err
 				}
