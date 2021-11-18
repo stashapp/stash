@@ -206,8 +206,8 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 
 			prefix := getProxyPrefix(r.Header)
-			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
-			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
+			baseURLIndex := strings.Replace(string(data), "/%BASE_URL%", prefix, -1)
+			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 1)
 			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
