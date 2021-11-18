@@ -82,7 +82,7 @@
     "selective_scan": "Scan sélectif",
     "set_as_default": "Définir comme valeur par défaut",
     "set_back_image": "Image Verso…",
-    "set_front_image": "Image Recto",
+    "set_front_image": "Image Recto…",
     "set_image": "Choisir l'image…",
     "show": "Montrer",
     "skip": "Passer",
@@ -111,7 +111,7 @@
   "component_tagger": {
     "config": {
       "active_instance": "Instance stash-box active:",
-      "blacklist_desc": "Éléments à exclure de la requête, sous la forme d'une expression régulière insensible à la casse. Certains caractères doivent être échapés avec un backslash :  {chars_require_escape}",
+      "blacklist_desc": "Éléments à exclure de la requête, sous la forme d'une expression régulière insensible à la casse. Certains caractères doivent être échapés avec un backslash : {chars_require_escape}",
       "blacklist_label": "Exclure",
       "query_mode_auto": "Automatique",
       "query_mode_auto_desc": "Se base sur les métadonnées du fichier si présentes, sinon utilise le nom du fichier",
