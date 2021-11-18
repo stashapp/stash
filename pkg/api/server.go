@@ -30,6 +30,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"github.com/vearutop/statigz"
 )
 
 var version string
@@ -213,11 +214,8 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-			uiRoot, err := fs.Sub(uiBox, uiRootDir)
-			if err != nil {
-				panic(err)
-			}
-			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
+			r.URL.Path = uiRootDir + r.URL.Path
+			statigz.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
 

@@ -91,9 +91,9 @@ export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin + getBaseURL());
 
   if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-    platformUrl.port = process.env.REACT_APP_PLATFORM_PORT ?? "9999";
+    platformUrl.port = process.env.VITE_APP_PLATFORM_PORT ?? "9999";
 
-    if (process.env.REACT_APP_HTTPS === "true") {
+    if (process.env.VITE_APP_HTTPS === "true") {
       platformUrl.protocol = "https:";
     }
   }
