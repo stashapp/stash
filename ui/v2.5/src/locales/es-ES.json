@@ -172,7 +172,7 @@
       "interface": "Diseño",
       "logs": "Registros",
       "plugins": "Plugins",
-      "scraping": "Rastreando",
+      "scraping": "Rastreo",
       "tasks": "Tareas",
       "tools": "Herramientas"
     },
@@ -256,7 +256,7 @@
       "preview_generation": "Previsualizar generación de ficheros",
       "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
       "scraper_user_agent_desc": "Identificador del agente de usuario del navegador web (USER-AGENT) usado durante el rastreo de información mediante peticiones http",
-      "scraping": "Rastreando",
+      "scraping": "Rastreo",
       "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio)",
       "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
       "video_ext_head": "Extensiones de vídeo",
@@ -733,6 +733,7 @@
     },
     "errors": {
       "something_went_wrong": "¡OH NO! ¡Algo ha ido mal!",
+      "something_went_wrong_description": "Si sospechas que puede haber un error con los datos aportados, por favor, haz clic en volver para arreglarlos. De lo contrario, abre una incidencia en {githubLink} o busca ayuda en {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Algo ha salido mal mientras configurábamos tu entorno. Éste es el mensaje de error recibido: {error}"
     },
     "github_repository": "Repositorio en Github",
@@ -757,12 +758,15 @@
       "where_can_stash_store_its_database": "¿Dónde guarda Stash su base de datos?",
       "where_can_stash_store_its_database_description": "Stash emplea una base de datos SQLite para almacenar los metadatos de tu colección. Por defecto será creada como <code>stash-go.sqlite</code> en el directorio en el que se encuentra tu archivo de configuración. Si quieres cambiar esto, por favor, introduce un nombre de archivo con ruta absoluta o relativa al directorio de trabajo actual.",
       "where_can_stash_store_its_generated_content": "¿Dónde guarda Stash los ficheros multimedia de soporte generados?",
+      "where_can_stash_store_its_generated_content_description": "Para poder ofrecerte miniaturas, vistas previas y conjuntos de imágenes animadas, Stash genera imágenes y vídeos. Esto incluye también transcodificaciones para formatos de vídeo no soportados. Por defecto, Stash creará el directorio <code>generated</code> en el directorio que contiene tu archivo de configuración. Si quieres cambiar dónde se almacenarán estos archivos generados, por favor, introduce una ruta absoluta o relativa (al directorio de trabajo actual). Stash creará este directorio si no existe.",
       "where_is_your_porn_located": "¿Dónde guardas el porno?",
       "where_is_your_porn_located_description": "Añade los directorios que contienen tus imágenes y vídeos porno. Stash usará estos directorios para buscar imágenes y vídeos durante el escaneo."
     },
     "stash_setup_wizard": "Asistente de configuración de Stash",
     "success": {
       "getting_help": "Obtener ayuda",
+      "help_links": "Si tienes algún problema, pregunta o sugerencia puedes abrir una inicidencia en {githubLink} o preguntar a nuestra comunidad de usuarios en {discordLink}.",
+      "in_app_manual_explained": "Te recomendamos que consultes el manual integrado en la aplicación, al que se puede acceder desde el icono en la esquina superior derecha de la pantalla y que tiene este aspecto: {icon}",
       "open_collective": "Visite {open_collective_link} para ver cómo puede contribuir al desarrollo de Stash.",
       "support_us": "Apóyanos",
       "thanks_for_trying_stash": "¡Gracias por usar Stash!",
@@ -816,6 +820,8 @@
     "rescanning_entity": "Reescanear {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} guardada",
     "started_auto_tagging": "Auto-etiquetado iniciado",
+    "started_generating": "Generación de ficheros multimedia iniciada",
+    "started_importing": "Importación iniciada",
     "updated_entity": "{entity} actualizada"
   },
   "total": "Total",
