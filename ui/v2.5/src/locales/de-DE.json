@@ -416,8 +416,8 @@
     "movies": "{count, plural, one {Film} other {Filme}}",
     "performers": "{count, plural, one {Darsteller} other {Darsteller}}",
     "scenes": "{count, plural, one {Szene} other {Szenen}}",
-    "studios": "{count, plural, one {Studio} andere {Studios}}",
-    "tags": "{count, plural, one {Tag} andere {Tags}}"
+    "studios": "{count, plural, one {Studio} other {Studios}}",
+    "tags": "{count, plural, one {Tag} other {Tags}}"
   },
   "country": "Land",
   "cover_image": "Titelbild",
