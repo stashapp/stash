@@ -710,8 +710,8 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/urfave/cli/v2 v2.1.1 h1:Qt8FeAtxE/vfdrLmR3rxR6JRE0RoVmbXu8+6kZtYU4k=
 github.com/urfave/cli/v2 v2.1.1/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
-github.com/vearutop/statigz v1.1.5 h1:qWvRgXFsseWVTFCkIvwHQPpaLNf9WI0+dDJE7I9432o=
-github.com/vearutop/statigz v1.1.5/go.mod h1:czAv7iXgPv/s+xsgXpVEhhD0NSOQ4wZPgmM/n7LANDI=
+github.com/vearutop/statigz v1.1.6 h1:si1zvulh/6P4S/SjFticuKQ8/EgQISglaRuycj8PWso=
+github.com/vearutop/statigz v1.1.6/go.mod h1:czAv7iXgPv/s+xsgXpVEhhD0NSOQ4wZPgmM/n7LANDI=
 github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e h1:+w0Zm/9gaWpEAyDlU1eKOuk5twTjAjuevXqcJJw8hrg=
 github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e/go.mod h1:/HUdMve7rvxZma+2ZELQeNh88+003LL7Pf/CZ089j8U=
 github.com/vektah/gqlparser v1.3.1 h1:8b0IcD3qZKWJQHSzynbDlrtP3IxVydZ2DZepCGofqfU=
