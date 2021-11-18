@@ -484,7 +484,8 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	fileDeleter.Commit()
 
 	for _, gallery := range galleries {
-		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path.Valid {
+		// don't delete stash library paths
+		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path.Valid && !isStashPath(gallery.Path.String) {
 			// try to remove the folder - it is possible that it is not empty
 			// so swallow the error if present
 			_ = os.Remove(gallery.Path.String)
@@ -502,6 +503,17 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	}
 
 	return true, nil
+}
+
+func isStashPath(path string) bool {
+	stashConfigs := manager.GetInstance().Config.GetStashPaths()
+	for _, config := range stashConfigs {
+		if path == config.Path {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.GalleryAddInput) (bool, error) {
