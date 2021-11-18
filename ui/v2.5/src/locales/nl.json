@@ -13,6 +13,7 @@
     "clear_image": "Wis afbeelding",
     "close": "Sluiten",
     "confirm": "Bevestigen",
+    "continue": "Doorgaan",
     "create": "Maken",
     "create_entity": "Maak {entityType}",
     "delete_file": "Verwijder bestand",
@@ -79,6 +80,35 @@
     "stop": "Stop",
     "tasks": {
       "clean_confirm_message": "Weet je zeker dat je wil opschonen? Dit verwijderd database informatie en gegenereerde bestanden voor alle scènes en galerijen die niet langer meer op schijf gevonden kunnen worden."
+    },
+    "use_default": "Gebruik standaard",
+    "view_random": "Bekijk Willekeurig"
+  },
+  "actions_name": "Acties",
+  "age": "Leeftijd",
+  "aliases": "Aliassen",
+  "all": "alle",
+  "also_known_as": "Ook bekend als",
+  "ascending": "Oplopend",
+  "average_resolution": "Gemiddelde resolutie",
+  "birth_year": "Geboortejaar",
+  "birthdate": "Geboortedatum",
+  "bitrate": "Bitsnelheid",
+  "career_length": "Duur van carrière",
+  "component_tagger": {
+    "config": {
+      "active_instance": "Actieve stash-box installatie:",
+      "query_mode_auto": "Auto",
+      "query_mode_auto_desc": "Gebruikt metadata indien aanwezig, of bestandsnaam",
+      "query_mode_filename": "Bestandsnaam",
+      "query_mode_filename_desc": "Gebruikt alleen bestandsnaam",
+      "query_mode_label": "Bevraag mode",
+      "query_mode_metadata": "Metadata",
+      "query_mode_metadata_desc": "Gebruikt alleen metadata",
+      "query_mode_path": "Pad",
+      "query_mode_path_desc": "Gebruikt volledige bestandspad",
+      "set_cover_desc": "Vervang de scène omslag als er een gevonden is.",
+      "set_cover_label": "Zet scène omslag afbeelding"
     }
   }
 }
