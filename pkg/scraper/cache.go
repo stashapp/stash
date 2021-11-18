@@ -145,13 +145,6 @@ func (c *Cache) ReloadScrapers() error {
 	return nil
 }
 
-// TODO - don't think this is needed
-// UpdateConfig updates the global config for the cache. If the scraper path
-// has changed, ReloadScrapers will need to be called separately.
-func (c *Cache) UpdateConfig(globalConfig GlobalConfig) {
-	c.globalConfig = globalConfig
-}
-
 // ListScrapers lists scrapers matching one of the given types.
 // Returns a list of scrapers, sorted by their ID.
 func (c Cache) ListScrapers(tys []models.ScrapeContentType) []*models.Scraper {
