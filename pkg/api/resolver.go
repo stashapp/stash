@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -29,9 +30,12 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	scraperCache *scraper.Cache
 	txnManager   models.TransactionManager
 	hookExecutor hookExecutor
+}
+
+func (r *Resolver) scraperCache() *scraper.Cache {
+	return manager.GetInstance().ScraperCache
 }
 
 func (r *Resolver) Gallery() models.GalleryResolver {
