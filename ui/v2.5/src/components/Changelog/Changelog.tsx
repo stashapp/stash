@@ -23,8 +23,8 @@ type Module = typeof V010;
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
 
-  const stashVersion = process.env.VITE_APP_STASH_VERSION;
-  const buildTime = process.env.VITE_APP_DATE;
+  const stashVersion = import.meta.env.VITE_APP_STASH_VERSION;
+  const buildTime = import.meta.env.VITE_APP_DATE;
 
   let buildDate;
   if (buildTime) {
