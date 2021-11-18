@@ -77,6 +77,7 @@ func (o Scanner) ScanExisting(existing FileBased, file SourceFile) (h *Scanned, 
 	// update existing data if needed
 	// truncate to seconds, since we don't store beyond that in the database
 	updatedFile.FileModTime = info.ModTime().Truncate(time.Second)
+	updatedFile.Size = strconv.FormatInt(info.Size(), 10)
 
 	modTimeChanged := !existingFile.FileModTime.Equal(updatedFile.FileModTime)
 

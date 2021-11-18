@@ -130,25 +130,23 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 		return
 	}
 
-	if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		var taskError error
-		j.progress.ExecuteTask("Identifying "+s.Path, func() {
-			task := identify.SceneIdentifier{
-				DefaultOptions: j.input.Options,
-				Sources:        sources,
-				ScreenshotSetter: &scene.PathsScreenshotSetter{
-					Paths:               instance.Paths,
-					FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
-				},
-				SceneUpdatePostHookExecutor: j.postHookExecutor,
-			}
+	var taskError error
+	j.progress.ExecuteTask("Identifying "+s.Path, func() {
+		task := identify.SceneIdentifier{
+			DefaultOptions: j.input.Options,
+			Sources:        sources,
+			ScreenshotSetter: &scene.PathsScreenshotSetter{
+				Paths:               instance.Paths,
+				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+			},
+			SceneUpdatePostHookExecutor: j.postHookExecutor,
+		}
 
-			taskError = task.Identify(ctx, r, s)
-		})
+		taskError = task.Identify(ctx, j.txnManager, s)
+	})
 
-		return taskError
-	}); err != nil {
-		logger.Errorf("Error encountered identifying %s: %v", s.Path, err)
+	if taskError != nil {
+		logger.Errorf("Error encountered identifying %s: %v", s.Path, taskError)
 	}
 
 	j.progress.Increment()

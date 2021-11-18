@@ -13,6 +13,7 @@ var matcher = language.NewMatcher([]language.Tag{
 	language.MustParse("es-ES"),
 	language.MustParse("de-DE"),
 	language.MustParse("it-IT"),
+	language.MustParse("fr-FR"),
 	language.MustParse("pt-BR"),
 	language.MustParse("sv-SE"),
 	language.MustParse("zh-CN"),

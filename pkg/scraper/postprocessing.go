@@ -65,7 +65,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerfo
 func (c Cache) postScrapeMovie(ctx context.Context, ret *models.ScrapedMovie) (models.ScrapedContent, error) {
 	if ret.Studio != nil {
 		if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			return match.ScrapedStudio(r.Studio(), ret.Studio)
+			return match.ScrapedStudio(r.Studio(), ret.Studio, nil)
 		}); err != nil {
 			return nil, err
 		}
@@ -112,7 +112,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (m
 				return err
 			}
 
-			if err := match.ScrapedPerformer(pqb, p); err != nil {
+			if err := match.ScrapedPerformer(pqb, p, nil); err != nil {
 				return err
 			}
 		}
@@ -131,7 +131,7 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (m
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := match.ScrapedStudio(sqb, ret.Studio)
+			err := match.ScrapedStudio(sqb, ret.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -157,7 +157,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, ret *models.ScrapedGallery
 		sqb := r.Studio()
 
 		for _, p := range ret.Performers {
-			err := match.ScrapedPerformer(pqb, p)
+			err := match.ScrapedPerformer(pqb, p, nil)
 			if err != nil {
 				return err
 			}
@@ -170,7 +170,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, ret *models.ScrapedGallery
 		ret.Tags = tags
 
 		if ret.Studio != nil {
-			err := match.ScrapedStudio(sqb, ret.Studio)
+			err := match.ScrapedStudio(sqb, ret.Studio, nil)
 			if err != nil {
 				return err
 			}

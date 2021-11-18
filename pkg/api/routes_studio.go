@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
+	"syscall"
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/logger"
@@ -47,7 +49,12 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving studio image: %v", err)
+		// Broken pipe errors are common when serving images and the remote
+		// connection closes the connection. Filter them out of the error
+		// messages, as they are benign.
+		if !errors.Is(err, syscall.EPIPE) {
+			logger.Warnf("cannot serve studio image: %v", err)
+		}
 	}
 }
 

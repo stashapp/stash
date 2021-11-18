@@ -73,6 +73,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsScraperQueryModalOpen,
   ] = useState<boolean>(false);
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
+  const [endpoint, setEndpoint] = useState<string | undefined>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<
     string | undefined
@@ -299,6 +300,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }
       // assume one returned scene
       setScrapedScene(result.data.scrapeSingleScene[0]);
+      setEndpoint(s.stash_box_endpoint ?? undefined);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -338,6 +340,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function onScrapeQueryClicked(s: GQL.ScraperSourceInput) {
     setScraper(s);
+    setEndpoint(s.stash_box_endpoint ?? undefined);
     setIsScraperQueryModalOpen(true);
   }
 
@@ -376,6 +379,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <SceneScrapeDialog
         scene={currentScene}
         scraped={scrapedScene}
+        endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
       />
     );
@@ -396,7 +400,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
           {stashBoxes.map((s, index) => (
             <Dropdown.Item
               key={s.endpoint}
-              onClick={() => onScrapeQueryClicked({ stash_box_index: index })}
+              onClick={() =>
+                onScrapeQueryClicked({
+                  stash_box_index: index,
+                  stash_box_endpoint: s.endpoint,
+                })
+              }
             >
               {stashboxDisplayName(s.name, index)}
             </Dropdown.Item>
@@ -463,7 +472,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
         {stashBoxes.map((s, index) => (
           <Dropdown.Item
             key={s.endpoint}
-            onClick={() => onScrapeClicked({ stash_box_index: index })}
+            onClick={() =>
+              onScrapeClicked({
+                stash_box_index: index,
+                stash_box_endpoint: s.endpoint,
+              })
+            }
           >
             {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
@@ -554,6 +568,34 @@ export const SceneEditPanel: React.FC<IProps> = ({
       // image is a base64 string
       formik.setFieldValue("cover_image", updatedScene.image);
       setCoverImagePreview(updatedScene.image);
+    }
+
+    if (updatedScene.remote_site_id && endpoint) {
+      let found = false;
+      formik.setFieldValue(
+        "stash_ids",
+        formik.values.stash_ids.map((s) => {
+          if (s.endpoint === endpoint) {
+            found = true;
+            return {
+              endpoint,
+              stash_id: updatedScene.remote_site_id,
+            };
+          }
+
+          return s;
+        })
+      );
+
+      if (!found) {
+        formik.setFieldValue(
+          "stash_ids",
+          formik.values.stash_ids.concat({
+            endpoint,
+            stash_id: updatedScene.remote_site_id,
+          })
+        );
+      }
     }
   }
 
@@ -771,41 +813,51 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 />
               </Col>
             </Form.Group>
-            <Form.Group controlId="details">
-              <Form.Label>StashIDs</Form.Label>
-              <ul className="pl-0">
-                {formik.values.stash_ids.map((stashID) => {
-                  const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-                  const link = base ? (
-                    <a
-                      href={`${base}scenes/${stashID.stash_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {stashID.stash_id}
-                    </a>
-                  ) : (
-                    stashID.stash_id
-                  );
-                  return (
-                    <li key={stashID.stash_id} className="row no-gutters">
-                      <Button
-                        variant="danger"
-                        className="mr-2 py-0"
-                        title={intl.formatMessage(
-                          { id: "actions.delete_entity" },
-                          { entityType: intl.formatMessage({ id: "stash_id" }) }
-                        )}
-                        onClick={() => removeStashID(stashID)}
+            {formik.values.stash_ids.length ? (
+              <Form.Group controlId="stashIDs">
+                <Form.Label>
+                  <FormattedMessage id="stash_ids" />
+                </Form.Label>
+                <ul className="pl-0">
+                  {formik.values.stash_ids.map((stashID) => {
+                    const base = stashID.endpoint.match(
+                      /https?:\/\/.*?\//
+                    )?.[0];
+                    const link = base ? (
+                      <a
+                        href={`${base}scenes/${stashID.stash_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        <Icon icon="trash-alt" />
-                      </Button>
-                      {link}
-                    </li>
-                  );
-                })}
-              </ul>
-            </Form.Group>
+                        {stashID.stash_id}
+                      </a>
+                    ) : (
+                      stashID.stash_id
+                    );
+                    return (
+                      <li key={stashID.stash_id} className="row no-gutters">
+                        <Button
+                          variant="danger"
+                          className="mr-2 py-0"
+                          title={intl.formatMessage(
+                            { id: "actions.delete_entity" },
+                            {
+                              entityType: intl.formatMessage({
+                                id: "stash_id",
+                              }),
+                            }
+                          )}
+                          onClick={() => removeStashID(stashID)}
+                        >
+                          <Icon icon="trash-alt" />
+                        </Button>
+                        {link}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Form.Group>
+            ) : undefined}
           </div>
           <div className="col-12 col-lg-5 col-xl-12">
             <Form.Group controlId="details">

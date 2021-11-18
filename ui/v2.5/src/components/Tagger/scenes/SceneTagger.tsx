@@ -11,6 +11,7 @@ import Config from "./Config";
 import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
 import { SceneSearchResults } from "./StashSearchResult";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -33,14 +34,18 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     submitFingerprints,
     pendingFingerprints,
   } = useContext(TaggerStateContext);
+  const { configuration } = React.useContext(ConfigurationContext);
+
   const [showConfig, setShowConfig] = useState(false);
   const [hideUnmatched, setHideUnmatched] = useState(false);
 
   const intl = useIntl();
 
+  const cont = configuration?.interface.continuePlaylistDefault ?? false;
+
   function generateSceneLink(scene: GQL.SlimSceneDataFragment, index: number) {
     return queue
-      ? queue.makeLink(scene.id, { sceneIndex: index })
+      ? queue.makeLink(scene.id, { sceneIndex: index, continue: cont })
       : `/scenes/${scene.id}`;
   }
 
