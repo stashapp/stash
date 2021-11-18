@@ -16,8 +16,10 @@
     "continue": "Doorgaan",
     "create": "Maken",
     "create_entity": "Maak {entityType}",
+    "delete": "Verwijder",
+    "delete_entity": "Verwijder {entityType}",
     "delete_file": "Verwijder bestand",
-    "delete_generated_supporting_files": "Verwijder gegenereerde ondersteuningsbestanden.",
+    "delete_generated_supporting_files": "Verwijder gegenereerde ondersteuningsbestanden",
     "disallow": "Niet toestaan",
     "download": "Download",
     "download_backup": "Download Backup",
@@ -110,5 +112,9 @@
       "set_cover_desc": "Vervang de scène omslag als er een gevonden is.",
       "set_cover_label": "Zet scène omslag afbeelding"
     }
-  }
+  },
+  "true": "Waar",
+  "twitter": "Twitter",
+  "weight": "Gewicht",
+  "years_old": "jaar oud"
 }
