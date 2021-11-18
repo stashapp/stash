@@ -21,8 +21,4 @@ export default defineConfig({
     deleteOriginFile: true,
     filter: /\.(js|json|css|svg|md)$/i
   })],
-  define: {
-    'process.versions': {},
-    'process.env': {}
- }
 })
