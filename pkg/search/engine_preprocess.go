@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// preprocess form a closure over changes to the documents affected by the current changeset
+// preprocess form a closure over changes to the documents affected by the current changeset.
+// The function looks for other entities which needs an update because there is an object in the
+// changeset which got updated.
 func (e *Engine) preprocess(ctx context.Context, cs *changeSet, loaders *loaders) {
 	// Preprocessing generally runs on the following principle.
 	//
