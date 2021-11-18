@@ -35,7 +35,7 @@
     "export_all": "导出所有…",
     "find": "搜索",
     "finish": "结束",
-    "from_file": "从文件...",
+    "from_file": "从文件…",
     "from_url": "从网址…",
     "full_export": "完整导出",
     "full_import": "完整导入",
@@ -83,8 +83,8 @@
     "selective_scan": "选择性扫描",
     "set_as_default": "设置为默认",
     "set_back_image": "设置背面图…",
-    "set_front_image": "设置正面图...",
-    "set_image": "设置图片...",
+    "set_front_image": "设置正面图…",
+    "set_image": "设置图片…",
     "show": "展示",
     "skip": "跳过",
     "stop": "停止",
@@ -93,8 +93,8 @@
       "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会写下记录。",
       "import_warning": "确定要导入吗？ 这将删除现有数据库并从导出的元数据中重新导入。"
     },
-    "temp_disable": "暂时关闭...",
-    "temp_enable": "暂时启用...",
+    "temp_disable": "暂时关闭…",
+    "temp_enable": "暂时启用…",
     "use_default": "使用默认",
     "view_random": "随机查看"
   },
@@ -651,7 +651,7 @@
   "isMissing": "缺失",
   "library": "收藏库",
   "loading": {
-    "generic": "加载中..."
+    "generic": "加载中…"
   },
   "marker_count": "标记数量",
   "markers": "标记",
@@ -737,7 +737,7 @@
     },
     "github_repository": "Github 代码仓库",
     "migrate": {
-      "backup_database_path_leave_empty_to_disable_backup": "数据库备份路径  (留空代表不备份):",
+      "backup_database_path_leave_empty_to_disable_backup": "数据库备份路径 (留空代表不备份):",
       "backup_recommended": "在迁移前推荐你先备份现有数据库. 我们可以帮你做，需要的话会做一备份到<code>{defaultBackupPath}</code>.",
       "migrating_database": "数据库迁移当中",
       "migration_failed": "迁移失败",
@@ -818,7 +818,7 @@
     "default_filter_set": "默认过滤器",
     "delete_entity": "删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "generating_screenshot": "正在生成截图...",
+    "generating_screenshot": "正在生成截图…",
     "merged_tags": "已经合并标签",
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "已经保存 {entity}",
