@@ -90,7 +90,7 @@ export const getBaseURL = () => {
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin + getBaseURL());
 
-  if (!import.meta.env.NODE_ENV || import.meta.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     platformUrl.port = import.meta.env.VITE_APP_PLATFORM_PORT ?? "9999";
 
     if (import.meta.env.VITE_APP_HTTPS === "true") {
