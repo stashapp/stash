@@ -216,7 +216,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			r.URL.Path = uiRootDir + r.URL.Path
 
 			http.FileServer(http.FS(uiBox)).ServeHTTP(w, r)
-			//statigz.FileServer(uiBox).ServeHTTP(w, r)
+			// statigz.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
 
