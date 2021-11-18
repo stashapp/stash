@@ -190,12 +190,6 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 		ext := path.Ext(r.URL.Path)
 
-		// workaround for Windows systems where js files are set to plaintext in
-		// the registry.
-		if ext == ".js" {
-			w.Header().Set("Content-Type", "application/javascript")
-		}
-
 		if customUILocation != "" {
 			if r.URL.Path == "index.html" || ext == "" {
 				r.URL.Path = "/"
