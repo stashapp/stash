@@ -111,7 +111,7 @@
     "config": {
       "active_instance": "Aktive stash-box Instanz:",
       "blacklist_desc": "Auf der Blacklist befindliche Objekte sind von Anfragen ausgenommen. Objekte sind reguläre Ausdrücke und Groß-/Kleinschreibung wird nicht beachtet. Manchen Zeichen muss ein Fluchtsymbol (Backslash) vorangestellt werden: {chars_require_escape}",
-      "blacklist_label": "Blacklist",
+      "blacklist_label": "Schwarze Liste",
       "query_mode_auto": "Automatisch",
       "query_mode_auto_desc": "Nutzt Metadaten sofern verfügbar bzw. Dateinamen",
       "query_mode_dir": "Verzeichnis",
@@ -142,6 +142,7 @@
       "match_failed_already_tagged": "Szene bereits getagged",
       "match_failed_no_result": "Keine Übereinstimmungen gefunden",
       "match_success": "Szene erfolgreich getagged",
+      "phash_matches": "{count} PHashes übereinstimmung",
       "unnamed": "Unbenannt"
     },
     "verb_match_fp": "Fingerabdrücke zuordnen",
@@ -208,7 +209,7 @@
         "username": "Benutzername",
         "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
       },
-      "cache_location": "Verzeichnis für den Cache.",
+      "cache_location": "Verzeichnis für den Cache",
       "cache_path_head": "Cache Pfad",
       "calculate_md5_and_ohash_desc": "Berechne MD5 Prüfsumme zusätzlich zu oshash. Aktivierung führt dazu, dass erstmalige Scans mehr Zeit benötigen. Dateibenennungshash muss auf oshash gesetzt sein, um Berechnung des MD5 zu unterbinden.",
       "calculate_md5_and_ohash_label": "Berechne MD5 für Videodateien",
@@ -222,9 +223,9 @@
       "directory_locations_to_your_content": "Verzeichnis zu Ihren Inhalten",
       "exclude_image": "Bilder ausschließen",
       "exclude_video": "Videos ausschließen",
-      "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen.",
+      "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
       "excluded_image_gallery_patterns_head": "Schema für ausgeschlossene Bilder/Galerien",
-      "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen.",
+      "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
       "excluded_video_patterns_head": "Schema für ausgeschlossene Videos",
       "gallery_ext_desc": "Durch Kommas getrennte Liste von Dateiformaten, welche als Galeriecontainer gelesen werden sollen.",
       "gallery_ext_head": "Galeriecontainer Dateiformate",
@@ -242,6 +243,7 @@
       "maximum_transcode_size_desc": "Maximale Größe für generierte Transcodes",
       "maximum_transcode_size_head": "Maximale Transcodierungsgröße",
       "metadata_path": {
+        "description": "Verzeichnis das bei einem vollständigen Export oder Import genutzt wird",
         "heading": "Metadatenpfad"
       },
       "number_of_parallel_task_for_scan_generation_desc": "Für die automatische Erkennung auf 0 setzen. Warnung: Mehr Aufgaben auszuführen, als erforderlich ist, um eine CPU-Auslastung von 100 % zu erreichen, verringert die Leistung und verursacht möglicherweise andere Probleme.",
@@ -266,6 +268,7 @@
     "scraping": {
       "entity_metadata": "{entityType} Metadaten",
       "entity_scrapers": "{entityType} Scraper",
+      "excluded_tag_patterns_desc": "Reguläre Audrücke von Tags zum Ausschließen von Scraping Ergebnissen",
       "excluded_tag_patterns_head": "Tag Muster ausschließen",
       "scraper": "Scraper",
       "scrapers": "Scraper",
@@ -288,7 +291,7 @@
       "auto_tagging": "Automatisches Tagging",
       "backing_up_database": "Datenbank sichern",
       "backup_and_download": "Führt eine Sicherung der Datenbank durch und lädt die resultierende Datei herunter.",
-      "backup_database": "Führt eine Sicherung der Datenbank im selben Verzeichnis wie die Datenbank mit dem Dateinamenformat {filename_format} durch.",
+      "backup_database": "Führt eine Sicherung der Datenbank aus, welche im selben Verzeichnis wie die Datenbank mit dem Dateinamenformat {filename_format} gespeichert wird",
       "cleanup_desc": "Suche nach fehlenden Dateien und entfernen Sie diese aus der Datenbank. Dies ist eine destruktive Aktion.",
       "dont_include_file_extension_as_part_of_the_title": "Füge keine Dateierweiterung als Teil des Titels hinzu",
       "export_to_json": "Exportiert den Datenbankinhalt in JSON-Format im Metadatenverzeichnis.",
@@ -321,7 +324,7 @@
       "maintenance": "Instandhaltung",
       "migrate_hash_files": "Wird nach dem Ändern des Dateinamen-Hashs für generierte Dateien verwendet, um vorhandene generierte Dateien in das neue Hash-Format umzubenennen.",
       "migrations": "Migrationen",
-      "only_dry_run": "Führe nur einen Probelauf durch. Es wird noch nichts entfernt.",
+      "only_dry_run": "Führt einen Probelauf durch. Es wird noch nichts entfernt",
       "plugin_tasks": "Plugin-Aufgaben",
       "scan_for_content_desc": "Suchen nach neuen Inhalten und füge sie der Datenbank hinzu.",
       "set_name_date_details_from_metadata_if_present": "Name, Datum, Details aus Metadaten festlegen (falls vorhanden)"
@@ -412,8 +415,8 @@
     "movies": "{count, plural, one {Film} other {Filme}}",
     "performers": "{count, plural, one {Darsteller} other {Darsteller}}",
     "scenes": "{count, plural, one {Szene} other {Szenen}}",
-    "studios": "{count, plural, one {Studio} other {Studios}}",
-    "tags": "{count, plural, one {Tag} other {Tags}}"
+    "studios": "{count, plural, one {Studio} andere {Studios}}",
+    "tags": "{count, plural, one {Tag} andere {Tags}}"
   },
   "country": "Land",
   "cover_image": "Titelbild",
@@ -506,7 +509,7 @@
   "effect_filters": {
     "aspect": "Aspekt",
     "blue": "Blau",
-    "blur": "Blur",
+    "blur": "Verwischen",
     "brightness": "Helligkeit",
     "contrast": "Kontrast",
     "gamma": "Gamma",
