@@ -728,7 +728,6 @@
   "toast": {
     "added_entity": "{entity} ajouté(e)",
     "added_generation_job_to_queue": "Tâche de génération ajoutée dans la file des tâches",
-    "create_entity": "Créé(e) {entity}",
     "default_filter_set": "Filtre par défaut enregistré",
     "delete_entity": "Suppression de {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} supprimé(e)(s)",
@@ -737,7 +736,8 @@
     "rescanning_entity": "Rescan de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "started_auto_tagging": "Démarrage du Taggage automatique",
     "saved_entity": "{entity} sauvegardé(e)",
-    "updated_entity": "{entity} mis(e) à jour"
+    "updated_entity": "{entity} mis(e) à jour",
+    "created_entity": "Créé(e) {entity}"
   },
   "total": "Total",
   "true": "Vrai",

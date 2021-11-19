@@ -54,7 +54,7 @@ type stashFindPerformerNamesResultType struct {
 	Performers []*stashFindPerformerNamePerformer `graphql:"performers"`
 }
 
-func (s *stashScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
+func (s *stashScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
 	client := s.getStashClient()
 
 	var q struct {
@@ -72,7 +72,7 @@ func (s *stashScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 		},
 	}
 
-	err := client.Query(context.TODO(), &q, vars)
+	err := client.Query(ctx, &q, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(scene *scrapedSceneStash)
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
 	client := s.getStashClient()
 
 	var q struct {
@@ -193,7 +193,7 @@ func (s *stashScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, 
 		},
 	}
 
-	err := client.Query(context.TODO(), &q, vars)
+	err := client.Query(ctx, &q, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +222,7 @@ type scrapedSceneStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// query by MD5
 	var q struct {
 		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
@@ -243,7 +243,7 @@ func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 	}
 
 	client := s.getStashClient()
-	if err := client.Query(context.TODO(), &q, vars); err != nil {
+	if err := client.Query(ctx, &q, vars); err != nil {
 		return nil, err
 	}
 
@@ -262,7 +262,7 @@ func (s *stashScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedS
 	return ret, nil
 }
 
-func (s *stashScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	return nil, errors.New("scrapeSceneByFragment not supported for stash scraper")
 }
 
@@ -278,7 +278,7 @@ type scrapedGalleryStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	var q struct {
 		FindGallery *scrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
 	}
@@ -296,7 +296,7 @@ func (s *stashScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.
 	}
 
 	client := s.getStashClient()
-	if err := client.Query(context.TODO(), &q, vars); err != nil {
+	if err := client.Query(ctx, &q, vars); err != nil {
 		return nil, err
 	}
 
@@ -313,19 +313,19 @@ func (s *stashScraper) scrapeGalleryByFragment(scene models.ScrapedGalleryInput)
 	return nil, errors.New("scrapeGalleryByFragment not supported for stash scraper")
 }
 
-func (s *stashScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
+func (s *stashScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
 	return nil, errors.New("scrapePerformerByURL not supported for stash scraper")
 }
 
-func (s *stashScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	return nil, errors.New("scrapeSceneByURL not supported for stash scraper")
 }
 
-func (s *stashScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+func (s *stashScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
 	return nil, errors.New("scrapeGalleryByURL not supported for stash scraper")
 }
 
-func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+func (s *stashScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	return nil, errors.New("scrapeMovieByURL not supported for stash scraper")
 }
 
