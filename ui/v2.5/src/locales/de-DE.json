@@ -73,6 +73,7 @@
     "scan": "Scannen",
     "scrape": "Scrape",
     "scrape_query": "Scrape Anfrage",
+    "scrape_scene_fragment": "An Bruchstück scrapen",
     "scrape_with": "Scrape mit…",
     "search": "Suchen",
     "select_all": "Alle auswählen",
@@ -207,6 +208,7 @@
         "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
         "stash-box_integration": "Stash-box Einbindung",
         "trusted_proxies": "Vertrauenswürdige Proxys",
+        "trusted_proxies_desc": "Liste von Proxys denen eine Durchleitung zu Stash erlaubt ist. Leer lassen, um Traffic des privaten Netzwerks zu erlauben.",
         "username": "Benutzername",
         "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
       },
@@ -237,6 +239,7 @@
       "hashing": "Hashing",
       "image_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Bilder identifiziert werden.",
       "image_ext_head": "Bilderweiterungen",
+      "include_audio_desc": "Binde Audiostream bei der Erstellung der Videovorschau ein.",
       "include_audio_head": "Audio einbeziehen",
       "logging": "Protokollierung",
       "maximum_streaming_transcode_size_desc": "Maximale Größe für transcodierte Streams",
@@ -308,14 +311,18 @@
         "create_missing": "Erstelle Fehlende",
         "default_options": "Standardoptionen",
         "description": "Automatisches erstellen der Szenen Metadaten durch Stash-Box und Scraper Quellen.",
+        "explicit_set_description": "Die folgenden Optionen werden genutzt, wenn sie nicht in der quellenspezifischen Konfiguration überschrieben worden sind.",
         "field": "Feld",
         "field_behaviour": "{strategy} {field}",
+        "field_options": "Feldoptionen",
         "heading": "Identifizieren",
         "identifying_from_paths": "Identifizieren von Szenen durch den folgenden Pfad",
         "identifying_scenes": "Identifiziere {num} {scene}",
         "include_male_performers": "Männliche Darsteller einbeziehen",
         "set_cover_images": "Titelbild festlegen",
+        "set_organized": "Setze 'Organisiert'",
         "source": "Quelle",
+        "source_options": "{source} Optionen",
         "sources": "Quellen",
         "strategy": "Strategie"
       },
@@ -356,11 +363,40 @@
         "option_label": "Benutzerdefiniertes CSS aktiviert"
       },
       "delete_options": {
-        "description": "Standardeinstellungen wenn Bilder, Galerien und Szenen gelöscht werden."
+        "description": "Standardeinstellungen wenn Bilder, Galerien und Szenen gelöscht werden.",
+        "heading": "Optionen löschen",
+        "options": {
+          "delete_file": "Lösche standardmäßig die Dateien",
+          "delete_generated_supporting_files": "Lösche standardmäßig die generierten Hilfsdateien"
+        }
+      },
+      "desktop_integration": {
+        "desktop_integration": "Desktop Integration",
+        "skip_opening_browser": "Überspringe Öffnen des Browsers",
+        "skip_opening_browser_on_startup": "Überspringe automatisches Öffnen des Browsers bei Start"
+      },
+      "editing": {
+        "disable_dropdown_create": {
+          "description": "Entferne die Möglichkeit der Erstellung neuer Objekte in der Dropdown-Auswahl",
+          "heading": "Entferne Dropdown Erstellung"
+        },
+        "heading": "Editieren"
+      },
+      "funscript_offset": {
+        "description": "Zeitversatz in Millisekunden für interaktive Skriptwiedergabe.",
+        "heading": "Funscript Zeitversatz (ms)"
       },
       "handy_connection_key": {
         "description": "Handy Verbindungsschlüssel für interaktive Szenen.",
         "heading": "Handy Verbindungsschlüssel"
+      },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "description": "Speichere eilig erstellte Bild-Thumbnails ab",
+            "heading": "Speichere Bild-Thumbnails"
+          }
+        }
       },
       "language": {
         "heading": "Sprache"
@@ -372,6 +408,14 @@
       "menu_items": {
         "description": "Anzeigen oder Ausblenden verschiedener Inhaltstypen in der Navigationsleiste",
         "heading": "Menüpunkte"
+      },
+      "performers": {
+        "options": {
+          "image_location": {
+            "description": "Benutzerdefinierter Pfad zu den standardmäßigen Darstellerbildern. Leer lassen, um mitgelieferte Darstellerbilder zu verwenden",
+            "heading": "Benutzerdefinierter Pfad zu Darstellerbildern"
+          }
+        }
       },
       "preview_type": {
         "description": "Konfiguration für Szenenwand",
