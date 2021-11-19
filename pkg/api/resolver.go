@@ -7,13 +7,22 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scraper"
 )
 
 var (
+	// ErrNotImplemented is an error which means the given functionality isn't implemented by the API.
 	ErrNotImplemented = errors.New("not implemented")
-	ErrNotSupported   = errors.New("not supported")
+
+	// ErrNotSupported is returned whenever there's a test, which can be used to guard against the error,
+	// but the given parameters aren't supported by the system.
+	ErrNotSupported = errors.New("not supported")
+
+	// ErrInput signifies errors where the input isn't valid for some reason. And no more specific error exists.
+	ErrInput = errors.New("input error")
 )
 
 type hookExecutor interface {
@@ -23,6 +32,10 @@ type hookExecutor interface {
 type Resolver struct {
 	txnManager   models.TransactionManager
 	hookExecutor hookExecutor
+}
+
+func (r *Resolver) scraperCache() *scraper.Cache {
+	return manager.GetInstance().ScraperCache
 }
 
 func (r *Resolver) Gallery() models.GalleryResolver {
