@@ -97,40 +97,11 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.Scr
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
+func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	scraper := s.getJsonScraper()
 
 	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
-	}
-
-	const placeholder = "{}"
-
-	// replace the placeholder string with the URL-escaped name
-	escapedName := url.QueryEscape(name)
-
-	url := s.scraper.QueryURL
-	url = strings.ReplaceAll(url, placeholder, escapedName)
-
-	doc, err := s.loadURL(context.TODO(), url)
-
-	if err != nil {
-		return nil, err
-	}
-
-	q := s.getJsonQuery(doc)
-	return scraper.scrapePerformers(q)
-}
-
-func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
-}
-
-func (s *jsonScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+		return nil, fmt.Errorf("%w: name %v", ErrNotFound, s.scraper.Scraper)
 	}
 
 	const placeholder = "{}"
@@ -148,7 +119,38 @@ func (s *jsonScraper) scrapeScenesByName(ctx context.Context, name string) ([]*m
 	}
 
 	q := s.getJsonQuery(doc)
-	return scraper.scrapeScenes(q)
+
+	var content []models.ScrapedContent
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		performers, err := scraper.scrapePerformers(q)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, p := range performers {
+			content = append(content, p)
+		}
+
+		return content, nil
+	case models.ScrapeContentTypeScene:
+		scenes, err := scraper.scrapeScenes(q)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, s := range scenes {
+			content = append(content, s)
+		}
+
+		return content, nil
+	}
+
+	return nil, ErrNotSupported
+}
+
+func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
 }
 
 func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {

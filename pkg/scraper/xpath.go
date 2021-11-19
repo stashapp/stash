@@ -78,11 +78,11 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.Sc
 	return nil, ErrNotSupported
 }
 
-func (s *xpathScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
+func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	scraper := s.getXpathScraper()
 
 	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+		return nil, fmt.Errorf("%w: name %v", ErrNotFound, s.scraper.Scraper)
 	}
 
 	const placeholder = "{}"
@@ -100,36 +100,36 @@ func (s *xpathScraper) scrapePerformersByName(ctx context.Context, name string) 
 	}
 
 	q := s.getXPathQuery(doc)
-	return scraper.scrapePerformers(q)
+
+	var content []models.ScrapedContent
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		performers, err := scraper.scrapePerformers(q)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range performers {
+			content = append(content, p)
+		}
+
+		return content, nil
+	case models.ScrapeContentTypeScene:
+		scenes, err := scraper.scrapeScenes(q)
+		if err != nil {
+			return nil, err
+		}
+		for _, s := range scenes {
+			content = append(content, s)
+		}
+
+		return content, nil
+	}
+
+	return nil, ErrNotSupported
 }
 
 func (s *xpathScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	return nil, errors.New("scrapePerformerByFragment not supported for xpath scraper")
-}
-
-func (s *xpathScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
-	}
-
-	const placeholder = "{}"
-
-	// replace the placeholder string with the URL-escaped name
-	escapedName := url.QueryEscape(name)
-
-	url := s.scraper.QueryURL
-	url = strings.ReplaceAll(url, placeholder, escapedName)
-
-	doc, err := s.loadURL(ctx, url)
-
-	if err != nil {
-		return nil, err
-	}
-
-	q := s.getXPathQuery(doc)
-	return scraper.scrapeScenes(q)
 }
 
 func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {

@@ -133,30 +133,14 @@ func (g group) viaName(ctx context.Context, client *http.Client, name string, ty
 		}
 
 		s := g.config.getScraper(*g.config.PerformerByName, client, g.txnManager, g.globalConf)
-		performers, err := s.scrapePerformersByName(ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		content := make([]models.ScrapedContent, len(performers))
-		for i := range performers {
-			content[i] = performers[i]
-		}
-		return content, nil
+		return s.scrapeByName(ctx, name, ty)
 	case models.ScrapeContentTypeScene:
 		if g.config.SceneByName == nil {
 			break
 		}
 
 		s := g.config.getScraper(*g.config.SceneByName, client, g.txnManager, g.globalConf)
-		scenes, err := s.scrapeScenesByName(ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		content := make([]models.ScrapedContent, len(scenes))
-		for i := range scenes {
-			content[i] = scenes[i]
-		}
-		return content, nil
+		return s.scrapeByName(ctx, name, ty)
 	}
 
 	return nil, fmt.Errorf("%w: cannot load %v by name", ErrNotSupported, ty)

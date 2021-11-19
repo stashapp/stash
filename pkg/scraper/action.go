@@ -26,11 +26,10 @@ func (e scraperAction) IsValid() bool {
 
 type scraperActionImpl interface {
 	scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
+	scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
 
-	scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error)
 	scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 
-	scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error)
 	scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error)
 	scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
 

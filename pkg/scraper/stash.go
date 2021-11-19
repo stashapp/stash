@@ -54,37 +54,6 @@ type stashFindPerformerNamesResultType struct {
 	Performers []*stashFindPerformerNamePerformer `graphql:"performers"`
 }
 
-func (s *stashScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
-	client := s.getStashClient()
-
-	var q struct {
-		FindPerformers stashFindPerformerNamesResultType `graphql:"findPerformers(filter: $f)"`
-	}
-
-	page := 1
-	perPage := 10
-
-	vars := map[string]interface{}{
-		"f": models.FindFilterType{
-			Q:       &name,
-			Page:    &page,
-			PerPage: &perPage,
-		},
-	}
-
-	err := client.Query(ctx, &q, vars)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.ScrapedPerformer
-	for _, p := range q.FindPerformers.Performers {
-		ret = append(ret, p.toPerformer())
-	}
-
-	return ret, nil
-}
-
 // need a separate for scraped stash performers - does not include remote_site_id or image
 type scrapedTagStash struct {
 	Name string `graphql:"name" json:"name"`
@@ -175,12 +144,8 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(scene *scrapedSceneStash)
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	client := s.getStashClient()
-
-	var q struct {
-		FindScenes stashFindSceneNamesResultType `graphql:"findScenes(filter: $f)"`
-	}
 
 	page := 1
 	perPage := 10
@@ -193,21 +158,45 @@ func (s *stashScraper) scrapeScenesByName(ctx context.Context, name string) ([]*
 		},
 	}
 
-	err := client.Query(ctx, &q, vars)
-	if err != nil {
-		return nil, err
-	}
+	var ret []models.ScrapedContent
+	switch ty {
+	case models.ScrapeContentTypeScene:
+		var q struct {
+			FindScenes stashFindSceneNamesResultType `graphql:"findScenes(filter: $f)"`
+		}
 
-	var ret []*models.ScrapedScene
-	for _, scene := range q.FindScenes.Scenes {
-		converted, err := s.scrapedStashSceneToScrapedScene(scene)
+		err := client.Query(ctx, &q, vars)
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, converted)
+
+		for _, scene := range q.FindScenes.Scenes {
+			converted, err := s.scrapedStashSceneToScrapedScene(scene)
+			if err != nil {
+				return nil, err
+			}
+			ret = append(ret, converted)
+		}
+
+		return ret, nil
+	case models.ScrapeContentTypePerformer:
+		var q struct {
+			FindPerformers stashFindPerformerNamesResultType `graphql:"findPerformers(filter: $f)"`
+		}
+
+		err := client.Query(ctx, &q, vars)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, p := range q.FindPerformers.Performers {
+			ret = append(ret, p.toPerformer())
+		}
+
+		return ret, nil
 	}
 
-	return ret, nil
+	return nil, ErrNotSupported
 }
 
 type scrapedSceneStash struct {

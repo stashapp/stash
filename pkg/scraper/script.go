@@ -90,19 +90,30 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	return nil
 }
 
-func (s *scriptScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
-	inString := `{"name": "` + name + `"}`
+func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+	input := `{"name": "` + name + `"}`
 
-	var performers []models.ScrapedPerformer
-
-	err := s.runScraperScript(inString, &performers)
-
-	// convert to pointers
-	var ret []*models.ScrapedPerformer
-	if err == nil {
-		for i := 0; i < len(performers); i++ {
-			ret = append(ret, &performers[i])
+	var ret []models.ScrapedContent
+	var err error
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		var performers []models.ScrapedPerformer
+		err = s.runScraperScript(input, &performers)
+		if err == nil {
+			for _, p := range performers {
+				ret = append(ret, &p)
+			}
 		}
+	case models.ScrapeContentTypeScene:
+		var scenes []models.ScrapedScene
+		err = s.runScraperScript(input, &scenes)
+		if err == nil {
+			for _, s := range scenes {
+				ret = append(ret, &s)
+			}
+		}
+	default:
+		return nil, ErrNotSupported
 	}
 
 	return ret, err
@@ -159,24 +170,6 @@ func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sc
 	err = s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
-}
-
-func (s *scriptScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
-	inString := `{"name": "` + name + `"}`
-
-	var scenes []models.ScrapedScene
-
-	err := s.runScraperScript(inString, &scenes)
-
-	// convert to pointers
-	var ret []*models.ScrapedScene
-	if err == nil {
-		for i := 0; i < len(scenes); i++ {
-			ret = append(ret, &scenes[i])
-		}
-	}
-
-	return ret, err
 }
 
 func (s *scriptScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
