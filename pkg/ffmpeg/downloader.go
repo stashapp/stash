@@ -45,7 +45,7 @@ func Download(ctx context.Context, configDirectory string) error {
 		}
 	}
 
-	//validate that the urls contained what we needed
+	// validate that the urls contained what we needed
 	executables := []string{"ffmpeg", "ffprobe"}
 	for _, executable := range executables {
 		_, err := os.Stat(filepath.Join(configDirectory, executable))
@@ -126,7 +126,6 @@ func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 
 	logger.Info("Downloading complete")
 
-	//not all files may end in .zip
 	if resp.Header.Get("Content-Type") == "application/zip" {
 		logger.Infof("Unzipping %s...", archivePath)
 		if err := unzip(archivePath, configDirectory); err != nil {
