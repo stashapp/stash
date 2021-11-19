@@ -44,6 +44,15 @@ func Download(ctx context.Context, configDirectory string) error {
 			return err
 		}
 	}
+
+	//validate that the urls contained what we needed
+	executables := []string{"ffmpeg", "ffprobe"}
+	for _, executable := range executables {
+		_, err := os.Stat(filepath.Join(configDirectory, executable))
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -76,7 +85,6 @@ func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 	}
 
 	// Configure where we want to download the archive
-	urlExt := path.Ext(url)
 	urlBase := path.Base(url)
 	archivePath := filepath.Join(configDirectory, urlBase)
 	_ = os.Remove(archivePath) // remove archive if it already exists
@@ -118,7 +126,8 @@ func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 
 	logger.Info("Downloading complete")
 
-	if urlExt == ".zip" {
+	//not all files may end in .zip
+	if resp.Header.Get("Content-Type") == "application/zip" {
 		logger.Infof("Unzipping %s...", archivePath)
 		if err := unzip(archivePath, configDirectory); err != nil {
 			return err
@@ -126,20 +135,24 @@ func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 
 		// On OSX or Linux set downloaded files permissions
 		if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
-			if err := os.Chmod(filepath.Join(configDirectory, "ffmpeg"), 0755); err != nil {
-				return err
+			_, err = os.Stat(filepath.Join(configDirectory, "ffmpeg"))
+			if !os.IsNotExist(err) {
+				if err = os.Chmod(filepath.Join(configDirectory, "ffmpeg"), 0755); err != nil {
+					return err
+				}
 			}
 
-			if err := os.Chmod(filepath.Join(configDirectory, "ffprobe"), 0755); err != nil {
-				return err
+			_, err = os.Stat(filepath.Join(configDirectory, "ffprobe"))
+			if !os.IsNotExist(err) {
+				if err := os.Chmod(filepath.Join(configDirectory, "ffprobe"), 0755); err != nil {
+					return err
+				}
 			}
 
 			// TODO: In future possible clear xattr to allow running on osx without user intervention
 			// TODO: this however may not be required.
 			// xattr -c /path/to/binary -- xattr.Remove(path, "com.apple.quarantine")
 		}
-
-		logger.Infof("ffmpeg and ffprobe successfully installed in %s", configDirectory)
 
 	} else {
 		return fmt.Errorf("ffmpeg was downloaded to %s", archivePath)
@@ -152,7 +165,7 @@ func getFFMPEGURL() []string {
 	var urls []string
 	switch runtime.GOOS {
 	case "darwin":
-		urls = []string{"https://evermeet.cx/ffmpeg/ffmpeg-4.3.1.zip", "https://evermeet.cx/ffmpeg/ffprobe-4.3.1.zip"}
+		urls = []string{"https://evermeet.cx/ffmpeg/getrelease/zip", "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip"}
 	case "linux":
 		switch runtime.GOARCH {
 		case "amd64":
