@@ -122,14 +122,29 @@ func (s *scriptScraper) scrapePerformerByFragment(scrapedPerformer models.Scrape
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
-	inString := `{"url": "` + url + `"}`
+func (s *scriptScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+	input := `{"url": "` + url + `"}`
 
-	var ret models.ScrapedPerformer
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		var performer models.ScrapedPerformer
+		err := s.runScraperScript(input, &performer)
+		return &performer, err
+	case models.ScrapeContentTypeGallery:
+		var gallery models.ScrapedGallery
+		err := s.runScraperScript(input, &gallery)
+		return &gallery, err
+	case models.ScrapeContentTypeScene:
+		var scene models.ScrapedScene
+		err := s.runScraperScript(input, &scene)
+		return &scene, err
+	case models.ScrapeContentTypeMovie:
+		var movie models.ScrapedMovie
+		err := s.runScraperScript(input, &movie)
+		return &movie, err
+	}
 
-	err := s.runScraperScript(string(inString), &ret)
-
-	return &ret, err
+	return nil, ErrNotSupported
 }
 
 func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
@@ -202,36 +217,6 @@ func (s *scriptScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInp
 	var ret models.ScrapedGallery
 
 	err = s.runScraperScript(string(inString), &ret)
-
-	return &ret, err
-}
-
-func (s *scriptScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	inString := `{"url": "` + url + `"}`
-
-	var ret models.ScrapedScene
-
-	err := s.runScraperScript(string(inString), &ret)
-
-	return &ret, err
-}
-
-func (s *scriptScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	inString := `{"url": "` + url + `"}`
-
-	var ret models.ScrapedGallery
-
-	err := s.runScraperScript(string(inString), &ret)
-
-	return &ret, err
-}
-
-func (s *scriptScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	inString := `{"url": "` + url + `"}`
-
-	var ret models.ScrapedMovie
-
-	err := s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
 }

@@ -106,27 +106,12 @@ func loadUrlCandidates(c config, ty models.ScrapeContentType) []*scrapeByURLConf
 	panic("loadUrlCandidates: unreachable")
 }
 
-func scrapeByUrl(ctx context.Context, url string, s scraperActionImpl, ty models.ScrapeContentType) (models.ScrapedContent, error) {
-	switch ty {
-	case models.ScrapeContentTypePerformer:
-		return s.scrapePerformerByURL(ctx, url)
-	case models.ScrapeContentTypeScene:
-		return s.scrapeSceneByURL(ctx, url)
-	case models.ScrapeContentTypeMovie:
-		return s.scrapeMovieByURL(ctx, url)
-	case models.ScrapeContentTypeGallery:
-		return s.scrapeGalleryByURL(ctx, url)
-	}
-
-	panic("scrapeByUrl: unreachable")
-}
-
 func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
 			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.txnManager, g.globalConf)
-			ret, err := scrapeByUrl(ctx, url, s, ty)
+			ret, err := s.scrapeByURL(ctx, url, ty)
 			if err != nil {
 				return nil, err
 			}

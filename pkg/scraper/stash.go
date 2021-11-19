@@ -313,20 +313,8 @@ func (s *stashScraper) scrapeGalleryByFragment(scene models.ScrapedGalleryInput)
 	return nil, errors.New("scrapeGalleryByFragment not supported for stash scraper")
 }
 
-func (s *stashScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
-	return nil, errors.New("scrapePerformerByURL not supported for stash scraper")
-}
-
-func (s *stashScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	return nil, errors.New("scrapeSceneByURL not supported for stash scraper")
-}
-
-func (s *stashScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	return nil, errors.New("scrapeGalleryByURL not supported for stash scraper")
-}
-
-func (s *stashScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	return nil, errors.New("scrapeMovieByURL not supported for stash scraper")
+func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ models.ScrapeContentType) (models.ScrapedContent, error) {
+	return nil, ErrNotSupported
 }
 
 func getScene(sceneID int, txnManager models.TransactionManager) (*models.Scene, error) {

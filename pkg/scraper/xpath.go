@@ -56,7 +56,7 @@ func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, *
 	return doc, scraper, nil
 }
 
-func (s *xpathScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
+func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
 	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
@@ -64,40 +64,18 @@ func (s *xpathScraper) scrapePerformerByURL(ctx context.Context, url string) (*m
 	}
 
 	q := s.getXPathQuery(doc)
-	return scraper.scrapePerformer(q)
-}
-
-func (s *xpathScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for scene by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
-	if err != nil {
-		return nil, err
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		return scraper.scrapePerformer(q)
+	case models.ScrapeContentTypeScene:
+		return scraper.scrapeScene(q)
+	case models.ScrapeContentTypeGallery:
+		return scraper.scrapeGallery(q)
+	case models.ScrapeContentTypeMovie:
+		return scraper.scrapeMovie(q)
 	}
 
-	q := s.getXPathQuery(doc)
-	return scraper.scrapeScene(q)
-}
-
-func (s *xpathScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for gallery by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
-	if err != nil {
-		return nil, err
-	}
-
-	q := s.getXPathQuery(doc)
-	return scraper.scrapeGallery(q)
-}
-
-func (s *xpathScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for movie by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
-	if err != nil {
-		return nil, err
-	}
-
-	q := s.getXPathQuery(doc)
-	return scraper.scrapeMovie(q)
+	return nil, ErrNotSupported
 }
 
 func (s *xpathScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {

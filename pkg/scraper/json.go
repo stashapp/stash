@@ -75,48 +75,26 @@ func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
 	return docStr, err
 }
 
-func (s *jsonScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
+func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+	u := replaceURL(url, s.scraper) // allow a URL Replace for url-queries
 	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
 
 	q := s.getJsonQuery(doc)
-	return scraper.scrapePerformer(q)
-}
-
-func (s *jsonScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for scene by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
-	if err != nil {
-		return nil, err
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		return scraper.scrapePerformer(q)
+	case models.ScrapeContentTypeScene:
+		return scraper.scrapeScene(q)
+	case models.ScrapeContentTypeGallery:
+		return scraper.scrapeGallery(q)
+	case models.ScrapeContentTypeMovie:
+		return scraper.scrapeMovie(q)
 	}
 
-	q := s.getJsonQuery(doc)
-	return scraper.scrapeScene(q)
-}
-
-func (s *jsonScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for gallery by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
-	if err != nil {
-		return nil, err
-	}
-
-	q := s.getJsonQuery(doc)
-	return scraper.scrapeGallery(q)
-}
-
-func (s *jsonScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for movie by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
-	if err != nil {
-		return nil, err
-	}
-
-	q := s.getJsonQuery(doc)
-	return scraper.scrapeMovie(q)
+	return nil, ErrNotSupported
 }
 
 func (s *jsonScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
