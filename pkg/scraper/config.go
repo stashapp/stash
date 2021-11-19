@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/yaml.v2"
 )
 
@@ -232,55 +233,118 @@ func loadConfigFromYAMLFile(path string) (*config, error) {
 	return ret, nil
 }
 
-func (c config) supportsPerformers() bool {
-	return c.PerformerByName != nil || c.PerformerByFragment != nil || len(c.PerformerByURL) > 0
-}
+func (c config) spec() models.Scraper {
+	ret := models.Scraper{
+		ID:   c.ID,
+		Name: c.Name,
+	}
 
-func (c config) matchesPerformerURL(url string) bool {
-	for _, scraper := range c.PerformerByURL {
-		if scraper.matchesURL(url) {
-			return true
+	performer := models.ScraperSpec{}
+	if c.PerformerByName != nil {
+		performer.SupportedScrapes = append(performer.SupportedScrapes, models.ScrapeTypeName)
+	}
+	if c.PerformerByFragment != nil {
+		performer.SupportedScrapes = append(performer.SupportedScrapes, models.ScrapeTypeFragment)
+	}
+	if len(c.PerformerByURL) > 0 {
+		performer.SupportedScrapes = append(performer.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.PerformerByURL {
+			performer.Urls = append(performer.Urls, v.URL...)
 		}
 	}
 
-	return false
-}
+	if len(performer.SupportedScrapes) > 0 {
+		ret.Performer = &performer
+	}
 
-func (c config) supportsScenes() bool {
-	return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
-}
-
-func (c config) supportsGalleries() bool {
-	return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
-}
-
-func (c config) matchesSceneURL(url string) bool {
-	for _, scraper := range c.SceneByURL {
-		if scraper.matchesURL(url) {
-			return true
+	scene := models.ScraperSpec{}
+	if c.SceneByFragment != nil {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeFragment)
+	}
+	if c.SceneByName != nil && c.SceneByQueryFragment != nil {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeName)
+	}
+	if len(c.SceneByURL) > 0 {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.SceneByURL {
+			scene.Urls = append(scene.Urls, v.URL...)
 		}
 	}
 
-	return false
-}
+	if len(scene.SupportedScrapes) > 0 {
+		ret.Scene = &scene
+	}
 
-func (c config) matchesGalleryURL(url string) bool {
-	for _, scraper := range c.GalleryByURL {
-		if scraper.matchesURL(url) {
-			return true
+	gallery := models.ScraperSpec{}
+	if c.GalleryByFragment != nil {
+		gallery.SupportedScrapes = append(gallery.SupportedScrapes, models.ScrapeTypeFragment)
+	}
+	if len(c.GalleryByURL) > 0 {
+		gallery.SupportedScrapes = append(gallery.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.GalleryByURL {
+			gallery.Urls = append(gallery.Urls, v.URL...)
 		}
 	}
-	return false
+
+	if len(gallery.SupportedScrapes) > 0 {
+		ret.Gallery = &gallery
+	}
+
+	movie := models.ScraperSpec{}
+	if len(c.MovieByURL) > 0 {
+		movie.SupportedScrapes = append(movie.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.MovieByURL {
+			movie.Urls = append(movie.Urls, v.URL...)
+		}
+	}
+
+	if len(movie.SupportedScrapes) > 0 {
+		ret.Movie = &movie
+	}
+
+	return ret
 }
 
-func (c config) supportsMovies() bool {
-	return len(c.MovieByURL) > 0
+func (c config) supports(ty models.ScrapeContentType) bool {
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		return c.PerformerByName != nil || c.PerformerByFragment != nil || len(c.PerformerByURL) > 0
+	case models.ScrapeContentTypeScene:
+		return (c.SceneByName != nil && c.SceneByQueryFragment != nil) || c.SceneByFragment != nil || len(c.SceneByURL) > 0
+	case models.ScrapeContentTypeGallery:
+		return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
+	case models.ScrapeContentTypeMovie:
+		return len(c.MovieByURL) > 0
+	}
+
+	panic("Unhandled ScrapeContentType")
 }
 
-func (c config) matchesMovieURL(url string) bool {
-	for _, scraper := range c.MovieByURL {
-		if scraper.matchesURL(url) {
-			return true
+func (c config) matchesURL(url string, ty models.ScrapeContentType) bool {
+	switch ty {
+	case models.ScrapeContentTypePerformer:
+		for _, scraper := range c.PerformerByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
+	case models.ScrapeContentTypeScene:
+		for _, scraper := range c.SceneByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
+	case models.ScrapeContentTypeGallery:
+		for _, scraper := range c.GalleryByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
+		}
+	case models.ScrapeContentTypeMovie:
+		for _, scraper := range c.MovieByURL {
+			if scraper.matchesURL(url) {
+				return true
+			}
 		}
 	}
 

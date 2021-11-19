@@ -79,7 +79,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
           previewExcludeEnd,
         },
       });
-      Toast.success({ content: "Started generating" });
+      Toast.success({
+        content: intl.formatMessage({ id: "toast.started_generating" }),
+      });
     } catch (e) {
       Toast.error(e);
     } finally {

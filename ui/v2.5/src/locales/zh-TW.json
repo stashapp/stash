@@ -95,7 +95,8 @@
     "identify": "辨認",
     "save_delete_settings": "當刪除項目時，使用下列設定",
     "use_default": "使用預設選項",
-    "ignore": "忽略"
+    "ignore": "忽略",
+    "continue": "繼續"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -390,7 +391,15 @@
       "scene_player": {
         "heading": "短片播放器",
         "options": {
-          "auto_start_video": "自動播放"
+          "auto_start_video": "自動播放",
+          "auto_start_video_on_play_selected": {
+            "description": "開啟所選短片或隨機播放時，自動開始播放影片",
+            "heading": "自動播放所選短片"
+          },
+          "continue_playlist_default": {
+            "description": "當影片播放完畢時，自動跳至下一個短片",
+            "heading": "持續播放播放清單"
+          }
         }
       },
       "scene_wall": {
@@ -439,6 +448,11 @@
         },
         "description": "刪除圖片、圖庫、及短片時的預設設定",
         "heading": "刪除選項"
+      },
+      "desktop_integration": {
+        "desktop_integration": "桌面整合",
+        "skip_opening_browser": "關閉瀏覽器自動開啟",
+        "skip_opening_browser_on_startup": "伺服器啟動時，不要自動開啟瀏覽器"
       }
     },
     "plugins": {
@@ -693,16 +707,18 @@
   "toast": {
     "added_entity": "已新增{singularEntity}",
     "added_generation_job_to_queue": "已將『生成作業』加入至工作排程",
+    "default_filter_set": "已設定預設過濾選項",
     "delete_entity": "刪除{singularEntity}",
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
-    "rescanning_entity": "重新掃描{singularEntity}中…",
-    "started_auto_tagging": "已將『自動套用標籤』加入至工作排程",
-    "updated_entity": "已更新{entity}",
     "merged_tags": "已合併的標籤",
-    "create_entity": "已建立 {entity}",
-    "default_filter_set": "已設定預設過濾選項",
-    "saved_entity": "已儲存 {entity}"
+    "rescanning_entity": "重新掃描{singularEntity}中…",
+    "saved_entity": "已儲存{entity}",
+    "started_auto_tagging": "自動套用標籤中…",
+    "started_generating": "生成檔案中…",
+    "started_importing": "匯入中…",
+    "updated_entity": "已更新{entity}",
+    "created_entity": "已建立{entity}"
   },
   "total": "總計",
   "up-dir": "往上一層",
@@ -768,7 +784,8 @@
       "database_filename_empty_for_default": "資料庫檔案名稱（留空以使用預設）",
       "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其生成內容？",
       "where_can_stash_store_its_generated_content_description": "為提供縮略圖、預覽和其他預覽資料，Stash 將自動生成圖片和影片資訊。這包括不支援的檔案格式之轉碼。預設情況下，Stash 將在包含您設定檔案的資料夾中建立一個新的 <code>generated</code> 資料夾。如果要更改此生成媒體的儲存位置，請在此輸入絕對或相對路徑（相對於當前工作目錄）。如果該資料夾不存在，Stash 將自動建立此目錄。",
-      "path_to_generated_directory_empty_for_default": "生成媒體資料夾路徑（留空以使用預設）"
+      "path_to_generated_directory_empty_for_default": "生成媒體資料夾路徑（留空以使用預設）",
+      "stash_alert": "您尚未選取任何路徑，Stash 將無法掃描你的檔案。你確定要繼續嗎？"
     },
     "confirm": {
       "almost_ready": "我們快要設定完了，請確認以下設定是否正確。若有任何不正確的內容，您可以回上一步進行修改。若一切看起來正確，請點選下方的「確認」按鈕以完成設定。",

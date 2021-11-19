@@ -610,6 +610,16 @@ func (qb *performerQueryBuilder) UpdateStashIDs(performerID int, stashIDs []mode
 	return qb.stashIDRepository().replace(performerID, stashIDs)
 }
 
+func (qb *performerQueryBuilder) FindByStashID(stashID models.StashID) ([]*models.Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
+		WHERE performer_stash_ids.stash_id = ?
+		AND performer_stash_ids.endpoint = ?
+	`
+	args := []interface{}{stashID.StashID, stashID.Endpoint}
+	return qb.queryPerformers(query, args)
+}
+
 func (qb *performerQueryBuilder) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
 	query := selectAll("performers") + `
 		LEFT JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
