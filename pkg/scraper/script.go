@@ -101,7 +101,8 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models
 		err = s.runScraperScript(input, &performers)
 		if err == nil {
 			for _, p := range performers {
-				ret = append(ret, &p)
+				v := p
+				ret = append(ret, &v)
 			}
 		}
 	case models.ScrapeContentTypeScene:
@@ -109,7 +110,8 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models
 		err = s.runScraperScript(input, &scenes)
 		if err == nil {
 			for _, s := range scenes {
-				ret = append(ret, &s)
+				v := s
+				ret = append(ret, &v)
 			}
 		}
 	default:
