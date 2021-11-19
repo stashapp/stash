@@ -107,7 +107,7 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (model
 		"f": performerID,
 	}
 
-	err := client.Query(context.TODO(), &q, vars)
+	err := client.Query(ctx, &q, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (model
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashPerformerImage(context.TODO(), s.config.StashServer.URL, performerID, s.client, s.globalConfig)
+	ret.Image, err = getStashPerformerImage(ctx, s.config.StashServer.URL, performerID, s.client, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ type stashFindSceneNamesResultType struct {
 	Scenes []*scrapedSceneStash `graphql:"scenes"`
 }
 
-func (s *stashScraper) scrapedStashSceneToScrapedScene(scene *scrapedSceneStash) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*models.ScrapedScene, error) {
 	ret := models.ScrapedScene{}
 	err := copier.Copy(&ret, scene)
 	if err != nil {
@@ -146,7 +146,7 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(scene *scrapedSceneStash)
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashSceneImage(context.TODO(), s.config.StashServer.URL, scene.ID, s.client, s.globalConfig)
+	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, scene.ID, s.client, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty models.
 		}
 
 		for _, scene := range q.FindScenes.Scenes {
-			converted, err := s.scrapedStashSceneToScrapedScene(scene)
+			converted, err := s.scrapedStashSceneToScrapedScene(ctx, scene)
 			if err != nil {
 				return nil, err
 			}
@@ -247,13 +247,13 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	}
 
 	// need to copy back to a scraped scene
-	ret, err := s.scrapedStashSceneToScrapedScene(q.FindScene)
+	ret, err := s.scrapedStashSceneToScrapedScene(ctx, q.FindScene)
 	if err != nil {
 		return nil, err
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashSceneImage(context.TODO(), s.config.StashServer.URL, q.FindScene.ID, s.client, s.globalConfig)
+	ret.Image, err = getStashSceneImage(ctx, s.config.StashServer.URL, q.FindScene.ID, s.client, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -308,9 +308,9 @@ func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ models.ScrapeC
 	return nil, ErrNotSupported
 }
 
-func getScene(sceneID int, txnManager models.TransactionManager) (*models.Scene, error) {
+func getScene(ctx context.Context, sceneID int, txnManager models.TransactionManager) (*models.Scene, error) {
 	var ret *models.Scene
-	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Scene().Find(sceneID)
 		return err
@@ -346,9 +346,9 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 	}
 }
 
-func getGallery(galleryID int, txnManager models.TransactionManager) (*models.Gallery, error) {
+func getGallery(ctx context.Context, galleryID int, txnManager models.TransactionManager) (*models.Gallery, error) {
 	var ret *models.Gallery
-	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Gallery().Find(galleryID)
 		return err
