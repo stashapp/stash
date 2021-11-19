@@ -23,8 +23,9 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
-	"github.com/pkg/browser"
+
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -250,22 +251,17 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			displayAddress = "http://" + displayAddress + "/"
 		}
 
-		// This can be done before actually starting the server, as modern browsers will
-		// automatically reload the page if a local port is closed at page load and then opened.
-		if !c.GetNoBrowser() && manager.GetInstance().IsDesktop() {
-			err = browser.OpenURL(displayAddress)
-			if err != nil {
-				logger.Error("Could not open browser: " + err.Error())
+		go func() {
+			if tlsConfig != nil {
+				logger.Infof("stash is running at " + displayAddress)
+				logger.Error(server.ListenAndServeTLS("", ""))
+			} else {
+				logger.Infof("stash is running at " + displayAddress)
+				logger.Error(server.ListenAndServe())
 			}
-		}
+		}()
 
-		if tlsConfig != nil {
-			logger.Infof("stash is running at " + displayAddress)
-			logger.Error(server.ListenAndServeTLS("", ""))
-		} else {
-			logger.Infof("stash is running at " + displayAddress)
-			logger.Error(server.ListenAndServe())
-		}
+		go desktop.Initialize()
 	}()
 }
 
