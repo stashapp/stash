@@ -4,8 +4,8 @@ const hexToBinary = (hex: string) =>
     .map((i) => parseInt(i, 16).toString(2).padStart(4, "0"))
     .join("");
 
-export const distance = (a: string, b: string): number | undefined => {
-  if (a.length !== b.length) return;
+export const distance = (a: string, b: string | undefined | null): number => {
+  if (!b || a.length !== b.length) return 32;
 
   const aBinary = hexToBinary(a);
   const bBinary = hexToBinary(b);
