@@ -44,7 +44,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 
 	if t.refresh {
 		var performerID string
-		txnErr := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		txnErr := t.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			stashids, _ := r.Performer().GetStashIDs(t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
@@ -57,7 +57,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			logger.Warnf("error while executing read transaction: %v", err)
 		}
 		if performerID != "" {
-			performer, err = client.FindStashBoxPerformerByID(performerID)
+			performer, err = client.FindStashBoxPerformerByID(ctx, performerID)
 		}
 	} else {
 		var name string
@@ -66,7 +66,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		} else {
 			name = t.performer.Name.String
 		}
-		performer, err = client.FindStashBoxPerformerByName(name)
+		performer, err = client.FindStashBoxPerformerByName(ctx, name)
 	}
 
 	if err != nil {

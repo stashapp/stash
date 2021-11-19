@@ -167,7 +167,7 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	if len(input.SceneIds) > 0 {
-		return client.FindStashBoxScenesByFingerprintsFlat(input.SceneIds)
+		return client.FindStashBoxScenesByFingerprintsFlat(ctx, input.SceneIds)
 	}
 
 	if input.Q != nil {
@@ -187,11 +187,11 @@ func (r *queryResolver) QueryStashBoxPerformer(ctx context.Context, input models
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	if len(input.PerformerIds) > 0 {
-		return client.FindStashBoxPerformersByNames(input.PerformerIds)
+		return client.FindStashBoxPerformersByNames(ctx, input.PerformerIds)
 	}
 
 	if input.Q != nil {
-		return client.QueryStashBoxPerformer(*input.Q)
+		return client.QueryStashBoxPerformer(ctx, *input.Q)
 	}
 
 	return nil, nil
@@ -243,7 +243,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 		}
 
 		if input.SceneID != nil {
-			return client.FindStashBoxScenesByFingerprintsFlat([]string{*input.SceneID})
+			return client.FindStashBoxScenesByFingerprintsFlat(ctx, []string{*input.SceneID})
 		} else if input.Query != nil {
 			return client.QueryStashBoxScene(ctx, *input.Query)
 		}
@@ -263,7 +263,7 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.Scr
 			return nil, err
 		}
 
-		return client.FindStashBoxScenesByFingerprints(input.SceneIds)
+		return client.FindStashBoxScenesByFingerprints(ctx, input.SceneIds)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
@@ -299,7 +299,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		var ret []*models.StashBoxPerformerQueryResult
 		switch {
 		case input.PerformerID != nil:
-			ret, err = client.FindStashBoxPerformersByNames([]string{*input.PerformerID})
+			ret, err = client.FindStashBoxPerformersByNames(ctx, []string{*input.PerformerID})
 		case input.Query != nil:
 			ret, err = client.QueryStashBoxPerformer(*input.Query)
 		default:
@@ -329,7 +329,7 @@ func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source models
 			return nil, err
 		}
 
-		return client.FindStashBoxPerformersByPerformerNames(input.PerformerIds)
+		return client.FindStashBoxPerformersByPerformerNames(ctx, input.PerformerIds)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
