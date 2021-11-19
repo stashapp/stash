@@ -30,6 +30,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"github.com/vearutop/statigz"
 )
 
 var version string
@@ -189,12 +190,6 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 		ext := path.Ext(r.URL.Path)
 
-		// workaround for Windows systems where js files are set to plaintext in
-		// the registry.
-		if ext == ".js" {
-			w.Header().Set("Content-Type", "application/javascript")
-		}
-
 		if customUILocation != "" {
 			if r.URL.Path == "index.html" || ext == "" {
 				r.URL.Path = "/"
@@ -211,18 +206,22 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 
 			prefix := getProxyPrefix(r.Header)
-			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
-			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
+			baseURLIndex := strings.ReplaceAll(string(data), "/%BASE_URL%", prefix)
+			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 1)
 			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
+
+			prefix := getProxyPrefix(r.Header)
+			if prefix != "" {
+				r.URL.Path = strings.Replace(r.URL.Path, prefix, "", 1)
+			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
-			http.FileServer(http.FS(uiBox)).ServeHTTP(w, r)
-			// statigz.FileServer(uiBox).ServeHTTP(w, r)
+			statigz.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
 

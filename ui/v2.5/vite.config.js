@@ -4,6 +4,7 @@ import viteCompression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "",
   build: {
     outDir: 'build',
   },
@@ -15,12 +16,12 @@ export default defineConfig({
   },
   publicDir: 'public',
   assetsInclude: ['**/*.md'],
-  plugins: [tsconfigPaths()
-    // viteCompression({
-    // algorithm: 'gzip',
-    // disable: false,
-    // deleteOriginFile: true,
-    // filter: /\.(js|json|css|svg|md)$/i
-  // })
+  plugins: [tsconfigPaths(),
+    viteCompression({
+    algorithm: 'gzip',
+    disable: false,
+    deleteOriginFile: true,
+    filter: /\.(js|json|css|svg|md)$/i
+  })
 ],
 })
