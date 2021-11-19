@@ -42,20 +42,6 @@ func (g group) fragmentScraper(input Input) *scraperTypeConfig {
 	return nil
 }
 
-// scrapeFragmentInput analyzes the input and calls an appropriate scraperActionImpl
-func scrapeFragmentInput(ctx context.Context, input Input, s scraperActionImpl) (models.ScrapedContent, error) {
-	switch {
-	case input.Performer != nil:
-		return s.scrapePerformerByFragment(*input.Performer)
-	case input.Gallery != nil:
-		return s.scrapeGalleryByFragment(*input.Gallery)
-	case input.Scene != nil:
-		return s.scrapeSceneByFragment(ctx, *input.Scene)
-	}
-
-	return nil, ErrNotSupported
-}
-
 func (g group) viaFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error) {
 	stc := g.fragmentScraper(input)
 	if stc == nil {
@@ -70,7 +56,7 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 	}
 
 	s := g.config.getScraper(*stc, client, g.txnManager, g.globalConf)
-	return scrapeFragmentInput(ctx, input, s)
+	return s.scrapeByFragment(ctx, input)
 }
 
 func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {

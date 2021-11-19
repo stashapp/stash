@@ -3,7 +3,7 @@ package scraper
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -83,7 +83,17 @@ type scrapedPerformerStash struct {
 	Weight       *string            `graphql:"weight" json:"weight"`
 }
 
-func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+	if input.Gallery != nil || input.Scene != nil {
+		return nil, fmt.Errorf("%w: using stash scraper as a fragment scraper", ErrNotSupported)
+	}
+
+	if input.Performer == nil {
+		return nil, fmt.Errorf("%w: the given performer is nil", ErrNotSupported)
+	}
+
+	scrapedPerformer := input.Performer
+
 	client := s.getStashClient()
 
 	var q struct {
@@ -251,10 +261,6 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	return ret, nil
 }
 
-func (s *stashScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
-	return nil, errors.New("scrapeSceneByFragment not supported for stash scraper")
-}
-
 type scrapedGalleryStash struct {
 	ID         string                   `graphql:"id" json:"id"`
 	Title      *string                  `graphql:"title" json:"title"`
@@ -296,10 +302,6 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 
 	return &ret, nil
-}
-
-func (s *stashScraper) scrapeGalleryByFragment(scene models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
-	return nil, errors.New("scrapeGalleryByFragment not supported for stash scraper")
 }
 
 func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ models.ScrapeContentType) (models.ScrapedContent, error) {

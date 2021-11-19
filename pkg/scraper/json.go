@@ -149,10 +149,6 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
-}
-
 func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
@@ -177,7 +173,18 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 	return scraper.scrapeScene(q)
 }
 
-func (s *jsonScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+	switch {
+	case input.Gallery != nil:
+		return nil, fmt.Errorf("%w: cannot use a json scraper as a gallery fragment scraper", ErrNotSupported)
+	case input.Performer != nil:
+		return nil, fmt.Errorf("%w: cannot use a json scraper as a performer fragment scraper", ErrNotSupported)
+	case input.Scene == nil:
+		return nil, fmt.Errorf("%w: scene input is nil", ErrNotSupported)
+	}
+
+	scene := *input.Scene
+
 	// construct the URL
 	queryURL := queryURLParametersFromScrapedScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -223,10 +230,6 @@ func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *model
 
 	q := s.getJsonQuery(doc)
 	return scraper.scrapeGallery(q)
-}
-
-func (s *jsonScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error) {
-	return nil, errors.New("scrapeGalleryByFragment not supported for json scraper")
 }
 
 func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {
