@@ -66,13 +66,13 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.Sc
 	q := s.getXPathQuery(doc)
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		return scraper.scrapePerformer(q)
+		return scraper.scrapePerformer(ctx, q)
 	case models.ScrapeContentTypeScene:
-		return scraper.scrapeScene(q)
+		return scraper.scrapeScene(ctx, q)
 	case models.ScrapeContentTypeGallery:
-		return scraper.scrapeGallery(q)
+		return scraper.scrapeGallery(ctx, q)
 	case models.ScrapeContentTypeMovie:
-		return scraper.scrapeMovie(q)
+		return scraper.scrapeMovie(ctx, q)
 	}
 
 	return nil, ErrNotSupported
@@ -104,7 +104,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 	var content []models.ScrapedContent
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		performers, err := scraper.scrapePerformers(q)
+		performers, err := scraper.scrapePerformers(ctx, q)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +114,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 
 		return content, nil
 	case models.ScrapeContentTypeScene:
-		scenes, err := scraper.scrapeScenes(q)
+		scenes, err := scraper.scrapeScenes(ctx, q)
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +149,7 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	}
 
 	q := s.getXPathQuery(doc)
-	return scraper.scrapeScene(q)
+	return scraper.scrapeScene(ctx, q)
 }
 
 func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
@@ -184,7 +184,7 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (model
 	}
 
 	q := s.getXPathQuery(doc)
-	return scraper.scrapeScene(q)
+	return scraper.scrapeScene(ctx, q)
 }
 
 func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
@@ -208,7 +208,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 
 	q := s.getXPathQuery(doc)
-	return scraper.scrapeGallery(q)
+	return scraper.scrapeGallery(ctx, q)
 }
 
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
@@ -282,8 +282,8 @@ func (q *xpathQuery) nodeText(n *html.Node) string {
 	return ret
 }
 
-func (q *xpathQuery) subScrape(value string) mappedQuery {
-	doc, err := q.scraper.loadURL(context.TODO(), value)
+func (q *xpathQuery) subScrape(ctx context.Context, value string) mappedQuery {
+	doc, err := q.scraper.loadURL(ctx, value)
 
 	if err != nil {
 		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
