@@ -301,7 +301,7 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		case input.PerformerID != nil:
 			ret, err = client.FindStashBoxPerformersByNames(ctx, []string{*input.PerformerID})
 		case input.Query != nil:
-			ret, err = client.QueryStashBoxPerformer(*input.Query)
+			ret, err = client.QueryStashBoxPerformer(ctx, *input.Query)
 		default:
 			return nil, ErrNotImplemented
 		}
