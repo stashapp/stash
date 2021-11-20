@@ -435,7 +435,11 @@
       "scene_player": {
         "heading": "Szenenplayer",
         "options": {
-          "auto_start_video": "Video automatisch starten"
+          "auto_start_video": "Video automatisch starten",
+          "continue_playlist_default": {
+            "description": "Nächste Szene in der Warteschlange spielen",
+            "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
+          }
         }
       },
       "scene_wall": {
@@ -466,7 +470,13 @@
   "country": "Land",
   "cover_image": "Titelbild",
   "created_at": "Erstellt am",
+  "criterion": {
+    "greater_than": "Größer als",
+    "less_than": "Weniger als",
+    "value": "Wert"
+  },
   "criterion_modifier": {
+    "between": "zwischen",
     "equals": "ist",
     "excludes": "schließt aus",
     "format_string": "{criterion} {modifierString} {valueString}",
@@ -476,10 +486,12 @@
     "is_null": "ist nichts",
     "less_than": "ist weniger als",
     "matches_regex": "stimmt mit Regex überein",
+    "not_between": "nicht zwischen",
     "not_equals": "ist nicht",
     "not_matches_regex": "stimmt nicht mit Regex überein",
     "not_null": "ist nicht nichts"
   },
+  "custom": "Benutzerdefiniert",
   "date": "Datum",
   "death_date": "Todesdatum",
   "death_year": "Todesjahr",
@@ -488,6 +500,8 @@
   "details": "Details",
   "developmentVersion": "Entwicklungsversion",
   "dialogs": {
+    "aliases_must_be_unique": "Aliase müssen einzigartig sein",
+    "delete_alert": "Folgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} werden dauerhaft gelöscht:",
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
     "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} Oder{Möchten Sie diese {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
     "delete_entity_title": "{count, plural, one {Lösche {singularEntity}} other {Lösche {pluralEntity}}}",
@@ -497,6 +511,16 @@
     "edit_entity_title": "Bearbeiten von {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Zugehörige Objekte in den Export einbeziehen",
     "export_title": "Export",
+    "lightbox": {
+      "delay": "Verzögerung (Sek)",
+      "display_mode": {
+        "fit_horizontally": "Horizontal anpassen",
+        "fit_to_screen": "Vollbild",
+        "label": "Anzeigemodus",
+        "original": "Original"
+      },
+      "options": "Optionen"
+    },
     "merge_tags": {
       "destination": "Ziel",
       "source": "Quelle"
