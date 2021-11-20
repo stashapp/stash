@@ -125,11 +125,11 @@
       "query_mode_metadata_desc": "仅使用元数据",
       "query_mode_path": "路径",
       "query_mode_path_desc": "使用文件完整路径",
-      "set_cover_desc": "找到封面时则替代原有短片的封面",
+      "set_cover_desc": "找到封面时替代原有短片的封面.",
       "set_cover_label": "设置短片封面",
       "set_tag_desc": "通过覆盖或与短片中的现有标签合并，将标签附加到短片。",
       "set_tag_label": "设置标签",
-      "show_male_desc": "选择搜索时是否获取男演员信息",
+      "show_male_desc": "选择搜索时是否获取男演员信息.",
       "show_male_label": "展示男演员标签",
       "source": "源"
     },
@@ -205,12 +205,12 @@
         "maximum_session_age": "最大会话有效期",
         "maximum_session_age_desc": "无操作多久后登出, 单位为秒。",
         "password": "密码",
-        "password_desc": "登录 Stash 时所需的密码，留空表示关闭身份验证。",
+        "password_desc": "登录 Stash 时所需的密码.留空表示关闭身份验证",
         "stash-box_integration": "整合 Stash-box",
         "trusted_proxies": "可信任的代理服务器",
         "trusted_proxies_desc": "允许网络流进入stash的代理服务器列表.如留空则为允许私有网络的流入.",
         "username": "用户名",
-        "username_desc": "登录 Stash 时所需的用户名，留空表示关闭身份验证。"
+        "username_desc": "登录 Stash 时所需的用户名.留空表示关闭身份验证"
       },
       "cache_location": "缓存目录的位置",
       "cache_path_head": "缓存路径",
@@ -294,11 +294,11 @@
       "auto_tag_based_on_filenames": "根据文件名自动添加标记。",
       "auto_tagging": "自动标记",
       "backing_up_database": "自动备份数据中",
-      "backup_and_download": "备份并下载数据",
+      "backup_and_download": "备份数据库并下载其文件.",
       "backup_database": "将数据库备份到与数据库相同的目录，文件名格式为 {filename_format}",
       "cleanup_desc": "检查缺失的文件并将它们的数据从数据库中删除。 注意，这是一个破坏性的动作。",
       "dont_include_file_extension_as_part_of_the_title": "不要把扩展名作为标题的一部分",
-      "export_to_json": "将数据库中的元数据导出为 JSON 文件",
+      "export_to_json": "将数据库中元数据目录的内容导出为 JSON 文件格式.",
       "generate_desc": "生成辅助的图片，预览，片段等其他文件。",
       "generate_phashes_during_scan": "在扫描期间生成感知码 PHashes（用于重复数据删除和短片识别）",
       "generate_previews_during_scan": "在扫描期间生成片段预览（动画 WebP 预览，仅当预览类型设置为动图时才需要）",
@@ -334,7 +334,7 @@
       "only_dry_run": "仅模拟运行，不要删除任何东西",
       "plugin_tasks": "插件任务",
       "scan_for_content_desc": "扫描新内容并添加至数据库中。",
-      "set_name_date_details_from_metadata_if_present": "使用元数据的标题、日期、详细信息（如有的话）。"
+      "set_name_date_details_from_metadata_if_present": "使用元数据的标题、日期、详情(如有的话)"
     },
     "tools": {
       "scene_duplicate_checker": "短片重复性检查工具",
@@ -386,7 +386,7 @@
         "heading": "Funscript偏移量（毫秒）"
       },
       "handy_connection_key": {
-        "description": "用于互动场景的快速连接密钥",
+        "description": "用于互动场景的快速连接密钥.",
         "heading": "快速连接密钥"
       },
       "images": {
@@ -722,6 +722,8 @@
       "almost_ready": "设置就快完成，请确认以下设定。你可以点“回去”去改变任何不正确的东西，如果一切看来都好，请按“确定”去建立你的系统。",
       "configuration_file_location": "配置文件的路径:",
       "database_file_path": "数据库文件的路径",
+      "default_db_location": "<含有设置文件的路径>/stash-go.sqlite",
+      "default_generated_content_location": "<含有设置文件的路径>/generated",
       "generated_directory": "生成资料的路径",
       "nearly_there": "就快到了！",
       "stash_library_directories": "Stash库的路径"
@@ -765,7 +767,7 @@
     "success": {
       "getting_help": "得到帮助",
       "help_links": "如果你遇到麻烦或者有任何的问题或者建议，请在{githubLink}新开一个“问题”，或者寻求社群{discordLink}的帮助。",
-      "in_app_manual_explained": "鼓励你看看内置的手册，你可以通过屏幕右上方的图标:{icon}来使用它。",
+      "in_app_manual_explained": "鼓励你看看内置的手册，你可以通过屏幕右上方的图标:{icon}来使用它",
       "next_config_step_one": "接下来你会被带到配置页面。此页面会让你设定哪些文件被包括或者不包括，设定用户名和密码来保护你的系统，以及其它的一些选项。",
       "next_config_step_two": "当你对这些选项都满意后，你可以开始按下<code>{localized_task}</code>，然后按下<code>{localized_scan}</code>来开始扫描你的收藏.",
       "open_collective": "看看我们的{open_collective_link}来了解一下你可以如何对Stash的继续发展作出贡献。",
@@ -823,6 +825,8 @@
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "已经保存 {entity}",
     "started_auto_tagging": "已经开始自动生成标签",
+    "started_generating": "开始产生资料",
+    "started_importing": "开始导入中",
     "updated_entity": "已经更新 {entity}"
   },
   "total": "总共",
