@@ -436,6 +436,10 @@
         "heading": "Szenenplayer",
         "options": {
           "auto_start_video": "Video automatisch starten",
+          "auto_start_video_on_play_selected": {
+            "description": "",
+            "heading": ""
+          },
           "continue_playlist_default": {
             "description": "Nächste Szene in der Warteschlange spielen",
             "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
@@ -458,6 +462,7 @@
   },
   "configuration": "Konfiguration",
   "countables": {
+    "files": "",
     "galleries": "{count, plural, one {Galerie} other {Galerien}}",
     "images": "{count, plural, one {Bild} other {Bilder}}",
     "markers": "{count, plural, one {Markierung} other {Markierungen}}",
@@ -505,6 +510,8 @@
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
     "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} Oder{Möchten Sie diese {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
     "delete_entity_title": "{count, plural, one {Lösche {singularEntity}} other {Lösche {pluralEntity}}}",
+    "delete_galleries_extra": "",
+    "delete_gallery_files": "",
     "delete_object_desc": "Möchten Sie {count, plural, one {diese {singularEntity}} other {diese {pluralEntity}}} wirklich löschen?",
     "delete_object_overflow": "…und {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
@@ -519,7 +526,18 @@
         "label": "Anzeigemodus",
         "original": "Original"
       },
-      "options": "Optionen"
+      "options": "Optionen",
+      "reset_zoom_on_nav": "",
+      "scale_up": {
+        "description": "",
+        "label": ""
+      },
+      "scroll_mode": {
+        "description": "",
+        "label": "",
+        "pan_y": "",
+        "zoom": ""
+      }
     },
     "merge_tags": {
       "destination": "Ziel",
@@ -528,6 +546,8 @@
     "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
     "scene_gen": {
       "image_previews": "Bildvorschauen (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
+      "marker_image_previews": "",
+      "marker_screenshots": "",
       "markers": "Markierungen (20-Sekunden-Videos, die mit dem angegebenen Timecode beginnen)",
       "overwrite": "Vorhandene generierte Dateien überschreiben",
       "phash": "Perzeptuelle Hashes (zur Deduplizierung)",
@@ -546,6 +566,8 @@
       "transcodes": "Transcodes (MP4-Konvertierungen von nicht unterstützten Videoformaten)",
       "video_previews": "Vorschauen (Videovorschauen, die abgespielt werden, wenn Sie mit der Maus über eine Szene fahren)"
     },
+    "scenes_found": "",
+    "scrape_entity_query": "",
     "scrape_entity_title": "{entity_type} Scrape-Ergebnisse",
     "scrape_results_existing": "Vorhanden",
     "scrape_results_scraped": "Gescraped",
@@ -599,10 +621,12 @@
   "ethnicity": "Ethnizität",
   "eye_color": "Augenfarbe",
   "fake_tits": "Gemachte Brüste",
+  "false": "",
   "favourite": "Favorit",
   "file": "Datei",
   "file_info": "Datei",
   "file_mod_time": "Dateiänderungszeit",
+  "files": "",
   "filesize": "Dateigröße",
   "filter": "Filter",
   "filter_name": "Filtername",
@@ -646,6 +670,7 @@
     "stream": "Stream",
     "video_codec": "Video-Codec"
   },
+  "megabits_per_second": "",
   "metadata": "Metadaten",
   "movie": "Film",
   "movie_scene_number": "Filmszenennummer",
@@ -662,7 +687,11 @@
     "next": "Nächster",
     "previous": "Vorheriger"
   },
+  "parent_of": "",
   "parent_studios": "Elternstudios",
+  "parent_tag_count": "",
+  "parent_tags": "",
+  "part_of": "",
   "path": "Pfad",
   "performer": "Darsteller",
   "performerTags": "Darsteller-Tags",
@@ -690,19 +719,82 @@
   "seconds": "Sekunden",
   "settings": "Einstellungen",
   "setup": {
+    "confirm": {
+      "almost_ready": "",
+      "configuration_file_location": "",
+      "database_file_path": "",
+      "default_db_location": "",
+      "default_generated_content_location": "",
+      "generated_directory": "",
+      "nearly_there": "",
+      "stash_library_directories": ""
+    },
+    "creating": {
+      "creating_your_system": "",
+      "ffmpeg_notice": ""
+    },
+    "errors": {
+      "something_went_wrong": "",
+      "something_went_wrong_description": "",
+      "something_went_wrong_while_setting_up_your_system": ""
+    },
+    "github_repository": "",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "",
+      "backup_recommended": "",
+      "migrating_database": "",
+      "migration_failed": "",
+      "migration_failed_error": "",
+      "migration_failed_help": "",
+      "migration_irreversible_warning": "",
+      "migration_required": "",
+      "perform_schema_migration": "",
+      "schema_too_old": ""
+    },
+    "paths": {
+      "database_filename_empty_for_default": "",
+      "description": "",
+      "path_to_generated_directory_empty_for_default": "",
+      "set_up_your_paths": "",
+      "stash_alert": "",
+      "where_can_stash_store_its_database": "",
+      "where_can_stash_store_its_database_description": "",
+      "where_can_stash_store_its_generated_content": "",
+      "where_can_stash_store_its_generated_content_description": "",
+      "where_is_your_porn_located": "",
+      "where_is_your_porn_located_description": ""
+    },
+    "stash_setup_wizard": "",
     "success": {
-      "support_us": "Unterstütze uns"
+      "getting_help": "",
+      "help_links": "",
+      "in_app_manual_explained": "",
+      "next_config_step_one": "",
+      "next_config_step_two": "",
+      "open_collective": "",
+      "support_us": "Unterstütze uns",
+      "thanks_for_trying_stash": "",
+      "welcome_contrib": "",
+      "your_system_has_been_created": ""
     },
     "welcome": {
+      "config_path_logic_explained": "",
       "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>",
-      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis"
+      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis",
+      "next_step": "",
+      "store_stash_config": "",
+      "unable_to_locate_config": "",
+      "unexpected_explained": ""
     },
     "welcome_specific_config": {
-      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>"
+      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>",
+      "next_step": "",
+      "unable_to_locate_specified_config": ""
     },
     "welcome_to_stash": "Willkommen zu Stash"
   },
   "stash_id": "Stash-ID",
+  "stash_ids": "",
   "stats": {
     "image_size": "Bildgröße",
     "scenes_duration": "Szenendauer",
@@ -739,6 +831,7 @@
     "updated_entity": "{entity} aktualisiert"
   },
   "total": "Gesamt",
+  "true": "",
   "twitter": "Twitter",
   "up-dir": "Ein Verzeichnis hoch",
   "updated_at": "Aktualisiert am",
