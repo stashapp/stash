@@ -124,11 +124,6 @@
       "set_cover_label": "Zet scène omslag afbeelding"
     }
   },
-  "setup": {
-    "welcome": {
-      "store_stash_config": ""
-    }
-  },
   "true": "Waar",
   "twitter": "Twitter",
   "weight": "Gewicht",
