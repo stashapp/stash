@@ -122,35 +122,25 @@
       "query_mode_path_desc": "Gebruikt volledige bestandspad",
       "set_cover_desc": "Vervang de scène omslag als er een gevonden is.",
       "set_cover_label": "Zet scène omslag afbeelding"
-    },
-    "results": {
-      "phash_matches": ""
     }
   },
   "config": {
     "about": {
       "stash_wiki": ""
     },
-    "dlna": {
-      "recent_ip_addresses": ""
-    },
     "general": {
       "auth": {
         "maximum_session_age_desc": ""
       },
-      "create_galleries_from_folders_desc": "",
-      "hashing": "",
-      "scraper_user_agent": ""
+      "hashing": ""
     },
     "scraping": {
       "search_by_name": ""
     },
     "tasks": {
-      "cleanup_desc": "",
       "identify": {
         "field_behaviour": ""
-      },
-      "migrate_hash_files": ""
+      }
     },
     "tools": {
       "scene_filename_parser": {
@@ -158,15 +148,7 @@
       }
     },
     "ui": {
-      "editing": {
-        "disable_dropdown_create": {
-          "heading": ""
-        }
-      },
       "preview_type": {
-        "heading": ""
-      },
-      "slideshow_delay": {
         "heading": ""
       }
     }
@@ -174,47 +156,26 @@
   "criterion": {
     "less_than": ""
   },
-  "custom": "",
   "dialogs": {
     "delete_object_overflow": "",
-    "lightbox": {
-      "scroll_mode": {
-        "pan_y": ""
-      }
-    },
     "scene_gen": {
       "preview_preset_desc": ""
     }
   },
-  "dimensions": "",
   "duration": "",
-  "effect_filters": {
-    "rotate_right_and_scale": ""
-  },
   "filters": "",
-  "include_sub_tags": "",
   "media_info": {
     "stream": ""
   },
-  "pagination": {
-    "previous": ""
-  },
   "resolution": "",
   "setup": {
-    "confirm": {
-      "database_file_path": ""
-    },
     "migrate": {
       "migration_failed_error": ""
-    },
-    "paths": {
-      "where_is_your_porn_located_description": ""
     },
     "welcome": {
       "store_stash_config": ""
     }
   },
-  "sub_tag_count": "",
   "toast": {
     "generating_screenshot": ""
   },

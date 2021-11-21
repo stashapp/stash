@@ -276,9 +276,6 @@
       "generate_sprites_during_scan": "Generera sprites under skanning (för scen-skrubbaren)",
       "generate_video_previews_during_scan": "Generera förhandsvisningar under skanning (videoförhandsvisning som visas när man håller över en video)",
       "generated_content": "Genererat Material",
-      "identify": {
-        "source_options": ""
-      },
       "import_from_exported_json": "Importera från den exporterade JSON-filen i metadatamappen. Rensar den existerande databasen.",
       "incremental_import": "Stegvis import från en exporterad zip-fil.",
       "job_queue": "Uppgiftskö",
@@ -595,14 +592,8 @@
   "seconds": "Sekunder",
   "settings": "Inställningar",
   "setup": {
-    "migrate": {
-      "backup_recommended": ""
-    },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
-    },
-    "welcome": {
-      "in_current_stash_directory": ""
     }
   },
   "stash_id": "Stash ID",

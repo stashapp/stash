@@ -272,9 +272,6 @@
       "generate_sprites_during_scan": "Gerar sprites durante a digitalização (para o cena scrubber)",
       "generate_video_previews_during_scan": "Gerar pré-visualizações durante a digitalização (pré-visualizações de vídeo que tocam ao posicionar o mouse sobre uma cena)",
       "generated_content": "Conteúdo gerado",
-      "identify": {
-        "source_options": ""
-      },
       "import_from_exported_json": "Importação de JSON exportado no diretório de metadados. Limpa o banco de dados existente.",
       "incremental_import": "Importação incremental de um arquivo zip de exportação fornecido.",
       "job_queue": "Fila de trabalho.",
@@ -570,14 +567,8 @@
   "seconds": "Segundos",
   "settings": "Definições",
   "setup": {
-    "migrate": {
-      "backup_recommended": ""
-    },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
-    },
-    "welcome": {
-      "in_current_stash_directory": ""
     }
   },
   "stash_id": "Stash ID",

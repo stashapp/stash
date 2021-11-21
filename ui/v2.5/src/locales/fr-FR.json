@@ -710,14 +710,8 @@
   "seconds": "Secondes",
   "settings": "Paramètres",
   "setup": {
-    "migrate": {
-      "backup_recommended": ""
-    },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
-    },
-    "welcome": {
-      "in_current_stash_directory": ""
     }
   },
   "stash_id": "Stash ID",
