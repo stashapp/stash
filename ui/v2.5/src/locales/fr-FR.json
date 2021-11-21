@@ -18,6 +18,7 @@
     "clear_image": "Supprimer l'image",
     "close": "Fermer",
     "confirm": "Confirmer",
+    "continue": "",
     "create": "Créer",
     "create_entity": "Créer {entityType}",
     "create_marker": "Créer un Marqueur",
@@ -434,7 +435,15 @@
       "scene_player": {
         "heading": "Lecteur Vidéo",
         "options": {
-          "auto_start_video": "Lecture automatique"
+          "auto_start_video": "Lecture automatique",
+          "auto_start_video_on_play_selected": {
+            "description": "",
+            "heading": ""
+          },
+          "continue_playlist_default": {
+            "description": "",
+            "heading": ""
+          }
         }
       },
       "scene_wall": {
@@ -709,6 +718,81 @@
   },
   "seconds": "Secondes",
   "settings": "Paramètres",
+  "setup": {
+    "confirm": {
+      "almost_ready": "",
+      "configuration_file_location": "",
+      "database_file_path": "",
+      "default_db_location": "",
+      "default_generated_content_location": "",
+      "generated_directory": "",
+      "nearly_there": "",
+      "stash_library_directories": ""
+    },
+    "creating": {
+      "creating_your_system": "",
+      "ffmpeg_notice": ""
+    },
+    "errors": {
+      "something_went_wrong": "",
+      "something_went_wrong_description": "",
+      "something_went_wrong_while_setting_up_your_system": ""
+    },
+    "github_repository": "",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "",
+      "backup_recommended": "",
+      "migrating_database": "",
+      "migration_failed": "",
+      "migration_failed_error": "",
+      "migration_failed_help": "",
+      "migration_irreversible_warning": "",
+      "migration_required": "",
+      "perform_schema_migration": "",
+      "schema_too_old": ""
+    },
+    "paths": {
+      "database_filename_empty_for_default": "",
+      "description": "",
+      "path_to_generated_directory_empty_for_default": "",
+      "set_up_your_paths": "",
+      "stash_alert": "",
+      "where_can_stash_store_its_database": "",
+      "where_can_stash_store_its_database_description": "",
+      "where_can_stash_store_its_generated_content": "",
+      "where_can_stash_store_its_generated_content_description": "",
+      "where_is_your_porn_located": "",
+      "where_is_your_porn_located_description": ""
+    },
+    "stash_setup_wizard": "",
+    "success": {
+      "getting_help": "",
+      "help_links": "",
+      "in_app_manual_explained": "",
+      "next_config_step_one": "",
+      "next_config_step_two": "",
+      "open_collective": "",
+      "support_us": "",
+      "thanks_for_trying_stash": "",
+      "welcome_contrib": "",
+      "your_system_has_been_created": ""
+    },
+    "welcome": {
+      "config_path_logic_explained": "",
+      "in_current_stash_directory": "",
+      "in_the_current_working_directory": "",
+      "next_step": "",
+      "store_stash_config": "",
+      "unable_to_locate_config": "",
+      "unexpected_explained": ""
+    },
+    "welcome_specific_config": {
+      "config_path": "",
+      "next_step": "",
+      "unable_to_locate_specified_config": ""
+    },
+    "welcome_to_stash": ""
+  },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
   "stats": {
@@ -742,6 +826,8 @@
     "rescanning_entity": "Rescan de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} sauvegardé(e)",
     "started_auto_tagging": "Démarrage du Taggage automatique",
+    "started_generating": "",
+    "started_importing": "",
     "updated_entity": "{entity} mis(e) à jour"
   },
   "total": "Total",
