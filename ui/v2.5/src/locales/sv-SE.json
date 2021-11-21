@@ -18,6 +18,7 @@
     "clear_image": "Rensa bild",
     "close": "Stäng",
     "confirm": "Bekräfta",
+    "continue": "",
     "create": "Skapa",
     "create_entity": "Skapa {entityType}",
     "create_marker": "Skapa markör",
@@ -33,6 +34,7 @@
     "export": "Exportera…",
     "export_all": "Exportera alla…",
     "find": "Sök",
+    "finish": "",
     "from_file": "Från fil…",
     "from_url": "Från URL…",
     "full_export": "Fullständig export",
@@ -42,17 +44,21 @@
     "generate_thumb_from_current": "Generera miniatyrbild från nuvarande",
     "hash_migration": "Hash-migration",
     "hide": "Dölj",
+    "identify": "",
+    "ignore": "",
     "import": "Importera…",
     "import_from_file": "Importera från fil",
     "merge": "Slå samman",
     "merge_from": "Slå samman från",
     "merge_into": "Slå samman till",
+    "next_action": "",
     "not_running": "körs ej",
     "open_random": "Öppna slumpad",
     "overwrite": "Ersätt",
     "play_random": "Spela slumpad",
     "play_selected": "Spela vald",
     "preview": "Förhandsvisa",
+    "previous_action": "",
     "refresh": "Uppdatera",
     "reload_plugins": "Ladda om tillägg",
     "reload_scrapers": "Ladda om skrapare",
@@ -62,8 +68,12 @@
     "reshuffle": "Blanda om",
     "running": "körs",
     "save": "Spara",
+    "save_delete_settings": "",
     "save_filter": "Spara filter",
     "scan": "Skanna",
+    "scrape": "",
+    "scrape_query": "",
+    "scrape_scene_fragment": "",
     "scrape_with": "Skrapa med…",
     "search": "Sök",
     "select_all": "Välj alla",
@@ -77,6 +87,7 @@
     "set_image": "Välj bild…",
     "show": "Visa",
     "skip": "Hoppa över",
+    "stop": "",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -84,11 +95,13 @@
     },
     "temp_disable": "Inaktivera tillfälligt…",
     "temp_enable": "Aktivera tillfälligt…",
+    "use_default": "",
     "view_random": "Visa slumpad"
   },
   "actions_name": "Handlingar",
   "age": "Ålder",
   "aliases": "Alias",
+  "all": "",
   "also_known_as": "Även känd som",
   "ascending": "Stigande",
   "average_resolution": "Genomsnittlig upplösning",
@@ -117,7 +130,8 @@
       "set_tag_desc": "Tagga scenen antingen genom att skriva över eller slå samman med de redan existerande.",
       "set_tag_label": "Tagga",
       "show_male_desc": "Välj huruvida manliga stjärnor kommer vara tillgängliga att tagga.",
-      "show_male_label": "Visa manliga stjärnor"
+      "show_male_label": "Visa manliga stjärnor",
+      "source": ""
     },
     "noun_query": "Query",
     "results": {
@@ -129,10 +143,13 @@
       "hash_matches": "{hash_type} matchar",
       "match_failed_already_tagged": "Scen redan taggad",
       "match_failed_no_result": "Inga resultat hittades",
-      "match_success": "Scen taggad"
+      "match_success": "Scen taggad",
+      "phash_matches": "",
+      "unnamed": ""
     },
     "verb_match_fp": "Matcha fingeravtryck",
     "verb_matched": "Matchad",
+    "verb_scrape_all": "",
     "verb_submit_fp": "Skicka {fpCount, plural, one{# Fingeravtryck} other{# Fingeravtryck}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} ej matchade scener"
@@ -189,6 +206,8 @@
         "maximum_session_age_desc": "Maximal väntetid innan inloggingen upphör, i sekunder.",
         "password": "Lösenord",
         "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
+        "trusted_proxies": "",
+        "trusted_proxies_desc": "",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
       },
@@ -219,11 +238,17 @@
       "hashing": "Hashande",
       "image_ext_desc": "Kommaavgränsad lista av filändelser som kommer identifieras som bilder.",
       "image_ext_head": "Bildfiländelser",
+      "include_audio_desc": "",
+      "include_audio_head": "",
       "logging": "Loggning",
       "maximum_streaming_transcode_size_desc": "Maximal storlek av transkodade strömmar",
       "maximum_streaming_transcode_size_head": "Maximal transkodningsstorlek på strömmar",
       "maximum_transcode_size_desc": "Maximal storlek för genererade trankodningar",
       "maximum_transcode_size_head": "Maximal transkodningsstorlek",
+      "metadata_path": {
+        "description": "",
+        "heading": ""
+      },
       "number_of_parallel_task_for_scan_generation_desc": "Ställ på 0 för auto. Varning-Att köra fler jobb än vad som krävs för att nå 100% CPU-användning kommer försämra prestanda och kan potentiellt skapa andra problem.",
       "number_of_parallel_task_for_scan_generation_head": "Antal parallella jobb för skan/generering",
       "parallel_scan_head": "Parallell Skan/Generering",
@@ -248,6 +273,7 @@
       "entity_scrapers": "{entityType} skrapare",
       "excluded_tag_patterns_desc": "Regexps av tagg-namn att exkludera från skrapresultat",
       "excluded_tag_patterns_head": "Exkluderade tagg-mönster",
+      "scraper": "",
       "search_by_name": "Sök med namn",
       "supported_types": "Stöttade typer",
       "supported_urls": "URL:er"
@@ -275,8 +301,29 @@
       "generate_phashes_during_scan": "Generera phash under skanning (för de-duplikation och scenidentifiering)",
       "generate_previews_during_scan": "Generera bildförhandsvisning under skanning (animerade WebP förhandsvisningar, krävs bara om typ är Animerad Bild)",
       "generate_sprites_during_scan": "Generera sprites under skanning (för scen-skrubbaren)",
+      "generate_thumbnails_during_scan": "",
       "generate_video_previews_during_scan": "Generera förhandsvisningar under skanning (videoförhandsvisning som visas när man håller över en video)",
       "generated_content": "Genererat Material",
+      "identify": {
+        "and_create_missing": "",
+        "create_missing": "",
+        "default_options": "",
+        "description": "",
+        "explicit_set_description": "",
+        "field": "",
+        "field_behaviour": "",
+        "field_options": "",
+        "heading": "",
+        "identifying_from_paths": "",
+        "identifying_scenes": "",
+        "include_male_performers": "",
+        "set_cover_images": "",
+        "set_organized": "",
+        "source": "",
+        "source_options": "",
+        "sources": "",
+        "strategy": ""
+      },
       "import_from_exported_json": "Importera från den exporterade JSON-filen i metadatamappen. Rensar den existerande databasen.",
       "incremental_import": "Stegvis import från en exporterad zip-fil.",
       "job_queue": "Uppgiftskö",
@@ -313,12 +360,40 @@
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
       },
+      "delete_options": {
+        "description": "",
+        "heading": "",
+        "options": {
+          "delete_file": "",
+          "delete_generated_supporting_files": ""
+        }
+      },
+      "desktop_integration": {
+        "desktop_integration": "",
+        "skip_opening_browser": "",
+        "skip_opening_browser_on_startup": ""
+      },
+      "editing": {
+        "disable_dropdown_create": {
+          "description": "",
+          "heading": ""
+        },
+        "heading": ""
+      },
       "funscript_offset": {
         "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
         "heading": "Funscript fördröjning (ms)"
       },
       "handy_connection_key": {
         "description": "Handy anslutningsnyckel för interaktiva scener."
+      },
+      "images": {
+        "options": {
+          "write_image_thumbnails": {
+            "description": "",
+            "heading": ""
+          }
+        }
       },
       "language": {
         "heading": "Språk"
@@ -357,7 +432,15 @@
       "scene_player": {
         "heading": "Scenspelaren",
         "options": {
-          "auto_start_video": "Starta videouppspelning automatiskt"
+          "auto_start_video": "Starta videouppspelning automatiskt",
+          "auto_start_video_on_play_selected": {
+            "description": "",
+            "heading": ""
+          },
+          "continue_playlist_default": {
+            "description": "",
+            "heading": ""
+          }
         }
       },
       "scene_wall": {
@@ -376,6 +459,7 @@
   },
   "configuration": "Konfiguration",
   "countables": {
+    "files": "",
     "galleries": "{count, plural, one {Galleri} other {Gallerier}}",
     "images": "{count, plural, one {Bild} other {Bilder}}",
     "markers": "{count, plural, one {Markör} other {Markörer}}",
@@ -418,15 +502,40 @@
   "details": "Beskrivningar",
   "developmentVersion": "Utvecklingsversion",
   "dialogs": {
+    "aliases_must_be_unique": "",
+    "delete_alert": "",
     "delete_confirm": "Är du säker på att du vill radera {entityName}?",
     "delete_entity_desc": "{count, plural, one {Är du säker att du vill radera detta {singularEntity}? Sålänge filen inte också raderas, kommer {singularEntity} att läggas till igen vid nästa skanning.} other {Är du säker att du vill radera dessa {pluralEntity}? Sålänge filen inte också raderas, kommer dessa {pluralEntity} att läggas till igen vid nästa skanning.}}",
     "delete_entity_title": "{count, plural, one {Radera {singularEntity}} other {Radera {pluralEntity}}}",
+    "delete_galleries_extra": "",
+    "delete_gallery_files": "",
     "delete_object_desc": "Är du säker på att du vill radera {count, plural, one {denna {singularEntity}} other {dessa {pluralEntity}}}?",
     "delete_object_overflow": "…och {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
+    "lightbox": {
+      "delay": "",
+      "display_mode": {
+        "fit_horizontally": "",
+        "fit_to_screen": "",
+        "label": "",
+        "original": ""
+      },
+      "options": "",
+      "reset_zoom_on_nav": "",
+      "scale_up": {
+        "description": "",
+        "label": ""
+      },
+      "scroll_mode": {
+        "description": "",
+        "label": "",
+        "pan_y": "",
+        "zoom": ""
+      }
+    },
     "merge_tags": {
       "destination": "Mål",
       "source": "Källa"
@@ -434,6 +543,8 @@
     "overwrite_filter_confirm": "Är du säker på att du vill skriva över existerande sökning {entityName}?",
     "scene_gen": {
       "image_previews": "Bildförhandsvisning (animerade WebP-förhandsvisningar, krävs enbart om typ är vald till Animerad Bild)",
+      "marker_image_previews": "",
+      "marker_screenshots": "",
       "markers": "Markörer (20-sekunders videor som börjar vid given tidsstämpel)",
       "overwrite": "Ersätt existerande genererade filer",
       "phash": "Perceptuella hashar (för de-duplikation)",
@@ -452,6 +563,8 @@
       "transcodes": "Transkoder (MP4-konvertering från videoformat som ej stöds)",
       "video_previews": "Förhandsvisning (videoförhandsvisning som visas när man pekar på en scen)"
     },
+    "scenes_found": "",
+    "scrape_entity_query": "",
     "scrape_entity_title": "{entity_type} Skrapade resultat",
     "scrape_results_existing": "Existerande",
     "scrape_results_scraped": "Skrapade",
@@ -505,9 +618,12 @@
   "ethnicity": "Etnicitet",
   "eye_color": "Ögonfärg",
   "fake_tits": "Fejkbröst",
+  "false": "",
   "favourite": "Favorit",
+  "file": "",
   "file_info": "Filinfo",
   "file_mod_time": "Filens Modifikationstid",
+  "files": "",
   "filesize": "Filstorlek",
   "filter": "Filter",
   "filter_name": "Filternamn",
@@ -525,7 +641,9 @@
   "image": "Bild",
   "image_count": "Antal bilder",
   "images": "Bilder",
+  "include_parent_tags": "",
   "include_sub_studios": "Inkludera underordnade studior",
+  "include_sub_tags": "",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
   "isMissing": "Saknas",
@@ -565,7 +683,11 @@
     "next": "Nästa",
     "previous": "Föregående"
   },
+  "parent_of": "",
   "parent_studios": "Överordnad studio",
+  "parent_tag_count": "",
+  "parent_tags": "",
+  "part_of": "",
   "path": "Sökväg",
   "performer": "Stjärna",
   "performerTags": "Stjärntagg",
@@ -592,7 +714,83 @@
   },
   "seconds": "Sekunder",
   "settings": "Inställningar",
+  "setup": {
+    "confirm": {
+      "almost_ready": "",
+      "configuration_file_location": "",
+      "database_file_path": "",
+      "default_db_location": "",
+      "default_generated_content_location": "",
+      "generated_directory": "",
+      "nearly_there": "",
+      "stash_library_directories": ""
+    },
+    "creating": {
+      "creating_your_system": "",
+      "ffmpeg_notice": ""
+    },
+    "errors": {
+      "something_went_wrong": "",
+      "something_went_wrong_description": "",
+      "something_went_wrong_while_setting_up_your_system": ""
+    },
+    "github_repository": "",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "",
+      "backup_recommended": "",
+      "migrating_database": "",
+      "migration_failed": "",
+      "migration_failed_error": "",
+      "migration_failed_help": "",
+      "migration_irreversible_warning": "",
+      "migration_required": "",
+      "perform_schema_migration": "",
+      "schema_too_old": ""
+    },
+    "paths": {
+      "database_filename_empty_for_default": "",
+      "description": "",
+      "path_to_generated_directory_empty_for_default": "",
+      "set_up_your_paths": "",
+      "stash_alert": "",
+      "where_can_stash_store_its_database": "",
+      "where_can_stash_store_its_database_description": "",
+      "where_can_stash_store_its_generated_content": "",
+      "where_can_stash_store_its_generated_content_description": "",
+      "where_is_your_porn_located": "",
+      "where_is_your_porn_located_description": ""
+    },
+    "stash_setup_wizard": "",
+    "success": {
+      "getting_help": "",
+      "help_links": "",
+      "in_app_manual_explained": "",
+      "next_config_step_one": "",
+      "next_config_step_two": "",
+      "open_collective": "",
+      "support_us": "",
+      "thanks_for_trying_stash": "",
+      "welcome_contrib": "",
+      "your_system_has_been_created": ""
+    },
+    "welcome": {
+      "config_path_logic_explained": "",
+      "in_current_stash_directory": "",
+      "in_the_current_working_directory": "",
+      "next_step": "",
+      "store_stash_config": "",
+      "unable_to_locate_config": "",
+      "unexpected_explained": ""
+    },
+    "welcome_specific_config": {
+      "config_path": "",
+      "next_step": "",
+      "unable_to_locate_specified_config": ""
+    },
+    "welcome_to_stash": ""
+  },
   "stash_id": "Stash ID",
+  "stash_ids": "",
   "stats": {
     "image_size": "Bildstorlek",
     "scenes_duration": "Total speltid",
@@ -602,6 +800,10 @@
   "studio": "Studio",
   "studio_depth": "Nivåer (tom för allt)",
   "studios": "Studior",
+  "sub_tag_count": "",
+  "sub_tag_of": "",
+  "sub_tags": "",
+  "subsidiary_studios": "",
   "synopsis": "Sammanfattning",
   "tag": "Tagg",
   "tag_count": "Antal taggar",
@@ -620,9 +822,12 @@
     "rescanning_entity": "Återskannar {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Sparade {entity}",
     "started_auto_tagging": "Började auto-tagga",
+    "started_generating": "",
+    "started_importing": "",
     "updated_entity": "Uppdaterade {entity}"
   },
   "total": "Total",
+  "true": "",
   "twitter": "Twitter",
   "up-dir": "Upp en mapp",
   "updated_at": "Uppdaterad vid",
