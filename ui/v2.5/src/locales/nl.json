@@ -125,30 +125,14 @@
     }
   },
   "config": {
-    "general": {
-      "auth": {
-        "maximum_session_age_desc": ""
-      }
-    },
     "scraping": {
       "search_by_name": ""
-    },
-    "tools": {
-      "scene_filename_parser": {
-        "select_parser_recipe": ""
-      }
     }
   },
   "criterion": {
     "less_than": ""
   },
-  "dialogs": {
-    "scene_gen": {
-      "preview_preset_desc": ""
-    }
-  },
   "filters": "",
-  "resolution": "",
   "setup": {
     "welcome": {
       "store_stash_config": ""
