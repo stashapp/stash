@@ -277,9 +277,7 @@
       "generate_video_previews_during_scan": "Generera förhandsvisningar under skanning (videoförhandsvisning som visas när man håller över en video)",
       "generated_content": "Genererat Material",
       "identify": {
-        "description": "",
         "field_options": "",
-        "include_male_performers": "",
         "source_options": ""
       },
       "import_from_exported_json": "Importera från den exporterade JSON-filen i metadatamappen. Rensar den existerande databasen.",
@@ -317,11 +315,6 @@
         "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
-      },
-      "delete_options": {
-        "options": {
-          "delete_generated_supporting_files": ""
-        }
       },
       "editing": {
         "disable_dropdown_create": {
@@ -372,10 +365,7 @@
       "scene_player": {
         "heading": "Scenspelaren",
         "options": {
-          "auto_start_video": "Starta videouppspelning automatiskt",
-          "continue_playlist_default": {
-            "heading": ""
-          }
+          "auto_start_video": "Starta videouppspelning automatiskt"
         }
       },
       "scene_wall": {
@@ -446,14 +436,8 @@
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
     "lightbox": {
-      "display_mode": {
-        "label": ""
-      },
       "scale_up": {
         "description": ""
-      },
-      "scroll_mode": {
-        "pan_y": ""
       }
     },
     "merge_tags": {
@@ -623,29 +607,20 @@
   "settings": "Inställningar",
   "setup": {
     "confirm": {
-      "default_db_location": "",
       "stash_library_directories": ""
-    },
-    "errors": {
-      "something_went_wrong_description": ""
     },
     "migrate": {
       "backup_recommended": "",
-      "migration_failed_help": "",
       "schema_too_old": ""
     },
     "paths": {
-      "set_up_your_paths": "",
       "where_can_stash_store_its_generated_content": ""
     },
-    "stash_setup_wizard": "",
     "success": {
-      "next_config_step_one": "",
-      "thanks_for_trying_stash": ""
+      "next_config_step_one": ""
     },
     "welcome": {
-      "in_current_stash_directory": "",
-      "unable_to_locate_config": ""
+      "in_current_stash_directory": ""
     },
     "welcome_specific_config": {
       "unable_to_locate_specified_config": ""
@@ -661,7 +636,6 @@
   "studio": "Studio",
   "studio_depth": "Nivåer (tom för allt)",
   "studios": "Studior",
-  "subsidiary_studios": "",
   "synopsis": "Sammanfattning",
   "tag": "Tagg",
   "tag_count": "Antal taggar",

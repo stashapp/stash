@@ -434,10 +434,7 @@
       "scene_player": {
         "heading": "Lecteur Vidéo",
         "options": {
-          "auto_start_video": "Lecture automatique",
-          "continue_playlist_default": {
-            "heading": ""
-          }
+          "auto_start_video": "Lecture automatique"
         }
       },
       "scene_wall": {
@@ -714,29 +711,20 @@
   "settings": "Paramètres",
   "setup": {
     "confirm": {
-      "default_db_location": "",
       "stash_library_directories": ""
-    },
-    "errors": {
-      "something_went_wrong_description": ""
     },
     "migrate": {
       "backup_recommended": "",
-      "migration_failed_help": "",
       "schema_too_old": ""
     },
     "paths": {
-      "set_up_your_paths": "",
       "where_can_stash_store_its_generated_content": ""
     },
-    "stash_setup_wizard": "",
     "success": {
-      "next_config_step_one": "",
-      "thanks_for_trying_stash": ""
+      "next_config_step_one": ""
     },
     "welcome": {
-      "in_current_stash_directory": "",
-      "unable_to_locate_config": ""
+      "in_current_stash_directory": ""
     },
     "welcome_specific_config": {
       "unable_to_locate_specified_config": ""

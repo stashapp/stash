@@ -121,110 +121,73 @@
       "query_mode_path": "Pad",
       "query_mode_path_desc": "Gebruikt volledige bestandspad",
       "set_cover_desc": "Vervang de scène omslag als er een gevonden is.",
-      "set_cover_label": "Zet scène omslag afbeelding",
-      "show_male_label": ""
+      "set_cover_label": "Zet scène omslag afbeelding"
     },
     "results": {
       "duration_unknown": "",
-      "hash_matches": "",
       "phash_matches": ""
-    },
-    "verb_scrape_all": ""
+    }
   },
   "config": {
     "about": {
       "build_hash": "",
-      "new_version_notice": "",
       "stash_wiki": ""
     },
     "categories": {
-      "logs": "",
       "tools": ""
     },
     "dlna": {
-      "default_ip_whitelist_desc": "",
       "recent_ip_addresses": ""
     },
     "general": {
       "auth": {
-        "api_key": "",
         "generate_api_key": "",
-        "log_http_desc": "",
-        "maximum_session_age_desc": "",
-        "trusted_proxies": ""
+        "maximum_session_age_desc": ""
       },
       "cache_location": "",
-      "check_for_insecure_certificates": "",
       "create_galleries_from_folders_desc": "",
-      "exclude_image": "",
       "excluded_video_patterns_desc": "",
-      "generated_file_naming_hash_desc": "",
       "hashing": "",
-      "include_audio_head": "",
       "maximum_transcode_size_desc": "",
-      "number_of_parallel_task_for_scan_generation_desc": "",
-      "scraper_user_agent": "",
-      "video_ext_desc": ""
+      "scraper_user_agent": ""
     },
     "plugins": {
       "hooks": ""
     },
     "scraping": {
-      "excluded_tag_patterns_desc": "",
       "search_by_name": ""
     },
     "stashbox": {
-      "api_key": "",
       "name": ""
     },
     "tasks": {
-      "auto_tagging": "",
       "cleanup_desc": "",
-      "generate_phashes_during_scan": "",
       "generate_video_previews_during_scan": "",
       "identify": {
-        "default_options": "",
         "field_behaviour": "",
-        "identifying_scenes": "",
         "source": ""
       },
-      "import_from_exported_json": "",
-      "migrate_hash_files": "",
-      "scan_for_content_desc": ""
+      "migrate_hash_files": ""
     },
     "tools": {
       "scene_filename_parser": {
         "capitalize_title": "",
-        "filename_pattern": "",
         "select_parser_recipe": ""
-      },
-      "scene_tools": ""
+      }
     },
     "ui": {
       "delete_options": {
         "description": ""
-      },
-      "desktop_integration": {
-        "desktop_integration": ""
       },
       "editing": {
         "disable_dropdown_create": {
           "heading": ""
         }
       },
-      "handy_connection_key": {
-        "description": ""
-      },
       "language": {
         "heading": ""
       },
-      "menu_items": {
-        "heading": ""
-      },
       "preview_type": {
-        "heading": ""
-      },
-      "scene_list": {
         "heading": ""
       },
       "scene_player": {
@@ -234,140 +197,90 @@
           }
         }
       },
-      "scene_wall": {
-        "heading": ""
-      },
       "slideshow_delay": {
         "heading": ""
       }
     }
   },
   "countables": {
-    "galleries": "",
     "performers": ""
   },
-  "country": "",
   "criterion": {
     "less_than": ""
   },
   "criterion_modifier": {
-    "excludes": "",
-    "includes_all": "",
-    "not_between": ""
+    "includes_all": ""
   },
   "custom": "",
-  "descending": "",
   "dialogs": {
     "aliases_must_be_unique": "",
-    "delete_entity_title": "",
     "delete_object_overflow": "",
-    "export_title": "",
     "lightbox": {
       "display_mode": {
         "label": ""
-      },
-      "scale_up": {
-        "description": ""
       },
       "scroll_mode": {
         "pan_y": ""
       }
     },
-    "overwrite_filter_confirm": "",
     "scene_gen": {
       "markers": "",
-      "preview_exclude_end_time_head": "",
       "preview_preset_desc": "",
-      "preview_seg_duration_desc": "",
       "video_previews": ""
-    },
-    "scrape_results_existing": ""
+    }
   },
   "dimensions": "",
-  "display_mode": {
-    "tagger": ""
-  },
   "dupe_check": {
-    "description": "",
-    "options": {
-      "low": ""
-    }
+    "description": ""
   },
   "duration": "",
   "effect_filters": {
-    "brightness": "",
     "hue": "",
-    "reset_filters": "",
     "rotate_right_and_scale": ""
   },
-  "ethnicity": "",
   "favourite": "",
-  "files": "",
   "filters": "",
-  "gallery": "",
   "hasMarkers": "",
-  "image_count": "",
   "include_sub_tags": "",
-  "library": "",
   "measurements": "",
   "media_info": {
-    "hash": "",
     "stream": ""
   },
-  "movie": "",
   "new": "",
-  "organized": "",
   "pagination": {
     "previous": ""
   },
-  "parent_tags": "",
   "performerTags": "",
-  "piercings": "",
   "resolution": "",
-  "scene_count": "",
   "search_filter": {
     "add_filter": ""
   },
-  "seconds": "",
   "setup": {
     "confirm": {
-      "database_file_path": "",
-      "nearly_there": ""
+      "database_file_path": ""
     },
     "errors": {
       "something_went_wrong": ""
     },
     "migrate": {
-      "backup_database_path_leave_empty_to_disable_backup": "",
-      "migration_failed_error": "",
-      "perform_schema_migration": ""
+      "migration_failed_error": ""
     },
     "paths": {
       "path_to_generated_directory_empty_for_default": "",
-      "where_can_stash_store_its_database_description": "",
       "where_is_your_porn_located_description": ""
     },
     "success": {
-      "in_app_manual_explained": "",
       "support_us": ""
     },
     "welcome": {
-      "config_path_logic_explained": "",
       "store_stash_config": ""
-    },
-    "welcome_specific_config": {
-      "next_step": ""
     }
   },
   "stash_ids": "",
-  "status": "",
   "sub_tag_count": "",
-  "synopsis": "",
   "tattoos": "",
   "toast": {
-    "created_entity": "",
-    "generating_screenshot": "",
-    "started_auto_tagging": ""
+    "generating_screenshot": ""
   },
   "total": "",
   "true": "Waar",

@@ -273,9 +273,7 @@
       "generate_video_previews_during_scan": "Gerar pré-visualizações durante a digitalização (pré-visualizações de vídeo que tocam ao posicionar o mouse sobre uma cena)",
       "generated_content": "Conteúdo gerado",
       "identify": {
-        "description": "",
         "field_options": "",
-        "include_male_performers": "",
         "source_options": ""
       },
       "import_from_exported_json": "Importação de JSON exportado no diretório de metadados. Limpa o banco de dados existente.",
@@ -313,18 +311,10 @@
         "heading": "CSS customizado",
         "option_label": "CSS customizado habilitado"
       },
-      "delete_options": {
-        "options": {
-          "delete_generated_supporting_files": ""
-        }
-      },
       "editing": {
         "disable_dropdown_create": {
           "description": ""
         }
-      },
-      "funscript_offset": {
-        "heading": ""
       },
       "handy_connection_key": {
         "description": "Chave de conexão para usar em cenas interativas.",
@@ -359,10 +349,7 @@
       "scene_player": {
         "heading": "Player de cenas",
         "options": {
-          "auto_start_video": "Começar vídeos automaticamente",
-          "continue_playlist_default": {
-            "heading": ""
-          }
+          "auto_start_video": "Começar vídeos automaticamente"
         }
       },
       "scene_wall": {
@@ -394,7 +381,6 @@
   "cover_image": "Imagem de capa",
   "created_at": "Criado em",
   "criterion_modifier": {
-    "between": "",
     "equals": "é",
     "excludes": "exclui",
     "format_string": "{criterion} {modifierString} {valueString}",
@@ -426,14 +412,8 @@
     "export_include_related_objects": "Inclua objetos relacionados na exportação",
     "export_title": "Exportar",
     "lightbox": {
-      "display_mode": {
-        "label": ""
-      },
       "scale_up": {
         "description": ""
-      },
-      "scroll_mode": {
-        "pan_y": ""
       }
     },
     "merge_tags": {
@@ -602,29 +582,20 @@
   "settings": "Definições",
   "setup": {
     "confirm": {
-      "default_db_location": "",
       "stash_library_directories": ""
-    },
-    "errors": {
-      "something_went_wrong_description": ""
     },
     "migrate": {
       "backup_recommended": "",
-      "migration_failed_help": "",
       "schema_too_old": ""
     },
     "paths": {
-      "set_up_your_paths": "",
       "where_can_stash_store_its_generated_content": ""
     },
-    "stash_setup_wizard": "",
     "success": {
-      "next_config_step_one": "",
-      "thanks_for_trying_stash": ""
+      "next_config_step_one": ""
     },
     "welcome": {
-      "in_current_stash_directory": "",
-      "unable_to_locate_config": ""
+      "in_current_stash_directory": ""
     },
     "welcome_specific_config": {
       "unable_to_locate_specified_config": ""

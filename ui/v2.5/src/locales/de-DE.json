@@ -519,10 +519,7 @@
         "label": "Anzeigemodus",
         "original": "Original"
       },
-      "options": "Optionen",
-      "scroll_mode": {
-        "description": ""
-      }
+      "options": "Optionen"
     },
     "merge_tags": {
       "destination": "Ziel",
@@ -694,31 +691,22 @@
   "settings": "Einstellungen",
   "setup": {
     "confirm": {
-      "default_db_location": "",
       "stash_library_directories": ""
-    },
-    "errors": {
-      "something_went_wrong_description": ""
     },
     "migrate": {
       "backup_recommended": "",
-      "migration_failed_help": "",
       "schema_too_old": ""
     },
     "paths": {
-      "set_up_your_paths": "",
       "where_can_stash_store_its_generated_content": ""
     },
-    "stash_setup_wizard": "",
     "success": {
       "next_config_step_one": "",
       "support_us": "Unterstütze uns"
     },
     "welcome": {
-      "config_path_logic_explained": "",
       "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>",
-      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis",
-      "unexpected_explained": ""
+      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis"
     },
     "welcome_specific_config": {
       "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>"
