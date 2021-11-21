@@ -826,7 +826,6 @@
     "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Salvato/a {entity}",
     "started_auto_tagging": "Inizato il tag automatico",
-    "started_importing": "",
     "updated_entity": "Aggiornato/a {entity}"
   },
   "total": "Totale",

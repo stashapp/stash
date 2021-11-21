@@ -436,9 +436,6 @@
         "heading": "Szenenplayer",
         "options": {
           "auto_start_video": "Video automatisch starten",
-          "auto_start_video_on_play_selected": {
-            "heading": ""
-          },
           "continue_playlist_default": {
             "description": "Nächste Szene in der Warteschlange spielen",
             "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
@@ -508,7 +505,6 @@
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
     "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} Oder{Möchten Sie diese {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
     "delete_entity_title": "{count, plural, one {Lösche {singularEntity}} other {Lösche {pluralEntity}}}",
-    "delete_gallery_files": "",
     "delete_object_desc": "Möchten Sie {count, plural, one {diese {singularEntity}} other {diese {pluralEntity}}} wirklich löschen?",
     "delete_object_overflow": "…und {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
@@ -524,12 +520,8 @@
         "original": "Original"
       },
       "options": "Optionen",
-      "scale_up": {
-        "description": ""
-      },
       "scroll_mode": {
-        "description": "",
-        "pan_y": ""
+        "description": ""
       }
     },
     "merge_tags": {
@@ -539,7 +531,6 @@
     "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
     "scene_gen": {
       "image_previews": "Bildvorschauen (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
-      "marker_screenshots": "",
       "markers": "Markierungen (20-Sekunden-Videos, die mit dem angegebenen Timecode beginnen)",
       "overwrite": "Vorhandene generierte Dateien überschreiben",
       "phash": "Perzeptuelle Hashes (zur Deduplizierung)",
@@ -558,7 +549,6 @@
       "transcodes": "Transcodes (MP4-Konvertierungen von nicht unterstützten Videoformaten)",
       "video_previews": "Vorschauen (Videovorschauen, die abgespielt werden, wenn Sie mit der Maus über eine Szene fahren)"
     },
-    "scrape_entity_query": "",
     "scrape_entity_title": "{entity_type} Scrape-Ergebnisse",
     "scrape_results_existing": "Vorhanden",
     "scrape_results_scraped": "Gescraped",
@@ -676,7 +666,6 @@
     "previous": "Vorheriger"
   },
   "parent_studios": "Elternstudios",
-  "parent_tags": "",
   "path": "Pfad",
   "performer": "Darsteller",
   "performerTags": "Darsteller-Tags",
@@ -705,50 +694,34 @@
   "settings": "Einstellungen",
   "setup": {
     "confirm": {
-      "configuration_file_location": "",
       "default_db_location": "",
-      "generated_directory": "",
       "stash_library_directories": ""
-    },
-    "creating": {
-      "ffmpeg_notice": ""
     },
     "errors": {
       "something_went_wrong_description": ""
     },
-    "github_repository": "",
     "migrate": {
       "backup_recommended": "",
-      "migration_failed": "",
       "migration_failed_help": "",
-      "migration_required": "",
       "schema_too_old": ""
     },
     "paths": {
-      "description": "",
       "set_up_your_paths": "",
-      "where_can_stash_store_its_database": "",
-      "where_can_stash_store_its_generated_content": "",
-      "where_is_your_porn_located": ""
+      "where_can_stash_store_its_generated_content": ""
     },
     "stash_setup_wizard": "",
     "success": {
-      "help_links": "",
       "next_config_step_one": "",
-      "open_collective": "",
-      "support_us": "Unterstütze uns",
-      "welcome_contrib": ""
+      "support_us": "Unterstütze uns"
     },
     "welcome": {
       "config_path_logic_explained": "",
       "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis",
-      "store_stash_config": "",
       "unexpected_explained": ""
     },
     "welcome_specific_config": {
-      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>",
-      "unable_to_locate_specified_config": ""
+      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>"
     },
     "welcome_to_stash": "Willkommen zu Stash"
   },

@@ -435,9 +435,6 @@
         "heading": "Lecteur Vidéo",
         "options": {
           "auto_start_video": "Lecture automatique",
-          "auto_start_video_on_play_selected": {
-            "heading": ""
-          },
           "continue_playlist_default": {
             "heading": ""
           }
@@ -717,47 +714,31 @@
   "settings": "Paramètres",
   "setup": {
     "confirm": {
-      "configuration_file_location": "",
       "default_db_location": "",
-      "generated_directory": "",
       "stash_library_directories": ""
-    },
-    "creating": {
-      "ffmpeg_notice": ""
     },
     "errors": {
       "something_went_wrong_description": ""
     },
-    "github_repository": "",
     "migrate": {
       "backup_recommended": "",
-      "migration_failed": "",
       "migration_failed_help": "",
-      "migration_required": "",
       "schema_too_old": ""
     },
     "paths": {
-      "description": "",
       "set_up_your_paths": "",
-      "where_can_stash_store_its_database": "",
-      "where_can_stash_store_its_generated_content": "",
-      "where_is_your_porn_located": ""
+      "where_can_stash_store_its_generated_content": ""
     },
     "stash_setup_wizard": "",
     "success": {
-      "help_links": "",
       "next_config_step_one": "",
-      "open_collective": "",
-      "thanks_for_trying_stash": "",
-      "your_system_has_been_created": ""
+      "thanks_for_trying_stash": ""
     },
     "welcome": {
       "in_current_stash_directory": "",
-      "next_step": "",
       "unable_to_locate_config": ""
     },
     "welcome_specific_config": {
-      "config_path": "",
       "unable_to_locate_specified_config": ""
     }
   },
@@ -794,7 +775,6 @@
     "rescanning_entity": "Rescan de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} sauvegardé(e)",
     "started_auto_tagging": "Démarrage du Taggage automatique",
-    "started_importing": "",
     "updated_entity": "{entity} mis(e) à jour"
   },
   "total": "Total",

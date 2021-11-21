@@ -15,7 +15,6 @@
     "clear_front_image": "Limpar imagem frontal",
     "clear_image": "Limpar imagem",
     "close": "Fechar",
-    "continue": "",
     "create": "Criar",
     "create_entity": "Criar {entityType}",
     "create_marker": "Criar marcador",
@@ -40,7 +39,6 @@
     "generate_thumb_from_current": "Gerar thumbnail do atual",
     "hash_migration": "migrar hash",
     "hide": "Esconder",
-    "ignore": "",
     "import": "Importar…",
     "import_from_file": "Importar do arquivo",
     "merge": "Unir",
@@ -62,7 +60,6 @@
     "save": "Salvar",
     "save_filter": "Salvar filtro",
     "scan": "Escanear",
-    "scrape_query": "",
     "scrape_with": "Scrape com…",
     "search": "Buscar",
     "select_all": "Selecionar todos",
@@ -127,8 +124,7 @@
       "hash_matches": "{hash_type} é uma correspondência",
       "match_failed_already_tagged": "Cena já marcada",
       "match_failed_no_result": "Nenhum resultado encontrado",
-      "match_success": "Cena marcada com sucesso",
-      "unnamed": ""
+      "match_success": "Cena marcada com sucesso"
     },
     "verb_match_fp": "Combine as impressões digitais",
     "verb_matched": "Combinado",
@@ -189,7 +185,6 @@
         "password": "Senha",
         "password_desc": "Senha para acesso Stash. Deixe em branco para desativar a autenticação do usuário",
         "stash-box_integration": "Integração com Stash-box",
-        "trusted_proxies_desc": "",
         "username": "Username",
         "username_desc": "Username para acessar o Stash. Deixe em branco para desativar a autenticação do usuário"
       },
@@ -220,15 +215,11 @@
       "hashing": "Hashing",
       "image_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como imagens.",
       "image_ext_head": "Extensões de imagem",
-      "include_audio_head": "",
       "logging": "Logging",
       "maximum_streaming_transcode_size_desc": "Tamanho máximo para streams transcodados",
       "maximum_streaming_transcode_size_head": "Tamanho máximo de transcodação de streaming",
       "maximum_transcode_size_desc": "Tamanho máximo para transcodes gerados",
       "maximum_transcode_size_head": "Tamanho máximo de transcode.",
-      "metadata_path": {
-        "heading": ""
-      },
       "number_of_parallel_task_for_scan_generation_desc": "Defina como 0 para detecção automática. AVISO Execução de mais tarefas do que é necessário para obter 100% de utilização da CPU diminuirá o desempenho e potencialmente causar outros problemas.",
       "number_of_parallel_task_for_scan_generation_head": "Número de tarefas paralelas para varredura/geração",
       "parallel_scan_head": "Varredura/Geração paralela",
@@ -251,7 +242,6 @@
     "scraping": {
       "entity_metadata": "{entityType} metadados",
       "entity_scrapers": "{entityType} scrapers",
-      "excluded_tag_patterns_head": "",
       "scrapers": "Scrapers",
       "search_by_name": "Buscar por nome",
       "supported_types": "Tipos suportados",
@@ -283,15 +273,10 @@
       "generate_video_previews_during_scan": "Gerar pré-visualizações durante a digitalização (pré-visualizações de vídeo que tocam ao posicionar o mouse sobre uma cena)",
       "generated_content": "Conteúdo gerado",
       "identify": {
-        "create_missing": "",
         "description": "",
-        "field": "",
         "field_options": "",
-        "identifying_from_paths": "",
         "include_male_performers": "",
-        "set_organized": "",
-        "source_options": "",
-        "strategy": ""
+        "source_options": ""
       },
       "import_from_exported_json": "Importação de JSON exportado no diretório de metadados. Limpa o banco de dados existente.",
       "incremental_import": "Importação incremental de um arquivo zip de exportação fornecido.",
@@ -329,19 +314,14 @@
         "option_label": "CSS customizado habilitado"
       },
       "delete_options": {
-        "heading": "",
         "options": {
           "delete_generated_supporting_files": ""
         }
       },
-      "desktop_integration": {
-        "skip_opening_browser": ""
-      },
       "editing": {
         "disable_dropdown_create": {
           "description": ""
-        },
-        "heading": ""
+        }
       },
       "funscript_offset": {
         "heading": ""
@@ -349,13 +329,6 @@
       "handy_connection_key": {
         "description": "Chave de conexão para usar em cenas interativas.",
         "heading": "Chave de conexão"
-      },
-      "images": {
-        "options": {
-          "write_image_thumbnails": {
-            "heading": ""
-          }
-        }
       },
       "language": {
         "heading": "Idioma"
@@ -367,13 +340,6 @@
       "menu_items": {
         "description": "Mostrar ou ocultar diferentes tipos de conteúdo na barra de navegação",
         "heading": "Itens do menu"
-      },
-      "performers": {
-        "options": {
-          "image_location": {
-            "heading": ""
-          }
-        }
       },
       "preview_type": {
         "description": "Configuração para itens do paredão",
@@ -394,9 +360,6 @@
         "heading": "Player de cenas",
         "options": {
           "auto_start_video": "Começar vídeos automaticamente",
-          "auto_start_video_on_play_selected": {
-            "heading": ""
-          },
           "continue_playlist_default": {
             "heading": ""
           }
@@ -430,9 +393,6 @@
   "country": "País",
   "cover_image": "Imagem de capa",
   "created_at": "Criado em",
-  "criterion": {
-    "less_than": ""
-  },
   "criterion_modifier": {
     "between": "",
     "equals": "é",
@@ -456,11 +416,9 @@
   "details": "Detalhes",
   "developmentVersion": "Versão de desenvolvimento.",
   "dialogs": {
-    "delete_alert": "",
     "delete_confirm": "Tem certeza de que deseja excluir {entityName}?",
     "delete_entity_desc": "{count, plural, one {Tem certeza de que deseja excluir este(a) {singularEntity}? A menos que o arquivo também seja excluído, este(a) {singularEntity} será re-adicionado quando a varredura for executada.} other {Tem certeza de que deseja excluir estes(as) {pluralEntity}? A menos que os arquivos também sejam excluídos, estes(as) {pluralEntity} serão re-adicionados quando a varredura for executada.}}",
     "delete_entity_title": "{count, plural, one {Excluir {singularEntity}} other {Excluir {pluralEntity}}}",
-    "delete_gallery_files": "",
     "delete_object_desc": "Tem certeza de que deseja excluir {count, plural, one {este(a) {singularEntity}} other {estes(as) {pluralEntity}}}?",
     "delete_object_overflow": "…e {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Excluir {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -469,15 +427,12 @@
     "export_title": "Exportar",
     "lightbox": {
       "display_mode": {
-        "fit_horizontally": "",
         "label": ""
       },
-      "options": "",
       "scale_up": {
         "description": ""
       },
       "scroll_mode": {
-        "description": "",
         "pan_y": ""
       }
     },
@@ -488,7 +443,6 @@
     "overwrite_filter_confirm": "Tem certeza de que deseja sobrescrever a consulta salva existente {entityName}?",
     "scene_gen": {
       "image_previews": "Pré-visualizações de imagem (WebP animadas, somente necessário se o tipo de pré-visualização for definido para imagem animada)",
-      "marker_screenshots": "",
       "markers": "Marcadores (vídeos de 20 segundos que iniciam no dado tempo)",
       "overwrite": "Substituir arquivos gerados existentes",
       "phash": "Hashes perceptivos (para desduplicação)",
@@ -507,7 +461,6 @@
       "transcodes": "Transcodes (conversões MP4 de formatos de vídeo não suportados)",
       "video_previews": "Pré-visualizações (pré-visualizações de vídeo que tocam ao posicionar o mouse sobre uma cena)"
     },
-    "scrape_entity_query": "",
     "scrape_entity_title": "{entity_type} resultados de scrape",
     "scrape_results_existing": "Existem",
     "scrape_results_scraped": "Scraped",
@@ -621,7 +574,6 @@
     "previous": "Anterior"
   },
   "parent_studios": "Estúdios pai",
-  "parent_tags": "",
   "path": "Caminho",
   "performer": "Artista",
   "performerTags": "Tags de artitas",
@@ -650,47 +602,31 @@
   "settings": "Definições",
   "setup": {
     "confirm": {
-      "configuration_file_location": "",
       "default_db_location": "",
-      "generated_directory": "",
       "stash_library_directories": ""
-    },
-    "creating": {
-      "ffmpeg_notice": ""
     },
     "errors": {
       "something_went_wrong_description": ""
     },
-    "github_repository": "",
     "migrate": {
       "backup_recommended": "",
-      "migration_failed": "",
       "migration_failed_help": "",
-      "migration_required": "",
       "schema_too_old": ""
     },
     "paths": {
-      "description": "",
       "set_up_your_paths": "",
-      "where_can_stash_store_its_database": "",
-      "where_can_stash_store_its_generated_content": "",
-      "where_is_your_porn_located": ""
+      "where_can_stash_store_its_generated_content": ""
     },
     "stash_setup_wizard": "",
     "success": {
-      "help_links": "",
       "next_config_step_one": "",
-      "open_collective": "",
-      "thanks_for_trying_stash": "",
-      "your_system_has_been_created": ""
+      "thanks_for_trying_stash": ""
     },
     "welcome": {
       "in_current_stash_directory": "",
-      "next_step": "",
       "unable_to_locate_config": ""
     },
     "welcome_specific_config": {
-      "config_path": "",
       "unable_to_locate_specified_config": ""
     }
   },
@@ -703,7 +639,6 @@
   "studio": "Estúdio",
   "studio_depth": "Níveis (vazio para todos)",
   "studios": "Estúdios",
-  "sub_tag_of": "",
   "subsidiary_studios": "Estúdios filhos",
   "synopsis": "Sinopse",
   "tag": "Tag",
@@ -723,7 +658,6 @@
     "rescanning_entity": "Reescaneando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} salvo(a)",
     "started_auto_tagging": "Auto tagging iniciado",
-    "started_importing": "",
     "updated_entity": "{entity} atualizado(a)"
   },
   "total": "Total",
