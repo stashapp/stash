@@ -709,11 +709,6 @@
   },
   "seconds": "Secondes",
   "settings": "Paramètres",
-  "setup": {
-    "paths": {
-      "where_can_stash_store_its_generated_content": ""
-    }
-  },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
   "stats": {

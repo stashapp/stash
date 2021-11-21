@@ -690,9 +690,6 @@
   "seconds": "Sekunden",
   "settings": "Einstellungen",
   "setup": {
-    "paths": {
-      "where_can_stash_store_its_generated_content": ""
-    },
     "success": {
       "support_us": "Unterstütze uns"
     },

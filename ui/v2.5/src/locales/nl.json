@@ -125,31 +125,17 @@
     }
   },
   "config": {
-    "about": {
-      "stash_wiki": ""
-    },
     "general": {
       "auth": {
         "maximum_session_age_desc": ""
-      },
-      "hashing": ""
+      }
     },
     "scraping": {
       "search_by_name": ""
     },
-    "tasks": {
-      "identify": {
-        "field_behaviour": ""
-      }
-    },
     "tools": {
       "scene_filename_parser": {
         "select_parser_recipe": ""
-      }
-    },
-    "ui": {
-      "preview_type": {
-        "heading": ""
       }
     }
   },
@@ -157,27 +143,16 @@
     "less_than": ""
   },
   "dialogs": {
-    "delete_object_overflow": "",
     "scene_gen": {
       "preview_preset_desc": ""
     }
   },
-  "duration": "",
   "filters": "",
-  "media_info": {
-    "stream": ""
-  },
   "resolution": "",
   "setup": {
-    "migrate": {
-      "migration_failed_error": ""
-    },
     "welcome": {
       "store_stash_config": ""
     }
-  },
-  "toast": {
-    "generating_screenshot": ""
   },
   "true": "Waar",
   "twitter": "Twitter",

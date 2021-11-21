@@ -591,11 +591,6 @@
   },
   "seconds": "Sekunder",
   "settings": "Inställningar",
-  "setup": {
-    "paths": {
-      "where_can_stash_store_its_generated_content": ""
-    }
-  },
   "stash_id": "Stash ID",
   "stats": {
     "image_size": "Bildstorlek",
