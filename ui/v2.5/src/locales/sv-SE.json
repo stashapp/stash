@@ -277,7 +277,6 @@
       "generate_video_previews_during_scan": "Generera förhandsvisningar under skanning (videoförhandsvisning som visas när man håller över en video)",
       "generated_content": "Genererat Material",
       "identify": {
-        "field_options": "",
         "source_options": ""
       },
       "import_from_exported_json": "Importera från den exporterade JSON-filen i metadatamappen. Rensar den existerande databasen.",
@@ -315,11 +314,6 @@
         "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
         "heading": "Anpassad CSS",
         "option_label": "Använd anpassad CSS"
-      },
-      "editing": {
-        "disable_dropdown_create": {
-          "description": ""
-        }
       },
       "funscript_offset": {
         "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
@@ -435,11 +429,6 @@
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
-    "lightbox": {
-      "scale_up": {
-        "description": ""
-      }
-    },
     "merge_tags": {
       "destination": "Mål",
       "source": "Källa"
@@ -606,24 +595,14 @@
   "seconds": "Sekunder",
   "settings": "Inställningar",
   "setup": {
-    "confirm": {
-      "stash_library_directories": ""
-    },
     "migrate": {
-      "backup_recommended": "",
-      "schema_too_old": ""
+      "backup_recommended": ""
     },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
     },
-    "success": {
-      "next_config_step_one": ""
-    },
     "welcome": {
       "in_current_stash_directory": ""
-    },
-    "welcome_specific_config": {
-      "unable_to_locate_specified_config": ""
     }
   },
   "stash_id": "Stash ID",

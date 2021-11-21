@@ -710,24 +710,14 @@
   "seconds": "Secondes",
   "settings": "Paramètres",
   "setup": {
-    "confirm": {
-      "stash_library_directories": ""
-    },
     "migrate": {
-      "backup_recommended": "",
-      "schema_too_old": ""
+      "backup_recommended": ""
     },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
     },
-    "success": {
-      "next_config_step_one": ""
-    },
     "welcome": {
       "in_current_stash_directory": ""
-    },
-    "welcome_specific_config": {
-      "unable_to_locate_specified_config": ""
     }
   },
   "stash_id": "Stash ID",

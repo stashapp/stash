@@ -124,165 +124,100 @@
       "set_cover_label": "Zet scène omslag afbeelding"
     },
     "results": {
-      "duration_unknown": "",
       "phash_matches": ""
     }
   },
   "config": {
     "about": {
-      "build_hash": "",
       "stash_wiki": ""
-    },
-    "categories": {
-      "tools": ""
     },
     "dlna": {
       "recent_ip_addresses": ""
     },
     "general": {
       "auth": {
-        "generate_api_key": "",
         "maximum_session_age_desc": ""
       },
-      "cache_location": "",
       "create_galleries_from_folders_desc": "",
-      "excluded_video_patterns_desc": "",
       "hashing": "",
-      "maximum_transcode_size_desc": "",
       "scraper_user_agent": ""
-    },
-    "plugins": {
-      "hooks": ""
     },
     "scraping": {
       "search_by_name": ""
     },
-    "stashbox": {
-      "name": ""
-    },
     "tasks": {
       "cleanup_desc": "",
-      "generate_video_previews_during_scan": "",
       "identify": {
-        "field_behaviour": "",
-        "source": ""
+        "field_behaviour": ""
       },
       "migrate_hash_files": ""
     },
     "tools": {
       "scene_filename_parser": {
-        "capitalize_title": "",
         "select_parser_recipe": ""
       }
     },
     "ui": {
-      "delete_options": {
-        "description": ""
-      },
       "editing": {
         "disable_dropdown_create": {
           "heading": ""
         }
       },
-      "language": {
-        "heading": ""
-      },
       "preview_type": {
         "heading": ""
-      },
-      "scene_player": {
-        "options": {
-          "auto_start_video_on_play_selected": {
-            "description": ""
-          }
-        }
       },
       "slideshow_delay": {
         "heading": ""
       }
     }
   },
-  "countables": {
-    "performers": ""
-  },
   "criterion": {
     "less_than": ""
   },
-  "criterion_modifier": {
-    "includes_all": ""
-  },
   "custom": "",
   "dialogs": {
-    "aliases_must_be_unique": "",
     "delete_object_overflow": "",
     "lightbox": {
-      "display_mode": {
-        "label": ""
-      },
       "scroll_mode": {
         "pan_y": ""
       }
     },
     "scene_gen": {
-      "markers": "",
-      "preview_preset_desc": "",
-      "video_previews": ""
+      "preview_preset_desc": ""
     }
   },
   "dimensions": "",
-  "dupe_check": {
-    "description": ""
-  },
   "duration": "",
   "effect_filters": {
-    "hue": "",
     "rotate_right_and_scale": ""
   },
-  "favourite": "",
   "filters": "",
-  "hasMarkers": "",
   "include_sub_tags": "",
-  "measurements": "",
   "media_info": {
     "stream": ""
   },
-  "new": "",
   "pagination": {
     "previous": ""
   },
-  "performerTags": "",
   "resolution": "",
-  "search_filter": {
-    "add_filter": ""
-  },
   "setup": {
     "confirm": {
       "database_file_path": ""
-    },
-    "errors": {
-      "something_went_wrong": ""
     },
     "migrate": {
       "migration_failed_error": ""
     },
     "paths": {
-      "path_to_generated_directory_empty_for_default": "",
       "where_is_your_porn_located_description": ""
-    },
-    "success": {
-      "support_us": ""
     },
     "welcome": {
       "store_stash_config": ""
     }
   },
-  "stash_ids": "",
   "sub_tag_count": "",
-  "tattoos": "",
   "toast": {
     "generating_screenshot": ""
   },
-  "total": "",
   "true": "Waar",
   "twitter": "Twitter",
   "weight": "Gewicht",

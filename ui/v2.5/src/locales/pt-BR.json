@@ -273,7 +273,6 @@
       "generate_video_previews_during_scan": "Gerar pré-visualizações durante a digitalização (pré-visualizações de vídeo que tocam ao posicionar o mouse sobre uma cena)",
       "generated_content": "Conteúdo gerado",
       "identify": {
-        "field_options": "",
         "source_options": ""
       },
       "import_from_exported_json": "Importação de JSON exportado no diretório de metadados. Limpa o banco de dados existente.",
@@ -310,11 +309,6 @@
         "description": "A página deve ser recarregada para alterações para terem efeito.",
         "heading": "CSS customizado",
         "option_label": "CSS customizado habilitado"
-      },
-      "editing": {
-        "disable_dropdown_create": {
-          "description": ""
-        }
       },
       "handy_connection_key": {
         "description": "Chave de conexão para usar em cenas interativas.",
@@ -411,11 +405,6 @@
     "edit_entity_title": "Editar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inclua objetos relacionados na exportação",
     "export_title": "Exportar",
-    "lightbox": {
-      "scale_up": {
-        "description": ""
-      }
-    },
     "merge_tags": {
       "destination": "Destino",
       "source": "Fonte"
@@ -581,24 +570,14 @@
   "seconds": "Segundos",
   "settings": "Definições",
   "setup": {
-    "confirm": {
-      "stash_library_directories": ""
-    },
     "migrate": {
-      "backup_recommended": "",
-      "schema_too_old": ""
+      "backup_recommended": ""
     },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
     },
-    "success": {
-      "next_config_step_one": ""
-    },
     "welcome": {
       "in_current_stash_directory": ""
-    },
-    "welcome_specific_config": {
-      "unable_to_locate_specified_config": ""
     }
   },
   "stash_id": "Stash ID",

@@ -690,18 +690,13 @@
   "seconds": "Sekunden",
   "settings": "Einstellungen",
   "setup": {
-    "confirm": {
-      "stash_library_directories": ""
-    },
     "migrate": {
-      "backup_recommended": "",
-      "schema_too_old": ""
+      "backup_recommended": ""
     },
     "paths": {
       "where_can_stash_store_its_generated_content": ""
     },
     "success": {
-      "next_config_step_one": "",
       "support_us": "Unterstütze uns"
     },
     "welcome": {
