@@ -313,7 +313,6 @@
         "description": "使用stash-box和挖掘器自动设立短片的元数据.",
         "explicit_set_description": "如果源没有特别设定，下列选项将被使用。",
         "field": "数据字段",
-        "field_behaviour": "",
         "field_options": "数据选项",
         "heading": "识别",
         "identifying_from_paths": "识别以下路径的短片",

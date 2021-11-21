@@ -9,7 +9,6 @@
     "apply": "Toepassen",
     "auto_tag": "Automatisch taggen",
     "backup": "Backup",
-    "browse_for_image": "",
     "cancel": "Afbreken",
     "clean": "Opschonen",
     "clear": "Wissen",
@@ -112,11 +111,9 @@
   "component_tagger": {
     "config": {
       "active_instance": "Actieve stash-box installatie:",
-      "blacklist_desc": "",
       "blacklist_label": "",
       "query_mode_auto": "Auto",
       "query_mode_auto_desc": "Gebruikt metadata indien aanwezig, of bestandsnaam",
-      "query_mode_dir": "",
       "query_mode_dir_desc": "",
       "query_mode_filename": "Bestandsnaam",
       "query_mode_filename_desc": "Gebruikt alleen bestandsnaam",
@@ -127,274 +124,164 @@
       "query_mode_path_desc": "Gebruikt volledige bestandspad",
       "set_cover_desc": "Vervang de scène omslag als er een gevonden is.",
       "set_cover_label": "Zet scène omslag afbeelding",
-      "set_tag_desc": "",
       "set_tag_label": "",
-      "show_male_desc": "",
-      "show_male_label": "",
-      "source": ""
+      "show_male_label": ""
     },
     "noun_query": "",
     "results": {
-      "duration_off": "",
       "duration_unknown": "",
-      "fp_found": "",
       "fp_matches": "",
-      "fp_matches_multi": "",
       "hash_matches": "",
-      "match_failed_already_tagged": "",
       "match_failed_no_result": "",
-      "match_success": "",
-      "phash_matches": "",
-      "unnamed": ""
+      "phash_matches": ""
     },
     "verb_match_fp": "",
-    "verb_matched": "",
     "verb_scrape_all": "",
-    "verb_submit_fp": "",
-    "verb_toggle_config": "",
-    "verb_toggle_unmatched": ""
+    "verb_toggle_config": ""
   },
   "config": {
     "about": {
       "build_hash": "",
-      "build_time": "",
       "check_for_new_version": "",
-      "latest_version_build_hash": "",
       "new_version_notice": "",
-      "stash_discord": "",
       "stash_home": "",
-      "stash_open_collective": "",
-      "stash_wiki": "",
-      "version": ""
+      "stash_wiki": ""
     },
     "categories": {
       "about": "",
-      "interface": "",
       "logs": "",
-      "plugins": "",
       "scraping": "",
-      "tasks": "",
       "tools": ""
     },
     "dlna": {
-      "allow_temp_ip": "",
       "allowed_ip_addresses": "",
-      "default_ip_whitelist": "",
       "default_ip_whitelist_desc": "",
-      "enabled_by_default": "",
       "network_interfaces": "",
-      "network_interfaces_desc": "",
       "recent_ip_addresses": "",
-      "server_display_name": "",
-      "server_display_name_desc": "",
-      "until_restart": ""
+      "server_display_name_desc": ""
     },
     "general": {
       "auth": {
         "api_key": "",
-        "api_key_desc": "",
         "authentication": "",
-        "clear_api_key": "",
         "generate_api_key": "",
-        "log_file": "",
         "log_file_desc": "",
-        "log_http": "",
         "log_http_desc": "",
-        "log_to_terminal": "",
         "log_to_terminal_desc": "",
-        "maximum_session_age": "",
         "maximum_session_age_desc": "",
-        "password": "",
         "password_desc": "",
-        "stash-box_integration": "",
         "trusted_proxies": "",
-        "trusted_proxies_desc": "",
-        "username": "",
-        "username_desc": ""
+        "username": ""
       },
       "cache_location": "",
-      "cache_path_head": "",
       "calculate_md5_and_ohash_desc": "",
-      "calculate_md5_and_ohash_label": "",
       "check_for_insecure_certificates": "",
-      "check_for_insecure_certificates_desc": "",
       "chrome_cdp_path": "",
-      "chrome_cdp_path_desc": "",
       "create_galleries_from_folders_desc": "",
-      "create_galleries_from_folders_label": "",
       "db_path_head": "",
-      "directory_locations_to_your_content": "",
       "exclude_image": "",
-      "exclude_video": "",
       "excluded_image_gallery_patterns_desc": "",
-      "excluded_image_gallery_patterns_head": "",
       "excluded_video_patterns_desc": "",
-      "excluded_video_patterns_head": "",
       "gallery_ext_desc": "",
-      "gallery_ext_head": "",
       "generated_file_naming_hash_desc": "",
-      "generated_file_naming_hash_head": "",
       "generated_files_location": "",
-      "generated_path_head": "",
       "hashing": "",
-      "image_ext_desc": "",
       "image_ext_head": "",
-      "include_audio_desc": "",
       "include_audio_head": "",
-      "logging": "",
       "maximum_streaming_transcode_size_desc": "",
-      "maximum_streaming_transcode_size_head": "",
       "maximum_transcode_size_desc": "",
-      "maximum_transcode_size_head": "",
       "metadata_path": {
-        "description": "",
-        "heading": ""
+        "description": ""
       },
       "number_of_parallel_task_for_scan_generation_desc": "",
-      "number_of_parallel_task_for_scan_generation_head": "",
       "parallel_scan_head": "",
-      "preview_generation": "",
       "scraper_user_agent": "",
-      "scraper_user_agent_desc": "",
       "scraping": "",
-      "sqlite_location": "",
       "video_ext_desc": "",
-      "video_ext_head": "",
       "video_head": ""
     },
-    "logs": {
-      "log_level": ""
-    },
     "plugins": {
-      "hooks": "",
-      "triggers_on": ""
+      "hooks": ""
     },
     "scraping": {
       "entity_metadata": "",
-      "entity_scrapers": "",
       "excluded_tag_patterns_desc": "",
-      "excluded_tag_patterns_head": "",
       "scraper": "",
-      "scrapers": "",
       "search_by_name": "",
-      "supported_types": "",
       "supported_urls": ""
     },
     "stashbox": {
-      "add_instance": "",
       "api_key": "",
-      "description": "",
       "endpoint": "",
-      "graphql_endpoint": "",
-      "name": "",
-      "title": ""
+      "name": ""
     },
     "tasks": {
       "added_job_to_queue": "",
-      "auto_tag_based_on_filenames": "",
       "auto_tagging": "",
-      "backing_up_database": "",
       "backup_and_download": "",
-      "backup_database": "",
       "cleanup_desc": "",
-      "dont_include_file_extension_as_part_of_the_title": "",
       "export_to_json": "",
-      "generate_desc": "",
       "generate_phashes_during_scan": "",
-      "generate_previews_during_scan": "",
       "generate_sprites_during_scan": "",
-      "generate_thumbnails_during_scan": "",
       "generate_video_previews_during_scan": "",
-      "generated_content": "",
       "identify": {
         "and_create_missing": "",
-        "create_missing": "",
         "default_options": "",
-        "description": "",
         "explicit_set_description": "",
-        "field": "",
         "field_behaviour": "",
-        "field_options": "",
         "heading": "",
-        "identifying_from_paths": "",
         "identifying_scenes": "",
-        "include_male_performers": "",
         "set_cover_images": "",
-        "set_organized": "",
         "source": "",
-        "source_options": "",
-        "sources": "",
-        "strategy": ""
+        "sources": ""
       },
       "import_from_exported_json": "",
-      "incremental_import": "",
       "job_queue": "",
-      "maintenance": "",
       "migrate_hash_files": "",
-      "migrations": "",
       "only_dry_run": "",
-      "plugin_tasks": "",
-      "scan_for_content_desc": "",
-      "set_name_date_details_from_metadata_if_present": ""
+      "scan_for_content_desc": ""
     },
     "tools": {
       "scene_duplicate_checker": "",
       "scene_filename_parser": {
-        "add_field": "",
         "capitalize_title": "",
-        "display_fields": "",
         "escape_chars": "",
-        "filename": "",
         "filename_pattern": "",
-        "ignore_organized": "",
         "ignored_words": "",
-        "matches_with": "",
         "select_parser_recipe": "",
-        "title": "",
-        "whitespace_chars": "",
-        "whitespace_chars_desc": ""
+        "whitespace_chars": ""
       },
       "scene_tools": ""
     },
     "ui": {
       "custom_css": {
-        "description": "",
-        "heading": "",
-        "option_label": ""
+        "heading": ""
       },
       "delete_options": {
         "description": "",
-        "heading": "",
         "options": {
-          "delete_file": "",
-          "delete_generated_supporting_files": ""
+          "delete_file": ""
         }
       },
       "desktop_integration": {
         "desktop_integration": "",
-        "skip_opening_browser": "",
         "skip_opening_browser_on_startup": ""
       },
       "editing": {
         "disable_dropdown_create": {
-          "description": "",
           "heading": ""
-        },
-        "heading": ""
+        }
       },
       "funscript_offset": {
-        "description": "",
-        "heading": ""
+        "description": ""
       },
       "handy_connection_key": {
-        "description": "",
-        "heading": ""
+        "description": ""
       },
       "images": {
         "options": {
           "write_image_thumbnails": {
-            "description": "",
-            "heading": ""
+            "description": ""
           }
         }
       },
@@ -402,440 +289,266 @@
         "heading": ""
       },
       "max_loop_duration": {
-        "description": "",
         "heading": ""
       },
       "menu_items": {
-        "description": "",
         "heading": ""
       },
       "performers": {
         "options": {
           "image_location": {
-            "description": "",
             "heading": ""
           }
         }
       },
       "preview_type": {
-        "description": "",
         "heading": "",
         "options": {
-          "animated": "",
-          "static": "",
-          "video": ""
+          "static": ""
         }
       },
       "scene_list": {
-        "heading": "",
-        "options": {
-          "show_studio_as_text": ""
-        }
+        "heading": ""
       },
       "scene_player": {
         "heading": "",
         "options": {
-          "auto_start_video": "",
           "auto_start_video_on_play_selected": {
-            "description": "",
-            "heading": ""
+            "description": ""
           },
           "continue_playlist_default": {
-            "description": "",
-            "heading": ""
+            "description": ""
           }
         }
       },
       "scene_wall": {
         "heading": "",
         "options": {
-          "display_title": "",
           "toggle_sound": ""
         }
       },
       "slideshow_delay": {
-        "description": "",
         "heading": ""
-      },
-      "title": ""
+      }
     }
   },
   "configuration": "",
   "countables": {
-    "files": "",
     "galleries": "",
-    "images": "",
     "markers": "",
-    "movies": "",
     "performers": "",
-    "scenes": "",
-    "studios": "",
-    "tags": ""
+    "studios": ""
   },
   "country": "",
-  "cover_image": "",
   "created_at": "",
   "criterion": {
-    "greater_than": "",
-    "less_than": "",
-    "value": ""
+    "less_than": ""
   },
   "criterion_modifier": {
     "between": "",
-    "equals": "",
     "excludes": "",
-    "format_string": "",
     "greater_than": "",
-    "includes": "",
     "includes_all": "",
-    "is_null": "",
     "less_than": "",
-    "matches_regex": "",
     "not_between": "",
-    "not_equals": "",
-    "not_matches_regex": "",
-    "not_null": ""
+    "not_matches_regex": ""
   },
   "custom": "",
-  "date": "",
   "death_date": "",
-  "death_year": "",
   "descending": "",
-  "detail": "",
   "details": "",
-  "developmentVersion": "",
   "dialogs": {
     "aliases_must_be_unique": "",
-    "delete_alert": "",
     "delete_confirm": "",
-    "delete_entity_desc": "",
     "delete_entity_title": "",
-    "delete_galleries_extra": "",
     "delete_gallery_files": "",
-    "delete_object_desc": "",
     "delete_object_overflow": "",
-    "delete_object_title": "",
     "edit_entity_title": "",
-    "export_include_related_objects": "",
     "export_title": "",
     "lightbox": {
-      "delay": "",
       "display_mode": {
         "fit_horizontally": "",
-        "fit_to_screen": "",
-        "label": "",
-        "original": ""
+        "label": ""
       },
       "options": "",
-      "reset_zoom_on_nav": "",
       "scale_up": {
-        "description": "",
-        "label": ""
+        "description": ""
       },
       "scroll_mode": {
         "description": "",
-        "label": "",
-        "pan_y": "",
-        "zoom": ""
+        "pan_y": ""
       }
     },
     "merge_tags": {
-      "destination": "",
-      "source": ""
+      "destination": ""
     },
     "overwrite_filter_confirm": "",
     "scene_gen": {
-      "image_previews": "",
       "marker_image_previews": "",
-      "marker_screenshots": "",
       "markers": "",
-      "overwrite": "",
       "phash": "",
-      "preview_exclude_end_time_desc": "",
       "preview_exclude_end_time_head": "",
-      "preview_exclude_start_time_desc": "",
       "preview_exclude_start_time_head": "",
-      "preview_options": "",
       "preview_preset_desc": "",
-      "preview_preset_head": "",
       "preview_seg_count_desc": "",
-      "preview_seg_count_head": "",
       "preview_seg_duration_desc": "",
-      "preview_seg_duration_head": "",
       "sprites": "",
-      "transcodes": "",
       "video_previews": ""
     },
-    "scenes_found": "",
     "scrape_entity_query": "",
-    "scrape_entity_title": "",
     "scrape_results_existing": "",
-    "scrape_results_scraped": "",
-    "set_image_url_title": "",
-    "unsaved_changes": ""
+    "set_image_url_title": ""
   },
   "dimensions": "",
-  "director": "",
   "display_mode": {
     "grid": "",
-    "list": "",
     "tagger": "",
-    "unknown": "",
     "wall": ""
   },
-  "donate": "",
   "dupe_check": {
     "description": "",
-    "found_sets": "",
     "options": {
       "exact": "",
-      "high": "",
-      "low": "",
-      "medium": ""
+      "low": ""
     },
-    "search_accuracy_label": "",
-    "title": ""
+    "search_accuracy_label": ""
   },
   "duration": "",
   "effect_filters": {
-    "aspect": "",
     "blue": "",
-    "blur": "",
     "brightness": "",
-    "contrast": "",
     "gamma": "",
-    "green": "",
     "hue": "",
-    "name": "",
     "name_transforms": "",
-    "red": "",
     "reset_filters": "",
-    "reset_transforms": "",
     "rotate": "",
-    "rotate_left_and_scale": "",
     "rotate_right_and_scale": "",
-    "saturation": "",
-    "scale": "",
-    "warmth": ""
+    "scale": ""
   },
   "ethnicity": "",
-  "eye_color": "",
   "fake_tits": "",
-  "false": "",
   "favourite": "",
-  "file": "",
   "file_info": "",
-  "file_mod_time": "",
   "files": "",
-  "filesize": "",
   "filter": "",
-  "filter_name": "",
   "filters": "",
-  "framerate": "",
   "frames_per_second": "",
-  "galleries": "",
   "gallery": "",
-  "gallery_count": "",
   "gender": "",
-  "hair_color": "",
   "hasMarkers": "",
-  "height": "",
   "help": "",
-  "image": "",
   "image_count": "",
-  "images": "",
   "include_parent_tags": "",
-  "include_sub_studios": "",
   "include_sub_tags": "",
-  "instagram": "",
   "interactive": "",
-  "isMissing": "",
   "library": "",
-  "loading": {
-    "generic": ""
-  },
   "marker_count": "",
-  "markers": "",
   "measurements": "",
   "media_info": {
-    "audio_codec": "",
     "checksum": "",
-    "downloaded_from": "",
     "hash": "",
     "performer_card": {
-      "age": "",
       "age_context": ""
     },
-    "phash": "",
-    "stream": "",
-    "video_codec": ""
+    "stream": ""
   },
   "megabits_per_second": "",
-  "metadata": "",
   "movie": "",
-  "movie_scene_number": "",
   "movies": "",
-  "name": "",
   "new": "",
-  "none": "",
   "o_counter": "",
-  "operations": "",
   "organized": "",
   "pagination": {
-    "first": "",
     "last": "",
-    "next": "",
     "previous": ""
   },
-  "parent_of": "",
   "parent_studios": "",
-  "parent_tag_count": "",
   "parent_tags": "",
-  "part_of": "",
   "path": "",
-  "performer": "",
   "performerTags": "",
-  "performer_count": "",
   "performer_image": "",
-  "performers": "",
   "piercings": "",
-  "queue": "",
   "random": "",
-  "rating": "",
   "resolution": "",
-  "scene": "",
   "sceneTagger": "",
-  "sceneTags": "",
   "scene_count": "",
-  "scene_id": "",
   "scenes": "",
-  "scenes_updated_at": "",
   "search_filter": {
     "add_filter": "",
-    "name": "",
-    "saved_filters": "",
-    "update_filter": ""
+    "saved_filters": ""
   },
   "seconds": "",
-  "settings": "",
   "setup": {
     "confirm": {
       "almost_ready": "",
-      "configuration_file_location": "",
       "database_file_path": "",
-      "default_db_location": "",
       "default_generated_content_location": "",
-      "generated_directory": "",
-      "nearly_there": "",
-      "stash_library_directories": ""
+      "nearly_there": ""
     },
     "creating": {
-      "creating_your_system": "",
-      "ffmpeg_notice": ""
+      "creating_your_system": ""
     },
     "errors": {
       "something_went_wrong": "",
-      "something_went_wrong_description": "",
       "something_went_wrong_while_setting_up_your_system": ""
     },
-    "github_repository": "",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "",
-      "backup_recommended": "",
       "migrating_database": "",
-      "migration_failed": "",
       "migration_failed_error": "",
-      "migration_failed_help": "",
       "migration_irreversible_warning": "",
-      "migration_required": "",
-      "perform_schema_migration": "",
-      "schema_too_old": ""
+      "perform_schema_migration": ""
     },
     "paths": {
       "database_filename_empty_for_default": "",
-      "description": "",
       "path_to_generated_directory_empty_for_default": "",
-      "set_up_your_paths": "",
       "stash_alert": "",
-      "where_can_stash_store_its_database": "",
       "where_can_stash_store_its_database_description": "",
-      "where_can_stash_store_its_generated_content": "",
       "where_can_stash_store_its_generated_content_description": "",
-      "where_is_your_porn_located": "",
       "where_is_your_porn_located_description": ""
     },
-    "stash_setup_wizard": "",
     "success": {
       "getting_help": "",
-      "help_links": "",
       "in_app_manual_explained": "",
-      "next_config_step_one": "",
       "next_config_step_two": "",
-      "open_collective": "",
       "support_us": "",
-      "thanks_for_trying_stash": "",
-      "welcome_contrib": "",
-      "your_system_has_been_created": ""
+      "welcome_contrib": ""
     },
     "welcome": {
       "config_path_logic_explained": "",
-      "in_current_stash_directory": "",
       "in_the_current_working_directory": "",
-      "next_step": "",
       "store_stash_config": "",
-      "unable_to_locate_config": "",
       "unexpected_explained": ""
     },
     "welcome_specific_config": {
-      "config_path": "",
-      "next_step": "",
-      "unable_to_locate_specified_config": ""
+      "next_step": ""
     },
     "welcome_to_stash": ""
   },
-  "stash_id": "",
   "stash_ids": "",
   "stats": {
-    "image_size": "",
-    "scenes_duration": "",
-    "scenes_size": ""
+    "scenes_duration": ""
   },
   "status": "",
-  "studio": "",
   "studio_depth": "",
-  "studios": "",
   "sub_tag_count": "",
-  "sub_tag_of": "",
   "sub_tags": "",
-  "subsidiary_studios": "",
   "synopsis": "",
-  "tag": "",
   "tag_count": "",
-  "tags": "",
   "tattoos": "",
-  "title": "",
   "toast": {
     "added_entity": "",
-    "added_generation_job_to_queue": "",
     "created_entity": "",
-    "default_filter_set": "",
     "delete_entity": "",
-    "delete_past_tense": "",
     "generating_screenshot": "",
-    "merged_tags": "",
     "rescanning_entity": "",
-    "saved_entity": "",
     "started_auto_tagging": "",
-    "started_generating": "",
-    "started_importing": "",
-    "updated_entity": ""
+    "started_importing": ""
   },
   "total": "",
   "true": "Waar",
   "twitter": "Twitter",
-  "up-dir": "",
   "updated_at": "",
-  "url": "",
   "weight": "Gewicht",
   "years_old": "jaar oud"
 }
