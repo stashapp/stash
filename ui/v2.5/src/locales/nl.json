@@ -124,9 +124,6 @@
       "set_cover_label": "Zet scène omslag afbeelding"
     }
   },
-  "criterion": {
-    "less_than": ""
-  },
   "setup": {
     "welcome": {
       "store_stash_config": ""
