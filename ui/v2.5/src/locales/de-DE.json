@@ -436,6 +436,10 @@
         "heading": "Szenenplayer",
         "options": {
           "auto_start_video": "Video automatisch starten",
+          "auto_start_video_on_play_selected": {
+            "description": "Automatische Wiedergabe von ausgewählten oder zufälligen Szenenvideos von der Szenenseite",
+            "heading": "Automatische Wiedergabe von ausgewählten Videos"
+          },
           "continue_playlist_default": {
             "description": "Nächste Szene in der Warteschlange spielen",
             "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
@@ -505,6 +509,8 @@
     "delete_confirm": "Möchten Sie {entityName} wirklich löschen?",
     "delete_entity_desc": "{count, plural, one {Möchten Sie {singularEntity} wirklich löschen? Sofern die Datei nicht ebenfalls gelöscht wird, wird diese {singularEntity} beim Scannen wieder hinzugefügt.} Oder{Möchten Sie diese {pluralEntity} wirklich löschen? Sofern die Dateien nicht ebenfalls gelöscht werden, werden diese {pluralEntity} beim Scannen wieder hinzugefügt.}}",
     "delete_entity_title": "{count, plural, one {Lösche {singularEntity}} other {Lösche {pluralEntity}}}",
+    "delete_galleries_extra": "…plus allen Bilddateien, die keiner anderen Galerie angehängt sind.",
+    "delete_gallery_files": "Lösche Galerieordner/zip Datei und alle Bilder, die keiner anderen Galerie angehängt sind.",
     "delete_object_desc": "Möchten Sie {count, plural, one {diese {singularEntity}} other {diese {pluralEntity}}} wirklich löschen?",
     "delete_object_overflow": "…und {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
@@ -519,7 +525,17 @@
         "label": "Anzeigemodus",
         "original": "Original"
       },
-      "options": "Optionen"
+      "options": "Optionen",
+      "reset_zoom_on_nav": "Zoomstufe beim Bildwechsel zurücksetzen",
+      "scale_up": {
+        "description": "Skaliere kleinere Bilder auf Bildschirmgröße",
+        "label": "Skalieren, um zu passen"
+      },
+      "scroll_mode": {
+        "description": "Halte die Umschalttaste gedrückt, um einen anderen Modus vorübergehend zu verwenden.",
+        "label": "Scroll-Modus",
+        "zoom": "Zoomen"
+      }
     },
     "merge_tags": {
       "destination": "Ziel",
@@ -546,6 +562,8 @@
       "transcodes": "Transcodes (MP4-Konvertierungen von nicht unterstützten Videoformaten)",
       "video_previews": "Vorschauen (Videovorschauen, die abgespielt werden, wenn Sie mit der Maus über eine Szene fahren)"
     },
+    "scenes_found": "{count} Szenen gefunden",
+    "scrape_entity_query": "{entity_type} Scrape-Abfrage",
     "scrape_entity_title": "{entity_type} Scrape-Ergebnisse",
     "scrape_results_existing": "Vorhanden",
     "scrape_results_scraped": "Gescraped",
@@ -599,10 +617,12 @@
   "ethnicity": "Ethnizität",
   "eye_color": "Augenfarbe",
   "fake_tits": "Gemachte Brüste",
+  "false": "Falsch",
   "favourite": "Favorit",
   "file": "Datei",
   "file_info": "Datei",
   "file_mod_time": "Dateiänderungszeit",
+  "files": "Dateien",
   "filesize": "Dateigröße",
   "filter": "Filter",
   "filter_name": "Filtername",
@@ -646,6 +666,7 @@
     "stream": "Stream",
     "video_codec": "Video-Codec"
   },
+  "megabits_per_second": "{value} Megabit pro Sekunde",
   "metadata": "Metadaten",
   "movie": "Film",
   "movie_scene_number": "Filmszenennummer",
@@ -662,7 +683,11 @@
     "next": "Nächster",
     "previous": "Vorheriger"
   },
+  "parent_of": "Übergeordnet von {children}",
   "parent_studios": "Elternstudios",
+  "parent_tag_count": "Übergeordnete Tag-Anzahl",
+  "parent_tags": "Übergeordnete Tags",
+  "part_of": "Übergeordnet von {parent}",
   "path": "Pfad",
   "performer": "Darsteller",
   "performerTags": "Darsteller-Tags",
@@ -690,6 +715,9 @@
   "seconds": "Sekunden",
   "settings": "Einstellungen",
   "setup": {
+    "confirm": {
+      "almost_ready": "Wir sind fast bereit die Konfiguration abzuschließen. Bitte bestätige die folgenden Einstellungen. Du kannst auf Zurück klicken, um etwas Falsches zu ändern. Wenn alles gut aussieht, klicke auf Bestätigen, um dein System zu erstellen."
+    },
     "success": {
       "support_us": "Unterstütze uns"
     },
