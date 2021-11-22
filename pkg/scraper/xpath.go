@@ -3,7 +3,6 @@ package scraper
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -36,29 +35,33 @@ func newXpathScraper(scraper scraperTypeConfig, client *http.Client, txnManager 
 	}
 }
 
-func (s *xpathScraper) getXpathScraper() *mappedScraper {
-	return s.config.XPathScrapers[s.scraper.Scraper]
-}
-
-func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, *mappedScraper, error) {
-	scraper := s.getXpathScraper()
-
+func (s *xpathScraper) xpathScraper() (*mappedScraper, error) {
+	scraper := s.config.XPathScrapers[s.scraper.Scraper]
 	if scraper == nil {
-		return nil, nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+		return nil, fmt.Errorf("%w: searched for xpath scraper %v", ErrNotFound, s.scraper.Scraper)
 	}
 
+	return scraper, nil
+}
+
+func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, error) {
 	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return doc, scraper, nil
+	return doc, nil
 }
 
 func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
+	scraper, err := s.xpathScraper()
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -79,10 +82,9 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.Sc
 }
 
 func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, fmt.Errorf("%w: name %v", ErrNotFound, s.scraper.Scraper)
+	scraper, err := s.xpathScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	const placeholder = "{}"
@@ -136,10 +138,9 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.xpathScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -171,10 +172,9 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (model
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.xpathScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -195,10 +195,9 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.xpathScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)

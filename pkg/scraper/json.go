@@ -32,24 +32,24 @@ func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager m
 	}
 }
 
-func (s *jsonScraper) getJsonScraper() *mappedScraper {
-	return s.config.JsonScrapers[s.scraper.Scraper]
-}
-
-func (s *jsonScraper) scrapeURL(ctx context.Context, url string) (string, *mappedScraper, error) {
-	scraper := s.getJsonScraper()
-
+func (s *jsonScraper) jsonScraper() (*mappedScraper, error) {
+	scraper := s.config.JsonScrapers[s.scraper.Scraper]
 	if scraper == nil {
-		return "", nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+		return nil, fmt.Errorf("%w: searched for scraper name %v", ErrNotFound, s.scraper.Scraper)
 	}
 
+	return scraper, nil
+
+}
+
+func (s *jsonScraper) scrapeURL(ctx context.Context, url string) (string, error) {
 	doc, err := s.loadURL(ctx, url)
 
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 
-	return doc, scraper, nil
+	return doc, nil
 }
 
 func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
@@ -77,7 +77,12 @@ func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
 
 func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for url-queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
+	scraper, err := s.jsonScraper()
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := s.scrapeURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -98,10 +103,9 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.Scr
 }
 
 func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, fmt.Errorf("%w: name %v", ErrNotFound, s.scraper.Scraper)
+	scraper, err := s.jsonScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	const placeholder = "{}"
@@ -157,10 +161,9 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.jsonScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -192,10 +195,9 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.jsonScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -216,10 +218,9 @@ func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *model
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper := s.getJsonScraper()
-
-	if scraper == nil {
-		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.jsonScraper()
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
