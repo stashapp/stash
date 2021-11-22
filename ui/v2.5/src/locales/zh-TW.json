@@ -217,7 +217,7 @@
       "calculate_md5_and_ohash_desc": "除 oshash 外，同時也計算 MD5 的雜湊值。開啟後，可能會影響初次掃描的速度。若要關閉 MD5 計算，請將『生成檔案名所使用的雜湊演算法』設為 oshash。",
       "calculate_md5_and_ohash_label": "計算影片 MD5",
       "check_for_insecure_certificates": "檢查憑證安全性",
-      "check_for_insecure_certificates_desc": "某些網站所使用的 SSL 憑證可能有安全性問題。取消勾選後，爬蟲工具會跳過不安全的憑證檢查，以允許爬蟲進行作業。\n如果您在抓取資訊時遇到憑證錯誤，請取消勾選此選項。",
+      "check_for_insecure_certificates_desc": "某些網站所使用的 SSL 憑證可能有安全性問題。取消勾選後，爬蟲工具會跳過不安全的憑證檢查，以允許爬蟲進行作業。如果您在抓取資訊時遇到憑證錯誤，請取消勾選此選項。",
       "chrome_cdp_path": "Chrome CDP 路徑",
       "chrome_cdp_path_desc": "Chrome 執行檔的檔案路徑，或 Chrome 的遠端地址（以 http:// 或 https:// 開頭，例如 http://localhost:9222/json/version）。",
       "create_galleries_from_folders_desc": "勾選後，則會從包含圖片的資料夾建立圖庫。",
@@ -230,14 +230,14 @@
       "excluded_image_gallery_patterns_head": "圖片/圖庫排除規則",
       "excluded_video_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的影片檔案/路徑的正則表達式",
       "excluded_video_patterns_head": "影片排除規則",
-      "gallery_ext_desc": "以逗號為區隔的副檔名名稱，這些檔案將被視為圖庫或圖包",
+      "gallery_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為圖庫或圖包。",
       "gallery_ext_head": "圖庫 ZIP 檔副檔名",
       "generated_file_naming_hash_desc": "使用 MD5 或 oshash 生成檔案命名。更改此設定後，所有短片則須有先對應的 MD5/oshash 雜湊值。因此，之前已經生成的檔案可能需要重新遷移或重新生成。請參閱『遷移』設定。",
       "generated_file_naming_hash_head": "生成檔案名所使用的雜湊演算法",
       "generated_files_location": "生成文件的檔案位置（短片標記、短片預覽、預覽圖等）",
       "generated_path_head": "生成檔案儲存路徑",
       "hashing": "雜湊值設定",
-      "image_ext_desc": "以逗號為區隔的副檔名名稱，這些檔案將被視為圖片",
+      "image_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為圖片。",
       "image_ext_head": "圖片副檔名",
       "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
       "include_audio_head": "包含音訊",
@@ -258,7 +258,7 @@
       "scraper_user_agent_desc": "抓取 HTTP 資料時所用的用戶代理字串 (User-Agent)",
       "scraping": "爬蟲設定",
       "sqlite_location": "SQLite 資料庫的位置（需重新啟動）",
-      "video_ext_desc": "以逗號為區隔的副檔名名稱，這些檔案將被視為影片",
+      "video_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為影片。",
       "video_ext_head": "影片副檔名",
       "video_head": "影片設定"
     },
@@ -283,7 +283,7 @@
     "stashbox": {
       "add_instance": "新增 Stash-box 端點",
       "api_key": "API 金鑰",
-      "description": "Stash-box 有助於根據影片的特徵碼和檔案名稱自動標記短片及演員。\n您可在您的 Stash-box 端點中的帳戶資訊內找到端點資訊以及您的 API 金鑰。\n如果您有多個端點數量的話，名稱資訊不可留空。",
+      "description": "Stash-box 可以根據影片的特徵碼和檔案名稱來自動標記短片及演員。\n您可在您的 Stash-box 端點中的帳戶資訊內找到端點資訊以及您的 API 金鑰。如果您有多個端點數量的話，名稱欄位不可留空。",
       "endpoint": "端點",
       "graphql_endpoint": "GraphQL 端點",
       "name": "名稱",
@@ -296,7 +296,7 @@
       "backing_up_database": "備份資料庫中",
       "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
       "backup_database": "將整個資料庫備份至與資料庫相同的目錄下，該匯出的名稱格式為 {filename_format}",
-      "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。請注意，本動作具破壞性且無法復原！",
+      "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。此動作具無法復原。",
       "dont_include_file_extension_as_part_of_the_title": "不要在標題中附上檔案副檔名",
       "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
       "generate_desc": "產生輔助圖片、預覽、影片檔、VTT 字幕等檔案。",
@@ -363,7 +363,7 @@
         "option_label": "啟用自定義 CSS"
       },
       "delete_options": {
-        "description": "刪除圖片、圖庫、及短片時的預設設定",
+        "description": "刪除圖片、圖庫及短片時的預設設定。",
         "heading": "刪除選項",
         "options": {
           "delete_file": "將『刪除檔案』設為預設選項",
@@ -412,7 +412,7 @@
       "performers": {
         "options": {
           "image_location": {
-            "description": "自訂演員圖像路徑，留空以使用內建預設。",
+            "description": "預設演員圖像的自訂路徑。留空以使用內建預設值",
             "heading": "自訂演員圖像路徑"
           }
         }
@@ -511,7 +511,7 @@
     "delete_entity_desc": "{count, plural, one {你確定要刪除該{singularEntity}嗎？除非連同檔案一起刪除，否則，下次進行檔案掃描時，該{singularEntity}會被重新加到資料庫中。} other {你確定要刪除這些{pluralEntity}嗎？除非連同檔案一起刪除，否則，下次進行檔案掃描時，這些{pluralEntity}會被重新加到資料庫中。}}",
     "delete_entity_title": "{count, plural, other {刪除{pluralEntity}}}",
     "delete_galleries_extra": "…及其他不在圖庫內的圖片檔案。",
-    "delete_gallery_files": "刪除所有不在任一圖庫內的圖庫資料夾、壓縮檔、及圖檔",
+    "delete_gallery_files": "刪除所有不在任一圖庫內的圖庫資料夾、壓縮檔及圖檔。",
     "delete_object_desc": "你確定要刪除{count, plural, =1 {這個{singularEntity}} other {這些{pluralEntity}}}嗎?",
     "delete_object_overflow": "…以及 {count} 個其他 {count, plural, =1 {{singularEntity}} other {{pluralEntity}}}。",
     "delete_object_title": "刪除{count, plural, =1 {{singularEntity}} other {{pluralEntity}}}",
@@ -741,13 +741,13 @@
     "github_repository": "GitHub 版本庫",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "備份資料庫路徑（留空以關閉備份）：",
-      "backup_recommended": "建議您在遷移之前備份現有資料庫檔案。如果需要，我們可以替您完成此操作，並將您的備份複製到 <code>{defaultBackupPath}</code>。",
+      "backup_recommended": "在進行遷移之前，建議您先備份現有資料庫檔案。如果需要，我們可以為您完成此操作，並將您的備份儲存於 <code>{defaultBackupPath}</code>。",
       "migrating_database": "遷移資料庫中",
       "migration_failed": "遷移失敗",
       "migration_failed_error": "遷移資料庫時遇到以下錯誤：",
       "migration_failed_help": "請進行所需的更正並重試。否則，請在 {githubLink} 上提出問題或在 {discordLink} 中尋求協助。",
       "migration_irreversible_warning": "架構遷移是不可逆的過程。遷移後，您的資料庫將無法與先前的 Stash 版本相容。",
-      "migration_required": "遷移須知",
+      "migration_required": "需要遷移",
       "perform_schema_migration": "執行架構遷移",
       "schema_too_old": "您當前的資料庫版本為 <strong>{databaseSchema}</strong>，需要遷移至版本 <strong>{appSchema}</strong>。如果不進行資料庫遷移，此版本的 Stash 將無法運行。"
     },
@@ -825,9 +825,9 @@
     "merged_tags": "已合併的標籤",
     "rescanning_entity": "重新掃描{singularEntity}中…",
     "saved_entity": "已儲存{entity}",
-    "started_auto_tagging": "自動套用標籤中…",
-    "started_generating": "生成檔案中…",
-    "started_importing": "匯入中…",
+    "started_auto_tagging": "自動套用標籤中",
+    "started_generating": "生成檔案中",
+    "started_importing": "匯入中",
     "updated_entity": "已更新{entity}"
   },
   "total": "總計",
