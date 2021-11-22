@@ -1,10 +1,8 @@
 package desktop
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -14,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
+	"golang.org/x/term"
 )
 
 func Initialize() {
@@ -89,35 +88,28 @@ func StartBrowser(force bool) {
 }
 
 func IsDesktop() bool {
-	// TODO if desktop integration is disabled
+	// TODO if desktop integration config option is disabled
 
 	// check if running under root
 	if os.Getuid() == 0 {
 		return false
 	}
-	// check if started by init, e.g. stash is a *nix systemd service / MacOS launchd service
-	if os.Getppid() == 1 {
+	// Check if stdin is a terminal
+	if term.IsTerminal(int(os.Stdin.Fd())) {
+		return false
+	}
+	if isService() {
 		return false
 	}
 	if IsServerDockerized() {
 		return false
 	}
-	// TODO: Check if stdin is terminal
-	// PERHAPS: Check if windows service
 
 	return true
 }
 
 func IsServerDockerized() bool {
-	if runtime.GOOS == "linux" {
-		_, dockerEnvErr := os.Stat("/.dockerenv")
-		cgroups, _ := ioutil.ReadFile("/proc/self/cgroup")
-		if os.IsExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
-			return true
-		}
-	}
-
-	return false
+	return isServerDockerized()
 }
 
 // IsAllowedAutoUpdate tries to determine if the stash binary was installed from a
