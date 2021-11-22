@@ -51,11 +51,11 @@ build: pre-build
 	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
-build-release: EXTRA_LDFLAGS := -s -w
+build-release: EXTRA_LDFLAGS := -s -w -H=windowsgui
 build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
-build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w -H=windowsgui
 build-release-static: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 

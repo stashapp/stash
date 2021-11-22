@@ -6,7 +6,12 @@ package desktop
 import "golang.org/x/sys/windows/svc"
 
 func isService() bool {
-	return svc.IsWindowsService()
+	result, err := svc.IsWindowsService()
+	if err != nil {
+		logger.Errorf("Encountered error checking if running as Windows service: %s", err)
+		return false
+	}
+	return result
 }
 
 func isServerDockerized() bool {
