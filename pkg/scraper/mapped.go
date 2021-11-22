@@ -319,12 +319,22 @@ func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	return nil
 }
 
+type mappedRegexConfigs []mappedRegexConfig
+
+func (cs mappedRegexConfigs) replace(s string) string {
+	// apply regex in order, by chaining functions
+	for _, c := range cs {
+		f := regexFunc(c)
+		s = f(s)
+	}
+
+	return s
+}
+
 type mappedRegexConfig struct {
 	Regex string `yaml:"regex"`
 	With  string `yaml:"with"`
 }
-
-type mappedRegexConfigs []mappedRegexConfig
 
 // regexFunc turns a regex configuration block into a function
 func regexFunc(c mappedRegexConfig) func(string) string {
@@ -415,16 +425,6 @@ func postProcessSubtractDays(next handlerFunc) handlerFunc {
 		dt = dt.AddDate(0, 0, -i)
 		return next(ctx, dt.Format(internalDateFormat), q)
 	}
-}
-
-func (cs mappedRegexConfigs) replace(s string) string {
-	// apply regex in order, by chaining functions
-	for _, c := range cs {
-		f := regexFunc(c)
-		s = f(s)
-	}
-
-	return s
 }
 
 func postProcessReplace(cs mappedRegexConfigs, next handlerFunc) handlerFunc {
@@ -717,7 +717,6 @@ func (c mappedScraperAttrConfig) postProcess(ctx context.Context, value string, 
 }
 
 type mappedResult map[string]string
-type mappedResults []mappedResult
 
 func (r mappedResult) apply(dest interface{}) {
 	destVal := reflect.ValueOf(dest)
@@ -745,6 +744,8 @@ func (r mappedResult) apply(dest interface{}) {
 		}
 	}
 }
+
+type mappedResults []mappedResult
 
 func (r mappedResults) setKey(index int, key string, value string) mappedResults {
 	if index >= len(r) {
