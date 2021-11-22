@@ -1125,7 +1125,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// Set generated to the metadata path for backwards compat
 	i.main.SetDefault(Generated, i.main.GetString(Metadata))
 
-	viper.SetDefault(NoBrowser, NoBrowserDefault)
+	i.main.SetDefault(NoBrowser, NoBrowserDefault)
 
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)

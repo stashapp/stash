@@ -243,6 +243,29 @@ func (_m *PerformerReaderWriter) FindBySceneID(sceneID int) ([]*models.Performer
 	return r0, r1
 }
 
+// FindByStashID provides a mock function with given fields: stashID
+func (_m *PerformerReaderWriter) FindByStashID(stashID models.StashID) ([]*models.Performer, error) {
+	ret := _m.Called(stashID)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func(models.StashID) []*models.Performer); ok {
+		r0 = rf(stashID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.StashID) error); ok {
+		r1 = rf(stashID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByStashIDStatus provides a mock function with given fields: hasStashID, stashboxEndpoint
 func (_m *PerformerReaderWriter) FindByStashIDStatus(hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
 	ret := _m.Called(hasStashID, stashboxEndpoint)

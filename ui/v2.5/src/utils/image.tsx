@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
-import Jimp from "jimp";
+import React, { useCallback, useEffect } from "react";
 
 const readImage = (file: File, onLoadEnd: (imageData: string) => void) => {
   const reader: FileReader = new FileReader();
@@ -35,17 +34,9 @@ const usePasteImage = (
   onLoadEnd: (imageData: string) => void,
   isActive: boolean = true
 ) => {
-  const [isEncoding, setIsEncoding] = useState(false);
-
   const encodeImage = useCallback(
     (data: string) => {
-      setIsEncoding(true);
-      Jimp.read(data).then((image) =>
-        image.quality(75).getBase64(Jimp.MIME_JPEG, (err, buffer) => {
-          setIsEncoding(false);
-          onLoadEnd(err ? "" : buffer);
-        })
-      );
+      onLoadEnd(data);
     },
     [onLoadEnd]
   );
@@ -59,7 +50,7 @@ const usePasteImage = (
     return () => document.removeEventListener("paste", paste);
   }, [isActive, encodeImage]);
 
-  return isEncoding;
+  return false;
 };
 
 const Image = {
