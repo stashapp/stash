@@ -56,10 +56,10 @@ type config struct {
 	StashServer *stashServer `yaml:"stashServer"`
 
 	// Xpath scraping configurations
-	XPathScrapers mappedScrapers `yaml:"xPathScrapers"`
+	XPathScrapers map[string]*mappedScraper `yaml:"xPathScrapers"`
 
 	// Json scraping configurations
-	JsonScrapers mappedScrapers `yaml:"jsonScrapers"`
+	JsonScrapers map[string]*mappedScraper `yaml:"jsonScrapers"`
 
 	// Scraping driver options
 	DriverOptions *scraperDriverOptions `yaml:"driver"`

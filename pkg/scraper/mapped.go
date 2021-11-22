@@ -716,9 +716,6 @@ func (c mappedScraperAttrConfig) postProcess(ctx context.Context, value string, 
 	return c.postProcessActions.Apply(ctx, value, q)
 }
 
-// FIXME: Kill this type
-type mappedScrapers map[string]*mappedScraper
-
 type mappedResult map[string]string
 type mappedResults []mappedResult
 
