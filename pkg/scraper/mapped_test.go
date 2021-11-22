@@ -51,7 +51,7 @@ var feetToCMTests = []feetToCMTest{
 }
 
 func TestFeetToCM(t *testing.T) {
-	pp := postProcessFeetToCm(true)
+	pp := postProcessFeetToCm(done())
 
 	q := &xpathQuery{}
 

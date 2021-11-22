@@ -43,7 +43,6 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 	var ret mappedResults
 
 	for k, attrConfig := range s {
-
 		if attrConfig.Fixed != "" {
 			// TODO - not sure if this needs to set _all_ indexes for the key
 			const i = 0
@@ -359,144 +358,155 @@ func (c mappedRegexConfigs) apply(value string) string {
 	return value
 }
 
-type postProcessAction interface {
-	Apply(ctx context.Context, value string, q mappedQuery) string
+// handlerFunc is the type of post-process handlers
+type handlerFunc func(ctx context.Context, value string, q mappedQuery) string
+
+// Apply runs the given handlerfunc
+func (f handlerFunc) Apply(ctx context.Context, value string, q mappedQuery) string {
+	return f(ctx, value, q)
 }
 
-type postProcessParseDate string
+// done is a handlerFunc which returns its value. This is a no-op func
+// which can be "plugged into" a handler chain to terminate it.
+func done() handlerFunc {
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		return value
+	}
+}
 
-func (p *postProcessParseDate) Apply(ctx context.Context, value string, q mappedQuery) string {
-	parseDate := string(*p)
-
+func postProcessParseDate(layout string, next handlerFunc) handlerFunc {
 	const internalDateFormat = "2006-01-02"
 
-	valueLower := strings.ToLower(value)
-	if valueLower == "today" || valueLower == "yesterday" { // handle today, yesterday
-		dt := time.Now()
-		if valueLower == "yesterday" { // subtract 1 day from now
-			dt = dt.AddDate(0, 0, -1)
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		valueLower := strings.ToLower(value)
+		if valueLower == "today" || valueLower == "yesterday" { // handle today, yesterday
+			dt := time.Now()
+			if valueLower == "yesterday" { // subtract 1 day from now
+				dt = dt.AddDate(0, 0, -1)
+			}
+			return next(ctx, dt.Format(internalDateFormat), q)
 		}
-		return dt.Format(internalDateFormat)
-	}
 
-	if parseDate == "" {
-		return value
-	}
+		if layout == "" {
+			// Nothing to do, next please!
+			return next(ctx, value, q)
+		}
 
-	// try to parse the date using the pattern
-	// if it fails, then just fall back to the original value
-	parsedValue, err := time.Parse(parseDate, value)
-	if err != nil {
-		logger.Warnf("Error parsing date string '%s' using format '%s': %s", value, parseDate, err.Error())
-		return value
-	}
-
-	// convert it into our date format
-	return parsedValue.Format(internalDateFormat)
-}
-
-type postProcessSubtractDays bool
-
-func (p *postProcessSubtractDays) Apply(ctx context.Context, value string, q mappedQuery) string {
-	const internalDateFormat = "2006-01-02"
-
-	i, err := strconv.Atoi(value)
-	if err != nil {
-		logger.Warnf("Error parsing day string %s: %s", value, err)
-		return value
-	}
-
-	dt := time.Now()
-	dt = dt.AddDate(0, 0, -i)
-	return dt.Format(internalDateFormat)
-}
-
-type postProcessReplace mappedRegexConfigs
-
-func (c *postProcessReplace) Apply(ctx context.Context, value string, q mappedQuery) string {
-	replace := mappedRegexConfigs(*c)
-	return replace.apply(value)
-}
-
-type postProcessSubScraper mappedScraperAttrConfig
-
-func (p *postProcessSubScraper) Apply(ctx context.Context, value string, q mappedQuery) string {
-	subScrapeConfig := mappedScraperAttrConfig(*p)
-
-	logger.Debugf("Sub-scraping for: %s", value)
-	ss := q.subScrape(ctx, value)
-
-	if ss != nil {
-		found, err := ss.runQuery(subScrapeConfig.Selector)
+		// try to parse the date using the pattern
+		// if it fails, then just fall back to the original value
+		parsedValue, err := time.Parse(layout, value)
 		if err != nil {
-			logger.Warnf("subscrape for '%v': %v", value, err)
+			logger.Warnf("Error parsing date string '%s' using format '%s': %s", value, layout, err.Error())
+			return next(ctx, value, q)
 		}
 
-		if len(found) > 0 {
-			// check if we're concatenating the results into a single result
-			var result string
-			if subScrapeConfig.hasConcat() {
-				result = subScrapeConfig.concatenateResults(found)
-			} else {
-				result = found[0]
+		// convert it into our date format
+		return next(ctx, parsedValue.Format(internalDateFormat), q)
+	}
+}
+
+func postProcessSubtractDays(next handlerFunc) handlerFunc {
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		const internalDateFormat = "2006-01-02"
+
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			logger.Warnf("Error parsing day string %s: %s", value, err)
+			return next(ctx, value, q)
+		}
+
+		dt := time.Now()
+		dt = dt.AddDate(0, 0, -i)
+		return next(ctx, dt.Format(internalDateFormat), q)
+	}
+}
+
+func postProcessReplace(replace mappedRegexConfigs, next handlerFunc) handlerFunc {
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		ret := replace.apply(value)
+		return next(ctx, ret, q)
+	}
+}
+
+func postProcessSubScraper(sub mappedScraperAttrConfig, next handlerFunc) handlerFunc {
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		logger.Debugf("Sub-scraping for: %s", value)
+		ss := q.subScrape(ctx, value)
+
+		if ss != nil {
+			found, err := ss.runQuery(sub.Selector)
+			if err != nil {
+				logger.Warnf("subscrape for '%v': %v", value, err)
 			}
 
-			result = subScrapeConfig.postProcess(ctx, result, ss)
-			return result
+			if len(found) > 0 {
+				// check if we're concatenating the results into a single result
+				var result string
+				if sub.hasConcat() {
+					result = sub.concatenateResults(found)
+				} else {
+					result = found[0]
+				}
+
+				result = sub.postProcess(ctx, result, ss)
+				return next(ctx, result, q)
+			}
 		}
-	}
 
-	return ""
+		return next(ctx, "", q)
+	}
 }
 
-type postProcessMap map[string]string
+func postProcessMap(m map[string]string, next handlerFunc) handlerFunc {
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		// return the mapped value if present
+		mapped, ok := m[value]
 
-func (p *postProcessMap) Apply(ctx context.Context, value string, q mappedQuery) string {
-	// return the mapped value if present
-	m := *p
-	mapped, ok := m[value]
+		if ok {
+			return next(ctx, mapped, q)
+		}
 
-	if ok {
-		return mapped
+		return next(ctx, value, q)
 	}
-
-	return value
 }
 
-type postProcessFeetToCm bool
-
-func (p *postProcessFeetToCm) Apply(ctx context.Context, value string, q mappedQuery) string {
+func postProcessFeetToCm(next handlerFunc) handlerFunc {
 	const foot_in_cm = 30.48
 	const inch_in_cm = 2.54
 
 	reg := regexp.MustCompile("[0-9]+")
-	filtered := reg.FindAllString(value, -1)
 
-	var feet float64
-	var inches float64
-	if len(filtered) > 0 {
-		feet, _ = strconv.ParseFloat(filtered[0], 64)
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		filtered := reg.FindAllString(value, -1)
+
+		var feet float64
+		var inches float64
+		if len(filtered) > 0 {
+			feet, _ = strconv.ParseFloat(filtered[0], 64)
+		}
+		if len(filtered) > 1 {
+			inches, _ = strconv.ParseFloat(filtered[1], 64)
+		}
+
+		var centimeters = feet*foot_in_cm + inches*inch_in_cm
+
+		// Return rounded integer string
+		return next(ctx, strconv.Itoa(int(math.Round(centimeters))), q)
 	}
-	if len(filtered) > 1 {
-		inches, _ = strconv.ParseFloat(filtered[1], 64)
-	}
-
-	var centimeters = feet*foot_in_cm + inches*inch_in_cm
-
-	// Return rounded integer string
-	return strconv.Itoa(int(math.Round(centimeters)))
 }
 
-type postProcessLbToKg bool
-
-func (p *postProcessLbToKg) Apply(ctx context.Context, value string, q mappedQuery) string {
+func postProcessLbToKg(next handlerFunc) handlerFunc {
 	const lb_in_kg = 0.45359237
-	w, err := strconv.ParseFloat(value, 64)
-	if err == nil {
-		w *= lb_in_kg
-		value = strconv.Itoa(int(math.Round(w)))
+
+	return func(ctx context.Context, value string, q mappedQuery) string {
+		w, err := strconv.ParseFloat(value, 64)
+		if err == nil {
+			w *= lb_in_kg
+			value = strconv.Itoa(int(math.Round(w)))
+		}
+		return next(ctx, value, q)
+
 	}
-	return value
 }
 
 type mappedPostProcessAction struct {
@@ -509,66 +519,68 @@ type mappedPostProcessAction struct {
 	LbToKg       bool                     `yaml:"lbToKg"`
 }
 
-func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
+var ErrInvalid = errors.New("invalid post-process action")
+
+func (a mappedPostProcessAction) parseHandlerFunc(next handlerFunc) (handlerFunc, error) {
 	var found string
-	var ret postProcessAction
+	var ret handlerFunc
 
 	if a.ParseDate != "" {
 		found = "parseDate"
-		action := postProcessParseDate(a.ParseDate)
-		ret = &action
+		action := postProcessParseDate(a.ParseDate, next)
+		ret = action
 	}
 	if len(a.Replace) > 0 {
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "replace")
 		}
 		found = "replace"
-		action := postProcessReplace(a.Replace)
-		ret = &action
+		action := postProcessReplace(a.Replace, next)
+		ret = action
 	}
 	if a.SubScraper != nil {
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "subScraper")
 		}
 		found = "subScraper"
-		action := postProcessSubScraper(*a.SubScraper)
-		ret = &action
+		action := postProcessSubScraper(*a.SubScraper, next)
+		ret = action
 	}
 	if a.Map != nil {
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "map")
 		}
 		found = "map"
-		action := postProcessMap(a.Map)
-		ret = &action
+		action := postProcessMap(a.Map, next)
+		ret = action
 	}
 	if a.FeetToCm {
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "feetToCm")
 		}
 		found = "feetToCm"
-		action := postProcessFeetToCm(a.FeetToCm)
-		ret = &action
+		action := postProcessFeetToCm(next)
+		ret = action
 	}
 	if a.LbToKg {
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "lbToKg")
 		}
 		found = "lbToKg"
-		action := postProcessLbToKg(a.LbToKg)
-		ret = &action
+		action := postProcessLbToKg(next)
+		ret = action
 	}
 	if a.SubtractDays {
 		if found != "" {
 			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "subtractDays")
 		}
 		// found = "subtractDays"
-		action := postProcessSubtractDays(a.SubtractDays)
-		ret = &action
+		action := postProcessSubtractDays(next)
+		ret = action
 	}
 
 	if ret == nil {
-		return nil, errors.New("invalid post-process action")
+		return nil, ErrInvalid
 	}
 
 	return ret, nil
@@ -581,7 +593,7 @@ type mappedScraperAttrConfig struct {
 	Concat      string                    `yaml:"concat"`
 	Split       string                    `yaml:"split"`
 
-	postProcessActions []postProcessAction
+	postProcessActions handlerFunc
 
 	// Deprecated: use PostProcess instead
 	ParseDate  string                   `yaml:"parseDate"`
@@ -613,43 +625,51 @@ func (c *mappedScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) erro
 	return c.convertPostProcessActions()
 }
 
+var ErrDeprecatedActions = errors.New("cannot include postProcess and (parseDate, replace, subScraper) deprecated fields")
+
 func (c *mappedScraperAttrConfig) convertPostProcessActions() error {
 	// ensure we don't have the old deprecated fields and the new post process field
 	if len(c.PostProcess) > 0 {
 		if c.ParseDate != "" || len(c.Replace) > 0 || c.SubScraper != nil {
-			return errors.New("cannot include postProcess and (parseDate, replace, subScraper) deprecated fields")
+			return ErrDeprecatedActions
 		}
 
 		// convert xpathPostProcessAction actions to postProcessActions
-		for _, a := range c.PostProcess {
-			action, err := a.ToPostProcessAction()
+		// process in reverse order to make the action chain run forward
+		// in the right order.
+
+		action := done() // Final action just outputs the chain
+		var err error
+		for i := len(c.PostProcess) - 1; i >= 0; i-- {
+			action, err = c.PostProcess[i].parseHandlerFunc(action)
 			if err != nil {
 				return err
 			}
-			c.postProcessActions = append(c.postProcessActions, action)
 		}
 
+		c.postProcessActions = action
 		c.PostProcess = nil
 	} else {
-		// convert old deprecated fields if present
-		// in same order as they used to be executed
-		if len(c.Replace) > 0 {
-			action := postProcessReplace(c.Replace)
-			c.postProcessActions = append(c.postProcessActions, &action)
-			c.Replace = nil
+		// convert old deprecated fields if present in same order as they
+		// used to be executed. Build up a chain in reverse
+		action := done()
+
+		if c.ParseDate != "" {
+			action = postProcessParseDate(c.ParseDate, action)
+			c.ParseDate = ""
 		}
 
 		if c.SubScraper != nil {
-			action := postProcessSubScraper(*c.SubScraper)
-			c.postProcessActions = append(c.postProcessActions, &action)
+			action = postProcessSubScraper(*c.SubScraper, action)
 			c.SubScraper = nil
 		}
 
-		if c.ParseDate != "" {
-			action := postProcessParseDate(c.ParseDate)
-			c.postProcessActions = append(c.postProcessActions, &action)
-			c.ParseDate = ""
+		if len(c.Replace) > 0 {
+			action = postProcessReplace(c.Replace, action)
+			c.Replace = nil
 		}
+
+		c.postProcessActions = action
 	}
 
 	return nil
@@ -692,11 +712,11 @@ func (c mappedScraperAttrConfig) splitString(value string) []string {
 }
 
 func (c mappedScraperAttrConfig) postProcess(ctx context.Context, value string, q mappedQuery) string {
-	for _, action := range c.postProcessActions {
-		value = action.Apply(ctx, value, q)
+	if c.postProcessActions == nil {
+		return value
 	}
 
-	return value
+	return c.postProcessActions.Apply(ctx, value, q)
 }
 
 type mappedScrapers map[string]*mappedScraper

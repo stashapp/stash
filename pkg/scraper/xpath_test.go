@@ -223,12 +223,9 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	// make this leave the trailing space to test existing scrapers that do so
 	birthdateReplace = append(birthdateReplace, makeReplaceRegex(`\(.* years old\)`, ""))
 
-	birthdateReplaceAction := postProcessReplace(birthdateReplace)
-	birthdateParseDate := postProcessParseDate("January 2, 2006") // "July 1, 1992 (27 years old)&nbsp;"
-	birthdateAttrConfig.postProcessActions = []postProcessAction{
-		&birthdateReplaceAction,
-		&birthdateParseDate,
-	}
+	action := postProcessParseDate("January 2, 2006", done()) // "July 1, 1992 (27 years old)&nbsp;"
+	action = postProcessReplace(birthdateReplace, action)
+	birthdateAttrConfig.postProcessActions = action
 	config.mappedConfig["Birthdate"] = birthdateAttrConfig
 
 	// special handling for career length
@@ -237,21 +234,16 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 
 	var careerLengthReplace mappedRegexConfigs
 	careerLengthReplace = append(careerLengthReplace, makeReplaceRegex(`\s+\(.*\)`, ""))
-	careerLengthReplaceAction := postProcessReplace(careerLengthReplace)
-	careerLengthAttrConfig.postProcessActions = []postProcessAction{
-		&careerLengthReplaceAction,
-	}
+	careerLengthReplaceAction := postProcessReplace(careerLengthReplace, done())
+	careerLengthAttrConfig.postProcessActions = careerLengthReplaceAction
 
 	config.mappedConfig["CareerLength"] = careerLengthAttrConfig
 
 	// use map post-process action for gender
 	genderConfig := makeSimpleAttrConfig(makeCommonXPath("Profession:"))
-	genderMapAction := make(postProcessMap)
-	genderMapAction["Porn Star"] = "Female"
-	genderConfig.postProcessActions = []postProcessAction{
-		&genderMapAction,
-	}
-
+	genderMap := make(map[string]string)
+	genderMap["Porn Star"] = "Female"
+	genderConfig.postProcessActions = postProcessMap(genderMap, done())
 	config.mappedConfig["Gender"] = genderConfig
 
 	// use fixed for Country
@@ -260,17 +252,11 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	}
 
 	heightConfig := makeSimpleAttrConfig(makeCommonXPath("Height:"))
-	heightConvAction := postProcessFeetToCm(true)
-	heightConfig.postProcessActions = []postProcessAction{
-		&heightConvAction,
-	}
+	heightConfig.postProcessActions = postProcessFeetToCm(done())
 	config.mappedConfig["Height"] = heightConfig
 
 	weightConfig := makeSimpleAttrConfig(makeCommonXPath("Weight:"))
-	weightConvAction := postProcessLbToKg(true)
-	weightConfig.postProcessActions = []postProcessAction{
-		&weightConvAction,
-	}
+	weightConfig.postProcessActions = postProcessLbToKg(done())
 	config.mappedConfig["Weight"] = weightConfig
 
 	tagConfig := mappedScraperAttrConfig{
@@ -782,10 +768,6 @@ xPathScrapers:
 	assert.Equal(t, "//movies", sceneConfig.Movies["Name"].Selector)
 	assert.Equal(t, "//performers", sceneConfig.Performers.mappedConfig["Name"].Selector)
 	assert.Equal(t, "//studio", sceneConfig.Studio["Name"].Selector)
-
-	postProcess := sceneConfig.mappedConfig["Title"].postProcessActions
-	parseDate := postProcess[0].(*postProcessParseDate)
-	assert.Equal(t, "January 2, 2006", string(*parseDate))
 }
 
 func TestLoadInvalidXPath(t *testing.T) {
