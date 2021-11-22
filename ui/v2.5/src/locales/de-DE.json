@@ -462,6 +462,7 @@
   },
   "configuration": "Konfiguration",
   "countables": {
+    "files": "{count, plural, one {Datei} other {Dateien}}",
     "galleries": "{count, plural, one {Galerie} other {Galerien}}",
     "images": "{count, plural, one {Bild} other {Bilder}}",
     "markers": "{count, plural, one {Markierung} other {Markierungen}}",
@@ -534,6 +535,7 @@
       "scroll_mode": {
         "description": "Halte die Umschalttaste gedrückt, um einen anderen Modus vorübergehend zu verwenden.",
         "label": "Scroll-Modus",
+        "pan_y": "Schwenkung Y",
         "zoom": "Zoomen"
       }
     },
@@ -544,6 +546,8 @@
     "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
     "scene_gen": {
       "image_previews": "Bildvorschauen (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
+      "marker_image_previews": "Markierungsvorschauen (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
+      "marker_screenshots": "Markierungsbild (statisches JPG-Bild, nur benötigt falls Preview-Typ auf statisches Bild gesetzt ist)",
       "markers": "Markierungen (20-Sekunden-Videos, die mit dem angegebenen Timecode beginnen)",
       "overwrite": "Vorhandene generierte Dateien überschreiben",
       "phash": "Perzeptuelle Hashes (zur Deduplizierung)",
@@ -651,7 +655,7 @@
     "generic": "Wird geladen…"
   },
   "marker_count": "Markierungsanzahl",
-  "markers": "Merker",
+  "markers": "Markierungen",
   "measurements": "Maße",
   "media_info": {
     "audio_codec": "Audio-Codec",
@@ -716,21 +720,81 @@
   "settings": "Einstellungen",
   "setup": {
     "confirm": {
-      "almost_ready": "Wir sind fast bereit die Konfiguration abzuschließen. Bitte bestätige die folgenden Einstellungen. Du kannst auf Zurück klicken, um etwas Falsches zu ändern. Wenn alles gut aussieht, klicke auf Bestätigen, um dein System zu erstellen."
+      "almost_ready": "Wir sind fast bereit die Konfiguration abzuschließen. Bitte bestätige die folgenden Einstellungen. Du kannst auf Zurück klicken, um etwas Falsches zu ändern. Wenn alles gut aussieht, klicke auf Bestätigen, um dein System zu erstellen.",
+      "configuration_file_location": "Ort der Konfigurationsdatei:",
+      "database_file_path": "Dateipfad der Datenbank",
+      "default_db_location": "<Pfad der Konfigurationsdatei beinhaltet>/stash-go.sqlite",
+      "default_generated_content_location": "<Pfad der Konfigurationsdatei beinhaltet>/generated",
+      "generated_directory": "Ordner der generierten Hilfsdateien",
+      "nearly_there": "Fast geschafft!",
+      "stash_library_directories": "Stash Bibliotheks-Ordner"
     },
+    "creating": {
+      "creating_your_system": "Erstelle dein System",
+      "ffmpeg_notice": "Wenn <code>ffmpeg</code> nicht in deinen Pfaden existiert, warte bitte während Stash es für dich herunterlädt. Der Downloadfortschritt wird im Konsolen-Output ausgegeben."
+    },
+    "errors": {
+      "something_went_wrong": "Oh nein! Etwas ist schief gelaufen!",
+      "something_went_wrong_description": "Es sieht so aus, als gäbe es Probleme mit deinen Eingaben, klicke Zurück und repariere sie. Falls du nicht weißt was du falsch gemacht hast, helfen wir gerne auf {discordLink}. Solltest du dir sicher sein einen Bug gefunden zu haben, schau doch mal auf {githubLink} vorbei.",
+      "something_went_wrong_while_setting_up_your_system": "Etwas lief bei der Erstellung des Systems falsch. Hier ist die Fehlermeldung: {error}"
+    },
+    "github_repository": "Github Repository",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "Backup Datenbank Pfad (Leer lassen, um Backups aus zu schalten):",
+      "backup_recommended": "Es wird dringend empfohlen ein Backup deiner Datenbank vor der Migration anzufertigen. Wir können das für dich erledigen, indem wir eine Kopie deiner Datenbank in <code>{defaultBackupPath}</code> anfertigen.",
+      "migrating_database": "Migration der Datenbank im Gange",
+      "migration_failed": "Migration der Datenbank fehlgeschlagen",
+      "migration_failed_error": "Der folgende Fehler ist bei der Migration der Datenbank aufgetreten:",
+      "migration_failed_help": "Bitte führe nötige Korrekturen durch und probiere es erneut. Falls du nicht weißt was du falsch gemacht hast, helfen wir gerne auf {discordLink}. Solltest du dir sicher sein einen Bug gefunden zu haben, schau doch mal auf {githubLink} vorbei.",
+      "migration_irreversible_warning": "Der Migrationsprozess des Datenbankschemas ist irreversibel. Nachdem sie ausgeführt wurde, ist deine Datenbank inkompatibel mit älteren Versionen von Stash.",
+      "migration_required": "Migration nötig",
+      "perform_schema_migration": "Führe Migration des Datenbankschemas durch",
+      "schema_too_old": "Das Schema deiner aktuellen Stash-Datenbank ist von Version <strong>{databaseSchema}</strong> und muss auf die Version <strong>{appSchema}</strong> migriert werden. Die aktuelle Version von Stash wird nicht ohne Migration der Datenbank funktionieren können."
+    },
+    "paths": {
+      "database_filename_empty_for_default": "Datenbank-Dateiname (Leer für Standardwert)",
+      "description": "Als nächstes müssen wir festhalten wo für deine Porno-Kollektion finden können und wo wir unsere Datenbank und Hilfsdateien speichern dürfen. Diese Einstellungen lassen sich später auch noch ändern.",
+      "path_to_generated_directory_empty_for_default": "Pfad zum Ordner der Hilfsdateien (Leer für Standardwert)",
+      "set_up_your_paths": "Setze die Dateipfade",
+      "stash_alert": "Es wurde kein Bibliotheks-Pfad gesetzt. Somit werden keine Dateien in Stash eingescannt. Bist du dir sicher?",
+      "where_can_stash_store_its_database": "Wo darf Stash seine Datenbank abspeichern?",
+      "where_can_stash_store_its_database_description": "Stash nutzt eine sqlite-Datenbank, um Metadaten über deine Pornosammlung zu speichern. Standardmäßig wird diese als <code>stash-go.sqlite</code> in dem Ordner gespeichert, in dem auf deine Konfigurationsdatei liegt. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad mit Dateinamen an.",
+      "where_can_stash_store_its_generated_content": "Wo darf Stash seine generierten Hilfsdateien abspeichern?",
+      "where_can_stash_store_its_generated_content_description": "Um Thumbnails, Previews und Sprites zur Verfügung zu stellen, generiert Stash diese aus deinen Videos und Bildern. Das schließt auch Transkodierungen von nicht unterstützten Dateiformaten mit ein. Standardmäßig wird Stash diese im Ordner <code>generated</code> abspeichern, der sich am Ort der Konfigurationsdatei befindet. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad an. Stash wird den Ordner erstellen, sollte er noch nicht existieren.",
+      "where_is_your_porn_located": "Wo finden wir deine Porno-Kollektion?",
+      "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen."
+    },
+    "stash_setup_wizard": "Stash Setup Wizard",
     "success": {
-      "support_us": "Unterstütze uns"
+      "getting_help": "Hilfe",
+      "help_links": "Solltest du Probleme , Fragen oder Anregungen haben, öffne gerne eine issue auf {githubLink} oder teile sie der Community auf {discordLink} mit.",
+      "in_app_manual_explained": "Du wirst angehalten das In-App-Benutzerhandbuch aufzusuchen, welches du über den {icon}-Icon in der oberen rechten Ecke findest",
+      "next_config_step_one": "Wir bringen dich als nächstes zu den Optionen von Stash. Diese Seiten erlauben es dir zu bestimmen, welche Dateien du einpflegen möchtest oder eben auch nicht, einen Benutzernamen und Passwort anzulegen um dein System zu schützen und haben außerdem noch viele weitere Optionen.",
+      "next_config_step_two": "Wenn du mit deinen Angaben zufrieden bist, kannst du anfangen, indem du Stash deine Dateien einpflegen lässt. Dazu klicke zunächst auf <code>{localized_task}</code> und dann auf <code>{localized_scan}</code>.",
+      "open_collective": "Schau doch mal auf unserer {open_collective_link} vorbei, um herauszufinden, wie du zu der fortwährenden Entwicklung von Stash beitragen kannst.",
+      "support_us": "Unterstütze uns",
+      "thanks_for_trying_stash": "Danke fürs Ausprobieren von Stash!",
+      "welcome_contrib": "Außerdem sind Beiträge in Form von Code (Bug-Fixes, Verbesserungen, Features), Tests, Bug-Reports, Ideen für Features und Verbesserungen, sowie User-Support immer willkommen. Details dazu im entsprechenden Kapitel des In-App-Benutzerhandbuchs.",
+      "your_system_has_been_created": "Geschafft! Dein System wurde erstellt!"
     },
     "welcome": {
+      "config_path_logic_explained": "Stash versucht zunächst seine Konfigurationsdatei (<code>config.yml</code>) in dem aktuellen Arbeitsverzeichnis zu finden, wenn das nicht gelingt fällt es auf <code>$HOME/.stash/config.yml</code> (bei Windows ist das <code>%USERPROFILE%\\.stash\\config.yml</code>) zurück. Du kannst Stash auch einen Pfad beim Start durch die Kommandozeilen-Option <code>-c <path to config file></code> or <code>--config <path to config file></code> vorgeben.",
       "in_current_stash_directory": "Im Verzeichnis <code>$HOME/.stash</code>",
-      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis"
+      "in_the_current_working_directory": "Im aktuellen Arbeitsverzeichnis",
+      "next_step": "Nachdem das alles aus dem Weg ist, sind wir jetzt bereit ein neues System zu erstellen. Wähle dazu zunächst aus wo du die Konfigurationsdatei speichern möchtest und klicke auf Weiter.",
+      "store_stash_config": "Wo möchtest du die Stash Konfigurationsdatei speichern?",
+      "unable_to_locate_config": "Wenn du das hier liest, konnte Stash keine existierende Konfiguration finden. Dieser Wizard wird dich deshalb durch den Prozess führen, eine neue Konfiguration anzulegen.",
+      "unexpected_explained": "Wenn du diesen Wizard nicht erwartest, starte Stash im korrekten Arbeitsverzeichnis neu oder setze den Pfad zur Konfigurationsdatei mit der Kommandozeilenoption <code>-c</code>."
     },
     "welcome_specific_config": {
-      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>"
+      "config_path": "Stash wird den folgenden Pfad für die Konfigurationsdatei verwenden: <code>{path}</code>",
+      "next_step": "Wenn du bereit bist ein neues System anzulegen, klicke Weiter.",
+      "unable_to_locate_specified_config": "Wenn du das hier liest, konnte Stash die Konfigurationsdatei, welche spezifiziert wurde, nicht finden. Dieser Wizard wird dich deshalb durch den Prozess führen, eine neue Konfiguration anzulegen."
     },
     "welcome_to_stash": "Willkommen zu Stash"
   },
   "stash_id": "Stash-ID",
+  "stash_ids": "Stash IDs",
   "stats": {
     "image_size": "Bildgröße",
     "scenes_duration": "Szenendauer",
@@ -767,6 +831,7 @@
     "updated_entity": "{entity} aktualisiert"
   },
   "total": "Gesamt",
+  "true": "Wahr",
   "twitter": "Twitter",
   "up-dir": "Ein Verzeichnis hoch",
   "updated_at": "Aktualisiert am",
