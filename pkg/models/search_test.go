@@ -99,10 +99,26 @@ func TestParseSearchString(t *testing.T) {
 			},
 		},
 		{
+			"or symbol",
+			"a | b",
+			SearchSpecs{
+				AnySets: [][]string{
+					{"a", "b"},
+				},
+			},
+		},
+		{
 			"quoted or",
 			`a "OR" b`,
 			SearchSpecs{
 				MustHave: []string{"a", "OR", "b"},
+			},
+		},
+		{
+			"quoted or symbol",
+			`a "|" b`,
+			SearchSpecs{
+				MustHave: []string{"a", "|", "b"},
 			},
 		},
 		{
@@ -126,6 +142,20 @@ func TestParseSearchString(t *testing.T) {
 			"a OR",
 			SearchSpecs{
 				MustHave: []string{"a", "OR"},
+			},
+		},
+		{
+			"or symbol at start",
+			"| a",
+			SearchSpecs{
+				MustHave: []string{"|", "a"},
+			},
+		},
+		{
+			"or symbol at end",
+			"a |",
+			SearchSpecs{
+				MustHave: []string{"a", "|"},
 			},
 		},
 		{

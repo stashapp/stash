@@ -4,6 +4,7 @@ import "strings"
 
 const (
 	or         = "OR"
+	orSymbol   = "|"
 	notPrefix  = '-'
 	phraseChar = '"'
 )
@@ -60,7 +61,7 @@ func extractOrConditions(words []string, searchSpec *SearchSpecs) []string {
 	for foundOr := true; foundOr; {
 		foundOr = false
 		for i, w := range words {
-			if i > 0 && i < len(words)-1 && strings.EqualFold(w, or) {
+			if i > 0 && i < len(words)-1 && (strings.EqualFold(w, or) || w == orSymbol) {
 				// found an OR keyword
 				// first operand will be the last word
 				startIndex := i - 1
