@@ -175,7 +175,7 @@ ui-start: pre-build
 	$(SET) VITE_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
 	$(SET) VITE_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
 	$(SET) VITE_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
-	cd ui/v2.5 && yarn start
+	cd ui/v2.5 && yarn start --host
 
 .PHONY: fmt-ui
 fmt-ui:
