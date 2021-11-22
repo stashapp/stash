@@ -34,6 +34,10 @@ func (t *SQLiteDate) Scan(value interface{}) error {
 
 // Value implements the driver Valuer interface.
 func (t SQLiteDate) Value() (driver.Value, error) {
+	if !t.Valid {
+		return nil, nil
+	}
+
 	s := strings.TrimSpace(t.String)
 	// handle empty string
 	if s == "" {
