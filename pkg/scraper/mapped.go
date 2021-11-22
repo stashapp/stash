@@ -17,29 +17,30 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type mappedQuery interface {
-	runQuery(selector string) ([]string, error)
-	subScrape(ctx context.Context, value string) mappedQuery
+type queryer interface {
+	query(selector string) ([]string, error)
+	subScrape(ctx context.Context, value string) queryer
 }
 
+// commonMappedConfig defines a set of common replacements
 type commonMappedConfig map[string]string
+
+// replace uses the common map to perform substitutions in s.
+func (c commonMappedConfig) replace(s string) string {
+	if c == nil {
+		return s
+	}
+
+	for commonKey, commonVal := range c {
+		s = strings.ReplaceAll(s, commonKey, commonVal)
+	}
+
+	return s
+}
 
 type mappedConfig map[string]mappedScraperAttrConfig
 
-func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
-	if c == nil {
-		return src
-	}
-
-	ret := src
-	for commonKey, commonVal := range c {
-		ret = strings.ReplaceAll(ret, commonKey, commonVal)
-	}
-
-	return ret
-}
-
-func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonMappedConfig) mappedResults {
+func (s mappedConfig) process(ctx context.Context, q queryer, common commonMappedConfig) mappedResults {
 	var ret mappedResults
 
 	for k, attrConfig := range s {
@@ -49,9 +50,9 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 			ret = ret.setKey(i, k, attrConfig.Fixed)
 		} else {
 			selector := attrConfig.Selector
-			selector = s.applyCommon(common, selector)
+			selector = common.replace(selector)
 
-			found, err := q.runQuery(selector)
+			found, err := q.query(selector)
 			if err != nil {
 				logger.Warnf("key '%v': %v", k, err)
 			}
@@ -68,15 +69,15 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 	return ret
 }
 
-func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig mappedScraperAttrConfig, found []string) []string {
+func (s mappedConfig) postProcess(ctx context.Context, q queryer, attrConfig mappedScraperAttrConfig, found []string) []string {
 	// check if we're concatenating the results into a single result
 	var ret []string
-	if attrConfig.hasConcat() {
-		result := attrConfig.concatenateResults(found)
+	if attrConfig.Concat != "" {
+		result := strings.Join(found, attrConfig.Concat)
 		result = attrConfig.postProcess(ctx, result, q)
-		if attrConfig.hasSplit() {
-			results := attrConfig.splitString(result)
-			results = attrConfig.cleanResults(results)
+		if attrConfig.Split != "" {
+			results := fieldSplit(result, attrConfig.Split)
+			results = cleanResults(results)
 			return results
 		}
 
@@ -84,13 +85,13 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 	} else {
 		for _, text := range found {
 			text = attrConfig.postProcess(ctx, text, q)
-			if attrConfig.hasSplit() {
-				return attrConfig.splitString(text)
+			if attrConfig.Split != "" {
+				return fieldSplit(text, attrConfig.Split)
 			}
 
 			ret = append(ret, text)
 		}
-		ret = attrConfig.cleanResults(ret)
+		ret = cleanResults(ret)
 	}
 
 	return ret
@@ -325,15 +326,20 @@ type mappedRegexConfig struct {
 
 type mappedRegexConfigs []mappedRegexConfig
 
-func (c mappedRegexConfig) apply(value string) string {
-	if c.Regex != "" {
+// regexFunc turns a regex configuration block into a function
+func regexFunc(c mappedRegexConfig) func(string) string {
+	return func(s string) string {
+		if c.Regex == "" {
+			return s
+		}
+
 		re, err := regexp.Compile(c.Regex)
 		if err != nil {
 			logger.Warnf("Error compiling regex '%s': %s", c.Regex, err.Error())
-			return value
+			return s
 		}
 
-		ret := re.ReplaceAllString(value, c.With)
+		ret := re.ReplaceAllString(s, c.With)
 
 		// trim leading and trailing whitespace
 		// this is done to maintain backwards compatibility with existing
@@ -341,35 +347,25 @@ func (c mappedRegexConfig) apply(value string) string {
 		ret = strings.TrimSpace(ret)
 
 		logger.Debugf(`Replace: '%s' with '%s'`, c.Regex, c.With)
-		logger.Debugf("Before: %s", value)
+		logger.Debugf("Before: %s", s)
 		logger.Debugf("After: %s", ret)
+
 		return ret
 	}
-
-	return value
-}
-
-func (c mappedRegexConfigs) apply(value string) string {
-	// apply regex in order
-	for _, config := range c {
-		value = config.apply(value)
-	}
-
-	return value
 }
 
 // handlerFunc is the type of post-process handlers
-type handlerFunc func(ctx context.Context, value string, q mappedQuery) string
+type handlerFunc func(ctx context.Context, value string, q queryer) string
 
 // Apply runs the given handlerfunc
-func (f handlerFunc) Apply(ctx context.Context, value string, q mappedQuery) string {
+func (f handlerFunc) Apply(ctx context.Context, value string, q queryer) string {
 	return f(ctx, value, q)
 }
 
 // done is a handlerFunc which returns its value. This is a no-op func
 // which can be "plugged into" a handler chain to terminate it.
 func done() handlerFunc {
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		return value
 	}
 }
@@ -377,7 +373,7 @@ func done() handlerFunc {
 func postProcessParseDate(layout string, next handlerFunc) handlerFunc {
 	const internalDateFormat = "2006-01-02"
 
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		valueLower := strings.ToLower(value)
 		if valueLower == "today" || valueLower == "yesterday" { // handle today, yesterday
 			dt := time.Now()
@@ -406,7 +402,7 @@ func postProcessParseDate(layout string, next handlerFunc) handlerFunc {
 }
 
 func postProcessSubtractDays(next handlerFunc) handlerFunc {
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		const internalDateFormat = "2006-01-02"
 
 		i, err := strconv.Atoi(value)
@@ -421,20 +417,30 @@ func postProcessSubtractDays(next handlerFunc) handlerFunc {
 	}
 }
 
-func postProcessReplace(replace mappedRegexConfigs, next handlerFunc) handlerFunc {
-	return func(ctx context.Context, value string, q mappedQuery) string {
-		ret := replace.apply(value)
-		return next(ctx, ret, q)
+func (cs mappedRegexConfigs) replace(s string) string {
+	// apply regex in order, by chaining functions
+	for _, c := range cs {
+		f := regexFunc(c)
+		s = f(s)
+	}
+
+	return s
+}
+
+func postProcessReplace(cs mappedRegexConfigs, next handlerFunc) handlerFunc {
+	return func(ctx context.Context, value string, q queryer) string {
+		value = cs.replace(value)
+		return next(ctx, value, q)
 	}
 }
 
 func postProcessSubScraper(sub mappedScraperAttrConfig, next handlerFunc) handlerFunc {
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		logger.Debugf("Sub-scraping for: %s", value)
 		ss := q.subScrape(ctx, value)
 
 		if ss != nil {
-			found, err := ss.runQuery(sub.Selector)
+			found, err := ss.query(sub.Selector)
 			if err != nil {
 				logger.Warnf("subscrape for '%v': %v", value, err)
 			}
@@ -442,8 +448,8 @@ func postProcessSubScraper(sub mappedScraperAttrConfig, next handlerFunc) handle
 			if len(found) > 0 {
 				// check if we're concatenating the results into a single result
 				var result string
-				if sub.hasConcat() {
-					result = sub.concatenateResults(found)
+				if sub.Concat != "" {
+					result = strings.Join(found, sub.Concat)
 				} else {
 					result = found[0]
 				}
@@ -458,7 +464,7 @@ func postProcessSubScraper(sub mappedScraperAttrConfig, next handlerFunc) handle
 }
 
 func postProcessMap(m map[string]string, next handlerFunc) handlerFunc {
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		// return the mapped value if present
 		mapped, ok := m[value]
 
@@ -476,7 +482,7 @@ func postProcessFeetToCm(next handlerFunc) handlerFunc {
 
 	reg := regexp.MustCompile("[0-9]+")
 
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		filtered := reg.FindAllString(value, -1)
 
 		var feet float64
@@ -498,7 +504,7 @@ func postProcessFeetToCm(next handlerFunc) handlerFunc {
 func postProcessLbToKg(next handlerFunc) handlerFunc {
 	const lb_in_kg = 0.45359237
 
-	return func(ctx context.Context, value string, q mappedQuery) string {
+	return func(ctx context.Context, value string, q queryer) string {
 		w, err := strconv.ParseFloat(value, 64)
 		if err == nil {
 			w *= lb_in_kg
@@ -627,82 +633,73 @@ func (c *mappedScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) erro
 
 var ErrDeprecatedActions = errors.New("cannot include postProcess and (parseDate, replace, subScraper) deprecated fields")
 
-func (c *mappedScraperAttrConfig) convertPostProcessActions() error {
-	// ensure we don't have the old deprecated fields and the new post process field
-	if len(c.PostProcess) > 0 {
-		if c.ParseDate != "" || len(c.Replace) > 0 || c.SubScraper != nil {
-			return ErrDeprecatedActions
-		}
+// convertDeprecatedPostProcessActions handles the old deprecated fields
+func (c *mappedScraperAttrConfig) convertDeprecatedPostProcessActions() error {
+	// convert old deprecated fields if present in same order as they
+	// used to be executed. Build up a chain in reverse
+	action := done()
 
-		// convert xpathPostProcessAction actions to postProcessActions
-		// process in reverse order to make the action chain run forward
-		// in the right order.
-
-		action := done() // Final action just outputs the chain
-		var err error
-		for i := len(c.PostProcess) - 1; i >= 0; i-- {
-			action, err = c.PostProcess[i].parseHandlerFunc(action)
-			if err != nil {
-				return err
-			}
-		}
-
-		c.postProcessActions = action
-		c.PostProcess = nil
-	} else {
-		// convert old deprecated fields if present in same order as they
-		// used to be executed. Build up a chain in reverse
-		action := done()
-
-		if c.ParseDate != "" {
-			action = postProcessParseDate(c.ParseDate, action)
-			c.ParseDate = ""
-		}
-
-		if c.SubScraper != nil {
-			action = postProcessSubScraper(*c.SubScraper, action)
-			c.SubScraper = nil
-		}
-
-		if len(c.Replace) > 0 {
-			action = postProcessReplace(c.Replace, action)
-			c.Replace = nil
-		}
-
-		c.postProcessActions = action
+	if c.ParseDate != "" {
+		action = postProcessParseDate(c.ParseDate, action)
+		c.ParseDate = ""
 	}
+
+	if c.SubScraper != nil {
+		action = postProcessSubScraper(*c.SubScraper, action)
+		c.SubScraper = nil
+	}
+
+	if len(c.Replace) > 0 {
+		action = postProcessReplace(c.Replace, action)
+		c.Replace = nil
+	}
+
+	c.postProcessActions = action
 
 	return nil
 }
 
-func (c mappedScraperAttrConfig) hasConcat() bool {
-	return c.Concat != ""
+func (c *mappedScraperAttrConfig) convertPostProcessActions() error {
+	// No post-process actions means we are in the old legacy case
+	if len(c.PostProcess) == 0 {
+		return c.convertDeprecatedPostProcessActions()
+	}
+
+	// ensure we don't have the old deprecated fields and the new post process field
+	if c.ParseDate != "" || len(c.Replace) > 0 || c.SubScraper != nil {
+		return ErrDeprecatedActions
+	}
+
+	// convert xpathPostProcessAction actions to postProcessActions
+	// process in reverse order to make the action chain run forward
+	// in the right order.
+
+	action := done() // Final action just outputs the chain
+	var err error
+	for i := len(c.PostProcess) - 1; i >= 0; i-- {
+		action, err = c.PostProcess[i].parseHandlerFunc(action)
+		if err != nil {
+			return err
+		}
+	}
+
+	c.postProcessActions = action
+	c.PostProcess = nil
+
+	return nil
 }
 
-func (c mappedScraperAttrConfig) hasSplit() bool {
-	return c.Split != ""
-}
-
-func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
-	separator := c.Concat
-	return strings.Join(nodes, separator)
-}
-
-func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {
+// cleanResults removes duplicate entries and empty values
+func cleanResults(nodes []string) []string {
 	cleaned := utils.StrUnique(nodes)      // remove duplicate values
 	cleaned = utils.StrDelete(cleaned, "") // remove empty values
 	return cleaned
 }
 
-func (c mappedScraperAttrConfig) splitString(value string) []string {
-	separator := c.Split
+// fieldSplit splits the value around sep and returns non-empty fields
+func fieldSplit(value, sep string) []string {
 	var res []string
-
-	if separator == "" {
-		return []string{value}
-	}
-
-	for _, str := range strings.Split(value, separator) {
+	for _, str := range strings.Split(value, sep) {
 		if str != "" {
 			res = append(res, str)
 		}
@@ -711,7 +708,7 @@ func (c mappedScraperAttrConfig) splitString(value string) []string {
 	return res
 }
 
-func (c mappedScraperAttrConfig) postProcess(ctx context.Context, value string, q mappedQuery) string {
+func (c mappedScraperAttrConfig) postProcess(ctx context.Context, value string, q queryer) string {
 	if c.postProcessActions == nil {
 		return value
 	}
@@ -719,15 +716,8 @@ func (c mappedScraperAttrConfig) postProcess(ctx context.Context, value string, 
 	return c.postProcessActions.Apply(ctx, value, q)
 }
 
+// FIXME: Kill this type
 type mappedScrapers map[string]*mappedScraper
-
-type mappedScraper struct {
-	Common    commonMappedConfig            `yaml:"common"`
-	Scene     *mappedSceneScraperConfig     `yaml:"scene"`
-	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
-	Performer *mappedPerformerScraperConfig `yaml:"performer"`
-	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
-}
 
 type mappedResult map[string]string
 type mappedResults []mappedResult
@@ -769,7 +759,15 @@ func (r mappedResults) setKey(index int, key string, value string) mappedResults
 	return r
 }
 
-func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*models.ScrapedPerformer, error) {
+type mappedScraper struct {
+	Common    commonMappedConfig            `yaml:"common"`
+	Scene     *mappedSceneScraperConfig     `yaml:"scene"`
+	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
+	Performer *mappedPerformerScraperConfig `yaml:"performer"`
+	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
+}
+
+func (s mappedScraper) scrapePerformer(ctx context.Context, q queryer) (*models.ScrapedPerformer, error) {
 	var ret models.ScrapedPerformer
 
 	performerMap := s.Performer
@@ -799,7 +797,7 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*models.ScrapedPerformer, error) {
+func (s mappedScraper) scrapePerformers(ctx context.Context, q queryer) ([]*models.ScrapedPerformer, error) {
 	var ret []*models.ScrapedPerformer
 
 	performerMap := s.Performer
@@ -817,7 +815,7 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 	return ret, nil
 }
 
-func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mappedResult) *models.ScrapedScene {
+func (s mappedScraper) processScene(ctx context.Context, q queryer, r mappedResult) *models.ScrapedScene {
 	var ret models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
@@ -892,7 +890,7 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 	return &ret
 }
 
-func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*models.ScrapedScene, error) {
+func (s mappedScraper) scrapeScenes(ctx context.Context, q queryer) ([]*models.ScrapedScene, error) {
 	var ret []*models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
@@ -911,7 +909,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*mode
 	return ret, nil
 }
 
-func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.ScrapedScene, error) {
+func (s mappedScraper) scrapeScene(ctx context.Context, q queryer) (*models.ScrapedScene, error) {
 	var ret models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
@@ -930,7 +928,7 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*models.ScrapedGallery, error) {
+func (s mappedScraper) scrapeGallery(ctx context.Context, q queryer) (*models.ScrapedGallery, error) {
 	var ret models.ScrapedGallery
 
 	galleryScraperConfig := s.Gallery
@@ -986,7 +984,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 	return &ret, nil
 }
 
-func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
+func (s mappedScraper) scrapeMovie(ctx context.Context, q queryer) (*models.ScrapedMovie, error) {
 	var ret models.ScrapedMovie
 
 	movieScraperConfig := s.Movie

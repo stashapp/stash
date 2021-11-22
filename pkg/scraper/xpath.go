@@ -242,7 +242,7 @@ type xpathQuery struct {
 	scraper *xpathScraper
 }
 
-func (q *xpathQuery) runQuery(selector string) ([]string, error) {
+func (q *xpathQuery) query(selector string) ([]string, error) {
 	found, err := htmlquery.QueryAll(q.doc, selector)
 	if err != nil {
 		return nil, fmt.Errorf("selector '%s': parse error: %v", selector, err)
@@ -282,7 +282,7 @@ func (q *xpathQuery) nodeText(n *html.Node) string {
 	return ret
 }
 
-func (q *xpathQuery) subScrape(ctx context.Context, value string) mappedQuery {
+func (q *xpathQuery) subScrape(ctx context.Context, value string) queryer {
 	doc, err := q.scraper.loadURL(ctx, value)
 
 	if err != nil {

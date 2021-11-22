@@ -244,7 +244,7 @@ type jsonQuery struct {
 	scraper *jsonScraper
 }
 
-func (q *jsonQuery) runQuery(selector string) ([]string, error) {
+func (q *jsonQuery) query(selector string) ([]string, error) {
 	value := gjson.Get(q.doc, selector)
 
 	if !value.Exists() {
@@ -264,7 +264,7 @@ func (q *jsonQuery) runQuery(selector string) ([]string, error) {
 	return ret, nil
 }
 
-func (q *jsonQuery) subScrape(ctx context.Context, value string) mappedQuery {
+func (q *jsonQuery) subScrape(ctx context.Context, value string) queryer {
 	doc, err := q.scraper.loadURL(ctx, value)
 
 	if err != nil {
