@@ -14,6 +14,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+var ErrScraperScript = errors.New("scraper script error")
+
 type scriptScraper struct {
 	scraper      scraperTypeConfig
 	config       config
@@ -74,17 +76,35 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	logger.Debugf("Scraper script <%s> started", strings.Join(cmd.Args, " "))
 
 	// TODO - add a timeout here
-	decodeErr := json.NewDecoder(stdout).Decode(out)
-	if decodeErr != nil {
-		logger.Error("could not unmarshal json: " + decodeErr.Error())
-		return errors.New("could not unmarshal json: " + decodeErr.Error())
+	// Make a copy of stdout here. This allows us to decode it twice.
+	var sb strings.Builder
+	tr := io.TeeReader(stdout, &sb)
+
+	// First, perform a decode where unknown fields are disallowed.
+	d := json.NewDecoder(tr)
+	d.DisallowUnknownFields()
+	strictErr := d.Decode(out)
+
+	if strictErr != nil {
+		// The decode failed for some reason, use the built string
+		// and allow unknown fields in the decode.
+		s := sb.String()
+		lenientErr := json.NewDecoder(strings.NewReader(s)).Decode(out)
+		if lenientErr != nil {
+			// The error is genuine, so return it
+			logger.Errorf("could not unmarshal json from script output: %v", lenientErr)
+			return fmt.Errorf("could not unmarshal json from script output: %w", lenientErr)
+		}
+
+		// Lenient decode succeeded, print a warning, but use the decode
+		logger.Warnf("json script output: %v", strictErr)
 	}
 
 	err = cmd.Wait()
 	logger.Debugf("Scraper script finished")
 
 	if err != nil {
-		return errors.New("error running scraper script")
+		return fmt.Errorf("%w: %v", ErrScraperScript, err)
 	}
 
 	return nil
