@@ -249,3 +249,11 @@ func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {
 
 	return ret, nil
 }
+
+func coalesce(column string) string {
+	return fmt.Sprintf("COALESCE(%s, '')", column)
+}
+
+func like(v string) string {
+	return "%" + v + "%"
+}
