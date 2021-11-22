@@ -3,7 +3,10 @@
 
 package desktop
 
-import "golang.org/x/sys/windows/svc"
+import (
+	"github.com/stashapp/stash/pkg/logger"
+	"golang.org/x/sys/windows/svc"
+)
 
 func isService() bool {
 	result, err := svc.IsWindowsService()
