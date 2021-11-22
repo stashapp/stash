@@ -1,7 +1,9 @@
 package file
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -14,12 +16,14 @@ type RenamerRemover interface {
 	Rename(oldpath, newpath string) error
 	Remove(name string) error
 	RemoveAll(path string) error
+	Stat(name string) (fs.FileInfo, error)
 }
 
 type renamerRemoverImpl struct {
 	RenameFn    func(oldpath, newpath string) error
 	RemoveFn    func(name string) error
 	RemoveAllFn func(path string) error
+	StatFn      func(path string) (fs.FileInfo, error)
 }
 
 func (r renamerRemoverImpl) Rename(oldpath, newpath string) error {
@@ -30,8 +34,12 @@ func (r renamerRemoverImpl) Remove(name string) error {
 	return r.RemoveFn(name)
 }
 
-func (r renamerRemoverImpl) RemoveAll(name string) error {
-	return r.RemoveAllFn(name)
+func (r renamerRemoverImpl) RemoveAll(path string) error {
+	return r.RemoveAllFn(path)
+}
+
+func (r renamerRemoverImpl) Stat(path string) (fs.FileInfo, error) {
+	return r.StatFn(path)
 }
 
 // Deleter is used to safely delete files and directories from the filesystem.
@@ -53,6 +61,7 @@ func NewDeleter() *Deleter {
 			RenameFn:    os.Rename,
 			RemoveFn:    os.Remove,
 			RemoveAllFn: os.RemoveAll,
+			StatFn:      os.Stat,
 		},
 	}
 }
@@ -64,6 +73,16 @@ func NewDeleter() *Deleter {
 // error.
 func (d *Deleter) Files(paths []string) error {
 	for _, p := range paths {
+		// fail silently if the file does not exist
+		if _, err := d.RenamerRemover.Stat(p); err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				logger.Warnf("File %q does not exist and therefore cannot be deleted. Ignoring.", p)
+				continue
+			}
+
+			return fmt.Errorf("check file %q exists: %w", p, err)
+		}
+
 		if err := d.renameForDelete(p); err != nil {
 			return fmt.Errorf("marking file %q for deletion: %w", p, err)
 		}
@@ -80,6 +99,16 @@ func (d *Deleter) Files(paths []string) error {
 // error.
 func (d *Deleter) Dirs(paths []string) error {
 	for _, p := range paths {
+		// fail silently if the file does not exist
+		if _, err := d.RenamerRemover.Stat(p); err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				logger.Warnf("Directory %q does not exist and therefore cannot be deleted. Ignoring.", p)
+				continue
+			}
+
+			return fmt.Errorf("check directory %q exists: %w", p, err)
+		}
+
 		if err := d.renameForDelete(p); err != nil {
 			return fmt.Errorf("marking directory %q for deletion: %w", p, err)
 		}
