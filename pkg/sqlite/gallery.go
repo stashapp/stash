@@ -237,9 +237,7 @@ func (qb *galleryQueryBuilder) makeQuery(galleryFilter *models.GalleryFilterType
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.title", "galleries.path", "galleries.checksum"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(galleryFilter); err != nil {

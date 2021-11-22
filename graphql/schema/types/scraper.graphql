@@ -1,11 +1,27 @@
 enum ScrapeType {
-  """From text query""" 
+  """From text query"""
   NAME
   """From existing object"""
   FRAGMENT
   """From URL"""
   URL
 }
+
+"Type of the content a scraper generates"
+enum ScrapeContentType {
+  GALLERY
+  MOVIE
+  PERFORMER
+  SCENE
+}
+
+"Scraped Content is the forming union over the different scrapers"
+union ScrapedContent = ScrapedStudio
+                     | ScrapedTag
+                     | ScrapedScene
+                     | ScrapedGallery
+                     | ScrapedMovie
+                     | ScrapedPerformer
 
 type ScraperSpec {
     """URLs matching these can be scraped with"""
@@ -25,6 +41,7 @@ type Scraper {
     """Details for movie scraper"""
     movie: ScraperSpec
 }
+
 
 type ScrapedStudio {
   """Set if studio matched"""

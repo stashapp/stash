@@ -47,7 +47,7 @@ require (
 )
 
 require (
-	github.com/vearutop/statigz v1.1.5
+	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.0.1
 )
 
