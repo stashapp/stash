@@ -124,13 +124,14 @@ const (
 	WallShowTitle        = "wall_show_title"
 	defaultWallShowTitle = true
 
-	CustomPerformerImageLocation = "custom_performer_image_location"
-	MaximumLoopDuration          = "maximum_loop_duration"
-	AutostartVideo               = "autostart_video"
-	AutostartVideoOnPlaySelected = "autostart_video_on_play_selected"
-	ContinuePlaylistDefault      = "continue_playlist_default"
-	ShowStudioAsText             = "show_studio_as_text"
-	CSSEnabled                   = "cssEnabled"
+	CustomPerformerImageLocation        = "custom_performer_image_location"
+	MaximumLoopDuration                 = "maximum_loop_duration"
+	AutostartVideo                      = "autostart_video"
+	AutostartVideoOnPlaySelected        = "autostart_video_on_play_selected"
+	autostartVideoOnPlaySelectedDefault = true
+	ContinuePlaylistDefault             = "continue_playlist_default"
+	ShowStudioAsText                    = "show_studio_as_text"
+	CSSEnabled                          = "cssEnabled"
 
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
@@ -830,15 +831,18 @@ func (i *Instance) GetAutostartVideo() bool {
 func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
 	i.Lock()
 	defer i.Unlock()
-	viper.SetDefault(AutostartVideoOnPlaySelected, true)
-	return viper.GetBool(AutostartVideoOnPlaySelected)
+
+	ret := autostartVideoOnPlaySelectedDefault
+	v := i.viper(AutostartVideoOnPlaySelected)
+	if v.IsSet(AutostartVideoOnPlaySelected) {
+		ret = v.GetBool(AutostartVideoOnPlaySelected)
+	}
+
+	return ret
 }
 
 func (i *Instance) GetContinuePlaylistDefault() bool {
-	i.Lock()
-	defer i.Unlock()
-	viper.SetDefault(ContinuePlaylistDefault, false)
-	return viper.GetBool(ContinuePlaylistDefault)
+	return i.getBool(ContinuePlaylistDefault)
 }
 
 func (i *Instance) GetShowStudioAsText() bool {
