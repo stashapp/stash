@@ -200,7 +200,16 @@ export const GalleryEditPanel: React.FC<
         });
         if (result.data?.galleryCreate) {
           history.push(`/galleries/${result.data.galleryCreate.id}`);
-          Toast.success({ content: "Created gallery" });
+          Toast.success({
+            content: intl.formatMessage(
+              { id: "toast.created_entity" },
+              {
+                entity: intl
+                  .formatMessage({ id: "gallery" })
+                  .toLocaleLowerCase(),
+              }
+            ),
+          });
         }
       } else {
         const result = await updateGallery({

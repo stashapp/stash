@@ -405,12 +405,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
         variables: { input },
       });
 
+      const newValue = [...(performers.newValue ?? [])];
+      if (result.data?.performerCreate)
+        newValue.push(result.data.performerCreate.id);
+
       // add the new performer to the new performers value
-      const performerClone = performers.cloneWithValue(performers.newValue);
-      if (!performerClone.newValue) {
-        performerClone.newValue = [];
-      }
-      performerClone.newValue.push(result.data!.performerCreate!.id);
+      const performerClone = performers.cloneWithValue(newValue);
       setPerformers(performerClone);
 
       // remove the performer from the list
@@ -490,12 +490,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
         },
       });
 
+      const newValue = [...(tags.newValue ?? [])];
+      if (result.data?.tagCreate) newValue.push(result.data.tagCreate.id);
+
       // add the new tag to the new tags value
-      const tagClone = tags.cloneWithValue(tags.newValue);
-      if (!tagClone.newValue) {
-        tagClone.newValue = [];
-      }
-      tagClone.newValue.push(result.data!.tagCreate!.id);
+      const tagClone = tags.cloneWithValue(newValue);
       setTags(tagClone);
 
       // remove the tag from the list

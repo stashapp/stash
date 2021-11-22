@@ -743,3 +743,11 @@ dl.details-list {
   grid-column-gap: 10px;
   grid-template-columns: minmax(16.67%, auto) 1fr;
 }
+
+// Fix Safari styling on dropdowns
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4.95 10' fill='%23fff'><polygon points='1.41 4.67 2.48 3.18 3.54 4.67 1.41 4.67'/><polygon points='3.54 5.33 2.48 6.82 1.41 5.33 3.54 5.33'/></svg>")
+    no-repeat right 2px center;
+}
