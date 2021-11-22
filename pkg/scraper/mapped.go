@@ -17,7 +17,7 @@ import (
 )
 
 type mappedQuery interface {
-	runQuery(selector string) []string
+	runQuery(selector string) ([]string, error)
 	subScrape(value string) mappedQuery
 }
 
@@ -51,7 +51,10 @@ func (s mappedConfig) process(q mappedQuery, common commonMappedConfig) mappedRe
 			selector := attrConfig.Selector
 			selector = s.applyCommon(common, selector)
 
-			found := q.runQuery(selector)
+			found, err := q.runQuery(selector)
+			if err != nil {
+				logger.Warnf("key '%v': %v", k, err)
+			}
 
 			if len(found) > 0 {
 				result := s.postProcess(q, attrConfig, found)
@@ -423,7 +426,10 @@ func (p *postProcessSubScraper) Apply(value string, q mappedQuery) string {
 	ss := q.subScrape(value)
 
 	if ss != nil {
-		found := ss.runQuery(subScrapeConfig.Selector)
+		found, err := ss.runQuery(subScrapeConfig.Selector)
+		if err != nil {
+			logger.Warnf("subscrape for '%v': %v", value, err)
+		}
 
 		if len(found) > 0 {
 			// check if we're concatenating the results into a single result

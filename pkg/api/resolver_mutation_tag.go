@@ -347,5 +347,6 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMerge
 		return nil, err
 	}
 
+	r.hookExecutor.ExecutePostHooks(ctx, t.ID, plugin.TagMergePost, input, nil)
 	return t, nil
 }

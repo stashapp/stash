@@ -940,10 +940,11 @@ func (i *Instance) GetDeleteGeneratedDefault() bool {
 func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOptions {
 	i.RLock()
 	defer i.RUnlock()
+	v := i.viper(DefaultIdentifySettings)
 
-	if viper.IsSet(DefaultIdentifySettings) {
+	if v.IsSet(DefaultIdentifySettings) {
 		var ret models.IdentifyMetadataTaskOptions
-		if err := viper.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -1182,7 +1183,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// Set generated to the metadata path for backwards compat
 	i.main.SetDefault(Generated, i.main.GetString(Metadata))
 
-	viper.SetDefault(NoBrowser, NoBrowserDefault)
+	i.main.SetDefault(NoBrowser, NoBrowserDefault)
 
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)

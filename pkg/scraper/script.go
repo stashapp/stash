@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -89,7 +90,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	return nil
 }
 
-func (s *scriptScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
+func (s *scriptScraper) scrapePerformersByName(ctx context.Context, name string) ([]*models.ScrapedPerformer, error) {
 	inString := `{"name": "` + name + `"}`
 
 	var performers []models.ScrapedPerformer
@@ -121,7 +122,7 @@ func (s *scriptScraper) scrapePerformerByFragment(scrapedPerformer models.Scrape
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
+func (s *scriptScraper) scrapePerformerByURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedPerformer
@@ -131,7 +132,7 @@ func (s *scriptScraper) scrapePerformerByURL(url string) (*models.ScrapedPerform
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(sceneToUpdateInput(scene))
 
 	if err != nil {
@@ -145,7 +146,7 @@ func (s *scriptScraper) scrapeSceneByScene(scene *models.Scene) (*models.Scraped
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeScenesByName(ctx context.Context, name string) ([]*models.ScrapedScene, error) {
 	inString := `{"name": "` + name + `"}`
 
 	var scenes []models.ScrapedScene
@@ -163,7 +164,7 @@ func (s *scriptScraper) scrapeScenesByName(name string) ([]*models.ScrapedScene,
 	return ret, err
 }
 
-func (s *scriptScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByFragment(ctx context.Context, scene models.ScrapedSceneInput) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(scene)
 
 	if err != nil {
@@ -177,7 +178,7 @@ func (s *scriptScraper) scrapeSceneByFragment(scene models.ScrapedSceneInput) (*
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	inString, err := json.Marshal(galleryToUpdateInput(gallery))
 
 	if err != nil {
@@ -205,7 +206,7 @@ func (s *scriptScraper) scrapeGalleryByFragment(gallery models.ScrapedGalleryInp
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedScene
@@ -215,7 +216,7 @@ func (s *scriptScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, erro
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+func (s *scriptScraper) scrapeGalleryByURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedGallery
@@ -225,7 +226,7 @@ func (s *scriptScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, 
 	return &ret, err
 }
 
-func (s *scriptScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+func (s *scriptScraper) scrapeMovieByURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedMovie
