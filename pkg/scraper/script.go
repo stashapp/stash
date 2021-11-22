@@ -97,7 +97,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		}
 
 		// Lenient decode succeeded, print a warning, but use the decode
-		logger.Warnf("json script output: %v", strictErr)
+		logger.Warnf("reading script result: %v", strictErr)
 	}
 
 	err = cmd.Wait()
