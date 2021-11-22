@@ -963,10 +963,11 @@ func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOpti
 func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
+	v := i.viper(DefaultScanSettings)
 
-	if viper.IsSet(DefaultScanSettings) {
+	if v.IsSet(DefaultScanSettings) {
 		var ret models.ScanMetadataOptions
-		if err := viper.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
+		if err := v.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -981,10 +982,11 @@ func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
 func (i *Instance) GetDefaultAutoTagSettings() *models.AutoTagMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
+	v := i.viper(DefaultAutoTagSettings)
 
-	if viper.IsSet(DefaultAutoTagSettings) {
+	if v.IsSet(DefaultAutoTagSettings) {
 		var ret models.AutoTagMetadataOptions
-		if err := viper.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
+		if err := v.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
@@ -999,10 +1001,11 @@ func (i *Instance) GetDefaultAutoTagSettings() *models.AutoTagMetadataOptions {
 func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
+	v := i.viper(DefaultGenerateSettings)
 
-	if viper.IsSet(DefaultGenerateSettings) {
+	if v.IsSet(DefaultGenerateSettings) {
 		var ret models.GenerateMetadataOptions
-		if err := viper.UnmarshalKey(DefaultGenerateSettings, &ret); err != nil {
+		if err := v.UnmarshalKey(DefaultGenerateSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
