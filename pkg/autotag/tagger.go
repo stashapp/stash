@@ -60,14 +60,12 @@ func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc a
 }
 
 func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFunc) error {
-	others, err := match.PathToStudios(t.Path, studioReader)
+	studio, err := match.PathToStudio(t.Path, studioReader)
 	if err != nil {
 		return err
 	}
 
-	// only add first studio
-	if len(others) > 0 {
-		studio := others[0]
+	if studio != nil {
 		added, err := addFunc(t.ID, studio.ID)
 
 		if err != nil {
