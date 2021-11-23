@@ -655,7 +655,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
 export interface ISceneSearchResults {
   target: GQL.SlimSceneDataFragment;
-  scenes: GQL.ScrapedSceneDataFragment[];
+  scenes: IScrapedScene[];
 }
 
 export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
@@ -667,6 +667,8 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   useEffect(() => {
     if (!scenes) {
       setSelectedResult(undefined);
+    } else if (scenes.length > 0 && scenes[0].resolved) {
+      setSelectedResult(0);
     }
   }, [scenes]);
 

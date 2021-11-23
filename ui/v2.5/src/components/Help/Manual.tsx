@@ -20,6 +20,7 @@ import Help from "src/docs/en/Help.md";
 import Deduplication from "src/docs/en/Deduplication.md";
 import Interactive from "src/docs/en/Interactive.md";
 import Identify from "src/docs/en/Identify.md";
+import Browsing from "src/docs/en/Browsing.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
@@ -79,6 +80,11 @@ export const Manual: React.FC<IManualProps> = ({
       title: "JSON Specification",
       content: JSONSpec,
       className: "indent-1",
+    },
+    {
+      key: "Browsing.md",
+      title: "Browsing",
+      content: Browsing,
     },
     {
       key: "Galleries.md",
