@@ -35,7 +35,7 @@ func newXpathScraper(scraper scraperTypeConfig, client *http.Client, txnManager 
 	}
 }
 
-func (s *xpathScraper) xpathScraper() (*mappedScraper, error) {
+func (s *xpathScraper) mappedScraper() (*mappedScraper, error) {
 	scraper := s.config.XPathScrapers[s.scraper.Scraper]
 	if scraper == nil {
 		return nil, fmt.Errorf("%w: searched for xpath scraper %v", ErrNotFound, s.scraper.Scraper)
@@ -44,29 +44,19 @@ func (s *xpathScraper) xpathScraper() (*mappedScraper, error) {
 	return scraper, nil
 }
 
-func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, error) {
-	doc, err := s.loadURL(ctx, url)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return doc, nil
-}
-
 func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
-	scraper, err := s.xpathScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := s.scrapeURL(ctx, u)
+	doc, err := s.loadURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.newDocQueryer(doc)
 	switch ty {
 	case models.ScrapeContentTypePerformer:
 		return scraper.scrapePerformer(ctx, q)
@@ -82,7 +72,7 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.Sc
 }
 
 func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
-	scraper, err := s.xpathScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +91,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.newDocQueryer(doc)
 
 	var content []models.ScrapedContent
 	switch ty {
@@ -138,7 +128,7 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper, err := s.xpathScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +139,7 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.newDocQueryer(doc)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -172,7 +162,7 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (model
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper, err := s.xpathScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +173,7 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (model
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.newDocQueryer(doc)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -195,7 +185,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper, err := s.xpathScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +196,7 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.newDocQueryer(doc)
 	return scraper.scrapeGallery(ctx, q)
 }
 
@@ -229,11 +219,23 @@ func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, err
 	return ret, err
 }
 
-func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
+// newDocQueryer turns an xpath scraper into a queryer over doc
+func (s *xpathScraper) newDocQueryer(doc *html.Node) docQueryer {
 	return &xpathQuery{
 		doc:     doc,
 		scraper: s,
 	}
+}
+
+func (s *xpathScraper) subScrape(ctx context.Context, value string) docQueryer {
+	doc, err := s.loadURL(ctx, value)
+
+	if err != nil {
+		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
+		return nil
+	}
+
+	return s.newDocQueryer(doc)
 }
 
 type xpathQuery struct {
@@ -241,7 +243,7 @@ type xpathQuery struct {
 	scraper *xpathScraper
 }
 
-func (q *xpathQuery) query(selector string) ([]string, error) {
+func (q *xpathQuery) docQuery(selector string) ([]string, error) {
 	found, err := htmlquery.QueryAll(q.doc, selector)
 	if err != nil {
 		return nil, fmt.Errorf("selector '%s': parse error: %v", selector, err)
@@ -250,16 +252,21 @@ func (q *xpathQuery) query(selector string) ([]string, error) {
 	var ret []string
 	for _, n := range found {
 		// don't add empty strings
-		nodeText := q.nodeText(n)
-		if nodeText != "" {
-			ret = append(ret, q.nodeText(n))
+		nt := nodeText(n)
+		if nt != "" {
+			ret = append(ret, nt)
 		}
 	}
 
 	return ret, nil
 }
 
-func (q *xpathQuery) nodeText(n *html.Node) string {
+var (
+	stripWhiteSpace = regexp.MustCompile("  +")
+	stripNewLine    = regexp.MustCompile("\n")
+)
+
+func nodeText(n *html.Node) string {
 	var ret string
 	if n != nil && n.Type == html.CommentNode {
 		ret = htmlquery.OutputHTML(n, true)
@@ -271,23 +278,14 @@ func (q *xpathQuery) nodeText(n *html.Node) string {
 	ret = strings.TrimSpace(ret)
 
 	// remove multiple whitespace
-	re := regexp.MustCompile("  +")
-	ret = re.ReplaceAllString(ret, " ")
+	ret = stripWhiteSpace.ReplaceAllString(ret, " ")
 
 	// TODO - make this optional
-	re = regexp.MustCompile("\n")
-	ret = re.ReplaceAllString(ret, "")
+	ret = stripNewLine.ReplaceAllString(ret, "")
 
 	return ret
 }
 
-func (q *xpathQuery) subScrape(ctx context.Context, value string) queryer {
-	doc, err := q.scraper.loadURL(ctx, value)
-
-	if err != nil {
-		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
-		return nil
-	}
-
-	return q.scraper.getXPathQuery(doc)
+func (q *xpathQuery) subScrape(ctx context.Context, value string) docQueryer {
+	return q.scraper.subScrape(ctx, value)
 }

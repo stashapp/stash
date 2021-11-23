@@ -87,7 +87,7 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.Scr
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.newDocQueryer(doc)
 	switch ty {
 	case models.ScrapeContentTypePerformer:
 		return scraper.scrapePerformer(ctx, q)
@@ -122,7 +122,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.newDocQueryer(doc)
 
 	var content []models.ScrapedContent
 	switch ty {
@@ -172,7 +172,7 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.newDocQueryer(doc)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -206,7 +206,7 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.newDocQueryer(doc)
 	return scraper.scrapeScene(ctx, q)
 }
 
@@ -229,11 +229,23 @@ func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *model
 		return nil, err
 	}
 
-	q := s.getJsonQuery(doc)
+	q := s.newDocQueryer(doc)
 	return scraper.scrapeGallery(ctx, q)
 }
 
-func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {
+func (s *jsonScraper) subScrape(ctx context.Context, value string) docQueryer {
+	doc, err := s.loadURL(ctx, value)
+
+	if err != nil {
+		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
+		return nil
+	}
+
+	return s.newDocQueryer(doc)
+}
+
+// newDocQueryer turns a json scraper into a queryer over doc
+func (s *jsonScraper) newDocQueryer(doc string) docQueryer {
 	return &jsonQuery{
 		doc:     doc,
 		scraper: s,
@@ -245,7 +257,7 @@ type jsonQuery struct {
 	scraper *jsonScraper
 }
 
-func (q *jsonQuery) query(selector string) ([]string, error) {
+func (q *jsonQuery) docQuery(selector string) ([]string, error) {
 	value := gjson.Get(q.doc, selector)
 
 	if !value.Exists() {
@@ -265,13 +277,6 @@ func (q *jsonQuery) query(selector string) ([]string, error) {
 	return ret, nil
 }
 
-func (q *jsonQuery) subScrape(ctx context.Context, value string) queryer {
-	doc, err := q.scraper.loadURL(ctx, value)
-
-	if err != nil {
-		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
-		return nil
-	}
-
-	return q.scraper.getJsonQuery(doc)
+func (q *jsonQuery) subScrape(ctx context.Context, value string) docQueryer {
+	return q.scraper.subScrape(ctx, value)
 }
