@@ -168,7 +168,11 @@ const (
 	LogAccess        = "logAccess"
 	defaultLogAccess = true
 
+	// Default settings
+	DefaultScanSettings     = "defaults.scan_task"
 	DefaultIdentifySettings = "defaults.identify_task"
+	DefaultAutoTagSettings  = "defaults.auto_tag_task"
+	DefaultGenerateSettings = "defaults.generate_task"
 
 	DeleteFileDefault             = "defaults.delete_file"
 	DeleteGeneratedDefault        = "defaults.delete_generated"
@@ -945,6 +949,63 @@ func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOpti
 	if v.IsSet(DefaultIdentifySettings) {
 		var ret models.IdentifyMetadataTaskOptions
 		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultScanSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultScanSettings)
+
+	if v.IsSet(DefaultScanSettings) {
+		var ret models.ScanMetadataOptions
+		if err := v.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultAutoTagSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultAutoTagSettings() *models.AutoTagMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultAutoTagSettings)
+
+	if v.IsSet(DefaultAutoTagSettings) {
+		var ret models.AutoTagMetadataOptions
+		if err := v.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultGenerateSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultGenerateSettings)
+
+	if v.IsSet(DefaultGenerateSettings) {
+		var ret models.GenerateMetadataOptions
+		if err := v.UnmarshalKey(DefaultGenerateSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret
