@@ -9,6 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrTimestamp = errors.New("cannot parse Timestamp")
@@ -49,7 +50,7 @@ func UnmarshalTimestamp(v interface{}) (time.Time, error) {
 			return t, nil
 		}
 
-		return time.Parse(time.RFC3339Nano, tmpStr)
+		return utils.ParseDateStringAsTime(tmpStr)
 	}
 
 	return time.Time{}, fmt.Errorf("%w: not a string", ErrTimestamp)

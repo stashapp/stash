@@ -27,14 +27,17 @@ func TestTimestampSymmetry(t *testing.T) {
 }
 
 func TestTimestamp(t *testing.T) {
-	n := time.Now()
+	n := time.Now().In(time.UTC)
 	testCases := []struct {
 		name string
 		have string
 		want string
 	}{
 		{"reflexivity", n.Format(time.RFC3339Nano), n.Format(time.RFC3339Nano)},
-		{"date-only", "2021-11-04T00:00:00Z", "2021-11-04T00:00:00Z"},
+		{"rfc3339", "2021-11-04T01:02:03Z", "2021-11-04T01:02:03Z"},
+		{"date", "2021-04-05", "2021-04-05T00:00:00Z"},
+		{"datetime", "2021-04-05 14:45:36", "2021-04-05T14:45:36Z"},
+		{"datetime-tz", "2021-04-05 14:45:36 PDT", "2021-04-05T14:45:36Z"},
 	}
 
 	for _, tc := range testCases {
