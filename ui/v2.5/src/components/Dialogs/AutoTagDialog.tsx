@@ -28,7 +28,7 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
   const wildcard = ["*"];
 
   function toggle(v?: GQL.Maybe<string[]>) {
-    if (!v) {
+    if (!v?.length) {
       return wildcard;
     }
     return [];
@@ -146,7 +146,10 @@ export const AutoTagDialog: React.FC<IAutoTagDialogProps> = ({ onClose }) => {
 
   async function onAutoTag() {
     try {
-      await mutateMetadataAutoTag(options);
+      await mutateMetadataAutoTag({
+        ...options,
+        paths: paths.length ? paths : undefined,
+      });
 
       Toast.success({
         content: intl.formatMessage(

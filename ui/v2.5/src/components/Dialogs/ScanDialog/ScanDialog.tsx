@@ -93,7 +93,10 @@ export const ScanDialog: React.FC<IScanDialogProps> = ({ onClose }) => {
 
   async function onScan() {
     try {
-      await mutateMetadataScan(options);
+      await mutateMetadataScan({
+        ...options,
+        paths: paths.length ? paths : undefined,
+      });
 
       Toast.success({
         content: intl.formatMessage(
