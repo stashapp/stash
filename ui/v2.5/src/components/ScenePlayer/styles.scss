@@ -34,6 +34,10 @@ $sceneTabWidth: 450px;
   &.portrait .video-wrapper {
     height: 177.78vw;
   }
+
+  #main-jwplayer {
+    outline: none;
+  }
 }
 
 .scene-tabs,
