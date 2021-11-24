@@ -289,14 +289,23 @@
     },
     "tasks": {
       "added_job_to_queue": "Añadido/a {operation_name} a la cola de trabajo",
+      "auto_tag": {
+        "auto_tagging_all_paths": "Etiquetar automáticamente todas las rutas",
+        "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas"
+      },
       "auto_tag_based_on_filenames": "Etiquetado automatizado del contenido basado en nombres de archivo.",
       "auto_tagging": "Auto-Etiquetado",
       "backing_up_database": "Guardando respaldo de la base de datos",
       "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
       "backup_database": "Lleva a cabo una copia de seguridad de la base de datos en el mismo directorio en que se encuentre ésta. El formato de nombre del fichero generado es {filename_format}",
       "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
+      "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",
       "dont_include_file_extension_as_part_of_the_title": "No incluir la extensión del archivo como parte del título",
       "export_to_json": "Exporta el contenido de la base de datos en formato JSON en el directorio de metadatos.",
+      "generate": {
+        "generating_from_paths": "Generando multimedia de soporte para las escenas en las siguientes rutas",
+        "generating_scenes": "Generando multimedia de soporte para {num} {scene}"
+      },
       "generate_desc": "Generar imagen de soporte, conjuntos de imágenes, vídeo, vtt y resto de archivos.",
       "generate_phashes_during_scan": "Generar hashes de percepción (Phases) de los vídeos durante el escaneo (este valor es empleado para la búsqueda de archivos de vídeo duplicados y para la identificación de escenas)",
       "generate_previews_during_scan": "Generar imágenes previas durante el escaneo (vistas previas WebP animadas). Solo requerido si el tipo de previsualización seleccionado es “Imágenes animadas”)",
@@ -332,6 +341,10 @@
       "migrations": "Migraciones",
       "only_dry_run": "Marca esta casilla para ejecutar en MODO DE SIMULACIÓN. No se eliminará información alguna, solo se mostrarán en el registro las acciones a realizar",
       "plugin_tasks": "Tareas de plugins",
+      "scan": {
+        "scanning_all_paths": "Escaneando todas las rutas",
+        "scanning_paths": "Escaneando las siguientes rutas"
+      },
       "scan_for_content_desc": "Buscar contenido nuevo y añadirlo a la base de datos.",
       "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos (si se encuentran)"
     },
