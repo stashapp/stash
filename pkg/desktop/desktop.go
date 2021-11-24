@@ -3,6 +3,7 @@ package desktop
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -17,8 +18,8 @@ import (
 
 func Initialize() {
 	if IsDesktop() {
-		StartBrowser(false)
-		go systray.Run(systrayOnReady, nil)
+		OpenURLInBrowser(false, "")
+		systray.Run(systrayOnReady, nil)
 	}
 
 	// we should re-render the systray if the system if finalized, or if an update is available
@@ -30,6 +31,7 @@ func Initialize() {
 }
 
 func systrayOnReady() {
+	systray.SetTemplateIcon(favicon, favicon)
 	systray.SetTitle("Stash")
 	systray.SetTooltip("🟢 Stash is Running.")
 
@@ -40,13 +42,28 @@ func systrayOnReady() {
 	if !c.IsNewSystem() {
 		menuItems = c.GetMenuItems()
 		for _, item := range menuItems {
-			systray.AddMenuItem(strings.Title(strings.ToLower(item)), "Open to "+item)
-			// TODO add handlers
+			curr := systray.AddMenuItem(strings.Title(strings.ToLower(item)), "Open to "+item)
+			go func(item string) {
+				for {
+					<-curr.ClickedCh
+					if item == "markers" {
+						item = "scenes/markers"
+					}
+					OpenURLInBrowser(true, item)
+				}
+			}(item)
 		}
 		systray.AddSeparator()
-		systray.AddMenuItem("Start a Scan", "Scan all libraries with default settings")
-		systray.AddMenuItem("Start Auto Tagging", "Auto Tag all libraries")
-		systray.AddSeparator()
+		// systray.AddMenuItem("Start a Scan", "Scan all libraries with default settings")
+		// systray.AddMenuItem("Start Auto Tagging", "Auto Tag all libraries")
+		// systray.AddSeparator()
+
+		testnotify := systray.AddMenuItem("Test Notification", "Send a test notification")
+		go func(testCh chan struct{}) {
+			for {
+				<-testCh
+			}
+		}(testnotify.ClickedCh)
 	}
 
 	quitStashButton := systray.AddMenuItem("Quit Stash Server", "Quits the Stash server")
@@ -55,32 +72,39 @@ func systrayOnReady() {
 		for {
 			select {
 			case <-openStashButton.ClickedCh:
-				StartBrowser(true)
+				OpenURLInBrowser(true, "")
 			case <-quitStashButton.ClickedCh:
-				manager.GetInstance().Shutdown()
-				os.Exit(0)
+				Shutdown()
 			}
 		}
 	}()
 }
 
-func StartBrowser(force bool) {
+// OpenURLInBrowser opens a browser to the Stash UI. Path is optional.
+func OpenURLInBrowser(force bool, path string) {
 	// This can be done before actually starting the server, as modern browsers will
 	// automatically reload the page if a local port is closed at page load and then opened.
 	c := config.GetInstance()
 	if force || (!c.GetNoBrowser() && IsDesktop()) {
-		displayHost := c.GetHost()
-		if displayHost == "0.0.0.0" {
-			displayHost = "localhost"
+		serverAddress := c.GetHost()
+		if serverAddress == "0.0.0.0" {
+			serverAddress = "localhost"
 		}
-		displayAddress := displayHost + ":" + strconv.Itoa(c.GetPort())
+		serverAddress = serverAddress + ":" + strconv.Itoa(c.GetPort())
+
+		proto := ""
 		if c.HasTLSConfig() {
-			displayAddress = "https://" + displayAddress + "/"
+			proto = "https://"
 		} else {
-			displayAddress = "http://" + displayAddress + "/"
+			proto = "http://"
+		}
+		serverAddress = proto + serverAddress + "/"
+
+		if path != "" {
+			serverAddress += strings.TrimPrefix(path, "/")
 		}
 
-		err := browser.OpenURL(displayAddress)
+		err := browser.OpenURL(serverAddress)
 		if err != nil {
 			logger.Error("Could not open browser: " + err.Error())
 		}
@@ -88,8 +112,6 @@ func StartBrowser(force bool) {
 }
 
 func IsDesktop() bool {
-	// TODO if desktop integration config option is disabled
-
 	// check if running under root
 	if os.Getuid() == 0 {
 		return false
@@ -115,6 +137,7 @@ func IsServerDockerized() bool {
 // IsAllowedAutoUpdate tries to determine if the stash binary was installed from a
 // package manager or if touching the executable is otherwise a bad idea
 func IsAllowedAutoUpdate() bool {
+
 	executablePath, err := os.Executable()
 	if err != nil {
 		logger.Errorf("Cannot get executable path: %s", err)
@@ -125,10 +148,20 @@ func IsAllowedAutoUpdate() bool {
 		logger.Errorf("Cannot get executable path: %s", err)
 		return false
 	}
-	if !utils.IsPathInDir("/usr", executablePath) {
-		if !utils.IsPathInDir("/opt", executablePath) {
-			return !IsServerDockerized()
+
+	if runtime.GOOS == "linux" {
+		if utils.IsPathInDir("/usr", executablePath) || utils.IsPathInDir("/opt", executablePath) {
+			return false
+		}
+		if isServerDockerized() {
+			return false
 		}
 	}
-	return false
+
+	return true
+}
+
+func Shutdown() {
+	systray.Quit()
+	manager.GetInstance().Shutdown(0)
 }

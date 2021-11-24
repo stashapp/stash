@@ -245,28 +245,27 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		TLSConfig: tlsConfig,
 	}
 
+	printVersion()
+	printLatestVersion(context.TODO())
+	logger.Infof("stash is listening on " + address)
+	if tlsConfig != nil {
+		displayAddress = "https://" + displayAddress + "/"
+	} else {
+		displayAddress = "http://" + displayAddress + "/"
+	}
+
 	go func() {
-		printVersion()
-		printLatestVersion(context.TODO())
-		logger.Infof("stash is listening on " + address)
 		if tlsConfig != nil {
-			displayAddress = "https://" + displayAddress + "/"
+			logger.Infof("stash is running at " + displayAddress)
+			logger.Error(server.ListenAndServeTLS("", ""))
 		} else {
-			displayAddress = "http://" + displayAddress + "/"
+			logger.Infof("stash is running at " + displayAddress)
+			logger.Error(server.ListenAndServe())
 		}
-
-		go func() {
-			if tlsConfig != nil {
-				logger.Infof("stash is running at " + displayAddress)
-				logger.Error(server.ListenAndServeTLS("", ""))
-			} else {
-				logger.Infof("stash is running at " + displayAddress)
-				logger.Error(server.ListenAndServe())
-			}
-		}()
-
-		go desktop.Initialize()
+		desktop.Shutdown()
 	}()
+
+	desktop.Initialize()
 }
 
 func printVersion() {

@@ -11,10 +11,7 @@ import (
 
 // isService checks if started by init, e.g. stash is a *nix systemd service / MacOS launchd service
 func isService() bool {
-	if os.Getppid() == 1 {
-		return true
-	}
-	return false
+	return os.Getppid() == 1
 }
 
 func isServerDockerized() bool {
