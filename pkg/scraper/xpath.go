@@ -51,21 +51,16 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.Sc
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, u)
+	dq, err := s.loadURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
 	switch ty {
-	case models.ScrapeContentTypePerformer:
-		return scraper.scrapePerformer(ctx, q)
-	case models.ScrapeContentTypeScene:
-		return scraper.scrapeScene(ctx, q)
 	case models.ScrapeContentTypeGallery:
-		return scraper.scrapeGallery(ctx, q)
+		return scraper.scrapeGallery(ctx, dq)
 	case models.ScrapeContentTypeMovie:
-		return scraper.scrapeMovie(ctx, q)
+		return scraper.scrapeMovie(ctx, dq)
 	}
 
 	return nil, ErrNotSupported
@@ -85,18 +80,16 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 	url := s.scraper.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
-	doc, err := s.loadURL(ctx, url)
+	dq, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-
 	var content []models.ScrapedContent
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		performers, err := scraper.scrapePerformers(ctx, q)
+		performers, err := scraper.scrapePerformers(ctx, dq)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +99,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 
 		return content, nil
 	case models.ScrapeContentTypeScene:
-		scenes, err := scraper.scrapeScenes(ctx, q)
+		scenes, err := scraper.scrapeScenes(ctx, dq)
 		if err != nil {
 			return nil, err
 		}
@@ -133,14 +126,13 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, url)
+	dq, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-	return scraper.scrapeScene(ctx, q)
+	return scraper.scrapeScene(ctx, dq)
 }
 
 func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
@@ -167,14 +159,13 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (model
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, url)
+	dq, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-	return scraper.scrapeScene(ctx, q)
+	return scraper.scrapeScene(ctx, dq)
 }
 
 func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
@@ -190,17 +181,16 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, url)
+	dq, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-	return scraper.scrapeGallery(ctx, q)
+	return scraper.scrapeGallery(ctx, dq)
 }
 
-func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
+func (s *xpathScraper) loadURL(ctx context.Context, url string) (docQueryer, error) {
 	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
 		return nil, err
@@ -216,7 +206,7 @@ func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, err
 		logger.Infof("loadURL (%s) response: \n%s", url, b.String())
 	}
 
-	return ret, err
+	return s.newDocQueryer(ret), err
 }
 
 // newDocQueryer turns an xpath scraper into a queryer over doc
@@ -228,14 +218,14 @@ func (s *xpathScraper) newDocQueryer(doc *html.Node) docQueryer {
 }
 
 func (s *xpathScraper) subScrape(ctx context.Context, value string) docQueryer {
-	doc, err := s.loadURL(ctx, value)
+	dq, err := s.loadURL(ctx, value)
 
 	if err != nil {
 		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
 		return nil
 	}
 
-	return s.newDocQueryer(doc)
+	return dq
 }
 
 type xpathQuery struct {
