@@ -554,6 +554,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
       Mousetrap.unbind("a");
@@ -565,6 +566,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
+      Mousetrap.unbind(",");
     };
   });
 
