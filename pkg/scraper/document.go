@@ -1,20 +1,35 @@
 package scraper
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
+	"github.com/antchfx/htmlquery"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/tidwall/gjson"
+	"golang.org/x/net/html"
 )
 
-type jsonScraper struct {
+type docScraperType int
+
+const (
+	jsonScraper docScraperType = iota
+	xpathScraper
+)
+
+// docScraper is the type of document scrapers. These work by constructing
+// a URL, loading the URL and then turn the content into a document. They
+// then scrape the document.
+type docScraper struct {
+	ty           docScraperType
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
@@ -22,8 +37,9 @@ type jsonScraper struct {
 	txnManager   models.TransactionManager
 }
 
-func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *jsonScraper {
-	return &jsonScraper{
+func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *docScraper {
+	return &docScraper{
+		ty:           jsonScraper,
 		scraper:      scraper,
 		config:       config,
 		client:       client,
@@ -32,8 +48,26 @@ func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager m
 	}
 }
 
-func (s *jsonScraper) mappedScraper() (*mappedScraper, error) {
-	scraper := s.config.JsonScrapers[s.scraper.Scraper]
+func newXpathScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *docScraper {
+	return &docScraper{
+		ty:           xpathScraper,
+		scraper:      scraper,
+		config:       config,
+		globalConfig: globalConfig,
+		client:       client,
+		txnManager:   txnManager,
+	}
+}
+
+func (s *docScraper) mappedScraper() (*mappedScraper, error) {
+	var scraper *mappedScraper
+	switch s.ty {
+	case jsonScraper:
+		scraper = s.config.JsonScrapers[s.scraper.Scraper]
+	case xpathScraper:
+		scraper = s.config.XPathScrapers[s.scraper.Scraper]
+	}
+
 	if scraper == nil {
 		return nil, fmt.Errorf("%w: searched for scraper name %v", ErrNotFound, s.scraper.Scraper)
 	}
@@ -44,30 +78,37 @@ func (s *jsonScraper) mappedScraper() (*mappedScraper, error) {
 
 var ErrInvalidJSON = errors.New("invalid json")
 
-func (s *jsonScraper) loadURL(ctx context.Context, url string) (docQueryer, error) {
+func (s *docScraper) loadURL(ctx context.Context, url string) (docQueryer, error) {
 	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
-	logger.Infof("loadURL (%s)\n", url)
-	doc, err := io.ReadAll(r)
-	if err != nil {
-		return nil, err
+
+	switch s.ty {
+	case jsonScraper:
+		q, err := newJsonDocQueryer(s, r)
+		if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
+			logger.Infof("loadURL (%s) response: \n%s", url, q)
+		}
+
+		return q, err
+	case xpathScraper:
+		q, err := newXpathDocQueryer(s, r)
+		if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
+			var b bytes.Buffer
+			if err := q.Render(&b); err != nil {
+				logger.Warnf("could not render HTML: %v", err)
+			}
+			logger.Infof("loadURL (%s) response: \n%s", url, b.String())
+		}
+
+		return q, err
 	}
 
-	docStr := string(doc)
-	if !gjson.Valid(docStr) {
-		return nil, ErrInvalidJSON
-	}
-
-	if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
-		logger.Infof("loadURL (%s) response: \n%s", url, docStr)
-	}
-
-	return s.newDocQueryer(docStr), err
+	panic("unknown docScraperType")
 }
 
-func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (s *docScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for url-queries
 	scraper, err := s.mappedScraper()
 	if err != nil {
@@ -93,7 +134,7 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.Scr
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (s *docScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
 	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
@@ -141,7 +182,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *docScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -162,7 +203,7 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 	return scraper.scrapeScene(ctx, dq)
 }
 
-func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+func (s *docScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
 	switch {
 	case input.Gallery != nil:
 		return nil, fmt.Errorf("%w: cannot use a json scraper as a gallery fragment scraper", ErrNotSupported)
@@ -195,7 +236,7 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models
 	return scraper.scrapeScene(ctx, dq)
 }
 
-func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *docScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {
@@ -217,7 +258,7 @@ func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *model
 	return scraper.scrapeGallery(ctx, dq)
 }
 
-func (s *jsonScraper) subScrape(ctx context.Context, value string) docQueryer {
+func (s *docScraper) subScrape(ctx context.Context, value string) docQueryer {
 	doc, err := s.loadURL(ctx, value)
 
 	if err != nil {
@@ -228,17 +269,37 @@ func (s *jsonScraper) subScrape(ctx context.Context, value string) docQueryer {
 	return doc
 }
 
-// newDocQueryer turns a json scraper into a queryer over doc
-func (s *jsonScraper) newDocQueryer(doc string) docQueryer {
-	return &jsonQuery{
-		doc:     doc,
-		scraper: s,
-	}
-}
-
 type jsonQuery struct {
 	doc     string
-	scraper *jsonScraper
+	scraper *docScraper
+}
+
+func (jq *jsonQuery) String() string {
+	if jq == nil {
+		return "<nil>"
+	}
+
+	return jq.doc
+}
+
+// newJsonDocQueryer turns a json scraper into a queryer over doc
+func newJsonDocQueryer(s *docScraper, r io.Reader) (*jsonQuery, error) {
+	doc, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	docStr := string(doc)
+	if !gjson.Valid(docStr) {
+		return nil, ErrInvalidJSON
+	}
+
+	jq := jsonQuery{
+		doc:     docStr,
+		scraper: s,
+	}
+
+	return &jq, nil
 }
 
 func (q *jsonQuery) docQuery(selector string) ([]string, error) {
@@ -263,4 +324,78 @@ func (q *jsonQuery) docQuery(selector string) ([]string, error) {
 
 func (q *jsonQuery) subScrape(ctx context.Context, value string) docQueryer {
 	return q.scraper.subScrape(ctx, value)
+}
+
+type xpathQuery struct {
+	doc     *html.Node
+	scraper *docScraper
+}
+
+// newXpathDocQueryer turns an xpath scraper into a queryer over doc
+func newXpathDocQueryer(s *docScraper, r io.Reader) (*xpathQuery, error) {
+	doc, err := html.Parse(r)
+
+	xq := xpathQuery{
+		doc:     doc,
+		scraper: s,
+	}
+
+	return &xq, err
+}
+
+var ErrNilDocument = errors.New("(X)HTML document is <nil>")
+
+func (q *xpathQuery) Render(w io.Writer) error {
+	if q == nil {
+		return ErrNilDocument
+	}
+
+	return html.Render(w, q.doc)
+}
+
+func (q *xpathQuery) docQuery(selector string) ([]string, error) {
+	found, err := htmlquery.QueryAll(q.doc, selector)
+	if err != nil {
+		return nil, fmt.Errorf("selector '%s': parse error: %v", selector, err)
+	}
+
+	var ret []string
+	for _, n := range found {
+		// don't add empty strings
+		nt := nodeText(n)
+		if nt != "" {
+			ret = append(ret, nt)
+		}
+	}
+
+	return ret, nil
+}
+
+func (q *xpathQuery) subScrape(ctx context.Context, value string) docQueryer {
+	return q.scraper.subScrape(ctx, value)
+}
+
+var (
+	stripWhiteSpace = regexp.MustCompile("  +")
+	stripNewLine    = regexp.MustCompile("\n")
+)
+
+func nodeText(n *html.Node) string {
+	var ret string
+	if n != nil && n.Type == html.CommentNode {
+		ret = htmlquery.OutputHTML(n, true)
+	} else {
+		ret = htmlquery.InnerText(n)
+	}
+
+	// trim all leading and trailing whitespace
+	ret = strings.TrimSpace(ret)
+
+	// remove multiple whitespace
+	ret = stripWhiteSpace.ReplaceAllString(ret, " ")
+
+	// TODO - make this optional
+	ret = stripNewLine.ReplaceAllString(ret, "")
+
+	return ret
 }
