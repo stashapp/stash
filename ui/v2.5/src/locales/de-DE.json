@@ -289,14 +289,23 @@
     },
     "tasks": {
       "added_job_to_queue": "{operation_name} zur Auftragswarteschlange hinzugefügt",
+      "auto_tag": {
+        "auto_tagging_all_paths": "Automatisches Taggen aller Pfade",
+        "auto_tagging_paths": "Automatisches Taggen der folgenden Pfade"
+      },
       "auto_tag_based_on_filenames": "Inhalte basierend auf Dateinamen automatisch taggen.",
       "auto_tagging": "Automatisches Tagging",
       "backing_up_database": "Datenbank sichern",
       "backup_and_download": "Führt eine Sicherung der Datenbank durch und lädt die resultierende Datei herunter.",
       "backup_database": "Führt eine Sicherung der Datenbank aus, welche im selben Verzeichnis wie die Datenbank mit dem Dateinamenformat {filename_format} gespeichert wird",
       "cleanup_desc": "Suche nach fehlenden Dateien und entfernen Sie diese aus der Datenbank. Dies ist eine destruktive Aktion.",
+      "defaults_set": "Standardeinstellungen wurden eingestellt und werden genutzt, wenn {action} Button auf der Aufgabenseite geklickt wurde.",
       "dont_include_file_extension_as_part_of_the_title": "Füge keine Dateierweiterung als Teil des Titels hinzu",
       "export_to_json": "Exportiert den Datenbankinhalt in JSON-Format im Metadatenverzeichnis.",
+      "generate": {
+        "generating_from_paths": "Generieren der Szenen aus den folgenden Pfaden",
+        "generating_scenes": "Generieren für {num} {scene}"
+      },
       "generate_desc": "Generiere unterstützende Bild-, Sprite-, Video-, VTT- und andere Dateien.",
       "generate_phashes_during_scan": "Generiere phashes während des Scans (zur Deduplizierung und Szenenidentifikation)",
       "generate_previews_during_scan": "Generiere Bildervorschauen während des Scans (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
@@ -332,6 +341,10 @@
       "migrations": "Migrationen",
       "only_dry_run": "Führt einen Probelauf durch. Es wird noch nichts entfernt",
       "plugin_tasks": "Plugin-Aufgaben",
+      "scan": {
+        "scanning_all_paths": "Scannen aller Pfade",
+        "scanning_paths": "Scannen der folgenden Pfade"
+      },
       "scan_for_content_desc": "Suchen nach neuen Inhalten und füge sie der Datenbank hinzu.",
       "set_name_date_details_from_metadata_if_present": "Name, Datum, Details aus Metadaten festlegen (falls vorhanden)"
     },
