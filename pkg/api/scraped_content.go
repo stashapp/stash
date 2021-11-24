@@ -16,9 +16,12 @@ func marshalScrapedScenes(content []models.ScrapedContent) ([]*models.ScrapedSce
 			continue
 		}
 
-		if s, ok := c.(*models.ScrapedScene); ok {
+		switch s := c.(type) {
+		case *models.ScrapedScene:
 			ret = append(ret, s)
-		} else {
+		case models.ScrapedScene:
+			ret = append(ret, &s)
+		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedScene", models.ErrConversion)
 		}
 	}
@@ -36,9 +39,12 @@ func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.Scrape
 			continue
 		}
 
-		if p, ok := c.(*models.ScrapedPerformer); ok {
+		switch p := c.(type) {
+		case *models.ScrapedPerformer:
 			ret = append(ret, p)
-		} else {
+		case models.ScrapedPerformer:
+			ret = append(ret, &p)
+		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedPerformer", models.ErrConversion)
 		}
 	}
@@ -56,9 +62,12 @@ func marshalScrapedGalleries(content []models.ScrapedContent) ([]*models.Scraped
 			continue
 		}
 
-		if g, ok := c.(*models.ScrapedGallery); ok {
+		switch g := c.(type) {
+		case *models.ScrapedGallery:
 			ret = append(ret, g)
-		} else {
+		case models.ScrapedGallery:
+			ret = append(ret, &g)
+		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedGallery", models.ErrConversion)
 		}
 	}
@@ -76,9 +85,12 @@ func marshalScrapedMovies(content []models.ScrapedContent) ([]*models.ScrapedMov
 			continue
 		}
 
-		if m, ok := c.(*models.ScrapedMovie); ok {
+		switch m := c.(type) {
+		case *models.ScrapedMovie:
 			ret = append(ret, m)
-		} else {
+		case models.ScrapedMovie:
+			ret = append(ret, &m)
+		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedConetnt into ScrapedMovie", models.ErrConversion)
 		}
 	}
