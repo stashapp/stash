@@ -549,7 +549,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("o", () => onIncrementClick());
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
@@ -560,7 +560,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
       Mousetrap.unbind("q");
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
-      Mousetrap.unbind("f");
+      Mousetrap.unbind("i");
       Mousetrap.unbind("o");
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
