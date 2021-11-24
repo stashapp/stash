@@ -19,6 +19,8 @@ import (
 type mappedQuery interface {
 	runQuery(selector string) ([]string, error)
 	subScrape(value string) mappedQuery
+	getType() QueryType
+	setType(QueryType)
 }
 
 type commonMappedConfig map[string]string
@@ -76,7 +78,10 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		result = attrConfig.postProcess(result, q)
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
-			results = attrConfig.cleanResults(results)
+			// skip cleaning when the query is used for searching
+			if !(q.getType() == SearchQuery) {
+				results = attrConfig.cleanResults(results)
+			}
 			return results
 		}
 
@@ -90,7 +95,10 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 
 			ret = append(ret, text)
 		}
-		ret = attrConfig.cleanResults(ret)
+		// skip cleaning when the query is used for searching
+		if !(q.getType() == SearchQuery) {
+			ret = attrConfig.cleanResults(ret)
+		}
 	}
 
 	return ret

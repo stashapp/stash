@@ -141,6 +141,7 @@ func (s *jsonScraper) scrapePerformersByName(ctx context.Context, name string) (
 	}
 
 	q := s.getJsonQuery(doc)
+	q.setType(SearchQuery)
 	return scraper.scrapePerformers(q)
 }
 
@@ -170,6 +171,7 @@ func (s *jsonScraper) scrapeScenesByName(ctx context.Context, name string) ([]*m
 	}
 
 	q := s.getJsonQuery(doc)
+	q.setType(SearchQuery)
 	return scraper.scrapeScenes(q)
 }
 
@@ -257,8 +259,17 @@ func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {
 }
 
 type jsonQuery struct {
-	doc     string
-	scraper *jsonScraper
+	doc       string
+	scraper   *jsonScraper
+	queryType QueryType
+}
+
+func (q *jsonQuery) getType() QueryType {
+	return q.queryType
+}
+
+func (q *jsonQuery) setType(t QueryType) {
+	q.queryType = t
 }
 
 func (q *jsonQuery) runQuery(selector string) ([]string, error) {

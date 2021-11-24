@@ -122,6 +122,7 @@ func (s *xpathScraper) scrapePerformersByName(ctx context.Context, name string) 
 	}
 
 	q := s.getXPathQuery(doc)
+	q.setType(SearchQuery)
 	return scraper.scrapePerformers(q)
 }
 
@@ -151,6 +152,7 @@ func (s *xpathScraper) scrapeScenesByName(ctx context.Context, name string) ([]*
 	}
 
 	q := s.getXPathQuery(doc)
+	q.setType(SearchQuery)
 	return scraper.scrapeScenes(q)
 }
 
@@ -257,8 +259,17 @@ func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
 }
 
 type xpathQuery struct {
-	doc     *html.Node
-	scraper *xpathScraper
+	doc       *html.Node
+	scraper   *xpathScraper
+	queryType QueryType
+}
+
+func (q *xpathQuery) getType() QueryType {
+	return q.queryType
+}
+
+func (q *xpathQuery) setType(t QueryType) {
+	q.queryType = t
 }
 
 func (q *xpathQuery) runQuery(selector string) ([]string, error) {
