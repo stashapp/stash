@@ -32,7 +32,7 @@ func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager m
 	}
 }
 
-func (s *jsonScraper) jsonScraper() (*mappedScraper, error) {
+func (s *jsonScraper) mappedScraper() (*mappedScraper, error) {
 	scraper := s.config.JsonScrapers[s.scraper.Scraper]
 	if scraper == nil {
 		return nil, fmt.Errorf("%w: searched for scraper name %v", ErrNotFound, s.scraper.Scraper)
@@ -42,68 +42,59 @@ func (s *jsonScraper) jsonScraper() (*mappedScraper, error) {
 
 }
 
-func (s *jsonScraper) scrapeURL(ctx context.Context, url string) (string, error) {
-	doc, err := s.loadURL(ctx, url)
+var ErrInvalidJSON = errors.New("invalid json")
 
-	if err != nil {
-		return "", err
-	}
-
-	return doc, nil
-}
-
-func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
+func (s *jsonScraper) loadURL(ctx context.Context, url string) (docQueryer, error) {
 	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	logger.Infof("loadURL (%s)\n", url)
 	doc, err := io.ReadAll(r)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	docStr := string(doc)
 	if !gjson.Valid(docStr) {
-		return "", errors.New("not valid json")
+		return nil, ErrInvalidJSON
 	}
 
 	if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
 		logger.Infof("loadURL (%s) response: \n%s", url, docStr)
 	}
 
-	return docStr, err
+	return s.newDocQueryer(docStr), err
 }
 
 func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for url-queries
-	scraper, err := s.jsonScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := s.scrapeURL(ctx, u)
+	dq, err := s.loadURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		return scraper.scrapePerformer(ctx, q)
+		return scraper.scrapePerformer(ctx, dq)
 	case models.ScrapeContentTypeScene:
-		return scraper.scrapeScene(ctx, q)
+		return scraper.scrapeScene(ctx, dq)
 	case models.ScrapeContentTypeGallery:
-		return scraper.scrapeGallery(ctx, q)
+		return scraper.scrapeGallery(ctx, dq)
 	case models.ScrapeContentTypeMovie:
-		return scraper.scrapeMovie(ctx, q)
+		return scraper.scrapeMovie(ctx, dq)
 	}
 
 	return nil, ErrNotSupported
 }
 
 func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
-	scraper, err := s.jsonScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
@@ -116,18 +107,15 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 	url := s.scraper.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
-	doc, err := s.loadURL(ctx, url)
-
+	dq, err := s.loadURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-
 	var content []models.ScrapedContent
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		performers, err := scraper.scrapePerformers(ctx, q)
+		performers, err := scraper.scrapePerformers(ctx, dq)
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +126,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 
 		return content, nil
 	case models.ScrapeContentTypeScene:
-		scenes, err := scraper.scrapeScenes(ctx, q)
+		scenes, err := scraper.scrapeScenes(ctx, dq)
 		if err != nil {
 			return nil, err
 		}
@@ -161,19 +149,17 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper, err := s.jsonScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, url)
-
+	dq, err := s.loadURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-	return scraper.scrapeScene(ctx, q)
+	return scraper.scrapeScene(ctx, dq)
 }
 
 func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
@@ -195,19 +181,18 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper, err := s.jsonScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, url)
+	dq, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-	return scraper.scrapeScene(ctx, q)
+	return scraper.scrapeScene(ctx, dq)
 }
 
 func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
@@ -218,19 +203,18 @@ func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *model
 	}
 	url := queryURL.constructURL(s.scraper.QueryURL)
 
-	scraper, err := s.jsonScraper()
+	scraper, err := s.mappedScraper()
 	if err != nil {
 		return nil, err
 	}
 
-	doc, err := s.loadURL(ctx, url)
+	dq, err := s.loadURL(ctx, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.newDocQueryer(doc)
-	return scraper.scrapeGallery(ctx, q)
+	return scraper.scrapeGallery(ctx, dq)
 }
 
 func (s *jsonScraper) subScrape(ctx context.Context, value string) docQueryer {
@@ -241,7 +225,7 @@ func (s *jsonScraper) subScrape(ctx context.Context, value string) docQueryer {
 		return nil
 	}
 
-	return s.newDocQueryer(doc)
+	return doc
 }
 
 // newDocQueryer turns a json scraper into a queryer over doc
