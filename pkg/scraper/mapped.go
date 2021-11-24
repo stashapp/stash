@@ -79,9 +79,10 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
 			// skip cleaning when the query is used for searching
-			if !(q.getType() == SearchQuery) {
-				results = attrConfig.cleanResults(results)
+			if q.getType() == SearchQuery {
+				return results
 			}
+			results = attrConfig.cleanResults(results)
 			return results
 		}
 
@@ -96,9 +97,11 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 			ret = append(ret, text)
 		}
 		// skip cleaning when the query is used for searching
-		if !(q.getType() == SearchQuery) {
-			ret = attrConfig.cleanResults(ret)
+		if q.getType() == SearchQuery {
+			return ret
 		}
+		ret = attrConfig.cleanResults(ret)
+
 	}
 
 	return ret

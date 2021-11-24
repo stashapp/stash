@@ -35,7 +35,7 @@ type QueryType int
 
 const (
 	// for now only SearchQuery is needed
-	SearchQuery QueryType = iota
+	SearchQuery QueryType = iota + 1
 )
 
 // scraper is the generic interface to the scraper subsystems
