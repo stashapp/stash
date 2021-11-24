@@ -18,19 +18,27 @@ func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (m
 	// Analyze the concrete type, call the right post-processing function
 	switch v := content.(type) {
 	case *models.ScrapedPerformer:
-		return c.postScrapePerformer(ctx, v)
+		if v != nil {
+			return c.postScrapePerformer(ctx, v)
+		}
 	case models.ScrapedPerformer:
 		return c.postScrapePerformer(ctx, &v)
 	case *models.ScrapedScene:
-		return c.postScrapeScene(ctx, v)
+		if v != nil {
+			return c.postScrapeScene(ctx, v)
+		}
 	case models.ScrapedScene:
 		return c.postScrapeScene(ctx, &v)
 	case *models.ScrapedGallery:
-		return c.postScrapeGallery(ctx, v)
+		if v != nil {
+			return c.postScrapeGallery(ctx, v)
+		}
 	case models.ScrapedGallery:
 		return c.postScrapeGallery(ctx, &v)
 	case *models.ScrapedMovie:
-		return c.postScrapeMovie(ctx, v)
+		if v != nil {
+			return c.postScrapeMovie(ctx, v)
+		}
 	case models.ScrapedMovie:
 		return c.postScrapeMovie(ctx, &v)
 	}
