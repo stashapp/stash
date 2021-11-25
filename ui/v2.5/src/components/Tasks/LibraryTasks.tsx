@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import {
@@ -6,15 +6,19 @@ import {
   mutateMetadataIdentify,
   mutateMetadataAutoTag,
   mutateMetadataGenerate,
+  useConfigureDefaults,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
 import { CleanDialog } from "../Dialogs/CleanDialog";
-import { ScanDialog } from "../Dialogs/ScanDialog/ScanDialog";
 import { AutoTagDialog } from "../Dialogs/AutoTagDialog";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
+import * as GQL from "src/core/generated-graphql";
+import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
+import { ScanOptions } from "./ScanOptions";
+import { useToast } from "src/hooks";
 
 interface ITask {
   description?: React.ReactNode;
@@ -34,6 +38,9 @@ const Task: React.FC<PropsWithChildren<ITask>> = ({
 
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
+  const Toast = useToast();
+  const [configureDefaults] = useConfigureDefaults();
+
   const [dialogOpen, setDialogOpenState] = useState({
     clean: false,
     scan: false,
@@ -41,10 +48,23 @@ export const LibraryTasks: React.FC = () => {
     identify: false,
     generate: false,
   });
+  const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
 
   type DialogOpenState = typeof dialogOpen;
 
   const { configuration } = React.useContext(ConfigurationContext);
+
+  useEffect(() => {
+    if (!configuration?.defaults) {
+      return;
+    }
+
+    const { scan } = configuration.defaults;
+
+    if (scan) {
+      setScanOptions(withoutTypename(scan));
+    }
+  }, [configuration]);
 
   function setDialogOpen(s: Partial<DialogOpenState>) {
     setDialogOpenState((v) => {
@@ -65,7 +85,41 @@ export const LibraryTasks: React.FC = () => {
       return;
     }
 
-    return <ScanDialog onClose={() => setDialogOpen({ scan: false })} />;
+    return <DirectorySelectionDialog onClose={onScanDialogClosed} />;
+  }
+
+  function onScanDialogClosed(paths?: string[]) {
+    if (paths) {
+      runScan(paths);
+    }
+
+    setDialogOpen({ scan: false });
+  }
+
+  async function runScan(paths?: string[]) {
+    try {
+      await configureDefaults({
+        variables: {
+          input: {
+            scan: scanOptions,
+          },
+        },
+      });
+
+      await mutateMetadataScan({
+        ...scanOptions,
+        paths,
+      });
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.scan" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function renderAutoTagDialog() {
@@ -90,21 +144,6 @@ export const LibraryTasks: React.FC = () => {
     return (
       <GenerateDialog onClose={() => setDialogOpen({ generate: false })} />
     );
-  }
-
-  async function onScanClicked() {
-    // check if defaults are set for scan
-    // if not, then open the dialog
-    if (!configuration) {
-      return;
-    }
-
-    const { scan } = configuration?.defaults;
-    if (!scan) {
-      setDialogOpen({ scan: true });
-    } else {
-      mutateMetadataScan(withoutTypename(scan));
-    }
   }
 
   async function onIdentifyClicked() {
@@ -169,21 +208,24 @@ export const LibraryTasks: React.FC = () => {
               id: "config.tasks.scan_for_content_desc",
             })}
           >
-            <ButtonGroup className="ellipsis-button">
-              <Button
-                variant="secondary"
-                type="submit"
-                onClick={() => onScanClicked()}
-              >
-                <FormattedMessage id="actions.scan" />
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setDialogOpen({ scan: true })}
-              >
-                …
-              </Button>
-            </ButtonGroup>
+            <ScanOptions options={scanOptions} setOptions={setScanOptions} />
+            <Button
+              variant="secondary"
+              type="submit"
+              className="mr-2"
+              onClick={() => runScan()}
+            >
+              <FormattedMessage id="actions.scan" />
+            </Button>
+
+            <Button
+              variant="secondary"
+              type="submit"
+              className="mr-2"
+              onClick={() => setDialogOpen({ scan: true })}
+            >
+              <FormattedMessage id="actions.selective_scan" />…
+            </Button>
           </Task>
 
           <Task
