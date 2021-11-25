@@ -13,17 +13,19 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
+	"golang.org/x/term"
 )
 
 func Initialize() {
 	if IsDesktop() {
 		OpenURLInBrowser(false, "")
-		c := config.GetInstance()
+		SendNotification("BEFORE SYSTRAY", "DEBUG")
 		go systray.Run(systrayInitialize, nil)
 
 		// Shows a small notification to inform that Stash will no longer show a terminal window,
 		// and instead will be available in the tray. Will only show the first time a pre-desktop integration
 		// system is started from a non-terminal method, e.g. double-clicking an icon.
+		c := config.GetInstance()
 		if c.GetShowOneTimeMovedNotification() {
 			SendNotification("Stash has moved!", "Stash now runs in your tray, instead of a terminal window.")
 			c.Set(config.ShowOneTimeMovedNotification, false)
@@ -35,6 +37,7 @@ func Initialize() {
 }
 
 func systrayInitialize() {
+	SendNotification("INITIALIZE SYSTRAY", "DEBUG")
 	systray.SetTemplateIcon(favicon, favicon)
 	systray.SetTitle("Stash")
 	systray.SetTooltip("🟢 Stash is Running.")
@@ -122,10 +125,10 @@ func IsDesktop() bool {
 	if os.Getuid() == 0 {
 		return false
 	}
-	// // Check if stdin is a terminal
-	// if term.IsTerminal(int(os.Stdin.Fd())) {
-	// 	return false
-	// }
+	// Check if stdin is a terminal
+	if term.IsTerminal(int(os.Stdin.Fd())) {
+		return false
+	}
 	if isService() {
 		return false
 	}

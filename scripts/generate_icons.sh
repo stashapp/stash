@@ -47,9 +47,9 @@ echo "// +build windows" >> ../pkg/desktop/favicon_windows.go
 echo >> ../pkg/desktop/favicon_windows.go
 "$GOPATH"/bin/2goarray favicon desktop < favicon.ico >> ../pkg/desktop/favicon_windows.go
 
-# Build .syso for Windows icon
-"$GOPATH"/bin/rsrc -ico favicon.ico -o windows_icon.syso
-mv windows_icon.syso ../pkg/desktop/
+# Build .syso for Windows icon, consumed by linker while building stash-win.exe
+"$GOPATH"/bin/rsrc -ico favicon.ico -o icon_windows.syso
+mv icon_windows.syso ../pkg/desktop/
 
 # cleanup
 rm favicon.png favicon.ico

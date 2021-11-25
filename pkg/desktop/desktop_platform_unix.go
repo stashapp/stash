@@ -6,14 +6,18 @@ package desktop
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/0xAX/notificator"
 )
 
-// isService checks if started by init, e.g. stash is a *nix systemd service / MacOS launchd service
+// isService checks if started by init, e.g. stash is a *nix systemd service
 func isService() bool {
-	return os.Getppid() == 1
+	if runtime.GOOS != "darwin" {
+		return os.Getppid() == 1
+	}
+	return false
 }
 
 func isServerDockerized() bool {
