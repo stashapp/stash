@@ -15,6 +15,7 @@ import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { ConfigurationContext } from "src/hooks/Config";
 import { Manual } from "./Help/Manual";
+import { TasksButton } from "./TasksButton";
 
 interface IMenuItem {
   name: string;
@@ -262,12 +263,7 @@ export const MainNavbar: React.FC = () => {
           to="/tasks"
           onClick={handleDismiss}
         >
-          <Button
-            className="minimal d-flex align-items-center h-100"
-            title="Settings"
-          >
-            <Icon icon="bolt" />
-          </Button>
+          <TasksButton />
         </NavLink>
         <NavLink
           className="nav-utility"
@@ -277,7 +273,7 @@ export const MainNavbar: React.FC = () => {
         >
           <Button
             className="minimal d-flex align-items-center h-100"
-            title="Tasks"
+            title="Settings"
           >
             <Icon icon="cog" />
           </Button>
