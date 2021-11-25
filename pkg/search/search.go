@@ -42,7 +42,7 @@ type Result struct {
 	Took     time.Duration
 }
 
-func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, facets []*models.SearchFacet) (*Result, error) {
+func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType) (*Result, error) {
 	queryString := bleve.NewQueryStringQuery(in)
 
 	var q query.Query
@@ -67,21 +67,6 @@ func (e *Engine) Search(ctx context.Context, in string, ty *models.SearchType, f
 	}
 
 	searchRequest := bleve.NewSearchRequest(q)
-
-	for _, f := range facets {
-		if f == nil {
-			continue
-		}
-
-		switch *f {
-		case models.SearchFacetDateRange:
-			var cutOffDate = time.Now().Add(-30 * 24 * time.Hour)
-			dateFacet := bleve.NewFacetRequest("date", 2)
-			dateFacet.AddDateTimeRange("old", time.Unix(0, 0), cutOffDate)
-			dateFacet.AddDateTimeRange("new", cutOffDate, time.Unix(9999999999999, 999999999))
-			searchRequest.AddFacet("released", dateFacet)
-		}
-	}
 
 	// Hold e.mu for as short as possible
 	e.mu.RLock()

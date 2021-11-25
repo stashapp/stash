@@ -65,7 +65,7 @@ type Query {
   logs: [LogEntry!]!
 
   # Search
-  search(query: String!, type: SearchType, facets: [SearchFacet] = []): SearchResultItemConnection!
+  search(query: String!, type: SearchType): SearchResultItemConnection!
 
   # Scrapers
 
