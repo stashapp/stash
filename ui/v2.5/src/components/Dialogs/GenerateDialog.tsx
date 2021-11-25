@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Form, Button, Collapse } from "react-bootstrap";
+import { Form, Button } from "react-bootstrap";
 import {
   mutateMetadataGenerate,
   useConfigureDefaults,

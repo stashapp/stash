@@ -150,9 +150,10 @@ export const LibraryTasks: React.FC = () => {
     };
   }
 
-  const [generateOptions, setGenerateOptions] = useState<GQL.GenerateMetadataInput>(
-    getDefaultGenerateOptions()
-  );
+  const [
+    generateOptions,
+    setGenerateOptions,
+  ] = useState<GQL.GenerateMetadataInput>(getDefaultGenerateOptions());
 
   type DialogOpenState = typeof dialogOpen;
 
@@ -354,7 +355,7 @@ export const LibraryTasks: React.FC = () => {
           },
         },
       });
-      
+
       await mutateMetadataGenerate(generateOptions);
       Toast.success({
         content: intl.formatMessage(
@@ -473,7 +474,10 @@ export const LibraryTasks: React.FC = () => {
               id: "config.tasks.generate_desc",
             })}
           >
-            <GenerateOptions options={generateOptions} setOptions={setGenerateOptions} />
+            <GenerateOptions
+              options={generateOptions}
+              setOptions={setGenerateOptions}
+            />
             <Button
               variant="secondary"
               type="submit"
