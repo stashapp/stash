@@ -60,11 +60,11 @@ func walk(filename string, linkDirname string, walkFn filepath.WalkFunc) error {
 				// don't bail out if symlink is invalid
 				return walkFn(path, info, err)
 			}
-			info, err := os.Lstat(finalPath)
+			li, err := os.Lstat(finalPath)
 			if err != nil {
 				return walkFn(path, info, err)
 			}
-			if info.IsDir() {
+			if li.IsDir() {
 				return walk(finalPath, path, walkFn)
 			}
 		}
