@@ -310,7 +310,7 @@
         "generating_from_paths": "Generating for scenes from the following paths"
       },
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
-      "generate_phashes_during_scan": "Generate phashes during scan (for deduplication and scene identification)",
+      "generate_phashes_during_scan": "Generate perceptual hashes during scan (for deduplication and scene identification)",
       "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
       "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
@@ -349,7 +349,7 @@
         "scanning_all_paths": "Scanning all paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
-      "set_name_date_details_from_metadata_if_present": "Set name, date, details from metadata (if present)"
+      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata (if present)"
     },
     "tools": {
       "scene_duplicate_checker": "Scene Duplicate Checker",
