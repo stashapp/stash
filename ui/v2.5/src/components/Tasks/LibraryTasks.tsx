@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
+import { Button, Card, Form } from "react-bootstrap";
 import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
@@ -12,12 +12,12 @@ import { withoutTypename } from "src/utils";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
-import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { ScanOptions } from "./ScanOptions";
 import { useToast } from "src/hooks";
 import { Modal } from "../Shared";
+import { GenerateOptions } from "./GenerateOptions";
 
 interface ITask {
   description?: React.ReactNode;
@@ -121,7 +121,6 @@ export const LibraryTasks: React.FC = () => {
     scan: false,
     autoTag: false,
     identify: false,
-    generate: false,
   });
 
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
@@ -136,6 +135,24 @@ export const LibraryTasks: React.FC = () => {
   const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
     dryRun: false,
   });
+
+  function getDefaultGenerateOptions(): GQL.GenerateMetadataInput {
+    return {
+      sprites: true,
+      phashes: true,
+      previews: true,
+      markers: true,
+      previewOptions: {
+        previewSegments: 0,
+        previewSegmentDuration: 0,
+        previewPreset: GQL.PreviewPreset.Slow,
+      },
+    };
+  }
+
+  const [generateOptions, setGenerateOptions] = useState<GQL.GenerateMetadataInput>(
+    getDefaultGenerateOptions()
+  );
 
   type DialogOpenState = typeof dialogOpen;
 
@@ -153,6 +170,33 @@ export const LibraryTasks: React.FC = () => {
     }
     if (autoTag) {
       setAutoTagOptions(withoutTypename(autoTag));
+    }
+
+    if (configuration?.defaults.generate) {
+      const { generate } = configuration.defaults;
+      setGenerateOptions(withoutTypename(generate));
+    } else if (configuration?.general) {
+      // backwards compatibility
+      const { general } = configuration;
+      setGenerateOptions((existing) => ({
+        ...existing,
+        previewOptions: {
+          ...existing.previewOptions,
+          previewSegments:
+            general.previewSegments ?? existing.previewOptions?.previewSegments,
+          previewSegmentDuration:
+            general.previewSegmentDuration ??
+            existing.previewOptions?.previewSegmentDuration,
+          previewExcludeStart:
+            general.previewExcludeStart ??
+            existing.previewOptions?.previewExcludeStart,
+          previewExcludeEnd:
+            general.previewExcludeEnd ??
+            existing.previewOptions?.previewExcludeEnd,
+          previewPreset:
+            general.previewPreset ?? existing.previewOptions?.previewPreset,
+        },
+      }));
     }
   }, [configuration]);
 
@@ -301,26 +345,25 @@ export const LibraryTasks: React.FC = () => {
     );
   }
 
-  function maybeRenderGenerateDialog() {
-    if (!dialogOpen.generate) return;
-
-    return (
-      <GenerateDialog onClose={() => setDialogOpen({ generate: false })} />
-    );
-  }
-
   async function onGenerateClicked() {
-    // check if defaults are set for generate
-    // if not, then open the dialog
-    if (!configuration) {
-      return;
-    }
-
-    const { generate } = configuration?.defaults;
-    if (!generate) {
-      setDialogOpen({ generate: true });
-    } else {
-      mutateMetadataGenerate(withoutTypename(generate));
+    try {
+      configureDefaults({
+        variables: {
+          input: {
+            generate: generateOptions,
+          },
+        },
+      });
+      
+      await mutateMetadataGenerate(generateOptions);
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.generate" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
     }
   }
 
@@ -330,7 +373,6 @@ export const LibraryTasks: React.FC = () => {
       {renderScanDialog()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
-      {maybeRenderGenerateDialog()}
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "library" })}</h5>
@@ -431,21 +473,14 @@ export const LibraryTasks: React.FC = () => {
               id: "config.tasks.generate_desc",
             })}
           >
-            <ButtonGroup className="ellipsis-button">
-              <Button
-                variant="secondary"
-                type="submit"
-                onClick={() => onGenerateClicked()}
-              >
-                <FormattedMessage id="actions.generate" />
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setDialogOpen({ generate: true })}
-              >
-                …
-              </Button>
-            </ButtonGroup>
+            <GenerateOptions options={generateOptions} setOptions={setGenerateOptions} />
+            <Button
+              variant="secondary"
+              type="submit"
+              onClick={() => onGenerateClicked()}
+            >
+              <FormattedMessage id="actions.generate" />
+            </Button>
           </Task>
         </Card>
       </Form.Group>
