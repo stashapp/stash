@@ -15,7 +15,7 @@ import {
   SCRAPER_PREFIX,
   STASH_BOX_PREFIX,
 } from "src/components/Tagger/constants";
-import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
+import { DirectorySelectionDialog } from "src/components/Tasks/DirectorySelectionDialog";
 import { Manual } from "src/components/Help/Manual";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";

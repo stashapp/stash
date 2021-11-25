@@ -8,7 +8,7 @@ import { Icon, Modal, OperationButton } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
+import { DirectorySelectionDialog } from "src/components/Tasks/DirectorySelectionDialog";
 import { Manual } from "src/components/Help/Manual";
 import { ScanOptions } from "./Options";
 import { withoutTypename } from "src/utils";

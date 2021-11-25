@@ -259,12 +259,25 @@ export const MainNavbar: React.FC = () => {
         <NavLink
           className="nav-utility"
           exact
-          to="/settings"
+          to="/tasks"
           onClick={handleDismiss}
         >
           <Button
             className="minimal d-flex align-items-center h-100"
             title="Settings"
+          >
+            <Icon icon="bolt" />
+          </Button>
+        </NavLink>
+        <NavLink
+          className="nav-utility"
+          exact
+          to="/settings"
+          onClick={handleDismiss}
+        >
+          <Button
+            className="minimal d-flex align-items-center h-100"
+            title="Tasks"
           >
             <Icon icon="cog" />
           </Button>
