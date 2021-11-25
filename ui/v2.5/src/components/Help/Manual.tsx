@@ -8,6 +8,7 @@ import Configuration from "src/docs/en/Configuration.md";
 import Interface from "src/docs/en/Interface.md";
 import Galleries from "src/docs/en/Galleries.md";
 import Scraping from "src/docs/en/Scraping.md";
+import ScraperDevelopment from "src/docs/en/ScraperDevelopment.md";
 import Plugins from "src/docs/en/Plugins.md";
 import ExternalPlugins from "src/docs/en/ExternalPlugins.md";
 import EmbeddedPlugins from "src/docs/en/EmbeddedPlugins.md";
@@ -19,6 +20,7 @@ import Help from "src/docs/en/Help.md";
 import Deduplication from "src/docs/en/Deduplication.md";
 import Interactive from "src/docs/en/Interactive.md";
 import Identify from "src/docs/en/Identify.md";
+import Browsing from "src/docs/en/Browsing.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
@@ -80,6 +82,11 @@ export const Manual: React.FC<IManualProps> = ({
       className: "indent-1",
     },
     {
+      key: "Browsing.md",
+      title: "Browsing",
+      content: Browsing,
+    },
+    {
       key: "Galleries.md",
       title: "Image Galleries",
       content: Galleries,
@@ -88,6 +95,12 @@ export const Manual: React.FC<IManualProps> = ({
       key: "Scraping.md",
       title: "Metadata Scraping",
       content: Scraping,
+    },
+    {
+      key: "ScraperDevelopment.md",
+      title: "Scraper Development",
+      content: ScraperDevelopment,
+      className: "indent-1",
     },
     {
       key: "Plugins.md",

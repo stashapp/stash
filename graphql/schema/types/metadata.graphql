@@ -33,6 +33,31 @@ input GeneratePreviewOptionsInput {
   previewPreset: PreviewPreset
 }
 
+type GenerateMetadataOptions {
+  sprites: Boolean
+  previews: Boolean
+  imagePreviews: Boolean
+  previewOptions: GeneratePreviewOptions
+  markers: Boolean
+  markerImagePreviews: Boolean
+  markerScreenshots: Boolean
+  transcodes: Boolean
+  phashes: Boolean
+}
+
+type GeneratePreviewOptions {
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
+}
+
 input ScanMetadataInput {
   paths: [String!]
   """Set name, date, details from metadata (if present)"""
@@ -51,6 +76,23 @@ input ScanMetadataInput {
   scanGenerateThumbnails: Boolean
 }
 
+type ScanMetadataOptions {
+  """Set name, date, details from metadata (if present)"""
+  useFileMetadata: Boolean!
+  """Strip file extension from title"""
+  stripFileExtension: Boolean!
+  """Generate previews during scan"""
+  scanGeneratePreviews: Boolean!
+  """Generate image previews during scan"""
+  scanGenerateImagePreviews: Boolean!
+  """Generate sprites during scan"""
+  scanGenerateSprites: Boolean!
+  """Generate phashes during scan"""
+  scanGeneratePhashes: Boolean!
+  """Generate image thumbnails during scan"""
+  scanGenerateThumbnails: Boolean!
+}
+
 input CleanMetadataInput {
   """Do a dry run. Don't delete any files"""
   dryRun: Boolean!
@@ -59,6 +101,15 @@ input CleanMetadataInput {
 input AutoTagMetadataInput {
   """Paths to tag, null for all files"""
   paths: [String!]
+  """IDs of performers to tag files with, or "*" for all"""
+  performers: [String!]
+  """IDs of studios to tag files with, or "*" for all"""
+  studios: [String!]
+  """IDs of tags to tag files with, or "*" for all"""
+  tags: [String!]
+}
+
+type AutoTagMetadataOptions {
   """IDs of performers to tag files with, or "*" for all"""
   performers: [String!]
   """IDs of studios to tag files with, or "*" for all"""

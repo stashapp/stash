@@ -145,9 +145,7 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	filter := qb.makeFilter(movieFilter)
@@ -209,7 +207,24 @@ func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.Hierarch
 
 func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if performers != nil && len(performers.Value) > 0 {
+		if performers != nil {
+			if performers.Modifier == models.CriterionModifierIsNull || performers.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if performers.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("movies_scenes", "", "movies.id = movies_scenes.movie_id")
+				f.addJoin("performers_scenes", "", "movies_scenes.scene_id = performers_scenes.scene_id")
+
+				f.addWhere(fmt.Sprintf("performers_scenes.performer_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(performers.Value) == 0 {
+				return
+			}
+
 			var args []interface{}
 			for _, arg := range performers.Value {
 				args = append(args, arg)

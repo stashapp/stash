@@ -12,7 +12,7 @@ import (
 )
 
 type SceneScraper interface {
-	ScrapeScene(sceneID int) (*models.ScrapedScene, error)
+	ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error)
 }
 
 type SceneUpdatePostHookExecutor interface {
@@ -33,8 +33,8 @@ type SceneIdentifier struct {
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
-func (t *SceneIdentifier) Identify(ctx context.Context, repo models.Repository, scene *models.Scene) error {
-	result, err := t.scrapeScene(scene)
+func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.TransactionManager, scene *models.Scene) error {
+	result, err := t.scrapeScene(ctx, scene)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, repo models.Repository, 
 	}
 
 	// results were found, modify the scene
-	if err := t.modifyScene(ctx, repo, scene, result); err != nil {
+	if err := t.modifyScene(ctx, txnManager, scene, result); err != nil {
 		return fmt.Errorf("error modifying scene: %v", err)
 	}
 
@@ -57,11 +57,11 @@ type scrapeResult struct {
 	source ScraperSource
 }
 
-func (t *SceneIdentifier) scrapeScene(scene *models.Scene) (*scrapeResult, error) {
+func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) (*scrapeResult, error) {
 	// iterate through the input sources
 	for _, source := range t.Sources {
 		// scrape using the source
-		scraped, err := source.Scraper.ScrapeScene(scene.ID)
+		scraped, err := source.Scraper.ScrapeScene(ctx, scene.ID)
 		if err != nil {
 			return nil, fmt.Errorf("error scraping from %v: %v", source.Scraper, err)
 		}
@@ -165,34 +165,44 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	return ret, nil
 }
 
-func (t *SceneIdentifier) modifyScene(ctx context.Context, repo models.Repository, scene *models.Scene, result *scrapeResult) error {
-	updater, err := t.getSceneUpdater(ctx, scene, result, repo)
-	if err != nil {
+func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.TransactionManager, s *models.Scene, result *scrapeResult) error {
+	var updater *scene.UpdateSet
+	if err := txnManager.WithTxn(ctx, func(repo models.Repository) error {
+		var err error
+		updater, err = t.getSceneUpdater(ctx, s, result, repo)
+		if err != nil {
+			return err
+		}
+
+		// don't update anything if nothing was set
+		if updater.IsEmpty() {
+			logger.Infof("Nothing to set for %s", s.Path)
+			return nil
+		}
+
+		_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
+		if err != nil {
+			return fmt.Errorf("error updating scene: %w", err)
+		}
+
+		as := ""
+		title := updater.Partial.Title
+		if title != nil {
+			as = fmt.Sprintf(" as %s", title.String)
+		}
+		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
+
+		return nil
+	}); err != nil {
 		return err
 	}
 
-	// don't update anything if nothing was set
-	if updater.IsEmpty() {
-		logger.Infof("Nothing to set for %s", scene.Path)
-		return nil
-	}
-
-	_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
-	if err != nil {
-		return fmt.Errorf("error updating scene: %w", err)
-	}
-
 	// fire post-update hooks
-	updateInput := updater.UpdateInput()
-	fields := utils.NotNilFields(updateInput, "json")
-	t.SceneUpdatePostHookExecutor.ExecuteSceneUpdatePostHooks(ctx, updateInput, fields)
-
-	as := ""
-	title := updater.Partial.Title
-	if title != nil {
-		as = fmt.Sprintf(" as %s", title.String)
+	if !updater.IsEmpty() {
+		updateInput := updater.UpdateInput()
+		fields := utils.NotNilFields(updateInput, "json")
+		t.SceneUpdatePostHookExecutor.ExecuteSceneUpdatePostHooks(ctx, updateInput, fields)
 	}
-	logger.Infof("Successfully identified %s%s using %s", scene.Path, as, result.source.Name)
 
 	return nil
 }

@@ -70,10 +70,12 @@ type Query {
   # Scrapers
 
   """List available scrapers"""
-  listPerformerScrapers: [Scraper!]!
-  listSceneScrapers: [Scraper!]!
-  listGalleryScrapers: [Scraper!]!
-  listMovieScrapers: [Scraper!]!
+  listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
+  listPerformerScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [PERFORMER])")
+  listSceneScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [SCENE])")
+  listGalleryScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [GALLERY])")
+  listMovieScrapers: [Scraper!]! @deprecated(reason: "Use listScrapers(types: [MOVIE])")
+
 
   """Scrape for a single scene"""
   scrapeSingleScene(source: ScraperSourceInput!, input: ScrapeSingleSceneInput!): [ScrapedScene!]!
@@ -90,6 +92,9 @@ type Query {
 
   """Scrape for a single movie"""
   scrapeSingleMovie(source: ScraperSourceInput!, input: ScrapeSingleMovieInput!): [ScrapedMovie!]!
+
+  "Scrapes content based on a URL"
+  scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
 
   """Scrapes a complete performer record based on a URL"""
   scrapePerformerURL(url: String!): ScrapedPerformer
@@ -109,8 +114,6 @@ type Query {
   """Scrapes a complete gallery record based on an existing gallery"""
   scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery @deprecated(reason: "use scrapeSingleGallery")
 
-  """Scrape a performer using Freeones"""
-  scrapeFreeones(performer_name: String!): ScrapedPerformer @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]! @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
 

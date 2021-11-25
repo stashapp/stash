@@ -44,6 +44,11 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		return nil, false, err
 	}
 
+	// we don't currently store sizes for gallery files
+	// clear the file size so that we don't incorrectly detect a
+	// change
+	scanned.New.Size = ""
+
 	retGallery = existing.(*models.Gallery)
 
 	path := scanned.New.Path
@@ -51,8 +56,6 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	changed := false
 
 	if scanned.ContentsChanged() {
-		logger.Infof("%s has been updated: rescanning", path)
-
 		retGallery.SetFile(*scanned.New)
 		changed = true
 	} else if scanned.FileUpdated() {

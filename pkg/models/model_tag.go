@@ -18,6 +18,11 @@ type TagPartial struct {
 	UpdatedAt *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+type TagPath struct {
+	Tag
+	Path string `db:"path" json:"path"`
+}
+
 func NewTag(name string) *Tag {
 	currentTime := time.Now()
 	return &Tag{
@@ -35,6 +40,16 @@ func (t *Tags) Append(o interface{}) {
 
 func (t *Tags) New() interface{} {
 	return &Tag{}
+}
+
+type TagPaths []*TagPath
+
+func (t *TagPaths) Append(o interface{}) {
+	*t = append(*t, o.(*TagPath))
+}
+
+func (t *TagPaths) New() interface{} {
+	return &TagPath{}
 }
 
 // Original Tag image from: https://fontawesome.com/icons/tag?style=solid
