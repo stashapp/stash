@@ -33,6 +33,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     allMenuItems.map((item) => item.id)
   );
   const [noBrowser, setNoBrowserFlag] = useState<boolean>(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
@@ -66,6 +67,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     wallPlayback,
     maximumLoopDuration,
     noBrowser,
+    notificationsEnabled,
     autostartVideo,
     autostartVideoOnPlaySelected,
     continuePlaylistDefault,
@@ -90,6 +92,7 @@ export const SettingsInterfacePanel: React.FC = () => {
       setWallPlayback(iCfg.wallPlayback ?? "video");
       setMaximumLoopDuration(iCfg.maximumLoopDuration ?? 0);
       setNoBrowserFlag(iCfg?.noBrowser ?? false);
+      setNotificationsEnabled(iCfg?.notificationsEnabled ?? true)
       setAutostartVideo(iCfg.autostartVideo ?? false);
       setAutostartVideoOnPlaySelected(
         iCfg.autostartVideoOnPlaySelected ?? true
@@ -214,6 +217,21 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Text className="text-muted">
           {intl.formatMessage({
             id: "config.ui.desktop_integration.skip_opening_browser_on_startup",
+          })}
+        </Form.Text>
+      </Form.Group>
+      <Form.Group>
+        <Form.Check
+          id="notifications-enabled"
+          checked={notificationsEnabled}
+          label={intl.formatMessage({
+            id: "config.ui.desktop_integration.notifications_enabled",
+          })}
+          onChange={() => setNotificationsEnabled(!notificationsEnabled)}
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.ui.desktop_integration.send_desktop_notifications_for_events",
           })}
         </Form.Text>
       </Form.Group>

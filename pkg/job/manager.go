@@ -2,9 +2,11 @@ package job
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -204,6 +206,8 @@ func (m *Manager) onJobFinish(job *Job) {
 	} else {
 		job.Status = StatusFinished
 	}
+	cleanDesc := strings.TrimRight(job.Description, ".")
+	desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished.")
 
 	t := time.Now()
 	job.EndTime = &t

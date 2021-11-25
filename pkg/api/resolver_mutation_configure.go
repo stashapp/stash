@@ -272,6 +272,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	setBool(config.NoBrowser, input.NoBrowser)
 
+	setBool(config.NotificationsEnabled, input.NotificationsEnabled)
+
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
 	}

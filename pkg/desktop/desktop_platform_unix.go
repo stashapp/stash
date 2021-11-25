@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/0xAX/notificator"
 )
 
 // isService checks if started by init, e.g. stash is a *nix systemd service / MacOS launchd service
@@ -22,4 +24,10 @@ func isServerDockerized() bool {
 	}
 
 	return false
+}
+
+func sendNotification(notificationTitle string, notificationText string) {
+	notificator.New(notificator.Options{
+		AppName: "Stash",
+	}).Push(notificationTitle, notificationText, "", notificator.UR_NORMAL)
 }

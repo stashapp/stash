@@ -9,28 +9,32 @@ import (
 
 	"github.com/getlantern/systray"
 	"github.com/pkg/browser"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
-	"golang.org/x/term"
 )
 
 func Initialize() {
 	if IsDesktop() {
 		OpenURLInBrowser(false, "")
-		systray.Run(systrayOnReady, nil)
-	}
+		c := config.GetInstance()
+		go systray.Run(systrayInitialize, nil)
 
-	// we should re-render the systray if the system if finalized, or if an update is available
-	// go func() {
-	// 	// TODO config channel listen
-	// 	systray.Quit()
-	// 	go systray.Run(systrayOnReady, nil)
-	// }()
+		// Shows a small notification to inform that Stash will no longer show a terminal window,
+		// and instead will be available in the tray. Will only show the first time a pre-desktop integration
+		// system is started from a non-terminal method, e.g. double-clicking an icon.
+		if c.GetShowOneTimeMovedNotification() {
+			SendNotification("Stash has moved!", "Stash now runs in your tray, instead of a terminal window.")
+			c.Set(config.ShowOneTimeMovedNotification, false)
+			if err := c.Write(); err != nil {
+				logger.Errorf("Error while writing configuration file: %s", err.Error())
+			}
+		}
+	}
 }
 
-func systrayOnReady() {
+func systrayInitialize() {
 	systray.SetTemplateIcon(favicon, favicon)
 	systray.SetTitle("Stash")
 	systray.SetTooltip("🟢 Stash is Running.")
@@ -57,13 +61,6 @@ func systrayOnReady() {
 		// systray.AddMenuItem("Start a Scan", "Scan all libraries with default settings")
 		// systray.AddMenuItem("Start Auto Tagging", "Auto Tag all libraries")
 		// systray.AddSeparator()
-
-		testnotify := systray.AddMenuItem("Test Notification", "Send a test notification")
-		go func(testCh chan struct{}) {
-			for {
-				<-testCh
-			}
-		}(testnotify.ClickedCh)
 	}
 
 	quitStashButton := systray.AddMenuItem("Quit Stash Server", "Quits the Stash server")
@@ -80,7 +77,7 @@ func systrayOnReady() {
 	}()
 }
 
-// OpenURLInBrowser opens a browser to the Stash UI. Path is optional.
+// OpenURLInBrowser opens a browser to the Stash UI. Path can be an empty string.
 func OpenURLInBrowser(force bool, path string) {
 	// This can be done before actually starting the server, as modern browsers will
 	// automatically reload the page if a local port is closed at page load and then opened.
@@ -111,15 +108,24 @@ func OpenURLInBrowser(force bool, path string) {
 	}
 }
 
+func SendNotification(title string, text string) {
+	if IsDesktop() {
+		c := config.GetInstance()
+		if c.GetNotificationsEnabled() {
+			sendNotification(title, text)
+		}
+	}
+}
+
 func IsDesktop() bool {
 	// check if running under root
 	if os.Getuid() == 0 {
 		return false
 	}
-	// Check if stdin is a terminal
-	if term.IsTerminal(int(os.Stdin.Fd())) {
-		return false
-	}
+	// // Check if stdin is a terminal
+	// if term.IsTerminal(int(os.Stdin.Fd())) {
+	// 	return false
+	// }
 	if isService() {
 		return false
 	}
@@ -163,5 +169,6 @@ func IsAllowedAutoUpdate() bool {
 
 func Shutdown() {
 	systray.Quit()
-	manager.GetInstance().Shutdown(0)
+	database.Close()
+	os.Exit(0)
 }

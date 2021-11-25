@@ -384,7 +384,9 @@
       "desktop_integration": {
         "desktop_integration": "Desktop Integration",
         "skip_opening_browser": "Skip Opening Browser",
-        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup",
+        "notifications_enabled": "Enable Notifications",
+        "send_desktop_notifications_for_events": "Send desktop notifications for events"
       },
       "editing": {
         "disable_dropdown_create": {

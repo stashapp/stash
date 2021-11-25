@@ -179,8 +179,12 @@ const (
 	deleteGeneratedDefaultDefault = true
 
 	// Desktop Integration Options
-	NoBrowser        = "noBrowser"
-	NoBrowserDefault = false
+	NoBrowser                           = "noBrowser"
+	NoBrowserDefault                    = false
+	NotificationsEnabled                = "notifications_enabled"
+	NotificationsEnabledDefault         = true
+	ShowOneTimeMovedNotification        = "show_one_time_moved_notification"
+	ShowOneTimeMovedNotificationDefault = false
 
 	// File upload options
 	MaxUploadSize = "max_upload_size"
@@ -269,6 +273,14 @@ func (i *Instance) GetCPUProfilePath() string {
 
 func (i *Instance) GetNoBrowser() bool {
 	return i.getBool(NoBrowser)
+}
+
+func (i *Instance) GetNotificationsEnabled() bool {
+	return i.getBool(NotificationsEnabled)
+}
+
+func (i *Instance) GetShowOneTimeMovedNotification() bool {
+	return i.getBool(ShowOneTimeMovedNotification)
 }
 
 func (i *Instance) Set(key string, value interface{}) {
@@ -1191,6 +1203,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(Generated, i.main.GetString(Metadata))
 
 	i.main.SetDefault(NoBrowser, NoBrowserDefault)
+	i.main.SetDefault(NotificationsEnabled, NotificationsEnabledDefault)
+	i.main.SetDefault(ShowOneTimeMovedNotification, ShowOneTimeMovedNotificationDefault)
 
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
@@ -1215,6 +1229,12 @@ func (i *Instance) setExistingSystemDefaults() error {
 		if !i.main.InConfig(NoBrowser) {
 			configDirtied = true
 			i.main.Set(NoBrowser, true)
+		}
+
+		// Existing systems as of the introduction of the taskbar should inform users.
+		if !i.main.InConfig(ShowOneTimeMovedNotification) {
+			configDirtied = true
+			i.main.Set(ShowOneTimeMovedNotification, true)
 		}
 
 		if configDirtied {

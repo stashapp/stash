@@ -39,7 +39,7 @@ require (
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
+	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 	golang.org/x/text v0.3.6
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
@@ -47,7 +47,9 @@ require (
 )
 
 require (
+	github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
 	github.com/getlantern/systray v1.1.0
+	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.0.1
 )
@@ -84,6 +86,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

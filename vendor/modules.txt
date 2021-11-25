@@ -1,3 +1,6 @@
+# github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
+## explicit
+github.com/0xAX/notificator
 # github.com/99designs/gqlgen v0.12.2
 ## explicit; go 1.12
 github.com/99designs/gqlgen
@@ -154,6 +157,9 @@ github.com/go-chi/chi/middleware
 # github.com/go-stack/stack v1.8.0
 ## explicit
 github.com/go-stack/stack
+# github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
+## explicit
+github.com/go-toast/toast
 # github.com/gobwas/httphead v0.1.0
 ## explicit; go 1.15
 github.com/gobwas/httphead
@@ -270,6 +276,9 @@ github.com/natefinch/pie
 # github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 ## explicit
 github.com/nfnt/resize
+# github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
+## explicit
+github.com/nu7hatch/gouuid
 # github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
 ## explicit; go 1.12
 github.com/oxtoacart/bpool
