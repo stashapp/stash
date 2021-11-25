@@ -3,22 +3,21 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import {
   mutateMetadataScan,
-  mutateMetadataIdentify,
   mutateMetadataAutoTag,
   mutateMetadataGenerate,
   useConfigureDefaults,
+  mutateMetadataClean,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
-import { CleanDialog } from "../Dialogs/CleanDialog";
-import { AutoTagDialog } from "../Dialogs/AutoTagDialog";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { ScanOptions } from "./ScanOptions";
 import { useToast } from "src/hooks";
+import { Modal } from "../Shared";
 
 interface ITask {
   description?: React.ReactNode;
@@ -36,6 +35,82 @@ const Task: React.FC<PropsWithChildren<ITask>> = ({
   </div>
 );
 
+interface IAutoTagOptions {
+  options: GQL.AutoTagMetadataInput;
+  setOptions: (s: GQL.AutoTagMetadataInput) => void;
+}
+
+const AutoTagOptions: React.FC<IAutoTagOptions> = ({
+  options,
+  setOptions: setOptionsState,
+}) => {
+  const intl = useIntl();
+
+  const { performers, studios, tags } = options;
+  const wildcard = ["*"];
+
+  function toggle(v?: GQL.Maybe<string[]>) {
+    if (!v?.length) {
+      return wildcard;
+    }
+    return [];
+  }
+
+  function setOptions(input: Partial<GQL.AutoTagMetadataInput>) {
+    setOptionsState({ ...options, ...input });
+  }
+
+  return (
+    <Form.Group>
+      <Form.Check
+        id="autotag-performers"
+        checked={!!performers?.length}
+        label={intl.formatMessage({ id: "performers" })}
+        onChange={() => setOptions({ performers: toggle(performers) })}
+      />
+      <Form.Check
+        id="autotag-studios"
+        checked={!!studios?.length}
+        label={intl.formatMessage({ id: "studios" })}
+        onChange={() => setOptions({ studios: toggle(studios) })}
+      />
+      <Form.Check
+        id="autotag-tags"
+        checked={!!tags?.length}
+        label={intl.formatMessage({ id: "tags" })}
+        onChange={() => setOptions({ tags: toggle(tags) })}
+      />
+    </Form.Group>
+  );
+};
+
+interface ICleanOptions {
+  options: GQL.CleanMetadataInput;
+  setOptions: (s: GQL.CleanMetadataInput) => void;
+}
+
+const CleanOptions: React.FC<ICleanOptions> = ({
+  options,
+  setOptions: setOptionsState,
+}) => {
+  const intl = useIntl();
+
+  function setOptions(input: Partial<GQL.CleanMetadataInput>) {
+    setOptionsState({ ...options, ...input });
+  }
+
+  return (
+    <Form.Group>
+      <Form.Check
+        id="clean-dryrun"
+        checked={options.dryRun}
+        label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
+        onChange={() => setOptions({ dryRun: !options.dryRun })}
+      />
+    </Form.Group>
+  );
+};
+
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
@@ -48,7 +123,19 @@ export const LibraryTasks: React.FC = () => {
     identify: false,
     generate: false,
   });
+
   const [scanOptions, setScanOptions] = useState<GQL.ScanMetadataInput>({});
+  const [
+    autoTagOptions,
+    setAutoTagOptions,
+  ] = useState<GQL.AutoTagMetadataInput>({
+    performers: ["*"],
+    studios: ["*"],
+    tags: ["*"],
+  });
+  const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
+    dryRun: false,
+  });
 
   type DialogOpenState = typeof dialogOpen;
 
@@ -59,10 +146,13 @@ export const LibraryTasks: React.FC = () => {
       return;
     }
 
-    const { scan } = configuration.defaults;
+    const { scan, autoTag } = configuration.defaults;
 
     if (scan) {
       setScanOptions(withoutTypename(scan));
+    }
+    if (autoTag) {
+      setAutoTagOptions(withoutTypename(autoTag));
     }
   }, [configuration]);
 
@@ -73,11 +163,50 @@ export const LibraryTasks: React.FC = () => {
   }
 
   function renderCleanDialog() {
-    if (!dialogOpen.clean) {
-      return;
+    let msg;
+    if (cleanOptions.dryRun) {
+      msg = (
+        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
+      );
+    } else {
+      msg = (
+        <p>
+          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
+        </p>
+      );
     }
 
-    return <CleanDialog onClose={() => setDialogOpen({ clean: false })} />;
+    return (
+      <Modal
+        show={dialogOpen.clean}
+        icon="trash-alt"
+        accept={{
+          text: intl.formatMessage({ id: "actions.clean" }),
+          variant: "danger",
+          onClick: onClean,
+        }}
+        cancel={{ onClick: () => setDialogOpen({ clean: false }) }}
+      >
+        {msg}
+      </Modal>
+    );
+  }
+
+  async function onClean() {
+    try {
+      await mutateMetadataClean(cleanOptions);
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.clean" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setDialogOpen({ clean: false });
+    }
   }
 
   function renderScanDialog() {
@@ -98,7 +227,7 @@ export const LibraryTasks: React.FC = () => {
 
   async function runScan(paths?: string[]) {
     try {
-      await configureDefaults({
+      configureDefaults({
         variables: {
           input: {
             scan: scanOptions,
@@ -127,7 +256,41 @@ export const LibraryTasks: React.FC = () => {
       return;
     }
 
-    return <AutoTagDialog onClose={() => setDialogOpen({ autoTag: false })} />;
+    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+  }
+
+  function onAutoTagDialogClosed(paths?: string[]) {
+    if (paths) {
+      runAutoTag(paths);
+    }
+
+    setDialogOpen({ autoTag: false });
+  }
+
+  async function runAutoTag(paths?: string[]) {
+    try {
+      configureDefaults({
+        variables: {
+          input: {
+            autoTag: autoTagOptions,
+          },
+        },
+      });
+
+      await mutateMetadataAutoTag({
+        ...autoTagOptions,
+        paths,
+      });
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function maybeRenderIdentifyDialog() {
@@ -144,36 +307,6 @@ export const LibraryTasks: React.FC = () => {
     return (
       <GenerateDialog onClose={() => setDialogOpen({ generate: false })} />
     );
-  }
-
-  async function onIdentifyClicked() {
-    // check if defaults are set for identify
-    // if not, then open the dialog
-    if (!configuration) {
-      return;
-    }
-
-    const { identify } = configuration?.defaults;
-    if (!identify) {
-      setDialogOpen({ identify: true });
-    } else {
-      mutateMetadataIdentify(withoutTypename(identify));
-    }
-  }
-
-  async function onAutoTagClicked() {
-    // check if defaults are set for auto tag
-    // if not, then open the dialog
-    if (!configuration) {
-      return;
-    }
-
-    const { autoTag } = configuration?.defaults;
-    if (!autoTag) {
-      setDialogOpen({ autoTag: true });
-    } else {
-      mutateMetadataAutoTag(withoutTypename(autoTag));
-    }
   }
 
   async function onGenerateClicked() {
@@ -233,21 +366,13 @@ export const LibraryTasks: React.FC = () => {
               id: "config.tasks.identify.description",
             })}
           >
-            <ButtonGroup className="ellipsis-button">
-              <Button
-                variant="secondary"
-                type="submit"
-                onClick={() => onIdentifyClicked()}
-              >
-                <FormattedMessage id="actions.identify" />
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setDialogOpen({ identify: true })}
-              >
-                …
-              </Button>
-            </ButtonGroup>
+            <Button
+              variant="secondary"
+              type="submit"
+              onClick={() => setDialogOpen({ identify: true })}
+            >
+              <FormattedMessage id="actions.identify" />…
+            </Button>
           </Task>
 
           <Task
@@ -255,21 +380,26 @@ export const LibraryTasks: React.FC = () => {
               id: "config.tasks.auto_tag_based_on_filenames",
             })}
           >
-            <ButtonGroup className="ellipsis-button">
-              <Button
-                variant="secondary"
-                type="submit"
-                onClick={() => onAutoTagClicked()}
-              >
-                <FormattedMessage id="actions.auto_tag" />
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setDialogOpen({ autoTag: true })}
-              >
-                …
-              </Button>
-            </ButtonGroup>
+            <AutoTagOptions
+              options={autoTagOptions}
+              setOptions={(o) => setAutoTagOptions(o)}
+            />
+
+            <Button
+              variant="secondary"
+              type="submit"
+              className="mr-2"
+              onClick={() => runAutoTag()}
+            >
+              <FormattedMessage id="actions.auto_tag" />
+            </Button>
+            <Button
+              variant="secondary"
+              type="submit"
+              onClick={() => setDialogOpen({ autoTag: true })}
+            >
+              <FormattedMessage id="actions.selective_auto_tag" />…
+            </Button>
           </Task>
 
           <Task
@@ -277,6 +407,10 @@ export const LibraryTasks: React.FC = () => {
               id: "config.tasks.cleanup_desc",
             })}
           >
+            <CleanOptions
+              options={cleanOptions}
+              setOptions={(o) => setCleanOptions(o)}
+            />
             <Button
               variant="danger"
               type="submit"
