@@ -76,6 +76,7 @@ func (a *ancestorQuery) Select(t iterator) NodeNavigator {
 				return nil
 			}
 			first := true
+			node = node.Copy()
 			a.iterator = func() NodeNavigator {
 				if first && a.Self {
 					first = false
@@ -666,6 +667,35 @@ func (c *constantQuery) Evaluate(t iterator) interface{} {
 
 func (c *constantQuery) Clone() query {
 	return c
+}
+
+type groupQuery struct {
+	posit int
+
+	Input query
+}
+
+func (g *groupQuery) Select(t iterator) NodeNavigator {
+	for {
+		node := g.Input.Select(t)
+		if node == nil {
+			return nil
+		}
+		g.posit++
+		return node.Copy()
+	}
+}
+
+func (g *groupQuery) Evaluate(t iterator) interface{} {
+	return g.Input.Evaluate(t)
+}
+
+func (g *groupQuery) Clone() query {
+	return &groupQuery{Input: g.Input}
+}
+
+func (g *groupQuery) position() int {
+	return g.posit
 }
 
 // logicalQuery is an XPath logical expression.
