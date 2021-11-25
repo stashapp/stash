@@ -378,6 +378,16 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			return nil
 		}
 
+		// If the path is a symlink, follow it through
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			finalPath, err := filepath.EvalSymlinks(path)
+			if err != nil {
+				logger.Warnf("error expanding symlink %v: %v", path, err)
+			}
+
+			path = finalPath
+		}
+
 		if !s.ExcludeVideo && utils.MatchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
 			return f(path, info, err)
 		}
