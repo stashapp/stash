@@ -15,7 +15,7 @@ import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { ConfigurationContext } from "src/hooks/Config";
 import { Manual } from "./Help/Manual";
-import { TasksButton } from "./TasksButton";
+import { SettingsButton } from "./SettingsButton";
 
 interface IMenuItem {
   name: string;
@@ -260,23 +260,10 @@ export const MainNavbar: React.FC = () => {
         <NavLink
           className="nav-utility"
           exact
-          to="/tasks"
-          onClick={handleDismiss}
-        >
-          <TasksButton />
-        </NavLink>
-        <NavLink
-          className="nav-utility"
-          exact
           to="/settings"
           onClick={handleDismiss}
         >
-          <Button
-            className="minimal d-flex align-items-center h-100"
-            title="Settings"
-          >
-            <Icon icon="cog" />
-          </Button>
+          <SettingsButton />
         </NavLink>
         <Button
           className="nav-utility minimal"

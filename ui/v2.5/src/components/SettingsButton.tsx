@@ -3,14 +3,15 @@ import React, { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useJobQueue, useJobsSubscribe } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { Icon } from "./Shared";
+import { useIntl } from "react-intl";
 
 type JobFragment = Pick<
   GQL.Job,
   "id" | "status" | "subTasks" | "description" | "progress"
 >;
 
-export const TasksButton: React.FC = () => {
+export const SettingsButton: React.FC = () => {
+  const intl = useIntl();
   const jobStatus = useJobQueue();
   const jobsSubscribe = useJobsSubscribe();
 
@@ -54,12 +55,11 @@ export const TasksButton: React.FC = () => {
   }, [jobsSubscribe.data]);
 
   return (
-    <Button className="minimal d-flex align-items-center h-100" title="Tasks">
-      {queue.length > 0 ? (
-        <FontAwesomeIcon icon="spinner" pulse />
-      ) : (
-        <Icon icon="bolt" />
-      )}
+    <Button
+      className="minimal d-flex align-items-center h-100"
+      title={intl.formatMessage({ id: "settings" })}
+    >
+      <FontAwesomeIcon icon="cog" spin={queue.length > 0} />
     </Button>
   );
 };
