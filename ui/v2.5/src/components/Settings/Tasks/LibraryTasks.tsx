@@ -1,39 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Card, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataGenerate,
   useConfigureDefaults,
-  mutateMetadataClean,
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils";
 import { ConfigurationContext } from "src/hooks/Config";
-import { PropsWithChildren } from "react-router/node_modules/@types/react";
-import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
+import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { ScanOptions } from "./ScanOptions";
 import { useToast } from "src/hooks";
-import { Modal } from "../Shared";
 import { GenerateOptions } from "./GenerateOptions";
-
-interface ITask {
-  description?: React.ReactNode;
-}
-
-const Task: React.FC<PropsWithChildren<ITask>> = ({
-  children,
-  description,
-}) => (
-  <div className="task">
-    {children}
-    {description ? (
-      <Form.Text className="text-muted">{description}</Form.Text>
-    ) : undefined}
-  </div>
-);
+import { Task } from "./Task";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -84,33 +66,6 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
   );
 };
 
-interface ICleanOptions {
-  options: GQL.CleanMetadataInput;
-  setOptions: (s: GQL.CleanMetadataInput) => void;
-}
-
-const CleanOptions: React.FC<ICleanOptions> = ({
-  options,
-  setOptions: setOptionsState,
-}) => {
-  const intl = useIntl();
-
-  function setOptions(input: Partial<GQL.CleanMetadataInput>) {
-    setOptionsState({ ...options, ...input });
-  }
-
-  return (
-    <Form.Group>
-      <Form.Check
-        id="clean-dryrun"
-        checked={options.dryRun}
-        label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
-        onChange={() => setOptions({ dryRun: !options.dryRun })}
-      />
-    </Form.Group>
-  );
-};
-
 export const LibraryTasks: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
@@ -131,9 +86,6 @@ export const LibraryTasks: React.FC = () => {
     performers: ["*"],
     studios: ["*"],
     tags: ["*"],
-  });
-  const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
-    dryRun: false,
   });
 
   function getDefaultGenerateOptions(): GQL.GenerateMetadataInput {
@@ -205,53 +157,6 @@ export const LibraryTasks: React.FC = () => {
     setDialogOpenState((v) => {
       return { ...v, ...s };
     });
-  }
-
-  function renderCleanDialog() {
-    let msg;
-    if (cleanOptions.dryRun) {
-      msg = (
-        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
-      );
-    } else {
-      msg = (
-        <p>
-          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
-        </p>
-      );
-    }
-
-    return (
-      <Modal
-        show={dialogOpen.clean}
-        icon="trash-alt"
-        accept={{
-          text: intl.formatMessage({ id: "actions.clean" }),
-          variant: "danger",
-          onClick: onClean,
-        }}
-        cancel={{ onClick: () => setDialogOpen({ clean: false }) }}
-      >
-        {msg}
-      </Modal>
-    );
-  }
-
-  async function onClean() {
-    try {
-      await mutateMetadataClean(cleanOptions);
-
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.clean" }) }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setDialogOpen({ clean: false });
-    }
   }
 
   function renderScanDialog() {
@@ -370,7 +275,6 @@ export const LibraryTasks: React.FC = () => {
 
   return (
     <Form.Group>
-      {renderCleanDialog()}
       {renderScanDialog()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
@@ -378,8 +282,9 @@ export const LibraryTasks: React.FC = () => {
       <Form.Group>
         <h5>{intl.formatMessage({ id: "library" })}</h5>
 
-        <Card className="task-group">
+        <div className="task-group">
           <Task
+            headingID="actions.scan"
             description={intl.formatMessage({
               id: "config.tasks.scan_for_content_desc",
             })}
@@ -405,6 +310,7 @@ export const LibraryTasks: React.FC = () => {
           </Task>
 
           <Task
+            headingID="config.tasks.identify.heading"
             description={intl.formatMessage({
               id: "config.tasks.identify.description",
             })}
@@ -419,6 +325,7 @@ export const LibraryTasks: React.FC = () => {
           </Task>
 
           <Task
+            headingID="config.tasks.auto_tagging"
             description={intl.formatMessage({
               id: "config.tasks.auto_tag_based_on_filenames",
             })}
@@ -444,31 +351,15 @@ export const LibraryTasks: React.FC = () => {
               <FormattedMessage id="actions.selective_auto_tag" />…
             </Button>
           </Task>
-
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.cleanup_desc",
-            })}
-          >
-            <CleanOptions
-              options={cleanOptions}
-              setOptions={(o) => setCleanOptions(o)}
-            />
-            <Button
-              variant="danger"
-              type="submit"
-              onClick={() => setDialogOpen({ clean: true })}
-            >
-              <FormattedMessage id="actions.clean" />…
-            </Button>
-          </Task>
-        </Card>
+        </div>
       </Form.Group>
+
+      <hr />
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
 
-        <Card className="task-group">
+        <div className="task-group">
           <Task
             description={intl.formatMessage({
               id: "config.tasks.generate_desc",
@@ -486,7 +377,7 @@ export const LibraryTasks: React.FC = () => {
               <FormattedMessage id="actions.generate" />
             </Button>
           </Task>
-        </Card>
+        </div>
       </Form.Group>
     </Form.Group>
   );

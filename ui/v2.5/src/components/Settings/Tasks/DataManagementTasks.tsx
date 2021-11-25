@@ -1,33 +1,46 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Card, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import {
   mutateMigrateHashNaming,
   mutateMetadataExport,
   mutateBackupDatabase,
   mutateMetadataImport,
+  mutateMetadataClean,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
-import { PropsWithChildren } from "react-router/node_modules/@types/react";
-import { Modal } from "../Shared";
+import { Modal } from "../../Shared";
 import { ImportDialog } from "./ImportDialog";
+import { Task } from "./Task";
+import * as GQL from "src/core/generated-graphql";
 
-interface ITask {
-  description?: React.ReactNode;
+interface ICleanOptions {
+  options: GQL.CleanMetadataInput;
+  setOptions: (s: GQL.CleanMetadataInput) => void;
 }
 
-const Task: React.FC<PropsWithChildren<ITask>> = ({
-  children,
-  description,
-}) => (
-  <div className="task">
-    {children}
-    {description ? (
-      <Form.Text className="text-muted">{description}</Form.Text>
-    ) : undefined}
-  </div>
-);
+const CleanOptions: React.FC<ICleanOptions> = ({
+  options,
+  setOptions: setOptionsState,
+}) => {
+  const intl = useIntl();
+
+  function setOptions(input: Partial<GQL.CleanMetadataInput>) {
+    setOptionsState({ ...options, ...input });
+  }
+
+  return (
+    <Form.Group>
+      <Form.Check
+        id="clean-dryrun"
+        checked={options.dryRun}
+        label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
+        onChange={() => setOptions({ dryRun: !options.dryRun })}
+      />
+    </Form.Group>
+  );
+};
 
 interface IDataManagementTasks {
   setIsBackupRunning: (v: boolean) => void;
@@ -42,10 +55,10 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     importAlert: false,
     import: false,
     clean: false,
-    scan: false,
-    autoTag: false,
-    identify: false,
-    generate: false,
+  });
+
+  const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
+    dryRun: false,
   });
 
   type DialogOpenState = typeof dialogOpen;
@@ -94,6 +107,53 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     }
 
     return <ImportDialog onClose={() => setDialogOpen({ import: false })} />;
+  }
+
+  function renderCleanDialog() {
+    let msg;
+    if (cleanOptions.dryRun) {
+      msg = (
+        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
+      );
+    } else {
+      msg = (
+        <p>
+          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
+        </p>
+      );
+    }
+
+    return (
+      <Modal
+        show={dialogOpen.clean}
+        icon="trash-alt"
+        accept={{
+          text: intl.formatMessage({ id: "actions.clean" }),
+          variant: "danger",
+          onClick: onClean,
+        }}
+        cancel={{ onClick: () => setDialogOpen({ clean: false }) }}
+      >
+        {msg}
+      </Modal>
+    );
+  }
+
+  async function onClean() {
+    try {
+      await mutateMetadataClean(cleanOptions);
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.clean" }) }
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setDialogOpen({ clean: false });
+    }
   }
 
   async function onMigrateHashNaming() {
@@ -151,10 +211,37 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     <Form.Group>
       {renderImportAlert()}
       {renderImportDialog()}
+      {renderCleanDialog()}
+
+      <Form.Group>
+        <div className="task-group">
+          <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
+          <Task
+            headingID="actions.clean"
+            description={intl.formatMessage({
+              id: "config.tasks.cleanup_desc",
+            })}
+          >
+            <CleanOptions
+              options={cleanOptions}
+              setOptions={(o) => setCleanOptions(o)}
+            />
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ clean: true })}
+            >
+              <FormattedMessage id="actions.clean" />…
+            </Button>
+          </Task>
+        </div>
+      </Form.Group>
+
+      <hr />
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "metadata" })}</h5>
-        <Card className="task-group">
+        <div className="task-group">
           <Task
             description={intl.formatMessage({
               id: "config.tasks.export_to_json",
@@ -199,14 +286,14 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
               <FormattedMessage id="actions.import_from_file" />
             </Button>
           </Task>
-        </Card>
+        </div>
       </Form.Group>
 
       <hr />
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
-        <Card className="task-group">
+        <div className="task-group">
           <Task
             description={intl.formatMessage(
               { id: "config.tasks.backup_database" },
@@ -243,7 +330,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
               <FormattedMessage id="actions.download_backup" />
             </Button>
           </Task>
-        </Card>
+        </div>
       </Form.Group>
 
       <hr />
@@ -251,7 +338,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       <Form.Group>
         <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
 
-        <Card className="task-group">
+        <div className="task-group">
           <Task
             description={intl.formatMessage({
               id: "config.tasks.migrate_hash_files",
@@ -265,7 +352,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
               <FormattedMessage id="actions.rename_gen_files" />
             </Button>
           </Task>
-        </Card>
+        </div>
       </Form.Group>
     </Form.Group>
   );

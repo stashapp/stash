@@ -33,7 +33,6 @@ import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
-import { Tasks } from "./components/Tasks/Tasks";
 
 initPolyfills();
 
@@ -126,7 +125,6 @@ export const App: React.FC = () => {
         <Route path="/studios" component={Studios} />
         <Route path="/movies" component={Movies} />
         <Route path="/settings" component={Settings} />
-        <Route path="/tasks" component={Tasks} />
         <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
         <Route
           path="/sceneDuplicateChecker"

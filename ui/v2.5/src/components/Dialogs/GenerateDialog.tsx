@@ -12,7 +12,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 // import { DirectorySelectionDialog } from "../Settings/SettingsTasksPanel/DirectorySelectionDialog";
 import { Manual } from "../Help/Manual";
 import { withoutTypename } from "src/utils";
-import { GenerateOptions } from "../Tasks/GenerateOptions";
+import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
 
 interface ISceneGenerateDialog {
   selectedIds?: string[];

@@ -9,6 +9,7 @@ import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
 import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
+import { SettingsTasksPanel } from "./Tasks/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapingPanel } from "./SettingsScrapingPanel";
 import { SettingsToolsPanel } from "./SettingsToolsPanel";
@@ -18,7 +19,7 @@ export const Settings: React.FC = () => {
   const intl = useIntl();
   const location = useLocation();
   const history = useHistory();
-  const defaultTab = queryString.parse(location.search).tab ?? "configuration";
+  const defaultTab = queryString.parse(location.search).tab ?? "tasks";
 
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 
@@ -47,6 +48,11 @@ export const Settings: React.FC = () => {
               <Nav.Item>
                 <Nav.Link eventKey="interface">
                   <FormattedMessage id="config.categories.interface" />
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="tasks">
+                  <FormattedMessage id="config.categories.tasks" />
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -87,6 +93,9 @@ export const Settings: React.FC = () => {
               </Tab.Pane>
               <Tab.Pane eventKey="interface">
                 <SettingsInterfacePanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="tasks">
+                <SettingsTasksPanel />
               </Tab.Pane>
               <Tab.Pane eventKey="dlna" unmountOnExit>
                 <SettingsDLNAPanel />

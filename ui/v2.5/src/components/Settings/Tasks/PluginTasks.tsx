@@ -1,26 +1,10 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import { Button, Card, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { mutateRunPluginTask, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { PropsWithChildren } from "react-router/node_modules/@types/react";
 import * as GQL from "src/core/generated-graphql";
-
-interface ITask {
-  description?: React.ReactNode;
-}
-
-const Task: React.FC<PropsWithChildren<ITask>> = ({
-  children,
-  description,
-}) => (
-  <div className="task">
-    {children}
-    {description ? (
-      <Form.Text className="text-muted">{description}</Form.Text>
-    ) : undefined}
-  </div>
-);
+import { Task } from "./Task";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -47,9 +31,9 @@ export const PluginTasks: React.FC = () => {
           return (
             <Form.Group key={`${o.id}`}>
               <h6>{o.name}</h6>
-              <Card className="task-group">
+              <div className="task-group">
                 {renderPluginTasks(o, o.tasks ?? [])}
-              </Card>
+              </div>
             </Form.Group>
           );
         })}
