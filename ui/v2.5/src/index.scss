@@ -21,6 +21,7 @@
 @import "src/components/Tagger/styles.scss";
 @import "src/hooks/Lightbox/lightbox.scss";
 @import "src/components/Dialogs/IdentifyDialog/styles.scss";
+@import "src/components/Dialogs/styles.scss";
 
 /* stylelint-disable */
 #root {
@@ -38,6 +39,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 4rem 0 0 0;
+
+  @include media-breakpoint-down(xs) {
+    @media (orientation: portrait) {
+      padding: 1rem 0 5rem;
+    }
+  }
 }
 
 code,
@@ -67,13 +74,6 @@ dd {
   }
 }
 
-.text-input,
-.text-input:focus,
-.text-input[readonly],
-.text-input:disabled {
-  background-color: $textfield-bg;
-}
-
 .input-control,
 .input-control:focus,
 .input-control:disabled {
@@ -82,6 +82,13 @@ dd {
 
 .input-control:disabled {
   opacity: 0.8;
+}
+
+.text-input,
+.text-input:focus,
+.text-input[readonly],
+.text-input:disabled {
+  background-color: $textfield-bg;
 }
 
 textarea.text-input {
@@ -375,7 +382,7 @@ div.dropdown-menu {
 }
 
 .card {
-  background-color: #30404d;
+  background-color: $card-bg;
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.4), 0 0 0 rgba(16, 22, 26, 0),
     0 0 0 rgba(16, 22, 26, 0);
@@ -414,6 +421,10 @@ div.dropdown-menu {
       color: $text-color;
       text-shadow: none;
     }
+  }
+
+  .toast-body {
+    white-space: pre-wrap;
   }
 }
 
@@ -464,44 +475,122 @@ div.dropdown-menu {
 }
 
 .top-nav {
+  justify-content: start;
   padding: 0.25rem 1rem;
+
+  @include media-breakpoint-down(xs) {
+    padding: 0.25rem 2rem;
+
+    @media (orientation: portrait) {
+      bottom: 0;
+      top: auto;
+    }
+  }
+
+  .navbar-toggler {
+    padding: 0.5em 0;
+    text-align: center;
+    width: 3em;
+
+    svg {
+      margin: auto;
+    }
+  }
+
+  .navbar-collapse {
+    justify-content: space-between;
+    max-height: calc(100vh - 4rem);
+
+    @include media-breakpoint-down(xs) {
+      @media (orientation: landscape) {
+        overflow-y: scroll;
+      }
+    }
+
+    .navbar-nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding-bottom: 0.5rem;
+
+      @include media-breakpoint-up(xl) {
+        flex-wrap: nowrap;
+        padding-bottom: 0;
+      }
+
+      &:last-child {
+        display: none;
+      }
+
+      @include media-breakpoint-down(xs) {
+        &:last-child {
+          display: flex;
+          min-height: 3rem;
+        }
+      }
+    }
+  }
+
+  .navbar-buttons .btn {
+    align-items: center;
+    display: flex;
+  }
+
+  @include media-breakpoint-down(xs) {
+    .navbar-buttons .nav-utility {
+      display: none;
+    }
+  }
 
   .nav-link {
     padding: 0;
   }
 
   .fa-icon {
-    margin-left: 0;
+    @include media-breakpoint-down(xs) {
+      margin: 0;
+    }
+
+    &.nav-menu-icon {
+      @include media-breakpoint-down(lg) {
+        height: 100%;
+        max-height: min(10vw, 55px);
+        width: 100%;
+      }
+    }
   }
 
   .btn {
     white-space: nowrap;
   }
 
-  @media (max-width: 576px) {
+  @include media-breakpoint-down(lg) {
+    .navbar-brand {
+      margin-left: -8px;
+    }
+
+    .navbar-buttons {
+      margin: 0 -8px;
+    }
+
     .btn {
-      padding: 6px;
-    }
-
-    .settings-button {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-
-    .donate {
-      span {
-        display: none;
-      }
-
-      svg {
-        margin: 0;
-      }
+      padding: 6px 12px;
     }
   }
 }
 
-.donate svg {
-  color: #ff7373;
+.donate {
+  align-items: center;
+  display: flex;
+  height: 100%;
+
+  svg {
+    color: #ff7373;
+
+    @include media-breakpoint-down(xs) {
+      margin: 0;
+    }
+  }
 }
 
 .error-message {
@@ -583,7 +672,7 @@ div.dropdown-menu {
   }
 
   code {
-    background-color: darken($color: #30404d, $amount: 3);
+    background-color: darken($color: $card-bg, $amount: 3);
     color: $text-color;
     padding: 0.2em 0.4em;
   }
@@ -601,7 +690,7 @@ div.dropdown-menu {
       padding: 0;
     }
 
-    background-color: darken($color: #30404d, $amount: 3);
+    background-color: darken($color: $card-bg, $amount: 3);
     border-radius: 3px;
     padding: 16px;
   }
@@ -623,7 +712,7 @@ div.dropdown-menu {
     }
 
     tr:nth-child(2n) {
-      background-color: darken($color: #30404d, $amount: 2);
+      background-color: darken($color: $card-bg, $amount: 2);
     }
 
     td,
@@ -654,4 +743,12 @@ dl.details-list {
   display: grid;
   grid-column-gap: 10px;
   grid-template-columns: minmax(16.67%, auto) 1fr;
+}
+
+// Fix Safari styling on dropdowns
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4.95 10' fill='%23fff'><polygon points='1.41 4.67 2.48 3.18 3.54 4.67 1.41 4.67'/><polygon points='3.54 5.33 2.48 6.82 1.41 5.33 3.54 5.33'/></svg>")
+    no-repeat right 2px center;
 }

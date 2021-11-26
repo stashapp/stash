@@ -54,6 +54,8 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   maximumLoopDuration
   noBrowser
   autostartVideo
+  autostartVideoOnPlaySelected
+  continuePlaylistDefault
   showStudioAsText
   css
   cssEnabled
@@ -104,6 +106,16 @@ fragment ScraperSourceData on ScraperSource {
 }
 
 fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
+  scan {
+    useFileMetadata
+    stripFileExtension
+    scanGeneratePreviews
+    scanGenerateImagePreviews
+    scanGenerateSprites
+    scanGeneratePhashes
+    scanGenerateThumbnails
+  }
+  
   identify {
     sources {
       source {
@@ -116,6 +128,30 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     options {
       ...IdentifyMetadataOptionsData
     }
+  }
+
+  autoTag {
+    performers
+    studios
+    tags
+  }
+
+  generate {
+    sprites
+    previews
+    imagePreviews
+    previewOptions {
+      previewSegments
+      previewSegmentDuration
+      previewExcludeStart
+      previewExcludeEnd
+      previewPreset
+    }
+    markers
+    markerImagePreviews
+    markerScreenshots
+    transcodes
+    phashes
   }
 
   deleteFile

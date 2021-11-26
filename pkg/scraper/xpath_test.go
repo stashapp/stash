@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -312,7 +313,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	performer, err := scraper.scrapePerformer(q)
+	performer, err := scraper.scrapePerformer(context.Background(), q)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
@@ -407,7 +408,7 @@ func TestConcatXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	performer, err := scraper.scrapePerformer(q)
+	performer, err := scraper.scrapePerformer(context.Background(), q)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
@@ -681,7 +682,7 @@ func TestApplySceneXPathConfig(t *testing.T) {
 	q := &xpathQuery{
 		doc: doc,
 	}
-	scene, err := scraper.scrapeScene(q)
+	scene, err := scraper.scrapeScene(context.Background(), q)
 
 	if err != nil {
 		t.Errorf("Error scraping scene: %s", err.Error())
@@ -804,7 +805,7 @@ func TestLoadInvalidXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	config.process(q, nil)
+	config.process(context.Background(), q, nil)
 }
 
 type mockGlobalConfig struct{}
@@ -875,12 +876,22 @@ xPathScrapers:
 	globalConfig := mockGlobalConfig{}
 
 	client := &http.Client{}
-	s := createScraperFromConfig(*c, client, nil, globalConfig)
-	performer, err := s.Performer.scrapeByURL(ts.URL)
+	ctx := context.Background()
+	s := newGroupScraper(*c, nil, globalConfig)
+	us, ok := s.(urlScraper)
+	if !ok {
+		t.Error("couldn't convert scraper into url scraper")
+	}
+	content, err := us.viaURL(ctx, client, ts.URL, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
 		return
+	}
+
+	performer, ok := content.(*models.ScrapedPerformer)
+	if !ok {
+		t.Error("couldn't convert scraped content into a performer")
 	}
 
 	verifyField(t, "The name", performer.Name, "Name")

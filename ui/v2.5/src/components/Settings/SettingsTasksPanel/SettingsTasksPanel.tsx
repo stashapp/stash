@@ -1,69 +1,69 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import {
   mutateMetadataImport,
-  mutateMetadataClean,
-  mutateMetadataScan,
-  mutateMetadataAutoTag,
   mutateMetadataExport,
   mutateMigrateHashNaming,
   usePlugins,
   mutateRunPluginTask,
   mutateBackupDatabase,
+  mutateMetadataScan,
+  mutateMetadataIdentify,
+  mutateMetadataAutoTag,
+  mutateMetadataGenerate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, Modal } from "src/components/Shared";
-import { downloadFile } from "src/utils";
+import { downloadFile, withoutTypename } from "src/utils";
 import IdentifyDialog from "src/components/Dialogs/IdentifyDialog/IdentifyDialog";
-import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
-import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { JobTable } from "./JobTable";
+import ScanDialog from "src/components/Dialogs/ScanDialog/ScanDialog";
+import AutoTagDialog from "src/components/Dialogs/AutoTagDialog";
+import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
+import CleanDialog from "src/components/Dialogs/CleanDialog";
+import { ConfigurationContext } from "src/hooks/Config";
+import { PropsWithChildren } from "react-router/node_modules/@types/react";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
+
+interface ITask {
+  description?: React.ReactNode;
+}
+
+const Task: React.FC<PropsWithChildren<ITask>> = ({
+  children,
+  description,
+}) => (
+  <div className="task">
+    {children}
+    {description ? (
+      <Form.Text className="text-muted">{description}</Form.Text>
+    ) : undefined}
+  </div>
+);
 
 export const SettingsTasksPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
   const [dialogOpen, setDialogOpenState] = useState({
     importAlert: false,
-    cleanAlert: false,
     import: false,
     clean: false,
     scan: false,
     autoTag: false,
     identify: false,
+    generate: false,
   });
 
   type DialogOpenState = typeof dialogOpen;
 
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
-  const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
-  const [stripFileExtension, setStripFileExtension] = useState<boolean>(false);
-  const [scanGeneratePreviews, setScanGeneratePreviews] = useState<boolean>(
-    false
-  );
-  const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
-    false
-  );
-  const [scanGeneratePhashes, setScanGeneratePhashes] = useState<boolean>(
-    false
-  );
-  const [scanGenerateThumbnails, setScanGenerateThumbnails] = useState<boolean>(
-    false
-  );
-  const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
-  const [
-    scanGenerateImagePreviews,
-    setScanGenerateImagePreviews,
-  ] = useState<boolean>(false);
 
-  const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
-  const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
-  const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
+  const { configuration } = React.useContext(ConfigurationContext);
 
   const plugins = usePlugins();
 
@@ -105,41 +105,12 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
-  function onClean() {
-    setDialogOpen({ cleanAlert: false });
-    mutateMetadataClean({
-      dryRun: cleanDryRun,
-    });
-  }
-
-  function renderCleanAlert() {
-    let msg;
-    if (cleanDryRun) {
-      msg = (
-        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
-      );
-    } else {
-      msg = (
-        <p>
-          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
-        </p>
-      );
+  function renderCleanDialog() {
+    if (!dialogOpen.clean) {
+      return;
     }
 
-    return (
-      <Modal
-        show={dialogOpen.cleanAlert}
-        icon="trash-alt"
-        accept={{
-          text: intl.formatMessage({ id: "actions.clean" }),
-          variant: "danger",
-          onClick: onClean,
-        }}
-        cancel={{ onClick: () => setDialogOpen({ cleanAlert: false }) }}
-      >
-        {msg}
-      </Modal>
-    );
+    return <CleanDialog onClose={() => setDialogOpen({ clean: false })} />;
   }
 
   function renderImportDialog() {
@@ -155,38 +126,7 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onScanDialogClosed} />;
-  }
-
-  function onScanDialogClosed(paths?: string[]) {
-    if (paths) {
-      onScan(paths);
-    }
-
-    setDialogOpen({ scan: false });
-  }
-
-  async function onScan(paths?: string[]) {
-    try {
-      await mutateMetadataScan({
-        paths,
-        useFileMetadata,
-        stripFileExtension,
-        scanGeneratePreviews,
-        scanGenerateImagePreviews,
-        scanGenerateSprites,
-        scanGeneratePhashes,
-        scanGenerateThumbnails,
-      });
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.scan" }) }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
+    return <ScanDialog onClose={() => setDialogOpen({ scan: false })} />;
   }
 
   function renderAutoTagDialog() {
@@ -194,7 +134,7 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+    return <AutoTagDialog onClose={() => setDialogOpen({ autoTag: false })} />;
   }
 
   function maybeRenderIdentifyDialog() {
@@ -205,36 +145,12 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
-  function onAutoTagDialogClosed(paths?: string[]) {
-    if (paths) {
-      onAutoTag(paths);
-    }
+  function maybeRenderGenerateDialog() {
+    if (!dialogOpen.generate) return;
 
-    setDialogOpen({ autoTag: false });
-  }
-
-  function getAutoTagInput(paths?: string[]) {
-    const wildcard = ["*"];
-    return {
-      paths,
-      performers: autoTagPerformers ? wildcard : [],
-      studios: autoTagStudios ? wildcard : [],
-      tags: autoTagTags ? wildcard : [],
-    };
-  }
-
-  async function onAutoTag(paths?: string[]) {
-    try {
-      await mutateMetadataAutoTag(getAutoTagInput(paths));
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.auto_tag" }) }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
+    return (
+      <GenerateDialog onClose={() => setDialogOpen({ generate: false })} />
+    );
   }
 
   async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
@@ -254,19 +170,15 @@ export const SettingsTasksPanel: React.FC = () => {
 
     return pluginTasks.map((o) => {
       return (
-        <div key={o.name}>
+        <Task description={o.description} key={o.name}>
           <Button
             onClick={() => onPluginTaskClicked(plugin, o)}
-            className="mt-3"
             variant="secondary"
             size="sm"
           >
             {o.name}
           </Button>
-          {o.description ? (
-            <Form.Text className="text-muted">{o.description}</Form.Text>
-          ) : undefined}
-        </div>
+        </Task>
       );
     });
   }
@@ -302,16 +214,20 @@ export const SettingsTasksPanel: React.FC = () => {
     return (
       <>
         <hr />
-        <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
-        {taskPlugins.map((o) => {
-          return (
-            <div key={`${o.id}`} className="mb-3">
-              <h6>{o.name}</h6>
-              {renderPluginTasks(o, o.tasks ?? [])}
-              <hr />
-            </div>
-          );
-        })}
+
+        <Form.Group>
+          <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
+          {taskPlugins.map((o) => {
+            return (
+              <Form.Group key={`${o.id}`}>
+                <h6>{o.name}</h6>
+                <Card className="task-group">
+                  {renderPluginTasks(o, o.tasks ?? [])}
+                </Card>
+              </Form.Group>
+            );
+          })}
+        </Form.Group>
       </>
     );
   }
@@ -348,6 +264,66 @@ export const SettingsTasksPanel: React.FC = () => {
     }
   }
 
+  async function onScanClicked() {
+    // check if defaults are set for scan
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { scan } = configuration?.defaults;
+    if (!scan) {
+      setDialogOpen({ scan: true });
+    } else {
+      mutateMetadataScan(withoutTypename(scan));
+    }
+  }
+
+  async function onIdentifyClicked() {
+    // check if defaults are set for identify
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { identify } = configuration?.defaults;
+    if (!identify) {
+      setDialogOpen({ identify: true });
+    } else {
+      mutateMetadataIdentify(withoutTypename(identify));
+    }
+  }
+
+  async function onAutoTagClicked() {
+    // check if defaults are set for auto tag
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { autoTag } = configuration?.defaults;
+    if (!autoTag) {
+      setDialogOpen({ autoTag: true });
+    } else {
+      mutateMetadataAutoTag(withoutTypename(autoTag));
+    }
+  }
+
+  async function onGenerateClicked() {
+    // check if defaults are set for generate
+    // if not, then open the dialog
+    if (!configuration) {
+      return;
+    }
+
+    const { generate } = configuration?.defaults;
+    if (!generate) {
+      setDialogOpen({ generate: true });
+    } else {
+      mutateMetadataGenerate(withoutTypename(generate));
+    }
+  }
+
   if (isBackupRunning) {
     return (
       <LoadingIndicator
@@ -359,11 +335,12 @@ export const SettingsTasksPanel: React.FC = () => {
   return (
     <>
       {renderImportAlert()}
-      {renderCleanAlert()}
+      {renderCleanDialog()}
       {renderImportDialog()}
       {renderScanDialog()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
+      {maybeRenderGenerateDialog()}
 
       <h4>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h4>
 
@@ -373,287 +350,237 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <Form.Group>
         <h5>{intl.formatMessage({ id: "library" })}</h5>
-        <Form.Group>
-          <h6>{intl.formatMessage({ id: "actions.scan" })}</h6>
-          <Form.Check
-            id="use-file-metadata"
-            checked={useFileMetadata}
-            label={intl.formatMessage({
-              id: "config.tasks.set_name_date_details_from_metadata_if_present",
+        <Card className="task-group">
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.scan_for_content_desc",
             })}
-            onChange={() => setUseFileMetadata(!useFileMetadata)}
-          />
-          <Form.Check
-            id="strip-file-extension"
-            checked={stripFileExtension}
-            label={intl.formatMessage({
-              id:
-                "config.tasks.dont_include_file_extension_as_part_of_the_title",
+          >
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onScanClicked()}
+              >
+                <FormattedMessage id="actions.scan" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ scan: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </Task>
+
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.identify.description",
             })}
-            onChange={() => setStripFileExtension(!stripFileExtension)}
-          />
-          <Form.Check
-            id="scan-generate-previews"
-            checked={scanGeneratePreviews}
-            label={intl.formatMessage({
-              id: "config.tasks.generate_video_previews_during_scan",
+          >
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onIdentifyClicked()}
+              >
+                <FormattedMessage id="actions.identify" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ identify: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </Task>
+
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.auto_tag_based_on_filenames",
             })}
-            onChange={() => setScanGeneratePreviews(!scanGeneratePreviews)}
-          />
-          <div className="d-flex flex-row">
-            <div>↳</div>
-            <Form.Check
-              id="scan-generate-image-previews"
-              checked={scanGenerateImagePreviews}
-              disabled={!scanGeneratePreviews}
-              label={intl.formatMessage({
-                id: "config.tasks.generate_previews_during_scan",
-              })}
-              onChange={() =>
-                setScanGenerateImagePreviews(!scanGenerateImagePreviews)
+          >
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onAutoTagClicked()}
+              >
+                <FormattedMessage id="actions.auto_tag" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ autoTag: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </Task>
+
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.cleanup_desc",
+            })}
+          >
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ clean: true })}
+            >
+              <FormattedMessage id="actions.clean" />…
+            </Button>
+          </Task>
+        </Card>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
+
+        <Card className="task-group">
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.generate_desc",
+            })}
+          >
+            <ButtonGroup className="ellipsis-button">
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onGenerateClicked()}
+              >
+                <FormattedMessage id="actions.generate" />
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setDialogOpen({ generate: true })}
+              >
+                …
+              </Button>
+            </ButtonGroup>
+          </Task>
+        </Card>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h5>{intl.formatMessage({ id: "metadata" })}</h5>
+        <Card className="task-group">
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.export_to_json",
+            })}
+          >
+            <Button
+              id="export"
+              variant="secondary"
+              type="submit"
+              onClick={() => onExport()}
+            >
+              <FormattedMessage id="actions.full_export" />
+            </Button>
+          </Task>
+
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.import_from_exported_json",
+            })}
+          >
+            <Button
+              id="import"
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ importAlert: true })}
+            >
+              <FormattedMessage id="actions.full_import" />
+            </Button>
+          </Task>
+
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.incremental_import",
+            })}
+          >
+            <Button
+              id="partial-import"
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ import: true })}
+            >
+              <FormattedMessage id="actions.import_from_file" />
+            </Button>
+          </Task>
+        </Card>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
+        <Card className="task-group">
+          <Task
+            description={intl.formatMessage(
+              { id: "config.tasks.backup_database" },
+              {
+                filename_format: (
+                  <code>
+                    [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                  </code>
+                ),
               }
-              className="ml-2 flex-grow"
-            />
-          </div>
-          <Form.Check
-            id="scan-generate-sprites"
-            checked={scanGenerateSprites}
-            label={intl.formatMessage({
-              id: "config.tasks.generate_sprites_during_scan",
-            })}
-            onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
-          />
-          <Form.Check
-            id="scan-generate-phashes"
-            checked={scanGeneratePhashes}
-            label={intl.formatMessage({
-              id: "config.tasks.generate_phashes_during_scan",
-            })}
-            onChange={() => setScanGeneratePhashes(!scanGeneratePhashes)}
-          />
-          <Form.Check
-            id="scan-generate-thumbnails"
-            checked={scanGenerateThumbnails}
-            label={intl.formatMessage({
-              id: "config.tasks.generate_thumbnails_during_scan",
-            })}
-            onChange={() => setScanGenerateThumbnails(!scanGenerateThumbnails)}
-          />
-        </Form.Group>
-        <Form.Group>
-          <Button
-            className="mr-2"
-            variant="secondary"
-            type="submit"
-            onClick={() => onScan()}
+            )}
           >
-            <FormattedMessage id="actions.scan" />
-          </Button>
-          <Button
-            variant="secondary"
-            type="submit"
-            onClick={() => setDialogOpen({ scan: true })}
-          >
-            <FormattedMessage id="actions.selective_scan" />
-          </Button>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.tasks.scan_for_content_desc" })}
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group>
-          <h6>
-            <FormattedMessage id="config.tasks.identify.heading" />
-          </h6>
-          <Button
-            className="mr-2"
-            variant="secondary"
-            type="submit"
-            onClick={() => setDialogOpen({ identify: true })}
-          >
-            <FormattedMessage id="actions.identify" />…
-          </Button>
-          <Form.Text className="text-muted">
-            <FormattedMessage id="config.tasks.identify.description" />
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group>
-          <h6>{intl.formatMessage({ id: "config.tasks.auto_tagging" })}</h6>
-
-          <Form.Group>
-            <Form.Check
-              id="autotag-performers"
-              checked={autoTagPerformers}
-              label={intl.formatMessage({ id: "performers" })}
-              onChange={() => setAutoTagPerformers(!autoTagPerformers)}
-            />
-            <Form.Check
-              id="autotag-studios"
-              checked={autoTagStudios}
-              label={intl.formatMessage({ id: "studios" })}
-              onChange={() => setAutoTagStudios(!autoTagStudios)}
-            />
-            <Form.Check
-              id="autotag-tags"
-              checked={autoTagTags}
-              label={intl.formatMessage({ id: "tags" })}
-              onChange={() => setAutoTagTags(!autoTagTags)}
-            />
-          </Form.Group>
-          <Form.Group>
             <Button
+              id="backup"
               variant="secondary"
               type="submit"
-              className="mr-2"
-              onClick={() => onAutoTag()}
+              onClick={() => onBackup()}
             >
-              <FormattedMessage id="actions.auto_tag" />
+              <FormattedMessage id="actions.backup" />
             </Button>
+          </Task>
+
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.backup_and_download",
+            })}
+          >
             <Button
+              id="backupDownload"
               variant="secondary"
               type="submit"
-              onClick={() => setDialogOpen({ autoTag: true })}
+              onClick={() => onBackup(true)}
             >
-              <FormattedMessage id="actions.selective_auto_tag" />
+              <FormattedMessage id="actions.download_backup" />
             </Button>
-            <Form.Text className="text-muted">
-              {intl.formatMessage({
-                id: "config.tasks.auto_tag_based_on_filenames",
-              })}
-            </Form.Text>
-          </Form.Group>
-        </Form.Group>
-      </Form.Group>
-
-      <hr />
-
-      <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
-      <GenerateButton />
-
-      <hr />
-      <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
-      <Form.Group>
-        <Form.Check
-          id="clean-dryrun"
-          checked={cleanDryRun}
-          label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
-          onChange={() => setCleanDryRun(!cleanDryRun)}
-        />
-      </Form.Group>
-      <Form.Group>
-        <Button
-          id="clean"
-          variant="danger"
-          onClick={() => setDialogOpen({ cleanAlert: true })}
-        >
-          <FormattedMessage id="actions.clean" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.cleanup_desc" })}
-        </Form.Text>
-      </Form.Group>
-
-      <hr />
-
-      <h5>{intl.formatMessage({ id: "metadata" })}</h5>
-      <Form.Group>
-        <Button
-          id="export"
-          variant="secondary"
-          type="submit"
-          onClick={() => onExport()}
-        >
-          <FormattedMessage id="actions.full_export" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.export_to_json" })}
-        </Form.Text>
-      </Form.Group>
-
-      <Form.Group>
-        <Button
-          id="import"
-          variant="danger"
-          onClick={() => setDialogOpen({ importAlert: true })}
-        >
-          <FormattedMessage id="actions.full_import" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.import_from_exported_json" })}
-        </Form.Text>
-      </Form.Group>
-
-      <Form.Group>
-        <Button
-          id="partial-import"
-          variant="danger"
-          onClick={() => setDialogOpen({ import: true })}
-        >
-          <FormattedMessage id="actions.import_from_file" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.incremental_import" })}
-        </Form.Text>
-      </Form.Group>
-
-      <hr />
-
-      <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
-      <Form.Group>
-        <Button
-          id="backup"
-          variant="secondary"
-          type="submit"
-          onClick={() => onBackup()}
-        >
-          <FormattedMessage id="actions.backup" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage(
-            { id: "config.tasks.backup_database" },
-            {
-              filename_format: (
-                <code>
-                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
-                </code>
-              ),
-            }
-          )}
-        </Form.Text>
-      </Form.Group>
-
-      <Form.Group>
-        <Button
-          id="backupDownload"
-          variant="secondary"
-          type="submit"
-          onClick={() => onBackup(true)}
-        >
-          <FormattedMessage id="actions.download_backup" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.backup_and_download" })}
-        </Form.Text>
+          </Task>
+        </Card>
       </Form.Group>
 
       {renderPlugins()}
 
       <hr />
 
-      <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
-
       <Form.Group>
-        <Button
-          id="migrateHashNaming"
-          variant="danger"
-          onClick={() => onMigrateHashNaming()}
-        >
-          <FormattedMessage id="actions.rename_gen_files" />
-        </Button>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.tasks.migrate_hash_files" })}
-        </Form.Text>
+        <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
+
+        <Card className="task-group">
+          <Task
+            description={intl.formatMessage({
+              id: "config.tasks.migrate_hash_files",
+            })}
+          >
+            <Button
+              id="migrateHashNaming"
+              variant="danger"
+              onClick={() => onMigrateHashNaming()}
+            >
+              <FormattedMessage id="actions.rename_gen_files" />
+            </Button>
+          </Task>
+        </Card>
       </Form.Group>
     </>
   );

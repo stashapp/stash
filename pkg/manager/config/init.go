@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/spf13/pflag"
@@ -14,7 +15,10 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var once sync.Once
+var (
+	initOnce     sync.Once
+	instanceOnce sync.Once
+)
 
 type flagStruct struct {
 	configFilePath string
@@ -22,18 +26,29 @@ type flagStruct struct {
 	nobrowser      bool
 }
 
+func GetInstance() *Instance {
+	instanceOnce.Do(func() {
+		instance = &Instance{
+			main:      viper.New(),
+			overrides: viper.New(),
+		}
+	})
+	return instance
+}
+
 func Initialize() (*Instance, error) {
 	var err error
-	once.Do(func() {
+	initOnce.Do(func() {
 		flags := initFlags()
-		instance = &Instance{
-			cpuProfilePath: flags.cpuProfilePath,
-		}
+		overrides := makeOverrideConfig()
 
-		if err = initConfig(flags); err != nil {
+		_ = GetInstance()
+		instance.overrides = overrides
+		instance.cpuProfilePath = flags.cpuProfilePath
+
+		if err = initConfig(instance, flags); err != nil {
 			return
 		}
-		initEnvs()
 
 		if instance.isNewSystem {
 			if instance.Validate() == nil {
@@ -43,20 +58,23 @@ func Initialize() (*Instance, error) {
 		}
 
 		if !instance.isNewSystem {
-			setExistingSystemDefaults(instance)
-			err = instance.SetInitialConfig()
+			err = instance.setExistingSystemDefaults()
+			if err == nil {
+				err = instance.SetInitialConfig()
+			}
 		}
 	})
 	return instance, err
 }
 
-func initConfig(flags flagStruct) error {
+func initConfig(instance *Instance, flags flagStruct) error {
+	v := instance.main
 
 	// The config file is called config.  Leave off the file extension.
-	viper.SetConfigName("config")
+	v.SetConfigName("config")
 
-	viper.AddConfigPath(".")            // Look for config in the working directory
-	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
+	v.AddConfigPath(".")                                // Look for config in the working directory
+	v.AddConfigPath(filepath.FromSlash("$HOME/.stash")) // Look for the config in the home directory
 
 	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
@@ -68,7 +86,7 @@ func initConfig(flags flagStruct) error {
 	}
 
 	if configFile != "" {
-		viper.SetConfigFile(configFile)
+		v.SetConfigFile(configFile)
 
 		// if file does not exist, assume it is a new system
 		if exists, _ := utils.FileExists(configFile); !exists {
@@ -86,7 +104,7 @@ func initConfig(flags flagStruct) error {
 		}
 	}
 
-	err := viper.ReadInConfig() // Find and read the config file
+	err := v.ReadInConfig() // Find and read the config file
 	// if not found, assume its a new system
 	var notFoundErr viper.ConfigFileNotFoundError
 	if errors.As(err, &notFoundErr) {
@@ -99,28 +117,6 @@ func initConfig(flags flagStruct) error {
 	return nil
 }
 
-// setExistingSystemDefaults sets config options that are new and unset in an existing install,
-// but should have a separate default than for brand-new systems, to maintain behavior.
-func setExistingSystemDefaults(instance *Instance) {
-	if !instance.isNewSystem {
-		configDirtied := false
-
-		// Existing systems as of the introduction of auto-browser open should retain existing
-		// behavior and not start the browser automatically.
-		if !viper.InConfig("nobrowser") {
-			configDirtied = true
-			viper.Set("nobrowser", "true")
-		}
-
-		if configDirtied {
-			err := viper.WriteConfig()
-			if err != nil {
-				logger.Errorf("Could not save existing system defaults: %s", err.Error())
-			}
-		}
-	}
-}
-
 func initFlags() flagStruct {
 	flags := flagStruct{}
 
@@ -131,30 +127,35 @@ func initFlags() flagStruct {
 	pflag.BoolVar(&flags.nobrowser, "nobrowser", false, "Don't open a browser window after launch")
 
 	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		logger.Infof("failed to bind flags: %s", err.Error())
-	}
 
 	return flags
 }
 
-func initEnvs() {
-	viper.SetEnvPrefix("stash") // will be uppercased automatically
-	bindEnv("host")             // STASH_HOST
-	bindEnv("port")             // STASH_PORT
-	bindEnv("external_host")    // STASH_EXTERNAL_HOST
-	bindEnv("generated")        // STASH_GENERATED
-	bindEnv("metadata")         // STASH_METADATA
-	bindEnv("cache")            // STASH_CACHE
-
-	// only set stash config flag if not already set
-	if instance.GetStashPaths() == nil {
-		bindEnv("stash") // STASH_STASH
-	}
+func initEnvs(viper *viper.Viper) {
+	viper.SetEnvPrefix("stash")     // will be uppercased automatically
+	bindEnv(viper, "host")          // STASH_HOST
+	bindEnv(viper, "port")          // STASH_PORT
+	bindEnv(viper, "external_host") // STASH_EXTERNAL_HOST
+	bindEnv(viper, "generated")     // STASH_GENERATED
+	bindEnv(viper, "metadata")      // STASH_METADATA
+	bindEnv(viper, "cache")         // STASH_CACHE
+	bindEnv(viper, "stash")         // STASH_STASH
 }
 
-func bindEnv(key string) {
+func bindEnv(viper *viper.Viper, key string) {
 	if err := viper.BindEnv(key); err != nil {
 		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
 	}
+}
+
+func makeOverrideConfig() *viper.Viper {
+	viper := viper.New()
+
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		logger.Infof("failed to bind flags: %s", err.Error())
+	}
+
+	initEnvs(viper)
+
+	return viper
 }

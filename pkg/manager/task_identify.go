@@ -130,25 +130,23 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 		return
 	}
 
-	if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		var taskError error
-		j.progress.ExecuteTask("Identifying "+s.Path, func() {
-			task := identify.SceneIdentifier{
-				DefaultOptions: j.input.Options,
-				Sources:        sources,
-				ScreenshotSetter: &scene.PathsScreenshotSetter{
-					Paths:               instance.Paths,
-					FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
-				},
-				SceneUpdatePostHookExecutor: j.postHookExecutor,
-			}
+	var taskError error
+	j.progress.ExecuteTask("Identifying "+s.Path, func() {
+		task := identify.SceneIdentifier{
+			DefaultOptions: j.input.Options,
+			Sources:        sources,
+			ScreenshotSetter: &scene.PathsScreenshotSetter{
+				Paths:               instance.Paths,
+				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+			},
+			SceneUpdatePostHookExecutor: j.postHookExecutor,
+		}
 
-			taskError = task.Identify(ctx, r, s)
-		})
+		taskError = task.Identify(ctx, j.txnManager, s)
+	})
 
-		return taskError
-	}); err != nil {
-		logger.Errorf("Error encountered identifying %s: %v", s.Path, err)
+	if taskError != nil {
+		logger.Errorf("Error encountered identifying %s: %v", s.Path, taskError)
 	}
 
 	j.progress.Increment()
@@ -213,8 +211,8 @@ type stashboxSource struct {
 	endpoint string
 }
 
-func (s stashboxSource) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
-	results, err := s.FindStashBoxScenesByFingerprintsFlat([]string{strconv.Itoa(sceneID)})
+func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+	results, err := s.FindStashBoxScenesByFingerprintsFlat(ctx, []string{strconv.Itoa(sceneID)})
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}
@@ -235,8 +233,17 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
-	return s.cache.ScrapeScene(s.scraperID, sceneID)
+func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, models.ScrapeContentTypeScene)
+	if err != nil {
+		return nil, err
+	}
+
+	if scene, ok := content.(*models.ScrapedScene); ok {
+		return scene, nil
+	}
+
+	return nil, errors.New("could not convert content to scene")
 }
 
 func (s scraperSource) String() string {

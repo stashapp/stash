@@ -25,6 +25,7 @@ $navbar-dark-color: rgb(245, 248, 250);
 $popover-bg: $secondary;
 $dark-text: #182026;
 $textfield-bg: rgba(16, 22, 26, 0.3);
+$card-bg: #30404d;
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -186,7 +187,7 @@ hr {
   &-header,
   &-body,
   &-footer {
-    background-color: #30404d;
+    background-color: $card-bg;
     color: $text-color;
   }
 

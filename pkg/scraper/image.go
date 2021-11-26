@@ -11,8 +11,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
-	if p == nil || p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
+func setPerformerImage(ctx context.Context, client *http.Client, p models.ScrapedPerformer, globalConfig GlobalConfig) error {
+	if p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
 		// nothing to do
 		return nil
 	}
@@ -29,9 +29,9 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 	return nil
 }
 
-func setSceneImage(ctx context.Context, client *http.Client, s *models.ScrapedScene, globalConfig GlobalConfig) error {
+func setSceneImage(ctx context.Context, client *http.Client, s models.ScrapedScene, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
-	if s == nil || s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
+	if s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
 		// nothing to do
 		return nil
 	}
@@ -46,9 +46,9 @@ func setSceneImage(ctx context.Context, client *http.Client, s *models.ScrapedSc
 	return nil
 }
 
-func setMovieFrontImage(ctx context.Context, client *http.Client, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
+func setMovieFrontImage(ctx context.Context, client *http.Client, m models.ScrapedMovie, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
-	if m == nil || m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
+	if m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
 		// nothing to do
 		return nil
 	}
@@ -63,9 +63,9 @@ func setMovieFrontImage(ctx context.Context, client *http.Client, m *models.Scra
 	return nil
 }
 
-func setMovieBackImage(ctx context.Context, client *http.Client, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
+func setMovieBackImage(ctx context.Context, client *http.Client, m models.ScrapedMovie, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
-	if m == nil || m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
+	if m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
 		// nothing to do
 		return nil
 	}

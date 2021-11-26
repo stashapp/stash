@@ -20,8 +20,8 @@ type TagReader interface {
 	Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(tagID int) ([]byte, error)
 	GetAliases(tagID int) ([]string, error)
-	FindAllAncestors(tagID int, excludeIDs []int) ([]*Tag, error)
-	FindAllDescendants(tagID int, excludeIDs []int) ([]*Tag, error)
+	FindAllAncestors(tagID int, excludeIDs []int) ([]*TagPath, error)
+	FindAllDescendants(tagID int, excludeIDs []int) ([]*TagPath, error)
 }
 
 type TagWriter interface {

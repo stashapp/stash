@@ -117,6 +117,16 @@ func (qb *studioQueryBuilder) FindByName(name string, nocase bool) (*models.Stud
 	return qb.queryStudio(query, args)
 }
 
+func (qb *studioQueryBuilder) FindByStashID(stashID models.StashID) ([]*models.Studio, error) {
+	query := selectAll("studios") + `
+		LEFT JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
+		WHERE studio_stash_ids.stash_id = ?
+		AND studio_stash_ids.endpoint = ?
+	`
+	args := []interface{}{stashID.StashID, stashID.Endpoint}
+	return qb.queryStudios(query, args)
+}
+
 func (qb *studioQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
@@ -234,9 +244,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")
 		searchColumns := []string{"studios.name", "studio_aliases.alias"}
 
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(studioFilter); err != nil {

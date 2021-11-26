@@ -412,9 +412,7 @@ func (qb *sceneQueryBuilder) Query(options models.SceneQueryOptions) (*models.Sc
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
 		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.oshash", "scenes.checksum", "scene_markers.title"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(sceneFilter); err != nil {
@@ -668,7 +666,24 @@ func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCrit
 
 func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if tags != nil && len(tags.Value) > 0 {
+		if tags != nil {
+			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
+				var notClause string
+				if tags.Modifier == models.CriterionModifierNotNull {
+					notClause = "NOT"
+				}
+
+				f.addJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+				f.addJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
+
+				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
+				return
+			}
+
+			if len(tags.Value) == 0 {
+				return
+			}
+
 			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (

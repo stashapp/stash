@@ -13,6 +13,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var ErrOverriddenConfig = errors.New("cannot set overridden value")
+
 func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
 	err := manager.GetInstance().Setup(ctx, input)
 	return err == nil, err
@@ -25,6 +27,7 @@ func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInpu
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	c := config.GetInstance()
+
 	existingPaths := c.GetStashPaths()
 	if len(input.Stashes) > 0 {
 		for _, s := range input.Stashes {
@@ -46,7 +49,20 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Stash, input.Stashes)
 	}
 
-	if input.DatabasePath != nil {
+	checkConfigOverride := func(key string) error {
+		if c.HasOverride(key) {
+			return fmt.Errorf("%w: %s", ErrOverriddenConfig, key)
+		}
+
+		return nil
+	}
+
+	existingDBPath := c.GetDatabasePath()
+	if input.DatabasePath != nil && existingDBPath != *input.DatabasePath {
+		if err := checkConfigOverride(config.Database); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		ext := filepath.Ext(*input.DatabasePath)
 		if ext != ".db" && ext != ".sqlite" && ext != ".sqlite3" {
 			return makeConfigGeneralResult(), fmt.Errorf("invalid database path, use extension db, sqlite, or sqlite3")
@@ -54,14 +70,24 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Database, input.DatabasePath)
 	}
 
-	if input.GeneratedPath != nil {
+	existingGeneratedPath := c.GetGeneratedPath()
+	if input.GeneratedPath != nil && existingGeneratedPath != *input.GeneratedPath {
+		if err := checkConfigOverride(config.Generated); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		if err := utils.EnsureDir(*input.GeneratedPath); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 		c.Set(config.Generated, input.GeneratedPath)
 	}
 
-	if input.MetadataPath != nil {
+	existingMetadataPath := c.GetMetadataPath()
+	if input.MetadataPath != nil && existingMetadataPath != *input.MetadataPath {
+		if err := checkConfigOverride(config.Metadata); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		if *input.MetadataPath != "" {
 			if err := utils.EnsureDir(*input.MetadataPath); err != nil {
 				return makeConfigGeneralResult(), err
@@ -70,7 +96,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
-	if input.CachePath != nil {
+	existingCachePath := c.GetCachePath()
+	if input.CachePath != nil && existingCachePath != *input.CachePath {
+		if err := checkConfigOverride(config.Metadata); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
 		if *input.CachePath != "" {
 			if err := utils.EnsureDir(*input.CachePath); err != nil {
 				return makeConfigGeneralResult(), err
@@ -251,6 +282,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	setBool(config.AutostartVideo, input.AutostartVideo)
 	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
+	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
+	setBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)
 
 	if input.Language != nil {
 		c.Set(config.Language, *input.Language)
@@ -359,6 +392,18 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.C
 
 	if input.Identify != nil {
 		c.Set(config.DefaultIdentifySettings, input.Identify)
+	}
+
+	if input.Scan != nil {
+		c.Set(config.DefaultScanSettings, input.Scan)
+	}
+
+	if input.AutoTag != nil {
+		c.Set(config.DefaultAutoTagSettings, input.AutoTag)
+	}
+
+	if input.Generate != nil {
+		c.Set(config.DefaultGenerateSettings, input.Generate)
 	}
 
 	if input.DeleteFile != nil {

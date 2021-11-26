@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -24,20 +25,12 @@ func (e scraperAction) IsValid() bool {
 }
 
 type scraperActionImpl interface {
-	scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error)
-	scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
-	scrapePerformerByURL(url string) (*models.ScrapedPerformer, error)
+	scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
+	scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
+	scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error)
 
-	scrapeScenesByName(name string) ([]*models.ScrapedScene, error)
-	scrapeSceneByScene(scene *models.Scene) (*models.ScrapedScene, error)
-	scrapeSceneByFragment(scene models.ScrapedSceneInput) (*models.ScrapedScene, error)
-	scrapeSceneByURL(url string) (*models.ScrapedScene, error)
-
-	scrapeGalleryByGallery(gallery *models.Gallery) (*models.ScrapedGallery, error)
-	scrapeGalleryByFragment(gallery models.ScrapedGalleryInput) (*models.ScrapedGallery, error)
-	scrapeGalleryByURL(url string) (*models.ScrapedGallery, error)
-
-	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
+	scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error)
+	scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error)
 }
 
 func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraperActionImpl {

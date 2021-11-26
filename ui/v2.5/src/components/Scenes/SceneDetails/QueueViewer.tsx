@@ -3,14 +3,17 @@ import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { Button, Spinner } from "react-bootstrap";
+import { Button, Form, Spinner } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
+import { useIntl } from "react-intl";
 
 export interface IPlaylistViewer {
   scenes?: GQL.SlimSceneDataFragment[];
   currentID?: string;
   start?: number;
+  continue?: boolean;
   hasMoreScenes: boolean;
+  setContinue: (v: boolean) => void;
   onSceneClicked: (id: string) => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -23,7 +26,9 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   scenes,
   currentID,
   start,
+  continue: continuePlaylist = false,
   hasMoreScenes,
+  setContinue,
   onNext,
   onPrevious,
   onRandom,
@@ -31,6 +36,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   onMoreScenes,
   onLessScenes,
 }) => {
+  const intl = useIntl();
   const [lessLoading, setLessLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
 
@@ -91,6 +97,15 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   return (
     <div id="queue-viewer">
       <div className="queue-controls">
+        <div>
+          <Form.Check
+            checked={continuePlaylist}
+            label={intl.formatMessage({ id: "actions.continue" })}
+            onChange={() => {
+              setContinue(!continuePlaylist);
+            }}
+          />
+        </div>
         <div>
           {(currentIndex ?? 0) > 0 ? (
             <Button

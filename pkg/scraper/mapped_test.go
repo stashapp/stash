@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ performerByURL:
 xPathScrapers:
   performerScraper:
     performer:
-      Name: 
+      Name:
         selector: //div/a/@href
         postProcess:
           - parseDate: Jan 2, 2006
@@ -55,6 +56,6 @@ func TestFeetToCM(t *testing.T) {
 	q := &xpathQuery{}
 
 	for _, test := range feetToCMTests {
-		assert.Equal(t, test.out, pp.Apply(test.in, q))
+		assert.Equal(t, test.out, pp.Apply(context.Background(), test.in, q))
 	}
 }

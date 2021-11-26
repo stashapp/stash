@@ -305,8 +305,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  const cont = configuration?.interface.continuePlaylistDefault ?? false;
+
   const sceneLink = props.queue
-    ? props.queue.makeLink(props.scene.id, { sceneIndex: props.index })
+    ? props.queue.makeLink(props.scene.id, {
+        sceneIndex: props.index,
+        continue: cont,
+      })
     : `/scenes/${props.scene.id}`;
 
   return (
