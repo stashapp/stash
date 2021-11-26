@@ -3,17 +3,11 @@ package main
 
 import (
 	"embed"
-	"os"
-	"os/signal"
-	"runtime/pprof"
-	"syscall"
-
-	"github.com/stashapp/stash/pkg/api"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
+	"log"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/stashapp/stash/cmd"
 )
 
 //go:embed ui/v2.5/build
@@ -23,23 +17,8 @@ var uiBox embed.FS
 var loginUIBox embed.FS
 
 func main() {
-	manager.Initialize()
-	api.Start(uiBox, loginUIBox)
-
-	// stop any profiling at exit
-	defer pprof.StopCPUProfile()
-	blockForever()
-
-	err := manager.GetInstance().Shutdown()
+	err := cmd.Execute(uiBox, loginUIBox)
 	if err != nil {
-		logger.Errorf("Error when closing: %s", err)
+		log.Fatalf("Execution failure: %v", err)
 	}
-}
-
-func blockForever() {
-	// handle signals
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	<-signals
 }

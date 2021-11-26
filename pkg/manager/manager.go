@@ -56,14 +56,13 @@ var instance *singleton
 var once sync.Once
 
 func GetInstance() *singleton {
-	Initialize()
 	return instance
 }
 
-func Initialize() *singleton {
+func Initialize(flags config.FlagStruct) *singleton {
 	once.Do(func() {
 		ctx := context.TODO()
-		cfg, err := config.Initialize()
+		cfg, err := config.Initialize(flags)
 
 		if err != nil {
 			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))

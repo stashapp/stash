@@ -20,10 +20,12 @@ var (
 	instanceOnce sync.Once
 )
 
-type flagStruct struct {
-	configFilePath string
-	cpuProfilePath string
-	nobrowser      bool
+type FlagStruct struct {
+	Host           net.IP
+	Port           int
+	ConfigFilePath string
+	CpuProfilePath string
+	NoBrowser      bool
 }
 
 func GetInstance() *Instance {
@@ -36,15 +38,14 @@ func GetInstance() *Instance {
 	return instance
 }
 
-func Initialize() (*Instance, error) {
+func Initialize(flags FlagStruct) (*Instance, error) {
 	var err error
 	initOnce.Do(func() {
-		flags := initFlags()
 		overrides := makeOverrideConfig()
 
 		_ = GetInstance()
 		instance.overrides = overrides
-		instance.cpuProfilePath = flags.cpuProfilePath
+		instance.cpuProfilePath = flags.CpuProfilePath
 
 		if err = initConfig(instance, flags); err != nil {
 			return
@@ -67,7 +68,7 @@ func Initialize() (*Instance, error) {
 	return instance, err
 }
 
-func initConfig(instance *Instance, flags flagStruct) error {
+func initConfig(instance *Instance, flags FlagStruct) error {
 	v := instance.main
 
 	// The config file is called config.  Leave off the file extension.
@@ -79,8 +80,8 @@ func initConfig(instance *Instance, flags flagStruct) error {
 	configFile := ""
 	envConfigFile := os.Getenv("STASH_CONFIG_FILE")
 
-	if flags.configFilePath != "" {
-		configFile = flags.configFilePath
+	if flags.ConfigFilePath != "" {
+		configFile = flags.ConfigFilePath
 	} else if envConfigFile != "" {
 		configFile = envConfigFile
 	}
@@ -115,20 +116,6 @@ func initConfig(instance *Instance, flags flagStruct) error {
 	}
 
 	return nil
-}
-
-func initFlags() flagStruct {
-	flags := flagStruct{}
-
-	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
-	pflag.Int("port", 9999, "port to serve from")
-	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
-	pflag.StringVar(&flags.cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
-	pflag.BoolVar(&flags.nobrowser, "nobrowser", false, "Don't open a browser window after launch")
-
-	pflag.Parse()
-
-	return flags
 }
 
 func initEnvs(viper *viper.Viper) {
