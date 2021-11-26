@@ -321,6 +321,29 @@ func (_m *SceneReaderWriter) FindByChecksum(checksum string) (*models.Scene, err
 	return r0, r1
 }
 
+// FindByFileID provides a mock function with given fields: fileID
+func (_m *SceneReaderWriter) FindByFileID(fileID int) ([]*models.Scene, error) {
+	ret := _m.Called(fileID)
+
+	var r0 []*models.Scene
+	if rf, ok := ret.Get(0).(func(int) []*models.Scene); ok {
+		r0 = rf(fileID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(fileID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByGalleryID provides a mock function with given fields: performerID
 func (_m *SceneReaderWriter) FindByGalleryID(performerID int) ([]*models.Scene, error) {
 	ret := _m.Called(performerID)
@@ -498,6 +521,29 @@ func (_m *SceneReaderWriter) GetCover(sceneID int) ([]byte, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetFileIDs provides a mock function with given fields: id
+func (_m *SceneReaderWriter) GetFileIDs(id int) ([]int, error) {
+	ret := _m.Called(id)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -750,6 +796,20 @@ func (_m *SceneReaderWriter) UpdateFileModTime(id int, modTime models.NullSQLite
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, models.NullSQLiteTimestamp) error); ok {
 		r0 = rf(id, modTime)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateFiles provides a mock function with given fields: id, fileIDs
+func (_m *SceneReaderWriter) UpdateFiles(id int, fileIDs []int) error {
+	ret := _m.Called(id, fileIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(id, fileIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

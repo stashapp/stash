@@ -17,6 +17,7 @@ type TransactionManager struct {
 	studio      *StudioReaderWriter
 	tag         *TagReaderWriter
 	savedFilter *SavedFilterReaderWriter
+	file        *FileReaderWriter
 }
 
 func NewTransactionManager() *TransactionManager {
@@ -31,6 +32,7 @@ func NewTransactionManager() *TransactionManager {
 		studio:      &StudioReaderWriter{},
 		tag:         &TagReaderWriter{},
 		savedFilter: &SavedFilterReaderWriter{},
+		file:        &FileReaderWriter{},
 	}
 }
 
@@ -78,6 +80,10 @@ func (t *TransactionManager) SavedFilterMock() *SavedFilterReaderWriter {
 	return t.savedFilter
 }
 
+func (t *TransactionManager) FileMock() *FileReaderWriter {
+	return t.file
+}
+
 func (t *TransactionManager) Gallery() models.GalleryReaderWriter {
 	return t.GalleryMock()
 }
@@ -116,6 +122,10 @@ func (t *TransactionManager) Tag() models.TagReaderWriter {
 
 func (t *TransactionManager) SavedFilter() models.SavedFilterReaderWriter {
 	return t.SavedFilterMock()
+}
+
+func (t *TransactionManager) File() models.FileReaderWriter {
+	return t.FileMock()
 }
 
 type ReadTransaction struct {
@@ -164,4 +174,8 @@ func (r *ReadTransaction) Tag() models.TagReader {
 
 func (r *ReadTransaction) SavedFilter() models.SavedFilterReader {
 	return r.SavedFilterMock()
+}
+
+func (r *ReadTransaction) File() models.FileReader {
+	return r.FileMock()
 }

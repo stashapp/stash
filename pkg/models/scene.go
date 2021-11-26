@@ -44,6 +44,7 @@ type SceneReader interface {
 	FindByChecksum(checksum string) (*Scene, error)
 	FindByOSHash(oshash string) (*Scene, error)
 	FindByPath(path string) (*Scene, error)
+	FindByFileID(fileID int) ([]*Scene, error)
 	FindByPerformerID(performerID int) ([]*Scene, error)
 	FindByGalleryID(performerID int) ([]*Scene, error)
 	FindDuplicates(distance int) ([][]*Scene, error)
@@ -68,6 +69,8 @@ type SceneReader interface {
 	GetGalleryIDs(sceneID int) ([]int, error)
 	GetPerformerIDs(sceneID int) ([]int, error)
 	GetStashIDs(sceneID int) ([]*StashID, error)
+
+	FileJoinReader
 }
 
 type SceneWriter interface {
@@ -86,6 +89,8 @@ type SceneWriter interface {
 	UpdateGalleries(sceneID int, galleryIDs []int) error
 	UpdateMovies(sceneID int, movies []MoviesScenes) error
 	UpdateStashIDs(sceneID int, stashIDs []StashID) error
+
+	FileJoinWriter
 }
 
 type SceneReaderWriter interface {

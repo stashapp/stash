@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -16,44 +15,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (t *ScanTask) scanImage() {
-	var i *models.Image
-	path := t.file.Path()
+func (t *ScanTask) postScanImage(scanner *image.Scanner) {
+	if scanner.Image != nil {
+		i := scanner.Image
 
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		var err error
-		i, err = r.Image().FindByPath(path)
-		return err
-	}); err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	scanner := image.Scanner{
-		Scanner:            image.FileScanner(&file.FSHasher{}),
-		StripFileExtension: t.StripFileExtension,
-		Ctx:                t.ctx,
-		TxnManager:         t.TxnManager,
-		Paths:              GetInstance().Paths,
-		PluginCache:        instance.PluginCache,
-		MutexManager:       t.mutexManager,
-	}
-
-	var err error
-	if i != nil {
-		i, err = scanner.ScanExisting(i, t.file)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-	} else {
-		i, err = scanner.ScanNew(t.file)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		if i != nil {
+		if scanner.IsNew {
 			if t.zipGallery != nil {
 				// associate with gallery
 				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
@@ -81,9 +47,7 @@ func (t *ScanTask) scanImage() {
 				}
 			}
 		}
-	}
 
-	if i != nil {
 		t.generateThumbnail(i)
 	}
 }

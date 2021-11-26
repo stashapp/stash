@@ -18,6 +18,13 @@ const performersScenesTable = "performers_scenes"
 const scenesTagsTable = "scenes_tags"
 const scenesGalleriesTable = "scenes_galleries"
 const moviesScenesTable = "movies_scenes"
+const scenesFilesTable = "scenes_files"
+
+var scenesForFileQuery = selectAll(sceneTable) + `
+LEFT JOIN scenes_files as files_join on files_join.scene_id = scenes.id
+WHERE files_join.file_id = ?
+GROUP BY scenes.id LIMIT 1
+`
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
@@ -240,6 +247,11 @@ func (qb *sceneQueryBuilder) FindByPath(path string) (*models.Scene, error) {
 	query := selectAll(sceneTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryScene(query, args)
+}
+
+func (qb *sceneQueryBuilder) FindByFileID(fileID int) ([]*models.Scene, error) {
+	args := []interface{}{fileID}
+	return qb.queryScenes(scenesForFileQuery, args)
 }
 
 func (qb *sceneQueryBuilder) FindByPerformerID(performerID int) ([]*models.Scene, error) {
@@ -929,4 +941,24 @@ func (qb *sceneQueryBuilder) FindDuplicates(distance int) ([][]*models.Scene, er
 	}
 
 	return duplicates, nil
+}
+
+func (qb *sceneQueryBuilder) filesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: scenesFilesTable,
+			idColumn:  sceneIDColumn,
+		},
+		fkColumn: fileIDColumn,
+	}
+}
+
+func (qb *sceneQueryBuilder) GetFileIDs(id int) ([]int, error) {
+	return qb.filesRepository().getIDs(id)
+}
+
+func (qb *sceneQueryBuilder) UpdateFiles(id int, fileIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.filesRepository().replace(id, fileIDs)
 }

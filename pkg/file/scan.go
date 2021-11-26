@@ -1,25 +1,37 @@
 package file
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
+
+const mutexType = "file"
 
 type SourceFile interface {
 	Open() (io.ReadCloser, error)
 	Path() string
 	FileInfo() fs.FileInfo
+	ZipFileID() int
 }
 
 type FileBased interface {
 	File() models.File
+}
+
+type Statter interface {
+	Stat(reader models.FileReader, f models.File) (fs.FileInfo, error)
+}
+
+type MetadataGenerator interface {
+	GenerateMetadata(dest *models.File, src SourceFile) error
 }
 
 type Hasher interface {
@@ -59,26 +71,64 @@ func (s Scanned) ContentsChanged() bool {
 }
 
 type Scanner struct {
-	Hasher Hasher
+	Hasher            Hasher
+	Statter           Statter
+	MutexManager      *utils.MutexManager
+	MetadataGenerator MetadataGenerator
 
 	CalculateMD5    bool
 	CalculateOSHash bool
+
+	Done chan struct{}
 }
 
-func (o Scanner) ScanExisting(existing FileBased, file SourceFile) (h *Scanned, err error) {
+func (o Scanner) ApplyChanges(rw models.FileWriter, scanned *Scanned) error {
+	if scanned.Old == nil {
+		// create the new file
+		created, err := rw.Create(*scanned.New)
+		if err != nil {
+			return err
+		}
+
+		scanned.New.ID = created.ID
+		return nil
+	}
+
+	_, err := rw.UpdateFull(*scanned.New)
+	return err
+}
+
+func (o *Scanner) Close() {
+	close(o.Done)
+}
+
+func (o Scanner) Scan(reader models.FileReader, file SourceFile) (h *Scanned, err error) {
+	zipFileID := file.ZipFileID()
+	existing, err := reader.FindByPath(file.Path(), zipFileID)
+	if err != nil {
+		return nil, err
+	}
+
+	if existing != nil {
+		return o.scanExisting(existing, file)
+	}
+
+	return o.scanNew(reader, file)
+}
+
+func (o Scanner) scanExisting(existingFile *models.File, file SourceFile) (h *Scanned, err error) {
 	info := file.FileInfo()
 	h = &Scanned{}
 
-	existingFile := existing.File()
-	h.Old = &existingFile
+	h.Old = existingFile
 
-	updatedFile := existingFile
+	updatedFile := *existingFile
 	h.New = &updatedFile
 
 	// update existing data if needed
 	// truncate to seconds, since we don't store beyond that in the database
 	updatedFile.FileModTime = info.ModTime().Truncate(time.Second)
-	updatedFile.Size = strconv.FormatInt(info.Size(), 10)
+	updatedFile.Size = info.Size()
 
 	modTimeChanged := !existingFile.FileModTime.Equal(updatedFile.FileModTime)
 
@@ -87,26 +137,94 @@ func (o Scanner) ScanExisting(existing FileBased, file SourceFile) (h *Scanned, 
 		return nil, err
 	}
 
+	// only regenerate metdata if file has changed
+	if o.MetadataGenerator != nil && h.ContentsChanged() {
+		if err := o.MetadataGenerator.GenerateMetadata(h.New, file); err != nil {
+			return nil, fmt.Errorf("generating metadata for %q: %w", file.Path(), err)
+		}
+	}
+
 	// notify of changes as needed
 	// object exists, no further processing required
 	return
 }
 
-func (o Scanner) ScanNew(file SourceFile) (*models.File, error) {
+func (o Scanner) scanNew(reader models.FileReader, file SourceFile) (*Scanned, error) {
 	info := file.FileInfo()
-	sizeStr := strconv.FormatInt(info.Size(), 10)
 	modTime := info.ModTime()
-	f := models.File{
+	zipFileID := file.ZipFileID()
+	f := &models.File{
 		Path:        file.Path(),
-		Size:        sizeStr,
+		Size:        info.Size(),
 		FileModTime: modTime,
 	}
+	if zipFileID != 0 {
+		f.ZipFileID = models.NullInt64(int64(zipFileID))
+	}
 
-	if _, err := o.generateHashes(&f, file, true); err != nil {
+	if _, err := o.generateHashes(f, file, true); err != nil {
 		return nil, err
 	}
 
-	return &f, nil
+	renamed, err := o.detectRename(reader, *f)
+	if err != nil {
+		return nil, err
+	}
+
+	if renamed != nil {
+		return renamed, nil
+	}
+
+	ret := &Scanned{
+		New: f,
+	}
+
+	if o.MetadataGenerator != nil {
+		if err := o.MetadataGenerator.GenerateMetadata(ret.New, file); err != nil {
+			return nil, fmt.Errorf("generating metadata for %q: %w", file.Path(), err)
+		}
+	}
+
+	return ret, nil
+}
+
+// detectRename performs rename detection - find files that have the same hash
+// and ensure all exist in the file system. For the first one that does not
+// exist, treat as a rename. Returns the old and new file objects if a rename
+// is detected.
+func (o Scanner) detectRename(reader models.FileReader, f models.File) (*Scanned, error) {
+	ret := &Scanned{}
+
+	var existingFiles []*models.File
+	var err error
+	if o.CalculateOSHash {
+		existingFiles, err = reader.FindByOSHash(f.OSHash)
+	} else {
+		existingFiles, err = reader.FindByChecksum(f.Checksum)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ff := range existingFiles {
+		_, err := o.Statter.Stat(reader, *ff)
+		if errors.Is(err, fs.ErrNotExist) {
+			// treat as a rename
+			logger.Infof("Detected move: %s -> %s", ff.Path, f.Path)
+
+			ret.Old = ff
+			ret.New = &f
+			f.ID = ff.ID
+
+			return ret, nil
+		} else if err != nil {
+			return nil, err
+		}
+	}
+
+	// treat as new, duplicate file
+	return nil, nil
 }
 
 // generateHashes regenerates and sets the hashes in the provided File.
@@ -186,5 +304,20 @@ func (o Scanner) generateHashes(f *models.File, file SourceFile, regenerate bool
 
 	changed = (o.CalculateOSHash && (f.OSHash != existing.OSHash)) || (o.CalculateMD5 && (f.Checksum != existing.Checksum))
 
+	if changed {
+		o.claimHashes(f)
+	}
+
 	return
+}
+
+// claimHashes claims the hashes for the provided file, to ensure that no
+// other threads can operate on files with these hashes.
+func (o Scanner) claimHashes(f *models.File) {
+	if f.OSHash != "" {
+		o.MutexManager.Claim(mutexType, f.OSHash, o.Done)
+	}
+	if f.Checksum != "" {
+		o.MutexManager.Claim(mutexType, f.Checksum, o.Done)
+	}
 }

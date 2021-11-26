@@ -15,6 +15,13 @@ const galleriesTagsTable = "galleries_tags"
 const galleriesImagesTable = "galleries_images"
 const galleriesScenesTable = "scenes_galleries"
 const galleryIDColumn = "gallery_id"
+const galleriesFilesTable = "galleries_files"
+
+var galleriesForFileQuery = selectAll(galleryTable) + `
+LEFT JOIN galleries_files as files_join on files_join.gallery_id = galleries.id
+WHERE files_join.file_id = ?
+GROUP BY galleries.id LIMIT 1
+`
 
 type galleryQueryBuilder struct {
 	repository
@@ -121,6 +128,11 @@ func (qb *galleryQueryBuilder) FindByPath(path string) (*models.Gallery, error) 
 	query := "SELECT * FROM galleries WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryGallery(query, args)
+}
+
+func (qb *galleryQueryBuilder) FindByFileID(fileID int) ([]*models.Gallery, error) {
+	args := []interface{}{fileID}
+	return qb.queryGalleries(galleriesForFileQuery, args)
 }
 
 func (qb *galleryQueryBuilder) FindBySceneID(sceneID int) ([]*models.Gallery, error) {
@@ -564,4 +576,24 @@ func (qb *galleryQueryBuilder) GetSceneIDs(galleryID int) ([]int, error) {
 func (qb *galleryQueryBuilder) UpdateScenes(galleryID int, sceneIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.scenesRepository().replace(galleryID, sceneIDs)
+}
+
+func (qb *galleryQueryBuilder) filesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: galleriesFilesTable,
+			idColumn:  galleryIDColumn,
+		},
+		fkColumn: fileIDColumn,
+	}
+}
+
+func (qb *galleryQueryBuilder) GetFileIDs(id int) ([]int, error) {
+	return qb.filesRepository().getIDs(id)
+}
+
+func (qb *galleryQueryBuilder) UpdateFiles(id int, fileIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.filesRepository().replace(id, fileIDs)
 }

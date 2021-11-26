@@ -3,7 +3,6 @@ package manager
 import (
 	"archive/zip"
 	"context"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -15,64 +14,13 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (t *ScanTask) scanGallery(ctx context.Context) {
-	var g *models.Gallery
-	path := t.file.Path()
-	images := 0
-	scanImages := false
-
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		var err error
-		g, err = r.Gallery().FindByPath(path)
-
-		if g != nil && err != nil {
-			images, err = r.Image().CountByGalleryID(g.ID)
-			if err != nil {
-				return fmt.Errorf("error getting images for zip gallery %s: %s", path, err.Error())
-			}
-		}
-
-		return err
-	}); err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	scanner := gallery.Scanner{
-		Scanner:            gallery.FileScanner(&file.FSHasher{}),
-		ImageExtensions:    instance.Config.GetImageExtensions(),
-		StripFileExtension: t.StripFileExtension,
-		Ctx:                t.ctx,
-		CaseSensitiveFs:    t.CaseSensitiveFs,
-		TxnManager:         t.TxnManager,
-		Paths:              instance.Paths,
-		PluginCache:        instance.PluginCache,
-		MutexManager:       t.mutexManager,
-	}
-
-	var err error
-	if g != nil {
-		g, scanImages, err = scanner.ScanExisting(g, t.file)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		// scan the zip files if the gallery has no images
-		scanImages = scanImages || images == 0
-	} else {
-		g, scanImages, err = scanner.ScanNew(t.file)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-	}
-
-	if g != nil {
-		if scanImages {
-			t.scanZipImages(g)
+func (t *ScanTask) postScanGallery(scanner *gallery.Scanner, f *models.File) {
+	if scanner.Gallery != nil {
+		if scanner.ScanImages {
+			t.scanZipImages(scanner.Gallery, f)
 		} else {
 			// in case thumbnails have been deleted, regenerate them
-			t.regenerateZipImages(g)
+			t.regenerateZipImages(scanner.Gallery)
 		}
 	}
 }
@@ -133,13 +81,13 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 	wg.Done()
 }
 
-func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
+func (t *ScanTask) scanZipImages(zipGallery *models.Gallery, zipFile *models.File) {
 	err := walkGalleryZip(zipGallery.Path.String, func(f *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
 
 		// filepath is the zip file and the internal file name, separated by a null byte
-		subTask.file = file.ZipFile(zipGallery.Path.String, f)
+		subTask.file = file.ZipFile(zipFile, f)
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete

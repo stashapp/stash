@@ -11,10 +11,13 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -266,17 +269,95 @@ type ScanTask struct {
 	mutexManager *utils.MutexManager
 }
 
+type scanner interface {
+	Scan(reader models.FileReader, file file.SourceFile) (h *file.Scanned, err error)
+	PostScan(scanned file.Scanned) error
+	Close()
+}
+
+func (t *ScanTask) getScanner(path string) scanner {
+	hasher := &file.FSHasher{}
+	statter := &file.FSStatter{}
+	switch {
+	case isGallery(path):
+		scanner := &gallery.Scanner{
+			Scanner:            gallery.FileScanner(hasher, statter),
+			ImageExtensions:    instance.Config.GetImageExtensions(),
+			StripFileExtension: t.StripFileExtension,
+			Ctx:                t.ctx,
+			CaseSensitiveFs:    t.CaseSensitiveFs,
+			TxnManager:         t.TxnManager,
+			Paths:              instance.Paths,
+			PluginCache:        instance.PluginCache,
+		}
+		scanner.Scanner.MutexManager = t.mutexManager
+		return scanner
+	case isVideo(path):
+		scanner := &scene.Scanner{
+			Scanner:             scene.FileScanner(hasher, statter, t.fileNamingAlgorithm, t.calculateMD5),
+			StripFileExtension:  t.StripFileExtension,
+			FileNamingAlgorithm: t.fileNamingAlgorithm,
+			Ctx:                 t.ctx,
+			TxnManager:          t.TxnManager,
+			Paths:               GetInstance().Paths,
+			Screenshotter:       &instance.FFMPEG,
+			VideoFileCreator:    &instance.FFProbe,
+			PluginCache:         instance.PluginCache,
+			UseFileMetadata:     t.UseFileMetadata,
+		}
+		scanner.Scanner.MetadataGenerator = scanner
+		scanner.Scanner.MutexManager = t.mutexManager
+		return scanner
+	case isImage(path):
+		scanner := &image.Scanner{
+			Scanner:            image.FileScanner(hasher, statter),
+			StripFileExtension: t.StripFileExtension,
+			Ctx:                t.ctx,
+			TxnManager:         t.TxnManager,
+			Paths:              GetInstance().Paths,
+			PluginCache:        instance.PluginCache,
+		}
+		scanner.Scanner.MetadataGenerator = scanner
+		scanner.Scanner.MutexManager = t.mutexManager
+		return scanner
+	}
+
+	panic("unknown path for scanner")
+}
+
 func (t *ScanTask) Start(ctx context.Context) {
 	var s *models.Scene
 	path := t.file.Path()
+
 	t.progress.ExecuteTask("Scanning "+path, func() {
-		switch {
-		case isGallery(path):
-			t.scanGallery(ctx)
-		case isVideo(path):
-			s = t.scanScene()
-		case isImage(path):
-			t.scanImage()
+		scanner := t.getScanner(path)
+		defer scanner.Close()
+
+		var scanned *file.Scanned
+		if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+			var err error
+			scanned, err = scanner.Scan(r.File(), t.file)
+
+			return err
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		if err := scanner.PostScan(*scanned); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		// special handling stuff
+		switch ss := scanner.(type) {
+		case *scene.Scanner:
+			// need to do generate stuff
+			s = ss.NewScene
+		case *gallery.Scanner:
+			t.postScanGallery(ss, scanned.New)
+		case *image.Scanner:
+			t.postScanImage(ss)
 		}
 	})
 

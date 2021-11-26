@@ -181,6 +181,29 @@ func (_m *ImageReaderWriter) FindByChecksum(checksum string) (*models.Image, err
 	return r0, r1
 }
 
+// FindByFileID provides a mock function with given fields: fileID
+func (_m *ImageReaderWriter) FindByFileID(fileID int) ([]*models.Image, error) {
+	ret := _m.Called(fileID)
+
+	var r0 []*models.Image
+	if rf, ok := ret.Get(0).(func(int) []*models.Image); ok {
+		r0 = rf(fileID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(fileID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByGalleryID provides a mock function with given fields: galleryID
 func (_m *ImageReaderWriter) FindByGalleryID(galleryID int) ([]*models.Image, error) {
 	ret := _m.Called(galleryID)
@@ -243,6 +266,29 @@ func (_m *ImageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]int) error); ok {
 		r1 = rf(ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetFileIDs provides a mock function with given fields: id
+func (_m *ImageReaderWriter) GetFileIDs(id int) ([]int, error) {
+	ret := _m.Called(id)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -447,6 +493,20 @@ func (_m *ImageReaderWriter) Update(updatedImage models.ImagePartial) (*models.I
 	}
 
 	return r0, r1
+}
+
+// UpdateFiles provides a mock function with given fields: id, fileIDs
+func (_m *ImageReaderWriter) UpdateFiles(id int, fileIDs []int) error {
+	ret := _m.Called(id, fileIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(id, fileIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // UpdateFull provides a mock function with given fields: updatedImage

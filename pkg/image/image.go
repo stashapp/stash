@@ -41,7 +41,11 @@ func DecodeSourceImage(i *models.Image) (*image.Config, *string, error) {
 	}
 	defer f.Close()
 
-	config, format, err := image.DecodeConfig(f)
+	return decodeSourceImage(f)
+}
+
+func decodeSourceImage(r io.Reader) (*image.Config, *string, error) {
+	config, format, err := image.DecodeConfig(r)
 
 	return &config, &format, err
 }

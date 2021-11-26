@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
-	"strconv"
 	"time"
 )
 
@@ -53,7 +52,7 @@ func (i *Image) File() File {
 		ret.FileModTime = i.FileModTime.Timestamp
 	}
 	if i.Size.Valid {
-		ret.Size = strconv.FormatInt(i.Size.Int64, 10)
+		ret.Size = i.Size.Int64
 	}
 
 	return ret
@@ -73,15 +72,13 @@ func (i *Image) SetFile(f File) {
 			Valid:     true,
 		}
 	}
-	if f.Size != "" {
-		size, err := strconv.ParseInt(f.Size, 10, 64)
-		if err == nil {
-			i.Size = sql.NullInt64{
-				Int64: size,
-				Valid: true,
-			}
-		}
+	i.Size = sql.NullInt64{
+		Int64: f.Size,
+		Valid: true,
 	}
+
+	i.Width = f.Width
+	i.Height = f.Height
 }
 
 // GetTitle returns the title of the image. If the Title field is empty,

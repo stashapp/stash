@@ -11,6 +11,7 @@ type Repository interface {
 	Studio() StudioReaderWriter
 	Tag() TagReaderWriter
 	SavedFilter() SavedFilterReaderWriter
+	File() FileReaderWriter
 }
 
 type ReaderRepository interface {
@@ -24,4 +25,5 @@ type ReaderRepository interface {
 	Studio() StudioReader
 	Tag() TagReader
 	SavedFilter() SavedFilterReader
+	File() FileReader
 }

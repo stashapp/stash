@@ -16,8 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-const mutexType = "gallery"
-
 type Scanner struct {
 	file.Scanner
 
@@ -28,28 +26,54 @@ type Scanner struct {
 	TxnManager         models.TransactionManager
 	Paths              *paths.Paths
 	PluginCache        *plugin.Cache
-	MutexManager       *utils.MutexManager
+
+	Gallery    *models.Gallery
+	ScanImages bool
 }
 
-func FileScanner(hasher file.Hasher) file.Scanner {
+func FileScanner(hasher file.Hasher, statter file.Statter) file.Scanner {
 	return file.Scanner{
 		Hasher:       hasher,
+		Statter:      statter,
 		CalculateMD5: true,
+		Done:         make(chan struct{}),
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
-	scanned, err := scanner.Scanner.ScanExisting(existing, file)
-	if err != nil {
-		return nil, false, err
+func (scanner *Scanner) PostScan(scanned file.Scanned) error {
+	if scanned.Old != nil {
+		// should be an existing gallery
+		var gallery *models.Gallery
+		if err := scanner.TxnManager.WithReadTxn(scanner.Ctx, func(r models.ReaderRepository) error {
+			galleries, err := r.Gallery().FindByFileID(scanned.Old.ID)
+			if err != nil {
+				return err
+			}
+
+			// assume only one gallery for now
+			if len(galleries) > 0 {
+				gallery = galleries[0]
+			}
+			return err
+		}); err != nil {
+			logger.Error(err.Error())
+			return nil
+		}
+
+		if gallery != nil {
+			return scanner.ScanExisting(gallery, scanned)
+		}
+
+		// we shouldn't be able to have an existing file without a gallery, but
+		// assuming that it's happened, treat it as a new gallery
 	}
 
-	// we don't currently store sizes for gallery files
-	// clear the file size so that we don't incorrectly detect a
-	// change
-	scanned.New.Size = ""
+	// assume a new file/scene
+	return scanner.ScanNew(scanned.New)
+}
 
-	retGallery = existing.(*models.Gallery)
+func (scanner *Scanner) ScanExisting(existing *models.Gallery, scanned file.Scanned) error {
+	retGallery := existing
 
 	path := scanned.New.Path
 
@@ -66,18 +90,16 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	}
 
 	if changed {
-		scanImages = true
+		scanner.ScanImages = true
+
 		logger.Infof("%s has been updated: rescanning", path)
 
 		retGallery.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-		// we are operating on a checksum now, so grab a mutex on the checksum
-		done := make(chan struct{})
-		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
-
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			// free the mutex once transaction is complete
-			defer close(done)
+			if err := scanner.Scanner.ApplyChanges(r.File(), &scanned); err != nil {
+				return err
+			}
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
@@ -87,64 +109,43 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 				}
 			}
 
+			var err error
 			retGallery, err = r.Gallery().Update(*retGallery)
 			return err
 		}); err != nil {
-			return nil, false, err
+			return err
 		}
 
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retGallery.ID, plugin.GalleryUpdatePost, nil, nil)
+
+		scanner.Gallery = retGallery
 	}
 
-	return
+	return nil
 }
 
-func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
-	scanned, err := scanner.Scanner.ScanNew(file)
-	if err != nil {
-		return nil, false, err
-	}
-
-	path := file.Path()
-	checksum := scanned.Checksum
+func (scanner *Scanner) ScanNew(f *models.File) error {
+	path := f.Path
+	checksum := f.Checksum
 	isNewGallery := false
 	isUpdatedGallery := false
 	var g *models.Gallery
 
-	// grab a mutex on the checksum
-	done := make(chan struct{})
-	scanner.MutexManager.Claim(mutexType, checksum, done)
-	defer close(done)
-
 	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if err := scanner.Scanner.ApplyChanges(r.File(), &file.Scanned{
+			New: f,
+		}); err != nil {
+			return err
+		}
+
 		qb := r.Gallery()
 
 		g, _ = qb.FindByChecksum(checksum)
 		if g != nil {
-			exists, _ := utils.FileExists(g.Path.String)
-			if !scanner.CaseSensitiveFs {
-				// #1426 - if file exists but is a case-insensitive match for the
-				// original filename, then treat it as a move
-				if exists && strings.EqualFold(path, g.Path.String) {
-					exists = false
-				}
-			}
+			logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
 
-			if exists {
-				logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
-			} else {
-				logger.Infof("%s already exists.  Updating path...", path)
-				g.Path = sql.NullString{
-					String: path,
-					Valid:  true,
-				}
-				g, err = qb.Update(*g)
-				if err != nil {
-					return err
-				}
-
-				isUpdatedGallery = true
-			}
+			// link gallery to file
+			return addFile(r.Gallery(), g, f)
 		} else if scanner.hasImages(path) { // don't create gallery if it has no images
 			currentTime := time.Now()
 
@@ -158,7 +159,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			}
 
-			g.SetFile(*scanned)
+			g.SetFile(*f)
 
 			// only warn when creating the gallery
 			ok, err := utils.IsZipFileUncompressed(path)
@@ -172,25 +173,37 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 				return err
 			}
 
-			scanImages = true
 			isNewGallery = true
+			scanner.ScanImages = true
+
+			// link scene to file
+			return addFile(r.Gallery(), g, f)
 		}
 
 		return nil
 	}); err != nil {
-		return nil, false, err
+		return err
 	}
 
 	if isNewGallery {
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
+		scanner.Gallery = g
 	} else if isUpdatedGallery {
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
+		// file was not updated, don't rescan
 	}
 
-	scanImages = isNewGallery
-	retGallery = g
+	return nil
+}
 
-	return
+func addFile(rw models.GalleryReaderWriter, g *models.Gallery, f *models.File) error {
+	ids, err := rw.GetFileIDs(g.ID)
+	if err != nil {
+		return err
+	}
+
+	ids = utils.IntAppendUnique(ids, f.ID)
+	return rw.UpdateFiles(g.ID, ids)
 }
 
 func (scanner *Scanner) isImage(pathname string) bool {

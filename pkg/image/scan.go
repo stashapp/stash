@@ -2,9 +2,9 @@ package image
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -14,8 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
-
-const mutexType = "image"
 
 type Scanner struct {
 	file.Scanner
@@ -27,24 +25,75 @@ type Scanner struct {
 	TxnManager      models.TransactionManager
 	Paths           *paths.Paths
 	PluginCache     *plugin.Cache
-	MutexManager    *utils.MutexManager
+
+	Image *models.Image
+	IsNew bool
 }
 
-func FileScanner(hasher file.Hasher) file.Scanner {
+func FileScanner(hasher file.Hasher, statter file.Statter) file.Scanner {
 	return file.Scanner{
 		Hasher:       hasher,
+		Statter:      statter,
 		CalculateMD5: true,
+		Done:         make(chan struct{}),
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (retImage *models.Image, err error) {
-	scanned, err := scanner.Scanner.ScanExisting(existing, file)
-	if err != nil {
-		return nil, err
+func (scanner *Scanner) PostScan(scanned file.Scanned) error {
+	if scanned.Old != nil {
+		// should be an existing image
+		var image *models.Image
+		if err := scanner.TxnManager.WithReadTxn(scanner.Ctx, func(r models.ReaderRepository) error {
+			images, err := r.Image().FindByFileID(scanned.Old.ID)
+			if err != nil {
+				return err
+			}
+
+			// assume only one scene for now
+			if len(images) > 0 {
+				image = images[0]
+			}
+			return err
+		}); err != nil {
+			logger.Error(err.Error())
+			return nil
+		}
+
+		if image != nil {
+			return scanner.ScanExisting(image, scanned)
+		}
+
+		// we shouldn't be able to have an existing file without an image, but
+		// assuming that it's happened, treat it as a new image
 	}
 
-	i := existing.(*models.Image)
+	// assume a new file/scene
+	return scanner.ScanNew(scanned.New)
+}
 
+func (scanner *Scanner) GenerateMetadata(dest *models.File, src file.SourceFile) error {
+	f, err := src.Open()
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	config, _, err := decodeSourceImage(f)
+	if err == nil {
+		dest.Width = sql.NullInt64{
+			Int64: int64(config.Width),
+			Valid: true,
+		}
+		dest.Height = sql.NullInt64{
+			Int64: int64(config.Height),
+			Valid: true,
+		}
+	}
+
+	return err
+}
+
+func (scanner *Scanner) ScanExisting(i *models.Image, scanned file.Scanned) error {
 	path := scanned.New.Path
 	oldChecksum := i.Checksum
 	changed := false
@@ -54,7 +103,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 		// regenerate the file details as well
 		if err := SetFileDetails(i); err != nil {
-			return nil, err
+			return err
 		}
 
 		changed = true
@@ -68,13 +117,12 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		i.SetFile(*scanned.New)
 		i.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-		// we are operating on a checksum now, so grab a mutex on the checksum
-		done := make(chan struct{})
-		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
+		var retImage *models.Image
+		if err := scanner.TxnManager.WithTxn(scanner.Ctx, func(r models.Repository) error {
+			if err := scanner.Scanner.ApplyChanges(r.File(), &scanned); err != nil {
+				return err
+			}
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			// free the mutex once transaction is complete
-			defer close(done)
 			var err error
 
 			// ensure no clashes of hashes
@@ -88,37 +136,27 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			retImage, err = r.Image().UpdateFull(*i)
 			return err
 		}); err != nil {
-			return nil, err
+			return err
 		}
 
 		// remove the old thumbnail if the checksum changed - we'll regenerate it
 		if oldChecksum != scanned.New.Checksum {
 			// remove cache dir of gallery
-			err = os.Remove(scanner.Paths.Generated.GetThumbnailPath(oldChecksum, models.DefaultGthumbWidth))
-			if err != nil {
+			if err := os.Remove(scanner.Paths.Generated.GetThumbnailPath(oldChecksum, models.DefaultGthumbWidth)); err != nil {
 				logger.Errorf("Error deleting thumbnail image: %s", err)
 			}
 		}
 
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retImage.ID, plugin.ImageUpdatePost, nil, nil)
+		scanner.Image = retImage
 	}
 
-	return
+	return nil
 }
 
-func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err error) {
-	scanned, err := scanner.Scanner.ScanNew(f)
-	if err != nil {
-		return nil, err
-	}
-
-	path := f.Path()
-	checksum := scanned.Checksum
-
-	// grab a mutex on the checksum
-	done := make(chan struct{})
-	scanner.MutexManager.Claim(mutexType, checksum, done)
-	defer close(done)
+func (scanner *Scanner) ScanNew(f *models.File) error {
+	path := f.Path
+	checksum := f.Checksum
 
 	// check for image by checksum
 	var existingImage *models.Image
@@ -127,40 +165,29 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 		existingImage, err = r.Image().FindByChecksum(checksum)
 		return err
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	pathDisplayName := file.ZipPathDisplayName(path)
 
 	if existingImage != nil {
-		exists := FileExists(existingImage.Path)
-		if !scanner.CaseSensitiveFs {
-			// #1426 - if file exists but is a case-insensitive match for the
-			// original filename, then treat it as a move
-			if exists && strings.EqualFold(path, existingImage.Path) {
-				exists = false
-			}
-		}
+		logger.Infof("%s already exists. Duplicate of %s ", pathDisplayName, file.ZipPathDisplayName(existingImage.Path))
 
-		if exists {
-			logger.Infof("%s already exists. Duplicate of %s ", pathDisplayName, file.ZipPathDisplayName(existingImage.Path))
-			return nil, nil
-		} else {
-			logger.Infof("%s already exists. Updating path...", pathDisplayName)
-			imagePartial := models.ImagePartial{
-				ID:   existingImage.ID,
-				Path: &path,
-			}
-
-			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				retImage, err = r.Image().Update(imagePartial)
-				return err
+		if err := scanner.TxnManager.WithTxn(scanner.Ctx, func(r models.Repository) error {
+			if err := scanner.Scanner.ApplyChanges(r.File(), &file.Scanned{
+				New: f,
 			}); err != nil {
-				return nil, err
+				return err
 			}
 
-			scanner.PluginCache.ExecutePostHooks(scanner.Ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
+			// link image to file
+			return addFile(r.Image(), existingImage, f)
+		}); err != nil {
+			return err
 		}
+
+		scanner.Image = existingImage
+		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", pathDisplayName)
 		currentTime := time.Now()
@@ -168,25 +195,50 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
-		newImage.SetFile(*scanned)
+		newImage.SetFile(*f)
 		newImage.Title.String = GetFilename(&newImage, scanner.StripFileExtension)
 		newImage.Title.Valid = true
 
 		if err := SetFileDetails(&newImage); err != nil {
 			logger.Error(err.Error())
-			return nil, err
+			return err
 		}
+
+		var retImage *models.Image
 
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			if err := scanner.Scanner.ApplyChanges(r.File(), &file.Scanned{
+				New: f,
+			}); err != nil {
+				return err
+			}
+
 			var err error
 			retImage, err = r.Image().Create(newImage)
-			return err
+			if err != nil {
+				return err
+			}
+
+			// link image to file
+			return addFile(r.Image(), retImage, f)
 		}); err != nil {
-			return nil, err
+			return err
 		}
 
+		scanner.Image = retImage
+		scanner.IsNew = true
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retImage.ID, plugin.ImageCreatePost, nil, nil)
 	}
 
-	return
+	return nil
+}
+
+func addFile(rw models.ImageReaderWriter, i *models.Image, f *models.File) error {
+	ids, err := rw.GetFileIDs(i.ID)
+	if err != nil {
+		return err
+	}
+
+	ids = utils.IntAppendUnique(ids, f.ID)
+	return rw.UpdateFiles(i.ID, ids)
 }

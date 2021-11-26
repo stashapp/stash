@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -18,8 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
-
-const mutexType = "scene"
 
 type videoFileCreator interface {
 	NewVideoFile(path string, stripFileExtension bool) (*ffmpeg.VideoFile, error)
@@ -33,31 +29,69 @@ type Scanner struct {
 	FileNamingAlgorithm models.HashAlgorithm
 
 	Ctx              context.Context
-	CaseSensitiveFs  bool
 	TxnManager       models.TransactionManager
 	Paths            *paths.Paths
 	Screenshotter    screenshotter
 	VideoFileCreator videoFileCreator
 	PluginCache      *plugin.Cache
-	MutexManager     *utils.MutexManager
+
+	NewScene *models.Scene
 }
 
-func FileScanner(hasher file.Hasher, fileNamingAlgorithm models.HashAlgorithm, calculateMD5 bool) file.Scanner {
+func FileScanner(hasher file.Hasher, statter file.Statter, fileNamingAlgorithm models.HashAlgorithm, calculateMD5 bool) file.Scanner {
 	return file.Scanner{
 		Hasher:          hasher,
+		Statter:         statter,
 		CalculateOSHash: true,
 		CalculateMD5:    fileNamingAlgorithm == models.HashAlgorithmMd5 || calculateMD5,
+		Done:            make(chan struct{}),
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (err error) {
-	scanned, err := scanner.Scanner.ScanExisting(existing, file)
+func (scanner *Scanner) PostScan(scanned file.Scanned) error {
+	if scanned.Old != nil {
+		// should be an existing scene
+		var scene *models.Scene
+		if err := scanner.TxnManager.WithReadTxn(scanner.Ctx, func(r models.ReaderRepository) error {
+			scenes, err := r.Scene().FindByFileID(scanned.Old.ID)
+			if err != nil {
+				return err
+			}
+
+			// assume only one scene for now
+			if len(scenes) > 0 {
+				scene = scenes[0]
+			}
+			return err
+		}); err != nil {
+			logger.Error(err.Error())
+			return nil
+		}
+
+		if scene != nil {
+			return scanner.ScanExisting(scene, scanned)
+		}
+
+		// we shouldn't be able to have an existing file without a scene, but
+		// assuming that it's happened, treat it as a new scene
+	}
+
+	// assume a new file/scene
+	return scanner.ScanNew(scanned.New)
+}
+
+func (scanner *Scanner) GenerateMetadata(dest *models.File, src file.SourceFile) error {
+	videoFile, err := scanner.VideoFileCreator.NewVideoFile(src.Path(), scanner.StripFileExtension)
 	if err != nil {
 		return err
 	}
 
-	s := existing.(*models.Scene)
+	videoFileToFile(dest, videoFile)
 
+	return nil
+}
+
+func (scanner *Scanner) ScanExisting(s *models.Scene, scanned file.Scanned) (err error) {
 	path := scanned.New.Path
 	interactive := getInteractive(path)
 
@@ -65,19 +99,11 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
 	changed := false
 
-	var videoFile *ffmpeg.VideoFile
-
 	if scanned.ContentsChanged() {
 		logger.Infof("%s has been updated: rescanning", path)
 
 		s.SetFile(*scanned.New)
 
-		videoFile, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
-		if err != nil {
-			return err
-		}
-
-		videoFileToScene(s, videoFile)
 		changed = true
 	} else if scanned.FileUpdated() || s.Interactive != interactive {
 		logger.Infof("Updated scene file %s", path)
@@ -89,30 +115,18 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 	// check for container
 	if !s.Format.Valid {
-		if videoFile == nil {
-			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
-			if err != nil {
-				return err
-			}
-		}
-		container := ffmpeg.MatchContainer(videoFile.Container, path)
+		s.Format = scanned.New.Format
+		container := s.Format.String
 		logger.Infof("Adding container %s to file %s", container, path)
-		s.Format = models.NullString(string(container))
 		changed = true
 	}
 
 	if changed {
-		// we are operating on a checksum now, so grab a mutex on the checksum
-		done := make(chan struct{})
-		if scanned.New.OSHash != "" {
-			scanner.MutexManager.Claim(mutexType, scanned.New.OSHash, done)
-		}
-		if scanned.New.Checksum != "" {
-			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
-		}
+		if err := scanner.TxnManager.WithTxn(scanner.Ctx, func(r models.Repository) error {
+			if err := scanner.Scanner.ApplyChanges(r.File(), &scanned); err != nil {
+				return err
+			}
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-			defer close(done)
 			qb := r.Scene()
 
 			// ensure no clashes of hashes
@@ -150,31 +164,15 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 	// We already have this item in the database
 	// check for thumbnails, screenshots
-	scanner.makeScreenshots(path, videoFile, s.GetHash(scanner.FileNamingAlgorithm))
+	scanner.makeScreenshots(path, nil, s.GetHash(scanner.FileNamingAlgorithm))
 
 	return nil
 }
 
-func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, err error) {
-	scanned, err := scanner.Scanner.ScanNew(file)
-	if err != nil {
-		return nil, err
-	}
-
-	path := file.Path()
-	checksum := scanned.Checksum
-	oshash := scanned.OSHash
-
-	// grab a mutex on the checksum and oshash
-	done := make(chan struct{})
-	if oshash != "" {
-		scanner.MutexManager.Claim(mutexType, oshash, done)
-	}
-	if checksum != "" {
-		scanner.MutexManager.Claim(mutexType, checksum, done)
-	}
-
-	defer close(done)
+func (scanner *Scanner) ScanNew(f *models.File) error {
+	path := f.Path
+	checksum := f.Checksum
+	oshash := f.OSHash
 
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
@@ -191,7 +189,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 		return nil
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	sceneHash := oshash
@@ -200,44 +198,33 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 		sceneHash = checksum
 	}
 
-	interactive := getInteractive(file.Path())
+	interactive := getInteractive(f.Path)
 
 	if s != nil {
-		exists, _ := utils.FileExists(s.Path)
-		if !scanner.CaseSensitiveFs {
-			// #1426 - if file exists but is a case-insensitive match for the
-			// original filename, then treat it as a move
-			if exists && strings.EqualFold(path, s.Path) {
-				exists = false
-			}
-		}
+		// if exists {
+		logger.Infof("%s already exists. Duplicate of %s", path, s.Path)
 
-		if exists {
-			logger.Infof("%s already exists. Duplicate of %s", path, s.Path)
-		} else {
-			logger.Infof("%s already exists. Updating path...", path)
-			scenePartial := models.ScenePartial{
-				ID:          s.ID,
-				Path:        &path,
-				Interactive: &interactive,
-			}
-			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-				_, err := r.Scene().Update(scenePartial)
-				return err
+		if err := scanner.TxnManager.WithTxn(scanner.Ctx, func(r models.Repository) error {
+			if err := scanner.Scanner.ApplyChanges(r.File(), &file.Scanned{
+				New: f,
 			}); err != nil {
-				return nil, err
+				return err
 			}
 
-			scanner.makeScreenshots(path, nil, sceneHash)
-			scanner.PluginCache.ExecutePostHooks(scanner.Ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
+			// link scene to file
+			return addFile(r.Scene(), s, f)
+		}); err != nil {
+			return err
 		}
+
+		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", path)
 		currentTime := time.Now()
 
 		videoFile, err := scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// Override title to be filename if UseFileMetadata is false
@@ -246,42 +233,59 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 		}
 
 		newScene := models.Scene{
-			Checksum: sql.NullString{String: checksum, Valid: checksum != ""},
-			OSHash:   sql.NullString{String: oshash, Valid: oshash != ""},
-			Path:     path,
-			FileModTime: models.NullSQLiteTimestamp{
-				Timestamp: scanned.FileModTime,
-				Valid:     true,
-			},
 			Title:       sql.NullString{String: videoFile.Title, Valid: true},
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
 		}
 
-		videoFileToScene(&newScene, videoFile)
+		newScene.SetFile(*f)
 
 		if scanner.UseFileMetadata {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
 			_ = newScene.Date.Scan(videoFile.CreationTime)
 		}
 
+		var retScene *models.Scene
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			if err := scanner.Scanner.ApplyChanges(r.File(), &file.Scanned{
+				New: f,
+			}); err != nil {
+				return err
+			}
+
 			var err error
 			retScene, err = r.Scene().Create(newScene)
-			return err
+			if err != nil {
+				return err
+			}
+
+			// link scene to file
+			return addFile(r.Scene(), retScene, f)
 		}); err != nil {
-			return nil, err
+			return err
 		}
 
 		scanner.makeScreenshots(path, videoFile, sceneHash)
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
+
+		scanner.NewScene = retScene
 	}
 
-	return retScene, nil
+	return nil
 }
 
-func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
+func addFile(rw models.SceneReaderWriter, s *models.Scene, f *models.File) error {
+	ids, err := rw.GetFileIDs(s.ID)
+	if err != nil {
+		return err
+	}
+
+	ids = utils.IntAppendUnique(ids, f.ID)
+	return rw.UpdateFiles(s.ID, ids)
+}
+
+func videoFileToFile(s *models.File, videoFile *ffmpeg.VideoFile) {
 	container := ffmpeg.MatchContainer(videoFile.Container, s.Path)
 
 	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
@@ -292,7 +296,6 @@ func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
 	s.Height = sql.NullInt64{Int64: int64(videoFile.Height), Valid: true}
 	s.Framerate = sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true}
 	s.Bitrate = sql.NullInt64{Int64: videoFile.Bitrate, Valid: true}
-	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
 }
 
 func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {

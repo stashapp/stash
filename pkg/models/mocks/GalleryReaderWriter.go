@@ -162,6 +162,29 @@ func (_m *GalleryReaderWriter) FindByChecksums(checksums []string) ([]*models.Ga
 	return r0, r1
 }
 
+// FindByFileID provides a mock function with given fields: fileID
+func (_m *GalleryReaderWriter) FindByFileID(fileID int) ([]*models.Gallery, error) {
+	ret := _m.Called(fileID)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(int) []*models.Gallery); ok {
+		r0 = rf(fileID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(fileID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByImageID provides a mock function with given fields: imageID
 func (_m *GalleryReaderWriter) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	ret := _m.Called(imageID)
@@ -247,6 +270,29 @@ func (_m *GalleryReaderWriter) FindMany(ids []int) ([]*models.Gallery, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]int) error); ok {
 		r1 = rf(ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetFileIDs provides a mock function with given fields: id
+func (_m *GalleryReaderWriter) GetFileIDs(id int) ([]int, error) {
+	ret := _m.Called(id)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -427,6 +473,20 @@ func (_m *GalleryReaderWriter) UpdateFileModTime(id int, modTime models.NullSQLi
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, models.NullSQLiteTimestamp) error); ok {
 		r0 = rf(id, modTime)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateFiles provides a mock function with given fields: id, fileIDs
+func (_m *GalleryReaderWriter) UpdateFiles(id int, fileIDs []int) error {
+	ret := _m.Called(id, fileIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(id, fileIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

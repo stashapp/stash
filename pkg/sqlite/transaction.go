@@ -130,6 +130,11 @@ func (t *transaction) SavedFilter() models.SavedFilterReaderWriter {
 	return NewSavedFilterReaderWriter(t.tx)
 }
 
+func (t *transaction) File() models.FileReaderWriter {
+	t.ensureTx()
+	return NewFileReaderWriter(t.tx)
+}
+
 type ReadTransaction struct{}
 
 func (t *ReadTransaction) Begin() error {
@@ -190,6 +195,10 @@ func (t *ReadTransaction) Tag() models.TagReader {
 
 func (t *ReadTransaction) SavedFilter() models.SavedFilterReader {
 	return NewSavedFilterReaderWriter(database.DB)
+}
+
+func (t *ReadTransaction) File() models.FileReader {
+	return NewFileReaderWriter(database.DB)
 }
 
 type TransactionManager struct {

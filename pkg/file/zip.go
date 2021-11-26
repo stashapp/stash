@@ -5,32 +5,37 @@ import (
 	"io"
 	"io/fs"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const zipSeparator = "\x00"
 
 type zipFile struct {
-	zipPath string
-	zf      *zip.File
+	zipFile *models.File
+	file    *zip.File
 }
 
 func (f *zipFile) Open() (io.ReadCloser, error) {
-	return f.zf.Open()
+	return f.file.Open()
 }
 
 func (f *zipFile) Path() string {
-	// TODO - fix this
-	return ZipFilename(f.zipPath, f.zf.Name)
+	return f.file.Name
 }
 
 func (f *zipFile) FileInfo() fs.FileInfo {
-	return f.zf.FileInfo()
+	return f.file.FileInfo()
 }
 
-func ZipFile(zipPath string, zf *zip.File) SourceFile {
+func (f *zipFile) ZipFileID() int {
+	return f.zipFile.ID
+}
+
+func ZipFile(zf *models.File, file *zip.File) SourceFile {
 	return &zipFile{
-		zipPath: zipPath,
-		zf:      zf,
+		zipFile: zf,
+		file:    file,
 	}
 }
 

@@ -12,6 +12,13 @@ const imageTable = "images"
 const imageIDColumn = "image_id"
 const performersImagesTable = "performers_images"
 const imagesTagsTable = "images_tags"
+const imagesFilesTable = "images_files"
+
+var imagesForFileQuery = selectAll(imageTable) + `
+LEFT JOIN images_files as files_join on files_join.image_id = images.id
+WHERE files_join.file_id = ?
+GROUP BY images.id LIMIT 1
+`
 
 var imagesForGalleryQuery = selectAll(imageTable) + `
 INNER JOIN galleries_images as galleries_join on galleries_join.image_id = images.id
@@ -164,6 +171,11 @@ func (qb *imageQueryBuilder) FindByPath(path string) (*models.Image, error) {
 	query := selectAll(imageTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryImage(query, args)
+}
+
+func (qb *imageQueryBuilder) FindByFileID(fileID int) ([]*models.Image, error) {
+	args := []interface{}{fileID}
+	return qb.queryImages(imagesForFileQuery, args)
 }
 
 func (qb *imageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
@@ -587,4 +599,24 @@ func (qb *imageQueryBuilder) GetTagIDs(imageID int) ([]int, error) {
 func (qb *imageQueryBuilder) UpdateTags(imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(imageID, tagIDs)
+}
+
+func (qb *imageQueryBuilder) filesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: imagesFilesTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: fileIDColumn,
+	}
+}
+
+func (qb *imageQueryBuilder) GetFileIDs(id int) ([]int, error) {
+	return qb.filesRepository().getIDs(id)
+}
+
+func (qb *imageQueryBuilder) UpdateFiles(id int, fileIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.filesRepository().replace(id, fileIDs)
 }

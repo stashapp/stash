@@ -53,7 +53,7 @@ func (s *Scene) File() File {
 		ret.FileModTime = s.FileModTime.Timestamp
 	}
 	if s.Size.Valid {
-		ret.Size = s.Size.String
+		ret.Size, _ = strconv.ParseInt(s.Size.String, 10, 64)
 	}
 
 	return ret
@@ -82,11 +82,35 @@ func (s *Scene) SetFile(f File) {
 			Valid:     true,
 		}
 	}
-	if f.Size != "" {
-		s.Size = sql.NullString{
-			String: f.Size,
-			Valid:  true,
-		}
+	s.Size = sql.NullString{
+		String: strconv.FormatInt(f.Size, 10),
+		Valid:  true,
+	}
+
+	// these items are optionally set, so only set if they are
+	if f.Duration.Valid {
+		s.Duration = f.Duration
+	}
+	if f.VideoCodec.Valid {
+		s.VideoCodec = f.VideoCodec
+	}
+	if f.AudioCodec.Valid {
+		s.AudioCodec = f.AudioCodec
+	}
+	if f.Format.Valid {
+		s.Format = f.Format
+	}
+	if f.Width.Valid {
+		s.Width = f.Width
+	}
+	if f.Height.Valid {
+		s.Height = f.Height
+	}
+	if f.Framerate.Valid {
+		s.Framerate = f.Framerate
+	}
+	if f.Bitrate.Valid {
+		s.Bitrate = f.Bitrate
 	}
 }
 
@@ -142,37 +166,6 @@ func (s ScenePartial) UpdateInput() SceneUpdateInput {
 		Rating:    nullInt64PtrToIntPtr(s.Rating),
 		Organized: boolPtrCopy(s.Organized),
 		StudioID:  nullInt64PtrToStringPtr(s.StudioID),
-	}
-}
-
-func (s *ScenePartial) SetFile(f File) {
-	path := f.Path
-	s.Path = &path
-
-	if f.Checksum != "" {
-		s.Checksum = &sql.NullString{
-			String: f.Checksum,
-			Valid:  true,
-		}
-	}
-	if f.OSHash != "" {
-		s.OSHash = &sql.NullString{
-			String: f.OSHash,
-			Valid:  true,
-		}
-	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = &NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
-	}
-	if f.Size != "" {
-		s.Size = &sql.NullString{
-			String: f.Size,
-			Valid:  true,
-		}
 	}
 }
 

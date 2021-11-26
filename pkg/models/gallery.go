@@ -6,6 +6,7 @@ type GalleryReader interface {
 	FindByChecksum(checksum string) (*Gallery, error)
 	FindByChecksums(checksums []string) ([]*Gallery, error)
 	FindByPath(path string) (*Gallery, error)
+	FindByFileID(fileID int) ([]*Gallery, error)
 	FindBySceneID(sceneID int) ([]*Gallery, error)
 	FindByImageID(imageID int) ([]*Gallery, error)
 	Count() (int, error)
@@ -16,6 +17,8 @@ type GalleryReader interface {
 	GetTagIDs(galleryID int) ([]int, error)
 	GetSceneIDs(galleryID int) ([]int, error)
 	GetImageIDs(galleryID int) ([]int, error)
+
+	FileJoinReader
 }
 
 type GalleryWriter interface {
@@ -28,6 +31,8 @@ type GalleryWriter interface {
 	UpdateTags(galleryID int, tagIDs []int) error
 	UpdateScenes(galleryID int, sceneIDs []int) error
 	UpdateImages(galleryID int, imageIDs []int) error
+
+	FileJoinWriter
 }
 
 type GalleryReaderWriter interface {
