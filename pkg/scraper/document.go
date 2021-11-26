@@ -302,8 +302,8 @@ func newJsonDocQueryer(s *docScraper, r io.Reader) (*jsonQuery, error) {
 	return &jq, nil
 }
 
-func (q *jsonQuery) docQuery(selector string) ([]string, error) {
-	value := gjson.Get(q.doc, selector)
+func (jq *jsonQuery) docQuery(selector string) ([]string, error) {
+	value := gjson.Get(jq.doc, selector)
 
 	if !value.Exists() {
 		return nil, fmt.Errorf("could not find json path '%s' in json object", selector)
@@ -322,8 +322,8 @@ func (q *jsonQuery) docQuery(selector string) ([]string, error) {
 	return ret, nil
 }
 
-func (q *jsonQuery) subScrape(ctx context.Context, value string) docQueryer {
-	return q.scraper.subScrape(ctx, value)
+func (jq *jsonQuery) subScrape(ctx context.Context, value string) docQueryer {
+	return jq.scraper.subScrape(ctx, value)
 }
 
 type xpathQuery struct {
@@ -345,16 +345,16 @@ func newXpathDocQueryer(s *docScraper, r io.Reader) (*xpathQuery, error) {
 
 var ErrNilDocument = errors.New("(X)HTML document is <nil>")
 
-func (q *xpathQuery) Render(w io.Writer) error {
-	if q == nil {
+func (xq *xpathQuery) Render(w io.Writer) error {
+	if xq == nil {
 		return ErrNilDocument
 	}
 
-	return html.Render(w, q.doc)
+	return html.Render(w, xq.doc)
 }
 
-func (q *xpathQuery) docQuery(selector string) ([]string, error) {
-	found, err := htmlquery.QueryAll(q.doc, selector)
+func (xq *xpathQuery) docQuery(selector string) ([]string, error) {
+	found, err := htmlquery.QueryAll(xq.doc, selector)
 	if err != nil {
 		return nil, fmt.Errorf("selector '%s': parse error: %v", selector, err)
 	}
@@ -371,8 +371,8 @@ func (q *xpathQuery) docQuery(selector string) ([]string, error) {
 	return ret, nil
 }
 
-func (q *xpathQuery) subScrape(ctx context.Context, value string) docQueryer {
-	return q.scraper.subScrape(ctx, value)
+func (xq *xpathQuery) subScrape(ctx context.Context, value string) docQueryer {
+	return xq.scraper.subScrape(ctx, value)
 }
 
 var (
