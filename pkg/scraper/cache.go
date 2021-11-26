@@ -268,7 +268,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("%w: cannot use scraper %s as a scene scraper", ErrNotSupported, scraperID)
 		}
 
-		scene, err := getScene(id, c.txnManager)
+		scene, err := getScene(ctx, id, c.txnManager)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: unable to load scene id %v: %w", scraperID, id, err)
 		}
@@ -283,7 +283,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("%w: cannot use scraper %s as a gallery scraper", ErrNotSupported, scraperID)
 		}
 
-		gallery, err := getGallery(id, c.txnManager)
+		gallery, err := getGallery(ctx, id, c.txnManager)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: unable to load gallery id %v: %w", scraperID, id, err)
 		}
