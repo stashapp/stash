@@ -78,7 +78,7 @@ func (scanner *Scanner) GenerateMetadata(dest *models.File, src file.SourceFile)
 	}
 	defer f.Close()
 
-	config, _, err := decodeSourceImage(f)
+	config, _, err := DecodeSourceImage(f)
 	if err == nil {
 		dest.Width = sql.NullInt64{
 			Int64: int64(config.Width),
@@ -100,11 +100,6 @@ func (scanner *Scanner) ScanExisting(i *models.Image, scanned file.Scanned) erro
 
 	if scanned.ContentsChanged() {
 		logger.Infof("%s has been updated: rescanning", path)
-
-		// regenerate the file details as well
-		if err := SetFileDetails(i); err != nil {
-			return err
-		}
 
 		changed = true
 	} else if scanned.FileUpdated() {
@@ -198,11 +193,6 @@ func (scanner *Scanner) ScanNew(f *models.File) error {
 		newImage.SetFile(*f)
 		newImage.Title.String = GetFilename(&newImage, scanner.StripFileExtension)
 		newImage.Title.Valid = true
-
-		if err := SetFileDetails(&newImage); err != nil {
-			logger.Error(err.Error())
-			return err
-		}
 
 		var retImage *models.Image
 

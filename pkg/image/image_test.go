@@ -18,7 +18,7 @@ func TestIsCover(t *testing.T) {
 	tests := []test{
 		{"cover.jpg", true},
 		{"covernot.jpg", false},
-		{"Cover.jpg", false},
+		{"Cover.jpg", true},
 		{fmt.Sprintf("subDir%scover.jpg", string(filepath.Separator)), true},
 		{"endsWithcover.jpg", true},
 		{"cover.png", false},

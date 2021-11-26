@@ -2,62 +2,24 @@ package image
 
 import (
 	"archive/zip"
-	"database/sql"
 	"fmt"
 	"image"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	_ "golang.org/x/image/webp"
 )
 
-func GetSourceImage(i *models.Image) (image.Image, error) {
-	f, err := openSourceImage(i.Path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	srcImage, _, err := image.Decode(f)
-	if err != nil {
-		return nil, err
-	}
-
-	return srcImage, nil
-}
-
-func DecodeSourceImage(i *models.Image) (*image.Config, *string, error) {
-	f, err := openSourceImage(i.Path)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer f.Close()
-
-	return decodeSourceImage(f)
-}
-
-func decodeSourceImage(r io.Reader) (*image.Config, *string, error) {
+func DecodeSourceImage(r io.Reader) (*image.Config, *string, error) {
 	config, format, err := image.DecodeConfig(r)
 
 	return &config, &format, err
-}
-
-func CalculateMD5(path string) (string, error) {
-	f, err := openSourceImage(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	return utils.MD5FromReader(f)
 }
 
 func FileExists(path string) bool {
@@ -126,48 +88,6 @@ func openSourceImage(path string) (io.ReadCloser, error) {
 	return os.Open(filename)
 }
 
-// GetFileDetails returns a pointer to an Image object with the
-// width, height and size populated.
-func GetFileDetails(path string) (*models.Image, error) {
-	i := &models.Image{
-		Path: path,
-	}
-
-	err := SetFileDetails(i)
-	if err != nil {
-		return nil, err
-	}
-
-	return i, nil
-}
-
-func SetFileDetails(i *models.Image) error {
-	f, err := stat(i.Path)
-	if err != nil {
-		return err
-	}
-
-	config, _, err := DecodeSourceImage(i)
-
-	if err == nil {
-		i.Width = sql.NullInt64{
-			Int64: int64(config.Width),
-			Valid: true,
-		}
-		i.Height = sql.NullInt64{
-			Int64: int64(config.Height),
-			Valid: true,
-		}
-	}
-
-	i.Size = sql.NullInt64{
-		Int64: int64(f.Size()),
-		Valid: true,
-	}
-
-	return nil
-}
-
 // GetFileModTime gets the file modification time, handling files in zip files.
 func GetFileModTime(path string) (time.Time, error) {
 	fi, err := stat(path)
@@ -205,35 +125,8 @@ func stat(path string) (os.FileInfo, error) {
 	return os.Stat(filename)
 }
 
-func Serve(w http.ResponseWriter, r *http.Request, path string) {
-	zipFilename, _ := file.ZipFilePath(path)
-	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
-	if zipFilename == "" {
-		http.ServeFile(w, r, path)
-	} else {
-		rc, err := openSourceImage(path)
-		if err != nil {
-			// assume not found
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
-		defer rc.Close()
-
-		data, err := io.ReadAll(rc)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if k, err := w.Write(data); err != nil {
-			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
-		}
-	}
-}
-
 func IsCover(img *models.Image) bool {
-	_, fn := file.ZipFilePath(img.Path)
-	return strings.HasSuffix(fn, "cover.jpg")
+	return strings.HasSuffix(strings.ToLower(img.Path), "cover.jpg")
 }
 
 func GetTitle(s *models.Image) string {
@@ -241,13 +134,11 @@ func GetTitle(s *models.Image) string {
 		return s.Title.String
 	}
 
-	_, fn := file.ZipFilePath(s.Path)
-	return filepath.Base(fn)
+	return filepath.Base(s.Path)
 }
 
 // GetFilename gets the base name of the image file
 // If stripExt is set the file extension is omitted from the name
 func GetFilename(s *models.Image, stripExt bool) string {
-	_, fn := file.ZipFilePath(s.Path)
-	return utils.GetNameFromPath(fn, stripExt)
+	return utils.GetNameFromPath(s.Path, stripExt)
 }

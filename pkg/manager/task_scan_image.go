@@ -3,9 +3,11 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"path/filepath"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -107,24 +109,52 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 		return
 	}
 
-	config, _, err := image.DecodeSourceImage(i)
+	var f []*models.File
+	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		fileIDs, err := r.Image().GetFileIDs(i.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(fileIDs) == 0 {
+			return nil
+		}
+
+		f, err = r.File().Find(fileIDs[0:1])
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		logger.Errorf("error getting files for image %q: %v", i.Path, err)
+		return
+	}
+
+	if len(f) == 0 {
+		logger.Warnf("no files found for image %q", i.Path)
+		return
+	}
+
+	reader, err := file.Open(f[0])
 	if err != nil {
 		logger.Errorf("error reading image %s: %s", i.Path, err.Error())
 		return
 	}
+	defer reader.Close()
 
-	if config.Height > models.DefaultGthumbWidth || config.Width > models.DefaultGthumbWidth {
-		encoder := image.NewThumbnailEncoder(instance.FFMPEG)
-		data, err := encoder.GetThumbnail(i, models.DefaultGthumbWidth)
-
-		if err != nil {
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG)
+	data, err := encoder.GetThumbnail(reader, models.DefaultGthumbWidth)
+	if err != nil {
+		// don't log if image too small
+		if !errors.Is(err, image.ErrTooSmall) {
 			logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
-			return
 		}
+		return
+	}
 
-		err = utils.WriteFile(thumbPath, data)
-		if err != nil {
-			logger.Errorf("error writing thumbnail for image %s: %s", i.Path, err)
-		}
+	err = utils.WriteFile(thumbPath, data)
+	if err != nil {
+		logger.Errorf("error writing thumbnail for image %s: %s", i.Path, err)
 	}
 }

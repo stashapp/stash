@@ -28,8 +28,8 @@ func (f *zipFile) FileInfo() fs.FileInfo {
 	return f.file.FileInfo()
 }
 
-func (f *zipFile) ZipFileID() int {
-	return f.zipFile.ID
+func (f *zipFile) ZipFile() *models.File {
+	return f.zipFile
 }
 
 func ZipFile(zf *models.File, file *zip.File) SourceFile {
@@ -66,4 +66,26 @@ func ZipFilePath(path string) (zipFilename, filename string) {
 		filename = path
 	}
 	return
+}
+
+type zipFileReadCloser struct {
+	src io.ReadCloser
+	zrc *zip.ReadCloser
+}
+
+func (i *zipFileReadCloser) Read(p []byte) (n int, err error) {
+	return i.src.Read(p)
+}
+
+func (i *zipFileReadCloser) Close() error {
+	err := i.src.Close()
+	var err2 error
+	if i.zrc != nil {
+		err2 = i.zrc.Close()
+	}
+
+	if err != nil {
+		return err
+	}
+	return err2
 }

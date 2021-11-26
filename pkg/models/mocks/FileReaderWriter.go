@@ -12,69 +12,6 @@ type FileReaderWriter struct {
 	mock.Mock
 }
 
-// Count provides a mock function with given fields:
-func (_m *FileReaderWriter) Count() (int, error) {
-	ret := _m.Called()
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountMissingChecksum provides a mock function with given fields:
-func (_m *FileReaderWriter) CountMissingChecksum() (int, error) {
-	ret := _m.Called()
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountMissingOSHash provides a mock function with given fields:
-func (_m *FileReaderWriter) CountMissingOSHash() (int, error) {
-	ret := _m.Called()
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Create provides a mock function with given fields: newFile
 func (_m *FileReaderWriter) Create(newFile models.File) (*models.File, error) {
 	ret := _m.Called(newFile)
@@ -181,13 +118,13 @@ func (_m *FileReaderWriter) FindByOSHash(oshash string) ([]*models.File, error) 
 	return r0, r1
 }
 
-// FindByPath provides a mock function with given fields: path, zipFileID
-func (_m *FileReaderWriter) FindByPath(path string, zipFileID int) (*models.File, error) {
-	ret := _m.Called(path, zipFileID)
+// FindByPath provides a mock function with given fields: path
+func (_m *FileReaderWriter) FindByPath(path string) (*models.File, error) {
+	ret := _m.Called(path)
 
 	var r0 *models.File
-	if rf, ok := ret.Get(0).(func(string, int) *models.File); ok {
-		r0 = rf(path, zipFileID)
+	if rf, ok := ret.Get(0).(func(string) *models.File); ok {
+		r0 = rf(path)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.File)
@@ -195,52 +132,8 @@ func (_m *FileReaderWriter) FindByPath(path string, zipFileID int) (*models.File
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, int) error); ok {
-		r1 = rf(path, zipFileID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FindBySceneID provides a mock function with given fields: sceneID
-func (_m *FileReaderWriter) FindBySceneID(sceneID int) ([]*models.File, error) {
-	ret := _m.Called(sceneID)
-
-	var r0 []*models.File
-	if rf, ok := ret.Get(0).(func(int) []*models.File); ok {
-		r0 = rf(sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.File)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Size provides a mock function with given fields:
-func (_m *FileReaderWriter) Size() (float64, error) {
-	ret := _m.Called()
-
-	var r0 float64
-	if rf, ok := ret.Get(0).(func() float64); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(float64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(path)
 	} else {
 		r1 = ret.Error(1)
 	}

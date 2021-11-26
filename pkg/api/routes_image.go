@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
@@ -44,9 +46,28 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath)
 	} else {
 		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
-		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
+
+		// try to read the first associated file
+		files := r.Context().Value(filesKey).([]*models.File)
+		if len(files) == 0 {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		reader, err := file.Open(files[0])
 		if err != nil {
-			logger.Errorf("error generating thumbnail for image: %s", err.Error())
+			logger.Errorf("error generating thumbnail for %q: %v", files[0].Path, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusNotFound)
+			return
+		}
+		defer reader.Close()
+
+		data, err := encoder.GetThumbnail(reader, models.DefaultGthumbWidth)
+		if err != nil {
+			// don't log if too small
+			if !errors.Is(err, image.ErrTooSmall) {
+				logger.Errorf("error generating thumbnail for image: %s", err.Error())
+			}
 
 			// backwards compatibility - fallback to original image instead
 			rs.Image(w, r)
@@ -66,10 +87,14 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
-	i := r.Context().Value(imageKey).(*models.Image)
+	files := r.Context().Value(filesKey).([]*models.File)
+	if len(files) == 0 {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
 
 	// if image is in a zip file, we need to serve it specifically
-	image.Serve(w, r, i.Path)
+	file.Serve(w, r, files[0])
 }
 
 // endregion
@@ -80,12 +105,19 @@ func ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
+		var files []*models.File
 		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			qb := repo.Image()
 			if imageID == 0 {
 				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
 			} else {
 				image, _ = qb.Find(imageID)
+			}
+
+			if image != nil {
+				// get the file(s) as well
+				fileIDs, _ := qb.GetFileIDs(imageID)
+				files, _ = repo.File().Find(fileIDs)
 			}
 
 			return nil
@@ -100,6 +132,7 @@ func ImageCtx(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), imageKey, image)
+		ctx = context.WithValue(ctx, filesKey, files)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

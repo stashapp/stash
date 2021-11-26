@@ -345,7 +345,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 		}
 
 		if err := scanner.PostScan(*scanned); err != nil {
-			logger.Error(err.Error())
+			logger.Errorf("Error scanning %q: %v", path, err)
 			return
 		}
 

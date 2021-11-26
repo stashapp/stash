@@ -38,7 +38,12 @@ func (r *repository) getAll(id int, f func(rows *sqlx.Rows) error) error {
 
 func (r *repository) insert(obj interface{}) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", r.tableName, listKeys(obj, false), listKeys(obj, true))
-	return r.tx.NamedExec(stmt, obj)
+	ret, err := r.tx.NamedExec(stmt, obj)
+	if err != nil {
+		return ret, sqlError(stmt, []interface{}{obj}, err)
+	}
+
+	return ret, err
 }
 
 func (r *repository) insertObject(obj interface{}, out interface{}) error {
@@ -66,7 +71,11 @@ func (r *repository) update(id int, obj interface{}, partial bool) error {
 	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSet(obj, partial), r.tableName, r.idColumn)
 	_, err = r.tx.NamedExec(stmt, obj)
 
-	return err
+	if err != nil {
+		return sqlError(stmt, []interface{}{obj}, err)
+	}
+
+	return nil
 }
 
 func (r *repository) updateMap(id int, m map[string]interface{}) error {
@@ -81,6 +90,10 @@ func (r *repository) updateMap(id int, m map[string]interface{}) error {
 
 	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
 	_, err = r.tx.NamedExec(stmt, m)
+
+	if err != nil {
+		return sqlError(stmt, []interface{}{m}, err)
+	}
 
 	return err
 }
@@ -442,6 +455,12 @@ func listKeys(i interface{}, addPrefix bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
+		// Ignore resolved fields
+		_, resolved := v.Type().Field(i).Tag.Lookup("resolved")
+		if resolved {
+			continue
+		}
+
 		// Get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]
@@ -460,6 +479,12 @@ func updateSet(i interface{}, partial bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
+		// Ignore resolved fields
+		_, resolved := v.Type().Field(i).Tag.Lookup("resolved")
+		if resolved {
+			continue
+		}
+
 		// Get key for struct tag
 		rawKey := v.Type().Field(i).Tag.Get("db")
 		key := strings.Split(rawKey, ",")[0]

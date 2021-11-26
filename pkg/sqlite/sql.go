@@ -257,3 +257,7 @@ func coalesce(column string) string {
 func like(v string) string {
 	return "%" + v + "%"
 }
+
+func sqlError(sql string, args []interface{}, err error) error {
+	return fmt.Errorf("executing SQL %q %v: %w", sql, args, err)
+}

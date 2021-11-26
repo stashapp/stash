@@ -8,8 +8,13 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-const fileTable = "files"
-const fileIDColumn = "file_id"
+const (
+	fileTable    = "files"
+	fileIDColumn = "file_id"
+
+	// we need to resolve the zip_path
+	fileSelectQuery = "SELECT files.*, zipfile.path as zip_path FROM files LEFT JOIN files zipfile ON zipfile.id = files.zip_file_id"
+)
 
 type fileQueryBuilder struct {
 	repository
@@ -65,6 +70,15 @@ func (qb *fileQueryBuilder) Find(ids []int) ([]*models.File, error) {
 	return files, nil
 }
 
+func (qb *fileQueryBuilder) get(id int, dest interface{}) error {
+	stmt := fileSelectQuery + " WHERE files.id = ? LIMIT 1"
+	if err := qb.tx.Get(dest, stmt, id); err != nil {
+		return fmt.Errorf("executing SQL %q: %w", stmt, err)
+	}
+
+	return nil
+}
+
 func (qb *fileQueryBuilder) find(id int) (*models.File, error) {
 	var ret models.File
 	if err := qb.get(id, &ret); err != nil {
@@ -78,27 +92,20 @@ func (qb *fileQueryBuilder) find(id int) (*models.File, error) {
 }
 
 func (qb *fileQueryBuilder) FindByChecksum(checksum string) ([]*models.File, error) {
-	query := "SELECT * FROM files WHERE checksum = ?"
+	query := fileSelectQuery + " WHERE files.checksum = ?"
 	args := []interface{}{checksum}
 	return qb.queryFiles(query, args)
 }
 
 func (qb *fileQueryBuilder) FindByOSHash(oshash string) ([]*models.File, error) {
-	query := "SELECT * FROM files WHERE oshash = ?"
+	query := fileSelectQuery + " WHERE files.oshash = ?"
 	args := []interface{}{oshash}
 	return qb.queryFiles(query, args)
 }
 
-func (qb *fileQueryBuilder) FindByPath(path string, zipFileID int) (*models.File, error) {
-	query := "SELECT * FROM files WHERE path = ? "
+func (qb *fileQueryBuilder) FindByPath(path string) (*models.File, error) {
+	query := fileSelectQuery + " WHERE files.path = ? "
 	args := []interface{}{path}
-	if zipFileID != 0 {
-		query += "AND zip_file_id = ? "
-		args = append(args, zipFileID)
-	} else {
-		query += "AND zip_file_id is NULL "
-	}
-
 	query += "LIMIT 1"
 
 	return qb.queryFile(query, args)

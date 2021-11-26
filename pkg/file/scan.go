@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -19,7 +20,7 @@ type SourceFile interface {
 	Open() (io.ReadCloser, error)
 	Path() string
 	FileInfo() fs.FileInfo
-	ZipFileID() int
+	ZipFile() *models.File
 }
 
 type FileBased interface {
@@ -87,7 +88,7 @@ func (o Scanner) ApplyChanges(rw models.FileWriter, scanned *Scanned) error {
 		// create the new file
 		created, err := rw.Create(*scanned.New)
 		if err != nil {
-			return err
+			return fmt.Errorf("creating file database entry: %w", err)
 		}
 
 		scanned.New.ID = created.ID
@@ -95,16 +96,27 @@ func (o Scanner) ApplyChanges(rw models.FileWriter, scanned *Scanned) error {
 	}
 
 	_, err := rw.UpdateFull(*scanned.New)
-	return err
+	if err != nil {
+		return fmt.Errorf("updating file database entry: %w", err)
+	}
+	return nil
 }
 
 func (o *Scanner) Close() {
 	close(o.Done)
 }
 
+func fullPath(file SourceFile) string {
+	zipFile := file.ZipFile()
+	if zipFile != nil {
+		return filepath.Join(zipFile.Path, file.Path())
+	}
+
+	return file.Path()
+}
+
 func (o Scanner) Scan(reader models.FileReader, file SourceFile) (h *Scanned, err error) {
-	zipFileID := file.ZipFileID()
-	existing, err := reader.FindByPath(file.Path(), zipFileID)
+	existing, err := reader.FindByPath(fullPath(file))
 	if err != nil {
 		return nil, err
 	}
@@ -152,14 +164,14 @@ func (o Scanner) scanExisting(existingFile *models.File, file SourceFile) (h *Sc
 func (o Scanner) scanNew(reader models.FileReader, file SourceFile) (*Scanned, error) {
 	info := file.FileInfo()
 	modTime := info.ModTime()
-	zipFileID := file.ZipFileID()
+	zipFile := file.ZipFile()
 	f := &models.File{
-		Path:        file.Path(),
+		Path:        fullPath(file),
 		Size:        info.Size(),
 		FileModTime: modTime,
 	}
-	if zipFileID != 0 {
-		f.ZipFileID = models.NullInt64(int64(zipFileID))
+	if zipFile != nil {
+		f.ZipFileID = models.NullInt64(int64(zipFile.ID))
 	}
 
 	if _, err := o.generateHashes(f, file, true); err != nil {

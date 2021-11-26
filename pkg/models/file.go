@@ -4,7 +4,7 @@ type FileReader interface {
 	Find(ids []int) ([]*File, error)
 	FindByChecksum(checksum string) ([]*File, error)
 	FindByOSHash(oshash string) ([]*File, error)
-	FindByPath(path string, zipFileID int) (*File, error)
+	FindByPath(path string) (*File, error)
 	// AllOfType(fileType FileType) ([]*File, error)
 }
 

@@ -3,18 +3,21 @@ package image
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os/exec"
 	"runtime"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/models"
 )
 
 var vipsPath string
 var once sync.Once
 
-var ErrUnsupportedFormat = errors.New("unsupported image format")
+var (
+	ErrUnsupportedFormat = errors.New("unsupported image format")
+	ErrTooSmall          = errors.New("image too small")
+)
 
 type ThumbnailEncoder struct {
 	ffmpeg ffmpeg.Encoder
@@ -42,24 +45,23 @@ func NewThumbnailEncoder(ffmpegEncoder ffmpeg.Encoder) ThumbnailEncoder {
 	return ret
 }
 
-// GetThumbnail returns the thumbnail image of the provided image resized to
+// GetThumbnailReader returns the thumbnail image of the provided source resized to
 // the provided max size. It resizes based on the largest X/Y direction.
 // It returns nil and an error if an error occurs reading, decoding or encoding
-// the image.
-func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte, error) {
-	reader, err := openSourceImage(img.Path)
-	if err != nil {
-		return nil, err
-	}
-
+// the image. Returns nil and ErrImageTooSmall if the image is smaller than the max size.
+func (e *ThumbnailEncoder) GetThumbnail(reader io.Reader, maxSize int) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	if _, err := buf.ReadFrom(reader); err != nil {
 		return nil, err
 	}
 
-	_, format, err := DecodeSourceImage(img)
+	config, format, err := DecodeSourceImage(bytes.NewReader(buf.Bytes()))
 	if err != nil {
 		return nil, err
+	}
+
+	if config.Width < maxSize && config.Height < maxSize {
+		return nil, ErrTooSmall
 	}
 
 	if format != nil && *format == "gif" {
@@ -70,6 +72,6 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
 	} else {
-		return e.ffmpeg.ImageThumbnail(buf, format, maxSize, img.Path)
+		return e.ffmpeg.ImageThumbnail(buf, format, maxSize, "")
 	}
 }

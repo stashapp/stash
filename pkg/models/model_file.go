@@ -23,6 +23,9 @@ type File struct {
 	FileModTime time.Time       `db:"mod_time" json:"mod_time"`
 	CreatedAt   SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+
+	// resolved, not stored
+	ZipPath sql.NullString `db:"zip_path" json:"zip_path" resolved:"true"`
 }
 
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
