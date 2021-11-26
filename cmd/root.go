@@ -1,8 +1,8 @@
+// package cmd is the CLI command handling for the stash application
 package cmd
 
 import (
 	"embed"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -25,9 +25,8 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "stash",
 		Short: "Stash - An organizer for your porn",
-		Long:  "Stash organizes your porn collection, and lets you watch it",
+		Long:  "Stash is an organizer for your porn, with search and watch functionality",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Println(flags)
 			manager.Initialize(flags)
 			api.Start(uiBox, loginUIBox)
 
