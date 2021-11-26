@@ -18,36 +18,44 @@ func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (m
 	// Analyze the concrete type, call the right post-processing function
 	switch v := content.(type) {
 	case *models.ScrapedPerformer:
-		return c.postScrapePerformer(ctx, v)
+		if v != nil {
+			return c.postScrapePerformer(ctx, *v)
+		}
 	case models.ScrapedPerformer:
-		return c.postScrapePerformer(ctx, &v)
+		return c.postScrapePerformer(ctx, v)
 	case *models.ScrapedScene:
-		return c.postScrapeScene(ctx, v)
+		if v != nil {
+			return c.postScrapeScene(ctx, *v)
+		}
 	case models.ScrapedScene:
-		return c.postScrapeScene(ctx, &v)
+		return c.postScrapeScene(ctx, v)
 	case *models.ScrapedGallery:
-		return c.postScrapeGallery(ctx, v)
+		if v != nil {
+			return c.postScrapeGallery(ctx, *v)
+		}
 	case models.ScrapedGallery:
-		return c.postScrapeGallery(ctx, &v)
+		return c.postScrapeGallery(ctx, v)
 	case *models.ScrapedMovie:
-		return c.postScrapeMovie(ctx, v)
+		if v != nil {
+			return c.postScrapeMovie(ctx, *v)
+		}
 	case models.ScrapedMovie:
-		return c.postScrapeMovie(ctx, &v)
+		return c.postScrapeMovie(ctx, v)
 	}
 
 	// If nothing matches, pass the content through
 	return content, nil
 }
 
-func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerformer) (models.ScrapedContent, error) {
+func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (models.ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		tags, err := postProcessTags(tqb, ret.Tags)
+		tags, err := postProcessTags(tqb, p.Tags)
 		if err != nil {
 			return err
 		}
-		ret.Tags = tags
+		p.Tags = tags
 
 		return nil
 	}); err != nil {
@@ -55,42 +63,42 @@ func (c Cache) postScrapePerformer(ctx context.Context, ret *models.ScrapedPerfo
 	}
 
 	// post-process - set the image if applicable
-	if err := setPerformerImage(ctx, c.client, ret, c.globalConfig); err != nil {
-		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+	if err := setPerformerImage(ctx, c.client, p, c.globalConfig); err != nil {
+		logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
 	}
 
-	return ret, nil
+	return p, nil
 }
 
-func (c Cache) postScrapeMovie(ctx context.Context, ret *models.ScrapedMovie) (models.ScrapedContent, error) {
-	if ret.Studio != nil {
+func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (models.ScrapedContent, error) {
+	if m.Studio != nil {
 		if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			return match.ScrapedStudio(r.Studio(), ret.Studio, nil)
+			return match.ScrapedStudio(r.Studio(), m.Studio, nil)
 		}); err != nil {
 			return nil, err
 		}
 	}
 
 	// post-process - set the image if applicable
-	if err := setMovieFrontImage(ctx, c.client, ret, c.globalConfig); err != nil {
-		logger.Warnf("could not set front image using URL %s: %v", *ret.FrontImage, err)
+	if err := setMovieFrontImage(ctx, c.client, m, c.globalConfig); err != nil {
+		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
 	}
-	if err := setMovieBackImage(ctx, c.client, ret, c.globalConfig); err != nil {
-		logger.Warnf("could not set back image using URL %s: %v", *ret.BackImage, err)
+	if err := setMovieBackImage(ctx, c.client, m, c.globalConfig); err != nil {
+		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
 	}
 
-	return ret, nil
+	return m, nil
 }
 
-func (c Cache) postScrapeScenePerformer(ctx context.Context, ret *models.ScrapedPerformer) error {
+func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPerformer) error {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		tags, err := postProcessTags(tqb, ret.Tags)
+		tags, err := postProcessTags(tqb, p.Tags)
 		if err != nil {
 			return err
 		}
-		ret.Tags = tags
+		p.Tags = tags
 
 		return nil
 	}); err != nil {
@@ -100,15 +108,19 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, ret *models.Scraped
 	return nil
 }
 
-func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (models.ScrapedContent, error) {
+func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (models.ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		mqb := r.Movie()
 		tqb := r.Tag()
 		sqb := r.Studio()
 
-		for _, p := range ret.Performers {
-			if err := c.postScrapeScenePerformer(ctx, p); err != nil {
+		for _, p := range scene.Performers {
+			if p == nil {
+				continue
+			}
+
+			if err := c.postScrapeScenePerformer(ctx, *p); err != nil {
 				return err
 			}
 
@@ -117,21 +129,21 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (m
 			}
 		}
 
-		for _, p := range ret.Movies {
+		for _, p := range scene.Movies {
 			err := match.ScrapedMovie(mqb, p)
 			if err != nil {
 				return err
 			}
 		}
 
-		tags, err := postProcessTags(tqb, ret.Tags)
+		tags, err := postProcessTags(tqb, scene.Tags)
 		if err != nil {
 			return err
 		}
-		ret.Tags = tags
+		scene.Tags = tags
 
-		if ret.Studio != nil {
-			err := match.ScrapedStudio(sqb, ret.Studio, nil)
+		if scene.Studio != nil {
+			err := match.ScrapedStudio(sqb, scene.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -143,34 +155,34 @@ func (c Cache) postScrapeScene(ctx context.Context, ret *models.ScrapedScene) (m
 	}
 
 	// post-process - set the image if applicable
-	if err := setSceneImage(ctx, c.client, ret, c.globalConfig); err != nil {
-		logger.Warnf("Could not set image using URL %s: %v", *ret.Image, err)
+	if err := setSceneImage(ctx, c.client, scene, c.globalConfig); err != nil {
+		logger.Warnf("Could not set image using URL %s: %v", *scene.Image, err)
 	}
 
-	return ret, nil
+	return scene, nil
 }
 
-func (c Cache) postScrapeGallery(ctx context.Context, ret *models.ScrapedGallery) (models.ScrapedContent, error) {
+func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (models.ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		tqb := r.Tag()
 		sqb := r.Studio()
 
-		for _, p := range ret.Performers {
+		for _, p := range g.Performers {
 			err := match.ScrapedPerformer(pqb, p, nil)
 			if err != nil {
 				return err
 			}
 		}
 
-		tags, err := postProcessTags(tqb, ret.Tags)
+		tags, err := postProcessTags(tqb, g.Tags)
 		if err != nil {
 			return err
 		}
-		ret.Tags = tags
+		g.Tags = tags
 
-		if ret.Studio != nil {
-			err := match.ScrapedStudio(sqb, ret.Studio, nil)
+		if g.Studio != nil {
+			err := match.ScrapedStudio(sqb, g.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -181,7 +193,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, ret *models.ScrapedGallery
 		return nil, err
 	}
 
-	return ret, nil
+	return g, nil
 }
 
 func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {

@@ -313,7 +313,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	performer, err := scraper.scrapePerformer(q)
+	performer, err := scraper.scrapePerformer(context.Background(), q)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
@@ -408,7 +408,7 @@ func TestConcatXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	performer, err := scraper.scrapePerformer(q)
+	performer, err := scraper.scrapePerformer(context.Background(), q)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
@@ -682,7 +682,7 @@ func TestApplySceneXPathConfig(t *testing.T) {
 	q := &xpathQuery{
 		doc: doc,
 	}
-	scene, err := scraper.scrapeScene(q)
+	scene, err := scraper.scrapeScene(context.Background(), q)
 
 	if err != nil {
 		t.Errorf("Error scraping scene: %s", err.Error())
@@ -805,7 +805,7 @@ func TestLoadInvalidXPath(t *testing.T) {
 		doc: doc,
 	}
 
-	config.process(q, nil)
+	config.process(context.Background(), q, nil)
 }
 
 type mockGlobalConfig struct{}
