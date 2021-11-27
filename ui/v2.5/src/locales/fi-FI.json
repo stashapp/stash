@@ -148,6 +148,7 @@
     "verb_match_fp": "Sormenjäljet täsmäävät",
     "verb_matched": "Täsmätty",
     "verb_scrape_all": "Kaavi kaikki",
+    "verb_submit_fp": "Lähetä {fpCount, plural, one{# sormenjäki} other{# sormenjälkeä}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} täsmäämättömät kohtaukset"
   },
@@ -226,7 +227,113 @@
       "excluded_image_gallery_patterns_desc": "Säännöllinen lauseke kuvien ja gallerioiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
       "excluded_image_gallery_patterns_head": "Poisjätetyt kuvien ja gallerioiden merkkijonot",
       "excluded_video_patterns_desc": "Säännöllinen lauseke videoiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
-      "excluded_video_patterns_head": "Poisjätetyt videoiden merkkijonot"
+      "excluded_video_patterns_head": "Poisjätetyt videoiden merkkijonot",
+      "gallery_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, mitkä tulkitaan pakatuksi zip -galleriatiedostoksi.",
+      "gallery_ext_head": "Gallerian zip -päätteet",
+      "generated_file_naming_hash_desc": "Käytä MD5:ttä tai oshashia tiedostojen nimien generoimiseen. Tämän muuttaminen vaatii, että kaikilla kohtauksilla on MD5 tai oshash. Tämän valinnan muuttamisen jälkeen kaikki generoidut tukitiedostot täytyy joko migraatioida tai generoida uudelleen. Katso lisää migraatiosta tehtävät -sivulta.",
+      "generated_file_naming_hash_head": "Generoitu tiiviste tiedoston nimeämistä varten",
+      "generated_files_location": "Kansion polku generoiduille tiedostoille (kohtauksen merkit, kohtauksien esikatselut, tms)",
+      "generated_path_head": "Generoitu polku",
+      "hashing": "Tiivisteen luominen",
+      "image_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan kuviksi.",
+      "image_ext_head": "Kuvien tiedostopäätteet",
+      "include_audio_desc": "Sisällyttää äänen generoituihin esikatseluihin.",
+      "include_audio_head": "SIsällytä ääni",
+      "logging": "Kirjaus",
+      "maximum_streaming_transcode_size_desc": "Suurin koko transkoodatulle suoratoistolle",
+      "maximum_streaming_transcode_size_head": "Transkoodatun suoratoiston suurin koko",
+      "maximum_transcode_size_desc": "Suurin koko generoiduille transkoodauksille",
+      "maximum_transcode_size_head": "Suurin koko transkoodaukselle",
+      "metadata_path": {
+        "description": "Kansion sijainti kun tehdään täydellinen vienti tai tuonti",
+        "heading": "Metadatan polku"
+      },
+      "number_of_parallel_task_for_scan_generation_desc": "Automaattinen tunnistus on käytössä jos asetat 0. Varoitus: jos sallit enemmän tehtäviä kuin mitä suoritimesi kykenee suorittamaan voi järjestelmän suorituskyky laskea tai se voi aiheuttaa muita ongelmia.",
+      "number_of_parallel_task_for_scan_generation_head": "Rinnakkaisten skannaus- ja generointitehtävien määrä",
+      "parallel_scan_head": "Rinnakkainen skannaus ja generointi",
+      "preview_generation": "Esikatsele generointi",
+      "scraper_user_agent": "Kaapijan käyttäjäagentti",
+      "scraper_user_agent_desc": "Käyttäjäagenttikenttä, jota kaavittaessa käytetään http pyynnöissä",
+      "scraping": "Kaapiminen",
+      "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen)",
+      "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
+      "video_ext_head": "Videoiden päätteet",
+      "video_head": "Video"
+    },
+    "logs": {
+      "log_level": "Lokin taso"
+    },
+    "scraping": {
+      "entity_metadata": "{entityType} metadata",
+      "entity_scrapers": "{entityType} kaapijat",
+      "excluded_tag_patterns_desc": "Säännöllinen lauseke tunnisteista, jotka jätetään pois kaapijan tuloksista",
+      "excluded_tag_patterns_head": "Poisjätetyt tunnisteet",
+      "scraper": "Kaapija",
+      "scrapers": "Kaapijat",
+      "search_by_name": "Etsi nimellä",
+      "supported_types": "Tuetut tyypit",
+      "supported_urls": "URL -osoitteet"
+    },
+    "stashbox": {
+      "add_instance": "Lisää stash-box instanssi",
+      "api_key": "API -avain",
+      "description": "Stash-box helpottaa kohtauksien ja esiintyjien tunnistamista sormenjälkien ja tiedostonimien perusteella.\nPäätepiste ja API -avain löytyy stash-boxin tilisi tiedoista. Nimiä vaaditaan jos yhdistät useampaan kuin yhteen stash-box -instanssiin.",
+      "endpoint": "Päätepiste",
+      "graphql_endpoint": "GraphQL päätepiste",
+      "name": "Nimi",
+      "title": "Stash-box päätepisteet"
+    },
+    "tasks": {
+      "added_job_to_queue": "Lisättiin {operation_name} tehtäväjonoon",
+      "auto_tag": {
+        "auto_tagging_all_paths": "Asetetaan tunnisteet automaattisesti kaikkiin polkuihin",
+        "auto_tagging_paths": "Asetetaan tunnisteet automaattisesti seuraaviin polkuihin"
+      },
+      "auto_tag_based_on_filenames": "Aseta tunnisteet automaattisesti tiedostonimien perusteella.",
+      "auto_tagging": "Automaattinen tunnisteiden asetus",
+      "backing_up_database": "Varmuuskopioidaan tietokantaa",
+      "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
+      "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston samaan kansioon kuin tietokanta",
+      "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
+      "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
+      "dont_include_file_extension_as_part_of_the_title": "Elä sisällytä tiedostopäätettä tiedoston nimeen",
+      "export_to_json": "Vie tietokannan sisällön JSON -formaatissa samaan kansioon kuin missä tietokanta on.",
+      "generate": {
+        "generating_from_paths": "Generoidaan kohtauksille seuraavista poluista",
+        "generating_scenes": "Generoidaan {num} {scene}"
+      },
+      "generate_desc": "Generoi kuvat, esikatselut ja muut tukitiedostot.",
+      "generate_phashes_during_scan": "Generoi phash -tiiviste skannauksen aikana (kaksoiskappaleiden ja kohtauksen tunnistamiseen)",
+      "generate_previews_during_scan": "Generoi esikatselukuvat skannauksen aikana (animoitu WebP esikatselu, vaaditaan vain jos esikatselun tyypiksi on valittu animoitu kuva)",
+      "generate_thumbnails_during_scan": "Generoi esikatselukuva skannauksen aikana.",
+      "generate_video_previews_during_scan": "Generoi esikatselu skannauksen aikana (videoesikatselu, joka näytetään kun osoitin menee kohtauksen päälle)",
+      "generated_content": "Generoitu sisältö",
+      "identify": {
+        "and_create_missing": "ja luo puuttuvat",
+        "create_missing": "Luo puuttuvat",
+        "default_options": "Oletusasetukset",
+        "description": "Aseta kohtauksen metadata automaattisesti käyttäen apuna stash-boxia ja kaapimia.",
+        "explicit_set_description": "Seuraavia asetuksia käytetään, mikäli lähdekohtaisia asetuksia ei ole.",
+        "field": "Kenttä",
+        "field_behaviour": "{strategy} {field}",
+        "field_options": "Kentän asetukset",
+        "heading": "Tunnista",
+        "identifying_from_paths": "Tunnistetaan kohtauksia seuraavista poluista",
+        "identifying_scenes": "Tunnistetaan {num} {scene}",
+        "include_male_performers": "Sisällytä miesesiintyjät",
+        "set_cover_images": "Aseta kansikuvat",
+        "set_organized": "Aseta järjestelty -tunniste",
+        "source": "Lähde",
+        "source_options": "{source} asetukset",
+        "sources": "Lähteet",
+        "strategy": "Strategia"
+      },
+      "import_from_exported_json": "Tuo viedystä JSON -tiedoista, jotka ovat samassa kansiossa kuin metadata. Pyyhkii olemassaolevan tietokannan.",
+      "incremental_import": "Lisäävä tuonti valitusta zip -tiedostosta.",
+      "job_queue": "Tehtäväjono",
+      "maintenance": "Ylläpito",
+      "migrate_hash_files": "Käytetään kun muutetaan generoitua tiedoston nimeämistiivistettä jo generoitujen tiedostojen uudelleennimeämiseen uuteen muotoon.",
+      "migrations": "Migraatiot"
     }
   }
 }
