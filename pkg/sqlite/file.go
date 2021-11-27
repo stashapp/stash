@@ -132,3 +132,73 @@ func (qb *fileQueryBuilder) queryFiles(query string, args []interface{}) ([]*mod
 
 	return []*models.File(ret), nil
 }
+
+func (qb *fileQueryBuilder) Query(options models.FileQueryOptions) (*models.FileQueryResult, error) {
+	findFilter := options.FindFilter
+
+	if findFilter == nil {
+		findFilter = &models.FindFilterType{}
+	}
+
+	query := qb.newQuery()
+	distinctIDs(&query, sceneTable)
+
+	// q is ignored for files for now
+
+	qb.setSort(&query, findFilter)
+	query.sortAndPagination += getPagination(findFilter)
+
+	result, err := qb.queryGroupedFields(options, query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
+	}
+
+	idsResult, err := query.findIDs()
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
+	}
+
+	result.IDs = idsResult
+	return result, nil
+}
+
+func (qb *fileQueryBuilder) getDefaultSort() string {
+	return " ORDER BY files.path ASC "
+}
+
+func (qb *fileQueryBuilder) setSort(query *queryBuilder, findFilter *models.FindFilterType) {
+	if findFilter == nil {
+		query.sortAndPagination += qb.getDefaultSort()
+		return
+	}
+	sort := findFilter.GetSort("path")
+	direction := findFilter.GetDirection()
+	query.sortAndPagination += getSort(sort, direction, "files")
+}
+
+func (qb *fileQueryBuilder) queryGroupedFields(options models.FileQueryOptions, query queryBuilder) (*models.FileQueryResult, error) {
+	if !options.Count {
+		// nothing to do - return empty result
+		return models.NewFileQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(temp.id) as total")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total int
+	}{}
+	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewFileQueryResult(qb)
+	ret.Count = out.Total
+	return ret, nil
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (t *ScanTask) postScanGallery(scanner *gallery.Scanner, f *models.File) {
@@ -82,7 +83,17 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *ScanTask) scanZipImages(zipGallery *models.Gallery, zipFile *models.File) {
-	err := walkGalleryZip(zipGallery.Path.String, func(f *zip.File) error {
+	extensions := config.GetInstance().GetImageExtensions()
+
+	err := file.WalkZip(zipGallery.Path.String, func(f *zip.File) error {
+		if strings.Contains(f.Name, "__MACOSX") {
+			return nil
+		}
+
+		if !utils.MatchExtension(f.Name, extensions) {
+			return nil
+		}
+
 		// copy this task and change the filename
 		subTask := *t
 
@@ -94,6 +105,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery, zipFile *models.Fil
 		subTask.Start(context.TODO())
 		return nil
 	})
+
 	if err != nil {
 		logger.Warnf("failed to scan zip file images for %s: %s", zipGallery.Path.String, err.Error())
 	}

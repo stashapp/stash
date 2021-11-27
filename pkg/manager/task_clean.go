@@ -3,7 +3,6 @@ package manager
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -41,14 +40,15 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 			return nil
 		}
 
-		if err := j.processScenes(ctx, progress, r.Scene()); err != nil {
+		if err := j.processScenes(ctx, progress, r.Scene(), r.File()); err != nil {
 			return fmt.Errorf("error cleaning scenes: %w", err)
 		}
-		if err := j.processImages(ctx, progress, r.Image()); err != nil {
-			return fmt.Errorf("error cleaning images: %w", err)
-		}
-		if err := j.processGalleries(ctx, progress, r.Gallery(), r.Image()); err != nil {
+		// doing galleries first since it might result in image files being deleted
+		if err := j.processGalleries(ctx, progress, r.Gallery(), r.Image(), r.File()); err != nil {
 			return fmt.Errorf("error cleaning galleries: %w", err)
+		}
+		if err := j.processImages(ctx, progress, r.Image(), r.File()); err != nil {
+			return fmt.Errorf("error cleaning images: %w", err)
 		}
 
 		return nil
@@ -91,7 +91,24 @@ func (j *cleanJob) getCount(r models.ReaderRepository) (int, error) {
 	return sceneResult.Count + imageCount + galleryCount, nil
 }
 
-func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb models.SceneReader) error {
+type deleteSet struct {
+	// 0 means to not delete the object
+	objectID int
+	fileIDs  []int
+}
+
+func (s deleteSet) deleteFiles(w models.FileWriter) error {
+	// delete files
+	for _, fileID := range s.fileIDs {
+		if err := w.Destroy(fileID); err != nil {
+			return fmt.Errorf("deleting file with id %d: %w", fileID, err)
+		}
+	}
+
+	return nil
+}
+
+func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb models.SceneReader, fileReader models.FileReader) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -99,7 +116,13 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 	sort := "path"
 	findFilter.Sort = &sort
 
-	var toDelete []int
+	var toDelete []deleteSet
+
+	cleaner := file.Cleaner{
+		FileReader: fileReader,
+		// DryRun:           j.input.DryRun,
+		Config: config.GetInstance(),
+	}
 
 	more := true
 	for more {
@@ -114,13 +137,41 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 
 		for _, scene := range scenes {
 			progress.ExecuteTask(fmt.Sprintf("Assessing scene %s for clean", scene.Path), func() {
-				if j.shouldCleanScene(scene) {
-					toDelete = append(toDelete, scene.ID)
+				var fileIDs []int
+				fileIDs, err = qb.GetFileIDs(scene.ID)
+				if err != nil {
+					err = fmt.Errorf("error getting file ids for scene %q: %w", scene.Path, err)
+					return
+				}
+
+				var toClean []int
+				toClean, err = cleaner.GetFilesToClean(fileIDs, scene)
+				if err != nil {
+					err = fmt.Errorf("error cleaning files for scene %q: %w", scene.Path, err)
+					return
+				}
+
+				if len(toClean) > 0 || len(fileIDs) == 0 {
+					set := deleteSet{
+						fileIDs: toClean,
+					}
+
+					if len(toClean) == len(fileIDs) {
+						// all files for this object are removed, remove this object as well
+						logger.Infof("All scene files removed. Marking to clean: %s", scene.Path)
+						set.objectID = scene.ID
+					}
+
+					toDelete = append(toDelete, set)
 				} else {
 					// increment progress, no further processing
 					progress.Increment()
 				}
 			})
+
+			if err != nil {
+				return err
+			}
 		}
 
 		if len(scenes) != batchSize {
@@ -139,12 +190,12 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 
 	if !j.input.DryRun && len(toDelete) > 0 {
 		progress.ExecuteTask(fmt.Sprintf("Cleaning %d scenes", len(toDelete)), func() {
-			for _, sceneID := range toDelete {
+			for _, set := range toDelete {
 				if job.IsCancelled(ctx) {
 					return
 				}
 
-				j.deleteScene(ctx, fileNamingAlgorithm, sceneID)
+				j.deleteScene(ctx, fileNamingAlgorithm, set)
 
 				progress.Increment()
 			}
@@ -154,7 +205,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 	return nil
 }
 
-func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress, qb models.GalleryReader, iqb models.ImageReader) error {
+func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress, qb models.GalleryReader, iqb models.ImageReader, fileReader models.FileReader) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -162,7 +213,18 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 	sort := "path"
 	findFilter.Sort = &sort
 
-	var toDelete []int
+	galleryFilter := &models.GalleryFilterType{
+		Path: &models.StringCriterionInput{
+			Modifier: models.CriterionModifierNotNull,
+		},
+	}
+
+	var toDelete []deleteSet
+
+	cleaner := file.Cleaner{
+		FileReader: fileReader,
+		Config:     config.GetInstance(),
+	}
 
 	more := true
 	for more {
@@ -177,13 +239,57 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 
 		for _, gallery := range galleries {
 			progress.ExecuteTask(fmt.Sprintf("Assessing gallery %s for clean", gallery.GetTitle()), func() {
-				if j.shouldCleanGallery(gallery, iqb) {
-					toDelete = append(toDelete, gallery.ID)
+				var fileIDs []int
+				fileIDs, err = qb.GetFileIDs(gallery.ID)
+				if err != nil {
+					err = fmt.Errorf("error getting file ids for gallery %q: %w", gallery.Path.String, err)
+					return
+				}
+
+				if gallery.Zip {
+					var toClean []int
+					toClean, err = cleaner.GetFilesToClean(fileIDs, gallery)
+					if err != nil {
+						err = fmt.Errorf("error cleaning files for gallery %q: %w", gallery.Path.String, err)
+						return
+					}
+
+					if len(toClean) > 0 || len(fileIDs) == 0 {
+						set := deleteSet{
+							fileIDs: toClean,
+						}
+
+						if len(toClean) == len(fileIDs) {
+							// all files for this object are removed, remove this object as well
+							logger.Infof("All gallery files removed. Marking to clean: %s", gallery.Path.String)
+							set.objectID = gallery.ID
+						}
+
+						toDelete = append(toDelete, set)
+					} else {
+						// increment progress, no further processing
+						progress.Increment()
+					}
 				} else {
-					// increment progress, no further processing
-					progress.Increment()
+					// folder-based - delete if it has no images
+					var count int
+					count, err = iqb.CountByGalleryID(gallery.ID)
+					if err != nil {
+						err = fmt.Errorf("counting gallery images for %q: %v", gallery.Path.String, err)
+						return
+					}
+
+					if count == 0 {
+						toDelete = append(toDelete, deleteSet{
+							objectID: gallery.ID,
+						})
+					}
 				}
 			})
+
+			if err != nil {
+				return err
+			}
 		}
 
 		if len(galleries) != batchSize {
@@ -200,12 +306,12 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 
 	if !j.input.DryRun && len(toDelete) > 0 {
 		progress.ExecuteTask(fmt.Sprintf("Cleaning %d galleries", len(toDelete)), func() {
-			for _, galleryID := range toDelete {
+			for _, set := range toDelete {
 				if job.IsCancelled(ctx) {
 					return
 				}
 
-				j.deleteGallery(ctx, galleryID)
+				j.deleteGallery(ctx, set)
 
 				progress.Increment()
 			}
@@ -215,7 +321,7 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 	return nil
 }
 
-func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb models.ImageReader) error {
+func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb models.ImageReader, fileReader models.FileReader) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -226,7 +332,11 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 	sortBy := "path"
 	findFilter.Sort = &sortBy
 
-	var toDelete []int
+	var toDelete []deleteSet
+	cleaner := file.Cleaner{
+		FileReader: fileReader,
+		Config:     config.GetInstance(),
+	}
 
 	more := true
 	for more {
@@ -241,13 +351,41 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 
 		for _, image := range images {
 			progress.ExecuteTask(fmt.Sprintf("Assessing image %s for clean", image.Path), func() {
-				if j.shouldCleanImage(image) {
-					toDelete = append(toDelete, image.ID)
+				var fileIDs []int
+				fileIDs, err = qb.GetFileIDs(image.ID)
+				if err != nil {
+					err = fmt.Errorf("error getting file ids for image %q: %w", image.Path, err)
+					return
+				}
+
+				var toClean []int
+				toClean, err = cleaner.GetFilesToClean(fileIDs, image)
+				if err != nil {
+					err = fmt.Errorf("error cleaning files for image %q: %w", image.Path, err)
+					return
+				}
+
+				if len(toClean) > 0 || len(fileIDs) == 0 {
+					set := deleteSet{
+						fileIDs: toClean,
+					}
+
+					if len(toClean) == len(fileIDs) {
+						// all files for this object are removed, remove this object as well
+						logger.Infof("All image files removed. Marking to clean: %s", image.Path)
+						set.objectID = image.ID
+					}
+
+					toDelete = append(toDelete, set)
 				} else {
 					// increment progress, no further processing
 					progress.Increment()
 				}
 			})
+
+			if err != nil {
+				return err
+			}
 		}
 
 		if len(images) != batchSize {
@@ -279,120 +417,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 	return nil
 }
 
-func (j *cleanJob) shouldClean(path string) bool {
-	// use image.FileExists for zip file checking
-	fileExists := image.FileExists(path)
-
-	// #1102 - clean anything in generated path
-	generatedPath := config.GetInstance().GetGeneratedPath()
-	if !fileExists || getStashFromPath(path) == nil || utils.IsPathInDir(generatedPath, path) {
-		logger.Infof("File not found. Marking to clean: \"%s\"", path)
-		return true
-	}
-
-	return false
-}
-
-func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
-	if j.shouldClean(s.Path) {
-		return true
-	}
-
-	stash := getStashFromPath(s.Path)
-	if stash.ExcludeVideo {
-		logger.Infof("File in stash library that excludes video. Marking to clean: \"%s\"", s.Path)
-		return true
-	}
-
-	config := config.GetInstance()
-	if !utils.MatchExtension(s.Path, config.GetVideoExtensions()) {
-		logger.Infof("File extension does not match video extensions. Marking to clean: \"%s\"", s.Path)
-		return true
-	}
-
-	if matchFile(s.Path, config.GetExcludes()) {
-		logger.Infof("File matched regex. Marking to clean: \"%s\"", s.Path)
-		return true
-	}
-
-	return false
-}
-
-func (j *cleanJob) shouldCleanGallery(g *models.Gallery, qb models.ImageReader) bool {
-	// never clean manually created galleries
-	if !g.Path.Valid {
-		return false
-	}
-
-	path := g.Path.String
-	if j.shouldClean(path) {
-		return true
-	}
-
-	stash := getStashFromPath(path)
-	if stash.ExcludeImage {
-		logger.Infof("File in stash library that excludes images. Marking to clean: \"%s\"", path)
-		return true
-	}
-
-	config := config.GetInstance()
-	if g.Zip {
-		if !utils.MatchExtension(path, config.GetGalleryExtensions()) {
-			logger.Infof("File extension does not match gallery extensions. Marking to clean: \"%s\"", path)
-			return true
-		}
-
-		if countImagesInZip(path) == 0 {
-			logger.Infof("Gallery has 0 images. Marking to clean: \"%s\"", path)
-			return true
-		}
-	} else {
-		// folder-based - delete if it has no images
-		count, err := qb.CountByGalleryID(g.ID)
-		if err != nil {
-			logger.Warnf("Error trying to count gallery images for %q: %v", path, err)
-			return false
-		}
-
-		if count == 0 {
-			return true
-		}
-	}
-
-	if matchFile(path, config.GetImageExcludes()) {
-		logger.Infof("File matched regex. Marking to clean: \"%s\"", path)
-		return true
-	}
-
-	return false
-}
-
-func (j *cleanJob) shouldCleanImage(s *models.Image) bool {
-	if j.shouldClean(s.Path) {
-		return true
-	}
-
-	stash := getStashFromPath(s.Path)
-	if stash.ExcludeImage {
-		logger.Infof("File in stash library that excludes images. Marking to clean: \"%s\"", s.Path)
-		return true
-	}
-
-	config := config.GetInstance()
-	if !utils.MatchExtension(s.Path, config.GetImageExtensions()) {
-		logger.Infof("File extension does not match image extensions. Marking to clean: \"%s\"", s.Path)
-		return true
-	}
-
-	if matchFile(s.Path, config.GetImageExcludes()) {
-		logger.Infof("File matched regex. Marking to clean: \"%s\"", s.Path)
-		return true
-	}
-
-	return false
-}
-
-func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.HashAlgorithm, sceneID int) {
+func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.HashAlgorithm, toDelete deleteSet) {
 	fileNamingAlgo := GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
@@ -400,17 +425,27 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          GetInstance().Paths,
 	}
+
 	var s *models.Scene
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
-		qb := repo.Scene()
-
 		var err error
-		s, err = qb.Find(sceneID)
-		if err != nil {
+
+		if err := toDelete.deleteFiles(repo.File()); err != nil {
 			return err
 		}
 
-		return scene.Destroy(s, repo, fileDeleter, true, false)
+		if toDelete.objectID != 0 {
+			qb := repo.Scene()
+
+			s, err = qb.Find(toDelete.objectID)
+			if err != nil {
+				return err
+			}
+
+			return scene.Destroy(s, repo, fileDeleter, true, false)
+		}
+
+		return nil
 	}); err != nil {
 		fileDeleter.Rollback()
 
@@ -418,41 +453,53 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 		return
 	}
 
-	// perform the post-commit actions
-	fileDeleter.Commit()
+	if toDelete.objectID != 0 {
+		// perform the post-commit actions
+		fileDeleter.Commit()
 
-	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
-		Checksum: s.Checksum.String,
-		OSHash:   s.OSHash.String,
-		Path:     s.Path,
-	}, nil)
+		GetInstance().PluginCache.ExecutePostHooks(ctx, toDelete.objectID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+			Checksum: s.Checksum.String,
+			OSHash:   s.OSHash.String,
+			Path:     s.Path,
+		}, nil)
+	}
 }
 
-func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
+func (j *cleanJob) deleteGallery(ctx context.Context, toDelete deleteSet) {
 	var g *models.Gallery
 
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
-		qb := repo.Gallery()
-
-		var err error
-		g, err = qb.Find(galleryID)
-		if err != nil {
+		if err := toDelete.deleteFiles(repo.File()); err != nil {
 			return err
 		}
 
-		return qb.Destroy(galleryID)
+		if toDelete.objectID != 0 {
+			qb := repo.Gallery()
+
+			var err error
+			g, err = qb.Find(toDelete.objectID)
+			if err != nil {
+				return err
+			}
+
+			return qb.Destroy(toDelete.objectID)
+		}
+
+		return nil
 	}); err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
 
-	GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
-		Checksum: g.Checksum,
-		Path:     g.Path.String,
-	}, nil)
+	if toDelete.objectID != 0 {
+		GetInstance().PluginCache.ExecutePostHooks(ctx, toDelete.objectID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			Checksum: g.Checksum,
+			Path:     g.Path.String,
+		}, nil)
+	}
 }
 
-func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
+func (j *cleanJob) deleteImage(ctx context.Context, toDelete deleteSet) {
 	fileDeleter := &image.FileDeleter{
 		Deleter: *file.NewDeleter(),
 		Paths:   GetInstance().Paths,
@@ -460,19 +507,27 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 
 	var i *models.Image
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
-		qb := repo.Image()
-
-		var err error
-		i, err = qb.Find(imageID)
-		if err != nil {
+		if err := toDelete.deleteFiles(repo.File()); err != nil {
 			return err
 		}
 
-		if i == nil {
-			return fmt.Errorf("image not found: %d", imageID)
+		if toDelete.objectID != 0 {
+			qb := repo.Image()
+
+			var err error
+			i, err = qb.Find(toDelete.objectID)
+			if err != nil {
+				return err
+			}
+
+			if i == nil {
+				return fmt.Errorf("image not found: %d", toDelete.objectID)
+			}
+
+			return image.Destroy(i, qb, fileDeleter, true, false)
 		}
 
-		return image.Destroy(i, qb, fileDeleter, true, false)
+		return nil
 	}); err != nil {
 		fileDeleter.Rollback()
 
@@ -480,21 +535,14 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 		return
 	}
 
-	// perform the post-commit actions
-	fileDeleter.Commit()
-	GetInstance().PluginCache.ExecutePostHooks(ctx, imageID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-		Checksum: i.Checksum,
-		Path:     i.Path,
-	}, nil)
-}
-
-func getStashFromPath(pathToCheck string) *models.StashConfig {
-	for _, s := range config.GetInstance().GetStashPaths() {
-		if utils.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
-			return s
-		}
+	if toDelete.objectID != 0 {
+		// perform the post-commit actions
+		fileDeleter.Commit()
+		GetInstance().PluginCache.ExecutePostHooks(ctx, toDelete.objectID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+			Checksum: i.Checksum,
+			Path:     i.Path,
+		}, nil)
 	}
-	return nil
 }
 
 func getStashFromDirPath(pathToCheck string) *models.StashConfig {

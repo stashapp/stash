@@ -102,6 +102,28 @@ func Open(f *models.File) (io.ReadCloser, error) {
 	}, nil
 }
 
+func Info(f *models.File) (fs.FileInfo, error) {
+	if !f.ZipFileID.Valid || !f.ZipPath.Valid {
+		return os.Stat(f.Path)
+	}
+
+	zipReader, err := zip.OpenReader(f.ZipPath.String)
+	if err != nil {
+		return nil, err
+	}
+	defer zipReader.Close()
+
+	// strip zip path from file path
+	path := strings.TrimPrefix(f.Path, f.ZipPath.String+string(filepath.Separator))
+	for _, zf := range zipReader.File {
+		if zf.Name == path {
+			return zf.FileInfo(), nil
+		}
+	}
+
+	return nil, fs.ErrNotExist
+}
+
 // Serve serves the provided file.
 func Serve(w http.ResponseWriter, r *http.Request, f *models.File) {
 	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week

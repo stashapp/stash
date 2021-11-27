@@ -141,6 +141,29 @@ func (_m *FileReaderWriter) FindByPath(path string) (*models.File, error) {
 	return r0, r1
 }
 
+// Query provides a mock function with given fields: options
+func (_m *FileReaderWriter) Query(options models.FileQueryOptions) (*models.FileQueryResult, error) {
+	ret := _m.Called(options)
+
+	var r0 *models.FileQueryResult
+	if rf, ok := ret.Get(0).(func(models.FileQueryOptions) *models.FileQueryResult); ok {
+		r0 = rf(options)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.FileQueryResult)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.FileQueryOptions) error); ok {
+		r1 = rf(options)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateFull provides a mock function with given fields: updatedFile
 func (_m *FileReaderWriter) UpdateFull(updatedFile models.File) (*models.File, error) {
 	ret := _m.Called(updatedFile)

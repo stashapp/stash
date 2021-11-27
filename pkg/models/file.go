@@ -1,11 +1,43 @@
 package models
 
-type FileReader interface {
+type FileQueryOptions struct {
+	QueryOptions
+}
+
+type FileQueryResult struct {
+	QueryResult
+	TotalDuration float64
+	TotalSize     float64
+
+	finder     FileFinder
+	files      []*File
+	resolveErr error
+}
+
+func NewFileQueryResult(finder FileFinder) *FileQueryResult {
+	return &FileQueryResult{
+		finder: finder,
+	}
+}
+
+func (r *FileQueryResult) Resolve() ([]*File, error) {
+	// cache results
+	if r.files == nil && r.resolveErr == nil {
+		r.files, r.resolveErr = r.finder.Find(r.IDs)
+	}
+	return r.files, r.resolveErr
+}
+
+type FileFinder interface {
 	Find(ids []int) ([]*File, error)
+}
+
+type FileReader interface {
+	FileFinder
 	FindByChecksum(checksum string) ([]*File, error)
 	FindByOSHash(oshash string) ([]*File, error)
 	FindByPath(path string) (*File, error)
-	// AllOfType(fileType FileType) ([]*File, error)
+	Query(options FileQueryOptions) (*FileQueryResult, error)
 }
 
 type FileWriter interface {

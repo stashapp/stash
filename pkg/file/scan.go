@@ -109,7 +109,10 @@ func (o *Scanner) Close() {
 func fullPath(file SourceFile) string {
 	zipFile := file.ZipFile()
 	if zipFile != nil {
-		return filepath.Join(zipFile.Path, file.Path())
+		// don't use filepath.Join because it cleans the result, changing / in
+		// zip path into \\ (on Windows). We want to maintain the separator
+		// in the zip file as it's required.
+		return zipFile.Path + string(filepath.Separator) + file.Path()
 	}
 
 	return file.Path()

@@ -2,11 +2,13 @@ package file
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"io/fs"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const zipSeparator = "\x00"
@@ -37,10 +39,6 @@ func ZipFile(zf *models.File, file *zip.File) SourceFile {
 		zipFile: zf,
 		file:    file,
 	}
-}
-
-func ZipFilename(zipFilename, filenameInZip string) string {
-	return zipFilename + zipSeparator + filenameInZip
 }
 
 // IsZipPath returns true if the path includes the zip separator byte,
@@ -88,4 +86,47 @@ func (i *zipFileReadCloser) Close() error {
 		return err
 	}
 	return err2
+}
+
+func WalkZip(path string, walkFunc func(file *zip.File) error) error {
+	readCloser, err := zip.OpenReader(path)
+	if err != nil {
+		return err
+	}
+	defer readCloser.Close()
+
+	for _, file := range readCloser.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+
+		err := walkFunc(file)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CountImagesInZip(path string, validExtensions []string) (int, error) {
+	ret := 0
+	err := WalkZip(path, func(file *zip.File) error {
+		if strings.Contains(file.Name, "__MACOSX") {
+			return nil
+		}
+
+		if !utils.MatchExtension(file.Name, validExtensions) {
+			return nil
+		}
+
+		ret++
+		return nil
+	})
+
+	if err != nil {
+		return ret, fmt.Errorf("walking zip: %w", err)
+	}
+
+	return ret, nil
 }

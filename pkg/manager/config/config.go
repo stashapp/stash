@@ -417,6 +417,15 @@ func (i *Instance) GetStashPaths() []*models.StashConfig {
 	return ret
 }
 
+func (i *Instance) GetStashFromPath(pathToCheck string) *models.StashConfig {
+	for _, s := range i.GetStashPaths() {
+		if utils.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
+			return s
+		}
+	}
+	return nil
+}
+
 func (i *Instance) GetCachePath() string {
 	return i.getString(Cache)
 }
