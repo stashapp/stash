@@ -3,15 +3,12 @@ package config
 import (
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -21,8 +18,6 @@ var (
 )
 
 type FlagStruct struct {
-	Host           net.IP
-	Port           int
 	ConfigFilePath string
 	CpuProfilePath string
 	NoBrowser      bool
@@ -38,11 +33,9 @@ func GetInstance() *Instance {
 	return instance
 }
 
-func Initialize(flags FlagStruct) (*Instance, error) {
+func Initialize(flags FlagStruct, overrides *viper.Viper) (*Instance, error) {
 	var err error
 	initOnce.Do(func() {
-		overrides := makeOverrideConfig()
-
 		_ = GetInstance()
 		instance.overrides = overrides
 		instance.cpuProfilePath = flags.CpuProfilePath
@@ -116,33 +109,4 @@ func initConfig(instance *Instance, flags FlagStruct) error {
 	}
 
 	return nil
-}
-
-func initEnvs(viper *viper.Viper) {
-	viper.SetEnvPrefix("stash")     // will be uppercased automatically
-	bindEnv(viper, "host")          // STASH_HOST
-	bindEnv(viper, "port")          // STASH_PORT
-	bindEnv(viper, "external_host") // STASH_EXTERNAL_HOST
-	bindEnv(viper, "generated")     // STASH_GENERATED
-	bindEnv(viper, "metadata")      // STASH_METADATA
-	bindEnv(viper, "cache")         // STASH_CACHE
-	bindEnv(viper, "stash")         // STASH_STASH
-}
-
-func bindEnv(viper *viper.Viper, key string) {
-	if err := viper.BindEnv(key); err != nil {
-		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
-	}
-}
-
-func makeOverrideConfig() *viper.Viper {
-	viper := viper.New()
-
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		logger.Infof("failed to bind flags: %s", err.Error())
-	}
-
-	initEnvs(viper)
-
-	return viper
 }

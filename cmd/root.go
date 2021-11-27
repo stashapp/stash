@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"embed"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/stashapp/stash/pkg/api"
 	"github.com/stashapp/stash/pkg/logger"
@@ -21,13 +23,16 @@ var (
 	uiBox      embed.FS
 	loginUIBox embed.FS
 	flags      config.FlagStruct
+	host       net.IP
+	port       int
+	conf       *viper.Viper
 
 	rootCmd = &cobra.Command{
 		Use:   "stash",
 		Short: "Stash - An organizer for your porn",
 		Long:  "Stash is an organizer for your porn, with search and watch functionality",
 		Run: func(cmd *cobra.Command, args []string) {
-			manager.Initialize(flags)
+			manager.Initialize(flags, conf)
 			api.Start(uiBox, loginUIBox)
 
 			// stop any profiling at exit
@@ -43,21 +48,44 @@ var (
 )
 
 func init() {
+	conf = viper.New()
 	cobra.OnInitialize(initConfig)
 
 	// Tell Cobra about our flags
-	rootCmd.PersistentFlags().IPVar(&flags.Host, "host", net.IPv4(0, 0, 0, 0), "ip address for the host")
-	rootCmd.PersistentFlags().IntVar(&flags.Port, "port", 9999, "port to serve from")
+	rootCmd.PersistentFlags().IPVar(&host, "host", net.IPv4(0, 0, 0, 0), "ip address for the host")
+	rootCmd.PersistentFlags().IntVar(&port, "port", 9999, "port to serve from")
 	rootCmd.PersistentFlags().StringVarP(&flags.ConfigFilePath, "config", "c", "", "config file to use")
 	rootCmd.PersistentFlags().StringVar(&flags.CpuProfilePath, "cpuprofile", "", "write cpu profile to file")
 	rootCmd.PersistentFlags().BoolVar(&flags.NoBrowser, "nobrowser", false, "don't open a browser window after launch")
 
 	// Bind the flags on the command line to viper
-	viper.BindPFlag("host", rootCmd.PersistentFlags().Lookup("host"))
-	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
-	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
-	viper.BindPFlag("cpuprofile", rootCmd.PersistentFlags().Lookup("cpuprofile"))
-	viper.BindPFlag("nobrowser", rootCmd.PersistentFlags().Lookup("nobrowser"))
+	bindPFlag(conf, "host", rootCmd.PersistentFlags().Lookup("host"))
+	bindPFlag(conf, "port", rootCmd.PersistentFlags().Lookup("port"))
+	bindPFlag(conf, "config", rootCmd.PersistentFlags().Lookup("config"))
+	bindPFlag(conf, "cpuprofile", rootCmd.PersistentFlags().Lookup("cpuprofile"))
+	bindPFlag(conf, "nobrowser", rootCmd.PersistentFlags().Lookup("nobrowser"))
+
+	// Bind to the environment as well
+	conf.SetEnvPrefix("stash")     // will be uppercased automatically
+	bindEnv(conf, "host")          // STASH_HOST
+	bindEnv(conf, "port")          // STASH_PORT
+	bindEnv(conf, "external_host") // STASH_EXTERNAL_HOST
+	bindEnv(conf, "generated")     // STASH_GENERATED
+	bindEnv(conf, "metadata")      // STASH_METADATA
+	bindEnv(conf, "cache")         // STASH_CACHE
+	bindEnv(conf, "stash")         // STASH_STASH
+}
+
+func bindPFlag(viper *viper.Viper, key string, flag *pflag.Flag) {
+	if err := viper.BindPFlag(key, flag); err != nil {
+		panic(fmt.Sprintf("unable to bind to pflag: %v", err))
+	}
+}
+
+func bindEnv(viper *viper.Viper, key string) {
+	if err := viper.BindEnv(key); err != nil {
+		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
+	}
 }
 
 func initConfig() {

@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -59,10 +60,10 @@ func GetInstance() *singleton {
 	return instance
 }
 
-func Initialize(flags config.FlagStruct) *singleton {
+func Initialize(flags config.FlagStruct, overrides *viper.Viper) *singleton {
 	once.Do(func() {
 		ctx := context.TODO()
-		cfg, err := config.Initialize(flags)
+		cfg, err := config.Initialize(flags, overrides)
 
 		if err != nil {
 			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
