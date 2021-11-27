@@ -289,14 +289,23 @@
     },
     "tasks": {
       "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
+      "auto_tag": {
+        "auto_tagging_all_paths": "為所有路徑自動套用標籤中",
+        "auto_tagging_paths": "為以下路徑自動套用標籤中"
+      },
       "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
       "auto_tagging": "自動套用標籤",
       "backing_up_database": "備份資料庫中",
       "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
       "backup_database": "將整個資料庫備份至與資料庫相同的目錄下，該匯出的名稱格式為 {filename_format}",
       "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。此動作具無法復原。",
+      "defaults_set": "已設定預設值；以後按下「{action}」按鈕時將會使用這些設定。",
       "dont_include_file_extension_as_part_of_the_title": "不要在標題中附上檔案副檔名",
       "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
+      "generate": {
+        "generating_from_paths": "為以下路徑之短片生成檔案中",
+        "generating_scenes": "為{num}個{scene}生成檔案中"
+      },
       "generate_desc": "產生輔助圖片、預覽、影片檔、VTT 字幕等檔案。",
       "generate_phashes_during_scan": "掃描時，順便產生 PHash（用於偵測重複的影片檔案及辨認短片）",
       "generate_previews_during_scan": "掃描時，順便產生圖像預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
@@ -332,6 +341,10 @@
       "migrations": "遷移",
       "only_dry_run": "僅模擬作業，不要刪除任何東西",
       "plugin_tasks": "插件排程",
+      "scan": {
+        "scanning_all_paths": "掃描所有路徑中",
+        "scanning_paths": "掃描以下路徑中"
+      },
       "scan_for_content_desc": "掃描新內容，並將其新增到資料庫中。",
       "set_name_date_details_from_metadata_if_present": "使用多媒體檔案中內建的標題、日期、詳細資訊（如果適用的話）"
     },
