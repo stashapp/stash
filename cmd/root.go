@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"net"
@@ -32,14 +33,19 @@ var (
 		Short: "Stash - An organizer for your porn",
 		Long:  "Stash is an organizer for your porn, with search and watch functionality",
 		Run: func(cmd *cobra.Command, args []string) {
-			manager.Initialize(flags, conf)
+			ctx := context.Background()
+			cfg, err := config.Initialize(flags, conf)
+			if err != nil {
+				panic(fmt.Sprintf("error initializing configuration: %s", err))
+			}
+			manager.Initialize(ctx, cfg)
 			api.Start(uiBox, loginUIBox)
 
 			// stop any profiling at exit
 			defer pprof.StopCPUProfile()
 			blockForever()
 
-			err := manager.GetInstance().Shutdown()
+			err = manager.GetInstance().Shutdown()
 			if err != nil {
 				logger.Errorf("Error when closing: %s", err)
 			}

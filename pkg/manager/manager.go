@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -60,15 +59,8 @@ func GetInstance() *singleton {
 	return instance
 }
 
-func Initialize(flags config.FlagStruct, overrides *viper.Viper) *singleton {
+func Initialize(ctx context.Context, cfg *config.Instance) *singleton {
 	once.Do(func() {
-		ctx := context.TODO()
-		cfg, err := config.Initialize(flags, overrides)
-
-		if err != nil {
-			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
-		}
-
 		initLog()
 		initProfiling(cfg.GetCPUProfilePath())
 
@@ -91,12 +83,9 @@ func Initialize(flags config.FlagStruct, overrides *viper.Viper) *singleton {
 		if !cfg.IsNewSystem() {
 			logger.Infof("using config file: %s", cfg.GetConfigFile())
 
-			if err == nil {
-				err = cfg.Validate()
-			}
-
+			err := cfg.Validate()
 			if err != nil {
-				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
+				panic(fmt.Sprintf("error initializing and validating configuration: %s", err.Error()))
 			} else if err := instance.PostInit(ctx); err != nil {
 				panic(err)
 			}
@@ -115,7 +104,7 @@ func Initialize(flags config.FlagStruct, overrides *viper.Viper) *singleton {
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
-		if err = initFFMPEG(); err != nil {
+		if err := initFFMPEG(); err != nil {
 			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 		}
 
