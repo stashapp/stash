@@ -42,20 +42,6 @@ func (g group) fragmentScraper(input Input) *scraperTypeConfig {
 	return nil
 }
 
-// scrapeFragmentInput analyzes the input and calls an appropriate scraperActionImpl
-func scrapeFragmentInput(ctx context.Context, input Input, s scraperActionImpl) (models.ScrapedContent, error) {
-	switch {
-	case input.Performer != nil:
-		return s.scrapePerformerByFragment(*input.Performer)
-	case input.Gallery != nil:
-		return s.scrapeGalleryByFragment(*input.Gallery)
-	case input.Scene != nil:
-		return s.scrapeSceneByFragment(ctx, *input.Scene)
-	}
-
-	return nil, ErrNotSupported
-}
-
 func (g group) viaFragment(ctx context.Context, client *http.Client, input Input) (models.ScrapedContent, error) {
 	stc := g.fragmentScraper(input)
 	if stc == nil {
@@ -70,7 +56,7 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 	}
 
 	s := g.config.getScraper(*stc, client, g.txnManager, g.globalConf)
-	return scrapeFragmentInput(ctx, input, s)
+	return s.scrapeByFragment(ctx, input)
 }
 
 func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
@@ -106,27 +92,12 @@ func loadUrlCandidates(c config, ty models.ScrapeContentType) []*scrapeByURLConf
 	panic("loadUrlCandidates: unreachable")
 }
 
-func scrapeByUrl(ctx context.Context, url string, s scraperActionImpl, ty models.ScrapeContentType) (models.ScrapedContent, error) {
-	switch ty {
-	case models.ScrapeContentTypePerformer:
-		return s.scrapePerformerByURL(ctx, url)
-	case models.ScrapeContentTypeScene:
-		return s.scrapeSceneByURL(ctx, url)
-	case models.ScrapeContentTypeMovie:
-		return s.scrapeMovieByURL(ctx, url)
-	case models.ScrapeContentTypeGallery:
-		return s.scrapeGalleryByURL(ctx, url)
-	}
-
-	panic("scrapeByUrl: unreachable")
-}
-
 func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
 			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.txnManager, g.globalConf)
-			ret, err := scrapeByUrl(ctx, url, s, ty)
+			ret, err := s.scrapeByURL(ctx, url, ty)
 			if err != nil {
 				return nil, err
 			}
@@ -148,30 +119,14 @@ func (g group) viaName(ctx context.Context, client *http.Client, name string, ty
 		}
 
 		s := g.config.getScraper(*g.config.PerformerByName, client, g.txnManager, g.globalConf)
-		performers, err := s.scrapePerformersByName(ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		content := make([]models.ScrapedContent, len(performers))
-		for i := range performers {
-			content[i] = performers[i]
-		}
-		return content, nil
+		return s.scrapeByName(ctx, name, ty)
 	case models.ScrapeContentTypeScene:
 		if g.config.SceneByName == nil {
 			break
 		}
 
 		s := g.config.getScraper(*g.config.SceneByName, client, g.txnManager, g.globalConf)
-		scenes, err := s.scrapeScenesByName(ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		content := make([]models.ScrapedContent, len(scenes))
-		for i := range scenes {
-			content[i] = scenes[i]
-		}
-		return content, nil
+		return s.scrapeByName(ctx, name, ty)
 	}
 
 	return nil, fmt.Errorf("%w: cannot load %v by name", ErrNotSupported, ty)

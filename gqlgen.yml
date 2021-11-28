@@ -14,6 +14,10 @@ resolver:
 struct_tag: gqlgen
 
 models:
+  # Scalars
+  Timestamp:
+    model: github.com/stashapp/stash/pkg/models.Timestamp
+  # Objects
   Gallery:
     model: github.com/stashapp/stash/pkg/models.Gallery
   Image:
