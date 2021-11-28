@@ -4,10 +4,10 @@
 <dict>
 	<key>CFBundleExecutable</key>
 	<string>stash</string>
-	<key>CFBundleIconFile</key>
+	<key>CFBundleIconName</key>
 	<string>stash.icns</string>
-	<key>CFBundleIdentifier</key>
-	<string>org.stashapp.Stash</string>
+	<key>CFBundleDisplayName</key>
+	<string>Stash</string>
 	<key>NSHighResolutionCapable</key>
 	<string>True</string>
 	<key>LSUIElement</key>

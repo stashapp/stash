@@ -3,7 +3,7 @@
 
 # Imagemagick, and go packages 2goarray and rsrc are required.
 # Copy a high-resolution stash-logo.png to this stash/scripts folder
-# and run this script from said folder and can commit the result.
+# and run this script from said folder, commit the result.
 
 if [ ! -f "stash-logo.png" ]; then
     echo "stash-logo.png not found."
@@ -29,19 +29,9 @@ if [ ! -e "$GOPATH/bin/rsrc" ]; then
     exit
 fi
 
-# Favicon, used for web and for windows executable icon
+# Favicon, used for web favicon, windows systray icon, windows executable icon
 convert stash-logo.png -define icon:auto-resize=256,64,48,32,16 favicon.ico
 cp favicon.ico ../ui/v2.5/public/
-
-# Linux / Macos 
-convert stash-logo.png -resize x256 favicon.png
-
-# Add icons for systray / notifications
-echo "//go:build linux || darwin" > ../pkg/desktop/favicon_unix.go
-echo "// +build linux darwin" >> ../pkg/desktop/favicon_unix.go
-echo >> ../pkg/desktop/favicon_unix.go
-"$GOPATH"/bin/2goarray favicon desktop < favicon.png >> ../pkg/desktop/favicon_unix.go
-
 echo "//go:build windows" > ../pkg/desktop/favicon_windows.go
 echo "// +build windows" >> ../pkg/desktop/favicon_windows.go
 echo >> ../pkg/desktop/favicon_windows.go
@@ -50,6 +40,21 @@ echo >> ../pkg/desktop/favicon_windows.go
 # Build .syso for Windows icon, consumed by linker while building stash-win.exe
 "$GOPATH"/bin/rsrc -ico favicon.ico -o icon_windows.syso
 mv icon_windows.syso ../pkg/desktop/
+
+# *nixes systray icon
+convert stash-logo.png -resize x256 favicon.png
+# Add icons for systray / notifications
+echo "//go:build linux || darwin" > ../pkg/desktop/favicon_unix.go
+echo "// +build linux darwin" >> ../pkg/desktop/favicon_unix.go
+echo >> ../pkg/desktop/favicon_unix.go
+"$GOPATH"/bin/2goarray favicon desktop < favicon.png >> ../pkg/desktop/favicon_unix.go
+
+
+# MacOS, used for bundle icon
+# https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
+# "By convention, this file takes the name of the bundle and an extension of .icns; the image format can be any supported type"
+convert stash-logo.png -resize x1024 macos.png
+mv macos.png macos-bundle/Contents/Resources/stash.icns
 
 # cleanup
 rm favicon.png favicon.ico
