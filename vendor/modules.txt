@@ -120,6 +120,9 @@ github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
+# github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb
+## explicit
+github.com/deckarep/gosx-notifier
 # github.com/disintegration/imaging v1.6.0
 ## explicit
 github.com/disintegration/imaging

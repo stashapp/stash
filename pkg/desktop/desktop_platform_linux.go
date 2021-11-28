@@ -1,12 +1,11 @@
-//go:build darwin || freebsd || linux
-// +build darwin freebsd linux
+//go:build linux
+// +build linux
 
 package desktop
 
 import (
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
 
 	"github.com/0xAX/notificator"
@@ -14,10 +13,7 @@ import (
 
 // isService checks if started by init, e.g. stash is a *nix systemd service
 func isService() bool {
-	if runtime.GOOS != "darwin" {
-		return os.Getppid() == 1
-	}
-	return false
+	return os.Getppid() == 1
 }
 
 func isServerDockerized() bool {

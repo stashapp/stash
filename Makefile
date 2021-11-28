@@ -95,7 +95,7 @@ cross-compile-macos:
 	cp -R scripts/macos-bundle dist/Stash.app
 	mkdir dist/Stash.app/Contents/MacOS
 	mv dist/stash-macos-universal dist/Stash.app/Contents/MacOS/stash
-	zip -r dist/Stash.app.zip dist/Stash.app
+	cd dist && zip -r Stash.app.zip Stash.app && cd ..
 	rm -rf dist/Stash.app
 
 cross-compile-linux: export GOOS := linux

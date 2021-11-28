@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/getlantern/systray"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 )
 
