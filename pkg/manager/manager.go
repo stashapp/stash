@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"runtime/pprof"
 	"strings"
 	"sync"
 	"time"
@@ -61,8 +60,6 @@ func GetInstance() *singleton {
 
 func Initialize(ctx context.Context, cfg *config.Instance) *singleton {
 	once.Do(func() {
-		initProfiling(cfg.GetCPUProfilePath())
-
 		instance = &singleton{
 			Config:        cfg,
 			JobManager:    job.NewManager(),
@@ -103,7 +100,7 @@ func Initialize(ctx context.Context, cfg *config.Instance) *singleton {
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
-		if err := initFFMPEG(); err != nil {
+		if err := initFFMPEG(ctx); err != nil {
 			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 		}
 
@@ -124,27 +121,7 @@ func initSecurity(cfg *config.Instance) {
 	}
 }
 
-func initProfiling(cpuProfilePath string) {
-	if cpuProfilePath == "" {
-		return
-	}
-
-	f, err := os.Create(cpuProfilePath)
-	if err != nil {
-		logger.Fatalf("unable to create cpu profile file: %s", err.Error())
-	}
-
-	logger.Infof("profiling to %s", cpuProfilePath)
-
-	// StopCPUProfile is defer called in main
-	if err = pprof.StartCPUProfile(f); err != nil {
-		logger.Warnf("could not start CPU profiling: %v", err)
-	}
-}
-
-func initFFMPEG() error {
-	ctx := context.TODO()
-
+func initFFMPEG(ctx context.Context) error {
 	// only do this if we have a config file set
 	if instance.Config.GetConfigFile() != "" {
 		// use same directory as config path
@@ -332,7 +309,7 @@ func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 
 	s.Config.FinalizeSetup()
 
-	if err := initFFMPEG(); err != nil {
+	if err := initFFMPEG(ctx); err != nil {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
 

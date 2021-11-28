@@ -31,7 +31,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "stash",
 		Short: "Stash - An organizer for your porn",
-		Long:  "Stash is an organizer for your porn, with search and watch functionality",
+		Long:  "Stash lets you curate, search, organize, and watch your porn",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
 			cfg, err := config.Initialize(flags, conf)
@@ -39,13 +39,14 @@ var (
 			if err != nil {
 				panic(fmt.Sprintf("error initializing configuration: %s", err))
 			}
+
+			initProfiling(cfg.GetCPUProfilePath())
+			defer pprof.StopCPUProfile()
+
 			manager.Initialize(ctx, cfg)
 			api.Start(uiBox, loginUIBox)
 
-			// stop any profiling at exit
-			defer pprof.StopCPUProfile()
 			blockForever()
-
 			err = manager.GetInstance().Shutdown()
 			if err != nil {
 				logger.Errorf("Error when closing: %s", err)
@@ -98,9 +99,22 @@ func bindEnv(viper *viper.Viper, key string) {
 func initConfig() {
 }
 
-func Execute(ui, login embed.FS) error {
-	uiBox, loginUIBox = ui, login
-	return rootCmd.Execute()
+func initProfiling(cpuProfilePath string) {
+	if cpuProfilePath == "" {
+		return
+	}
+
+	f, err := os.Create(cpuProfilePath)
+	if err != nil {
+		logger.Fatalf("unable to create cpu profile file: %s", err.Error())
+	}
+
+	logger.Infof("profiling to %s", cpuProfilePath)
+
+	// StopCPUProfile is defer called in main
+	if err = pprof.StartCPUProfile(f); err != nil {
+		logger.Warnf("could not start CPU profiling: %v", err)
+	}
 }
 
 func blockForever() {
@@ -109,4 +123,9 @@ func blockForever() {
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	<-signals
+}
+
+func Execute(ui, login embed.FS) error {
+	uiBox, loginUIBox = ui, login
+	return rootCmd.Execute()
 }
