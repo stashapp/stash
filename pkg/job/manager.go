@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -206,11 +207,12 @@ func (m *Manager) onJobFinish(job *Job) {
 	} else {
 		job.Status = StatusFinished
 	}
-	cleanDesc := strings.TrimRight(job.Description, ".")
-	desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished.")
-
 	t := time.Now()
 	job.EndTime = &t
+	cleanDesc := strings.TrimRight(job.Description, ".")
+	totalTime := strconv.FormatFloat(job.EndTime.Sub(*job.StartTime).Minutes(), 'f', 2, 64)
+	desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished. Took "+totalTime+" minutes.")
+
 }
 
 func (m *Manager) removeJob(job *Job) {
