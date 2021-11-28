@@ -61,7 +61,6 @@ func GetInstance() *singleton {
 
 func Initialize(ctx context.Context, cfg *config.Instance) *singleton {
 	once.Do(func() {
-		initLog()
 		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
@@ -179,11 +178,6 @@ func initFFMPEG() error {
 	}
 
 	return nil
-}
-
-func initLog() {
-	config := config.GetInstance()
-	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
 // PostInit initialises the paths, caches and txnManager after the initial

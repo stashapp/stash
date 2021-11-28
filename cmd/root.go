@@ -35,6 +35,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := context.Background()
 			cfg, err := config.Initialize(flags, conf)
+			logger.Init(cfg.GetLogFile(), cfg.GetLogOut(), cfg.GetLogLevel())
 			if err != nil {
 				panic(fmt.Sprintf("error initializing configuration: %s", err))
 			}
