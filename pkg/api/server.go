@@ -269,7 +269,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 func printVersion() {
 	versionString := githash
-	if manager.GetInstance().IsOfficialBuild() {
+	if config.IsOfficialBuild() {
 		versionString += " - Official Build"
 	} else {
 		versionString += " - Unofficial Build"

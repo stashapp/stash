@@ -26,7 +26,17 @@ func startSystray() {
 		}
 	}
 
-	systray.Run(systrayInitialize, nil)
+	// Listen for changes to rerender systray
+	go func() {
+		for {
+			<-config.GetInstance().GetConfigUpdatesChannel()
+			systray.Quit()
+		}
+	}()
+
+	for {
+		systray.Run(systrayInitialize, nil)
+	}
 }
 
 func systrayInitialize() {
@@ -56,6 +66,7 @@ func systrayInitialize() {
 		// TODO
 		// systray.AddMenuItem("Start a Scan", "Scan all libraries with default settings")
 		// systray.AddMenuItem("Start Auto Tagging", "Auto Tag all libraries")
+		// systray.AddMenuItem("Check for updates", "Check for a new Stash release")
 		// systray.AddSeparator()
 	}
 

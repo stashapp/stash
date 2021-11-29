@@ -89,21 +89,27 @@ func IsServerDockerized() bool {
 // package manager or if touching the executable is otherwise a bad idea
 func IsAllowedAutoUpdate() bool {
 
-	executablePath, err := os.Executable()
-	if err != nil {
-		logger.Errorf("Cannot get executable path: %s", err)
-		return false
-	}
-	executablePath, err = filepath.EvalSymlinks(executablePath)
-	if err != nil {
-		logger.Errorf("Cannot get executable path: %s", err)
+	// Only try to update if downloaded from official sources
+	if !config.IsOfficialBuild() {
 		return false
 	}
 
+	// Avoid updating if installed from package manager
 	if runtime.GOOS == "linux" {
+		executablePath, err := os.Executable()
+		if err != nil {
+			logger.Errorf("Cannot get executable path: %s", err)
+			return false
+		}
+		executablePath, err = filepath.EvalSymlinks(executablePath)
+		if err != nil {
+			logger.Errorf("Cannot get executable path: %s", err)
+			return false
+		}
 		if utils.IsPathInDir("/usr", executablePath) || utils.IsPathInDir("/opt", executablePath) {
 			return false
 		}
+
 		if isServerDockerized() {
 			return false
 		}

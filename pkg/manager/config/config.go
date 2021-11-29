@@ -21,6 +21,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var officialBuild string
+
 const (
 	Stash         = "stash"
 	Cache         = "cache"
@@ -216,6 +218,10 @@ func (s *StashBoxError) Error() string {
 	return "Stash-box: " + s.msg
 }
 
+func IsOfficialBuild() bool {
+	return officialBuild == "true"
+}
+
 type Instance struct {
 	// main instance - backed by config file
 	main *viper.Viper
@@ -226,6 +232,7 @@ type Instance struct {
 
 	cpuProfilePath string
 	isNewSystem    bool
+	configUpdates  chan int
 	certFile       string
 	keyFile        string
 	sync.RWMutex
@@ -279,11 +286,18 @@ func (i *Instance) GetNotificationsEnabled() bool {
 	return i.getBool(NotificationsEnabled)
 }
 
+func (i *Instance) GetConfigUpdatesChannel() chan int {
+	return i.configUpdates
+}
+
 func (i *Instance) GetShowOneTimeMovedNotification() bool {
 	return i.getBool(ShowOneTimeMovedNotification)
 }
 
 func (i *Instance) Set(key string, value interface{}) {
+	if key == MenuItems {
+		i.configUpdates <- 0
+	}
 	i.Lock()
 	defer i.Unlock()
 	i.main.Set(key, value)
@@ -1274,4 +1288,5 @@ func (i *Instance) setInitialConfig(write bool) error {
 
 func (i *Instance) FinalizeSetup() {
 	i.isNewSystem = false
+	i.configUpdates <- 0
 }
