@@ -51,6 +51,7 @@ type singleton struct {
 
 var instance *singleton
 var once sync.Once
+var officialBuild string
 
 func GetInstance() *singleton {
 	Initialize()
@@ -421,6 +422,10 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 		Status:         status,
 		ConfigPath:     &configFile,
 	}
+}
+
+func (s *singleton) IsOfficialBuild() bool {
+	return officialBuild == "true"
 }
 
 // Shutdown gracefully stops the manager

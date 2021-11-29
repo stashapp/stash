@@ -47,15 +47,15 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.officialBuild=$(OFFICIAL_BUILD)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/manager.officialBuild=$(OFFICIAL_BUILD)')
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)"
 
 # strips debug symbols from the release build
-build-release: EXTRA_LDFLAGS += -s -w
+build-release: EXTRA_LDFLAGS := -s -w
 build-release: GO_BUILD_FLAGS := -trimpath
 build-release: build
 
-build-release-static: EXTRA_LDFLAGS += -extldflags=-static -s -w
+build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
 build-release-static: GO_BUILD_FLAGS := -trimpath
 build-release-static: build
 
@@ -65,7 +65,7 @@ cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
-cross-compile-windows: EXTRA_LDFLAGS := -H windowsgui
+cross-compile-windows: PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
 cross-compile-windows: build-release-static
 
 cross-compile-macos-intel: export GOOS := darwin

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/0xAX/notificator"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // isService checks if started by init, e.g. stash is a *nix systemd service
@@ -27,7 +28,10 @@ func isServerDockerized() bool {
 }
 
 func sendNotification(notificationTitle string, notificationText string) {
-	notificator.New(notificator.Options{
+	err := notificator.New(notificator.Options{
 		AppName: "Stash",
 	}).Push(notificationTitle, notificationText, "", notificator.UR_NORMAL)
+	if err != nil {
+		logger.Errorf("Error sending notification on Linux: %s", err.Error())
+	}
 }
