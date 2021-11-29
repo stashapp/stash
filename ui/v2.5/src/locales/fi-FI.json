@@ -365,7 +365,7 @@
       },
       "delete_options": {
         "description": "Oletusasetukset kun poistetaan kuvia, gallerioita ja kohtauksia.",
-        "heading": "Poista valinnat",
+        "heading": "Poistovalinnat",
         "options": {
           "delete_file": "Poista tiedosto oletuksena",
           "delete_generated_supporting_files": "Poista generoidut tukitiedostot oletuksena"
