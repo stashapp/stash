@@ -289,14 +289,23 @@
     },
     "tasks": {
       "added_job_to_queue": "Aggiunto/a {operation_name} alla coda lavori",
+      "auto_tag": {
+        "auto_tagging_all_paths": "Taggare Automaticamente tutti i percorsi",
+        "auto_tagging_paths": "Taggare Automaticamente i seguenti percorsi"
+      },
       "auto_tag_based_on_filenames": "Tag automatico del contenuto basato sui nomi file.",
       "auto_tagging": "Tag Automatico",
       "backing_up_database": "Backup del database",
       "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
       "backup_database": "Esegue il backup del database nella stessa cartella del database, con il formato nome file {filename_format}",
       "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
+      "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
       "dont_include_file_extension_as_part_of_the_title": "Non includere l'estensione file come parte del titolo",
       "export_to_json": "Esporta il contenuto del database in formato JSON nella cartella metadati.",
+      "generate": {
+        "generating_from_paths": "Creando per le scene dai seguenti percorsi",
+        "generating_scenes": "Creando per {num} {scene}"
+      },
       "generate_desc": "Crea i file di supporto immagini, sprite, video, vtt e altri file.",
       "generate_phashes_during_scan": "Crea i phash durante la scansione (per deduplicazione e identificazione scene)",
       "generate_previews_during_scan": "Crea le anteprime immagini durante la scansione (anteprime animate WebP, sono richieste solo se il Tipo Anteprima è impostato su Immagine Animata)",
@@ -332,6 +341,10 @@
       "migrations": "Migrazioni",
       "only_dry_run": "Esegue solo una Dry Run. Non cancella niente",
       "plugin_tasks": "Attività Plugin",
+      "scan": {
+        "scanning_all_paths": "Scansione di tutti i percorsi",
+        "scanning_paths": "Scansione dei seguenti percorsi"
+      },
       "scan_for_content_desc": "Scansiona per cercare nuovo contenuto e lo aggiunge al database.",
       "set_name_date_details_from_metadata_if_present": "Imposta il nome, data e dettagli dai metadati (se presenti)"
     },
@@ -739,7 +752,7 @@
     "github_repository": "Github repository",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Percorsa per il file di backup del database (lasciare vuoto per disabilitare il backup):",
-      "backup_recommended": "E' raccomandato fare il backup del database esistente prima di migrare. Possiamo farlo per te, facendo una copia del tuo scrivendo un backup in <code>{defaultBackupPath}</code> se necessario.",
+      "backup_recommended": "È raccomandato fare il backup del database esistente prima di migrare. Possiamo farlo per te, facendo una copia del tuo scrivendo un backup in <code>{defaultBackupPath}</code> se necessario.",
       "migrating_database": "Migrando il database",
       "migration_failed": "Migrazione fallita",
       "migration_failed_error": "Il seguente errore è stato riscontrato mentre si migrava il database:",
@@ -777,7 +790,7 @@
     },
     "welcome": {
       "config_path_logic_explained": "Stash cerca di trovare il file di configurazione (<code>config.yml</code>) dall'attuale cartella di lavoro inizialmente e se non lo trova lì, cerca in <code>$HOME/.stash/config.yml</code> (sotto Windows, sarà <code>%USERPROFILE%\\.stash\\config.yml</code>). Potete far leggere a Stash un specifico file di configurazione lanciandolo con l'opzione <code>-c <percorso al file></code> o <code>--config <percorso al file></code>.",
-      "in_current_stash_directory": "Nella cartella <code>$HOME/.stash</code>.",
+      "in_current_stash_directory": "Nella cartella <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "Nell'attuale cartella di lavoro",
       "next_step": "Dopo tutto questo, se siete pronti a procedere con la configurazione di un nuovo sistema, scegliete dove vorreste salvare il file di configurazione e premete Prossimo.",
       "store_stash_config": "Dove volete salvare la vostra configurazione di Stash?",
@@ -824,6 +837,8 @@
     "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Salvato/a {entity}",
     "started_auto_tagging": "Inizato il tag automatico",
+    "started_generating": "Creazione iniziata",
+    "started_importing": "Importazione iniziata",
     "updated_entity": "Aggiornato/a {entity}"
   },
   "total": "Totale",
