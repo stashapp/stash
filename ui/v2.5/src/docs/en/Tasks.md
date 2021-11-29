@@ -2,15 +2,13 @@
 
 This page allows you to direct the stash server to perform a variety of tasks.
 
-> **⚠️ Note:** It is currently only possible to run one task at a time. No queuing is currently implemented.
-
 # Scanning
 
 The scan function walks through the stash directories you have configured for new and moved files. 
 
-Stash currently identifies files by performing a full MD5 hash on them. This means that if the file is renamed for moved elsewhere within your configured stash directories, then the scan will detect this and update its database accordingly.
+Stash currently identifies files by performing a quick file hash. This means that if the file is renamed for moved elsewhere within your configured stash directories, then the scan will detect this and update its database accordingly.
 
-Stash currently ignores duplicate files. If a file is detected with the same hash as a file already in the database (and that file still exists on the filesystem), then the duplicate file is ignored.
+Stash currently ignores duplicate files. If a file is detected with the same hash as a file already in the database (and that file still exists on the filesystem), only the last copy is used.
 
 The "Set name, data, details from metadata" option will parse the files metadata (where supported) and set the scene attributes accordingly. It has previously been noted that this information is frequently incorrect, so only use this option where you are certain that the metadata is correct in the files.
 
