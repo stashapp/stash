@@ -31,22 +31,6 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   return (
     <Form.Group>
       <Form.Check
-        id="use-file-metadata"
-        checked={useFileMetadata ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.set_name_date_details_from_metadata_if_present",
-        })}
-        onChange={() => setOptions({ useFileMetadata: !useFileMetadata })}
-      />
-      <Form.Check
-        id="strip-file-extension"
-        checked={stripFileExtension ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.dont_include_file_extension_as_part_of_the_title",
-        })}
-        onChange={() => setOptions({ stripFileExtension: !stripFileExtension })}
-      />
-      <Form.Check
         id="scan-generate-previews"
         checked={scanGeneratePreviews ?? false}
         label={intl.formatMessage({
@@ -102,6 +86,22 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         onChange={() =>
           setOptions({ scanGenerateThumbnails: !scanGenerateThumbnails })
         }
+      />
+      <Form.Check
+        id="strip-file-extension"
+        checked={stripFileExtension ?? false}
+        label={intl.formatMessage({
+          id: "config.tasks.dont_include_file_extension_as_part_of_the_title",
+        })}
+        onChange={() => setOptions({ stripFileExtension: !stripFileExtension })}
+      />
+      <Form.Check
+        id="use-file-metadata"
+        checked={useFileMetadata ?? false}
+        label={intl.formatMessage({
+          id: "config.tasks.set_name_date_details_from_metadata_if_present",
+        })}
+        onChange={() => setOptions({ useFileMetadata: !useFileMetadata })}
       />
     </Form.Group>
   );
