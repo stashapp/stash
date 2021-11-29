@@ -18,6 +18,7 @@ export default {
   ptBR,
   frFR,
   itIT,
+  fiFI,
   svSE,
   zhTW,
   zhCN,
