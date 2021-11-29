@@ -2,9 +2,10 @@ package models
 
 import (
 	"database/sql/driver"
+	"fmt"
+	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -33,14 +34,19 @@ func (t *SQLiteDate) Scan(value interface{}) error {
 
 // Value implements the driver Valuer interface.
 func (t SQLiteDate) Value() (driver.Value, error) {
+	if !t.Valid {
+		return nil, nil
+	}
+
+	s := strings.TrimSpace(t.String)
 	// handle empty string
-	if t.String == "" {
+	if s == "" {
 		return "", nil
 	}
 
-	result, err := utils.ParseDateStringAsFormat(t.String, "2006-01-02")
+	result, err := utils.ParseDateStringAsFormat(s, "2006-01-02")
 	if err != nil {
-		logger.Debugf("sqlite date conversion error: %s", err.Error())
+		return nil, fmt.Errorf("converting sqlite date %q: %w", s, err)
 	}
 	return result, nil
 }

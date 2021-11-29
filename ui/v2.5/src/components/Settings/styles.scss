@@ -161,3 +161,29 @@
     }
   }
 }
+
+.card.task-group {
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+
+  .task {
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid $dark-gray2;
+    }
+  }
+}
+
+.ellipsis-button {
+  .btn:first-child {
+    border-right: 1px solid $card-bg;
+  }
+
+  .btn:last-child {
+    border-left: 1px solid $card-bg;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+}

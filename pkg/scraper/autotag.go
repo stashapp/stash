@@ -46,15 +46,15 @@ func autotagMatchPerformers(path string, performerReader models.PerformerReader)
 }
 
 func autotagMatchStudio(path string, studioReader models.StudioReader) (*models.ScrapedStudio, error) {
-	st, err := match.PathToStudios(path, studioReader)
+	studio, err := match.PathToStudio(path, studioReader)
 	if err != nil {
 		return nil, fmt.Errorf("error matching studios: %w", err)
 	}
 
-	if len(st) > 0 {
-		id := strconv.Itoa(st[0].ID)
+	if studio != nil {
+		id := strconv.Itoa(studio.ID)
 		return &models.ScrapedStudio{
-			Name:     st[0].Name.String,
+			Name:     studio.Name.String,
 			StoredID: &id,
 		}, nil
 	}
