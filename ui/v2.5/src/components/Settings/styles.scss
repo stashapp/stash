@@ -1,3 +1,13 @@
+@include media-breakpoint-up(sm) {
+  #settings-menu-container {
+    position: fixed;
+  }
+}
+
+#settings-container .tab-content {
+  max-width: 780px;
+}
+
 .logs {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
