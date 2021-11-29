@@ -9,6 +9,7 @@
     "apply": "Apply",
     "auto_tag": "Auto Tag",
     "backup": "Backup",
+    "browse_for_image": "Browse for image…",
     "cancel": "Cancel",
     "clean": "Clean",
     "clear": "Clear",
@@ -16,6 +17,7 @@
     "clear_front_image": "Clear front image",
     "clear_image": "Clear Image",
     "close": "Close",
+    "confirm": "Confirm",
     "create": "Create",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
@@ -31,6 +33,7 @@
     "export": "Export…",
     "export_all": "Export all…",
     "find": "Find",
+    "finish": "Finish",
     "from_file": "From file…",
     "from_url": "From URL…",
     "full_export": "Full Export",
@@ -41,16 +44,20 @@
     "hash_migration": "hash migration",
     "hide": "Hide",
     "identify": "Identify",
+    "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
+    "next_action": "Next",
     "not_running": "not running",
+    "open_random": "Open Random",
     "overwrite": "Overwrite",
     "play_random": "Play Random",
     "play_selected": "Play selected",
     "preview": "Preview",
+    "previous_action": "Back",
     "refresh": "Refresh",
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
@@ -64,14 +71,13 @@
     "save_filter": "Save filter",
     "scan": "Scan",
     "scrape": "Scrape",
-    "scrape_with": "Scrape with…",
     "scrape_query": "Scrape query",
     "scrape_scene_fragment": "Scrape by fragment",
+    "scrape_with": "Scrape with…",
     "search": "Search",
     "select_all": "Select All",
+    "select_folders": "Select folders",
     "select_none": "Select None",
-    "selective_auto_tag": "Selective Auto Tag",
-    "selective_scan": "Selective Scan",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
@@ -86,16 +92,9 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
-    "view_random": "View Random",
-    "confirm": "Confirm",
-    "select_folders": "Select folders",
-    "browse_for_image": "Browse for image…",
-    "open_random": "Open Random",
-    "next_action": "Next",
-    "previous_action": "Back",
-    "finish": "Finish",
     "use_default": "Use default",
-    "ignore": "Ignore"
+    "view_random": "View Random",
+    "continue": "Continue"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -108,9 +107,6 @@
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
   "career_length": "Career Length",
-  "subsidiary_studios": "Subsidiary Studios",
-  "sub_tags": "Sub-Tags",
-  "sub_tag_count": "Sub-Tag Count",
   "component_tagger": {
     "config": {
       "active_instance": "Active stash-box instance:",
@@ -131,12 +127,14 @@
       "set_cover_label": "Set scene cover image",
       "set_tag_desc": "Attach tags to scene, either by overwriting or merging with existing tags on scene.",
       "set_tag_label": "Set tags",
-      "source": "Source",
       "show_male_desc": "Toggle whether male performers will be available to tag.",
-      "show_male_label": "Show male performers"
+      "show_male_label": "Show male performers",
+      "source": "Source"
     },
     "noun_query": "Query",
     "results": {
+      "duration_off": "Duration off by at least {number}s",
+      "duration_unknown": "Duration unknown",
       "fp_found": "{fpCount, plural, =0 {No new fingerprint matches found} other {# new fingerprint matches found}}",
       "fp_matches": "Duration is a match",
       "fp_matches_multi": "Duration matches {matchCount}/{durationsLength} fingerprint(s)",
@@ -144,10 +142,8 @@
       "match_failed_already_tagged": "Scene already tagged",
       "match_failed_no_result": "No results found",
       "match_success": "Scene successfully tagged",
-      "unnamed": "Unnamed",
-      "duration_off": "Duration off by at least {number}s",
-      "duration_unknown": "Duration unknown",
-      "phash_matches": "{count} PHashes match"
+      "phash_matches": "{count} PHashes match",
+      "unnamed": "Unnamed"
     },
     "verb_match_fp": "Match Fingerprints",
     "verb_matched": "Matched",
@@ -241,14 +237,16 @@
       "hashing": "Hashing",
       "image_ext_desc": "Comma-delimited list of file extensions that will be identified as images.",
       "image_ext_head": "Image Extensions",
+      "include_audio_desc": "Includes audio stream when generating previews.",
+      "include_audio_head": "Include audio",
       "logging": "Logging",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",
       "maximum_transcode_size_head": "Maximum transcode size",
       "metadata_path": {
-        "heading": "Metadata Path",
-        "description": "Directory location used when performing a full export or import"
+        "description": "Directory location used when performing a full export or import",
+        "heading": "Metadata Path"
       },
       "number_of_parallel_task_for_scan_generation_desc": "Set to 0 for auto-detection. Warning running more tasks than is required to achieve 100% cpu utilisation will decrease performance and potentially cause other issues.",
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
@@ -260,9 +258,7 @@
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video Extensions",
-      "video_head": "Video",
-      "include_audio_head": "Include audio",
-      "include_audio_desc": "Includes audio stream when generating previews."
+      "video_head": "Video"
     },
     "logs": {
       "log_level": "Log Level"
@@ -293,39 +289,48 @@
     },
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
+      "auto_tag": {
+        "auto_tagging_paths": "Auto Tagging the following paths",
+        "auto_tagging_all_paths": "Auto Tagging all paths"
+      },
       "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
       "backup_database": "Performs a backup of the database to the same directory as the database, with the filename format {filename_format}",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
+      "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
+      "generate": {
+        "generating_scenes": "Generating for {num} {scene}",
+        "generating_from_paths": "Generating for scenes from the following paths"
+      },
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
       "generate_phashes_during_scan": "Generate phashes during scan (for deduplication and scene identification)",
       "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
-      "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
       "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
+      "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
       "generated_content": "Generated Content",
       "identify": {
         "and_create_missing": "and create missing",
         "create_missing": "Create missing",
-        "heading": "Identify",
-        "description": "Automatically set scene metadata using stash-box and scraper sources.",
         "default_options": "Default Options",
+        "description": "Automatically set scene metadata using stash-box and scraper sources.",
         "explicit_set_description": "The following options will be used where not overridden in the source-specific options.",
+        "field": "Field",
         "field_behaviour": "{strategy} {field}",
         "field_options": "Field Options",
-        "identifying_scenes": "Identifying {num} {scene}",
+        "heading": "Identify",
         "identifying_from_paths": "Identifying scenes from the following paths",
+        "identifying_scenes": "Identifying {num} {scene}",
         "include_male_performers": "Include male performers",
         "set_cover_images": "Set cover images",
         "set_organized": "Set organised flag",
-        "source_options": "{source} Options",
         "source": "Source",
+        "source_options": "{source} Options",
         "sources": "Sources",
-        "field": "Field",
         "strategy": "Strategy"
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
@@ -336,6 +341,10 @@
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
       "plugin_tasks": "Plugin Tasks",
+      "scan": {
+        "scanning_paths": "Scanning the following paths",
+        "scanning_all_paths": "Scanning all paths"
+      },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from metadata (if present)"
     },
@@ -379,24 +388,24 @@
       },
       "editing": {
         "disable_dropdown_create": {
-          "heading": "Disable dropdown create",
-          "description": "Remove the ability to create new objects from the dropdown selectors"
+          "description": "Remove the ability to create new objects from the dropdown selectors",
+          "heading": "Disable dropdown create"
         },
         "heading": "Editing"
-      },
-      "handy_connection_key": {
-        "description": "Handy connection key to use for interactive scenes.",
-        "heading": "Handy Connection Key"
       },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
       },
+      "handy_connection_key": {
+        "description": "Handy connection key to use for interactive scenes.",
+        "heading": "Handy Connection Key"
+      },
       "images": {
         "options": {
           "write_image_thumbnails": {
-            "heading": "Write image thumbnails",
-            "description": "Write image thumbnails to disk when generated on-the-fly"
+            "description": "Write image thumbnails to disk when generated on-the-fly",
+            "heading": "Write image thumbnails"
           }
         }
       },
@@ -414,8 +423,8 @@
       "performers": {
         "options": {
           "image_location": {
-            "heading": "Custom Performer Image Path",
-            "description": "Custom path for default performer images. Leave empty to use in-built defaults"
+            "description": "Custom path for default performer images. Leave empty to use in-built defaults",
+            "heading": "Custom Performer Image Path"
           }
         }
       },
@@ -439,12 +448,12 @@
         "options": {
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
-            "heading": "Auto-start video when playing selected",
-            "description": "Auto-start scene videos when playing selected or random from Scenes page"
+            "description": "Auto-start scene videos when playing selected or random from Scenes page",
+            "heading": "Auto-start video when playing selected"
           },
           "continue_playlist_default": {
-            "heading": "Continue playlist by default",
-            "description": "Play next scene in queue when video finishes"
+            "description": "Play next scene in queue when video finishes",
+            "heading": "Continue playlist by default"
           }
         }
       },
@@ -463,8 +472,8 @@
     }
   },
   "configuration": "Configuration",
-  "continue": "Continue",
   "countables": {
+    "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
     "images": "{count, plural, one {Image} other {Images}}",
     "markers": "{count, plural, one {Marker} other {Markers}}",
@@ -472,8 +481,7 @@
     "performers": "{count, plural, one {Performer} other {Performers}}",
     "scenes": "{count, plural, one {Scene} other {Scenes}}",
     "studios": "{count, plural, one {Studio} other {Studios}}",
-    "tags": "{count, plural, one {Tag} other {Tags}}",
-    "files": "{count, plural, one {File} other {Files}}"
+    "tags": "{count, plural, one {Tag} other {Tags}}"
   },
   "country": "Country",
   "cover_image": "Cover Image",
@@ -484,6 +492,7 @@
     "value": "Value"
   },
   "criterion_modifier": {
+    "between": "between",
     "equals": "is",
     "excludes": "excludes",
     "format_string": "{criterion} {modifierString} {valueString}",
@@ -493,11 +502,10 @@
     "is_null": "is null",
     "less_than": "is less than",
     "matches_regex": "matches regex",
+    "not_between": "not between",
     "not_equals": "is not",
     "not_matches_regex": "not matches regex",
-    "not_null": "is not null",
-    "between": "between",
-    "not_between": "not between"
+    "not_null": "is not null"
   },
   "custom": "Custom",
   "date": "Date",
@@ -508,36 +516,38 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
+    "aliases_must_be_unique": "aliases must be unique",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
+    "delete_galleries_extra": "…plus any image files not attached to any other gallery.",
+    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery.",
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "delete_galleries_extra": "…plus any image files not attached to any other gallery.",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
     "lightbox": {
       "delay": "Delay (Sec)",
       "display_mode": {
-        "label": "Display Mode",
-        "original": "Original",
+        "fit_horizontally": "Fit horizontally",
         "fit_to_screen": "Fit to screen",
-        "fit_horizontally": "Fit horizontally"
+        "label": "Display Mode",
+        "original": "Original"
       },
       "options": "Options",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
-        "label": "Scale up to fit",
-        "description": "Scale smaller images up to fill screen"
+        "description": "Scale smaller images up to fill screen",
+        "label": "Scale up to fit"
       },
       "scroll_mode": {
+        "description": "Hold shift to temporarily use other mode.",
         "label": "Scroll Mode",
-        "zoom": "Zoom",
         "pan_y": "Pan Y",
-        "description": "Hold shift to temporarily use other mode."
+        "zoom": "Zoom"
       }
     },
     "merge_tags": {
@@ -547,9 +557,9 @@
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "markers": "Markers (20 second videos which begin at the given timecode)",
       "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
+      "markers": "Markers (20 second videos which begin at the given timecode)",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -573,9 +583,7 @@
     "scrape_results_existing": "Existing",
     "scrape_results_scraped": "Scraped",
     "set_image_url_title": "Image URL",
-    "unsaved_changes": "Unsaved changes. Are you sure you want to leave?",
-    "aliases_must_be_unique": "aliases must be unique",
-    "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery."
+    "unsaved_changes": "Unsaved changes. Are you sure you want to leave?"
   },
   "dimensions": "Dimensions",
   "director": "Director",
@@ -627,9 +635,9 @@
   "false": "False",
   "favourite": "Favourite",
   "file": "file",
-  "files": "files",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
+  "files": "files",
   "filesize": "File Size",
   "filter": "Filter",
   "filter_name": "Filter name",
@@ -692,27 +700,27 @@
   },
   "parent_of": "Parent of {children}",
   "parent_studios": "Parent Studios",
-  "parent_tags": "Parent Tags",
   "parent_tag_count": "Parent Tag Count",
+  "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
   "performer": "Performer",
+  "performerTags": "Performer Tags",
   "performer_count": "Performer Count",
   "performer_image": "Performer Image",
   "performers": "Performers",
-  "performerTags": "Performer Tags",
   "piercings": "Piercings",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
   "resolution": "Resolution",
   "scene": "Scene",
+  "sceneTagger": "Scene Tagger",
+  "sceneTags": "Scene Tags",
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
   "scenes_updated_at": "Scene Updated At",
-  "sceneTagger": "Scene Tagger",
-  "sceneTags": "Scene Tags",
   "search_filter": {
     "add_filter": "Add Filter",
     "name": "Filter",
@@ -721,13 +729,96 @@
   },
   "seconds": "Seconds",
   "settings": "Settings",
-  "sub_tag_of": "Sub-tag of {parent}",
+  "setup": {
+    "confirm": {
+      "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
+      "configuration_file_location": "Configuration file location:",
+      "database_file_path": "Database file path",
+      "default_db_location": "<path containing configuration file>/stash-go.sqlite",
+      "default_generated_content_location": "<path containing configuration file>/generated",
+      "generated_directory": "Generated directory",
+      "nearly_there": "Nearly there!",
+      "stash_library_directories": "Stash library directories"
+    },
+    "creating": {
+      "creating_your_system": "Creating your system",
+      "ffmpeg_notice": "If <code>ffmpeg</code> is not yet in your paths, please be patient while stash downloads it. View the console output to see download progress."
+    },
+    "errors": {
+      "something_went_wrong": "Oh no! Something went wrong!",
+      "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
+      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}"
+    },
+    "github_repository": "Github repository",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "Backup database path (leave empty to disable backup):",
+      "backup_recommended": "It is recommended that you backup your existing database before you migrate. We can do this for you, by making a copy of your database to <code>{defaultBackupPath}</code>.",
+      "migrating_database": "Migrating database",
+      "migration_failed": "Migration failed",
+      "migration_failed_error": "The following error was encountered while migrating the database:",
+      "migration_failed_help": "Please make any necessary corrections and try again. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
+      "migration_irreversible_warning": "The schema migration process is not reversible. Once the migration is performed, your database will be incompatible with previous versions of stash.",
+      "migration_required": "Migration required",
+      "perform_schema_migration": "Perform schema migration",
+      "schema_too_old": "Your current stash database is schema version <strong>{databaseSchema}</strong> and needs to be migrated to version <strong>{appSchema}</strong>. This version of Stash will not function without migrating the database."
+    },
+    "paths": {
+      "database_filename_empty_for_default": "database filename (empty for default)",
+      "description": "Next up, we need to determine where to find your porn collection, where to store the stash database and generated files. These settings can be changed later if needed.",
+      "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
+      "set_up_your_paths": "Set up your paths",
+      "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
+      "where_can_stash_store_its_database": "Where can Stash store its database?",
+      "where_can_stash_store_its_database_description": "Stash uses an sqlite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
+      "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
+      "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
+      "where_is_your_porn_located": "Where is your porn located?",
+      "where_is_your_porn_located_description": "Add directories containing your porn videos and images. Stash will use these directories to find videos and images during scanning."
+    },
+    "stash_setup_wizard": "Stash Setup Wizard",
+    "success": {
+      "getting_help": "Getting help",
+      "help_links": "If you run into issues or have any questions or suggestions, feel free to open an issue in the {githubLink}, or ask the community in the {discordLink}.",
+      "in_app_manual_explained": "You are encouraged to check out the in-app manual which can be accessed from the icon in the top-right corner of the screen that looks like this: {icon}",
+      "next_config_step_one": "You will be taken to the Configuration page next. This page will allow you to customize what files to include and exclude, set a username and password to protect your system, and a whole bunch of other options.",
+      "next_config_step_two": "When you are satisfied with these settings, you can begin scanning your content into Stash by clicking on <code>{localized_task}</code>, then <code>{localized_scan}</code>.",
+      "open_collective": "Check out our {open_collective_link} to see how you can contribute to the continued development of Stash.",
+      "support_us": "Support us",
+      "thanks_for_trying_stash": "Thanks for trying Stash!",
+      "welcome_contrib": "We also welcome contributions in the form of code (bug fixes, improvements and new features), testing, bug reports, improvement and feature requests, and user support. Details can be found in the Contribution section of the in-app manual.",
+      "your_system_has_been_created": "Success! Your system has been created!"
+    },
+    "welcome": {
+      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c <path to config file></code> or <code>--config <path to config file></code> options.",
+      "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory",
+      "in_the_current_working_directory": "In the current working directory",
+      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",
+      "store_stash_config": "Where do you want to store your Stash configuration?",
+      "unable_to_locate_config": "If you're reading this, then Stash couldn't find an existing configuration. This wizard will guide you through the process of setting up a new configuration.",
+      "unexpected_explained": "If you're getting this screen unexpectedly, please try restarting Stash in the correct working directory or with the <code>-c</code> flag."
+    },
+    "welcome_specific_config": {
+      "config_path": "Stash will use the following configuration file path: <code>{path}</code>",
+      "next_step": "When you're ready to proceed with setting up a new system, click Next.",
+      "unable_to_locate_specified_config": "If you're reading this, then Stash couldn't find the configuration file specified at the command line or the environment. This wizard will guide you through the process of setting up a new configuration."
+    },
+    "welcome_to_stash": "Welcome to Stash"
+  },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "stats": {
+    "image_size": "Images size",
+    "scenes_duration": "Scenes duration",
+    "scenes_size": "Scenes size"
+  },
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Levels (empty for all)",
   "studios": "Studios",
+  "sub_tag_count": "Sub-Tag Count",
+  "sub_tag_of": "Sub-tag of {parent}",
+  "sub_tags": "Sub-Tags",
+  "subsidiary_studios": "Subsidiary Studios",
   "synopsis": "Synopsis",
   "tag": "Tag",
   "tag_count": "Tag Count",
@@ -737,16 +828,18 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
-    "create_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
     "merged_tags": "Merged tags",
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
-    "started_auto_tagging": "Started auto tagging",
     "saved_entity": "Saved {entity}",
-    "updated_entity": "Updated {entity}"
+    "started_auto_tagging": "Started auto tagging",
+    "updated_entity": "Updated {entity}",
+    "started_generating": "Started generating",
+    "started_importing": "Started importing",
+    "created_entity": "Created {entity}"
   },
   "total": "Total",
   "true": "True",
@@ -755,85 +848,5 @@
   "updated_at": "Updated At",
   "url": "URL",
   "weight": "Weight",
-  "years_old": "years old",
-  "stats": {
-    "image_size": "Images size",
-    "scenes_size": "Scenes size",
-    "scenes_duration": "Scenes duration"
-  },
-  "setup": {
-    "github_repository": "Github repository",
-    "welcome_to_stash": "Welcome to Stash",
-    "welcome_specific_config": {
-      "unable_to_locate_specified_config": "If you're reading this, then Stash couldn't find the configuration file specified at the command line or the environment. This wizard will guide you through the process of setting up a new configuration.",
-      "config_path": "Stash will use the following configuration file path: <code>{path}</code>",
-      "next_step": "When you're ready to proceed with setting up a new system, click Next."
-    },
-    "welcome": {
-      "unable_to_locate_config": "If you're reading this, then Stash couldn't find an existing configuration. This wizard will guide you through the process of setting up a new configuration.",
-      "config_path_logic_explained": "Stash tries to find its configuration file (<code>config.yml</code>) from the current working directory first, and if it does not find it there, it falls back to <code>$HOME/.stash/config.yml</code> (on Windows, this will be <code>%USERPROFILE%\\.stash\\config.yml</code>). You can also make Stash read from a specific configuration file by running it with the <code>-c <path to config file></code> or <code>--config <path to config file></code> options.",
-      "unexpected_explained": "If you're getting this screen unexpectedly, please try restarting Stash in the correct working directory or with the <code>-c</code> flag.",
-      "next_step": "With all of that out of the way, if you're ready to proceed with setting up a new system, choose where you'd like to store your configuration file and click Next.",
-      "store_stash_config": "Where do you want to store your Stash configuration?",
-      "in_the_current_working_directory": "In the current working directory",
-      "in_current_stash_directory": "In the <code>$HOME/.stash</code> directory"
-    },
-    "paths": {
-      "set_up_your_paths": "Set up your paths",
-      "description": "Next up, we need to determine where to find your porn collection, where to store the stash database and generated files. These settings can be changed later if needed.",
-      "where_is_your_porn_located": "Where is your porn located?",
-      "where_is_your_porn_located_description": "Add directories containing your porn videos and images. Stash will use these directories to find videos and images during scanning.",
-      "where_can_stash_store_its_database": "Where can Stash store its database?",
-      "where_can_stash_store_its_database_description": "Stash uses an sqlite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
-      "database_filename_empty_for_default": "database filename (empty for default)",
-      "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
-      "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
-      "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
-      "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?"
-    },
-    "confirm": {
-      "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
-      "nearly_there": "Nearly there!",
-      "generated_directory": "Generated directory",
-      "database_file_path": "Database file path",
-      "stash_library_directories": "Stash library directories",
-      "configuration_file_location": "Configuration file location:",
-      "default_db_location": "<path containing configuration file>/stash-go.sqlite",
-      "default_generated_content_location": "<path containing configuration file>/generated"
-    },
-    "errors": {
-      "something_went_wrong": "Oh no! Something went wrong!",
-      "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}",
-      "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}."
-    },
-    "success": {
-      "your_system_has_been_created": "Success! Your system has been created!",
-      "next_config_step_one": "You will be taken to the Configuration page next. This page will allow you to customize what files to include and exclude, set a username and password to protect your system, and a whole bunch of other options.",
-      "next_config_step_two": "When you are satisfied with these settings, you can begin scanning your content into Stash by clicking on <code>{localized_task}</code>, then <code>{localized_scan}</code>.",
-      "thanks_for_trying_stash": "Thanks for trying Stash!",
-      "welcome_contrib": "We also welcome contributions in the form of code (bug fixes, improvements and new features), testing, bug reports, improvement and feature requests, and user support. Details can be found in the Contribution section of the in-app manual.",
-      "getting_help": "Getting help",
-      "in_app_manual_explained": "You are encouraged to check out the in-app manual which can be accessed from the icon in the top-right corner of the screen that looks like this: {icon}",
-      "help_links": "If you run into issues or have any questions or suggestions, feel free to open an issue in the {githubLink}, or ask the community in the {discordLink}.",
-      "open_collective": "Check out our {open_collective_link} to see how you can contribute to the continued development of Stash.",
-      "support_us": "Support us"
-    },
-    "creating": {
-      "creating_your_system": "Creating your system",
-      "ffmpeg_notice": "If <code>ffmpeg</code> is not yet in your paths, please be patient while stash downloads it. View the console output to see download progress."
-    },
-    "stash_setup_wizard": "Stash Setup Wizard",
-    "migrate": {
-      "migrating_database": "Migrating database",
-      "migration_failed": "Migration failed",
-      "migration_failed_error": "The following error was encountered while migrating the database:",
-      "migration_failed_help": "Please make any necessary corrections and try again. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
-      "migration_required": "Migration required",
-      "schema_too_old": "Your current stash database is schema version <strong>{databaseSchema}</strong> and needs to be migrated to version <strong>{appSchema}</strong>. This version of Stash will not function without migrating the database.",
-      "migration_irreversible_warning": "The schema migration process is not reversible. Once the migration is performed, your database will be incompatible with previous versions of stash.",
-      "backup_recommended": "It is recommended that you backup your existing database before you migrate. We can do this for you, making a copy of your writing a backup to <code>{defaultBackupPath}</code> if required.",
-      "backup_database_path_leave_empty_to_disable_backup": "Backup database path (leave empty to disable backup):",
-      "perform_schema_migration": "Perform schema migration"
-    }
-  }
+  "years_old": "years old"
 }

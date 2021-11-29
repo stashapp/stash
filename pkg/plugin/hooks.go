@@ -40,6 +40,7 @@ const (
 
 	TagCreatePost  HookTriggerEnum = "Tag.Create.Post"
 	TagUpdatePost  HookTriggerEnum = "Tag.Update.Post"
+	TagMergePost   HookTriggerEnum = "Tag.Merge.Post"
 	TagDestroyPost HookTriggerEnum = "Tag.Destroy.Post"
 )
 
@@ -74,6 +75,7 @@ var AllHookTriggerEnum = []HookTriggerEnum{
 
 	TagCreatePost,
 	TagUpdatePost,
+	TagMergePost,
 	TagDestroyPost,
 }
 

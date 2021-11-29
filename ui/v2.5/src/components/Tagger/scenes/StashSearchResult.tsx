@@ -4,7 +4,7 @@ import { Badge, Button, Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { uniq } from "lodash";
 import { blobToBase64 } from "base64-blob";
-import distance from "hamming-distance";
+import { distance } from "src/utils/hamming";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -655,7 +655,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
 export interface ISceneSearchResults {
   target: GQL.SlimSceneDataFragment;
-  scenes: GQL.ScrapedSceneDataFragment[];
+  scenes: IScrapedScene[];
 }
 
 export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
@@ -667,6 +667,8 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   useEffect(() => {
     if (!scenes) {
       setSelectedResult(undefined);
+    } else if (scenes.length > 0 && scenes[0].resolved) {
+      setSelectedResult(0);
     }
   }, [scenes]);
 

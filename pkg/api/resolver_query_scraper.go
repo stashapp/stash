@@ -6,53 +6,57 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
-// deprecated
-func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name string) (*models.ScrapedPerformer, error) {
-	scrapedPerformer := models.ScrapedPerformerInput{
-		Name: &performer_name,
-	}
-	return manager.GetInstance().ScraperCache.ScrapePerformer(scraper.FreeonesScraperID, scrapedPerformer)
+func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+	return r.scraperCache().ScrapeURL(ctx, url, ty)
 }
 
 // deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	scrapedPerformers, err := manager.GetInstance().ScraperCache.ScrapePerformerList(scraper.FreeonesScraperID, query)
+	content, err := r.scraperCache().ScrapeName(ctx, scraper.FreeonesScraperID, query, models.ScrapeContentTypePerformer)
 
 	if err != nil {
 		return nil, err
 	}
 
+	performers, err := marshalScrapedPerformers(content)
+	if err != nil {
+		return nil, err
+	}
+
 	var ret []string
-	for _, v := range scrapedPerformers {
-		if v.Name != nil {
-			ret = append(ret, *v.Name)
+	for _, p := range performers {
+		if p.Name != nil {
+			ret = append(ret, *p.Name)
 		}
 	}
 
 	return ret, nil
 }
 
+func (r *queryResolver) ListScrapers(ctx context.Context, types []models.ScrapeContentType) ([]*models.Scraper, error) {
+	return r.scraperCache().ListScrapers(types), nil
+}
+
 func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListPerformerScrapers(), nil
+	return r.scraperCache().ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypePerformer}), nil
 }
 
 func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListSceneScrapers(), nil
+	return r.scraperCache().ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypeScene}), nil
 }
 
 func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListGalleryScrapers(), nil
+	return r.scraperCache().ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypeGallery}), nil
 }
 
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
-	return manager.GetInstance().ScraperCache.ListMovieScrapers(), nil
+	return r.scraperCache().ListScrapers([]models.ScrapeContentType{models.ScrapeContentTypeMovie}), nil
 }
 
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
@@ -60,15 +64,29 @@ func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID strin
 		return nil, nil
 	}
 
-	return manager.GetInstance().ScraperCache.ScrapePerformerList(scraperID, query)
+	content, err := r.scraperCache().ScrapeName(ctx, scraperID, query, models.ScrapeContentTypePerformer)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedPerformers(content)
 }
 
 func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	return manager.GetInstance().ScraperCache.ScrapePerformer(scraperID, scrapedPerformer)
+	content, err := r.scraperCache().ScrapeFragment(ctx, scraperID, scraper.Input{Performer: &scrapedPerformer})
+	if err != nil {
+		return nil, err
+	}
+	return marshalScrapedPerformer(content)
 }
 
 func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
-	return manager.GetInstance().ScraperCache.ScrapePerformerURL(url)
+	content, err := r.scraperCache().ScrapeURL(ctx, url, models.ScrapeContentTypePerformer)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedPerformer(content)
 }
 
 func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, query string) ([]*models.ScrapedScene, error) {
@@ -76,50 +94,80 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 		return nil, nil
 	}
 
-	return manager.GetInstance().ScraperCache.ScrapeSceneQuery(scraperID, query)
+	content, err := r.scraperCache().ScrapeName(ctx, scraperID, query, models.ScrapeContentTypeScene)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedScenes(content)
 }
 
 func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
+		return nil, fmt.Errorf("%w: scene.ID is not an integer: '%s'", ErrInput, scene.ID)
+	}
+
+	content, err := r.scraperCache().ScrapeID(ctx, scraperID, id, models.ScrapeContentTypeScene)
+	if err != nil {
 		return nil, err
 	}
 
-	return manager.GetInstance().ScraperCache.ScrapeScene(scraperID, id)
+	return marshalScrapedScene(content)
 }
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
-	return manager.GetInstance().ScraperCache.ScrapeSceneURL(url)
+	content, err := r.scraperCache().ScrapeURL(ctx, url, models.ScrapeContentTypeScene)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedScene(content)
 }
 
 func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
 	id, err := strconv.Atoi(gallery.ID)
 	if err != nil {
+		return nil, fmt.Errorf("%w: gallery id is not an integer: '%s'", ErrInput, gallery.ID)
+	}
+
+	content, err := r.scraperCache().ScrapeID(ctx, scraperID, id, models.ScrapeContentTypeGallery)
+	if err != nil {
 		return nil, err
 	}
 
-	return manager.GetInstance().ScraperCache.ScrapeGallery(scraperID, id)
+	return marshalScrapedGallery(content)
 }
 
 func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
-	return manager.GetInstance().ScraperCache.ScrapeGalleryURL(url)
+	content, err := r.scraperCache().ScrapeURL(ctx, url, models.ScrapeContentTypeGallery)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedGallery(content)
 }
 
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
-	return manager.GetInstance().ScraperCache.ScrapeMovieURL(url)
+	content, err := r.scraperCache().ScrapeURL(ctx, url, models.ScrapeContentTypeMovie)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedMovie(content)
 }
 
 func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxSceneQueryInput) ([]*models.ScrapedScene, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
 	}
 
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	if len(input.SceneIds) > 0 {
-		return client.FindStashBoxScenesByFingerprintsFlat(input.SceneIds)
+		return client.FindStashBoxScenesByFingerprintsFlat(ctx, input.SceneIds)
 	}
 
 	if input.Q != nil {
@@ -133,17 +181,17 @@ func (r *queryResolver) QueryStashBoxPerformer(ctx context.Context, input models
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
 	}
 
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	if len(input.PerformerIds) > 0 {
-		return client.FindStashBoxPerformersByNames(input.PerformerIds)
+		return client.FindStashBoxPerformersByNames(ctx, input.PerformerIds)
 	}
 
 	if input.Q != nil {
-		return client.QueryStashBoxPerformer(*input.Q)
+		return client.QueryStashBoxPerformer(ctx, *input.Q)
 	}
 
 	return nil, nil
@@ -153,7 +201,7 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if index < 0 || index >= len(boxes) {
-		return nil, fmt.Errorf("invalid stash_box_index %d", index)
+		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, index)
 	}
 
 	return stashbox.NewClient(*boxes[index], r.txnManager), nil
@@ -161,7 +209,8 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleSceneInput) ([]*models.ScrapedScene, error) {
 	if source.ScraperID != nil {
-		var singleScene *models.ScrapedScene
+		var c models.ScrapedContent
+		var content []models.ScrapedContent
 		var err error
 
 		switch {
@@ -169,26 +218,24 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			var sceneID int
 			sceneID, err = strconv.Atoi(*input.SceneID)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("%w: sceneID is not an integer: '%s'", ErrInput, *input.SceneID)
 			}
-			singleScene, err = manager.GetInstance().ScraperCache.ScrapeScene(*source.ScraperID, sceneID)
+			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, sceneID, models.ScrapeContentTypeScene)
+			content = []models.ScrapedContent{c}
 		case input.SceneInput != nil:
-			singleScene, err = manager.GetInstance().ScraperCache.ScrapeSceneFragment(*source.ScraperID, *input.SceneInput)
+			c, err = r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Scene: input.SceneInput})
+			content = []models.ScrapedContent{c}
 		case input.Query != nil:
-			return manager.GetInstance().ScraperCache.ScrapeSceneQuery(*source.ScraperID, *input.Query)
+			content, err = r.scraperCache().ScrapeName(ctx, *source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
 		default:
-			err = errors.New("scene_id, scene_input or query must be set")
+			err = fmt.Errorf("%w: scene_id, scene_input, or query must be set", ErrInput)
 		}
 
 		if err != nil {
 			return nil, err
 		}
 
-		if singleScene != nil {
-			return []*models.ScrapedScene{singleScene}, nil
-		}
-
-		return nil, nil
+		return marshalScrapedScenes(content)
 	} else if source.StashBoxIndex != nil {
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
@@ -196,15 +243,15 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 		}
 
 		if input.SceneID != nil {
-			return client.FindStashBoxScenesByFingerprintsFlat([]string{*input.SceneID})
+			return client.FindStashBoxScenesByFingerprintsFlat(ctx, []string{*input.SceneID})
 		} else if input.Query != nil {
 			return client.QueryStashBoxScene(ctx, *input.Query)
 		}
 
-		return nil, errors.New("scene_id or query must be set")
+		return nil, fmt.Errorf("%w: scene_id or query must be set", ErrInput)
 	}
 
-	return nil, errors.New("scraper_id or stash_box_index must be set")
+	return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
 }
 
 func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiScenesInput) ([][]*models.ScrapedScene, error) {
@@ -216,7 +263,7 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.Scr
 			return nil, err
 		}
 
-		return client.FindStashBoxScenesByFingerprints(input.SceneIds)
+		return client.FindStashBoxScenesByFingerprints(ctx, input.SceneIds)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
@@ -225,20 +272,21 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.Scr
 func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSinglePerformerInput) ([]*models.ScrapedPerformer, error) {
 	if source.ScraperID != nil {
 		if input.PerformerInput != nil {
-			singlePerformer, err := manager.GetInstance().ScraperCache.ScrapePerformer(*source.ScraperID, *input.PerformerInput)
+			performer, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Performer: input.PerformerInput})
 			if err != nil {
 				return nil, err
 			}
 
-			if singlePerformer != nil {
-				return []*models.ScrapedPerformer{singlePerformer}, nil
-			}
-
-			return nil, nil
+			return marshalScrapedPerformers([]models.ScrapedContent{performer})
 		}
 
 		if input.Query != nil {
-			return manager.GetInstance().ScraperCache.ScrapePerformerList(*source.ScraperID, *input.Query)
+			content, err := r.scraperCache().ScrapeName(ctx, *source.ScraperID, *input.Query, models.ScrapeContentTypePerformer)
+			if err != nil {
+				return nil, err
+			}
+
+			return marshalScrapedPerformers(content)
 		}
 
 		return nil, ErrNotImplemented
@@ -251,9 +299,9 @@ func (r *queryResolver) ScrapeSinglePerformer(ctx context.Context, source models
 		var ret []*models.StashBoxPerformerQueryResult
 		switch {
 		case input.PerformerID != nil:
-			ret, err = client.FindStashBoxPerformersByNames([]string{*input.PerformerID})
+			ret, err = client.FindStashBoxPerformersByNames(ctx, []string{*input.PerformerID})
 		case input.Query != nil:
-			ret, err = client.QueryStashBoxPerformer(*input.Query)
+			ret, err = client.QueryStashBoxPerformer(ctx, *input.Query)
 		default:
 			return nil, ErrNotImplemented
 		}
@@ -281,45 +329,43 @@ func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source models
 			return nil, err
 		}
 
-		return client.FindStashBoxPerformersByPerformerNames(input.PerformerIds)
+		return client.FindStashBoxPerformersByPerformerNames(ctx, input.PerformerIds)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
 }
 
 func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleGalleryInput) ([]*models.ScrapedGallery, error) {
-	if source.ScraperID != nil {
-		var singleGallery *models.ScrapedGallery
-		var err error
-
-		switch {
-		case input.GalleryID != nil:
-			var galleryID int
-			galleryID, err = strconv.Atoi(*input.GalleryID)
-			if err != nil {
-				return nil, err
-			}
-			singleGallery, err = manager.GetInstance().ScraperCache.ScrapeGallery(*source.ScraperID, galleryID)
-		case input.GalleryInput != nil:
-			singleGallery, err = manager.GetInstance().ScraperCache.ScrapeGalleryFragment(*source.ScraperID, *input.GalleryInput)
-		default:
-			return nil, ErrNotImplemented
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		if singleGallery != nil {
-			return []*models.ScrapedGallery{singleGallery}, nil
-		}
-
-		return nil, nil
-	} else if source.StashBoxIndex != nil {
+	if source.StashBoxIndex != nil {
 		return nil, ErrNotSupported
 	}
 
-	return nil, errors.New("scraper_id must be set")
+	if source.ScraperID == nil {
+		return nil, fmt.Errorf("%w: scraper_id must be set", ErrInput)
+	}
+
+	var c models.ScrapedContent
+
+	switch {
+	case input.GalleryID != nil:
+		galleryID, err := strconv.Atoi(*input.GalleryID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: gallery id is not an integer: '%s'", ErrInput, *input.GalleryID)
+		}
+		c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, galleryID, models.ScrapeContentTypeGallery)
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedGalleries([]models.ScrapedContent{c})
+	case input.GalleryInput != nil:
+		c, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Gallery: input.GalleryInput})
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedGalleries([]models.ScrapedContent{c})
+	default:
+		return nil, ErrNotImplemented
+	}
 }
 
 func (r *queryResolver) ScrapeSingleMovie(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleMovieInput) ([]*models.ScrapedMovie, error) {

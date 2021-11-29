@@ -124,13 +124,14 @@ const (
 	WallShowTitle        = "wall_show_title"
 	defaultWallShowTitle = true
 
-	CustomPerformerImageLocation = "custom_performer_image_location"
-	MaximumLoopDuration          = "maximum_loop_duration"
-	AutostartVideo               = "autostart_video"
-	AutostartVideoOnPlaySelected = "autostart_video_on_play_selected"
-	ContinuePlaylistDefault      = "continue_playlist_default"
-	ShowStudioAsText             = "show_studio_as_text"
-	CSSEnabled                   = "cssEnabled"
+	CustomPerformerImageLocation        = "custom_performer_image_location"
+	MaximumLoopDuration                 = "maximum_loop_duration"
+	AutostartVideo                      = "autostart_video"
+	AutostartVideoOnPlaySelected        = "autostart_video_on_play_selected"
+	autostartVideoOnPlaySelectedDefault = true
+	ContinuePlaylistDefault             = "continue_playlist_default"
+	ShowStudioAsText                    = "show_studio_as_text"
+	CSSEnabled                          = "cssEnabled"
 
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
@@ -167,7 +168,11 @@ const (
 	LogAccess        = "logAccess"
 	defaultLogAccess = true
 
+	// Default settings
+	DefaultScanSettings     = "defaults.scan_task"
 	DefaultIdentifySettings = "defaults.identify_task"
+	DefaultAutoTagSettings  = "defaults.auto_tag_task"
+	DefaultGenerateSettings = "defaults.generate_task"
 
 	DeleteFileDefault             = "defaults.delete_file"
 	DeleteGeneratedDefault        = "defaults.delete_generated"
@@ -826,15 +831,18 @@ func (i *Instance) GetAutostartVideo() bool {
 func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
 	i.Lock()
 	defer i.Unlock()
-	viper.SetDefault(AutostartVideoOnPlaySelected, true)
-	return viper.GetBool(AutostartVideoOnPlaySelected)
+
+	ret := autostartVideoOnPlaySelectedDefault
+	v := i.viper(AutostartVideoOnPlaySelected)
+	if v.IsSet(AutostartVideoOnPlaySelected) {
+		ret = v.GetBool(AutostartVideoOnPlaySelected)
+	}
+
+	return ret
 }
 
 func (i *Instance) GetContinuePlaylistDefault() bool {
-	i.Lock()
-	defer i.Unlock()
-	viper.SetDefault(ContinuePlaylistDefault, false)
-	return viper.GetBool(ContinuePlaylistDefault)
+	return i.getBool(ContinuePlaylistDefault)
 }
 
 func (i *Instance) GetShowStudioAsText() bool {
@@ -941,6 +949,63 @@ func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOpti
 	if v.IsSet(DefaultIdentifySettings) {
 		var ret models.IdentifyMetadataTaskOptions
 		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultScanSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultScanSettings)
+
+	if v.IsSet(DefaultScanSettings) {
+		var ret models.ScanMetadataOptions
+		if err := v.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultAutoTagSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultAutoTagSettings() *models.AutoTagMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultAutoTagSettings)
+
+	if v.IsSet(DefaultAutoTagSettings) {
+		var ret models.AutoTagMetadataOptions
+		if err := v.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
+			return nil
+		}
+		return &ret
+	}
+
+	return nil
+}
+
+// GetDefaultGenerateSettings returns the default Scan task settings.
+// Returns nil if the settings could not be unmarshalled, or if it
+// has not been set.
+func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
+	i.RLock()
+	defer i.RUnlock()
+	v := i.viper(DefaultGenerateSettings)
+
+	if v.IsSet(DefaultGenerateSettings) {
+		var ret models.GenerateMetadataOptions
+		if err := v.UnmarshalKey(DefaultGenerateSettings, &ret); err != nil {
 			return nil
 		}
 		return &ret

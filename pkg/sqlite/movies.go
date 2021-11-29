@@ -145,9 +145,7 @@ func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	filter := qb.makeFilter(movieFilter)

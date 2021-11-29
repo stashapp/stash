@@ -46,7 +46,10 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/vektah/gqlparser/v2 v2.0.1
+require (
+	github.com/vearutop/statigz v1.1.6
+	github.com/vektah/gqlparser/v2 v2.0.1
+)
 
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect

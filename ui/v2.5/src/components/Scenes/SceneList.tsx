@@ -19,7 +19,7 @@ import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
-import { SceneGenerateDialog } from "./SceneGenerateDialog";
+import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
@@ -180,7 +180,7 @@ export const SceneList: React.FC<ISceneList> = ({
     if (isGenerateDialogOpen) {
       return (
         <>
-          <SceneGenerateDialog
+          <GenerateDialog
             selectedIds={Array.from(selectedIds.values())}
             onClose={() => {
               setIsGenerateDialogOpen(false);
