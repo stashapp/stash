@@ -127,6 +127,18 @@ func (qb *queryBuilder) join(table, as, onClause string) {
 		table:    table,
 		as:       as,
 		onClause: onClause,
+		joinType: "LEFT",
+	}
+
+	qb.joins.add(newJoin)
+}
+
+func (qb *queryBuilder) innerJoin(table, as, onClause string) {
+	newJoin := join{
+		table:    table,
+		as:       as,
+		onClause: onClause,
+		joinType: "RIGHT",
 	}
 
 	qb.joins.add(newJoin)
