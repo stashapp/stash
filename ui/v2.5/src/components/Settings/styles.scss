@@ -12,6 +12,47 @@
   &:not(:first-child) {
     margin-top: 1.5em;
   }
+
+  .card {
+    padding: 0;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .setting {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    width: 100%;
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0;
+    }
+
+    .sub-heading {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    > div:last-child {
+      min-width: 100px;
+      text-align: right;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #000;
+    }
+
+    .value {
+      font-family: "Courier New", Courier, monospace;
+      margin-bottom: 0.5rem;
+      margin-top: 0.5rem;
+    }
+  }
 }
 
 .logs {

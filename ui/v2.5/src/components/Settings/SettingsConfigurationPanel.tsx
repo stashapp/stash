@@ -16,6 +16,7 @@ import {
 import StashConfiguration from "./StashConfiguration";
 import { StringListInput } from "../Shared/StringListInput";
 import { SettingGroup } from "./SettingGroup";
+import { BooleanSetting, DialogSetting, SelectSetting } from "./Inputs";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
@@ -436,53 +437,29 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.library.media_content_extensions">
-        <Form.Group id="video-extensions">
-          <h6>
-            <FormattedMessage id="config.general.video_ext_head" />
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={videoExtensions}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setVideoExtensions(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.video_ext_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <DialogSetting
+          id="video-extensions"
+          headingID="config.general.video_ext_head"
+          subHeadingID="config.general.video_ext_desc"
+          value={videoExtensions}
+          onChange={() => {}}
+        />
 
-        <Form.Group id="image-extensions">
-          <h6>
-            <FormattedMessage id="config.general.image_ext_head" />
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={imageExtensions}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setImageExtensions(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.image_ext_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <DialogSetting
+          id="image-extensions"
+          headingID="config.general.image_ext_head"
+          subHeadingID="config.general.image_ext_desc"
+          value={imageExtensions}
+          onChange={() => {}}
+        />
 
-        <Form.Group id="gallery-extensions">
-          <h6>
-            {intl.formatMessage({ id: "config.general.gallery_ext_head" })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={galleryExtensions}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setGalleryExtensions(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.gallery_ext_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <DialogSetting
+          id="gallery-extensions"
+          headingID="config.general.gallery_ext_head"
+          subHeadingID="config.general.gallery_ext_desc"
+          value={galleryExtensions}
+          onChange={() => {}}
+        />
       </SettingGroup>
 
       <SettingGroup headingID="config.library.exclusions">
@@ -540,146 +517,87 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.library.gallery_and_image_options">
-        <Form.Group>
-          <Form.Check
-            id="create-galleries-from-folders"
-            checked={createGalleriesFromFolders}
-            label={intl.formatMessage({
-              id: "config.general.create_galleries_from_folders_label",
-            })}
-            onChange={() =>
-              setCreateGalleriesFromFolders(!createGalleriesFromFolders)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.create_galleries_from_folders_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="create-galleries-from-folders"
+          headingID="config.general.create_galleries_from_folders_label"
+          subHeadingID="config.general.create_galleries_from_folders_desc"
+          checked={createGalleriesFromFolders}
+          onChange={() =>
+            setCreateGalleriesFromFolders(!createGalleriesFromFolders)
+          }
+        />
 
-        <Form.Group>
-          <Form.Check
-            id="write-image-thumbnails"
-            checked={writeImageThumbnails}
-            label={intl.formatMessage({
-              id: "config.ui.images.options.write_image_thumbnails.heading",
-            })}
-            onChange={() => setWriteImageThumbnails(!writeImageThumbnails)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.images.options.write_image_thumbnails.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="write-image-thumbnails"
+          headingID="config.ui.images.options.write_image_thumbnails.heading"
+          subHeadingID="config.ui.images.options.write_image_thumbnails.description"
+          checked={writeImageThumbnails}
+          onChange={() => setWriteImageThumbnails(!writeImageThumbnails)}
+        />
       </SettingGroup>
 
       <SettingGroup headingID="config.general.hashing">
-        <Form.Group>
-          <Form.Check
-            id="calculate-md5-and-ohash"
-            checked={calculateMD5}
-            label={intl.formatMessage({
-              id: "config.general.calculate_md5_and_ohash_label",
-            })}
-            onChange={() => setCalculateMD5(!calculateMD5)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.calculate_md5_and_ohash_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="calculate-md5-and-ohash"
+          headingID="config.general.calculate_md5_and_ohash_label"
+          subHeadingID="config.general.calculate_md5_and_ohash_desc"
+          checked={calculateMD5}
+          onChange={() => setCalculateMD5(!calculateMD5)}
+        />
 
-        <Form.Group id="transcode-size">
-          <h6>
-            {intl.formatMessage({
-              id: "config.general.generated_file_naming_hash_head",
-            })}
-          </h6>
-
-          <Form.Control
-            className="w-auto input-control"
-            as="select"
-            value={namingHashToString(videoFileNamingAlgorithm)}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setVideoFileNamingAlgorithm(
-                translateNamingHash(e.currentTarget.value)
-              )
-            }
-          >
-            {namingHashAlgorithms.map((q) => (
-              <option key={q} value={q}>
-                {q}
-              </option>
-            ))}
-          </Form.Control>
-
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.generated_file_naming_hash_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <SelectSetting
+          id="generated_file_naming_hash"
+          headingID="config.general.generated_file_naming_hash_head"
+          subHeadingID="config.general.generated_file_naming_hash_desc"
+          value={namingHashToString(videoFileNamingAlgorithm)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setVideoFileNamingAlgorithm(
+              translateNamingHash(e.currentTarget.value)
+            )
+          }
+        >
+          {namingHashAlgorithms.map((q) => (
+            <option key={q} value={q}>
+              {q}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingGroup>
 
       <SettingGroup headingID="config.system.transcoding">
-        <h4>{intl.formatMessage({ id: "config.general.video_head" })}</h4>
-        <Form.Group id="transcode-size">
-          <h6>
-            {intl.formatMessage({
-              id: "config.general.maximum_transcode_size_head",
-            })}
-          </h6>
-          <Form.Control
-            className="w-auto input-control"
-            as="select"
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-              setMaxTranscodeSize(translateQuality(event.currentTarget.value))
-            }
-            value={resolutionToString(maxTranscodeSize)}
-          >
-            {transcodeQualities.map((q) => (
-              <option key={q} value={q}>
-                {q}
-              </option>
-            ))}
-          </Form.Control>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.maximum_transcode_size_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
-        <Form.Group id="streaming-transcode-size">
-          <h6>
-            {intl.formatMessage({
-              id: "config.general.maximum_streaming_transcode_size_head",
-            })}
-          </h6>
-          <Form.Control
-            className="w-auto input-control"
-            as="select"
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-              setMaxStreamingTranscodeSize(
-                translateQuality(event.currentTarget.value)
-              )
-            }
-            value={resolutionToString(maxStreamingTranscodeSize)}
-          >
-            {transcodeQualities.map((q) => (
-              <option key={q} value={q}>
-                {q}
-              </option>
-            ))}
-          </Form.Control>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.maximum_streaming_transcode_size_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <SelectSetting
+          id="transcode-size"
+          headingID="config.general.maximum_transcode_size_head"
+          subHeadingID="config.general.maximum_transcode_size_desc"
+          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+            setMaxTranscodeSize(translateQuality(event.currentTarget.value))
+          }
+          value={resolutionToString(maxTranscodeSize)}
+        >
+          {transcodeQualities.map((q) => (
+            <option key={q} value={q}>
+              {q}
+            </option>
+          ))}
+        </SelectSetting>
+
+        <SelectSetting
+          id="streaming-transcode-size"
+          headingID="config.general.maximum_streaming_transcode_size_head"
+          subHeadingID="config.general.maximum_streaming_transcode_size_desc"
+          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+            setMaxStreamingTranscodeSize(
+              translateQuality(event.currentTarget.value)
+            )
+          }
+          value={resolutionToString(maxStreamingTranscodeSize)}
+        >
+          {transcodeQualities.map((q) => (
+            <option key={q} value={q}>
+              {q}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingGroup>
 
       <SettingGroup headingID="config.general.parallel_scan_head">
@@ -710,47 +628,30 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.general.preview_generation">
-        <Form.Group id="transcode-size">
-          <h6>
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_preset_head",
-            })}
-          </h6>
-          <Form.Control
-            className="w-auto input-control"
-            as="select"
-            value={previewPreset}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setPreviewPreset(e.currentTarget.value)
-            }
-          >
-            {Object.keys(GQL.PreviewPreset).map((p) => (
-              <option value={p.toLowerCase()} key={p}>
-                {p}
-              </option>
-            ))}
-          </Form.Control>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_preset_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <SelectSetting
+          id="scene-gen-preview-preset"
+          headingID="dialogs.scene_gen.preview_preset_head"
+          subHeadingID="dialogs.scene_gen.preview_preset_desc"
+          value={previewPreset}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setPreviewPreset(e.currentTarget.value)
+          }
+        >
+          {Object.keys(GQL.PreviewPreset).map((p) => (
+            <option value={p.toLowerCase()} key={p}>
+              {p}
+            </option>
+          ))}
+        </SelectSetting>
 
         <Form.Group>
-          <Form.Check
+          <BooleanSetting
             id="preview-include-audio"
+            headingID="config.general.include_audio_head"
+            subHeadingID="config.general.include_audio_desc"
             checked={previewAudio}
-            label={intl.formatMessage({
-              id: "config.general.include_audio_head",
-            })}
             onChange={() => setPreviewAudio(!previewAudio)}
           />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.include_audio_desc",
-            })}
-          </Form.Text>
         </Form.Group>
 
         <Form.Group id="preview-segments">
@@ -964,50 +865,37 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group>
-          <Form.Check
+          <BooleanSetting
             id="log-terminal"
+            headingID="config.general.auth.log_to_terminal"
+            subHeadingID="config.general.auth.log_to_terminal_desc"
             checked={logOut}
-            label={intl.formatMessage({
-              id: "config.general.auth.log_to_terminal",
-            })}
             onChange={() => setLogOut(!logOut)}
           />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.auth.log_to_terminal_desc",
-            })}
-          </Form.Text>
         </Form.Group>
 
-        <Form.Group id="log-level">
-          <h6>{intl.formatMessage({ id: "config.logs.log_level" })}</h6>
-          <Form.Control
-            className="col col-sm-6 input-control"
-            as="select"
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-              setLogLevel(event.currentTarget.value)
-            }
-            value={logLevel}
-          >
-            {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+        <SelectSetting
+          id="log-level"
+          headingID="config.logs.log_level"
+          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+            setLogLevel(event.currentTarget.value)
+          }
+          value={logLevel}
+        >
+          {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </SelectSetting>
 
-        <Form.Group>
-          <Form.Check
-            id="log-http"
-            checked={logAccess}
-            label={intl.formatMessage({ id: "config.general.auth.log_http" })}
-            onChange={() => setLogAccess(!logAccess)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.auth.log_http_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="log-http"
+          headingID="config.general.auth.log_http"
+          subHeadingID="config.general.auth.log_http_desc"
+          checked={logAccess}
+          onChange={() => setLogAccess(!logAccess)}
+        />
       </SettingGroup>
 
       <hr />

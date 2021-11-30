@@ -12,6 +12,7 @@ import * as GQL from "src/core/generated-graphql";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { withoutTypename } from "src/utils";
 import { SettingGroup } from "../SettingGroup";
+import { BooleanSetting, SelectSetting } from "../Inputs";
 
 const allMenuItems = [
   { id: "scenes", label: "Scenes" },
@@ -161,29 +162,26 @@ export const SettingsInterfacePanel: React.FC = () => {
   return (
     <>
       <SettingGroup headingID="config.ui.interface.basic_settings">
-        <Form.Group controlId="language">
-          <h5>{intl.formatMessage({ id: "config.ui.language.heading" })}</h5>
-          <Form.Control
-            as="select"
-            className="col-4 input-control"
-            value={language}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setLanguage(e.currentTarget.value)
-            }
-          >
-            <option value="en-US">English (United States)</option>
-            <option value="en-GB">English (United Kingdom)</option>
-            <option value="es-ES">Spanish (Spain)</option>
-            <option value="de-DE">German (Germany)</option>
-            <option value="pt-BR">Portuguese (Brazil)</option>
-            <option value="fr-FR">French (France)</option>
-            <option value="it-IT">Italian (Italy)</option>
-            <option value="fi-FI">Finnish (Finland)</option>
-            <option value="sv-SE">Swedish (Sweden)</option>
-            <option value="zh-TW">繁體中文 (台灣)</option>
-            <option value="zh-CN">简体中文 (中国)</option>
-          </Form.Control>
-        </Form.Group>
+        <SelectSetting
+          id="language"
+          headingID="config.ui.language.heading"
+          value={language}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setLanguage(e.currentTarget.value)
+          }
+        >
+          <option value="en-US">English (United States)</option>
+          <option value="en-GB">English (United Kingdom)</option>
+          <option value="es-ES">Spanish (Spain)</option>
+          <option value="de-DE">German (Germany)</option>
+          <option value="pt-BR">Portuguese (Brazil)</option>
+          <option value="fr-FR">French (France)</option>
+          <option value="it-IT">Italian (Italy)</option>
+          <option value="fi-FI">Finnish (Finland)</option>
+          <option value="sv-SE">Swedish (Sweden)</option>
+          <option value="zh-TW">繁體中文 (台灣)</option>
+          <option value="zh-CN">简体中文 (中国)</option>
+        </SelectSetting>
 
         <Form.Group>
           <h5>{intl.formatMessage({ id: "config.ui.menu_items.heading" })}</h5>
@@ -200,50 +198,33 @@ export const SettingsInterfacePanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.desktop_integration.desktop_integration">
-        <Form.Group>
-          <Form.Check
-            id="skip-browser"
-            checked={noBrowser}
-            label={intl.formatMessage({
-              id: "config.ui.desktop_integration.skip_opening_browser",
-            })}
-            onChange={() => setNoBrowserFlag(!noBrowser)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id:
-                "config.ui.desktop_integration.skip_opening_browser_on_startup",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="skip-browser"
+          headingID="config.ui.desktop_integration.skip_opening_browser"
+          subHeadingID="config.ui.desktop_integration.skip_opening_browser_on_startup"
+          checked={noBrowser}
+          onChange={() => setNoBrowserFlag(!noBrowser)}
+        />
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.scene_wall.heading">
-        <Form.Check
+        <BooleanSetting
           id="wall-show-title"
+          headingID="config.ui.scene_wall.options.display_title"
           checked={wallShowTitle}
-          label={intl.formatMessage({
-            id: "config.ui.scene_wall.options.display_title",
-          })}
           onChange={() => setWallShowTitle(!wallShowTitle)}
         />
-        <Form.Check
+        <BooleanSetting
           id="wall-sound-enabled"
           checked={soundOnPreview}
-          label={intl.formatMessage({
-            id: "config.ui.scene_wall.options.toggle_sound",
-          })}
+          headingID="config.ui.scene_wall.options.toggle_sound"
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
-        <Form.Label htmlFor="wall-preview">
-          <h6>
-            {intl.formatMessage({ id: "config.ui.preview_type.heading" })}
-          </h6>
-        </Form.Label>
-        <Form.Control
-          as="select"
-          name="wall-preview"
-          className="col-4 input-control"
+
+        <SelectSetting
+          id="wall-preview"
+          headingID="config.ui.preview_type.heading"
+          subHeadingID="config.ui.preview_type.description"
           value={wallPlayback}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setWallPlayback(e.currentTarget.value)
@@ -262,19 +243,14 @@ export const SettingsInterfacePanel: React.FC = () => {
               id: "config.ui.preview_type.options.static",
             })}
           </option>
-        </Form.Control>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.ui.preview_type.description" })}
-        </Form.Text>
+        </SelectSetting>
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.scene_list.heading">
-        <Form.Check
+        <BooleanSetting
           id="show-text-studios"
           checked={showStudioAsText}
-          label={intl.formatMessage({
-            id: "config.ui.scene_list.options.show_studio_as_text",
-          })}
+          headingID="config.ui.scene_list.options.show_studio_as_text"
           onChange={() => {
             setShowStudioAsText(!showStudioAsText);
           }}
@@ -282,55 +258,33 @@ export const SettingsInterfacePanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.scene_player.heading">
-        <Form.Group>
-          <Form.Check
-            id="auto-start-video"
-            checked={autostartVideo}
-            label={intl.formatMessage({
-              id: "config.ui.scene_player.options.auto_start_video",
-            })}
-            onChange={() => {
-              setAutostartVideo(!autostartVideo);
-            }}
-          />
-        </Form.Group>
-        <Form.Group id="auto-start-video-on-play-selected">
-          <Form.Check
-            checked={autostartVideoOnPlaySelected}
-            label={intl.formatMessage({
-              id:
-                "config.ui.scene_player.options.auto_start_video_on_play_selected.heading",
-            })}
-            onChange={() => {
-              setAutostartVideoOnPlaySelected(!autostartVideoOnPlaySelected);
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id:
-                "config.ui.scene_player.options.auto_start_video_on_play_selected.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="auto-start-video"
+          checked={autostartVideo}
+          headingID="config.ui.scene_player.options.auto_start_video"
+          onChange={() => {
+            setAutostartVideo(!autostartVideo);
+          }}
+        />
+        <BooleanSetting
+          id="auto-start-video-on-play-selected"
+          checked={autostartVideoOnPlaySelected}
+          headingID="config.ui.scene_player.options.auto_start_video_on_play_selected.heading"
+          subHeadingID="config.ui.scene_player.options.auto_start_video_on_play_selected.description"
+          onChange={() => {
+            setAutostartVideoOnPlaySelected(!autostartVideoOnPlaySelected);
+          }}
+        />
 
-        <Form.Group id="continue-playlist-default">
-          <Form.Check
-            checked={continuePlaylistDefault}
-            label={intl.formatMessage({
-              id:
-                "config.ui.scene_player.options.continue_playlist_default.heading",
-            })}
-            onChange={() => {
-              setContinuePlaylistDefault(!continuePlaylistDefault);
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id:
-                "config.ui.scene_player.options.continue_playlist_default.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <BooleanSetting
+          id="continue-playlist-default"
+          checked={continuePlaylistDefault}
+          headingID="config.ui.scene_player.options.continue_playlist_default.heading"
+          subHeadingID="config.ui.scene_player.options.continue_playlist_default.description"
+          onChange={() => {
+            setContinuePlaylistDefault(!continuePlaylistDefault);
+          }}
+        />
 
         <Form.Group id="max-loop-duration">
           <h6>
@@ -373,8 +327,6 @@ export const SettingsInterfacePanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.editing.heading">
-        <h5>{intl.formatMessage({ id: "config.ui.editing.heading" })}</h5>
-
         <Form.Group>
           <h6>
             {intl.formatMessage({
@@ -431,12 +383,10 @@ export const SettingsInterfacePanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.custom_css.heading">
-        <Form.Check
+        <BooleanSetting
           id="custom-css"
           checked={cssEnabled}
-          label={intl.formatMessage({
-            id: "config.ui.custom_css.option_label",
-          })}
+          headingID="config.ui.custom_css.option_label"
           onChange={() => {
             setCSSEnabled(!cssEnabled);
           }}
@@ -497,32 +447,23 @@ export const SettingsInterfacePanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.ui.delete_options.heading">
-        <Form.Check
+        <BooleanSetting
           id="delete-file-default"
           checked={deleteFileDefault}
-          label={intl.formatMessage({
-            id: "config.ui.delete_options.options.delete_file",
-          })}
+          headingID="config.ui.delete_options.options.delete_file"
           onChange={() => {
             setDeleteFileDefault(!deleteFileDefault);
           }}
         />
-        <Form.Check
+        <BooleanSetting
           id="delete-generated-default"
           checked={deleteGeneratedDefault}
-          label={intl.formatMessage({
-            id:
-              "config.ui.delete_options.options.delete_generated_supporting_files",
-          })}
+          headingID="config.ui.delete_options.options.delete_generated_supporting_files"
+          subHeadingID="config.ui.delete_options.description"
           onChange={() => {
             setDeleteGeneratedDefault(!deleteGeneratedDefault);
           }}
         />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.ui.delete_options.description",
-          })}
-        </Form.Text>
       </SettingGroup>
 
       <hr />
