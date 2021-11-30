@@ -169,6 +169,23 @@ func (f *filterBuilder) addJoin(table, as, onClause string) {
 		table:    table,
 		as:       as,
 		onClause: onClause,
+		joinType: "LEFT",
+	}
+
+	f.joins.add(newJoin)
+}
+
+// addInnerJoin adds a join to the filter. The join is expressed in SQL as:
+// INNER JOIN <table> [AS <as>] ON <onClause>
+// The AS is omitted if as is empty.
+// This method does not add a join if it its alias/table name is already
+// present in another existing join.
+func (f *filterBuilder) addInnerJoin(table, as, onClause string) {
+	newJoin := join{
+		table:    table,
+		as:       as,
+		onClause: onClause,
+		joinType: "INNER",
 	}
 
 	f.joins.add(newJoin)
