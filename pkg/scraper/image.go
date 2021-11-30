@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func setPerformerImage(ctx context.Context, client *http.Client, p models.ScrapedPerformer, globalConfig GlobalConfig) error {
+func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
 	if p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
 		// nothing to do
 		return nil
@@ -29,7 +29,7 @@ func setPerformerImage(ctx context.Context, client *http.Client, p models.Scrape
 	return nil
 }
 
-func setSceneImage(ctx context.Context, client *http.Client, s models.ScrapedScene, globalConfig GlobalConfig) error {
+func setSceneImage(ctx context.Context, client *http.Client, s *models.ScrapedScene, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
 		// nothing to do
@@ -46,7 +46,7 @@ func setSceneImage(ctx context.Context, client *http.Client, s models.ScrapedSce
 	return nil
 }
 
-func setMovieFrontImage(ctx context.Context, client *http.Client, m models.ScrapedMovie, globalConfig GlobalConfig) error {
+func setMovieFrontImage(ctx context.Context, client *http.Client, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
 		// nothing to do
@@ -63,7 +63,7 @@ func setMovieFrontImage(ctx context.Context, client *http.Client, m models.Scrap
 	return nil
 }
 
-func setMovieBackImage(ctx context.Context, client *http.Client, m models.ScrapedMovie, globalConfig GlobalConfig) error {
+func setMovieBackImage(ctx context.Context, client *http.Client, m *models.ScrapedMovie, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
 		// nothing to do
