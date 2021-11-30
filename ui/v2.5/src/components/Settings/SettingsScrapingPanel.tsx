@@ -15,6 +15,7 @@ import { TextUtils } from "src/utils";
 import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 import { ScrapeType } from "src/core/generated-graphql";
 import { StringListInput } from "../Shared/StringListInput";
+import { SettingGroup } from "./SettingGroup";
 
 interface IURLList {
   urls: string[];
@@ -349,8 +350,7 @@ export const SettingsScrapingPanel: React.FC = () => {
 
   return (
     <>
-      <Form.Group>
-        <h4>{intl.formatMessage({ id: "config.general.scraping" })}</h4>
+      <SettingGroup headingID="config.general.scraping">
         <Form.Group id="scraperUserAgent">
           <h6>
             {intl.formatMessage({ id: "config.general.scraper_user_agent" })}
@@ -400,54 +400,52 @@ export const SettingsScrapingPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
 
-      <Form.Group>
-        <h6>
-          {intl.formatMessage({
-            id: "config.scraping.excluded_tag_patterns_head",
-          })}
-        </h6>
-        <StringListInput
-          className="w-50"
-          value={excludeTagPatterns}
-          setValue={setExcludeTagPatterns}
-          defaultNewValue="4K"
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.scraping.excluded_tag_patterns_desc",
-          })}
-        </Form.Text>
-      </Form.Group>
+        <Form.Group>
+          <h6>
+            {intl.formatMessage({
+              id: "config.scraping.excluded_tag_patterns_head",
+            })}
+          </h6>
+          <StringListInput
+            className="w-50"
+            value={excludeTagPatterns}
+            setValue={setExcludeTagPatterns}
+            defaultNewValue="4K"
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.scraping.excluded_tag_patterns_desc",
+            })}
+          </Form.Text>
+        </Form.Group>
 
-      <hr />
+        <Form.Group>
+          <Button variant="primary" onClick={() => onSave()}>
+            <FormattedMessage id="actions.save" />
+          </Button>
+        </Form.Group>
+      </SettingGroup>
 
-      <h4>{intl.formatMessage({ id: "config.scraping.scrapers" })}</h4>
+      <SettingGroup headingID="config.scraping.scrapers">
+        <div className="mb-3">
+          <Button onClick={() => onReloadScrapers()}>
+            <span className="fa-icon">
+              <Icon icon="sync-alt" />
+            </span>
+            <span>
+              <FormattedMessage id="actions.reload_scrapers" />
+            </span>
+          </Button>
+        </div>
 
-      <div className="mb-3">
-        <Button onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon="sync-alt" />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Button>
-      </div>
-
-      <div>
-        {renderSceneScrapers()}
-        {renderGalleryScrapers()}
-        {renderPerformerScrapers()}
-        {renderMovieScrapers()}
-      </div>
-
-      <hr />
-
-      <Button variant="primary" onClick={() => onSave()}>
-        <FormattedMessage id="actions.save" />
-      </Button>
+        <div>
+          {renderSceneScrapers()}
+          {renderGalleryScrapers()}
+          {renderPerformerScrapers()}
+          {renderMovieScrapers()}
+        </div>
+      </SettingGroup>
     </>
   );
 };

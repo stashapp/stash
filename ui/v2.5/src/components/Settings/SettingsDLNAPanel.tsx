@@ -16,6 +16,7 @@ import {
 import { useToast } from "src/hooks";
 import { DurationInput, Icon, LoadingIndicator, Modal } from "../Shared";
 import { StringListInput } from "../Shared/StringListInput";
+import { SettingGroup } from "./SettingGroup";
 
 export const SettingsDLNAPanel: React.FC = () => {
   const intl = useIntl();
@@ -443,8 +444,7 @@ export const SettingsDLNAPanel: React.FC = () => {
           message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
         />
 
-        <Form.Group>
-          <h5>{intl.formatMessage({ id: "settings" })}</h5>
+        <SettingGroup headingID="settings">
           <Form.Group>
             <Form.Label>
               {intl.formatMessage({ id: "config.dlna.server_display_name" })}
@@ -508,7 +508,7 @@ export const SettingsDLNAPanel: React.FC = () => {
               )}
             </Form.Text>
           </Form.Group>
-        </Form.Group>
+        </SettingGroup>
 
         <hr />
 
@@ -532,9 +532,7 @@ export const SettingsDLNAPanel: React.FC = () => {
         </h5>
       </Form.Group>
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "actions_name" })}</h5>
-
+      <SettingGroup headingID="actions_name">
         <Form.Group>
           {renderEnableButton()}
           {renderTempCancelButton()}
@@ -553,9 +551,7 @@ export const SettingsDLNAPanel: React.FC = () => {
             </Button>
           </Form.Group>
         </Form.Group>
-      </Form.Group>
-
-      <hr />
+      </SettingGroup>
 
       <Formik
         initialValues={initialValues}

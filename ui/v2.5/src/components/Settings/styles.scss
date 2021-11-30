@@ -8,6 +8,12 @@
   max-width: 780px;
 }
 
+.setting-group {
+  &:not(:first-child) {
+    margin-top: 1.5em;
+  }
+}
+
 .logs {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

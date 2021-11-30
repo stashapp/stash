@@ -11,6 +11,7 @@ import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { withoutTypename } from "src/utils";
+import { SettingGroup } from "../SettingGroup";
 
 const allMenuItems = [
   { id: "scenes", label: "Scenes" },
@@ -159,69 +160,65 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   return (
     <>
-      <h4>{intl.formatMessage({ id: "config.ui.title" })}</h4>
-      <Form.Group controlId="language">
-        <h5>{intl.formatMessage({ id: "config.ui.language.heading" })}</h5>
-        <Form.Control
-          as="select"
-          className="col-4 input-control"
-          value={language}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setLanguage(e.currentTarget.value)
-          }
-        >
-          <option value="en-US">English (United States)</option>
-          <option value="en-GB">English (United Kingdom)</option>
-          <option value="es-ES">Spanish (Spain)</option>
-          <option value="de-DE">German (Germany)</option>
-          <option value="pt-BR">Portuguese (Brazil)</option>
-          <option value="fr-FR">French (France)</option>
-          <option value="it-IT">Italian (Italy)</option>
-          <option value="fi-FI">Finnish (Finland)</option>
-          <option value="sv-SE">Swedish (Sweden)</option>
-          <option value="zh-TW">繁體中文 (台灣)</option>
-          <option value="zh-CN">简体中文 (中国)</option>
-        </Form.Control>
-      </Form.Group>
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.ui.menu_items.heading" })}</h5>
-        <CheckboxGroup
-          groupId="menu-items"
-          items={allMenuItems}
-          checkedIds={menuItemIds}
-          onChange={setMenuItemIds}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.ui.menu_items.description" })}
-        </Form.Text>
-      </Form.Group>
+      <SettingGroup headingID="config.ui.interface.basic_settings">
+        <Form.Group controlId="language">
+          <h5>{intl.formatMessage({ id: "config.ui.language.heading" })}</h5>
+          <Form.Control
+            as="select"
+            className="col-4 input-control"
+            value={language}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setLanguage(e.currentTarget.value)
+            }
+          >
+            <option value="en-US">English (United States)</option>
+            <option value="en-GB">English (United Kingdom)</option>
+            <option value="es-ES">Spanish (Spain)</option>
+            <option value="de-DE">German (Germany)</option>
+            <option value="pt-BR">Portuguese (Brazil)</option>
+            <option value="fr-FR">French (France)</option>
+            <option value="it-IT">Italian (Italy)</option>
+            <option value="fi-FI">Finnish (Finland)</option>
+            <option value="sv-SE">Swedish (Sweden)</option>
+            <option value="zh-TW">繁體中文 (台灣)</option>
+            <option value="zh-CN">简体中文 (中国)</option>
+          </Form.Control>
+        </Form.Group>
 
-      <hr />
+        <Form.Group>
+          <h5>{intl.formatMessage({ id: "config.ui.menu_items.heading" })}</h5>
+          <CheckboxGroup
+            groupId="menu-items"
+            items={allMenuItems}
+            checkedIds={menuItemIds}
+            onChange={setMenuItemIds}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({ id: "config.ui.menu_items.description" })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
-      <h4>
-        {intl.formatMessage({
-          id: "config.ui.desktop_integration.desktop_integration",
-        })}
-      </h4>
-      <Form.Group>
-        <Form.Check
-          id="skip-browser"
-          checked={noBrowser}
-          label={intl.formatMessage({
-            id: "config.ui.desktop_integration.skip_opening_browser",
-          })}
-          onChange={() => setNoBrowserFlag(!noBrowser)}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.ui.desktop_integration.skip_opening_browser_on_startup",
-          })}
-        </Form.Text>
-      </Form.Group>
-      <hr />
+      <SettingGroup headingID="config.ui.desktop_integration.desktop_integration">
+        <Form.Group>
+          <Form.Check
+            id="skip-browser"
+            checked={noBrowser}
+            label={intl.formatMessage({
+              id: "config.ui.desktop_integration.skip_opening_browser",
+            })}
+            onChange={() => setNoBrowserFlag(!noBrowser)}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id:
+                "config.ui.desktop_integration.skip_opening_browser_on_startup",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.ui.scene_wall.heading" })}</h5>
+      <SettingGroup headingID="config.ui.scene_wall.heading">
         <Form.Check
           id="wall-show-title"
           checked={wallShowTitle}
@@ -269,10 +266,9 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.ui.preview_type.description" })}
         </Form.Text>
-      </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.ui.scene_list.heading" })}</h5>
+      <SettingGroup headingID="config.ui.scene_list.heading">
         <Form.Check
           id="show-text-studios"
           checked={showStudioAsText}
@@ -283,10 +279,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             setShowStudioAsText(!showStudioAsText);
           }}
         />
-      </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.ui.scene_player.heading" })}</h5>
+      <SettingGroup headingID="config.ui.scene_player.heading">
         <Form.Group>
           <Form.Check
             id="auto-start-video"
@@ -352,28 +347,32 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
+      </SettingGroup>
 
-      <Form.Group id="slideshow-delay">
-        <h5>
-          {intl.formatMessage({ id: "config.ui.slideshow_delay.heading" })}
-        </h5>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          type="number"
-          value={slideshowDelay / SECONDS_TO_MS}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setSlideshowDelay(
-              Number.parseInt(e.currentTarget.value, 10) * SECONDS_TO_MS
-            );
-          }}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.ui.slideshow_delay.description" })}
-        </Form.Text>
-      </Form.Group>
+      <SettingGroup headingID="config.ui.images">
+        <Form.Group id="slideshow-delay">
+          <h5>
+            {intl.formatMessage({ id: "config.ui.slideshow_delay.heading" })}
+          </h5>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={slideshowDelay / SECONDS_TO_MS}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setSlideshowDelay(
+                Number.parseInt(e.currentTarget.value, 10) * SECONDS_TO_MS
+              );
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.slideshow_delay.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
+      <SettingGroup headingID="config.ui.editing.heading">
         <h5>{intl.formatMessage({ id: "config.ui.editing.heading" })}</h5>
 
         <Form.Group>
@@ -429,10 +428,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.ui.custom_css.heading" })}</h5>
+      <SettingGroup headingID="config.ui.custom_css.heading">
         <Form.Check
           id="custom-css"
           checked={cssEnabled}
@@ -456,46 +454,49 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.ui.custom_css.description" })}
         </Form.Text>
-      </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h5>
-          {intl.formatMessage({ id: "config.ui.handy_connection_key.heading" })}
-        </h5>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          value={handyKey}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setHandyKey(e.currentTarget.value);
-          }}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.ui.handy_connection_key.description",
-          })}
-        </Form.Text>
-      </Form.Group>
-      <Form.Group>
-        <h5>
-          {intl.formatMessage({ id: "config.ui.funscript_offset.heading" })}
-        </h5>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          type="number"
-          value={funscriptOffset}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setFunscriptOffset(Number.parseInt(e.currentTarget.value, 10));
-          }}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.ui.funscript_offset.description" })}
-        </Form.Text>
-      </Form.Group>
+      <SettingGroup headingID="config.ui.interactive_scenes">
+        <Form.Group>
+          <h5>
+            {intl.formatMessage({
+              id: "config.ui.handy_connection_key.heading",
+            })}
+          </h5>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            value={handyKey}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setHandyKey(e.currentTarget.value);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.handy_connection_key.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+        <Form.Group>
+          <h5>
+            {intl.formatMessage({ id: "config.ui.funscript_offset.heading" })}
+          </h5>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={funscriptOffset}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setFunscriptOffset(Number.parseInt(e.currentTarget.value, 10));
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.funscript_offset.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h5>
-          {intl.formatMessage({ id: "config.ui.delete_options.heading" })}
-        </h5>
+      <SettingGroup headingID="config.ui.delete_options.heading">
         <Form.Check
           id="delete-file-default"
           checked={deleteFileDefault}
@@ -522,7 +523,7 @@ export const SettingsInterfacePanel: React.FC = () => {
             id: "config.ui.delete_options.description",
           })}
         </Form.Text>
-      </Form.Group>
+      </SettingGroup>
 
       <hr />
       <Button variant="primary" onClick={() => onSave()}>

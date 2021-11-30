@@ -15,6 +15,7 @@ import {
 } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
 import { StringListInput } from "../Shared/StringListInput";
+import { SettingGroup } from "./SettingGroup";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
@@ -329,23 +330,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   return (
     <>
-      <h4>
-        <FormattedMessage id="library" />
-      </h4>
-      <Form.Group>
-        <Form.Group id="stashes">
-          <h6>Stashes</h6>
-          <StashConfiguration
-            stashes={stashes}
-            setStashes={(s) => setStashes(s)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.directory_locations_to_your_content",
-            })}
-          </Form.Text>
-        </Form.Group>
+      <SettingGroup
+        headingID="library"
+        subHeadingID="config.general.directory_locations_to_your_content"
+      >
+        <StashConfiguration
+          stashes={stashes}
+          setStashes={(s) => setStashes(s)}
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "config.general.directory_locations_to_your_content",
+          })}
+        </Form.Text>
+      </SettingGroup>
 
+      <SettingGroup headingID="config.application_paths.heading">
         <Form.Group id="database-path">
           <h6>
             <FormattedMessage id="config.general.db_path_head" />
@@ -414,6 +414,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Text>
         </Form.Group>
 
+        <Form.Group>
+          <h6>
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.heading",
+            })}
+          </h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            value={customPerformerImageLocation}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setCustomPerformerImageLocation(e.currentTarget.value);
+            }}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.performers.options.image_location.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
+
+      <SettingGroup headingID="config.library.media_content_extensions">
         <Form.Group id="video-extensions">
           <h6>
             <FormattedMessage id="config.general.video_ext_head" />
@@ -461,7 +483,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             {intl.formatMessage({ id: "config.general.gallery_ext_desc" })}
           </Form.Text>
         </Form.Group>
+      </SettingGroup>
 
+      <SettingGroup headingID="config.library.exclusions">
         <Form.Group>
           <h6>
             {intl.formatMessage({
@@ -513,7 +537,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </a>
           </Form.Text>
         </Form.Group>
+      </SettingGroup>
 
+      <SettingGroup headingID="config.library.gallery_and_image_options">
         <Form.Group>
           <Form.Check
             id="create-galleries-from-folders"
@@ -531,12 +557,25 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
 
-      <hr />
+        <Form.Group>
+          <Form.Check
+            id="write-image-thumbnails"
+            checked={writeImageThumbnails}
+            label={intl.formatMessage({
+              id: "config.ui.images.options.write_image_thumbnails.heading",
+            })}
+            onChange={() => setWriteImageThumbnails(!writeImageThumbnails)}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.ui.images.options.write_image_thumbnails.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
-      <Form.Group>
-        <h4>{intl.formatMessage({ id: "config.general.hashing" })}</h4>
+      <SettingGroup headingID="config.general.hashing">
         <Form.Group>
           <Form.Check
             id="calculate-md5-and-ohash"
@@ -583,11 +622,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
+      </SettingGroup>
 
-      <hr />
-
-      <Form.Group>
+      <SettingGroup headingID="config.system.transcoding">
         <h4>{intl.formatMessage({ id: "config.general.video_head" })}</h4>
         <Form.Group id="transcode-size">
           <h6>
@@ -643,15 +680,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
+      </SettingGroup>
 
-      <hr />
-
-      <Form.Group>
-        <h4>
-          {intl.formatMessage({ id: "config.general.parallel_scan_head" })}
-        </h4>
-
+      <SettingGroup headingID="config.general.parallel_scan_head">
         <Form.Group id="parallel-tasks">
           <h6>
             {intl.formatMessage({
@@ -676,15 +707,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
+      </SettingGroup>
 
-      <hr />
-
-      <Form.Group>
-        <h4>
-          {intl.formatMessage({ id: "config.general.preview_generation" })}
-        </h4>
-
+      <SettingGroup headingID="config.general.preview_generation">
         <Form.Group id="transcode-size">
           <h6>
             {intl.formatMessage({
@@ -813,71 +838,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
+      </SettingGroup>
 
-      <hr />
-
-      <Form.Group>
-        <h4>{intl.formatMessage({ id: "images" })}</h4>
-
-        <Form.Group>
-          <Form.Check
-            id="write-image-thumbnails"
-            checked={writeImageThumbnails}
-            label={intl.formatMessage({
-              id: "config.ui.images.options.write_image_thumbnails.heading",
-            })}
-            onChange={() => setWriteImageThumbnails(!writeImageThumbnails)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.images.options.write_image_thumbnails.description",
-            })}
-          </Form.Text>
-        </Form.Group>
-      </Form.Group>
-
-      <hr />
-
-      <Form.Group>
-        <h4>{intl.formatMessage({ id: "performers" })}</h4>
-        <Form.Group>
-          <h6>
-            {intl.formatMessage({
-              id: "config.ui.performers.options.image_location.heading",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            value={customPerformerImageLocation}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setCustomPerformerImageLocation(e.currentTarget.value);
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.performers.options.image_location.description",
-            })}
-          </Form.Text>
-        </Form.Group>
-      </Form.Group>
-      <hr />
-
-      <Form.Group id="stashbox">
-        <h4>
-          {intl.formatMessage({
-            id: "config.general.auth.stash-box_integration",
-          })}
-        </h4>
+      <SettingGroup headingID="config.general.auth.stash-box_integration">
         <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
-      </Form.Group>
+      </SettingGroup>
 
-      <hr />
-
-      <Form.Group>
-        <h4>
-          {intl.formatMessage({ id: "config.general.auth.authentication" })}
-        </h4>
+      <SettingGroup headingID="config.general.auth.authentication">
         <Form.Group id="username">
           <h6>{intl.formatMessage({ id: "config.general.auth.username" })}</h6>
           <Form.Control
@@ -963,86 +930,85 @@ export const SettingsConfigurationPanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </Form.Group>
 
-      <Form.Group id="trusted-proxies">
-        <h6>
-          {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
-        </h6>
-        <StringListInput
-          value={trustedProxies ?? []}
-          setValue={(value) => setTrustedProxies(value)}
-          defaultNewValue=""
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.general.auth.trusted_proxies_desc",
-          })}
-        </Form.Text>
-      </Form.Group>
+        <Form.Group id="trusted-proxies">
+          <h6>
+            {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
+          </h6>
+          <StringListInput
+            value={trustedProxies ?? []}
+            setValue={(value) => setTrustedProxies(value)}
+            defaultNewValue=""
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.general.auth.trusted_proxies_desc",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
-      <hr />
+      <SettingGroup headingID="config.general.logging">
+        <Form.Group id="log-file">
+          <h6>{intl.formatMessage({ id: "config.general.auth.log_file" })}</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={logFile}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setLogFile(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({ id: "config.general.auth.log_file_desc" })}
+          </Form.Text>
+        </Form.Group>
 
-      <h4>{intl.formatMessage({ id: "config.general.logging" })}</h4>
-      <Form.Group id="log-file">
-        <h6>{intl.formatMessage({ id: "config.general.auth.log_file" })}</h6>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          defaultValue={logFile}
-          onInput={(e: React.FormEvent<HTMLInputElement>) =>
-            setLogFile(e.currentTarget.value)
-          }
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.general.auth.log_file_desc" })}
-        </Form.Text>
-      </Form.Group>
+        <Form.Group>
+          <Form.Check
+            id="log-terminal"
+            checked={logOut}
+            label={intl.formatMessage({
+              id: "config.general.auth.log_to_terminal",
+            })}
+            onChange={() => setLogOut(!logOut)}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "config.general.auth.log_to_terminal_desc",
+            })}
+          </Form.Text>
+        </Form.Group>
 
-      <Form.Group>
-        <Form.Check
-          id="log-terminal"
-          checked={logOut}
-          label={intl.formatMessage({
-            id: "config.general.auth.log_to_terminal",
-          })}
-          onChange={() => setLogOut(!logOut)}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.general.auth.log_to_terminal_desc",
-          })}
-        </Form.Text>
-      </Form.Group>
+        <Form.Group id="log-level">
+          <h6>{intl.formatMessage({ id: "config.logs.log_level" })}</h6>
+          <Form.Control
+            className="col col-sm-6 input-control"
+            as="select"
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+              setLogLevel(event.currentTarget.value)
+            }
+            value={logLevel}
+          >
+            {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
 
-      <Form.Group id="log-level">
-        <h6>{intl.formatMessage({ id: "config.logs.log_level" })}</h6>
-        <Form.Control
-          className="col col-sm-6 input-control"
-          as="select"
-          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-            setLogLevel(event.currentTarget.value)
-          }
-          value={logLevel}
-        >
-          {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </Form.Control>
-      </Form.Group>
-
-      <Form.Group>
-        <Form.Check
-          id="log-http"
-          checked={logAccess}
-          label={intl.formatMessage({ id: "config.general.auth.log_http" })}
-          onChange={() => setLogAccess(!logAccess)}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.general.auth.log_http_desc" })}
-        </Form.Text>
-      </Form.Group>
+        <Form.Group>
+          <Form.Check
+            id="log-http"
+            checked={logAccess}
+            label={intl.formatMessage({ id: "config.general.auth.log_http" })}
+            onChange={() => setLogAccess(!logAccess)}
+          />
+          <Form.Text className="text-muted">
+            {intl.formatMessage({ id: "config.general.auth.log_http_desc" })}
+          </Form.Text>
+        </Form.Group>
+      </SettingGroup>
 
       <hr />
 
