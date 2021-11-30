@@ -78,6 +78,8 @@
     "select_all": "Select All",
     "select_folders": "Select folders",
     "select_none": "Select None",
+    "selective_auto_tag": "Selective Auto Tag",
+    "selective_scan": "Selective Scan",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
@@ -299,6 +301,7 @@
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
       "backup_database": "Performs a backup of the database to the same directory as the database, with the filename format {filename_format}",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
+      "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
@@ -307,7 +310,7 @@
         "generating_from_paths": "Generating for scenes from the following paths"
       },
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
-      "generate_phashes_during_scan": "Generate phashes during scan (for deduplication and scene identification)",
+      "generate_phashes_during_scan": "Generate perceptual hashes during scan (for deduplication and scene identification)",
       "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
       "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
@@ -346,7 +349,7 @@
         "scanning_all_paths": "Scanning all paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
-      "set_name_date_details_from_metadata_if_present": "Set name, date, details from metadata (if present)"
+      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata (if present)"
     },
     "tools": {
       "scene_duplicate_checker": "Scene Duplicate Checker",

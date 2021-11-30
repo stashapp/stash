@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"testing"
 
 	"gopkg.in/yaml.v2"
@@ -81,7 +82,7 @@ jsonScrapers:
 		doc: json,
 	}
 
-	scrapedPerformer, err := performerScraper.scrapePerformer(q)
+	scrapedPerformer, err := performerScraper.scrapePerformer(context.Background(), q)
 	if err != nil {
 		t.Fatalf("Error scraping performer: %s", err.Error())
 	}
