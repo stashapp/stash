@@ -16,29 +16,19 @@ import {
 import StashConfiguration from "./StashConfiguration";
 import { StringListInput } from "../Shared/StringListInput";
 import { SettingGroup } from "./SettingGroup";
-import { BooleanSetting, DialogSetting, SelectSetting } from "./Inputs";
+import {
+  BooleanSetting,
+  NumberSetting,
+  SelectSetting,
+  StringSetting,
+} from "./Inputs";
+import { debounce } from "lodash";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
   // Editing config state
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
-  const [databasePath, setDatabasePath] = useState<string | undefined>(
-    undefined
-  );
-  const [generatedPath, setGeneratedPath] = useState<string | undefined>(
-    undefined
-  );
-  const [metadataPath, setMetadataPath] = useState<string | undefined>(
-    undefined
-  );
-  const [cachePath, setCachePath] = useState<string | undefined>(undefined);
-  const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
-  const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
-    GQL.HashAlgorithm | undefined
-  >(undefined);
-  const [parallelTasks, setParallelTasks] = useState<number>(0);
-  const [previewAudio, setPreviewAudio] = useState<boolean>(true);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -49,140 +39,106 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [previewExcludeEnd, setPreviewExcludeEnd] = useState<
     string | undefined
   >(undefined);
-  const [previewPreset, setPreviewPreset] = useState<string>(
-    GQL.PreviewPreset.Slow
-  );
-  const [maxTranscodeSize, setMaxTranscodeSize] = useState<
-    GQL.StreamingResolutionEnum | undefined
-  >(undefined);
-  const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
-    GQL.StreamingResolutionEnum | undefined
-  >(undefined);
-  const [writeImageThumbnails, setWriteImageThumbnails] = useState(true);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
   const [trustedProxies, setTrustedProxies] = useState<string[] | undefined>(
     undefined
   );
-  const [logFile, setLogFile] = useState<string | undefined>();
-  const [logOut, setLogOut] = useState<boolean>(true);
-  const [logLevel, setLogLevel] = useState<string>("Info");
-  const [logAccess, setLogAccess] = useState<boolean>(true);
-
-  const [videoExtensions, setVideoExtensions] = useState<string | undefined>();
-  const [imageExtensions, setImageExtensions] = useState<string | undefined>();
-  const [galleryExtensions, setGalleryExtensions] = useState<
-    string | undefined
-  >();
-  const [
-    createGalleriesFromFolders,
-    setCreateGalleriesFromFolders,
-  ] = useState<boolean>(false);
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);
-  const [
-    customPerformerImageLocation,
-    setCustomPerformerImageLocation,
-  ] = useState<string>();
   const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
+  const [toSave, setToSave] = useState<GQL.ConfigGeneralInput | undefined>();
+
   const { data, error, loading } = useConfiguration();
+  const [configuration, setConfiguration] = useState<
+    GQL.ConfigGeneralInput | undefined
+  >();
 
   const [generateAPIKey] = useGenerateAPIKey();
 
-  const [updateGeneralConfig] = useConfigureGeneral({
-    stashes: stashes.map((s) => ({
-      path: s.path,
-      excludeVideo: s.excludeVideo,
-      excludeImage: s.excludeImage,
-    })),
-    databasePath,
-    generatedPath,
-    metadataPath,
-    cachePath,
-    calculateMD5,
-    videoFileNamingAlgorithm:
-      (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
-    parallelTasks,
-    previewAudio,
-    previewSegments,
-    previewSegmentDuration,
-    previewExcludeStart,
-    previewExcludeEnd,
-    previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
-    maxTranscodeSize,
-    maxStreamingTranscodeSize,
-    writeImageThumbnails,
-    username,
-    password,
-    maxSessionAge,
-    trustedProxies,
-    logFile,
-    logOut,
-    logLevel,
-    logAccess,
-    createGalleriesFromFolders,
-    videoExtensions: commaDelimitedToList(videoExtensions),
-    imageExtensions: commaDelimitedToList(imageExtensions),
-    galleryExtensions: commaDelimitedToList(galleryExtensions),
-    excludes,
-    imageExcludes,
-    customPerformerImageLocation,
-    stashBoxes: stashBoxes.map(
-      (b) =>
-        ({
-          name: b?.name ?? "",
-          api_key: b?.api_key ?? "",
-          endpoint: b?.endpoint ?? "",
-        } as GQL.StashBoxInput)
-    ),
-  });
+  const [updateGeneralConfig] = useConfigureGeneral();
+
+  // saves the configuration if no further changes are made after a half second
+  const saveConfig = debounce(async (input: GQL.ConfigGeneralInput) => {
+    try {
+      await updateGeneralConfig({
+        variables: {
+          input,
+        },
+      });
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "toast.updated_entity" },
+          {
+            entity: intl
+              .formatMessage({ id: "configuration" })
+              .toLocaleLowerCase(),
+          }
+        ),
+      });
+      setToSave(undefined);
+    } catch (e) {
+      Toast.error(e);
+    }
+  }, 500);
+
+  useEffect(() => {
+    if (!toSave) {
+      return;
+    }
+
+    saveConfig(toSave);
+  }, [toSave, saveConfig]);
 
   useEffect(() => {
     if (!data?.configuration || error) return;
 
+    const { general } = data.configuration;
+
+    setConfiguration({
+      databasePath: general.databasePath,
+      generatedPath: general.generatedPath,
+      metadataPath: general.metadataPath,
+      cachePath: general.cachePath,
+      createGalleriesFromFolders: general.createGalleriesFromFolders,
+      parallelTasks: general.parallelTasks,
+      writeImageThumbnails: general.writeImageThumbnails,
+      calculateMD5: general.calculateMD5,
+      previewAudio: general.previewAudio,
+      logOut: general.logOut,
+      logAccess: general.logAccess,
+      videoFileNamingAlgorithm: general.videoFileNamingAlgorithm,
+      maxTranscodeSize: general.maxTranscodeSize ?? undefined,
+      maxStreamingTranscodeSize: general.maxStreamingTranscodeSize ?? undefined,
+      previewPreset: general.previewPreset,
+      logLevel: general.logLevel,
+      videoExtensions: general.videoExtensions,
+      imageExtensions: general.imageExtensions,
+      galleryExtensions: general.galleryExtensions,
+      logFile: general.logFile,
+      customPerformerImageLocation: general.customPerformerImageLocation,
+    });
+
     const conf = data.configuration;
     if (conf.general) {
       setStashes(conf.general.stashes ?? []);
-      setDatabasePath(conf.general.databasePath);
-      setGeneratedPath(conf.general.generatedPath);
-      setMetadataPath(conf.general.metadataPath);
-      setCachePath(conf.general.cachePath);
-      setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
-      setCalculateMD5(conf.general.calculateMD5);
-      setParallelTasks(conf.general.parallelTasks);
-      setPreviewAudio(conf.general.previewAudio);
+
       setPreviewSegments(conf.general.previewSegments);
       setPreviewSegmentDuration(conf.general.previewSegmentDuration);
       setPreviewExcludeStart(conf.general.previewExcludeStart);
       setPreviewExcludeEnd(conf.general.previewExcludeEnd);
-      setPreviewPreset(conf.general.previewPreset);
-      setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
-      setMaxStreamingTranscodeSize(
-        conf.general.maxStreamingTranscodeSize ?? undefined
-      );
-      setWriteImageThumbnails(conf.general.writeImageThumbnails);
+
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
       setTrustedProxies(conf.general.trustedProxies ?? undefined);
-      setLogFile(conf.general.logFile ?? undefined);
-      setLogOut(conf.general.logOut);
-      setLogLevel(conf.general.logLevel);
-      setLogAccess(conf.general.logAccess);
-      setCreateGalleriesFromFolders(conf.general.createGalleriesFromFolders);
-      setVideoExtensions(listToCommaDelimited(conf.general.videoExtensions));
-      setImageExtensions(listToCommaDelimited(conf.general.imageExtensions));
-      setGalleryExtensions(
-        listToCommaDelimited(conf.general.galleryExtensions)
-      );
+
       setExcludes(conf.general.excludes);
       setImageExcludes(conf.general.imageExcludes);
-      setCustomPerformerImageLocation(
-        conf.general.customPerformerImageLocation ?? ""
-      );
+
       setStashBoxes(
         conf.general.stashBoxes.map((box, i) => ({
           name: box?.name ?? undefined,
@@ -232,9 +188,58 @@ export const SettingsConfigurationPanel: React.FC = () => {
     }
   }
 
+  function save(input: Partial<GQL.ConfigGeneralInput>) {
+    if (!configuration) {
+      return;
+    }
+
+    setConfiguration({
+      ...configuration,
+      ...input,
+    });
+
+    setToSave((current) => {
+      if (!current) {
+        return input;
+      }
+      return {
+        ...current,
+        ...input,
+      };
+    });
+  }
+
   async function onSave() {
     try {
-      const result = await updateGeneralConfig();
+      const result = await updateGeneralConfig({
+        variables: {
+          input: {
+            stashes: stashes.map((s) => ({
+              path: s.path,
+              excludeVideo: s.excludeVideo,
+              excludeImage: s.excludeImage,
+            })),
+            previewSegments,
+            previewSegmentDuration,
+            previewExcludeStart,
+            previewExcludeEnd,
+            username,
+            password,
+            maxSessionAge,
+            trustedProxies,
+            excludes,
+            imageExcludes,
+            stashBoxes: stashBoxes.map(
+              (b) =>
+                ({
+                  name: b?.name ?? "",
+                  api_key: b?.api_key ?? "",
+                  endpoint: b?.endpoint ?? "",
+                } as GQL.StashBoxInput)
+            ),
+          },
+        },
+      });
       // eslint-disable-next-line no-console
       console.log(result);
       Toast.success({
@@ -327,7 +332,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
   }
 
   if (error) return <h1>{error.message}</h1>;
-  if (!data?.configuration || loading) return <LoadingIndicator />;
+  if (!data?.configuration || !configuration || loading)
+    return <LoadingIndicator />;
+
+  const general = configuration;
 
   return (
     <>
@@ -347,118 +355,70 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.application_paths.heading">
-        <Form.Group id="database-path">
-          <h6>
-            <FormattedMessage id="config.general.db_path_head" />
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={databasePath}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setDatabasePath(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.sqlite_location" })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          id="database-path"
+          headingID="config.general.db_path_head"
+          subHeadingID="config.general.sqlite_location"
+          value={general.databasePath ?? undefined}
+          onChange={(v) => save({ databasePath: v })}
+        />
 
-        <Form.Group id="generated-path">
-          <h6>
-            <FormattedMessage id="config.general.generated_path_head" />
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={generatedPath}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setGeneratedPath(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.generated_files_location",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          id="generated-path"
+          headingID="config.general.generated_path_head"
+          subHeadingID="config.general.generated_files_location"
+          value={general.generatedPath ?? undefined}
+          onChange={(v) => save({ generatedPath: v })}
+        />
 
-        <Form.Group id="metadata-path">
-          <h6>
-            <FormattedMessage id="config.general.metadata_path.heading" />
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={metadataPath}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setMetadataPath(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.metadata_path.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          id="metadata-path"
+          headingID="config.general.metadata_path.heading"
+          subHeadingID="config.general.metadata_path.description"
+          value={general.metadataPath ?? undefined}
+          onChange={(v) => save({ metadataPath: v })}
+        />
 
-        <Form.Group id="cache-path">
-          <h6>
-            <FormattedMessage id="config.general.cache_path_head" />
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={cachePath}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setCachePath(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.cache_location" })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          id="cache-path"
+          headingID="config.general.cache_path_head"
+          subHeadingID="config.general.cache_location"
+          value={general.cachePath ?? undefined}
+          onChange={(v) => save({ cachePath: v })}
+        />
 
-        <Form.Group>
-          <h6>
-            {intl.formatMessage({
-              id: "config.ui.performers.options.image_location.heading",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            value={customPerformerImageLocation}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setCustomPerformerImageLocation(e.currentTarget.value);
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.performers.options.image_location.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          id="custom-performer-image-location"
+          headingID="config.ui.performers.options.image_location.heading"
+          subHeadingID="config.ui.performers.options.image_location.description"
+          value={general.customPerformerImageLocation ?? undefined}
+          onChange={(v) => save({ customPerformerImageLocation: v })}
+        />
       </SettingGroup>
 
       <SettingGroup headingID="config.library.media_content_extensions">
-        <DialogSetting
+        <StringSetting
           id="video-extensions"
           headingID="config.general.video_ext_head"
           subHeadingID="config.general.video_ext_desc"
-          value={videoExtensions}
-          onChange={() => {}}
+          value={listToCommaDelimited(general.videoExtensions ?? undefined)}
+          onChange={(v) => save({ videoExtensions: commaDelimitedToList(v) })}
         />
 
-        <DialogSetting
+        <StringSetting
           id="image-extensions"
           headingID="config.general.image_ext_head"
           subHeadingID="config.general.image_ext_desc"
-          value={imageExtensions}
-          onChange={() => {}}
+          value={listToCommaDelimited(general.imageExtensions ?? undefined)}
+          onChange={(v) => save({ imageExtensions: commaDelimitedToList(v) })}
         />
 
-        <DialogSetting
+        <StringSetting
           id="gallery-extensions"
           headingID="config.general.gallery_ext_head"
           subHeadingID="config.general.gallery_ext_desc"
-          value={galleryExtensions}
-          onChange={() => {}}
+          value={listToCommaDelimited(general.galleryExtensions ?? undefined)}
+          onChange={(v) => save({ galleryExtensions: commaDelimitedToList(v) })}
         />
       </SettingGroup>
 
@@ -521,18 +481,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="create-galleries-from-folders"
           headingID="config.general.create_galleries_from_folders_label"
           subHeadingID="config.general.create_galleries_from_folders_desc"
-          checked={createGalleriesFromFolders}
-          onChange={() =>
-            setCreateGalleriesFromFolders(!createGalleriesFromFolders)
-          }
+          checked={general.createGalleriesFromFolders ?? false}
+          onChange={(v) => save({ createGalleriesFromFolders: v })}
         />
 
         <BooleanSetting
           id="write-image-thumbnails"
           headingID="config.ui.images.options.write_image_thumbnails.heading"
           subHeadingID="config.ui.images.options.write_image_thumbnails.description"
-          checked={writeImageThumbnails}
-          onChange={() => setWriteImageThumbnails(!writeImageThumbnails)}
+          checked={general.writeImageThumbnails ?? false}
+          onChange={(v) => save({ writeImageThumbnails: v })}
         />
       </SettingGroup>
 
@@ -541,19 +499,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="calculate-md5-and-ohash"
           headingID="config.general.calculate_md5_and_ohash_label"
           subHeadingID="config.general.calculate_md5_and_ohash_desc"
-          checked={calculateMD5}
-          onChange={() => setCalculateMD5(!calculateMD5)}
+          checked={general.calculateMD5 ?? false}
+          onChange={(v) => save({ calculateMD5: v })}
         />
 
         <SelectSetting
           id="generated_file_naming_hash"
           headingID="config.general.generated_file_naming_hash_head"
           subHeadingID="config.general.generated_file_naming_hash_desc"
-          value={namingHashToString(videoFileNamingAlgorithm)}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setVideoFileNamingAlgorithm(
-              translateNamingHash(e.currentTarget.value)
-            )
+          value={namingHashToString(
+            general.videoFileNamingAlgorithm ?? undefined
+          )}
+          onChange={(v) =>
+            save({ videoFileNamingAlgorithm: translateNamingHash(v) })
           }
         >
           {namingHashAlgorithms.map((q) => (
@@ -569,10 +527,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="transcode-size"
           headingID="config.general.maximum_transcode_size_head"
           subHeadingID="config.general.maximum_transcode_size_desc"
-          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-            setMaxTranscodeSize(translateQuality(event.currentTarget.value))
-          }
-          value={resolutionToString(maxTranscodeSize)}
+          onChange={(v) => save({ maxTranscodeSize: translateQuality(v) })}
+          value={resolutionToString(general.maxTranscodeSize ?? undefined)}
         >
           {transcodeQualities.map((q) => (
             <option key={q} value={q}>
@@ -585,12 +541,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="streaming-transcode-size"
           headingID="config.general.maximum_streaming_transcode_size_head"
           subHeadingID="config.general.maximum_streaming_transcode_size_desc"
-          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-            setMaxStreamingTranscodeSize(
-              translateQuality(event.currentTarget.value)
-            )
+          onChange={(v) =>
+            save({ maxStreamingTranscodeSize: translateQuality(v) })
           }
-          value={resolutionToString(maxStreamingTranscodeSize)}
+          value={resolutionToString(
+            general.maxStreamingTranscodeSize ?? undefined
+          )}
         >
           {transcodeQualities.map((q) => (
             <option key={q} value={q}>
@@ -601,30 +557,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.general.parallel_scan_head">
-        <Form.Group id="parallel-tasks">
-          <h6>
-            {intl.formatMessage({
-              id:
-                "config.general.number_of_parallel_task_for_scan_generation_head",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={parallelTasks}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setParallelTasks(
-                Number.parseInt(e.currentTarget.value || "0", 10)
-              )
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id:
-                "config.general.number_of_parallel_task_for_scan_generation_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <NumberSetting
+          id="parallel-tasks"
+          headingID="config.general.number_of_parallel_task_for_scan_generation_head"
+          subHeadingID="config.general.number_of_parallel_task_for_scan_generation_desc"
+          value={general.parallelTasks ?? undefined}
+          onChange={(v) => save({ parallelTasks: v })}
+        />
       </SettingGroup>
 
       <SettingGroup headingID="config.general.preview_generation">
@@ -632,9 +571,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="scene-gen-preview-preset"
           headingID="dialogs.scene_gen.preview_preset_head"
           subHeadingID="dialogs.scene_gen.preview_preset_desc"
-          value={previewPreset}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setPreviewPreset(e.currentTarget.value)
+          value={general.previewPreset ?? undefined}
+          onChange={(v) =>
+            save({ previewPreset: (v as GQL.PreviewPreset) ?? undefined })
           }
         >
           {Object.keys(GQL.PreviewPreset).map((p) => (
@@ -649,8 +588,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             id="preview-include-audio"
             headingID="config.general.include_audio_head"
             subHeadingID="config.general.include_audio_desc"
-            checked={previewAudio}
-            onChange={() => setPreviewAudio(!previewAudio)}
+            checked={general.previewAudio ?? false}
+            onChange={(v) => save({ previewAudio: v })}
           />
         </Form.Group>
 
@@ -850,37 +789,26 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </SettingGroup>
 
       <SettingGroup headingID="config.general.logging">
-        <Form.Group id="log-file">
-          <h6>{intl.formatMessage({ id: "config.general.auth.log_file" })}</h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={logFile}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setLogFile(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.auth.log_file_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          headingID="config.general.auth.log_file"
+          subHeadingID="config.general.auth.log_file_desc"
+          value={general.logFile ?? undefined}
+          onChange={(v) => save({ logFile: v })}
+        />
 
-        <Form.Group>
-          <BooleanSetting
-            id="log-terminal"
-            headingID="config.general.auth.log_to_terminal"
-            subHeadingID="config.general.auth.log_to_terminal_desc"
-            checked={logOut}
-            onChange={() => setLogOut(!logOut)}
-          />
-        </Form.Group>
+        <BooleanSetting
+          id="log-terminal"
+          headingID="config.general.auth.log_to_terminal"
+          subHeadingID="config.general.auth.log_to_terminal_desc"
+          checked={general.logOut ?? false}
+          onChange={(v) => save({ logOut: v })}
+        />
 
         <SelectSetting
           id="log-level"
           headingID="config.logs.log_level"
-          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-            setLogLevel(event.currentTarget.value)
-          }
-          value={logLevel}
+          onChange={(v) => save({ logLevel: v })}
+          value={general.logLevel ?? undefined}
         >
           {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
             <option key={o} value={o}>
@@ -893,8 +821,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="log-http"
           headingID="config.general.auth.log_http"
           subHeadingID="config.general.auth.log_http_desc"
-          checked={logAccess}
-          onChange={() => setLogAccess(!logAccess)}
+          checked={general.logAccess ?? false}
+          onChange={(v) => save({ logAccess: v })}
         />
       </SettingGroup>
 

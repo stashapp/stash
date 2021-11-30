@@ -737,9 +737,8 @@ export const useTagsMerge = () =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
-export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
+export const useConfigureGeneral = () =>
   GQL.useConfigureGeneralMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });

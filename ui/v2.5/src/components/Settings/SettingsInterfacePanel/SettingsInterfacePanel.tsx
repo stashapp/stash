@@ -166,9 +166,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           id="language"
           headingID="config.ui.language.heading"
           value={language}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setLanguage(e.currentTarget.value)
-          }
+          onChange={(v) => setLanguage(v)}
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
@@ -226,9 +224,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           headingID="config.ui.preview_type.heading"
           subHeadingID="config.ui.preview_type.description"
           value={wallPlayback}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setWallPlayback(e.currentTarget.value)
-          }
+          onChange={(v) => setWallPlayback(v)}
         >
           <option value="video">
             {intl.formatMessage({ id: "config.ui.preview_type.options.video" })}

@@ -1,6 +1,6 @@
-import React from "react";
-import { Button, Form } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import React, { useState } from "react";
+import { Button, Form, Modal } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
 
 interface ISetting {
@@ -33,7 +33,7 @@ const Setting: React.FC<PropsWithChildren<ISetting>> = ({
 
 interface IBooleanSetting extends ISetting {
   checked?: boolean;
-  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onChange: (v: boolean) => void;
 }
 
 export const BooleanSetting: React.FC<IBooleanSetting> = ({
@@ -45,14 +45,18 @@ export const BooleanSetting: React.FC<IBooleanSetting> = ({
 }) => {
   return (
     <Setting headingID={headingID} subHeadingID={subHeadingID}>
-      <Form.Switch id={id} checked={checked} onChange={onChange} />
+      <Form.Switch
+        id={id}
+        checked={checked}
+        onChange={() => onChange(!checked)}
+      />
     </Setting>
   );
 };
 
 interface ISelectSetting extends ISetting {
   value?: string | number | string[] | undefined;
-  onChange?: React.ChangeEventHandler | undefined;
+  onChange: (v: string) => void;
 }
 
 export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> = ({
@@ -69,7 +73,7 @@ export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> = ({
         className="input-control"
         as="select"
         value={value}
-        onChange={onChange}
+        onChange={(e) => onChange(e.currentTarget.value)}
       >
         {children}
       </Form.Control>
@@ -77,18 +81,14 @@ export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> = ({
   );
 };
 
-interface IDialogSetting extends ISetting {
-  value?: string;
+interface IDialogSetting<T> extends ISetting {
+  value?: T;
+  renderValue: (v: T | undefined) => JSX.Element;
   onChange: () => void;
 }
 
-export const DialogSetting: React.FC<IDialogSetting> = ({
-  id,
-  headingID,
-  subHeadingID,
-  value,
-  onChange,
-}) => {
+export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
+  const { id, headingID, subHeadingID, value, onChange, renderValue } = props;
   const intl = useIntl();
 
   return (
@@ -96,7 +96,7 @@ export const DialogSetting: React.FC<IDialogSetting> = ({
       <div>
         <h3>{intl.formatMessage({ id: headingID })}</h3>
 
-        <div className="value">{value}</div>
+        <div className="value">{renderValue(value)}</div>
 
         {subHeadingID ? (
           <div className="sub-heading">
@@ -108,5 +108,148 @@ export const DialogSetting: React.FC<IDialogSetting> = ({
         <Button onClick={() => onChange()}>Change</Button>
       </div>
     </div>
+  );
+};
+
+interface ISettingModal<T> {
+  headingID: string;
+  subHeadingID?: string;
+  value: T | undefined;
+  close: (v?: T) => void;
+  renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
+}
+
+const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
+  const { headingID, subHeadingID, value, close, renderField } = props;
+
+  const intl = useIntl();
+  const [currentValue, setCurrentValue] = useState<T | undefined>(value);
+
+  return (
+    <Modal show onHide={() => close()} id="setting-dialog">
+      <Form
+        onSubmit={(e) => {
+          close(currentValue);
+          e.preventDefault();
+        }}
+      >
+        <Modal.Header closeButton>
+          <FormattedMessage id={headingID} />
+        </Modal.Header>
+        <Modal.Body>
+          {renderField(currentValue, setCurrentValue)}
+          {subHeadingID ? (
+            <div className="sub-heading">
+              {intl.formatMessage({ id: subHeadingID })}
+            </div>
+          ) : undefined}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => close()}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            onClick={() => close(currentValue)}
+          >
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
+  );
+};
+
+interface IModalSetting<T> extends ISetting {
+  value: T | undefined;
+  onChange: (v: T) => void;
+  renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
+  renderValue: (v: T | undefined) => JSX.Element;
+}
+
+export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
+  const {
+    id,
+    value,
+    headingID,
+    subHeadingID,
+    onChange,
+    renderField,
+    renderValue,
+  } = props;
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <>
+      {showModal ? (
+        <SettingModal<T>
+          headingID={headingID}
+          subHeadingID={subHeadingID}
+          value={value}
+          renderField={renderField}
+          close={(v) => {
+            if (v !== undefined) onChange(v);
+            setShowModal(false);
+          }}
+        />
+      ) : undefined}
+
+      <ChangeButtonSetting<T>
+        id={id}
+        headingID={headingID}
+        subHeadingID={subHeadingID}
+        value={value}
+        onChange={() => setShowModal(true)}
+        renderValue={renderValue}
+      />
+    </>
+  );
+};
+
+interface IStringSetting extends ISetting {
+  value: string | undefined;
+  onChange: (v: string) => void;
+}
+
+export const StringSetting: React.FC<IStringSetting> = (props) => {
+  return (
+    <ModalSetting<string>
+      {...props}
+      renderField={(value, setValue) => (
+        <Form.Control
+          className="text-input"
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(e.currentTarget.value)
+          }
+        />
+      )}
+      renderValue={(value) => <span>{value}</span>}
+    />
+  );
+};
+
+interface INumberSetting extends ISetting {
+  value: number | undefined;
+  onChange: (v: number) => void;
+}
+
+export const NumberSetting: React.FC<INumberSetting> = (props) => {
+  return (
+    <ModalSetting<number>
+      {...props}
+      renderField={(value, setValue) => (
+        <Form.Control
+          className="text-input"
+          type="number"
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(Number.parseInt(e.currentTarget.value || "0", 10))
+          }
+        />
+      )}
+      renderValue={(value) => <span>{value}</span>}
+    />
   );
 };
