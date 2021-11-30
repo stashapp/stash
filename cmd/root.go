@@ -57,8 +57,6 @@ var (
 
 func init() {
 	conf = viper.New()
-	cobra.OnInitialize(initConfig)
-
 	// Tell Cobra about our flags
 	rootCmd.PersistentFlags().IPVar(&host, "host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	rootCmd.PersistentFlags().IntVar(&port, "port", 9999, "port to serve from")
@@ -94,9 +92,6 @@ func bindEnv(viper *viper.Viper, key string) {
 	if err := viper.BindEnv(key); err != nil {
 		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
 	}
-}
-
-func initConfig() {
 }
 
 func initProfiling(cpuProfilePath string) {
