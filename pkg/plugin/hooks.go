@@ -81,7 +81,6 @@ var AllHookTriggerEnum = []HookTriggerEnum{
 }
 
 func (e HookTriggerEnum) IsValid() bool {
-
 	switch e {
 	case SceneMarkerCreatePost,
 		SceneMarkerUpdatePost,
@@ -113,7 +112,8 @@ func (e HookTriggerEnum) IsValid() bool {
 
 		TagCreatePost,
 		TagUpdatePost,
-		TagDestroyPost:
+		TagDestroyPost,
+		TagMergePost:
 		return true
 	}
 	return false
@@ -143,7 +143,7 @@ func changeFromHookTrigger(e HookTriggerEnum) event.ChangeType {
 		return event.Performer
 	case StudioCreatePost, StudioUpdatePost, StudioDestroyPost:
 		return event.Studio
-	case TagCreatePost, TagUpdatePost, TagDestroyPost:
+	case TagCreatePost, TagUpdatePost, TagDestroyPost, TagMergePost:
 		return event.Tag
 	}
 

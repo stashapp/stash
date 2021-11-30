@@ -182,7 +182,34 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 		logger.Errorf("error executing post hooks: %s", err.Error())
 	}
 
-	c.eventDispatcher.Publish(event.Change{ID: id, Type: changeFromHookTrigger(hookType)})
+	switch hookType {
+	case TagMergePost:
+		mergeInput, ok := input.(models.TagsMergeInput)
+		if !ok {
+			logger.Warnf("not posthooking merge event because input type doesn't match")
+			return
+		}
+
+		ty := changeFromHookTrigger(hookType)
+		for _, v := range mergeInput.Source {
+			id, err := strconv.Atoi(v)
+			if err != nil {
+				logger.Warnf("could not convert TagsMergeInput source %v to integer: %v", v, err)
+				continue
+			}
+			c.eventDispatcher.Publish(event.Change{ID: id, Type: ty})
+		}
+
+		target, err := strconv.Atoi(mergeInput.Destination)
+		if err != nil {
+			logger.Warnf("couldn't convert TagsMergeInput destination %v to integer: %v", mergeInput.Destination, err)
+			return
+		}
+
+		c.eventDispatcher.Publish(event.Change{ID: target, Type: ty})
+	default:
+		c.eventDispatcher.Publish(event.Change{ID: id, Type: changeFromHookTrigger(hookType)})
+	}
 }
 
 func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
