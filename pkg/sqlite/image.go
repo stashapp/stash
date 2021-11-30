@@ -469,8 +469,8 @@ func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.Hier
 					notClause = "NOT"
 				}
 
-				f.addJoin("performers_images", "", "images.id = performers_images.image_id")
-				f.addJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
+				f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
+				f.addLeftJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
 
 				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
 				return
@@ -488,7 +488,7 @@ INNER JOIN performers_tags pt ON pt.performer_id = pi.performer_id
 INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
-			f.addJoin("performer_tags", "", "performer_tags.image_id = images.id")
+			f.addLeftJoin("performer_tags", "", "performer_tags.image_id = images.id")
 
 			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
 		}

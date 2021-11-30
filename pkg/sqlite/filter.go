@@ -159,12 +159,12 @@ func (f *filterBuilder) not(n *filterBuilder) {
 	f.subFilterOp = notOp
 }
 
-// addJoin adds a join to the filter. The join is expressed in SQL as:
+// addLeftJoin adds a left join to the filter. The join is expressed in SQL as:
 // LEFT JOIN <table> [AS <as>] ON <onClause>
 // The AS is omitted if as is empty.
 // This method does not add a join if it its alias/table name is already
 // present in another existing join.
-func (f *filterBuilder) addJoin(table, as, onClause string) {
+func (f *filterBuilder) addLeftJoin(table, as, onClause string) {
 	newJoin := join{
 		table:    table,
 		as:       as,
@@ -175,7 +175,7 @@ func (f *filterBuilder) addJoin(table, as, onClause string) {
 	f.joins.add(newJoin)
 }
 
-// addInnerJoin adds a join to the filter. The join is expressed in SQL as:
+// addInnerJoin adds an inner join to the filter. The join is expressed in SQL as:
 // INNER JOIN <table> [AS <as>] ON <onClause>
 // The AS is omitted if as is empty.
 // This method does not add a join if it its alias/table name is already
@@ -527,7 +527,7 @@ func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionI
 				table := m.primaryTable
 				if m.joinTable != "" {
 					table = m.joinTable
-					f.addJoin(table, "", fmt.Sprintf("%s.%s = %s.id", table, m.primaryFK, m.primaryTable))
+					f.addLeftJoin(table, "", fmt.Sprintf("%s.%s = %s.id", table, m.primaryFK, m.primaryTable))
 				}
 
 				f.addWhere(fmt.Sprintf("%s.%s IS %s NULL", table, m.foreignFK, notClause))
@@ -720,7 +720,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 
 			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			f.addJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
+			f.addLeftJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
 
 			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "root_id")
 		}
@@ -753,7 +753,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 					notClause = "NOT"
 				}
 
-				f.addJoin(m.joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+				f.addLeftJoin(m.joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
 
 				f.addWhere(utils.StrFormat("{table}.{column} IS {not} NULL", utils.StrFormatMap{
 					"table":  joinAlias,
@@ -779,7 +779,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 				"valuesClause": valuesClause,
 			})
 
-			f.addJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
+			f.addLeftJoin(joinTable, joinAlias, fmt.Sprintf("%s.%s = %s.id", joinAlias, m.primaryFK, m.primaryTable))
 
 			addHierarchicalConditionClauses(f, criterion, joinAlias, "root_id")
 		}
