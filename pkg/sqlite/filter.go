@@ -39,6 +39,7 @@ type join struct {
 	table    string
 	as       string
 	onClause string
+	joinType string
 }
 
 // equals returns true if the other join alias/table is equal to this one
@@ -57,11 +58,15 @@ func (j join) alias() string {
 
 func (j join) toSQL() string {
 	asStr := ""
+	joinStr := j.joinType
 	if j.as != "" && j.as != j.table {
 		asStr = " AS " + j.as
 	}
+	if j.joinType == "" {
+		joinStr = "LEFT"
+	}
 
-	return fmt.Sprintf("LEFT JOIN %s%s ON %s", j.table, asStr, j.onClause)
+	return fmt.Sprintf("%s JOIN %s%s ON %s", joinStr, j.table, asStr, j.onClause)
 }
 
 type joins []join
