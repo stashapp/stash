@@ -301,6 +301,7 @@
       "backup_and_download": "备份数据库并下载其文件.",
       "backup_database": "将数据库备份到与数据库相同的目录，文件名格式为 {filename_format}",
       "cleanup_desc": "检查缺失的文件并将它们的数据从数据库中删除。 注意，这是一个破坏性的动作。",
+      "data_management": "数据管理",
       "defaults_set": "预设值已经设定好，将会在按下任务页面里的{action}按钮后生效.",
       "dont_include_file_extension_as_part_of_the_title": "不要把扩展名作为标题的一部分",
       "export_to_json": "将数据库中元数据目录的内容导出为 JSON 文件格式.",
@@ -309,7 +310,7 @@
         "generating_scenes": "正在为{num}个{scene}生成资料"
       },
       "generate_desc": "生成辅助的图片，预览，片段，字幕等其他文件。",
-      "generate_phashes_during_scan": "在扫描期间生成感知识别码 PHashes（用于重复数据删除和短片识别）",
+      "generate_phashes_during_scan": "在扫描期间生成感知识别码(用于重复数据删除和短片识别)",
       "generate_previews_during_scan": "在扫描期间生成片段预览（动画 WebP 预览，仅当预览类型设置为动图时才需要）",
       "generate_sprites_during_scan": "在扫描期间生成时间轴预览（用于时间轴预览图）",
       "generate_thumbnails_during_scan": "扫描时生成图片的缩略图.",
@@ -348,7 +349,7 @@
         "scanning_paths": "正在扫描以下路径"
       },
       "scan_for_content_desc": "扫描新内容并添加至数据库中。",
-      "set_name_date_details_from_metadata_if_present": "使用元数据的标题、日期、详情(如有的话)"
+      "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情(如有的话)"
     },
     "tools": {
       "scene_duplicate_checker": "短片重复性检查工具",
