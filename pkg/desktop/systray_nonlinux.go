@@ -27,6 +27,7 @@ func startSystray() {
 	}
 
 	// Listen for changes to rerender systray
+	// TODO: This only works once, and then changes are ignored from then
 	go func() {
 		for {
 			<-config.GetInstance().GetConfigUpdatesChannel()

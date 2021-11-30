@@ -264,7 +264,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		desktop.Shutdown()
 	}()
 
-	desktop.Initialize()
+	desktop.Start()
 }
 
 func printVersion() {
