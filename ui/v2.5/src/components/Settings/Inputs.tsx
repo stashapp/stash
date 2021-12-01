@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
+import { StringListInput } from "../Shared/StringListInput";
 
 interface ISetting {
   id?: string;
@@ -105,13 +106,15 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
         ) : undefined}
       </div>
       <div>
-        <Button onClick={() => onChange()}>Change</Button>
+        <Button onClick={() => onChange()}>
+          <FormattedMessage id="actions.edit" />
+        </Button>
       </div>
     </div>
   );
 };
 
-interface ISettingModal<T> {
+export interface ISettingModal<T> {
   headingID: string;
   subHeadingID?: string;
   value: T | undefined;
@@ -119,7 +122,7 @@ interface ISettingModal<T> {
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
 }
 
-const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
+export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
   const { headingID, subHeadingID, value, close, renderField } = props;
 
   const intl = useIntl();
@@ -250,6 +253,30 @@ export const NumberSetting: React.FC<INumberSetting> = (props) => {
         />
       )}
       renderValue={(value) => <span>{value}</span>}
+    />
+  );
+};
+
+interface IStringListSetting extends ISetting {
+  value: string[] | undefined;
+  onChange: (v: string[]) => void;
+}
+
+export const StringListSetting: React.FC<IStringListSetting> = (props) => {
+  return (
+    <ModalSetting<string[]>
+      {...props}
+      renderField={(value, setValue) => (
+        <StringListInput value={value ?? []} setValue={setValue} />
+      )}
+      renderValue={(value) => (
+        <div>
+          {value?.map((v, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <div key={i}>{v}</div>
+          ))}
+        </div>
+      )}
     />
   );
 };

@@ -14,6 +14,7 @@ import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapingPanel } from "./SettingsScrapingPanel";
 import { SettingsToolsPanel } from "./SettingsToolsPanel";
 import { SettingsDLNAPanel } from "./SettingsDLNAPanel";
+import { SettingsContext } from "./context";
 
 export const Settings: React.FC = () => {
   const intl = useIntl();
@@ -91,35 +92,37 @@ export const Settings: React.FC = () => {
           md={{ offset: 2 }}
           xl={{ offset: 1 }}
         >
-          <Tab.Content className="mx-auto">
-            <Tab.Pane eventKey="configuration">
-              <SettingsConfigurationPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="interface">
-              <SettingsInterfacePanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="tasks">
-              <SettingsTasksPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="dlna" unmountOnExit>
-              <SettingsDLNAPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="tools" unmountOnExit>
-              <SettingsToolsPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="scraping" unmountOnExit>
-              <SettingsScrapingPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="plugins" unmountOnExit>
-              <SettingsPluginsPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="logs" unmountOnExit>
-              <SettingsLogsPanel />
-            </Tab.Pane>
-            <Tab.Pane eventKey="about" unmountOnExit>
-              <SettingsAboutPanel />
-            </Tab.Pane>
-          </Tab.Content>
+          <SettingsContext>
+            <Tab.Content className="mx-auto">
+              <Tab.Pane eventKey="configuration">
+                <SettingsConfigurationPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="interface">
+                <SettingsInterfacePanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="tasks">
+                <SettingsTasksPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="dlna" unmountOnExit>
+                <SettingsDLNAPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="tools" unmountOnExit>
+                <SettingsToolsPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="scraping" unmountOnExit>
+                <SettingsScrapingPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="plugins" unmountOnExit>
+                <SettingsPluginsPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="logs" unmountOnExit>
+                <SettingsLogsPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="about" unmountOnExit>
+                <SettingsAboutPanel />
+              </Tab.Pane>
+            </Tab.Content>
+          </SettingsContext>
         </Col>
       </Row>
     </Tab.Container>

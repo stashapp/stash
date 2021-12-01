@@ -1,154 +1,222 @@
-import React, { useEffect, useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import React, { useState } from "react";
+import { useIntl } from "react-intl";
+import { Button, Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  useConfiguration,
-  useConfigureGeneral,
-  useGenerateAPIKey,
-} from "src/core/StashService";
+import { useGenerateAPIKey } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { Icon, LoadingIndicator } from "src/components/Shared";
-import {
-  StashBoxConfiguration,
-  IStashBoxInstance,
-} from "./StashBoxConfiguration";
+import { LoadingIndicator } from "src/components/Shared";
+import { StashBoxSetting } from "./StashBoxConfiguration";
 import StashConfiguration from "./StashConfiguration";
-import { StringListInput } from "../Shared/StringListInput";
 import { SettingGroup } from "./SettingGroup";
 import {
   BooleanSetting,
+  ModalSetting,
   NumberSetting,
   SelectSetting,
+  StringListSetting,
   StringSetting,
 } from "./Inputs";
-import { debounce } from "lodash";
+import { SettingStateContext } from "./context";
+
+type VideoPreviewSettingsInput = Pick<
+  GQL.ConfigGeneralInput,
+  | "previewSegments"
+  | "previewSegmentDuration"
+  | "previewExcludeStart"
+  | "previewExcludeEnd"
+>;
+
+interface IVideoPreviewInput {
+  value: VideoPreviewSettingsInput;
+  setValue: (v: VideoPreviewSettingsInput) => void;
+}
+
+const VideoPreviewInput: React.FC<IVideoPreviewInput> = ({
+  value,
+  setValue,
+}) => {
+  const intl = useIntl();
+
+  function set(v: Partial<VideoPreviewSettingsInput>) {
+    setValue({
+      ...value,
+      ...v,
+    });
+  }
+
+  const {
+    previewSegments,
+    previewSegmentDuration,
+    previewExcludeStart,
+    previewExcludeEnd,
+  } = value;
+
+  return (
+    <div>
+      <Form.Group id="preview-segments">
+        <h6>
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_seg_count_head",
+          })}
+        </h6>
+        <Form.Control
+          className="text-input"
+          type="number"
+          value={previewSegments?.toString() ?? 0}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            set({
+              previewSegments: Number.parseInt(
+                e.currentTarget.value || "0",
+                10
+              ),
+            })
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_seg_count_desc",
+          })}
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group id="preview-segment-duration">
+        <h6>
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_seg_duration_head",
+          })}
+        </h6>
+        <Form.Control
+          className="text-input"
+          type="number"
+          value={previewSegmentDuration?.toString() ?? 0}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            set({
+              previewSegmentDuration: Number.parseFloat(
+                e.currentTarget.value || "0"
+              ),
+            })
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_seg_duration_desc",
+          })}
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group id="preview-exclude-start">
+        <h6>
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_exclude_start_time_head",
+          })}
+        </h6>
+        <Form.Control
+          className="text-input"
+          value={previewExcludeStart ?? ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            set({ previewExcludeStart: e.currentTarget.value })
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_exclude_start_time_desc",
+          })}
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group id="preview-exclude-start">
+        <h6>
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_exclude_end_time_head",
+          })}
+        </h6>
+        <Form.Control
+          className="text-input"
+          value={previewExcludeEnd ?? ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            set({ previewExcludeEnd: e.currentTarget.value })
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({
+            id: "dialogs.scene_gen.preview_exclude_end_time_desc",
+          })}
+        </Form.Text>
+      </Form.Group>
+    </div>
+  );
+};
+
+type AuthenticationSettingsInput = Pick<
+  GQL.ConfigGeneralInput,
+  "username" | "password"
+>;
+
+interface IAuthenticationInput {
+  value: AuthenticationSettingsInput;
+  setValue: (v: AuthenticationSettingsInput) => void;
+}
+
+const AuthenticationInput: React.FC<IAuthenticationInput> = ({
+  value,
+  setValue,
+}) => {
+  const intl = useIntl();
+
+  function set(v: Partial<AuthenticationSettingsInput>) {
+    setValue({
+      ...value,
+      ...v,
+    });
+  }
+
+  const { username, password } = value;
+
+  return (
+    <div>
+      <Form.Group id="username">
+        <h6>{intl.formatMessage({ id: "config.general.auth.username" })}</h6>
+        <Form.Control
+          className="text-input"
+          value={username ?? ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            set({ username: e.currentTarget.value })
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({ id: "config.general.auth.username_desc" })}
+        </Form.Text>
+      </Form.Group>
+      <Form.Group id="password">
+        <h6>{intl.formatMessage({ id: "config.general.auth.password" })}</h6>
+        <Form.Control
+          className="text-input"
+          type="password"
+          value={password ?? ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            set({ password: e.currentTarget.value })
+          }
+        />
+        <Form.Text className="text-muted">
+          {intl.formatMessage({ id: "config.general.auth.password_desc" })}
+        </Form.Text>
+      </Form.Group>
+    </div>
+  );
+};
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
+
+  const { general, apiKey, loading, error, saveGeneral } = React.useContext(
+    SettingStateContext
+  );
+
   // Editing config state
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
-  const [previewSegments, setPreviewSegments] = useState<number>(0);
-  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
-    0
-  );
-  const [previewExcludeStart, setPreviewExcludeStart] = useState<
-    string | undefined
-  >(undefined);
-  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<
-    string | undefined
-  >(undefined);
-  const [username, setUsername] = useState<string | undefined>(undefined);
-  const [password, setPassword] = useState<string | undefined>(undefined);
-  const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
-  const [trustedProxies, setTrustedProxies] = useState<string[] | undefined>(
-    undefined
-  );
-
-  const [excludes, setExcludes] = useState<string[]>([]);
-  const [imageExcludes, setImageExcludes] = useState<string[]>([]);
-  const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
-
-  const [toSave, setToSave] = useState<GQL.ConfigGeneralInput | undefined>();
-
-  const { data, error, loading } = useConfiguration();
-  const [configuration, setConfiguration] = useState<
-    GQL.ConfigGeneralInput | undefined
-  >();
 
   const [generateAPIKey] = useGenerateAPIKey();
-
-  const [updateGeneralConfig] = useConfigureGeneral();
-
-  // saves the configuration if no further changes are made after a half second
-  const saveConfig = debounce(async (input: GQL.ConfigGeneralInput) => {
-    try {
-      await updateGeneralConfig({
-        variables: {
-          input,
-        },
-      });
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl
-              .formatMessage({ id: "configuration" })
-              .toLocaleLowerCase(),
-          }
-        ),
-      });
-      setToSave(undefined);
-    } catch (e) {
-      Toast.error(e);
-    }
-  }, 500);
-
-  useEffect(() => {
-    if (!toSave) {
-      return;
-    }
-
-    saveConfig(toSave);
-  }, [toSave, saveConfig]);
-
-  useEffect(() => {
-    if (!data?.configuration || error) return;
-
-    const { general } = data.configuration;
-
-    setConfiguration({
-      databasePath: general.databasePath,
-      generatedPath: general.generatedPath,
-      metadataPath: general.metadataPath,
-      cachePath: general.cachePath,
-      createGalleriesFromFolders: general.createGalleriesFromFolders,
-      parallelTasks: general.parallelTasks,
-      writeImageThumbnails: general.writeImageThumbnails,
-      calculateMD5: general.calculateMD5,
-      previewAudio: general.previewAudio,
-      logOut: general.logOut,
-      logAccess: general.logAccess,
-      videoFileNamingAlgorithm: general.videoFileNamingAlgorithm,
-      maxTranscodeSize: general.maxTranscodeSize ?? undefined,
-      maxStreamingTranscodeSize: general.maxStreamingTranscodeSize ?? undefined,
-      previewPreset: general.previewPreset,
-      logLevel: general.logLevel,
-      videoExtensions: general.videoExtensions,
-      imageExtensions: general.imageExtensions,
-      galleryExtensions: general.galleryExtensions,
-      logFile: general.logFile,
-      customPerformerImageLocation: general.customPerformerImageLocation,
-    });
-
-    const conf = data.configuration;
-    if (conf.general) {
-      setStashes(conf.general.stashes ?? []);
-
-      setPreviewSegments(conf.general.previewSegments);
-      setPreviewSegmentDuration(conf.general.previewSegmentDuration);
-      setPreviewExcludeStart(conf.general.previewExcludeStart);
-      setPreviewExcludeEnd(conf.general.previewExcludeEnd);
-
-      setUsername(conf.general.username);
-      setPassword(conf.general.password);
-      setMaxSessionAge(conf.general.maxSessionAge);
-      setTrustedProxies(conf.general.trustedProxies ?? undefined);
-
-      setExcludes(conf.general.excludes);
-      setImageExcludes(conf.general.imageExcludes);
-
-      setStashBoxes(
-        conf.general.stashBoxes.map((box, i) => ({
-          name: box?.name ?? undefined,
-          endpoint: box.endpoint,
-          api_key: box.api_key,
-          index: i,
-        })) ?? []
-      );
-    }
-  }, [data, error]);
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {
@@ -182,75 +250,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
             clear: true,
           },
         },
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  function save(input: Partial<GQL.ConfigGeneralInput>) {
-    if (!configuration) {
-      return;
-    }
-
-    setConfiguration({
-      ...configuration,
-      ...input,
-    });
-
-    setToSave((current) => {
-      if (!current) {
-        return input;
-      }
-      return {
-        ...current,
-        ...input,
-      };
-    });
-  }
-
-  async function onSave() {
-    try {
-      const result = await updateGeneralConfig({
-        variables: {
-          input: {
-            stashes: stashes.map((s) => ({
-              path: s.path,
-              excludeVideo: s.excludeVideo,
-              excludeImage: s.excludeImage,
-            })),
-            previewSegments,
-            previewSegmentDuration,
-            previewExcludeStart,
-            previewExcludeEnd,
-            username,
-            password,
-            maxSessionAge,
-            trustedProxies,
-            excludes,
-            imageExcludes,
-            stashBoxes: stashBoxes.map(
-              (b) =>
-                ({
-                  name: b?.name ?? "",
-                  api_key: b?.api_key ?? "",
-                  endpoint: b?.endpoint ?? "",
-                } as GQL.StashBoxInput)
-            ),
-          },
-        },
-      });
-      // eslint-disable-next-line no-console
-      console.log(result);
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl
-              .formatMessage({ id: "configuration" })
-              .toLocaleLowerCase(),
-          }
-        ),
       });
     } catch (e) {
       Toast.error(e);
@@ -332,10 +331,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   }
 
   if (error) return <h1>{error.message}</h1>;
-  if (!data?.configuration || !configuration || loading)
-    return <LoadingIndicator />;
-
-  const general = configuration;
+  if (loading) return <LoadingIndicator />;
 
   return (
     <>
@@ -360,7 +356,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.db_path_head"
           subHeadingID="config.general.sqlite_location"
           value={general.databasePath ?? undefined}
-          onChange={(v) => save({ databasePath: v })}
+          onChange={(v) => saveGeneral({ databasePath: v })}
         />
 
         <StringSetting
@@ -368,7 +364,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.generated_path_head"
           subHeadingID="config.general.generated_files_location"
           value={general.generatedPath ?? undefined}
-          onChange={(v) => save({ generatedPath: v })}
+          onChange={(v) => saveGeneral({ generatedPath: v })}
         />
 
         <StringSetting
@@ -376,7 +372,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.metadata_path.heading"
           subHeadingID="config.general.metadata_path.description"
           value={general.metadataPath ?? undefined}
-          onChange={(v) => save({ metadataPath: v })}
+          onChange={(v) => saveGeneral({ metadataPath: v })}
         />
 
         <StringSetting
@@ -384,7 +380,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.cache_path_head"
           subHeadingID="config.general.cache_location"
           value={general.cachePath ?? undefined}
-          onChange={(v) => save({ cachePath: v })}
+          onChange={(v) => saveGeneral({ cachePath: v })}
         />
 
         <StringSetting
@@ -392,7 +388,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.ui.performers.options.image_location.heading"
           subHeadingID="config.ui.performers.options.image_location.description"
           value={general.customPerformerImageLocation ?? undefined}
-          onChange={(v) => save({ customPerformerImageLocation: v })}
+          onChange={(v) => saveGeneral({ customPerformerImageLocation: v })}
         />
       </SettingGroup>
 
@@ -402,7 +398,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.video_ext_head"
           subHeadingID="config.general.video_ext_desc"
           value={listToCommaDelimited(general.videoExtensions ?? undefined)}
-          onChange={(v) => save({ videoExtensions: commaDelimitedToList(v) })}
+          onChange={(v) =>
+            saveGeneral({ videoExtensions: commaDelimitedToList(v) })
+          }
         />
 
         <StringSetting
@@ -410,7 +408,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.image_ext_head"
           subHeadingID="config.general.image_ext_desc"
           value={listToCommaDelimited(general.imageExtensions ?? undefined)}
-          onChange={(v) => save({ imageExtensions: commaDelimitedToList(v) })}
+          onChange={(v) =>
+            saveGeneral({ imageExtensions: commaDelimitedToList(v) })
+          }
         />
 
         <StringSetting
@@ -418,62 +418,42 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.gallery_ext_head"
           subHeadingID="config.general.gallery_ext_desc"
           value={listToCommaDelimited(general.galleryExtensions ?? undefined)}
-          onChange={(v) => save({ galleryExtensions: commaDelimitedToList(v) })}
+          onChange={(v) =>
+            saveGeneral({ galleryExtensions: commaDelimitedToList(v) })
+          }
         />
       </SettingGroup>
 
       <SettingGroup headingID="config.library.exclusions">
-        <Form.Group>
-          <h6>
-            {intl.formatMessage({
-              id: "config.general.excluded_video_patterns_head",
-            })}
-          </h6>
-          <StringListInput
-            className="w-50"
-            value={excludes}
-            setValue={setExcludes}
-            defaultNewValue="sample\.mp4$"
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.excluded_video_patterns_desc",
-            })}
-            <a
-              href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <Icon icon="question-circle" />
-            </a>
-          </Form.Text>
-        </Form.Group>
+        <StringListSetting
+          id="excluded-video-patterns"
+          headingID="config.general.excluded_video_patterns_head"
+          subHeadingID="config.general.excluded_video_patterns_desc"
+          value={general.excludes ?? undefined}
+          onChange={(v) => saveGeneral({ excludes: v })}
+        />
+        {/* <a
+          href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <Icon icon="question-circle" />
+        </a> */}
 
-        <Form.Group>
-          <h6>
-            {intl.formatMessage({
-              id: "config.general.excluded_image_gallery_patterns_head",
-            })}
-          </h6>
-          <StringListInput
-            className="w-50"
-            value={imageExcludes}
-            setValue={setImageExcludes}
-            defaultNewValue="sample\.jpg$"
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.excluded_image_gallery_patterns_desc",
-            })}
-            <a
-              href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <Icon icon="question-circle" />
-            </a>
-          </Form.Text>
-        </Form.Group>
+        <StringListSetting
+          id="excluded-image-gallery-patterns"
+          headingID="config.general.excluded_image_gallery_patterns_head"
+          subHeadingID="config.general.excluded_image_gallery_patterns_desc"
+          value={general.imageExcludes ?? undefined}
+          onChange={(v) => saveGeneral({ imageExcludes: v })}
+        />
+        {/* <a
+          href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          <Icon icon="question-circle" />
+        </a> */}
       </SettingGroup>
 
       <SettingGroup headingID="config.library.gallery_and_image_options">
@@ -482,7 +462,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.create_galleries_from_folders_label"
           subHeadingID="config.general.create_galleries_from_folders_desc"
           checked={general.createGalleriesFromFolders ?? false}
-          onChange={(v) => save({ createGalleriesFromFolders: v })}
+          onChange={(v) => saveGeneral({ createGalleriesFromFolders: v })}
         />
 
         <BooleanSetting
@@ -490,7 +470,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.ui.images.options.write_image_thumbnails.heading"
           subHeadingID="config.ui.images.options.write_image_thumbnails.description"
           checked={general.writeImageThumbnails ?? false}
-          onChange={(v) => save({ writeImageThumbnails: v })}
+          onChange={(v) => saveGeneral({ writeImageThumbnails: v })}
         />
       </SettingGroup>
 
@@ -500,7 +480,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.calculate_md5_and_ohash_label"
           subHeadingID="config.general.calculate_md5_and_ohash_desc"
           checked={general.calculateMD5 ?? false}
-          onChange={(v) => save({ calculateMD5: v })}
+          onChange={(v) => saveGeneral({ calculateMD5: v })}
         />
 
         <SelectSetting
@@ -511,7 +491,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             general.videoFileNamingAlgorithm ?? undefined
           )}
           onChange={(v) =>
-            save({ videoFileNamingAlgorithm: translateNamingHash(v) })
+            saveGeneral({ videoFileNamingAlgorithm: translateNamingHash(v) })
           }
         >
           {namingHashAlgorithms.map((q) => (
@@ -527,7 +507,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           id="transcode-size"
           headingID="config.general.maximum_transcode_size_head"
           subHeadingID="config.general.maximum_transcode_size_desc"
-          onChange={(v) => save({ maxTranscodeSize: translateQuality(v) })}
+          onChange={(v) =>
+            saveGeneral({ maxTranscodeSize: translateQuality(v) })
+          }
           value={resolutionToString(general.maxTranscodeSize ?? undefined)}
         >
           {transcodeQualities.map((q) => (
@@ -542,7 +524,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.maximum_streaming_transcode_size_head"
           subHeadingID="config.general.maximum_streaming_transcode_size_desc"
           onChange={(v) =>
-            save({ maxStreamingTranscodeSize: translateQuality(v) })
+            saveGeneral({ maxStreamingTranscodeSize: translateQuality(v) })
           }
           value={resolutionToString(
             general.maxStreamingTranscodeSize ?? undefined
@@ -562,7 +544,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.number_of_parallel_task_for_scan_generation_head"
           subHeadingID="config.general.number_of_parallel_task_for_scan_generation_desc"
           value={general.parallelTasks ?? undefined}
-          onChange={(v) => save({ parallelTasks: v })}
+          onChange={(v) => saveGeneral({ parallelTasks: v })}
         />
       </SettingGroup>
 
@@ -573,7 +555,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="dialogs.scene_gen.preview_preset_desc"
           value={general.previewPreset ?? undefined}
           onChange={(v) =>
-            save({ previewPreset: (v as GQL.PreviewPreset) ?? undefined })
+            saveGeneral({
+              previewPreset: (v as GQL.PreviewPreset) ?? undefined,
+            })
           }
         >
           {Object.keys(GQL.PreviewPreset).map((p) => (
@@ -583,209 +567,140 @@ export const SettingsConfigurationPanel: React.FC = () => {
           ))}
         </SelectSetting>
 
-        <Form.Group>
-          <BooleanSetting
-            id="preview-include-audio"
-            headingID="config.general.include_audio_head"
-            subHeadingID="config.general.include_audio_desc"
-            checked={general.previewAudio ?? false}
-            onChange={(v) => save({ previewAudio: v })}
-          />
-        </Form.Group>
+        <BooleanSetting
+          id="preview-include-audio"
+          headingID="config.general.include_audio_head"
+          subHeadingID="config.general.include_audio_desc"
+          checked={general.previewAudio ?? false}
+          onChange={(v) => saveGeneral({ previewAudio: v })}
+        />
 
-        <Form.Group id="preview-segments">
-          <h6>
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_seg_count_head",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={previewSegments.toString()}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPreviewSegments(
-                Number.parseInt(e.currentTarget.value || "0", 10)
-              )
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_seg_count_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group id="preview-segment-duration">
-          <h6>
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_seg_duration_head",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={previewSegmentDuration.toString()}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPreviewSegmentDuration(
-                Number.parseFloat(e.currentTarget.value || "0")
-              )
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_seg_duration_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group id="preview-exclude-start">
-          <h6>
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_exclude_start_time_head",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={previewExcludeStart}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPreviewExcludeStart(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_exclude_start_time_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group id="preview-exclude-start">
-          <h6>
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_exclude_end_time_head",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={previewExcludeEnd}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPreviewExcludeEnd(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "dialogs.scene_gen.preview_exclude_end_time_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <ModalSetting<VideoPreviewSettingsInput>
+          id="video-preview-settings"
+          headingID="dialogs.scene_gen.preview_generation_options"
+          value={{
+            previewExcludeEnd: general.previewExcludeEnd,
+            previewExcludeStart: general.previewExcludeStart,
+            previewSegmentDuration: general.previewSegmentDuration,
+            previewSegments: general.previewSegments,
+          }}
+          onChange={(v) => saveGeneral(v)}
+          renderField={(value, setValue) => (
+            <VideoPreviewInput value={value ?? {}} setValue={setValue} />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
       </SettingGroup>
 
-      <SettingGroup headingID="config.general.auth.stash-box_integration">
-        <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
-      </SettingGroup>
+      {/* <SettingGroup headingID="config.general.auth.stash-box_integration">
+        <ModalSetting<GQL.StashBoxInput[]>
+          id="stash-boxes"
+          headingID="config.stashbox.title"
+          subHeadingID="config.stashbox.description"
+          value={general.stashBoxes ?? []}
+          onChange={(v) => saveGeneral({
+            stashBoxes: v,
+          })}
+          renderField={(value, setValue) => {
+            const stashBoxes = (general.stashBoxes ?? []).map((box, i) => ({
+              name: box?.name ?? undefined,
+              endpoint: box.endpoint,
+              api_key: box.api_key,
+              index: i,
+            })) ?? [];
+
+            return (
+              <StashBoxConfiguration boxes={stashBoxes} saveBoxes={(v) => {
+                setValue(v.map(vv => {
+                  return {
+                    api_key: vv.api_key ?? "",
+                    endpoint: vv.endpoint ?? "",
+                    name: vv.name ?? "",
+                  };
+                }))
+              }}/>
+            );
+          }}
+          renderValue={(v) => { 
+            return (
+              <div>
+                {v?.map(vv => <div>{vv.name}</div>)}
+              </div>
+            );
+          }}
+        />
+        
+      </SettingGroup> */}
+
+      <StashBoxSetting
+        value={general.stashBoxes ?? []}
+        onChange={(v) => saveGeneral({ stashBoxes: v })}
+      />
 
       <SettingGroup headingID="config.general.auth.authentication">
-        <Form.Group id="username">
-          <h6>{intl.formatMessage({ id: "config.general.auth.username" })}</h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={username}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setUsername(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.auth.username_desc" })}
-          </Form.Text>
-        </Form.Group>
-        <Form.Group id="password">
-          <h6>{intl.formatMessage({ id: "config.general.auth.password" })}</h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="password"
-            defaultValue={password}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setPassword(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.auth.password_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <ModalSetting<AuthenticationSettingsInput>
+          id="authentication-settings"
+          headingID="config.general.auth.credentials.heading"
+          subHeadingID="config.general.auth.credentials.description"
+          value={{
+            username: general.username,
+            password: general.password,
+          }}
+          onChange={(v) => saveGeneral(v)}
+          renderField={(value, setValue) => (
+            <AuthenticationInput value={value ?? {}} setValue={setValue} />
+          )}
+          renderValue={(v) => {
+            if (v?.username && v?.password)
+              return <span>{v?.username ?? ""}</span>;
+            return <></>;
+          }}
+        />
 
-        <Form.Group id="apikey">
-          <h6>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h6>
-          <InputGroup>
-            <Form.Control
-              className="col col-sm-6 text-input"
-              value={data.configuration.general.apiKey}
-              readOnly
-            />
-            <InputGroup.Append>
-              <Button
-                className=""
-                title={intl.formatMessage({
-                  id: "config.general.auth.generate_api_key",
-                })}
-                onClick={() => onGenerateAPIKey()}
-              >
-                <Icon icon="redo" />
-              </Button>
-              <Button
-                className=""
-                variant="danger"
-                title={intl.formatMessage({
-                  id: "config.general.auth.clear_api_key",
-                })}
-                onClick={() => onClearAPIKey()}
-              >
-                <Icon icon="minus" />
-              </Button>
-            </InputGroup.Append>
-          </InputGroup>
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
-          </Form.Text>
-        </Form.Group>
+        <div className="setting" id="apikey">
+          <div>
+            <h3>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h3>
 
-        <Form.Group id="maxSessionAge">
-          <h6>
-            {intl.formatMessage({
-              id: "config.general.auth.maximum_session_age",
-            })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={maxSessionAge.toString()}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setMaxSessionAge(
-                Number.parseInt(e.currentTarget.value || "0", 10)
-              )
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.auth.maximum_session_age_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+            <div className="value text-break">{apiKey}</div>
 
-        <Form.Group id="trusted-proxies">
-          <h6>
-            {intl.formatMessage({ id: "config.general.auth.trusted_proxies" })}
-          </h6>
-          <StringListInput
-            value={trustedProxies ?? []}
-            setValue={(value) => setTrustedProxies(value)}
-            defaultNewValue=""
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.auth.trusted_proxies_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+            <div className="sub-heading">
+              {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
+            </div>
+          </div>
+          <div>
+            <Button
+              disabled={!general.username || !general.password}
+              onClick={() => onGenerateAPIKey()}
+            >
+              {intl.formatMessage({
+                id: "config.general.auth.generate_api_key",
+              })}
+            </Button>
+            <Button variant="danger" onClick={() => onClearAPIKey()}>
+              {intl.formatMessage({
+                id: "config.general.auth.clear_api_key",
+              })}
+            </Button>
+          </div>
+        </div>
+
+        <NumberSetting
+          id="maxSessionAge"
+          headingID="config.general.auth.maximum_session_age"
+          subHeadingID="config.general.auth.maximum_session_age_desc"
+          value={general.maxSessionAge ?? undefined}
+          onChange={(v) => saveGeneral({ maxSessionAge: v })}
+        />
+
+        <StringListSetting
+          id="trusted-proxies"
+          headingID="config.general.auth.trusted_proxies"
+          subHeadingID="config.general.auth.trusted_proxies_desc"
+          value={general.trustedProxies ?? undefined}
+          onChange={(v) => saveGeneral({ trustedProxies: v })}
+        />
       </SettingGroup>
 
       <SettingGroup headingID="config.general.logging">
@@ -793,7 +708,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.auth.log_file"
           subHeadingID="config.general.auth.log_file_desc"
           value={general.logFile ?? undefined}
-          onChange={(v) => save({ logFile: v })}
+          onChange={(v) => saveGeneral({ logFile: v })}
         />
 
         <BooleanSetting
@@ -801,13 +716,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.auth.log_to_terminal"
           subHeadingID="config.general.auth.log_to_terminal_desc"
           checked={general.logOut ?? false}
-          onChange={(v) => save({ logOut: v })}
+          onChange={(v) => saveGeneral({ logOut: v })}
         />
 
         <SelectSetting
           id="log-level"
           headingID="config.logs.log_level"
-          onChange={(v) => save({ logLevel: v })}
+          onChange={(v) => saveGeneral({ logLevel: v })}
           value={general.logLevel ?? undefined}
         >
           {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
@@ -822,15 +737,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           headingID="config.general.auth.log_http"
           subHeadingID="config.general.auth.log_http_desc"
           checked={general.logAccess ?? false}
-          onChange={(v) => save({ logAccess: v })}
+          onChange={(v) => saveGeneral({ logAccess: v })}
         />
       </SettingGroup>
-
-      <hr />
-
-      <Button variant="primary" onClick={() => onSave()}>
-        <FormattedMessage id="actions.save" />
-      </Button>
     </>
   );
 };

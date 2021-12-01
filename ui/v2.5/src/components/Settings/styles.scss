@@ -21,6 +21,11 @@
     font-size: 2rem;
   }
 
+  .sub-heading {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
   .setting {
     align-items: center;
     display: flex;
@@ -33,14 +38,17 @@
       margin-bottom: 0;
     }
 
-    .sub-heading {
-      font-size: 0.8rem;
-      margin-top: 0.5rem;
+    > div:first-child {
+      flex-grow: 0;
     }
 
     > div:last-child {
       min-width: 100px;
       text-align: right;
+
+      button {
+        margin: 0.25rem;
+      }
     }
 
     &:not(:last-child) {

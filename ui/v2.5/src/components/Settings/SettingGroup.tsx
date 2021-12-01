@@ -4,11 +4,13 @@ import { useIntl } from "react-intl";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
 
 interface ISettingGroup {
+  id?: string;
   headingID: string;
   subHeadingID?: string;
 }
 
 export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
+  id,
   children,
   headingID,
   subHeadingID,
@@ -16,10 +18,12 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
   const intl = useIntl();
 
   return (
-    <div className="setting-group">
+    <div className="setting-group" id={id}>
       <h1>{intl.formatMessage({ id: headingID })}</h1>
       {subHeadingID ? (
-        <h2>{intl.formatMessage({ id: subHeadingID })}</h2>
+        <div className="sub-heading">
+          {intl.formatMessage({ id: subHeadingID })}
+        </div>
       ) : undefined}
       <Card>{children}</Card>
     </div>
