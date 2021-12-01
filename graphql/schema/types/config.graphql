@@ -282,7 +282,8 @@ type ConfigInterfaceResult {
   slideshowDelay: Int
 
   """Fields are true if creating via dropdown menus are disabled"""
-  disabledDropdownCreate: ConfigDisableDropdownCreate!
+  disableDropdownCreate: ConfigDisableDropdownCreate!
+  disabledDropdownCreate: ConfigDisableDropdownCreate! @deprecated(reason: "Use disableDropdownCreate")
 
   """Handy Connection Key"""
   handyKey: String
