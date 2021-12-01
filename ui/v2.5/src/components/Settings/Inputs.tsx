@@ -33,6 +33,7 @@ const Setting: React.FC<PropsWithChildren<ISetting>> = ({
 };
 
 interface IBooleanSetting extends ISetting {
+  id: string;
   checked?: boolean;
   onChange: (v: boolean) => void;
 }

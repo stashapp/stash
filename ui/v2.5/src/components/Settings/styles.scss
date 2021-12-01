@@ -59,10 +59,16 @@
       font-family: "Courier New", Courier, monospace;
       margin-bottom: 0.5rem;
       margin-top: 0.5rem;
+
+      pre {
+        max-height: 250px;
+        width: 100%;
+      }
     }
   }
 
   .setting-group {
+    padding-bottom: 15px;
     width: 100%;
 
     &:not(:last-child) {

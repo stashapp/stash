@@ -1,160 +1,41 @@
-import React, { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import React from "react";
+import { Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
-import {
-  useConfiguration,
-  useConfigureDefaults,
-  useConfigureInterface,
-} from "src/core/StashService";
-import { useToast } from "src/hooks";
-import * as GQL from "src/core/generated-graphql";
 import { CheckboxGroup } from "./CheckboxGroup";
-import { withoutTypename } from "src/utils";
 import { SettingSection } from "../SettingSection";
-import { BooleanSetting, SelectSetting } from "../Inputs";
+import {
+  BooleanSetting,
+  ModalSetting,
+  NumberSetting,
+  SelectSetting,
+  StringSetting,
+} from "../Inputs";
+import { SettingStateContext } from "../context";
+import { DurationUtils } from "src/utils";
 
 const allMenuItems = [
-  { id: "scenes", label: "Scenes" },
-  { id: "images", label: "Images" },
-  { id: "movies", label: "Movies" },
-  { id: "markers", label: "Markers" },
-  { id: "galleries", label: "Galleries" },
-  { id: "performers", label: "Performers" },
-  { id: "studios", label: "Studios" },
-  { id: "tags", label: "Tags" },
+  { id: "scenes", headingID: "scenes" },
+  { id: "images", headingID: "images" },
+  { id: "movies", headingID: "movies" },
+  { id: "markers", headingID: "markers" },
+  { id: "galleries", headingID: "galleries" },
+  { id: "performers", headingID: "performers" },
+  { id: "studios", headingID: "studios" },
+  { id: "tags", headingID: "tags" },
 ];
-
-const SECONDS_TO_MS = 1000;
 
 export const SettingsInterfacePanel: React.FC = () => {
   const intl = useIntl();
-  const Toast = useToast();
-  const { data: config, error, loading } = useConfiguration();
-  const [menuItemIds, setMenuItemIds] = useState<string[]>(
-    allMenuItems.map((item) => item.id)
-  );
-  const [noBrowser, setNoBrowserFlag] = useState<boolean>(false);
-  const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
-  const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
-  const [wallPlayback, setWallPlayback] = useState<string>("video");
-  const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
-  const [autostartVideo, setAutostartVideo] = useState<boolean>(false);
-  const [
-    autostartVideoOnPlaySelected,
-    setAutostartVideoOnPlaySelected,
-  ] = useState(true);
-  const [continuePlaylistDefault, setContinuePlaylistDefault] = useState(false);
-  const [slideshowDelay, setSlideshowDelay] = useState<number>(0);
-  const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
-  const [css, setCSS] = useState<string>();
-  const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
-  const [language, setLanguage] = useState<string>("en");
-  const [handyKey, setHandyKey] = useState<string>();
-  const [funscriptOffset, setFunscriptOffset] = useState<number>(0);
-  const [deleteFileDefault, setDeleteFileDefault] = useState<boolean>(false);
-  const [deleteGeneratedDefault, setDeleteGeneratedDefault] = useState<boolean>(
-    true
-  );
-  const [
-    disableDropdownCreate,
-    setDisableDropdownCreate,
-  ] = useState<GQL.ConfigDisableDropdownCreateInput>({});
 
-  const [updateInterfaceConfig] = useConfigureInterface({
-    menuItems: menuItemIds,
-    soundOnPreview,
-    wallShowTitle,
-    wallPlayback,
-    maximumLoopDuration,
-    noBrowser,
-    autostartVideo,
-    autostartVideoOnPlaySelected,
-    continuePlaylistDefault,
-    showStudioAsText,
-    css,
-    cssEnabled,
-    language,
-    slideshowDelay,
-    handyKey,
-    funscriptOffset,
-    disableDropdownCreate,
-  });
-
-  const [updateDefaultsConfig] = useConfigureDefaults();
-
-  useEffect(() => {
-    if (config) {
-      const { interface: iCfg, defaults } = config.configuration;
-      setMenuItemIds(iCfg.menuItems ?? allMenuItems.map((item) => item.id));
-      setSoundOnPreview(iCfg.soundOnPreview ?? true);
-      setWallShowTitle(iCfg.wallShowTitle ?? true);
-      setWallPlayback(iCfg.wallPlayback ?? "video");
-      setMaximumLoopDuration(iCfg.maximumLoopDuration ?? 0);
-      setNoBrowserFlag(iCfg?.noBrowser ?? false);
-      setAutostartVideo(iCfg.autostartVideo ?? false);
-      setAutostartVideoOnPlaySelected(
-        iCfg.autostartVideoOnPlaySelected ?? true
-      );
-      setContinuePlaylistDefault(iCfg.continuePlaylistDefault ?? false);
-      setShowStudioAsText(iCfg.showStudioAsText ?? false);
-      setCSS(iCfg.css ?? "");
-      setCSSEnabled(iCfg.cssEnabled ?? false);
-      setLanguage(iCfg.language ?? "en-US");
-      setSlideshowDelay(iCfg.slideshowDelay ?? 5000);
-      setHandyKey(iCfg.handyKey ?? "");
-      setFunscriptOffset(iCfg.funscriptOffset ?? 0);
-      setDisableDropdownCreate({
-        performer: iCfg.disabledDropdownCreate.performer,
-        studio: iCfg.disabledDropdownCreate.studio,
-        tag: iCfg.disabledDropdownCreate.tag,
-      });
-
-      setDeleteFileDefault(defaults.deleteFile ?? false);
-      setDeleteGeneratedDefault(defaults.deleteGenerated ?? true);
-    }
-  }, [config]);
-
-  async function onSave() {
-    const prevCSS = config?.configuration.interface.css;
-    const prevCSSenabled = config?.configuration.interface.cssEnabled;
-    try {
-      if (config?.configuration.defaults) {
-        await updateDefaultsConfig({
-          variables: {
-            input: {
-              ...withoutTypename(config?.configuration.defaults),
-              deleteFile: deleteFileDefault,
-              deleteGenerated: deleteGeneratedDefault,
-            },
-          },
-        });
-      }
-      const result = await updateInterfaceConfig();
-
-      // Force refetch of custom css if it was changed
-      if (
-        prevCSS !== result.data?.configureInterface.css ||
-        prevCSSenabled !== result.data?.configureInterface.cssEnabled
-      ) {
-        await fetch("/css", { cache: "reload" });
-        window.location.reload();
-      }
-
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl
-              .formatMessage({ id: "configuration" })
-              .toLocaleLowerCase(),
-          }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
+  const {
+    interface: iface,
+    saveInterface,
+    defaults,
+    saveDefaults,
+    loading,
+    error,
+  } = React.useContext(SettingStateContext);
 
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
@@ -165,8 +46,8 @@ export const SettingsInterfacePanel: React.FC = () => {
         <SelectSetting
           id="language"
           headingID="config.ui.language.heading"
-          value={language}
-          onChange={(v) => setLanguage(v)}
+          value={iface.language ?? undefined}
+          onChange={(v) => saveInterface({ language: v })}
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
@@ -181,18 +62,27 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
 
-        <Form.Group>
-          <h5>{intl.formatMessage({ id: "config.ui.menu_items.heading" })}</h5>
+        <div className="setting-group">
+          <div className="setting">
+            <div>
+              <h3>
+                {intl.formatMessage({
+                  id: "config.ui.menu_items.heading",
+                })}
+              </h3>
+              <div className="sub-heading">
+                {intl.formatMessage({ id: "config.ui.menu_items.description" })}
+              </div>
+            </div>
+            <div />
+          </div>
           <CheckboxGroup
             groupId="menu-items"
             items={allMenuItems}
-            checkedIds={menuItemIds}
-            onChange={setMenuItemIds}
+            checkedIds={iface.menuItems ?? undefined}
+            onChange={(v) => saveInterface({ menuItems: v })}
           />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.ui.menu_items.description" })}
-          </Form.Text>
-        </Form.Group>
+        </div>
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">
@@ -200,8 +90,8 @@ export const SettingsInterfacePanel: React.FC = () => {
           id="skip-browser"
           headingID="config.ui.desktop_integration.skip_opening_browser"
           subHeadingID="config.ui.desktop_integration.skip_opening_browser_on_startup"
-          checked={noBrowser}
-          onChange={() => setNoBrowserFlag(!noBrowser)}
+          checked={iface.noBrowser ?? undefined}
+          onChange={(v) => saveInterface({ noBrowser: v })}
         />
       </SettingSection>
 
@@ -209,22 +99,22 @@ export const SettingsInterfacePanel: React.FC = () => {
         <BooleanSetting
           id="wall-show-title"
           headingID="config.ui.scene_wall.options.display_title"
-          checked={wallShowTitle}
-          onChange={() => setWallShowTitle(!wallShowTitle)}
+          checked={iface.wallShowTitle ?? undefined}
+          onChange={(v) => saveInterface({ wallShowTitle: v })}
         />
         <BooleanSetting
           id="wall-sound-enabled"
-          checked={soundOnPreview}
           headingID="config.ui.scene_wall.options.toggle_sound"
-          onChange={() => setSoundOnPreview(!soundOnPreview)}
+          checked={iface.soundOnPreview ?? undefined}
+          onChange={(v) => saveInterface({ soundOnPreview: v })}
         />
 
         <SelectSetting
           id="wall-preview"
           headingID="config.ui.preview_type.heading"
           subHeadingID="config.ui.preview_type.description"
-          value={wallPlayback}
-          onChange={(v) => setWallPlayback(v)}
+          value={iface.wallPlayback ?? undefined}
+          onChange={(v) => saveInterface({ wallPlayback: v })}
         >
           <option value="video">
             {intl.formatMessage({ id: "config.ui.preview_type.options.video" })}
@@ -245,227 +135,186 @@ export const SettingsInterfacePanel: React.FC = () => {
       <SettingSection headingID="config.ui.scene_list.heading">
         <BooleanSetting
           id="show-text-studios"
-          checked={showStudioAsText}
           headingID="config.ui.scene_list.options.show_studio_as_text"
-          onChange={() => {
-            setShowStudioAsText(!showStudioAsText);
-          }}
+          checked={iface.showStudioAsText ?? undefined}
+          onChange={(v) => saveInterface({ showStudioAsText: v })}
         />
       </SettingSection>
 
       <SettingSection headingID="config.ui.scene_player.heading">
         <BooleanSetting
           id="auto-start-video"
-          checked={autostartVideo}
           headingID="config.ui.scene_player.options.auto_start_video"
-          onChange={() => {
-            setAutostartVideo(!autostartVideo);
-          }}
+          checked={iface.autostartVideo ?? undefined}
+          onChange={(v) => saveInterface({ autostartVideo: v })}
         />
         <BooleanSetting
           id="auto-start-video-on-play-selected"
-          checked={autostartVideoOnPlaySelected}
           headingID="config.ui.scene_player.options.auto_start_video_on_play_selected.heading"
           subHeadingID="config.ui.scene_player.options.auto_start_video_on_play_selected.description"
-          onChange={() => {
-            setAutostartVideoOnPlaySelected(!autostartVideoOnPlaySelected);
-          }}
+          checked={iface.autostartVideoOnPlaySelected ?? undefined}
+          onChange={(v) => saveInterface({ autostartVideoOnPlaySelected: v })}
         />
 
         <BooleanSetting
           id="continue-playlist-default"
-          checked={continuePlaylistDefault}
           headingID="config.ui.scene_player.options.continue_playlist_default.heading"
           subHeadingID="config.ui.scene_player.options.continue_playlist_default.description"
-          onChange={() => {
-            setContinuePlaylistDefault(!continuePlaylistDefault);
-          }}
+          checked={iface.continuePlaylistDefault ?? undefined}
+          onChange={(v) => saveInterface({ continuePlaylistDefault: v })}
         />
 
-        <Form.Group id="max-loop-duration">
-          <h6>
-            {intl.formatMessage({ id: "config.ui.max_loop_duration.heading" })}
-          </h6>
-          <DurationInput
-            className="row col col-4"
-            numericValue={maximumLoopDuration}
-            onValueChange={(duration) => setMaximumLoopDuration(duration ?? 0)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.max_loop_duration.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <ModalSetting<number>
+          id="max-loop-duration"
+          headingID="config.ui.max_loop_duration.heading"
+          subHeadingID="config.ui.max_loop_duration.description"
+          value={iface.maximumLoopDuration ?? undefined}
+          onChange={(v) => saveInterface({ maximumLoopDuration: v })}
+          renderField={(value, setValue) => (
+            <DurationInput
+              numericValue={value}
+              onValueChange={(duration) => setValue(duration ?? 0)}
+            />
+          )}
+          renderValue={(v) => {
+            return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
+          }}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.images">
-        <Form.Group id="slideshow-delay">
-          <h5>
-            {intl.formatMessage({ id: "config.ui.slideshow_delay.heading" })}
-          </h5>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={slideshowDelay / SECONDS_TO_MS}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSlideshowDelay(
-                Number.parseInt(e.currentTarget.value, 10) * SECONDS_TO_MS
-              );
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.slideshow_delay.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <NumberSetting
+          headingID="config.ui.slideshow_delay.heading"
+          subHeadingID="config.ui.slideshow_delay.description"
+          value={iface.slideshowDelay ?? undefined}
+          onChange={(v) => saveInterface({ slideshowDelay: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.editing.heading">
-        <Form.Group>
-          <h6>
-            {intl.formatMessage({
-              id: "config.ui.editing.disable_dropdown_create.heading",
-            })}
-          </h6>
-          <Form.Check
+        <div className="setting-group">
+          <div className="setting">
+            <div>
+              <h3>
+                {intl.formatMessage({
+                  id: "config.ui.editing.disable_dropdown_create.heading",
+                })}
+              </h3>
+              <div className="sub-heading">
+                {intl.formatMessage({
+                  id: "config.ui.editing.disable_dropdown_create.description",
+                })}
+              </div>
+            </div>
+            <div />
+          </div>
+          <BooleanSetting
             id="disableDropdownCreate_performer"
-            checked={disableDropdownCreate.performer ?? false}
-            label={intl.formatMessage({
-              id: "performer",
-            })}
-            onChange={() => {
-              setDisableDropdownCreate({
-                ...disableDropdownCreate,
-                performer: !disableDropdownCreate.performer ?? true,
-              });
-            }}
+            headingID="performer"
+            checked={iface.disableDropdownCreate?.performer ?? undefined}
+            onChange={(v) =>
+              saveInterface({
+                disableDropdownCreate: {
+                  ...iface.disableDropdownCreate,
+                  performer: v,
+                },
+              })
+            }
           />
-
-          <Form.Check
+          <BooleanSetting
             id="disableDropdownCreate_studio"
-            checked={disableDropdownCreate.studio ?? false}
-            label={intl.formatMessage({
-              id: "studio",
-            })}
-            onChange={() => {
-              setDisableDropdownCreate({
-                ...disableDropdownCreate,
-                studio: !disableDropdownCreate.studio ?? true,
-              });
-            }}
+            headingID="studio"
+            checked={iface.disableDropdownCreate?.studio ?? undefined}
+            onChange={(v) =>
+              saveInterface({
+                disableDropdownCreate: {
+                  ...iface.disableDropdownCreate,
+                  studio: v,
+                },
+              })
+            }
           />
-
-          <Form.Check
+          <BooleanSetting
             id="disableDropdownCreate_tag"
-            checked={disableDropdownCreate.tag ?? false}
-            label={intl.formatMessage({
-              id: "tag",
-            })}
-            onChange={() => {
-              setDisableDropdownCreate({
-                ...disableDropdownCreate,
-                tag: !disableDropdownCreate.tag ?? true,
-              });
-            }}
+            headingID="tag"
+            checked={iface.disableDropdownCreate?.tag ?? undefined}
+            onChange={(v) =>
+              saveInterface({
+                disableDropdownCreate: {
+                  ...iface.disableDropdownCreate,
+                  tag: v,
+                },
+              })
+            }
           />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.editing.disable_dropdown_create.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        </div>
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">
         <BooleanSetting
-          id="custom-css"
-          checked={cssEnabled}
+          id="custom-css-enabled"
           headingID="config.ui.custom_css.option_label"
-          onChange={() => {
-            setCSSEnabled(!cssEnabled);
-          }}
+          checked={iface.cssEnabled ?? undefined}
+          onChange={(v) => saveInterface({ cssEnabled: v })}
         />
 
-        <Form.Control
-          as="textarea"
-          value={css}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setCSS(e.currentTarget.value)
-          }
-          rows={16}
-          className="col col-sm-6 text-input code"
+        <ModalSetting<string>
+          id="custom-css"
+          headingID="config.ui.custom_css.heading"
+          subHeadingID="config.ui.custom_css.description"
+          value={iface.css ?? undefined}
+          onChange={(v) => saveInterface({ css: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
         />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.ui.custom_css.description" })}
-        </Form.Text>
       </SettingSection>
 
       <SettingSection headingID="config.ui.interactive_scenes">
-        <Form.Group>
-          <h5>
-            {intl.formatMessage({
-              id: "config.ui.handy_connection_key.heading",
-            })}
-          </h5>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            value={handyKey}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setHandyKey(e.currentTarget.value);
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.handy_connection_key.description",
-            })}
-          </Form.Text>
-        </Form.Group>
-        <Form.Group>
-          <h5>
-            {intl.formatMessage({ id: "config.ui.funscript_offset.heading" })}
-          </h5>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={funscriptOffset}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setFunscriptOffset(Number.parseInt(e.currentTarget.value, 10));
-            }}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.ui.funscript_offset.description",
-            })}
-          </Form.Text>
-        </Form.Group>
+        <StringSetting
+          headingID="config.ui.handy_connection_key.heading"
+          subHeadingID="config.ui.handy_connection_key.description"
+          value={iface.handyKey ?? undefined}
+          onChange={(v) => saveInterface({ handyKey: v })}
+        />
+        <NumberSetting
+          headingID="config.ui.funscript_offset.heading"
+          subHeadingID="config.ui.funscript_offset.description"
+          value={iface.funscriptOffset ?? undefined}
+          onChange={(v) => saveInterface({ funscriptOffset: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.delete_options.heading">
         <BooleanSetting
           id="delete-file-default"
-          checked={deleteFileDefault}
           headingID="config.ui.delete_options.options.delete_file"
-          onChange={() => {
-            setDeleteFileDefault(!deleteFileDefault);
+          checked={defaults.deleteFile ?? undefined}
+          onChange={(v) => {
+            saveDefaults({ deleteFile: v });
           }}
         />
         <BooleanSetting
           id="delete-generated-default"
-          checked={deleteGeneratedDefault}
           headingID="config.ui.delete_options.options.delete_generated_supporting_files"
           subHeadingID="config.ui.delete_options.description"
-          onChange={() => {
-            setDeleteGeneratedDefault(!deleteGeneratedDefault);
+          checked={defaults.deleteGenerated ?? undefined}
+          onChange={(v) => {
+            saveDefaults({ deleteGenerated: v });
           }}
         />
       </SettingSection>
-
-      <hr />
-      <Button variant="primary" onClick={() => onSave()}>
-        {intl.formatMessage({ id: "actions.save" })}
-      </Button>
     </>
   );
 };

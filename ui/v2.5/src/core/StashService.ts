@@ -743,9 +743,8 @@ export const useConfigureGeneral = () =>
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
-export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
+export const useConfigureInterface = () =>
   GQL.useConfigureInterfaceMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
