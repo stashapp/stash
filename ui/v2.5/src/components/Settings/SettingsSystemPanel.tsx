@@ -1,19 +1,14 @@
 import React from "react";
 import { useIntl } from "react-intl";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useGenerateAPIKey } from "src/core/StashService";
-import { useToast } from "src/hooks";
 import { LoadingIndicator } from "src/components/Shared";
-import { StashBoxSetting } from "./StashBoxConfiguration";
-import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
   ModalSetting,
   NumberSetting,
   SelectSetting,
-  StringListSetting,
   StringSetting,
 } from "./Inputs";
 import { SettingStateContext } from "./context";
@@ -147,111 +142,10 @@ const VideoPreviewInput: React.FC<IVideoPreviewInput> = ({
   );
 };
 
-type AuthenticationSettingsInput = Pick<
-  GQL.ConfigGeneralInput,
-  "username" | "password"
->;
-
-interface IAuthenticationInput {
-  value: AuthenticationSettingsInput;
-  setValue: (v: AuthenticationSettingsInput) => void;
-}
-
-const AuthenticationInput: React.FC<IAuthenticationInput> = ({
-  value,
-  setValue,
-}) => {
-  const intl = useIntl();
-
-  function set(v: Partial<AuthenticationSettingsInput>) {
-    setValue({
-      ...value,
-      ...v,
-    });
-  }
-
-  const { username, password } = value;
-
-  return (
-    <div>
-      <Form.Group id="username">
-        <h6>{intl.formatMessage({ id: "config.general.auth.username" })}</h6>
-        <Form.Control
-          className="text-input"
-          value={username ?? ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            set({ username: e.currentTarget.value })
-          }
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.general.auth.username_desc" })}
-        </Form.Text>
-      </Form.Group>
-      <Form.Group id="password">
-        <h6>{intl.formatMessage({ id: "config.general.auth.password" })}</h6>
-        <Form.Control
-          className="text-input"
-          type="password"
-          value={password ?? ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            set({ password: e.currentTarget.value })
-          }
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({ id: "config.general.auth.password_desc" })}
-        </Form.Text>
-      </Form.Group>
-    </div>
-  );
-};
-
 export const SettingsConfigurationPanel: React.FC = () => {
-  const intl = useIntl();
-  const Toast = useToast();
-
-  const { general, apiKey, loading, error, saveGeneral } = React.useContext(
+  const { general, loading, error, saveGeneral } = React.useContext(
     SettingStateContext
   );
-
-  const [generateAPIKey] = useGenerateAPIKey();
-
-  function commaDelimitedToList(value: string | undefined) {
-    if (value) {
-      return value.split(",").map((s) => s.trim());
-    }
-  }
-
-  function listToCommaDelimited(value: string[] | undefined) {
-    if (value) {
-      return value.join(", ");
-    }
-  }
-
-  async function onGenerateAPIKey() {
-    try {
-      await generateAPIKey({
-        variables: {
-          input: {},
-        },
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function onClearAPIKey() {
-    try {
-      await generateAPIKey({
-        variables: {
-          input: {
-            clear: true,
-          },
-        },
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,
@@ -332,11 +226,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   return (
     <>
-      <StashSetting
-        value={general.stashes ?? []}
-        onChange={(v) => saveGeneral({ stashes: v })}
-      />
-
       <SettingSection headingID="config.application_paths.heading">
         <StringSetting
           id="database-path"
@@ -376,88 +265,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           subHeadingID="config.ui.performers.options.image_location.description"
           value={general.customPerformerImageLocation ?? undefined}
           onChange={(v) => saveGeneral({ customPerformerImageLocation: v })}
-        />
-      </SettingSection>
-
-      <SettingSection headingID="config.library.media_content_extensions">
-        <StringSetting
-          id="video-extensions"
-          headingID="config.general.video_ext_head"
-          subHeadingID="config.general.video_ext_desc"
-          value={listToCommaDelimited(general.videoExtensions ?? undefined)}
-          onChange={(v) =>
-            saveGeneral({ videoExtensions: commaDelimitedToList(v) })
-          }
-        />
-
-        <StringSetting
-          id="image-extensions"
-          headingID="config.general.image_ext_head"
-          subHeadingID="config.general.image_ext_desc"
-          value={listToCommaDelimited(general.imageExtensions ?? undefined)}
-          onChange={(v) =>
-            saveGeneral({ imageExtensions: commaDelimitedToList(v) })
-          }
-        />
-
-        <StringSetting
-          id="gallery-extensions"
-          headingID="config.general.gallery_ext_head"
-          subHeadingID="config.general.gallery_ext_desc"
-          value={listToCommaDelimited(general.galleryExtensions ?? undefined)}
-          onChange={(v) =>
-            saveGeneral({ galleryExtensions: commaDelimitedToList(v) })
-          }
-        />
-      </SettingSection>
-
-      <SettingSection headingID="config.library.exclusions">
-        <StringListSetting
-          id="excluded-video-patterns"
-          headingID="config.general.excluded_video_patterns_head"
-          subHeadingID="config.general.excluded_video_patterns_desc"
-          value={general.excludes ?? undefined}
-          onChange={(v) => saveGeneral({ excludes: v })}
-        />
-        {/* <a
-          href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <Icon icon="question-circle" />
-        </a> */}
-
-        <StringListSetting
-          id="excluded-image-gallery-patterns"
-          headingID="config.general.excluded_image_gallery_patterns_head"
-          subHeadingID="config.general.excluded_image_gallery_patterns_desc"
-          value={general.imageExcludes ?? undefined}
-          onChange={(v) => saveGeneral({ imageExcludes: v })}
-        />
-        {/* <a
-          href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <Icon icon="question-circle" />
-        </a> */}
-      </SettingSection>
-
-      <SettingSection headingID="config.library.gallery_and_image_options">
-        <BooleanSetting
-          id="create-galleries-from-folders"
-          headingID="config.general.create_galleries_from_folders_label"
-          subHeadingID="config.general.create_galleries_from_folders_desc"
-          checked={general.createGalleriesFromFolders ?? false}
-          onChange={(v) => saveGeneral({ createGalleriesFromFolders: v })}
-        />
-
-        <BooleanSetting
-          id="write-image-thumbnails"
-          headingID="config.ui.images.options.write_image_thumbnails.heading"
-          subHeadingID="config.ui.images.options.write_image_thumbnails.description"
-          checked={general.writeImageThumbnails ?? false}
-          onChange={(v) => saveGeneral({ writeImageThumbnails: v })}
         />
       </SettingSection>
 
@@ -578,75 +385,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           renderValue={() => {
             return <></>;
           }}
-        />
-      </SettingSection>
-
-      <StashBoxSetting
-        value={general.stashBoxes ?? []}
-        onChange={(v) => saveGeneral({ stashBoxes: v })}
-      />
-
-      <SettingSection headingID="config.general.auth.authentication">
-        <ModalSetting<AuthenticationSettingsInput>
-          id="authentication-settings"
-          headingID="config.general.auth.credentials.heading"
-          subHeadingID="config.general.auth.credentials.description"
-          value={{
-            username: general.username,
-            password: general.password,
-          }}
-          onChange={(v) => saveGeneral(v)}
-          renderField={(value, setValue) => (
-            <AuthenticationInput value={value ?? {}} setValue={setValue} />
-          )}
-          renderValue={(v) => {
-            if (v?.username && v?.password)
-              return <span>{v?.username ?? ""}</span>;
-            return <></>;
-          }}
-        />
-
-        <div className="setting" id="apikey">
-          <div>
-            <h3>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h3>
-
-            <div className="value text-break">{apiKey}</div>
-
-            <div className="sub-heading">
-              {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
-            </div>
-          </div>
-          <div>
-            <Button
-              disabled={!general.username || !general.password}
-              onClick={() => onGenerateAPIKey()}
-            >
-              {intl.formatMessage({
-                id: "config.general.auth.generate_api_key",
-              })}
-            </Button>
-            <Button variant="danger" onClick={() => onClearAPIKey()}>
-              {intl.formatMessage({
-                id: "config.general.auth.clear_api_key",
-              })}
-            </Button>
-          </div>
-        </div>
-
-        <NumberSetting
-          id="maxSessionAge"
-          headingID="config.general.auth.maximum_session_age"
-          subHeadingID="config.general.auth.maximum_session_age_desc"
-          value={general.maxSessionAge ?? undefined}
-          onChange={(v) => saveGeneral({ maxSessionAge: v })}
-        />
-
-        <StringListSetting
-          id="trusted-proxies"
-          headingID="config.general.auth.trusted_proxies"
-          subHeadingID="config.general.auth.trusted_proxies_desc"
-          value={general.trustedProxies ?? undefined}
-          onChange={(v) => saveGeneral({ trustedProxies: v })}
         />
       </SettingSection>
 

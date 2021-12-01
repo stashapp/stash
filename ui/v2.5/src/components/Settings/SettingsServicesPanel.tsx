@@ -14,7 +14,7 @@ import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
 
-export const SettingsDLNAPanel: React.FC = () => {
+export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
 

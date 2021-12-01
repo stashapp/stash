@@ -28,21 +28,16 @@ const allMenuItems = [
 export const SettingsInterfacePanel: React.FC = () => {
   const intl = useIntl();
 
-  const {
-    interface: iface,
-    saveInterface,
-    defaults,
-    saveDefaults,
-    loading,
-    error,
-  } = React.useContext(SettingStateContext);
+  const { interface: iface, saveInterface, loading, error } = React.useContext(
+    SettingStateContext
+  );
 
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
   return (
     <>
-      <SettingSection headingID="config.ui.interface.basic_settings">
+      <SettingSection headingID="config.ui.basic_settings">
         <SelectSetting
           id="language"
           headingID="config.ui.language.heading"
@@ -182,7 +177,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.ui.images">
+      <SettingSection headingID="config.ui.images.heading">
         <NumberSetting
           headingID="config.ui.slideshow_delay.heading"
           subHeadingID="config.ui.slideshow_delay.description"
@@ -281,7 +276,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.ui.interactive_scenes">
+      <SettingSection headingID="config.ui.interactive_options">
         <StringSetting
           headingID="config.ui.handy_connection_key.heading"
           subHeadingID="config.ui.handy_connection_key.description"
@@ -293,26 +288,6 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.funscript_offset.description"
           value={iface.funscriptOffset ?? undefined}
           onChange={(v) => saveInterface({ funscriptOffset: v })}
-        />
-      </SettingSection>
-
-      <SettingSection headingID="config.ui.delete_options.heading">
-        <BooleanSetting
-          id="delete-file-default"
-          headingID="config.ui.delete_options.options.delete_file"
-          checked={defaults.deleteFile ?? undefined}
-          onChange={(v) => {
-            saveDefaults({ deleteFile: v });
-          }}
-        />
-        <BooleanSetting
-          id="delete-generated-default"
-          headingID="config.ui.delete_options.options.delete_generated_supporting_files"
-          subHeadingID="config.ui.delete_options.description"
-          checked={defaults.deleteGenerated ?? undefined}
-          onChange={(v) => {
-            saveDefaults({ deleteGenerated: v });
-          }}
         />
       </SettingSection>
     </>

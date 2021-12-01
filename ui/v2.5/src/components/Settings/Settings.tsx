@@ -6,15 +6,17 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
-import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
+import { SettingsConfigurationPanel } from "./SettingsSystemPanel";
 import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./Tasks/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 import { SettingsScrapingPanel } from "./SettingsScrapingPanel";
 import { SettingsToolsPanel } from "./SettingsToolsPanel";
-import { SettingsDLNAPanel } from "./SettingsDLNAPanel";
+import { SettingsServicesPanel } from "./SettingsServicesPanel";
 import { SettingsContext } from "./context";
+import { SettingsLibraryPanel } from "./SettingsLibraryPanel";
+import { SettingsSecurityPanel } from "./SettingsSecurityPanel";
 
 export const Settings: React.FC = () => {
   const intl = useIntl();
@@ -38,11 +40,16 @@ export const Settings: React.FC = () => {
         titleTemplate={`%s | ${title_template}`}
       />
       <Row>
-        <Col id="settings-menu-container" sm={3} md={2} xl={1}>
+        <Col id="settings-menu-container" sm={3} md={3} xl={2}>
           <Nav variant="pills" className="flex-column">
             <Nav.Item>
-              <Nav.Link eventKey="configuration">
-                <FormattedMessage id="configuration" />
+              <Nav.Link eventKey="tasks">
+                <FormattedMessage id="config.categories.tasks" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="library">
+                <FormattedMessage id="library" />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
@@ -51,21 +58,23 @@ export const Settings: React.FC = () => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="tasks">
-                <FormattedMessage id="config.categories.tasks" />
+              <Nav.Link eventKey="security">
+                <FormattedMessage id="config.categories.security" />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="dlna">DLNA</Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="tools">
-                <FormattedMessage id="config.categories.tools" />
+              <Nav.Link eventKey="metadata-providers">
+                <FormattedMessage id="config.categories.metadata_providers" />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="scraping">
-                <FormattedMessage id="config.categories.scraping" />
+              <Nav.Link eventKey="services">
+                <FormattedMessage id="config.categories.services" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="system">
+                <FormattedMessage id="config.categories.system" />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
@@ -79,6 +88,11 @@ export const Settings: React.FC = () => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
+              <Nav.Link eventKey="tools">
+                <FormattedMessage id="config.categories.tools" />
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link eventKey="about">
                 <FormattedMessage id="config.categories.about" />
               </Nav.Link>
@@ -89,28 +103,34 @@ export const Settings: React.FC = () => {
         <Col
           id="settings-container"
           sm={{ offset: 3 }}
-          md={{ offset: 2 }}
-          xl={{ offset: 1 }}
+          md={{ offset: 3 }}
+          xl={{ offset: 2 }}
         >
           <SettingsContext>
             <Tab.Content className="mx-auto">
-              <Tab.Pane eventKey="configuration">
-                <SettingsConfigurationPanel />
+              <Tab.Pane eventKey="library">
+                <SettingsLibraryPanel />
               </Tab.Pane>
               <Tab.Pane eventKey="interface">
                 <SettingsInterfacePanel />
               </Tab.Pane>
+              <Tab.Pane eventKey="security">
+                <SettingsSecurityPanel />
+              </Tab.Pane>
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="dlna" unmountOnExit>
-                <SettingsDLNAPanel />
+              <Tab.Pane eventKey="services" unmountOnExit>
+                <SettingsServicesPanel />
               </Tab.Pane>
               <Tab.Pane eventKey="tools" unmountOnExit>
                 <SettingsToolsPanel />
               </Tab.Pane>
-              <Tab.Pane eventKey="scraping" unmountOnExit>
+              <Tab.Pane eventKey="metadata-providers" unmountOnExit>
                 <SettingsScrapingPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="system">
+                <SettingsConfigurationPanel />
               </Tab.Pane>
               <Tab.Pane eventKey="plugins" unmountOnExit>
                 <SettingsPluginsPanel />

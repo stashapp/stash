@@ -167,12 +167,19 @@
       "stash_wiki": "Stash {url} page",
       "version": "Version"
     },
+    "application_paths": {
+      "heading": "Application Paths"
+    },
     "categories": {
       "about": "About",
       "interface": "Interface",
       "logs": "Logs",
+      "metadata_providers": "Metadata Providers",
       "plugins": "Plugins",
       "scraping": "Scraping",
+      "security": "Security",
+      "services": "Services",
+      "system": "System",
       "tasks": "Tasks",
       "tools": "Tools"
     },
@@ -195,6 +202,10 @@
         "api_key_desc": "API key for external systems. Only required when username/password is configured. Username must be saved before generating API key.",
         "authentication": "Authentication",
         "clear_api_key": "Clear API key",
+        "credentials": {
+          "description": "Credentials to restrict access to stash.",
+          "heading": "Credentials"
+        },
         "generate_api_key": "Generate API key",
         "log_file": "Log file",
         "log_file_desc": "Path to the file to output logging to. Blank to disable file logging. Requires restart.",
@@ -262,6 +273,11 @@
       "video_ext_head": "Video Extensions",
       "video_head": "Video"
     },
+    "library": {
+      "exclusions": "Exclusions",
+      "gallery_and_image_options": "Gallery and Image options",
+      "media_content_extensions": "Media content extensions"
+    },
     "logs": {
       "log_level": "Log Level"
     },
@@ -288,6 +304,9 @@
       "graphql_endpoint": "GraphQL endpoint",
       "name": "Name",
       "title": "Stash-box Endpoints"
+    },
+    "system": {
+      "transcoding": "Transcoding"
     },
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
@@ -371,6 +390,7 @@
       "scene_tools": "Scene Tools"
     },
     "ui": {
+      "basic_settings": "Basic Settings",
       "custom_css": {
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
@@ -405,6 +425,7 @@
         "heading": "Handy Connection Key"
       },
       "images": {
+        "heading": "Images",
         "options": {
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
@@ -412,6 +433,7 @@
           }
         }
       },
+      "interactive_options": "Interactive Options",
       "language": {
         "heading": "Language"
       },
@@ -569,6 +591,7 @@
       "preview_exclude_end_time_head": "Exclude end time",
       "preview_exclude_start_time_desc": "Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_start_time_head": "Exclude start time",
+      "preview_generation_options": "Preview Generation Options",
       "preview_options": "Preview Options",
       "preview_preset_desc": "The preset regulates size, quality and encoding time of preview generation. Presets beyond “slow” have diminishing returns and are not recommended.",
       "preview_preset_head": "Preview encoding preset",

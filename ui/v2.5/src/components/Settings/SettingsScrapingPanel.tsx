@@ -15,6 +15,7 @@ import { ScrapeType } from "src/core/generated-graphql";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
+import { StashBoxSetting } from "./StashBoxConfiguration";
 
 interface IURLList {
   urls: string[];
@@ -90,9 +91,14 @@ export const SettingsScrapingPanel: React.FC = () => {
     loading: loadingMovies,
   } = useListMovieScrapers();
 
-  const { scraping, loading, error, saveScraping } = React.useContext(
-    SettingStateContext
-  );
+  const {
+    general,
+    scraping,
+    loading,
+    error,
+    saveGeneral,
+    saveScraping,
+  } = React.useContext(SettingStateContext);
 
   async function onReloadScrapers() {
     await mutateReloadScrapers().catch((e) => Toast.error(e));
@@ -312,6 +318,11 @@ export const SettingsScrapingPanel: React.FC = () => {
 
   return (
     <>
+      <StashBoxSetting
+        value={general.stashBoxes ?? []}
+        onChange={(v) => saveGeneral({ stashBoxes: v })}
+      />
+
       <SettingSection headingID="config.general.scraping">
         <StringSetting
           id="scraperUserAgent"
