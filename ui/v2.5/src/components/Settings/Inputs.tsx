@@ -8,24 +8,36 @@ interface ISetting {
   id?: string;
   headingID: string;
   subHeadingID?: string;
+  subHeading?: React.ReactNode;
 }
 
 const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   id,
   headingID,
   subHeadingID,
+  subHeading,
   children,
 }) => {
   const intl = useIntl();
+
+  function renderSubHeading() {
+    if (subHeadingID) {
+      return (
+        <div className="sub-heading">
+          {intl.formatMessage({ id: subHeadingID })}
+        </div>
+      );
+    }
+    if (subHeading) {
+      return <div className="sub-heading">{subHeading}</div>;
+    }
+  }
+
   return (
     <div className="setting" id={id}>
       <div>
         <h3>{intl.formatMessage({ id: headingID })}</h3>
-        {subHeadingID ? (
-          <div className="sub-heading">
-            {intl.formatMessage({ id: subHeadingID })}
-          </div>
-        ) : undefined}
+        {renderSubHeading()}
       </div>
       <div>{children}</div>
     </div>
@@ -260,6 +272,7 @@ export const NumberSetting: React.FC<INumberSetting> = (props) => {
 
 interface IStringListSetting extends ISetting {
   value: string[] | undefined;
+  defaultNewValue?: string;
   onChange: (v: string[]) => void;
 }
 
@@ -268,7 +281,11 @@ export const StringListSetting: React.FC<IStringListSetting> = (props) => {
     <ModalSetting<string[]>
       {...props}
       renderField={(value, setValue) => (
-        <StringListInput value={value ?? []} setValue={setValue} />
+        <StringListInput
+          value={value ?? []}
+          setValue={setValue}
+          defaultNewValue={props.defaultNewValue}
+        />
       )}
       renderValue={(value) => (
         <div>

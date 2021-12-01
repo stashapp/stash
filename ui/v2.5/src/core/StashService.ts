@@ -779,9 +779,8 @@ export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
-export const useConfigureScraping = (input: GQL.ConfigScrapingInput) =>
+export const useConfigureScraping = () =>
   GQL.useConfigureScrapingMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
