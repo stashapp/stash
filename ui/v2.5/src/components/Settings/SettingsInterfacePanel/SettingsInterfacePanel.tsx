@@ -11,7 +11,7 @@ import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { withoutTypename } from "src/utils";
-import { SettingGroup } from "../SettingGroup";
+import { SettingSection } from "../SettingSection";
 import { BooleanSetting, SelectSetting } from "../Inputs";
 
 const allMenuItems = [
@@ -161,7 +161,7 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   return (
     <>
-      <SettingGroup headingID="config.ui.interface.basic_settings">
+      <SettingSection headingID="config.ui.interface.basic_settings">
         <SelectSetting
           id="language"
           headingID="config.ui.language.heading"
@@ -193,9 +193,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             {intl.formatMessage({ id: "config.ui.menu_items.description" })}
           </Form.Text>
         </Form.Group>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.desktop_integration.desktop_integration">
+      <SettingSection headingID="config.ui.desktop_integration.desktop_integration">
         <BooleanSetting
           id="skip-browser"
           headingID="config.ui.desktop_integration.skip_opening_browser"
@@ -203,9 +203,9 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={noBrowser}
           onChange={() => setNoBrowserFlag(!noBrowser)}
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.scene_wall.heading">
+      <SettingSection headingID="config.ui.scene_wall.heading">
         <BooleanSetting
           id="wall-show-title"
           headingID="config.ui.scene_wall.options.display_title"
@@ -240,9 +240,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </option>
         </SelectSetting>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.scene_list.heading">
+      <SettingSection headingID="config.ui.scene_list.heading">
         <BooleanSetting
           id="show-text-studios"
           checked={showStudioAsText}
@@ -251,9 +251,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             setShowStudioAsText(!showStudioAsText);
           }}
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.scene_player.heading">
+      <SettingSection headingID="config.ui.scene_player.heading">
         <BooleanSetting
           id="auto-start-video"
           checked={autostartVideo}
@@ -297,9 +297,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.images">
+      <SettingSection headingID="config.ui.images">
         <Form.Group id="slideshow-delay">
           <h5>
             {intl.formatMessage({ id: "config.ui.slideshow_delay.heading" })}
@@ -320,9 +320,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.editing.heading">
+      <SettingSection headingID="config.ui.editing.heading">
         <Form.Group>
           <h6>
             {intl.formatMessage({
@@ -376,9 +376,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.custom_css.heading">
+      <SettingSection headingID="config.ui.custom_css.heading">
         <BooleanSetting
           id="custom-css"
           checked={cssEnabled}
@@ -400,9 +400,9 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.ui.custom_css.description" })}
         </Form.Text>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.interactive_scenes">
+      <SettingSection headingID="config.ui.interactive_scenes">
         <Form.Group>
           <h5>
             {intl.formatMessage({
@@ -440,9 +440,9 @@ export const SettingsInterfacePanel: React.FC = () => {
             })}
           </Form.Text>
         </Form.Group>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.ui.delete_options.heading">
+      <SettingSection headingID="config.ui.delete_options.heading">
         <BooleanSetting
           id="delete-file-default"
           checked={deleteFileDefault}
@@ -460,7 +460,7 @@ export const SettingsInterfacePanel: React.FC = () => {
             setDeleteGeneratedDefault(!deleteGeneratedDefault);
           }}
         />
-      </SettingGroup>
+      </SettingSection>
 
       <hr />
       <Button variant="primary" onClick={() => onSave()}>

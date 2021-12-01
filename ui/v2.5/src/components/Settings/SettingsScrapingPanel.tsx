@@ -15,7 +15,7 @@ import { TextUtils } from "src/utils";
 import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 import { ScrapeType } from "src/core/generated-graphql";
 import { StringListInput } from "../Shared/StringListInput";
-import { SettingGroup } from "./SettingGroup";
+import { SettingSection } from "./SettingSection";
 
 interface IURLList {
   urls: string[];
@@ -350,7 +350,7 @@ export const SettingsScrapingPanel: React.FC = () => {
 
   return (
     <>
-      <SettingGroup headingID="config.general.scraping">
+      <SettingSection headingID="config.general.scraping">
         <Form.Group id="scraperUserAgent">
           <h6>
             {intl.formatMessage({ id: "config.general.scraper_user_agent" })}
@@ -425,9 +425,9 @@ export const SettingsScrapingPanel: React.FC = () => {
             <FormattedMessage id="actions.save" />
           </Button>
         </Form.Group>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.scraping.scrapers">
+      <SettingSection headingID="config.scraping.scrapers">
         <div className="mb-3">
           <Button onClick={() => onReloadScrapers()}>
             <span className="fa-icon">
@@ -445,7 +445,7 @@ export const SettingsScrapingPanel: React.FC = () => {
           {renderPerformerScrapers()}
           {renderMovieScrapers()}
         </div>
-      </SettingGroup>
+      </SettingSection>
     </>
   );
 };

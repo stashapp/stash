@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
@@ -6,8 +6,8 @@ import { useGenerateAPIKey } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { LoadingIndicator } from "src/components/Shared";
 import { StashBoxSetting } from "./StashBoxConfiguration";
-import StashConfiguration from "./StashConfiguration";
-import { SettingGroup } from "./SettingGroup";
+import { StashSetting } from "./StashConfiguration";
+import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
   ModalSetting,
@@ -213,9 +213,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
     SettingStateContext
   );
 
-  // Editing config state
-  const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
-
   const [generateAPIKey] = useGenerateAPIKey();
 
   function commaDelimitedToList(value: string | undefined) {
@@ -335,22 +332,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   return (
     <>
-      <SettingGroup
-        headingID="library"
-        subHeadingID="config.general.directory_locations_to_your_content"
-      >
-        <StashConfiguration
-          stashes={stashes}
-          setStashes={(s) => setStashes(s)}
-        />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.general.directory_locations_to_your_content",
-          })}
-        </Form.Text>
-      </SettingGroup>
+      <StashSetting
+        value={general.stashes ?? []}
+        onChange={(v) => saveGeneral({ stashes: v })}
+      />
 
-      <SettingGroup headingID="config.application_paths.heading">
+      <SettingSection headingID="config.application_paths.heading">
         <StringSetting
           id="database-path"
           headingID="config.general.db_path_head"
@@ -390,9 +377,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.customPerformerImageLocation ?? undefined}
           onChange={(v) => saveGeneral({ customPerformerImageLocation: v })}
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.library.media_content_extensions">
+      <SettingSection headingID="config.library.media_content_extensions">
         <StringSetting
           id="video-extensions"
           headingID="config.general.video_ext_head"
@@ -422,9 +409,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             saveGeneral({ galleryExtensions: commaDelimitedToList(v) })
           }
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.library.exclusions">
+      <SettingSection headingID="config.library.exclusions">
         <StringListSetting
           id="excluded-video-patterns"
           headingID="config.general.excluded_video_patterns_head"
@@ -454,9 +441,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
         >
           <Icon icon="question-circle" />
         </a> */}
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.library.gallery_and_image_options">
+      <SettingSection headingID="config.library.gallery_and_image_options">
         <BooleanSetting
           id="create-galleries-from-folders"
           headingID="config.general.create_galleries_from_folders_label"
@@ -472,9 +459,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           checked={general.writeImageThumbnails ?? false}
           onChange={(v) => saveGeneral({ writeImageThumbnails: v })}
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.general.hashing">
+      <SettingSection headingID="config.general.hashing">
         <BooleanSetting
           id="calculate-md5-and-ohash"
           headingID="config.general.calculate_md5_and_ohash_label"
@@ -500,9 +487,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.system.transcoding">
+      <SettingSection headingID="config.system.transcoding">
         <SelectSetting
           id="transcode-size"
           headingID="config.general.maximum_transcode_size_head"
@@ -536,9 +523,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.general.parallel_scan_head">
+      <SettingSection headingID="config.general.parallel_scan_head">
         <NumberSetting
           id="parallel-tasks"
           headingID="config.general.number_of_parallel_task_for_scan_generation_head"
@@ -546,9 +533,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.parallelTasks ?? undefined}
           onChange={(v) => saveGeneral({ parallelTasks: v })}
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.general.preview_generation">
+      <SettingSection headingID="config.general.preview_generation">
         <SelectSetting
           id="scene-gen-preview-preset"
           headingID="dialogs.scene_gen.preview_preset_head"
@@ -592,54 +579,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
             return <></>;
           }}
         />
-      </SettingGroup>
-
-      {/* <SettingGroup headingID="config.general.auth.stash-box_integration">
-        <ModalSetting<GQL.StashBoxInput[]>
-          id="stash-boxes"
-          headingID="config.stashbox.title"
-          subHeadingID="config.stashbox.description"
-          value={general.stashBoxes ?? []}
-          onChange={(v) => saveGeneral({
-            stashBoxes: v,
-          })}
-          renderField={(value, setValue) => {
-            const stashBoxes = (general.stashBoxes ?? []).map((box, i) => ({
-              name: box?.name ?? undefined,
-              endpoint: box.endpoint,
-              api_key: box.api_key,
-              index: i,
-            })) ?? [];
-
-            return (
-              <StashBoxConfiguration boxes={stashBoxes} saveBoxes={(v) => {
-                setValue(v.map(vv => {
-                  return {
-                    api_key: vv.api_key ?? "",
-                    endpoint: vv.endpoint ?? "",
-                    name: vv.name ?? "",
-                  };
-                }))
-              }}/>
-            );
-          }}
-          renderValue={(v) => { 
-            return (
-              <div>
-                {v?.map(vv => <div>{vv.name}</div>)}
-              </div>
-            );
-          }}
-        />
-        
-      </SettingGroup> */}
+      </SettingSection>
 
       <StashBoxSetting
         value={general.stashBoxes ?? []}
         onChange={(v) => saveGeneral({ stashBoxes: v })}
       />
 
-      <SettingGroup headingID="config.general.auth.authentication">
+      <SettingSection headingID="config.general.auth.authentication">
         <ModalSetting<AuthenticationSettingsInput>
           id="authentication-settings"
           headingID="config.general.auth.credentials.heading"
@@ -701,9 +648,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.trustedProxies ?? undefined}
           onChange={(v) => saveGeneral({ trustedProxies: v })}
         />
-      </SettingGroup>
+      </SettingSection>
 
-      <SettingGroup headingID="config.general.logging">
+      <SettingSection headingID="config.general.logging">
         <StringSetting
           headingID="config.general.auth.log_file"
           subHeadingID="config.general.auth.log_file_desc"
@@ -739,7 +686,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           checked={general.logAccess ?? false}
           onChange={(v) => saveGeneral({ logAccess: v })}
         />
-      </SettingGroup>
+      </SettingSection>
     </>
   );
 };

@@ -4,6 +4,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
+import { BooleanSetting } from "./Inputs";
+import { SettingSection } from "./SettingSection";
 
 interface IStashProps {
   index: number;
@@ -134,6 +136,143 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
         </Button>
       </Form.Group>
     </>
+  );
+};
+
+interface IStashSetting {
+  value: GQL.StashConfigInput[];
+  onChange: (v: GQL.StashConfigInput[]) => void;
+}
+
+export const StashSetting: React.FC<IStashSetting> = ({ value, onChange }) => {
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | undefined>();
+
+  function onEdit(index: number) {
+    setEditingIndex(index);
+  }
+
+  function onDelete(index: number) {
+    onChange(value.filter((v, i) => i !== index));
+  }
+
+  function onNew() {
+    setIsCreating(true);
+  }
+
+  return (
+    <SettingSection
+      id="stashes"
+      headingID="library"
+      subHeadingID="config.general.directory_locations_to_your_content"
+    >
+      {isCreating ? (
+        <FolderSelectDialog
+          onClose={(v) => {
+            if (v)
+              onChange([
+                ...value,
+                {
+                  path: v,
+                  excludeVideo: false,
+                  excludeImage: false,
+                },
+              ]);
+            setIsCreating(false);
+          }}
+        />
+      ) : undefined}
+
+      {editingIndex !== undefined ? (
+        <FolderSelectDialog
+          defaultValue={value[editingIndex].path}
+          onClose={(v) => {
+            if (v)
+              onChange(
+                value.map((vv, index) => {
+                  if (index === editingIndex) {
+                    return {
+                      ...vv,
+                      path: v,
+                    };
+                  }
+                  return vv;
+                })
+              );
+            setEditingIndex(undefined);
+          }}
+        />
+      ) : undefined}
+
+      {value.map((dir, index) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={index} className="setting-group">
+          <div className="setting">
+            <div>
+              <h3>{dir.path}</h3>
+            </div>
+            <div>{/* TODO - expand collapse */}</div>
+          </div>
+          <BooleanSetting
+            id={`library-${index}-exclude-video`}
+            headingID="config.general.exclude_video"
+            checked={dir.excludeVideo ?? false}
+            onChange={(v) =>
+              onChange(
+                value.map((vv, i) => {
+                  if (i === index) {
+                    return {
+                      ...vv,
+                      excludeVideo: v,
+                    };
+                  }
+
+                  return vv;
+                })
+              )
+            }
+          />
+          <BooleanSetting
+            id={`library-${index}-exclude-image`}
+            headingID="config.general.exclude_image"
+            checked={dir.excludeImage ?? false}
+            onChange={(v) =>
+              onChange(
+                value.map((vv, i) => {
+                  if (i === index) {
+                    return {
+                      ...vv,
+                      excludeImage: v,
+                    };
+                  }
+
+                  return vv;
+                })
+              )
+            }
+          />
+          <div className="setting">
+            <div />
+            <div>
+              <Button onClick={() => onEdit(index)}>
+                <FormattedMessage id="actions.edit" />
+              </Button>
+              <Button variant="danger" onClick={() => onDelete(index)}>
+                <FormattedMessage id="actions.delete" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      ))}
+      <div className="setting">
+        <div />
+        <div>
+          <Button onClick={() => onNew()}>
+            <FormattedMessage id="actions.add" />
+          </Button>
+        </div>
+      </div>
+    </SettingSection>
   );
 };
 

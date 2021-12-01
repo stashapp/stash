@@ -9,7 +9,7 @@ interface ISettingGroup {
   subHeadingID?: string;
 }
 
-export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
+export const SettingSection: React.FC<PropsWithChildren<ISettingGroup>> = ({
   id,
   children,
   headingID,
@@ -18,7 +18,7 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
   const intl = useIntl();
 
   return (
-    <div className="setting-group" id={id}>
+    <div className="setting-section" id={id}>
       <h1>{intl.formatMessage({ id: headingID })}</h1>
       {subHeadingID ? (
         <div className="sub-heading">

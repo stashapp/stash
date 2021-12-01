@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { SettingGroup } from "./SettingGroup";
+import { SettingSection } from "./SettingSection";
 import * as GQL from "src/core/generated-graphql";
 import { SettingModal } from "./Inputs";
 
@@ -105,7 +105,7 @@ export const StashBoxSetting: React.FC<IStashBoxSetting> = ({
   }
 
   return (
-    <SettingGroup
+    <SettingSection
       id="stash-boxes"
       headingID="config.stashbox.title"
       subHeadingID="config.stashbox.description"
@@ -118,7 +118,7 @@ export const StashBoxSetting: React.FC<IStashBoxSetting> = ({
             name: "",
           }}
           close={(v) => {
-            if (v) onChange(value.concat(v));
+            if (v) onChange([...value, v]);
             setIsCreating(false);
           }}
         />
@@ -167,6 +167,6 @@ export const StashBoxSetting: React.FC<IStashBoxSetting> = ({
           </Button>
         </div>
       </div>
-    </SettingGroup>
+    </SettingSection>
   );
 };

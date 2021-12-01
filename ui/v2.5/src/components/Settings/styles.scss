@@ -8,7 +8,7 @@
   max-width: 780px;
 }
 
-.setting-group {
+.setting-section {
   &:not(:first-child) {
     margin-top: 1.5em;
   }
@@ -59,6 +59,39 @@
       font-family: "Courier New", Courier, monospace;
       margin-bottom: 0.5rem;
       margin-top: 0.5rem;
+    }
+  }
+
+  .setting-group {
+    width: 100%;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #000;
+    }
+
+    .setting {
+      width: auto;
+
+      &:not(:first-child) {
+        margin-left: 2.5rem;
+        margin-right: 1.5rem;
+        padding-bottom: 10px;
+        padding-left: 0;
+        padding-top: 10px;
+
+        h3 {
+          font-size: 1rem;
+        }
+      }
+
+      &:first-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      &:not(:last-child) {
+        border-bottom-color: $muted-gray;
+      }
     }
   }
 }
