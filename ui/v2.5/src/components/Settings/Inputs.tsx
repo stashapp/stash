@@ -6,19 +6,28 @@ import { StringListInput } from "../Shared/StringListInput";
 
 interface ISetting {
   id?: string;
-  headingID: string;
+  heading?: string;
+  headingID?: string;
   subHeadingID?: string;
   subHeading?: React.ReactNode;
 }
 
-const Setting: React.FC<PropsWithChildren<ISetting>> = ({
+export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   id,
+  heading,
   headingID,
   subHeadingID,
   subHeading,
   children,
 }) => {
   const intl = useIntl();
+
+  function renderHeading() {
+    if (headingID) {
+      return intl.formatMessage({ id: headingID });
+    }
+    return heading;
+  }
 
   function renderSubHeading() {
     if (subHeadingID) {
@@ -36,7 +45,7 @@ const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   return (
     <div className="setting" id={id}>
       <div>
-        <h3>{intl.formatMessage({ id: headingID })}</h3>
+        <h3>{renderHeading()}</h3>
         {renderSubHeading()}
       </div>
       <div>{children}</div>
@@ -46,6 +55,7 @@ const Setting: React.FC<PropsWithChildren<ISetting>> = ({
 
 interface IBooleanSetting extends ISetting {
   id: string;
+  disabled?: boolean;
   checked?: boolean;
   onChange: (v: boolean) => void;
 }
@@ -54,6 +64,7 @@ export const BooleanSetting: React.FC<IBooleanSetting> = ({
   id,
   headingID,
   subHeadingID,
+  disabled,
   checked,
   onChange,
 }) => {
@@ -61,6 +72,7 @@ export const BooleanSetting: React.FC<IBooleanSetting> = ({
     <Setting headingID={headingID} subHeadingID={subHeadingID}>
       <Form.Switch
         id={id}
+        disabled={disabled}
         checked={checked}
         onChange={() => onChange(!checked)}
       />
@@ -96,13 +108,22 @@ export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> = ({
 };
 
 interface IDialogSetting<T> extends ISetting {
+  buttonTextID?: string;
   value?: T;
-  renderValue: (v: T | undefined) => JSX.Element;
+  renderValue?: (v: T | undefined) => JSX.Element;
   onChange: () => void;
 }
 
 export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
-  const { id, headingID, subHeadingID, value, onChange, renderValue } = props;
+  const {
+    id,
+    headingID,
+    subHeadingID,
+    value,
+    onChange,
+    renderValue,
+    buttonTextID,
+  } = props;
   const intl = useIntl();
 
   return (
@@ -110,7 +131,9 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
       <div>
         <h3>{intl.formatMessage({ id: headingID })}</h3>
 
-        <div className="value">{renderValue(value)}</div>
+        <div className="value">
+          {renderValue ? renderValue(value) : undefined}
+        </div>
 
         {subHeadingID ? (
           <div className="sub-heading">
@@ -120,7 +143,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
       </div>
       <div>
         <Button onClick={() => onChange()}>
-          <FormattedMessage id="actions.edit" />
+          <FormattedMessage id={buttonTextID ?? "actions.edit"} />
         </Button>
       </div>
     </div>
@@ -128,7 +151,8 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
 };
 
 export interface ISettingModal<T> {
-  headingID: string;
+  heading?: string;
+  headingID?: string;
   subHeadingID?: string;
   value: T | undefined;
   close: (v?: T) => void;
@@ -136,7 +160,7 @@ export interface ISettingModal<T> {
 }
 
 export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
-  const { headingID, subHeadingID, value, close, renderField } = props;
+  const { heading, headingID, subHeadingID, value, close, renderField } = props;
 
   const intl = useIntl();
   const [currentValue, setCurrentValue] = useState<T | undefined>(value);
@@ -150,7 +174,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
         }}
       >
         <Modal.Header closeButton>
-          <FormattedMessage id={headingID} />
+          {headingID ? <FormattedMessage id={headingID} /> : heading}
         </Modal.Header>
         <Modal.Body>
           {renderField(currentValue, setCurrentValue)}
@@ -179,9 +203,10 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
 
 interface IModalSetting<T> extends ISetting {
   value: T | undefined;
+  buttonTextID?: string;
   onChange: (v: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
-  renderValue: (v: T | undefined) => JSX.Element;
+  renderValue?: (v: T | undefined) => JSX.Element;
 }
 
 export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
@@ -193,6 +218,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     onChange,
     renderField,
     renderValue,
+    buttonTextID,
   } = props;
   const [showModal, setShowModal] = useState(false);
 
@@ -213,6 +239,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
 
       <ChangeButtonSetting<T>
         id={id}
+        buttonTextID={buttonTextID}
         headingID={headingID}
         subHeadingID={subHeadingID}
         value={value}

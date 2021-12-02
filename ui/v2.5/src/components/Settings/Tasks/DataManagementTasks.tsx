@@ -12,8 +12,9 @@ import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
 import { Modal } from "../../Shared";
 import { ImportDialog } from "./ImportDialog";
-import { Task } from "./Task";
 import * as GQL from "src/core/generated-graphql";
+import { SettingSection } from "../SettingSection";
+import { BooleanSetting, Setting } from "../Inputs";
 
 interface ICleanOptions {
   options: GQL.CleanMetadataInput;
@@ -24,21 +25,19 @@ const CleanOptions: React.FC<ICleanOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
-  const intl = useIntl();
-
   function setOptions(input: Partial<GQL.CleanMetadataInput>) {
     setOptionsState({ ...options, ...input });
   }
 
   return (
-    <Form.Group>
-      <Form.Check
+    <>
+      <BooleanSetting
         id="clean-dryrun"
         checked={options.dryRun}
-        label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
-        onChange={() => setOptions({ dryRun: !options.dryRun })}
+        headingID="config.tasks.only_dry_run"
+        onChange={(v) => setOptions({ dryRun: v })}
       />
-    </Form.Group>
+    </>
   );
 };
 
@@ -213,19 +212,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       {renderImportDialog()}
       {renderCleanDialog()}
 
-      <Form.Group>
-        <div className="task-group">
-          <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
-          <Task
+      <SettingSection headingID="config.tasks.maintenance">
+        <div className="setting-group">
+          <Setting
             headingID="actions.clean"
-            description={intl.formatMessage({
-              id: "config.tasks.cleanup_desc",
-            })}
+            subHeadingID="config.tasks.cleanup_desc"
           >
-            <CleanOptions
-              options={cleanOptions}
-              setOptions={(o) => setCleanOptions(o)}
-            />
             <Button
               variant="danger"
               type="submit"
@@ -233,127 +225,111 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             >
               <FormattedMessage id="actions.clean" />…
             </Button>
-          </Task>
+          </Setting>
+          <CleanOptions
+            options={cleanOptions}
+            setOptions={(o) => setCleanOptions(o)}
+          />
         </div>
-      </Form.Group>
+      </SettingSection>
 
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "metadata" })}</h5>
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.export_to_json",
-            })}
+      <SettingSection headingID="metadata">
+        <Setting
+          headingID="actions.full_export"
+          subHeadingID="config.tasks.export_to_json"
+        >
+          <Button
+            id="export"
+            variant="secondary"
+            type="submit"
+            onClick={() => onExport()}
           >
-            <Button
-              id="export"
-              variant="secondary"
-              type="submit"
-              onClick={() => onExport()}
-            >
-              <FormattedMessage id="actions.full_export" />
-            </Button>
-          </Task>
+            <FormattedMessage id="actions.full_export" />
+          </Button>
+        </Setting>
 
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.import_from_exported_json",
-            })}
+        <Setting
+          headingID="actions.full_import"
+          subHeadingID="config.tasks.import_from_exported_json"
+        >
+          <Button
+            id="import"
+            variant="danger"
+            type="submit"
+            onClick={() => setDialogOpen({ importAlert: true })}
           >
-            <Button
-              id="import"
-              variant="danger"
-              type="submit"
-              onClick={() => setDialogOpen({ importAlert: true })}
-            >
-              <FormattedMessage id="actions.full_import" />
-            </Button>
-          </Task>
+            <FormattedMessage id="actions.full_import" />
+          </Button>
+        </Setting>
 
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.incremental_import",
-            })}
+        <Setting
+          headingID="actions.import_from_file"
+          subHeadingID="config.tasks.incremental_import"
+        >
+          <Button
+            id="partial-import"
+            variant="danger"
+            type="submit"
+            onClick={() => setDialogOpen({ import: true })}
           >
-            <Button
-              id="partial-import"
-              variant="danger"
-              type="submit"
-              onClick={() => setDialogOpen({ import: true })}
-            >
-              <FormattedMessage id="actions.import_from_file" />
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
+            <FormattedMessage id="actions.import_from_file" />
+          </Button>
+        </Setting>
+      </SettingSection>
 
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage(
-              { id: "config.tasks.backup_database" },
-              {
-                filename_format: (
-                  <code>
-                    [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
-                  </code>
-                ),
-              }
-            )}
+      <SettingSection headingID="actions.backup">
+        <Setting
+          headingID="actions.backup"
+          subHeading={intl.formatMessage(
+            { id: "config.tasks.backup_database" },
+            {
+              filename_format: (
+                <code>
+                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                </code>
+              ),
+            }
+          )}
+        >
+          <Button
+            id="backup"
+            variant="secondary"
+            type="submit"
+            onClick={() => onBackup()}
           >
-            <Button
-              id="backup"
-              variant="secondary"
-              type="submit"
-              onClick={() => onBackup()}
-            >
-              <FormattedMessage id="actions.backup" />
-            </Button>
-          </Task>
+            <FormattedMessage id="actions.backup" />
+          </Button>
+        </Setting>
 
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.backup_and_download",
-            })}
+        <Setting
+          headingID="actions.download_backup"
+          subHeadingID="config.tasks.backup_and_download"
+        >
+          <Button
+            id="backupDownload"
+            variant="secondary"
+            type="submit"
+            onClick={() => onBackup(true)}
           >
-            <Button
-              id="backupDownload"
-              variant="secondary"
-              type="submit"
-              onClick={() => onBackup(true)}
-            >
-              <FormattedMessage id="actions.download_backup" />
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
+            <FormattedMessage id="actions.download_backup" />
+          </Button>
+        </Setting>
+      </SettingSection>
 
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
-
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.migrate_hash_files",
-            })}
+      <SettingSection headingID="config.tasks.migrations">
+        <Setting
+          headingID="actions.rename_gen_files"
+          subHeadingID="config.tasks.migrate_hash_files"
+        >
+          <Button
+            id="migrateHashNaming"
+            variant="danger"
+            onClick={() => onMigrateHashNaming()}
           >
-            <Button
-              id="migrateHashNaming"
-              variant="danger"
-              onClick={() => onMigrateHashNaming()}
-            >
-              <FormattedMessage id="actions.rename_gen_files" />
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
+            <FormattedMessage id="actions.rename_gen_files" />
+          </Button>
+        </Setting>
+      </SettingSection>
     </Form.Group>
   );
 };
