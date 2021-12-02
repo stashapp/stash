@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
-import { BooleanSetting } from "./Inputs";
+import { BooleanSetting, SettingGroup } from "./Inputs";
 import { SettingSection } from "./SettingSection";
 
 interface IStashProps {
@@ -206,13 +206,14 @@ export const StashSetting: React.FC<IStashSetting> = ({ value, onChange }) => {
 
       {value.map((dir, index) => (
         // eslint-disable-next-line react/no-array-index-key
-        <div key={index} className="setting-group">
-          <div className="setting">
-            <div>
-              <h3>{dir.path}</h3>
-            </div>
-            <div>{/* TODO - expand collapse */}</div>
-          </div>
+        <SettingGroup
+          key={index}
+          settingProps={{
+            heading: dir.path,
+          }}
+          collapsible
+          collapsedDefault
+        >
           <BooleanSetting
             id={`library-${index}-exclude-video`}
             headingID="config.general.exclude_video"
@@ -262,7 +263,7 @@ export const StashSetting: React.FC<IStashSetting> = ({ value, onChange }) => {
               </Button>
             </div>
           </div>
-        </div>
+        </SettingGroup>
       ))}
       <div className="setting">
         <div />
