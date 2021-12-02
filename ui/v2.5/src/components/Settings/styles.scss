@@ -41,6 +41,11 @@
     h3 {
       font-size: 1.25rem;
       margin-bottom: 0;
+
+      &[title] {
+        cursor: help;
+        text-decoration: underline dotted;
+      }
     }
 
     > div:first-child {

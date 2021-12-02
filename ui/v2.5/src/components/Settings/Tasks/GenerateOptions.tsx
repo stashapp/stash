@@ -28,6 +28,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         id="preview-task"
         checked={options.previews ?? false}
         headingID="dialogs.scene_gen.video_previews"
+        tooltipID="dialogs.scene_gen.video_previews_tooltip"
         onChange={(v) => setOptions({ previews: v })}
       />
       <BooleanSetting
@@ -35,6 +36,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         checked={options.imagePreviews ?? false}
         disabled={!options.previews}
         headingID="dialogs.scene_gen.image_previews"
+        tooltipID="dialogs.scene_gen.image_previews_tooltip"
         onChange={(v) => setOptions({ imagePreviews: v })}
       />
 
@@ -61,12 +63,14 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         id="sprite-task"
         checked={options.sprites ?? false}
         headingID="dialogs.scene_gen.sprites"
+        tooltipID="dialogs.scene_gen.sprites_tooltip"
         onChange={(v) => setOptions({ sprites: v })}
       />
       <BooleanSetting
         id="marker-task"
         checked={options.markers ?? false}
         headingID="dialogs.scene_gen.markers"
+        tooltipID="dialogs.scene_gen.markers_tooltip"
         onChange={(v) => setOptions({ markers: v })}
       />
       <BooleanSetting
@@ -74,6 +78,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         checked={options.markerImagePreviews ?? false}
         disabled={!options.markers}
         headingID="dialogs.scene_gen.marker_image_previews"
+        tooltipID="dialogs.scene_gen.marker_image_previews_tooltip"
         onChange={(v) =>
           setOptions({
             markerImagePreviews: v,
@@ -85,6 +90,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         checked={options.markerScreenshots ?? false}
         disabled={!options.markers}
         headingID="dialogs.scene_gen.marker_screenshots"
+        tooltipID="dialogs.scene_gen.marker_screenshots_tooltip"
         onChange={(v) => setOptions({ markerScreenshots: v })}
       />
 
@@ -92,6 +98,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         id="transcode-task"
         checked={options.transcodes ?? false}
         headingID="dialogs.scene_gen.transcodes"
+        tooltipID="dialogs.scene_gen.transcodes_tooltip"
         onChange={(v) => setOptions({ transcodes: v })}
       />
       <BooleanSetting

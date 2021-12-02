@@ -11,6 +11,7 @@ interface ISetting {
   headingID?: string;
   subHeadingID?: string;
   subHeading?: React.ReactNode;
+  tooltipID?: string;
 }
 
 export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
@@ -20,6 +21,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   subHeadingID,
   subHeading,
   children,
+  tooltipID,
 }) => {
   const intl = useIntl();
 
@@ -43,10 +45,12 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
     }
   }
 
+  const tooltip = tooltipID ? intl.formatMessage({ id: tooltipID }) : undefined;
+
   return (
     <div className="setting" id={id}>
       <div>
-        <h3>{renderHeading()}</h3>
+        <h3 title={tooltip}>{renderHeading()}</h3>
         {renderSubHeading()}
       </div>
       <div>{children}</div>
@@ -107,16 +111,11 @@ interface IBooleanSetting extends ISetting {
   onChange: (v: boolean) => void;
 }
 
-export const BooleanSetting: React.FC<IBooleanSetting> = ({
-  id,
-  headingID,
-  subHeadingID,
-  disabled,
-  checked,
-  onChange,
-}) => {
+export const BooleanSetting: React.FC<IBooleanSetting> = (props) => {
+  const { id, disabled, checked, onChange } = props;
+
   return (
-    <Setting headingID={headingID} subHeadingID={subHeadingID}>
+    <Setting {...props}>
       <Form.Switch
         id={id}
         disabled={disabled}
