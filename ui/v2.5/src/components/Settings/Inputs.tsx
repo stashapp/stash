@@ -166,6 +166,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     id,
     headingID,
     subHeadingID,
+    subHeading,
     value,
     onChange,
     renderValue,
@@ -186,6 +187,8 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
           <div className="sub-heading">
             {intl.formatMessage({ id: subHeadingID })}
           </div>
+        ) : subHeading ? (
+          <div className="sub-heading">{subHeading}</div>
         ) : undefined}
       </div>
       <div>
@@ -201,13 +204,22 @@ export interface ISettingModal<T> {
   heading?: string;
   headingID?: string;
   subHeadingID?: string;
+  subHeading?: React.ReactNode;
   value: T | undefined;
   close: (v?: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
 }
 
 export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
-  const { heading, headingID, subHeadingID, value, close, renderField } = props;
+  const {
+    heading,
+    headingID,
+    subHeading,
+    subHeadingID,
+    value,
+    close,
+    renderField,
+  } = props;
 
   const intl = useIntl();
   const [currentValue, setCurrentValue] = useState<T | undefined>(value);
@@ -229,6 +241,8 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
             <div className="sub-heading">
               {intl.formatMessage({ id: subHeadingID })}
             </div>
+          ) : subHeading ? (
+            <div className="sub-heading">{subHeading}</div>
           ) : undefined}
         </Modal.Body>
         <Modal.Footer>
@@ -262,6 +276,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     value,
     headingID,
     subHeadingID,
+    subHeading,
     onChange,
     renderField,
     renderValue,
@@ -275,6 +290,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         <SettingModal<T>
           headingID={headingID}
           subHeadingID={subHeadingID}
+          subHeading={subHeading}
           value={value}
           renderField={renderField}
           close={(v) => {
@@ -289,6 +305,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         buttonTextID={buttonTextID}
         headingID={headingID}
         subHeadingID={subHeadingID}
+        subHeading={subHeading}
         value={value}
         onChange={() => setShowModal(true)}
         renderValue={renderValue}

@@ -1,11 +1,13 @@
 import React from "react";
-import { LoadingIndicator } from "src/components/Shared";
+import { Icon, LoadingIndicator } from "src/components/Shared";
 import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
+import { useIntl } from "react-intl";
 
 export const SettingsLibraryPanel: React.FC = () => {
+  const intl = useIntl();
   const {
     general,
     loading,
@@ -73,32 +75,46 @@ export const SettingsLibraryPanel: React.FC = () => {
         <StringListSetting
           id="excluded-video-patterns"
           headingID="config.general.excluded_video_patterns_head"
-          subHeadingID="config.general.excluded_video_patterns_desc"
+          subHeading={
+            <span>
+              {intl.formatMessage({
+                id: "config.general.excluded_video_patterns_desc",
+              })}
+              <a
+                href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Icon icon="question-circle" />
+              </a>
+            </span>
+          }
           value={general.excludes ?? undefined}
           onChange={(v) => saveGeneral({ excludes: v })}
+          defaultNewValue="sample\.mp4$"
         />
-        {/* <a
-          href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <Icon icon="question-circle" />
-        </a> */}
 
         <StringListSetting
           id="excluded-image-gallery-patterns"
           headingID="config.general.excluded_image_gallery_patterns_head"
-          subHeadingID="config.general.excluded_image_gallery_patterns_desc"
+          subHeading={
+            <span>
+              {intl.formatMessage({
+                id: "config.general.excluded_image_gallery_patterns_desc",
+              })}
+              <a
+                href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Icon icon="question-circle" />
+              </a>
+            </span>
+          }
           value={general.imageExcludes ?? undefined}
           onChange={(v) => saveGeneral({ imageExcludes: v })}
+          defaultNewValue="sample\.jpg$"
         />
-        {/* <a
-          href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <Icon icon="question-circle" />
-        </a> */}
       </SettingSection>
 
       <SettingSection headingID="config.library.gallery_and_image_options">
