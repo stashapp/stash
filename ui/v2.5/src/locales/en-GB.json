@@ -329,11 +329,11 @@
         "generating_from_paths": "Generating for scenes from the following paths"
       },
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
-      "generate_phashes_during_scan": "Generate perceptual hashes during scan (for deduplication and scene identification)",
-      "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
-      "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
-      "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
+      "generate_phashes_during_scan": "Generate perceptual hashes",
+      "generate_previews_during_scan": "Generate animated image previews",
+      "generate_sprites_during_scan": "Generate sprites",
+      "generate_thumbnails_during_scan": "Generate thumbnails for images",
+      "generate_video_previews_during_scan": "Generate previews",
       "generated_content": "Generated Content",
       "identify": {
         "and_create_missing": "and create missing",
@@ -368,7 +368,7 @@
         "scanning_all_paths": "Scanning all paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
-      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata (if present)"
+      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
       "scene_duplicate_checker": "Scene Duplicate Checker",
@@ -581,10 +581,10 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
-      "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
-      "markers": "Markers (20 second videos which begin at the given timecode)",
+      "image_previews": "Animated Image Previews",
+      "marker_image_previews": "Marker Animated Image Previews",
+      "marker_screenshots": "Marker Screenshots",
+      "markers": "Marker Previews",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -599,9 +599,9 @@
       "preview_seg_count_head": "Number of segments in preview",
       "preview_seg_duration_desc": "Duration of each preview segment, in seconds.",
       "preview_seg_duration_head": "Preview segment duration",
-      "sprites": "Sprites (for the scene scrubber)",
-      "transcodes": "Transcodes (MP4 conversions of unsupported video formats)",
-      "video_previews": "Previews (video previews which play when hovering over a scene)"
+      "sprites": "Scene Scrubber Sprites",
+      "transcodes": "Transcodes",
+      "video_previews": "Previews"
     },
     "scenes_found": "{count} scenes found",
     "scrape_entity_query": "{entity_type} Scrape Query",
