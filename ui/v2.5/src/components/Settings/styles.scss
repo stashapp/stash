@@ -300,3 +300,36 @@
     }
   }
 }
+
+.loading-indicator {
+  opacity: 50%;
+  position: fixed;
+  right: 30px;
+  z-index: 1051;
+
+  @include media-breakpoint-down(xs) {
+    top: 30px;
+  }
+  @include media-breakpoint-up(xs) {
+    bottom: 30px;
+  }
+
+  .fa-icon {
+    animation: fadeOut 2s forwards;
+    animation-delay: 2s;
+    color: $success;
+    height: 2rem;
+    margin: 0;
+    width: 2rem;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}

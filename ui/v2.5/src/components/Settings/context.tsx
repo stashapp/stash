@@ -1,7 +1,13 @@
 import { ApolloError } from "@apollo/client/errors";
 import { debounce } from "lodash";
-import React, { useState, useEffect, useMemo } from "react";
-import { useIntl } from "react-intl";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
+import { Spinner } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   useConfiguration,
@@ -13,6 +19,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { withoutTypename } from "src/utils";
+import { Icon } from "../Shared";
 
 export interface ISettingsContextState {
   loading: boolean;
@@ -50,10 +57,10 @@ export const SettingStateContext = React.createContext<ISettingsContextState>({
 });
 
 export const SettingsContext: React.FC = ({ children }) => {
-  const intl = useIntl();
   const Toast = useToast();
 
   const { data, error, loading } = useConfiguration();
+  const initialRef = useRef(false);
 
   const [general, setGeneral] = useState<GQL.ConfigGeneralInput>({});
   const [pendingGeneral, setPendingGeneral] = useState<
@@ -85,10 +92,15 @@ export const SettingsContext: React.FC = ({ children }) => {
   >();
   const [updateDLNAConfig] = useConfigureDLNA();
 
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+
   const [apiKey, setApiKey] = useState("");
 
   useEffect(() => {
-    if (!data?.configuration || error) return;
+    // only initialise once - assume we have control over these settings and
+    // they aren't modified elsewhere
+    if (!data?.configuration || error || initialRef.current) return;
+    initialRef.current = true;
 
     setGeneral({ ...withoutTypename(data.configuration.general) });
     setIface({ ...withoutTypename(data.configuration.interface) });
@@ -97,6 +109,19 @@ export const SettingsContext: React.FC = ({ children }) => {
     setDLNA({ ...withoutTypename(data.configuration.dlna) });
     setApiKey(data.configuration.general.apiKey);
   }, [data, error]);
+
+  const resetSuccess = useMemo(
+    () =>
+      debounce(() => {
+        setUpdateSuccess(false);
+      }, 4000),
+    []
+  );
+
+  const onSuccess = useCallback(() => {
+    setUpdateSuccess(true);
+    resetSuccess();
+  }, [resetSuccess]);
 
   // saves the configuration if no further changes are made after a half second
   const saveGeneralConfig = useMemo(
@@ -109,23 +134,13 @@ export const SettingsContext: React.FC = ({ children }) => {
             },
           });
 
-          // TODO - use different notification method
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "configuration" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
           setPendingGeneral(undefined);
+          onSuccess();
         } catch (e) {
           Toast.error(e);
         }
       }, 500),
-    [Toast, intl, updateGeneralConfig]
+    [Toast, updateGeneralConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -168,23 +183,13 @@ export const SettingsContext: React.FC = ({ children }) => {
             },
           });
 
-          // TODO - use different notification method
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "configuration" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
           setPendingInterface(undefined);
+          onSuccess();
         } catch (e) {
           Toast.error(e);
         }
       }, 500),
-    [Toast, intl, updateInterfaceConfig]
+    [Toast, updateInterfaceConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -227,23 +232,13 @@ export const SettingsContext: React.FC = ({ children }) => {
             },
           });
 
-          // TODO - use different notification method
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "configuration" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
           setPendingDefaults(undefined);
+          onSuccess();
         } catch (e) {
           Toast.error(e);
         }
       }, 500),
-    [Toast, intl, updateDefaultsConfig]
+    [Toast, updateDefaultsConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -286,23 +281,13 @@ export const SettingsContext: React.FC = ({ children }) => {
             },
           });
 
-          // TODO - use different notification method
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "configuration" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
           setPendingScraping(undefined);
+          onSuccess();
         } catch (e) {
           Toast.error(e);
         }
       }, 500),
-    [Toast, intl, updateScrapingConfig]
+    [Toast, updateScrapingConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -345,23 +330,13 @@ export const SettingsContext: React.FC = ({ children }) => {
             },
           });
 
-          // TODO - use different notification method
-          Toast.success({
-            content: intl.formatMessage(
-              { id: "toast.updated_entity" },
-              {
-                entity: intl
-                  .formatMessage({ id: "configuration" })
-                  .toLocaleLowerCase(),
-              }
-            ),
-          });
           setPendingDLNA(undefined);
+          onSuccess();
         } catch (e) {
           Toast.error(e);
         }
       }, 500),
-    [Toast, intl, updateDLNAConfig]
+    [Toast, updateDLNAConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -393,6 +368,32 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  function maybeRenderLoadingIndicator() {
+    if (
+      pendingGeneral ||
+      pendingInterface ||
+      pendingDefaults ||
+      pendingScraping ||
+      pendingDLNA
+    ) {
+      return (
+        <div className="loading-indicator">
+          <Spinner animation="border" role="status">
+            <span className="sr-only">Loading...</span>
+          </Spinner>
+        </div>
+      );
+    }
+
+    if (updateSuccess) {
+      return (
+        <div className="loading-indicator">
+          <Icon icon="check-circle" className="fa-fw" />
+        </div>
+      );
+    }
+  }
+
   return (
     <SettingStateContext.Provider
       value={{
@@ -411,6 +412,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         saveDLNA,
       }}
     >
+      {maybeRenderLoadingIndicator()}
       {children}
     </SettingStateContext.Provider>
   );
