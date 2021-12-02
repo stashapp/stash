@@ -5,7 +5,7 @@ import { mutateRunPluginTask, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
-import { Setting } from "../Inputs";
+import { Setting, SettingGroup } from "../Inputs";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -29,10 +29,16 @@ export const PluginTasks: React.FC = () => {
       <SettingSection headingID="config.tasks.plugin_tasks">
         {taskPlugins.map((o) => {
           return (
-            <div key={`${o.id}`} className="setting-group">
-              <Setting heading={o.name}></Setting>
+            <SettingGroup
+              key={`${o.id}`}
+              settingProps={{
+                heading: o.name,
+              }}
+              collapsible
+              collapsedDefault={(o.tasks?.length ?? 0) > 1}
+            >
               {renderPluginTasks(o, o.tasks ?? [])}
-            </div>
+            </SettingGroup>
           );
         })}
       </SettingSection>

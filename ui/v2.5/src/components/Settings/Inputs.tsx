@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { Button, Collapse, Form, Modal } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
+import { Icon } from "../Shared";
 import { StringListInput } from "../Shared/StringListInput";
 
 interface ISetting {
@@ -49,6 +50,52 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
         {renderSubHeading()}
       </div>
       <div>{children}</div>
+    </div>
+  );
+};
+
+interface ISettingGroup {
+  settingProps: ISetting;
+  topLevel?: JSX.Element;
+  collapsible?: boolean;
+  collapsedDefault?: boolean;
+}
+
+export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
+  settingProps,
+  topLevel,
+  collapsible,
+  collapsedDefault,
+  children,
+}) => {
+  const [open, setOpen] = useState(!collapsedDefault);
+
+  function renderCollapseButton() {
+    if (!collapsible) return;
+
+    return (
+      <Button
+        className="collapse-button"
+        variant="minimal"
+        onClick={() => setOpen(!open)}
+      >
+        <Icon
+          className="fa-fw"
+          icon={open ? "chevron-circle-down" : "chevron-circle-left"}
+        />
+      </Button>
+    );
+  }
+
+  return (
+    <div className="setting-group">
+      <Setting {...settingProps}>
+        {topLevel}
+        {renderCollapseButton()}
+      </Setting>
+      <Collapse in={open}>
+        <div className="collapsible-section">{children}</div>
+      </Collapse>
     </div>
   );
 };

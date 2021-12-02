@@ -16,7 +16,7 @@ import { ScanOptions } from "./ScanOptions";
 import { useToast } from "src/hooks";
 import { GenerateOptions } from "./GenerateOptions";
 import { SettingSection } from "../SettingSection";
-import { BooleanSetting, Setting } from "../Inputs";
+import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -279,31 +279,38 @@ export const LibraryTasks: React.FC = () => {
       {maybeRenderIdentifyDialog()}
 
       <SettingSection headingID="library">
-        <div className="setting-group">
-          <Setting
-            headingID="actions.scan"
-            subHeadingID="config.tasks.scan_for_content_desc"
-          >
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => runScan()}
-            >
-              <FormattedMessage id="actions.scan" />
-            </Button>
+        <SettingGroup
+          settingProps={{
+            headingID: "actions.scan",
+            subHeadingID: "config.tasks.scan_for_content_desc",
+          }}
+          topLevel={
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => runScan()}
+              >
+                <FormattedMessage id="actions.scan" />
+              </Button>
 
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => setDialogOpen({ scan: true })}
-            >
-              <FormattedMessage id="actions.selective_scan" />…
-            </Button>
-          </Setting>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => setDialogOpen({ scan: true })}
+              >
+                <FormattedMessage id="actions.selective_scan" />…
+              </Button>
+            </>
+          }
+          collapsible
+          collapsedDefault
+        >
           <ScanOptions options={scanOptions} setOptions={setScanOptions} />
-        </div>
+        </SettingGroup>
+
         <Setting
           headingID="config.tasks.identify.heading"
           subHeadingID="config.tasks.identify.description"
@@ -316,42 +323,48 @@ export const LibraryTasks: React.FC = () => {
             <FormattedMessage id="actions.identify" />…
           </Button>
         </Setting>
-        <div className="setting-group">
-          <Setting
-            headingID="actions.auto_tag"
-            subHeadingID="config.tasks.auto_tag_based_on_filenames"
-          >
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => runAutoTag()}
-            >
-              <FormattedMessage id="actions.auto_tag" />
-            </Button>
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => setDialogOpen({ autoTag: true })}
-            >
-              <FormattedMessage id="actions.selective_auto_tag" />…
-            </Button>
-          </Setting>
+
+        <SettingGroup
+          settingProps={{
+            headingID: "actions.auto_tag",
+            subHeadingID: "config.tasks.auto_tag_based_on_filenames",
+          }}
+          topLevel={
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => runAutoTag()}
+              >
+                <FormattedMessage id="actions.auto_tag" />
+              </Button>
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => setDialogOpen({ autoTag: true })}
+              >
+                <FormattedMessage id="actions.selective_auto_tag" />…
+              </Button>
+            </>
+          }
+          collapsible
+          collapsedDefault
+        >
           <AutoTagOptions
             options={autoTagOptions}
             setOptions={(o) => setAutoTagOptions(o)}
           />
-        </div>
+        </SettingGroup>
       </SettingSection>
 
-      <hr />
-
       <SettingSection headingID="config.tasks.generated_content">
-        <div className="setting-group">
-          <Setting
-            headingID="actions.generate"
-            subHeadingID="config.tasks.generate_desc"
-          >
+        <SettingGroup
+          settingProps={{
+            headingID: "actions.generate",
+            subHeadingID: "config.tasks.generate_desc",
+          }}
+          topLevel={
             <Button
               variant="secondary"
               type="submit"
@@ -359,12 +372,15 @@ export const LibraryTasks: React.FC = () => {
             >
               <FormattedMessage id="actions.generate" />
             </Button>
-          </Setting>
+          }
+          collapsible
+          collapsedDefault
+        >
           <GenerateOptions
             options={generateOptions}
             setOptions={setGenerateOptions}
           />
-        </div>
+        </SettingGroup>
       </SettingSection>
     </Form.Group>
   );

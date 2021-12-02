@@ -76,29 +76,36 @@
     padding-bottom: 15px;
     width: 100%;
 
+    .collapse-button {
+      color: $text-muted;
+      font-size: 1.5rem;
+      padding: 0;
+    }
+
     &:not(:last-child) {
       border-bottom: 1px solid #000;
     }
 
+    > .setting:first-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    > .setting:not(:first-child),
+    .collapsible-section .setting {
+      margin-left: 2.5rem;
+      margin-right: 1.5rem;
+      padding-bottom: 10px;
+      padding-left: 0;
+      padding-top: 10px;
+
+      h3 {
+        font-size: 1rem;
+      }
+    }
+
     .setting {
       width: auto;
-
-      &:not(:first-child) {
-        margin-left: 2.5rem;
-        margin-right: 1.5rem;
-        padding-bottom: 10px;
-        padding-left: 0;
-        padding-top: 10px;
-
-        h3 {
-          font-size: 1rem;
-        }
-      }
-
-      &:first-child {
-        border-bottom: none;
-        padding-bottom: 0;
-      }
 
       &:not(:last-child) {
         border-bottom-color: $muted-gray;
