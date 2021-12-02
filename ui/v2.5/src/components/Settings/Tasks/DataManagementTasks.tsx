@@ -15,6 +15,8 @@ import { ImportDialog } from "./ImportDialog";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting } from "../Inputs";
+import { ManualLink } from "src/components/Help/Manual";
+import { Icon } from "src/components/Shared";
 
 interface ICleanOptions {
   options: GQL.CleanMetadataInput;
@@ -215,7 +217,14 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       <SettingSection headingID="config.tasks.maintenance">
         <div className="setting-group">
           <Setting
-            headingID="actions.clean"
+            heading={
+              <>
+                <FormattedMessage id="actions.clean" />
+                <ManualLink tab="Tasks">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            }
             subHeadingID="config.tasks.cleanup_desc"
           >
             <Button

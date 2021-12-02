@@ -33,6 +33,7 @@ import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
+import { ManualProvider } from "./components/Help/Manual";
 
 initPolyfills();
 
@@ -146,12 +147,14 @@ export const App: React.FC = () => {
         >
           <ToastProvider>
             <LightboxProvider>
-              <Helmet
-                titleTemplate={`%s ${TITLE_SUFFIX}`}
-                defaultTitle="Stash"
-              />
-              {maybeRenderNavbar()}
-              <div className="main container-fluid">{renderContent()}</div>
+              <ManualProvider>
+                <Helmet
+                  titleTemplate={`%s ${TITLE_SUFFIX}`}
+                  defaultTitle="Stash"
+                />
+                {maybeRenderNavbar()}
+                <div className="main container-fluid">{renderContent()}</div>
+              </ManualProvider>
             </LightboxProvider>
           </ToastProvider>
         </ConfigurationProvider>

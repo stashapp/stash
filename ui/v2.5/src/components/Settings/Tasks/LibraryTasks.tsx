@@ -17,6 +17,8 @@ import { useToast } from "src/hooks";
 import { GenerateOptions } from "./GenerateOptions";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
+import { ManualLink } from "src/components/Help/Manual";
+import { Icon } from "src/components/Shared";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -281,7 +283,14 @@ export const LibraryTasks: React.FC = () => {
       <SettingSection headingID="library">
         <SettingGroup
           settingProps={{
-            headingID: "actions.scan",
+            heading: (
+              <>
+                <FormattedMessage id="actions.scan" />
+                <ManualLink tab="Tasks">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            ),
             subHeadingID: "config.tasks.scan_for_content_desc",
           }}
           topLevel={
@@ -312,7 +321,14 @@ export const LibraryTasks: React.FC = () => {
         </SettingGroup>
 
         <Setting
-          headingID="config.tasks.identify.heading"
+          heading={
+            <>
+              <FormattedMessage id="config.tasks.identify.heading" />
+              <ManualLink tab="Identify">
+                <Icon icon="question-circle" />
+              </ManualLink>
+            </>
+          }
           subHeadingID="config.tasks.identify.description"
         >
           <Button
@@ -326,7 +342,14 @@ export const LibraryTasks: React.FC = () => {
 
         <SettingGroup
           settingProps={{
-            headingID: "actions.auto_tag",
+            heading: (
+              <>
+                <FormattedMessage id="actions.auto_tag" />
+                <ManualLink tab="AutoTagging">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            ),
             subHeadingID: "config.tasks.auto_tag_based_on_filenames",
           }}
           topLevel={
@@ -361,7 +384,14 @@ export const LibraryTasks: React.FC = () => {
       <SettingSection headingID="config.tasks.generated_content">
         <SettingGroup
           settingProps={{
-            headingID: "actions.generate",
+            heading: (
+              <>
+                <FormattedMessage id="actions.generate" />
+                <ManualLink tab="Tasks">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            ),
             subHeadingID: "config.tasks.generate_desc",
           }}
           topLevel={

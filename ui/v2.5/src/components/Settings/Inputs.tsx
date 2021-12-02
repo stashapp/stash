@@ -7,7 +7,7 @@ import { StringListInput } from "../Shared/StringListInput";
 
 interface ISetting {
   id?: string;
-  heading?: string;
+  heading?: React.ReactNode;
   headingID?: string;
   subHeadingID?: string;
   subHeading?: React.ReactNode;
