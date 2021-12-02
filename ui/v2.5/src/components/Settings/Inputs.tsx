@@ -79,7 +79,7 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
 
     return (
       <Button
-        className="collapse-button"
+        className="setting-group-collapse-button"
         variant="minimal"
         onClick={() => setOpen(!open)}
       >
