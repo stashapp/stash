@@ -35,7 +35,6 @@ export const PluginTasks: React.FC = () => {
                 heading: o.name,
               }}
               collapsible
-              collapsedDefault={(o.tasks?.length ?? 0) > 1}
             >
               {renderPluginTasks(o, o.tasks ?? [])}
             </SettingGroup>
@@ -53,8 +52,8 @@ export const PluginTasks: React.FC = () => {
     return pluginTasks.map((o) => {
       return (
         <Setting
-          headingID={o.name}
-          subHeadingID={o.description ?? undefined}
+          heading={o.name}
+          subHeading={o.description ?? undefined}
           key={o.name}
         >
           <Button

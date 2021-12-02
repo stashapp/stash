@@ -83,10 +83,7 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
         variant="minimal"
         onClick={() => setOpen(!open)}
       >
-        <Icon
-          className="fa-fw"
-          icon={open ? "chevron-circle-down" : "chevron-circle-left"}
-        />
+        <Icon className="fa-fw" icon={open ? "chevron-up" : "chevron-down"} />
       </Button>
     );
   }
@@ -119,7 +116,7 @@ export const BooleanSetting: React.FC<IBooleanSetting> = (props) => {
       <Form.Switch
         id={id}
         disabled={disabled}
-        checked={checked}
+        checked={checked ?? false}
         onChange={() => onChange(!checked)}
       />
     </Setting>
@@ -144,7 +141,7 @@ export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> = ({
       <Form.Control
         className="input-control"
         as="select"
-        value={value}
+        value={value ?? ""}
         onChange={(e) => onChange(e.currentTarget.value)}
       >
         {children}
@@ -325,7 +322,7 @@ export const StringSetting: React.FC<IStringSetting> = (props) => {
       renderField={(value, setValue) => (
         <Form.Control
           className="text-input"
-          value={value}
+          value={value ?? ""}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setValue(e.currentTarget.value)
           }
@@ -349,7 +346,7 @@ export const NumberSetting: React.FC<INumberSetting> = (props) => {
         <Form.Control
           className="text-input"
           type="number"
-          value={value}
+          value={value ?? 0}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setValue(Number.parseInt(e.currentTarget.value || "0", 10))
           }
