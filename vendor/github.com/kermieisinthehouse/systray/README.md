@@ -1,5 +1,7 @@
 systray is a cross-platform Go library to place an icon and menu in the notification area.
 
+This is a fork of the abandoned https://github.com/getlantern/systray with pull requests reviewed and merged, and bugs fixed.
+
 ## Features
 
 * Supported on Windows, macOS, and Linux
@@ -68,7 +70,7 @@ The code under `webview_example` is to demostrate how it can co-exist with other
 
 ### Linux
 
-* Building apps requires gcc as well as the `gtk3` and `libappindicator3` development headers to be installed. For Debian or Ubuntu, you may install these using:
+* Building apps requires gcc as well as the `gtk3` and `libayatana-appindicator` development headers to be installed. For Debian or Ubuntu, you may install these using:
 
 ```sh
 sudo apt-get install gcc libgtk-3-dev libappindicator3-dev

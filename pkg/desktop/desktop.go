@@ -15,8 +15,6 @@ import (
 	"golang.org/x/term"
 )
 
-func init() { runtime.LockOSThread() }
-
 func Start() {
 	if IsDesktop() {
 		OpenURLInBrowser(false, "")

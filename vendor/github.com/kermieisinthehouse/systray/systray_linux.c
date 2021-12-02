@@ -2,7 +2,7 @@
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
-#include <libappindicator/app-indicator.h>
+#include <libayatana-appindicator/app-indicator.h>
 #include "systray.h"
 
 static AppIndicator *global_app_indicator;
@@ -222,6 +222,7 @@ void setIcon(const char* iconBytes, int length, bool template) {
 }
 
 void setTitle(char* ctitle) {
+	app_indicator_set_title(global_app_indicator,ctitle);
 	app_indicator_set_label(global_app_indicator, ctitle, "");
 	free(ctitle);
 }

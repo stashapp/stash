@@ -6,7 +6,7 @@ package desktop
 import (
 	"strings"
 
-	"github.com/getlantern/systray"
+	"github.com/kermieisinthehouse/systray"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 )
@@ -28,6 +28,7 @@ func startSystray() {
 
 	// Listen for changes to rerender systray
 	// TODO: This only works once, and then changes are ignored from then
+	// TODO: This panics macos, upstream bug (!)
 	go func() {
 		for {
 			<-config.GetInstance().GetConfigUpdatesChannel()

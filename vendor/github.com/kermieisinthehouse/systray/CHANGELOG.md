@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.1.0](https://github.com/getlantern/systray/tree/v1.1.0) (2020-11-18)
+
+[Full Changelog](https://github.com/getlantern/systray/compare/v1.0.5...v1.1.0)
+
+**Merged pull requests:**
+
+- Add submenu support for Linux [\#183](https://github.com/getlantern/systray/pull/183) ([fbrinker](https://github.com/fbrinker))
+- Add checkbox support for Linux [\#181](https://github.com/getlantern/systray/pull/181) ([fbrinker](https://github.com/fbrinker))
+- fix SetTitle documentation [\#179](https://github.com/getlantern/systray/pull/179) ([delthas](https://github.com/delthas))
+
 ## [v1.0.5](https://github.com/getlantern/systray/tree/v1.0.5) (2020-10-19)
 
 [Full Changelog](https://github.com/getlantern/systray/compare/v1.0.4...v1.0.5)
@@ -33,19 +43,19 @@
 
 ## [v1.0.2](https://github.com/getlantern/systray/tree/v1.0.2) (2020-05-19)
 
-[Full Changelog](https://github.com/getlantern/systray/compare/1.0.1...v1.0.2)
+[Full Changelog](https://github.com/getlantern/systray/compare/v1.0.1...v1.0.2)
 
 **Merged pull requests:**
 
 - remove unused dependencies [\#145](https://github.com/getlantern/systray/pull/145) ([joesis](https://github.com/joesis))
 
-## [1.0.1](https://github.com/getlantern/systray/tree/1.0.1) (2020-05-18)
-
-[Full Changelog](https://github.com/getlantern/systray/compare/v1.0.1...1.0.1)
-
 ## [v1.0.1](https://github.com/getlantern/systray/tree/v1.0.1) (2020-05-18)
 
-[Full Changelog](https://github.com/getlantern/systray/compare/1.0.0...v1.0.1)
+[Full Changelog](https://github.com/getlantern/systray/compare/1.0.1...v1.0.1)
+
+## [1.0.1](https://github.com/getlantern/systray/tree/1.0.1) (2020-05-18)
+
+[Full Changelog](https://github.com/getlantern/systray/compare/1.0.0...1.0.1)
 
 **Merged pull requests:**
 
@@ -61,7 +71,6 @@
 
 **Merged pull requests:**
 
-- Backport all features and fixes from master [\#140](https://github.com/getlantern/systray/pull/140) ([joesis](https://github.com/joesis))
 - Check if the menu item is nil [\#137](https://github.com/getlantern/systray/pull/137) ([myleshorton](https://github.com/myleshorton))
 
 ## [0.9.0](https://github.com/getlantern/systray/tree/0.9.0) (2020-03-24)
@@ -74,6 +83,7 @@
 
 **Merged pull requests:**
 
+- Backport all features and fixes from master [\#140](https://github.com/getlantern/systray/pull/140) ([joesis](https://github.com/joesis))
 - Nested menu windows [\#132](https://github.com/getlantern/systray/pull/132) ([joesis](https://github.com/joesis))
 - Support for nested sub-menus on OS X [\#131](https://github.com/getlantern/systray/pull/131) ([oxtoacart](https://github.com/oxtoacart))
 - Use temp directory for walk resource manager [\#129](https://github.com/getlantern/systray/pull/129) ([max-b](https://github.com/max-b))
@@ -109,9 +119,6 @@
 - Fixed hide show in linux \(\#37\) [\#39](https://github.com/getlantern/systray/pull/39) ([meskio](https://github.com/meskio))
 - fix: linux compilation warning [\#36](https://github.com/getlantern/systray/pull/36) ([novln](https://github.com/novln))
 - Added separator functionality [\#32](https://github.com/getlantern/systray/pull/32) ([oxtoacart](https://github.com/oxtoacart))
-- Add ability to show/hide menu items [\#31](https://github.com/getlantern/systray/pull/31) ([oxtoacart](https://github.com/oxtoacart))
-- Exit handling improvements [\#29](https://github.com/getlantern/systray/pull/29) ([oxtoacart](https://github.com/oxtoacart))
-- Made onExit run reliably and process terminate on quit [\#28](https://github.com/getlantern/systray/pull/28) ([oxtoacart](https://github.com/oxtoacart))
 
 
 

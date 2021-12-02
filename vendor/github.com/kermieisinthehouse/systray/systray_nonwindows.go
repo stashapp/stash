@@ -1,9 +1,10 @@
+//go:build !windows
 // +build !windows
 
 package systray
 
 /*
-#cgo linux pkg-config: gtk+-3.0 appindicator3-0.1
+#cgo linux pkg-config: gtk+-3.0 ayatana-appindicator3-0.1
 #cgo darwin CFLAGS: -DDARWIN -x objective-c -fobjc-arc
 #cgo darwin LDFLAGS: -framework Cocoa
 
