@@ -159,6 +159,7 @@
       "build_hash": "Build hash:",
       "build_time": "Build time:",
       "check_for_new_version": "Check for new version",
+      "latest_version": "Latest Version",
       "latest_version_build_hash": "Latest Version Build Hash:",
       "new_version_notice": "[NEW]",
       "stash_discord": "Join our {url} channel",

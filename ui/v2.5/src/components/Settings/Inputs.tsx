@@ -385,3 +385,32 @@ export const StringListSetting: React.FC<IStringListSetting> = (props) => {
     />
   );
 };
+
+interface IConstantSetting<T> extends ISetting {
+  value?: T;
+  renderValue?: (v: T | undefined) => JSX.Element;
+}
+
+export const ConstantSetting = <T extends {}>(props: IConstantSetting<T>) => {
+  const { id, headingID, subHeading, subHeadingID, renderValue, value } = props;
+  const intl = useIntl();
+
+  return (
+    <div className="setting" id={id}>
+      <div>
+        <h3>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h3>
+
+        <div className="value">{renderValue ? renderValue(value) : value}</div>
+
+        {subHeadingID ? (
+          <div className="sub-heading">
+            {intl.formatMessage({ id: subHeadingID })}
+          </div>
+        ) : subHeading ? (
+          <div className="sub-heading">{subHeading}</div>
+        ) : undefined}
+      </div>
+      <div />
+    </div>
+  );
+};
