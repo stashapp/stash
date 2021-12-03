@@ -19,18 +19,19 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   return (
-    <>
-      <h4>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h4>
+    <div id="tasks-panel">
+      <div className="tasks-panel-queue">
+        <h1>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h1>
+        <JobTable />
+      </div>
 
-      <JobTable />
-
-      <hr />
-
-      <LibraryTasks />
-      <hr />
-      <DataManagementTasks setIsBackupRunning={setIsBackupRunning} />
-      <hr />
-      <PluginTasks />
-    </>
+      <div className="tasks-panel-tasks">
+        <LibraryTasks />
+        <hr />
+        <DataManagementTasks setIsBackupRunning={setIsBackupRunning} />
+        <hr />
+        <PluginTasks />
+      </div>
+    </div>
   );
 };

@@ -119,6 +119,21 @@
   }
 }
 
+#tasks-panel {
+  @media (min-width: 576px) and (min-height: 600px) {
+    height: calc(100vh - 4rem);
+
+    .tasks-panel-tasks {
+      max-height: calc(100% - 180px);
+      overflow-y: auto;
+    }
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}
+
 #setting-dialog .sub-heading {
   font-size: 0.8rem;
   margin-top: 0.5rem;
@@ -197,9 +212,12 @@
   }
 }
 
-.job-table {
+.job-table.card {
+  background-color: $card-bg;
   height: 10em;
+  margin-bottom: 30px;
   overflow-y: auto;
+  padding: 0.5rem 15px;
 
   ul {
     list-style: none;
@@ -337,4 +355,8 @@
   to {
     opacity: 0;
   }
+}
+
+.empty-queue-message {
+  color: $text-muted;
 }
