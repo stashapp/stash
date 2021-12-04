@@ -9,6 +9,7 @@
     "apply": "Toepassen",
     "auto_tag": "Automatisch taggen",
     "backup": "Backup",
+    "browse_for_image": "Bladeren voor beeld …",
     "cancel": "Afbreken",
     "clean": "Opschonen",
     "clear": "Wissen",
@@ -78,6 +79,7 @@
     "select_all": "Selecteer Alles",
     "select_folders": "Selecteer bestandsmappen",
     "select_none": "Selecteer Niets",
+    "selective_scan": "Selectief Aftasten",
     "set_as_default": "Stel als standaard in",
     "set_back_image": "Achtergrond afbeelding…",
     "set_front_image": "Voorgrond afbeelding…",
@@ -109,8 +111,11 @@
   "component_tagger": {
     "config": {
       "active_instance": "Actieve stash-box installatie:",
+      "blacklist_desc": "Zwarte lijst items worden uitgesloten van zoekopdrachten. Merk op dat het reguliere uitdrukkingen zijn en ook hoofdletterongevoelig. Bepaalde tekens moeten worden geontsnapt met een backslash: {chars_require_escape}",
+      "blacklist_label": "Zwarte lijst",
       "query_mode_auto": "Auto",
       "query_mode_auto_desc": "Gebruikt metadata indien aanwezig, of bestandsnaam",
+      "query_mode_dir_desc": "Gebruikt alleen de hoofddirectory van het videobestand",
       "query_mode_filename": "Bestandsnaam",
       "query_mode_filename_desc": "Gebruikt alleen bestandsnaam",
       "query_mode_label": "Bevraag mode",
@@ -119,7 +124,74 @@
       "query_mode_path": "Pad",
       "query_mode_path_desc": "Gebruikt volledige bestandspad",
       "set_cover_desc": "Vervang de scène omslag als er een gevonden is.",
-      "set_cover_label": "Zet scène omslag afbeelding"
+      "set_cover_label": "Zet scène omslag afbeelding",
+      "set_tag_desc": "Voeg tags toe aan de scène, door ze te overschrijven of samen te voegen met bestaande tags in de scène.",
+      "set_tag_label": "Labels instellen",
+      "show_male_desc": "Schakel tussen of mannelijke performers beschikbaar zullen zijn om te taggen.",
+      "show_male_label": "Toon mannelijke performers",
+      "source": "Bron"
+    },
+    "noun_query": "Vraag",
+    "results": {
+      "duration_off": "De duur is minstens {number}s",
+      "duration_unknown": "Duur onbekend",
+      "fp_found": "{fpCount, plural, =0 {Geen nieuwe vingerafdrukken gevonden} other {# nieuwe vingerafdruk overeenkomsten gevonden}}",
+      "fp_matches": "Duur is een overeenkomst",
+      "fp_matches_multi": "Duur wedstrijden {matchCount}/{durationsLength} vingerafdruk(ken)",
+      "hash_matches": "{hash_type} is een overeenkomst",
+      "match_failed_already_tagged": "Scène al getagd",
+      "match_failed_no_result": "Geen resultaten gevonden",
+      "match_success": "Scene succesvol getagd",
+      "phash_matches": "{count} PHashes wedstrijd",
+      "unnamed": "Naamloos"
+    },
+    "verb_match_fp": "Vingerafdrukken vergelijken",
+    "verb_matched": "Bijpassend",
+    "verb_scrape_all": "Bekijk alle",
+    "verb_submit_fp": "Indienen {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
+    "verb_toggle_config": "{toggle} {configuration}",
+    "verb_toggle_unmatched": "{toggle} ongeëvenaarde scènes"
+  },
+  "config": {
+    "about": {
+      "build_hash": "Bouw hash:",
+      "build_time": "Bouwtijd:",
+      "check_for_new_version": "Controleren op nieuwe versie",
+      "latest_version_build_hash": "Nieuwste versie Bouw Hash:",
+      "new_version_notice": "[NIEUW]",
+      "stash_discord": "Word lid van ons {url} kanaal",
+      "stash_home": "Stash thuis bij {url}",
+      "stash_open_collective": "Steun ons via {url}",
+      "stash_wiki": "Stash {url} pagina",
+      "version": "Versie"
+    },
+    "categories": {
+      "about": "Over",
+      "interface": "Interface",
+      "logs": "Logboeken",
+      "plugins": "Plugins",
+      "tasks": "Taken",
+      "tools": "Gereedschap"
+    },
+    "dlna": {
+      "allow_temp_ip": "Toestaan {tempIP}",
+      "allowed_ip_addresses": "Toegestane IP-adressen",
+      "default_ip_whitelist": "Standaard IP witte lijst",
+      "default_ip_whitelist_desc": "Standaard IP-adressen staan toegang tot DLNA toe. Gebruik {wildcard} om alle IP-adressen toe te staan.",
+      "enabled_by_default": "Standaard ingeschakeld",
+      "network_interfaces_desc": "Interfaces om de DLNA-server aan bloot te stellen. Een lege lijst resulteert in uitvoering op alle interfaces. Vereist een herstart van DLNA na wijziging.",
+      "recent_ip_addresses": "Recentelijk IP-adressen",
+      "server_display_name": "Naam serverweergave",
+      "server_display_name_desc": "Weergavenaam voor de DLNA-server. Wordt standaard ingesteld op {server_naam} indien leeg.",
+      "until_restart": "tot de herstart"
+    },
+    "general": {
+      "auth": {
+        "api_key": "API Sleutel",
+        "api_key_desc": "API sleutel voor externe systemen. Alleen vereist wanneer gebruikersnaam/wachtwoord is geconfigureerd. Gebruikersnaam moet worden opgeslagen voordat API sleutel wordt gegenereerd.",
+        "authentication": "Authenticatie",
+        "clear_api_key": "Duidelijke API sleutel"
+      }
     }
   },
   "true": "Waar",
