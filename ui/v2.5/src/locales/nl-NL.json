@@ -227,6 +227,12 @@
       "generated_file_naming_hash_head": "Gebruikte hash voor gegenereerde bestandsnamen"
     }
   },
+  "setup": {
+    "success": {
+      "getting_help": "Help",
+      "in_app_manual_explained": "Het is aanbevolen om de in-app handleiding te bekijken, het is raadpleegbaar via het {icon} icoontje rechts-boven"
+    }
+  },
   "true": "Waar",
   "twitter": "Twitter",
   "weight": "Gewicht",
