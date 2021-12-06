@@ -115,6 +115,17 @@
   }
 }
 
+#stash-table {
+  .setting {
+    justify-content: start;
+    padding: 0;
+  }
+
+  .stash-row .setting > div:last-child {
+    text-align: left;
+  }
+}
+
 #tasks-panel h1 {
   font-size: 2rem;
 }

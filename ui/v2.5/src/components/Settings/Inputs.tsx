@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Collapse, Form, Modal } from "react-bootstrap";
+import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PropsWithChildren } from "react-router/node_modules/@types/react";
 import { Icon } from "../Shared";
@@ -173,7 +173,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
   return (
     <div className="setting" id={id}>
       <div>
-        <h3>{intl.formatMessage({ id: headingID })}</h3>
+        <h3>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h3>
 
         <div className="value">
           {renderValue ? renderValue(value) : undefined}
@@ -204,6 +204,7 @@ export interface ISettingModal<T> {
   value: T | undefined;
   close: (v?: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
+  modalProps?: ModalProps;
 }
 
 export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
@@ -215,13 +216,14 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
     value,
     close,
     renderField,
+    modalProps,
   } = props;
 
   const intl = useIntl();
   const [currentValue, setCurrentValue] = useState<T | undefined>(value);
 
   return (
-    <Modal show onHide={() => close()} id="setting-dialog">
+    <Modal show onHide={() => close()} id="setting-dialog" {...modalProps}>
       <Form
         onSubmit={(e) => {
           close(currentValue);
@@ -264,6 +266,7 @@ interface IModalSetting<T> extends ISetting {
   onChange: (v: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
   renderValue?: (v: T | undefined) => JSX.Element;
+  modalProps?: ModalProps;
 }
 
 export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
@@ -277,6 +280,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     renderField,
     renderValue,
     buttonTextID,
+    modalProps,
   } = props;
   const [showModal, setShowModal] = useState(false);
 
@@ -293,6 +297,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
             if (v !== undefined) onChange(v);
             setShowModal(false);
           }}
+          {...modalProps}
         />
       ) : undefined}
 

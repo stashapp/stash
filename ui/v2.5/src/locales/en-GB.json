@@ -236,8 +236,6 @@
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
-      "exclude_image": "Exclude Image",
-      "exclude_video": "Exclude Video",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
       "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
@@ -885,6 +883,7 @@
   "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
+  "videos": "Videos",
   "weight": "Weight",
   "years_old": "years old"
 }
