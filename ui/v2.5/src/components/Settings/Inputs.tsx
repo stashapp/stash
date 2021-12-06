@@ -109,10 +109,10 @@ interface IBooleanSetting extends ISetting {
 }
 
 export const BooleanSetting: React.FC<IBooleanSetting> = (props) => {
-  const { id, disabled, checked, onChange } = props;
+  const { id, disabled, checked, onChange, ...settingProps } = props;
 
   return (
-    <Setting {...props}>
+    <Setting {...settingProps}>
       <Form.Switch
         id={id}
         disabled={disabled}
