@@ -19,7 +19,7 @@ export const SettingSection: React.FC<PropsWithChildren<ISettingGroup>> = ({
 
   return (
     <div className="setting-section" id={id}>
-      <h1>{headingID ? intl.formatMessage({ id: headingID }): undefined}</h1>
+      <h1>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h1>
       {subHeadingID ? (
         <div className="sub-heading">
           {intl.formatMessage({ id: subHeadingID })}
