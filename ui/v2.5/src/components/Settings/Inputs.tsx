@@ -12,6 +12,7 @@ interface ISetting {
   subHeadingID?: string;
   subHeading?: React.ReactNode;
   tooltipID?: string;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
@@ -22,6 +23,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   subHeading,
   children,
   tooltipID,
+  onClick,
 }) => {
   const intl = useIntl();
 
@@ -48,7 +50,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   const tooltip = tooltipID ? intl.formatMessage({ id: tooltipID }) : undefined;
 
   return (
-    <div className="setting" id={id}>
+    <div className="setting" id={id} onClick={onClick}>
       <div>
         <h3 title={tooltip}>{renderHeading()}</h3>
         {renderSubHeading()}
@@ -88,9 +90,28 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
     );
   }
 
+  function onDivClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (!collapsible) return;
+
+    // ensure button was not clicked
+    let target: HTMLElement | null = e.target as HTMLElement;
+    while (target && target !== e.currentTarget) {
+      if (
+        target.nodeName.toLowerCase() === "button" ||
+        target.nodeName.toLowerCase() === "a"
+      ) {
+        // button clicked, swallow event
+        return;
+      }
+      target = target.parentElement;
+    }
+
+    setOpen(!open);
+  }
+
   return (
-    <div className="setting-group">
-      <Setting {...settingProps}>
+    <div className={`setting-group ${collapsible ? "collapsible" : ""}`}>
+      <Setting {...settingProps} onClick={onDivClick}>
         {topLevel}
         {renderCollapseButton()}
       </Setting>

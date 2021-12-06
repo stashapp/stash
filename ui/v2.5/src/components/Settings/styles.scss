@@ -78,6 +78,10 @@
   }
 
   .setting-group {
+    &.collapsible > .setting {
+      cursor: pointer;
+    }
+
     padding-bottom: 15px;
     width: 100%;
 
