@@ -5,7 +5,7 @@ import { PropsWithChildren } from "react-router/node_modules/@types/react";
 
 interface ISettingGroup {
   id?: string;
-  headingID: string;
+  headingID?: string;
   subHeadingID?: string;
 }
 
@@ -19,7 +19,7 @@ export const SettingSection: React.FC<PropsWithChildren<ISettingGroup>> = ({
 
   return (
     <div className="setting-section" id={id}>
-      <h1>{intl.formatMessage({ id: headingID })}</h1>
+      <h1>{headingID ? intl.formatMessage({ id: headingID }): undefined}</h1>
       {subHeadingID ? (
         <div className="sub-heading">
           {intl.formatMessage({ id: subHeadingID })}

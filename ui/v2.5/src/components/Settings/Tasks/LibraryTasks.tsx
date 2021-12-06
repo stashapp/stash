@@ -315,11 +315,12 @@ export const LibraryTasks: React.FC = () => {
             </>
           }
           collapsible
-          collapsedDefault
         >
           <ScanOptions options={scanOptions} setOptions={setScanOptions} />
         </SettingGroup>
+      </SettingSection>
 
+      <SettingSection>
         <Setting
           heading={
             <>
@@ -339,7 +340,9 @@ export const LibraryTasks: React.FC = () => {
             <FormattedMessage id="actions.identify" />…
           </Button>
         </Setting>
+      </SettingSection>
 
+      <SettingSection>
         <SettingGroup
           settingProps={{
             heading: (
@@ -372,7 +375,6 @@ export const LibraryTasks: React.FC = () => {
             </>
           }
           collapsible
-          collapsedDefault
         >
           <AutoTagOptions
             options={autoTagOptions}
@@ -404,7 +406,6 @@ export const LibraryTasks: React.FC = () => {
             </Button>
           }
           collapsible
-          collapsedDefault
         >
           <GenerateOptions
             options={generateOptions}

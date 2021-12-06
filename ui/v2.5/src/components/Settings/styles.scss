@@ -111,10 +111,6 @@
 
     .setting {
       width: auto;
-
-      &:not(:last-child) {
-        border-bottom-color: $muted-gray;
-      }
     }
   }
 }
