@@ -294,11 +294,20 @@ func (r *repository) join(j joiner, as string, parentIDCol string) {
 	if as != "" {
 		t = as
 	}
-	j.addJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
+	j.addLeftJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
+}
+
+func (r *repository) innerJoin(j joiner, as string, parentIDCol string) {
+	t := r.tableName
+	if as != "" {
+		t = as
+	}
+	j.addInnerJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
 }
 
 type joiner interface {
-	addJoin(table, as, onClause string)
+	addLeftJoin(table, as, onClause string)
+	addInnerJoin(table, as, onClause string)
 }
 
 type joinRepository struct {
