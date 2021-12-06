@@ -32,6 +32,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         onChange={(v) => setOptions({ previews: v })}
       />
       <BooleanSetting
+        className="sub-setting"
         id="image-preview-task"
         checked={options.imagePreviews ?? false}
         disabled={!options.previews}
@@ -42,6 +43,8 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
 
       <ModalSetting<VideoPreviewSettingsInput>
         id="video-preview-settings"
+        className="sub-setting"
+        disabled={!options.previews}
         buttonTextID="dialogs.scene_gen.preview_generation_options"
         headingID="dialogs.scene_gen.preview_generation_options"
         value={{
@@ -75,6 +78,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
       />
       <BooleanSetting
         id="marker-image-preview-task"
+        className="sub-setting"
         checked={options.markerImagePreviews ?? false}
         disabled={!options.markers}
         headingID="dialogs.scene_gen.marker_image_previews"
@@ -87,6 +91,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
       />
       <BooleanSetting
         id="marker-screenshot-task"
+        className="sub-setting"
         checked={options.markerScreenshots ?? false}
         disabled={!options.markers}
         headingID="dialogs.scene_gen.marker_screenshots"

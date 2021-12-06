@@ -38,6 +38,10 @@
     padding: 15px;
     width: 100%;
 
+    &.sub-setting {
+      padding-left: 2rem;
+    }
+
     h3 {
       font-size: 1.25rem;
       margin-bottom: 0;
@@ -46,6 +50,10 @@
         cursor: help;
         text-decoration: underline dotted;
       }
+    }
+
+    &.disabled h3 {
+      color: $text-muted;
     }
 
     > div:first-child {
@@ -110,6 +118,10 @@
 
       h3 {
         font-size: 1rem;
+      }
+
+      &.sub-setting {
+        padding-left: 2rem;
       }
     }
 

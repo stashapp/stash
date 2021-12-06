@@ -7,16 +7,19 @@ import { StringListInput } from "../Shared/StringListInput";
 
 interface ISetting {
   id?: string;
+  className?: string;
   heading?: React.ReactNode;
   headingID?: string;
   subHeadingID?: string;
   subHeading?: React.ReactNode;
   tooltipID?: string;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
+  disabled?: boolean;
 }
 
 export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   id,
+  className,
   heading,
   headingID,
   subHeadingID,
@@ -24,6 +27,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   children,
   tooltipID,
   onClick,
+  disabled,
 }) => {
   const intl = useIntl();
 
@@ -48,9 +52,14 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
   }
 
   const tooltip = tooltipID ? intl.formatMessage({ id: tooltipID }) : undefined;
+  const disabledClassName = disabled ? "disabled" : "";
 
   return (
-    <div className="setting" id={id} onClick={onClick}>
+    <div
+      className={`setting ${className} ${disabledClassName}`}
+      id={id}
+      onClick={onClick}
+    >
       <div>
         <h3 title={tooltip}>{renderHeading()}</h3>
         {renderSubHeading()}
@@ -61,7 +70,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
 };
 
 interface ISettingGroup {
-  settingProps: ISetting;
+  settingProps?: ISetting;
   topLevel?: JSX.Element;
   collapsible?: boolean;
   collapsedDefault?: boolean;
@@ -124,7 +133,6 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
 
 interface IBooleanSetting extends ISetting {
   id: string;
-  disabled?: boolean;
   checked?: boolean;
   onChange: (v: boolean) => void;
 }
@@ -133,7 +141,7 @@ export const BooleanSetting: React.FC<IBooleanSetting> = (props) => {
   const { id, disabled, checked, onChange, ...settingProps } = props;
 
   return (
-    <Setting {...settingProps}>
+    <Setting {...settingProps} disabled={disabled}>
       <Form.Switch
         id={id}
         disabled={disabled}
@@ -181,6 +189,7 @@ interface IDialogSetting<T> extends ISetting {
 export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
   const {
     id,
+    className,
     headingID,
     subHeadingID,
     subHeading,
@@ -188,11 +197,14 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     onChange,
     renderValue,
     buttonTextID,
+    disabled,
   } = props;
   const intl = useIntl();
 
+  const disabledClassName = disabled ? "disabled" : "";
+
   return (
-    <div className="setting" id={id}>
+    <div className={`setting ${className} ${disabledClassName}`} id={id}>
       <div>
         <h3>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h3>
 
@@ -209,7 +221,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
         ) : undefined}
       </div>
       <div>
-        <Button onClick={() => onChange()}>
+        <Button onClick={() => onChange()} disabled={disabled}>
           <FormattedMessage id={buttonTextID ?? "actions.edit"} />
         </Button>
       </div>
@@ -293,6 +305,7 @@ interface IModalSetting<T> extends ISetting {
 export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
   const {
     id,
+    className,
     value,
     headingID,
     subHeadingID,
@@ -302,6 +315,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     renderValue,
     buttonTextID,
     modalProps,
+    disabled,
   } = props;
   const [showModal, setShowModal] = useState(false);
 
@@ -324,6 +338,8 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
 
       <ChangeButtonSetting<T>
         id={id}
+        className={className}
+        disabled={disabled}
         buttonTextID={buttonTextID}
         headingID={headingID}
         subHeadingID={subHeadingID}
