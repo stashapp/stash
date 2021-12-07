@@ -301,6 +301,7 @@
       "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
       "backup_database": "Säkerhetskopierar databasen i databasens mapp med filnamnsformatet {filename_format}",
       "cleanup_desc": "Kollar efter saknade filer och raderar dem från databasen. Detta är en destruktiv handling.",
+      "data_management": "Datahantering",
       "defaults_set": "Standard har valts och kommer användas när {action} trycks på Jobbsidan.",
       "dont_include_file_extension_as_part_of_the_title": "Inkludera inte filändelse som del av titeln",
       "export_to_json": "Exporterar databasens innehåll i JSON format till metadatamappen.",
@@ -348,7 +349,7 @@
         "scanning_paths": "Skannar följande sökvägar"
       },
       "scan_for_content_desc": "Skannar för nytt innehåll och lägger till det i databasen.",
-      "set_name_date_details_from_metadata_if_present": "Sätt namn, datum, beskrivning från metadata (om det finns)"
+      "set_name_date_details_from_metadata_if_present": "Sätt namn, datum, beskrivning från medföljande metadata (om det finns)"
     },
     "tools": {
       "scene_duplicate_checker": "Scen Duplikat Kontroll",
