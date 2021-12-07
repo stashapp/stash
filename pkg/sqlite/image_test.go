@@ -69,6 +69,32 @@ func TestImageFindByPath(t *testing.T) {
 	})
 }
 
+func TestImageFindByGalleryID(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images, err := sqb.FindByGalleryID(galleryIDs[galleryIdxWithTwoImages])
+
+		if err != nil {
+			t.Errorf("Error finding images: %s", err.Error())
+		}
+
+		assert.Len(t, images, 2)
+		assert.Equal(t, imageIDs[imageIdx1WithGallery], images[0].ID)
+		assert.Equal(t, imageIDs[imageIdx2WithGallery], images[1].ID)
+
+		images, err = sqb.FindByGalleryID(galleryIDs[galleryIdxWithScene])
+
+		if err != nil {
+			t.Errorf("Error finding images: %s", err.Error())
+		}
+
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
 func TestImageQueryQ(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		const imageIdx = 2

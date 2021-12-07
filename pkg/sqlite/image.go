@@ -14,7 +14,7 @@ const performersImagesTable = "performers_images"
 const imagesTagsTable = "images_tags"
 
 var imagesForGalleryQuery = selectAll(imageTable) + `
-LEFT JOIN galleries_images as galleries_join on galleries_join.image_id = images.id
+INNER JOIN galleries_images as galleries_join on galleries_join.image_id = images.id
 WHERE galleries_join.gallery_id = ?
 GROUP BY images.id
 `
@@ -360,7 +360,7 @@ func imageIsMissingCriterionHandler(qb *imageQueryBuilder, isMissing *string) cr
 				qb.performersRepository().join(f, "performers_join", "images.id")
 				f.addWhere("performers_join.image_id IS NULL")
 			case "galleries":
-				qb.galleriesRepository().join(f, "galleries_join", "images.id")
+				qb.galleriesRepository().innerJoin(f, "galleries_join", "images.id")
 				f.addWhere("galleries_join.image_id IS NULL")
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "images.id")
@@ -412,8 +412,8 @@ func imageTagCountCriterionHandler(qb *imageQueryBuilder, tagCount *models.IntCr
 
 func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.galleriesRepository().join(f, "galleries_join", "images.id")
-		f.addJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
+		qb.galleriesRepository().innerJoin(f, "galleries_join", "images.id")
+		f.addInnerJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 
@@ -469,8 +469,8 @@ func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.Hier
 					notClause = "NOT"
 				}
 
-				f.addJoin("performers_images", "", "images.id = performers_images.image_id")
-				f.addJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
+				f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
+				f.addLeftJoin("performers_tags", "", "performers_images.performer_id = performers_tags.performer_id")
 
 				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
 				return
@@ -488,7 +488,7 @@ INNER JOIN performers_tags pt ON pt.performer_id = pi.performer_id
 INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
-			f.addJoin("performer_tags", "", "performer_tags.image_id = images.id")
+			f.addLeftJoin("performer_tags", "", "performer_tags.image_id = images.id")
 
 			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
 		}
