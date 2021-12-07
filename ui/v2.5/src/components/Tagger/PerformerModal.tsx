@@ -188,6 +188,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       <div className="row">
         <div className="col-7">
           {renderField("name", performer.name)}
+          {renderField("aliases", performer.aliases)}
           {renderField(
             "gender",
             performer.gender ? genderToString(performer.gender) : ""
