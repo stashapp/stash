@@ -301,6 +301,7 @@
       "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
       "backup_database": "Esegue il backup del database nella stessa cartella del database, con il formato nome file {filename_format}",
       "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
+      "data_management": "Gestione dati",
       "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
       "dont_include_file_extension_as_part_of_the_title": "Non includere l'estensione file come parte del titolo",
       "export_to_json": "Esporta il contenuto del database in formato JSON nella cartella metadati.",
