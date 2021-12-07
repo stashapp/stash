@@ -52,8 +52,11 @@
       }
     }
 
-    &.disabled h3 {
-      color: $text-muted;
+    &.disabled {
+      .custom-switch,
+      h3 {
+        opacity: 0.5;
+      }
     }
 
     > div:first-child {
