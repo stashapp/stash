@@ -131,6 +131,11 @@
   }
 }
 
+#stashes .card {
+  // override overflow so that menu shows correctly
+  overflow: visible;
+}
+
 #stash-table {
   .setting {
     justify-content: start;

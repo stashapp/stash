@@ -56,7 +56,7 @@ export const Setting: React.FC<PropsWithChildren<ISetting>> = ({
 
   return (
     <div
-      className={`setting ${className} ${disabledClassName}`}
+      className={`setting ${className ?? ""} ${disabledClassName}`}
       id={id}
       onClick={onClick}
     >
@@ -204,7 +204,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
   const disabledClassName = disabled ? "disabled" : "";
 
   return (
-    <div className={`setting ${className} ${disabledClassName}`} id={id}>
+    <div className={`setting ${className ?? ""} ${disabledClassName}`} id={id}>
       <div>
         <h3>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h3>
 
