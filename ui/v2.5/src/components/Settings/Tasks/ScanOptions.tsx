@@ -36,6 +36,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
       />
       <BooleanSetting
         id="scan-generate-image-previews"
+        className="sub-setting"
         headingID="config.tasks.generate_previews_during_scan"
         tooltipID="config.tasks.generate_previews_during_scan_tooltip"
         checked={scanGenerateImagePreviews ?? false}
