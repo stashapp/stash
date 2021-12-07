@@ -12,6 +12,7 @@ fragment SceneData on Scene {
   path
   phash
   interactive
+  interactive_speed
 
   file {
     size
