@@ -42,7 +42,7 @@ const Stash: React.FC<IStashProps> = ({
         {/* NOTE - language is opposite to meaning:
         internally exclude flags, displayed as include */}
         <BooleanSetting
-          id="stash-exclude-video"
+          id={`stash-exclude-video-${index}`}
           checked={!stash.excludeVideo}
           onChange={(v) => handleInput("excludeVideo", !v)}
         />
@@ -50,7 +50,7 @@ const Stash: React.FC<IStashProps> = ({
 
       <Col xs={2}>
         <BooleanSetting
-          id="stash-exclude-image"
+          id={`stash-exclude-image-${index}`}
           checked={!stash.excludeImage}
           onChange={(v) => handleInput("excludeImage", !v)}
         />
