@@ -325,6 +325,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       }
       linkClassName="scene-card-link"
       thumbnailSectionClassName="video-section"
+      interactiveHeatmap={
+        props.scene.interactive_speed
+          ? props.scene.paths.interactive_heatmap ?? undefined
+          : undefined
+      }
       image={
         <>
           <ScenePreview
