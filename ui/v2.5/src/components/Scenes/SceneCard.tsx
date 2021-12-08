@@ -16,6 +16,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -106,6 +107,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         {(props.scene.file.duration ?? 0) >= 1
           ? TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)
           : ""}
+      </div>
+    );
+  }
+
+  function maybeRenderInteractiveSpeedOverlay() {
+    return (
+      <div className="scene-interactive-speed-overlay">
+        {props.scene.interactive_speed ?? ""}
       </div>
     );
   }
@@ -340,6 +349,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           />
           <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}
+          {maybeRenderInteractiveSpeedOverlay()}
         </>
       }
       overlays={maybeRenderSceneStudioOverlay()}
