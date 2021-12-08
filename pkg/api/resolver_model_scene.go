@@ -97,16 +97,18 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
+	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &models.ScenePathsType{
-		Screenshot:  &screenshotPath,
-		Preview:     &previewPath,
-		Stream:      &streamPath,
-		Webp:        &webpPath,
-		Vtt:         &vttPath,
-		ChaptersVtt: &chaptersVttPath,
-		Sprite:      &spritePath,
-		Funscript:   &funscriptPath,
+		Screenshot:         &screenshotPath,
+		Preview:            &previewPath,
+		Stream:             &streamPath,
+		Webp:               &webpPath,
+		Vtt:                &vttPath,
+		ChaptersVtt:        &chaptersVttPath,
+		Sprite:             &spritePath,
+		Funscript:          &funscriptPath,
+		InteractiveHeatmap: &interactiveHeatmap,
 	}, nil
 }
 

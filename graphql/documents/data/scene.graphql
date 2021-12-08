@@ -34,6 +34,7 @@ fragment SceneData on Scene {
     chapters_vtt
     sprite
     funscript
+    interactive_heatmap
   }
 
   scene_markers {
