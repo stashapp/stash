@@ -16,7 +16,6 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface IScenePreviewProps {
   isPortrait: boolean;

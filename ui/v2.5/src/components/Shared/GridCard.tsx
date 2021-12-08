@@ -17,7 +17,7 @@ interface ICardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
-  interactiveHeatmap?: string
+  interactiveHeatmap?: string;
 }
 
 export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {

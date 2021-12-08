@@ -172,8 +172,8 @@ func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap() error {
 	}
 	defer outpng.Close()
 
-	png.Encode(outpng, img)
-	return nil
+	err = png.Encode(outpng, img)
+	return err
 }
 
 func (funscript *Script) CalculateMedian() int64 {
@@ -216,8 +216,8 @@ func (funscript Script) getGradientTable(numSegments int) GradientTable {
 
 	for _, a := range funscript.Actions {
 		segment := int(float64(a.At) / float64(maxts+1) * float64(numSegments))
-		segments[segment].count = segments[segment].count + 1
-		segments[segment].intensity = segments[segment].intensity + int(a.Intensity)
+		segments[segment].count++
+		segments[segment].intensity += int(a.Intensity)
 	}
 
 	for i := 0; i < numSegments; i++ {
@@ -245,24 +245,26 @@ func getSegmentColor(intensity float64) colorful.Color {
 	var f float64
 	var c colorful.Color
 
-	if intensity <= 0.001 {
+	switch {
+	case intensity <= 0.001:
 		c = colorBackground
-	} else if intensity <= 1*stepSize {
+	case intensity <= 1*stepSize:
 		f = (intensity - 0*stepSize) / stepSize
 		c = colorBlue.BlendLab(colorGreen, f)
-	} else if intensity <= 2*stepSize {
+	case intensity <= 2*stepSize:
 		f = (intensity - 1*stepSize) / stepSize
 		c = colorGreen.BlendLab(colorYellow, f)
-	} else if intensity <= 3*stepSize {
+	case intensity <= 3*stepSize:
 		f = (intensity - 2*stepSize) / stepSize
 		c = colorYellow.BlendLab(colorRed, f)
-	} else if intensity <= 4*stepSize {
+	case intensity <= 4*stepSize:
 		f = (intensity - 3*stepSize) / stepSize
 		c = colorRed.BlendRgb(colorPurple, f)
-	} else {
+	default:
 		f = (intensity - 4*stepSize) / (5 * stepSize)
 		f = math.Min(f, 1.0)
 		c = colorPurple.BlendLab(colorBlack, f)
 	}
+
 	return c
 }
