@@ -677,6 +677,7 @@
     "checksum": "Checksum",
     "downloaded_from": "Downloaded From",
     "hash": "Hash",
+    "interactive_speed": "Interactive speed",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in this scene"
