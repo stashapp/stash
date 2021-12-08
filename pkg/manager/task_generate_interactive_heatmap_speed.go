@@ -3,8 +3,8 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
-	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -17,16 +17,18 @@ type GenerateInteractiveHeatmapSpeedTask struct {
 	TxnManager          models.TransactionManager
 }
 
-func (t *GenerateInteractiveHeatmapSpeedTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
-	defer wg.Done()
+func (t *GenerateInteractiveHeatmapSpeedTask) GetDescription() string {
+	return fmt.Sprintf("Generating heatmap and speed for %s", t.Scene.Path)
+}
+
+func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
+	if !t.shouldGenerate() {
+		return
+	}
 
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 	funscriptPath := utils.GetFunscriptPath(t.Scene.Path)
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
-
-	if !t.Overwrite && !t.required() {
-		return
-	}
 
 	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
 
@@ -67,12 +69,12 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(wg *sizedwaitgroup.SizedWait
 
 }
 
-func (t *GenerateInteractiveHeatmapSpeedTask) required() bool {
+func (t *GenerateInteractiveHeatmapSpeedTask) shouldGenerate() bool {
 	if !t.Scene.Interactive {
 		return false
 	}
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	return !t.doesHeatmapExist(sceneHash)
+	return !t.doesHeatmapExist(sceneHash) || t.Overwrite
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) doesHeatmapExist(sceneChecksum string) bool {

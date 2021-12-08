@@ -268,6 +268,15 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
           />
         </Form.Group>
 
+        <Form.Group>
+            <Form.Check
+            id="interactive-heatmap-speed-task"
+            checked={options.interactiveHeatmapsSpeeds ?? false}
+            label={intl.formatMessage({ id: "dialogs.scene_gen.interactive_heatmap_speed" })}
+            onChange={() => setOptions({ interactiveHeatmapsSpeeds: !options.interactiveHeatmapsSpeeds })}
+            />
+        </Form.Group>
+
         <hr />
         <Form.Group>
           <Form.Check

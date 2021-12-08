@@ -560,6 +560,7 @@
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
       "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
+      "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
       "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
       "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
       "markers": "Markers (20 second videos which begin at the given timecode)",
