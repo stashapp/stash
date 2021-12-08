@@ -31,6 +31,7 @@ const sortByOptions = [
   "bitrate",
   "movie_scene_number",
   "interactive",
+  "interactive_speed",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
@@ -69,6 +70,7 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
+  createMandatoryNumberCriterionOption("interactive_speed"),
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(
