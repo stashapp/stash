@@ -74,10 +74,13 @@ func IsServerDockerized() bool {
 
 // writeStashIcon writes the current stash logo to config/icon.png
 func writeStashIcon() {
-	iconPath := path.Join(config.GetInstance().GetConfigPath(), "icon.png")
-	err := ioutil.WriteFile(iconPath, favicon_png, 0644)
-	if err != nil {
-		logger.Errorf("Couldn't write icon file: %s", err.Error())
+	c := config.GetInstance()
+	if !c.IsNewSystem() {
+		iconPath := path.Join(c.GetConfigPath(), "icon.png")
+		err := ioutil.WriteFile(iconPath, favicon_png, 0644)
+		if err != nil {
+			logger.Errorf("Couldn't write icon file: %s", err.Error())
+		}
 	}
 }
 

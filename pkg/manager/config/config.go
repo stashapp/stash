@@ -295,9 +295,9 @@ func (i *Instance) GetShowOneTimeMovedNotification() bool {
 }
 
 func (i *Instance) Set(key string, value interface{}) {
-	if key == MenuItems {
-		i.configUpdates <- 0
-	}
+	// if key == MenuItems {
+	// 	i.configUpdates <- 0
+	// }
 	i.Lock()
 	defer i.Unlock()
 	i.main.Set(key, value)
@@ -1288,5 +1288,5 @@ func (i *Instance) setInitialConfig(write bool) error {
 
 func (i *Instance) FinalizeSetup() {
 	i.isNewSystem = false
-	i.configUpdates <- 0
+	// i.configUpdates <- 0
 }
