@@ -53,6 +53,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
+  const [showScrubber, setShowScrubber] = useState(true);
 
   const {
     data: sceneStreams,
@@ -555,6 +556,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind(".", () => setShowScrubber(!showScrubber));
 
     return () => {
       Mousetrap.unbind("a");
@@ -567,6 +569,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
       Mousetrap.unbind(",");
+      Mousetrap.unbind(".");
     };
   });
 
@@ -619,7 +622,9 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         {!rerenderPlayer ? (
           <ScenePlayer
-            className="w-100 m-sm-auto no-gutter"
+            className={`w-100 m-sm-auto no-gutter ${
+              !showScrubber ? "hide-scrubber" : ""
+            }`}
             scene={scene}
             timestamp={timestamp}
             autoplay={autoplay}

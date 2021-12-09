@@ -35,7 +35,7 @@ $sceneTabWidth: 450px;
     height: 177.78vw;
   }
 
-  #main-jwplayer {
+  .jwplayer {
     outline: none;
   }
 }
@@ -117,6 +117,10 @@ $sceneTabWidth: 450px;
   margin: 5px 0;
   overflow: hidden;
   position: relative;
+}
+
+.hide-scrubber .scrubber-wrapper {
+  display: none;
 }
 
 /* hide scrubber when height is < 450px or width < 576 */
