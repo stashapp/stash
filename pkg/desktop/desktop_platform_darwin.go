@@ -4,7 +4,7 @@
 package desktop
 
 import (
-	"github.com/deckarep/gosx-notifier"
+	"github.com/kermieisinthehouse/gosx-notifier"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -20,6 +20,8 @@ func isServerDockerized() bool {
 func sendNotification(notificationTitle string, notificationText string) {
 	notification := gosxnotifier.NewNotification(notificationText)
 	notification.Title = notificationTitle
+	notification.AppIcon = getIconPath()
+	notification.Link = getServerURL("")
 	err := notification.Push()
 
 	if err != nil {

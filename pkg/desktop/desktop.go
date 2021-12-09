@@ -1,7 +1,9 @@
 package desktop
 
 import (
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -18,6 +20,7 @@ import (
 func Start() {
 	if IsDesktop() {
 		OpenURLInBrowser(false, "")
+		writeStashIcon()
 		startSystray()
 	}
 }
@@ -28,23 +31,7 @@ func OpenURLInBrowser(force bool, path string) {
 	// automatically reload the page if a local port is closed at page load and then opened.
 	c := config.GetInstance()
 	if force || (!c.GetNoBrowser() && IsDesktop()) {
-		serverAddress := c.GetHost()
-		if serverAddress == "0.0.0.0" {
-			serverAddress = "localhost"
-		}
-		serverAddress = serverAddress + ":" + strconv.Itoa(c.GetPort())
-
-		proto := ""
-		if c.HasTLSConfig() {
-			proto = "https://"
-		} else {
-			proto = "http://"
-		}
-		serverAddress = proto + serverAddress + "/"
-
-		if path != "" {
-			serverAddress += strings.TrimPrefix(path, "/")
-		}
+		serverAddress := getServerURL(path)
 
 		err := browser.OpenURL(serverAddress)
 		if err != nil {
@@ -85,6 +72,15 @@ func IsServerDockerized() bool {
 	return isServerDockerized()
 }
 
+// writeStashIcon writes the current stash logo to config/icon.png
+func writeStashIcon() {
+	iconPath := path.Join(config.GetInstance().GetConfigPath(), "icon.png")
+	err := ioutil.WriteFile(iconPath, favicon_png, 0644)
+	if err != nil {
+		logger.Errorf("Couldn't write icon file: %s", err.Error())
+	}
+}
+
 // IsAllowedAutoUpdate tries to determine if the stash binary was installed from a
 // package manager or if touching the executable is otherwise a bad idea
 func IsAllowedAutoUpdate() bool {
@@ -121,4 +117,31 @@ func IsAllowedAutoUpdate() bool {
 func Shutdown() {
 	database.Close()
 	os.Exit(0)
+}
+
+func getIconPath() string {
+	return path.Join(config.GetInstance().GetConfigPath(), "icon.png")
+}
+
+func getServerURL(path string) string {
+	c := config.GetInstance()
+	serverAddress := c.GetHost()
+	if serverAddress == "0.0.0.0" {
+		serverAddress = "localhost"
+	}
+	serverAddress = serverAddress + ":" + strconv.Itoa(c.GetPort())
+
+	proto := ""
+	if c.HasTLSConfig() {
+		proto = "https://"
+	} else {
+		proto = "http://"
+	}
+	serverAddress = proto + serverAddress + "/"
+
+	if path != "" {
+		serverAddress += strings.TrimPrefix(path, "/")
+	}
+
+	return serverAddress
 }

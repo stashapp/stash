@@ -33,7 +33,9 @@ export const SettingsInterfacePanel: React.FC = () => {
     allMenuItems.map((item) => item.id)
   );
   const [noBrowser, setNoBrowserFlag] = useState<boolean>(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(
+    true
+  );
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
@@ -92,7 +94,7 @@ export const SettingsInterfacePanel: React.FC = () => {
       setWallPlayback(iCfg.wallPlayback ?? "video");
       setMaximumLoopDuration(iCfg.maximumLoopDuration ?? 0);
       setNoBrowserFlag(iCfg?.noBrowser ?? false);
-      setNotificationsEnabled(iCfg?.notificationsEnabled ?? true)
+      setNotificationsEnabled(iCfg?.notificationsEnabled ?? true);
       setAutostartVideo(iCfg.autostartVideo ?? false);
       setAutostartVideoOnPlaySelected(
         iCfg.autostartVideoOnPlaySelected ?? true
@@ -232,7 +234,8 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
         <Form.Text className="text-muted">
           {intl.formatMessage({
-            id: "config.ui.desktop_integration.send_desktop_notifications_for_events",
+            id:
+              "config.ui.desktop_integration.send_desktop_notifications_for_events",
           })}
         </Form.Text>
       </Form.Group>

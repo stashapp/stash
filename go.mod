@@ -47,8 +47,8 @@ require (
 
 require (
 	github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
-	github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
+	github.com/kermieisinthehouse/gosx-notifier v0.1.0
 	github.com/kermieisinthehouse/systray v1.2.0
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.0.1

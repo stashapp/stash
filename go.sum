@@ -175,8 +175,6 @@ github.com/cznic/mathutil v0.0.0-20180504122225-ca4c9f2c1369/go.mod h1:e6NPNENfs
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb h1:6S+TKObz6+Io2c8IOkcbK4Sz7nj6RpEVU7TkvmsZZcw=
-github.com/deckarep/gosx-notifier v0.0.0-20180201035817-e127226297fb/go.mod h1:wf3nKtOnQqCp7kp9xB7hHnNlZ6m3NoiOxjrB9hFRq4Y=
 github.com/denisenkom/go-mssqldb v0.10.0/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27NDyej4t/EjAShU=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
@@ -503,6 +501,10 @@ github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0/go.mod h1:1NbS8ALr
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=
+github.com/kermieisinthehouse/gosx-notifier v0.0.0-20211209090154-16b21a85a5fa h1:Nexcp9twSgwDLcoypbiRQC2UUOjcp1vqESXZE+rht4M=
+github.com/kermieisinthehouse/gosx-notifier v0.0.0-20211209090154-16b21a85a5fa/go.mod h1:xyWT07azFtUOcHl96qMVvKhvKzsMcS7rKTHQyv8WTho=
+github.com/kermieisinthehouse/gosx-notifier v0.1.0 h1:ugLNi8Z8lz8Wm2hsWaOPUbQ0E0/tVJ0EFCjiWaCCwPE=
+github.com/kermieisinthehouse/gosx-notifier v0.1.0/go.mod h1:xyWT07azFtUOcHl96qMVvKhvKzsMcS7rKTHQyv8WTho=
 github.com/kermieisinthehouse/systray v1.2.0 h1:2ULlD9RcURYsaNI5bji8At+HmeOcPRrExem9jpxdkXc=
 github.com/kermieisinthehouse/systray v1.2.0/go.mod h1:SjGKj6DEZAu+ASGuxHhfXUBq6QeGUiif/58IHhjdM+g=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=

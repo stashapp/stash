@@ -4,6 +4,7 @@
 package desktop
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/kermieisinthehouse/systray"
@@ -11,7 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 )
 
-// MUST be run on the main goroutine or will have no effect on MacOS
+// MUST be run on the main goroutine or will have no effect on macOS
 func startSystray() {
 
 	// Shows a small notification to inform that Stash will no longer show a terminal window,
@@ -27,14 +28,14 @@ func startSystray() {
 	}
 
 	// Listen for changes to rerender systray
-	// TODO: This only works once, and then changes are ignored from then
-	// TODO: This panics macos, upstream bug (!)
-	go func() {
-		for {
-			<-config.GetInstance().GetConfigUpdatesChannel()
-			systray.Quit()
-		}
-	}()
+	// TODO: This is disabled for now. The systray package does not clean up all of its resources when Quit() is called.
+	// TODO: This results in this only working once, or changes being ignored. Our fork of systray fixes a crash(!) on macOS here.
+	// go func() {
+	// 	for {
+	// 		<-config.GetInstance().GetConfigUpdatesChannel()
+	// 		systray.Quit()
+	// 	}
+	// }()
 
 	for {
 		systray.Run(systrayInitialize, nil)
@@ -42,6 +43,10 @@ func startSystray() {
 }
 
 func systrayInitialize() {
+	favicon := favicon_png
+	if runtime.GOOS == "windows" {
+		favicon = favicon_ico
+	}
 	systray.SetTemplateIcon(favicon, favicon)
 	systray.SetTooltip("🟢 Stash is Running.")
 

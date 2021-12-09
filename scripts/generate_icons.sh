@@ -18,31 +18,28 @@ fi
 if [ ! -e "$GOPATH/bin/2goarray" ]; then
     echo "Missing Dependency:"
     echo "Please run the following /outside/ of the stash folder:"
-    echo "go get github.com/cratonica/2goarray" 
+    echo "go install github.com/cratonica/2goarray@latest" 
     exit
 fi
 
 if [ ! -e "$GOPATH/bin/rsrc" ]; then
     echo "Missing Dependency:"
     echo "Please run the following /outside/ of the stash folder:"
-    echo "go get github.com/akavel/rsrc" 
+    echo "go install github.com/akavel/rsrc@latest" 
     exit
 fi
 
 if [ ! -e "$GOPATH/bin/icnsify" ]; then
     echo "Missing Dependency:"
     echo "Please run the following /outside/ of the stash folder:"
-    echo "go get github.com/jackmordaunt/icns/v2/cmd/icnsify@latest" 
+    echo "go install github.com/jackmordaunt/icns/v2/cmd/icnsify@latest" 
     exit
 fi
 
 # Favicon, used for web favicon, windows systray icon, windows executable icon
 convert stash-logo.png -define icon:auto-resize=256,64,48,32,16 favicon.ico
 cp favicon.ico ../ui/v2.5/public/
-echo "//go:build windows" > ../pkg/desktop/favicon_windows.go
-echo "// +build windows" >> ../pkg/desktop/favicon_windows.go
-echo >> ../pkg/desktop/favicon_windows.go
-"$GOPATH"/bin/2goarray favicon desktop < favicon.ico >> ../pkg/desktop/favicon_windows.go
+"$GOPATH"/bin/2goarray favicon_ico desktop < favicon.ico > ../pkg/desktop/favicon_ico.go
 
 # Build .syso for Windows icon, consumed by linker while building stash-win.exe
 "$GOPATH"/bin/rsrc -ico favicon.ico -o icon_windows.syso
@@ -51,10 +48,7 @@ mv icon_windows.syso ../pkg/desktop/
 # *nixes systray icon
 convert stash-logo.png -resize x256 favicon.png
 # Add icons for systray / notifications
-echo "//go:build linux || darwin" > ../pkg/desktop/favicon_unix.go
-echo "// +build linux darwin" >> ../pkg/desktop/favicon_unix.go
-echo >> ../pkg/desktop/favicon_unix.go
-"$GOPATH"/bin/2goarray favicon desktop < favicon.png >> ../pkg/desktop/favicon_unix.go
+"$GOPATH"/bin/2goarray favicon_png desktop < favicon.png > ../pkg/desktop/favicon_png.go
 
 
 # MacOS, used for bundle icon
