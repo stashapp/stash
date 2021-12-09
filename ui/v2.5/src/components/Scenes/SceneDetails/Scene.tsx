@@ -370,7 +370,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         <Dropdown.Item
           key="generate-screenshot"
           className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot(getPosition())}
+          onClick={() => onGenerateScreenshot(getPlayerPosition())}
         >
           <FormattedMessage id="actions.generate_thumb_from_current" />
         </Dropdown.Item>

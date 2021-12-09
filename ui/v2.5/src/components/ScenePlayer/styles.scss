@@ -13,8 +13,8 @@ $sceneTabWidth: 450px;
   }
 
   .video-js {
-    width: 100%;
     height: 56.25vw;
+    width: 100%;
 
     @media (min-width: 1200px) {
       height: 100%;
@@ -26,8 +26,8 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-vtt-thumbnail-display {
-    position: absolute;
     bottom: 60px;
+    position: absolute;
   }
 }
 
