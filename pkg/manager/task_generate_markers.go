@@ -117,6 +117,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		ScenePath: scene.Path,
 		Seconds:   seconds,
 		Width:     640,
+		Audio:     instance.Config.GetPreviewAudio(),
 	}
 
 	encoder := instance.FFMPEG
