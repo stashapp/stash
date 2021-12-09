@@ -20,8 +20,8 @@ import {
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ScenePlayer } from "src/components/ScenePlayer";
-import { TextUtils, JWUtils } from "src/utils";
+import { ScenePlayer, getPlayerPosition } from "src/components/ScenePlayer";
+import { TextUtils } from "src/utils";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneQueue } from "src/models/sceneQueue";
@@ -370,9 +370,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         <Dropdown.Item
           key="generate-screenshot"
           className="bg-secondary text-white"
-          onClick={() =>
-            onGenerateScreenshot(JWUtils.getPlayer().getPosition())
-          }
+          onClick={() => onGenerateScreenshot(getPosition())}
         >
           <FormattedMessage id="actions.generate_thumb_from_current" />
         </Dropdown.Item>

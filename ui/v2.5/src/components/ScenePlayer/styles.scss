@@ -2,7 +2,7 @@ $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
 
-#jwplayer-container {
+.VideoPlayer {
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - #{$menuHeight});
@@ -12,18 +12,8 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  & video:focus {
-    outline: 0;
-  }
-
-  /* stylelint-disable */
-  .jw-video {
-    // #1764 - jwplayer sets object-fit: fit in the style. Need to override it.
-    object-fit: contain !important;
-  }
-  /* stylelint-enable */
-
-  .video-wrapper {
+  .video-js {
+    width: 100%;
     height: 56.25vw;
 
     @media (min-width: 1200px) {
@@ -31,8 +21,13 @@ $sceneTabWidth: 450px;
     }
   }
 
-  &.portrait .video-wrapper {
+  &.portrait .video-js {
     height: 177.78vw;
+  }
+
+  .vjs-vtt-thumbnail-display {
+    position: absolute;
+    bottom: 60px;
   }
 }
 
