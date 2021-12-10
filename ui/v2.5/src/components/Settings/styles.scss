@@ -140,6 +140,10 @@
 }
 
 #stash-table {
+  @include media-breakpoint-down(sm) {
+    padding-top: 0;
+  }
+
   .setting {
     justify-content: start;
     padding: 0;
