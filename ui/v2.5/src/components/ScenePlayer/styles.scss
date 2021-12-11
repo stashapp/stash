@@ -24,10 +24,69 @@ $sceneTabWidth: 450px;
   &.portrait .video-js {
     height: 177.78vw;
   }
+}
+
+.video-js {
+  .vjs-control-bar {
+    background: none;
+    /* Scales control size */
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity .25s cubic-bezier(0,0,0.2,1);
+
+    &:before {
+      content: '';
+      background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+      width: 100%;
+      height: 10rem;
+      position: absolute;
+      bottom: 0px;
+    }
+  }
+
+  .vjs-time-control {
+    display: block;
+    padding: 0 4px;
+    min-width: 0;
+
+    .vjs-control-text {
+      display: none;
+    }
+  }
+
+  .vjs-duration {
+    margin-right: auto;
+  }
+
+  .vjs-remaining-time {
+    display: none;
+  }
+
+  &:hover,
+  &.vjs-paused {
+    .vjs-control-bar {
+      opacity: 1;
+    }
+  }
+
+  .vjs-progress-control {
+    position: absolute;
+    bottom: 2rem;
+    margin-left: 1%;
+    width: 98%;
+  }
 
   .vjs-vtt-thumbnail-display {
-    bottom: 60px;
+    border: 2px solid white;
+    border-radius: 2px;
+    bottom: 90px;
     position: absolute;
+  }
+
+  .vjs-big-play-button {
+    border: none;
+    background: none !important;
+    font-size: 10em;
   }
 }
 

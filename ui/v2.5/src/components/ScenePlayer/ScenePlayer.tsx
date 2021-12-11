@@ -49,6 +49,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       poster: scene.paths.screenshot ?? undefined,
       controls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      inactivityTimeout: 4000,
     };
 
     const player = VideoJS(videoElement, options);
