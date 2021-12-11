@@ -17,11 +17,7 @@ export const VRButton: React.FC<IVRButtonProps> = ({ scene }) => {
   }
 
   return (
-    <Button
-      className="minimal"
-      variant="secondary"
-      title="Open in DeoVR"
-    >
+    <Button className="minimal" variant="secondary" title="Open in DeoVR">
       <a href={paths.deovr}>
         <Icon icon="vr-cardboard" color="white" />
       </a>

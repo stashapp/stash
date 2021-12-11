@@ -22,7 +22,7 @@ type SlimDeoScene struct {
 	Title        string `json:"title"`
 	VideoLength  int    `json:"videoLength"`
 	ThumbnailURL string `json:"thumbnailUrl"`
-	VideoJsonURL string `json:video_url`
+	VideoJsonURL string `json:"video_url"`
 	VideoPreview string `json:"videoPreview,omitempty"`
 }
 

@@ -193,7 +193,10 @@ func (rs sceneRoutes) DeoVRJSON(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(getSingleSceneJSON(r.Context(), scene))
+	_, err := w.Write(getSingleSceneJSON(r.Context(), scene))
+	if err != nil {
+		logger.Warnf("Error writing single scene deovr json response: %s", err.Error())
+	}
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
