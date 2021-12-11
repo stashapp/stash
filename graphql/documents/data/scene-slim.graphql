@@ -33,6 +33,7 @@ fragment SlimSceneData on Scene {
     chapters_vtt
     sprite
     funscript
+    deovr
   }
 
   scene_markers {

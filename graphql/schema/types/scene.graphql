@@ -18,6 +18,7 @@ type ScenePathsType {
   chapters_vtt: String # Resolver
   sprite: String # Resolver
   funscript: String # Resolver
+  deovr: String # Resolver
 }
 
 type SceneMovie {
