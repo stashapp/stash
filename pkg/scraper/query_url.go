@@ -61,7 +61,7 @@ func (p queryURLParameters) applyReplacements(r queryURLReplacements) {
 	for k, v := range p {
 		rpl, found := r[k]
 		if found {
-			p[k] = rpl.apply(v)
+			p[k] = rpl.replace(v)
 		}
 	}
 }
