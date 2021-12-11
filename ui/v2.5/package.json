@@ -94,6 +94,7 @@
     "@types/react-router-hash-link": "^1.2.1",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "cheerio": "^1.0.0-rc.10",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-typescript": "^14.0.1",
