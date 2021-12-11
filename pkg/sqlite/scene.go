@@ -537,7 +537,7 @@ func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, hei
 func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if hasMarkers != nil {
-			f.addLeftJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
+			f.addJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
 			if *hasMarkers == "true" {
 				f.addHaving("count(scene_markers.scene_id) > 0")
 			} else {
@@ -658,7 +658,7 @@ func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.Hierarch
 func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.moviesRepository().join(f, "movies_join", "scenes.id")
-		f.addLeftJoin("movies", "", "movies_join.movie_id = movies.id")
+		f.addJoin("movies", "", "movies_join.movie_id = movies.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(movieTable, moviesScenesTable, "movie_id", addJoinsFunc)
 	return h.handler(movies)
@@ -673,8 +673,8 @@ func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.Hier
 					notClause = "NOT"
 				}
 
-				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
-				f.addLeftJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
+				f.addJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+				f.addJoin("performers_tags", "", "performers_scenes.performer_id = performers_tags.performer_id")
 
 				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
 				return
@@ -692,7 +692,7 @@ INNER JOIN performers_tags pt ON pt.performer_id = ps.performer_id
 INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
-			f.addLeftJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
+			f.addJoin("performer_tags", "", "performer_tags.scene_id = scenes.id")
 
 			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
 		}

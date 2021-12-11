@@ -176,13 +176,13 @@ func movieIsMissingCriterionHandler(qb *movieQueryBuilder, isMissing *string) cr
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "front_image":
-				f.addLeftJoin("movies_images", "", "movies_images.movie_id = movies.id")
+				f.addJoin("movies_images", "", "movies_images.movie_id = movies.id")
 				f.addWhere("movies_images.front_image IS NULL")
 			case "back_image":
-				f.addLeftJoin("movies_images", "", "movies_images.movie_id = movies.id")
+				f.addJoin("movies_images", "", "movies_images.movie_id = movies.id")
 				f.addWhere("movies_images.back_image IS NULL")
 			case "scenes":
-				f.addLeftJoin("movies_scenes", "", "movies_scenes.movie_id = movies.id")
+				f.addJoin("movies_scenes", "", "movies_scenes.movie_id = movies.id")
 				f.addWhere("movies_scenes.scene_id IS NULL")
 			default:
 				f.addWhere("(movies." + *isMissing + " IS NULL OR TRIM(movies." + *isMissing + ") = '')")
@@ -214,8 +214,8 @@ func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.M
 					notClause = "NOT"
 				}
 
-				f.addLeftJoin("movies_scenes", "", "movies.id = movies_scenes.movie_id")
-				f.addLeftJoin("performers_scenes", "", "movies_scenes.scene_id = performers_scenes.scene_id")
+				f.addJoin("movies_scenes", "", "movies.id = movies_scenes.movie_id")
+				f.addJoin("performers_scenes", "", "movies_scenes.scene_id = performers_scenes.scene_id")
 
 				f.addWhere(fmt.Sprintf("performers_scenes.performer_id IS %s NULL", notClause))
 				return
@@ -237,7 +237,7 @@ func moviePerformersCriterionHandler(qb *movieQueryBuilder, performers *models.M
 				INNER JOIN performers_scenes ON movies_scenes.scene_id = performers_scenes.scene_id
 				WHERE performers_scenes.performer_id IN`+getInBinding(len(performers.Value))+`
 			)`, args...)
-			f.addLeftJoin("movies_performers", "", "movies.id = movies_performers.movie_id")
+			f.addJoin("movies_performers", "", "movies.id = movies_performers.movie_id")
 
 			switch performers.Modifier {
 			case models.CriterionModifierIncludes:

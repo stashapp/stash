@@ -290,7 +290,7 @@ func galleryIsMissingCriterionHandler(qb *galleryQueryBuilder, isMissing *string
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "scenes":
-				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
+				f.addJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
 				f.addWhere("scenes_join.gallery_id IS NULL")
 			case "studio":
 				f.addWhere("galleries.studio_id IS NULL")
@@ -395,8 +395,8 @@ func galleryPerformerTagsCriterionHandler(qb *galleryQueryBuilder, tags *models.
 					notClause = "NOT"
 				}
 
-				f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
-				f.addLeftJoin("performers_tags", "", "performers_galleries.performer_id = performers_tags.performer_id")
+				f.addJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
+				f.addJoin("performers_tags", "", "performers_galleries.performer_id = performers_tags.performer_id")
 
 				f.addWhere(fmt.Sprintf("performers_tags.tag_id IS %s NULL", notClause))
 				return
@@ -414,7 +414,7 @@ INNER JOIN performers_tags pt ON pt.performer_id = pg.performer_id
 INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 )`)
 
-			f.addLeftJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")
+			f.addJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")
 
 			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
 		}
@@ -425,7 +425,7 @@ func galleryAverageResolutionCriterionHandler(qb *galleryQueryBuilder, resolutio
 	return func(f *filterBuilder) {
 		if resolution != nil && resolution.Value.IsValid() {
 			qb.imagesRepository().join(f, "images_join", "galleries.id")
-			f.addLeftJoin("images", "", "images_join.image_id = images.id")
+			f.addJoin("images", "", "images_join.image_id = images.id")
 
 			min := resolution.Value.GetMinResolution()
 			max := resolution.Value.GetMaxResolution()
