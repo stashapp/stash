@@ -20,7 +20,7 @@ func isService() bool {
 func isServerDockerized() bool {
 	_, dockerEnvErr := os.Stat("/.dockerenv")
 	cgroups, _ := ioutil.ReadFile("/proc/self/cgroup")
-	if os.IsExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
+	if !os.IsNotExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
 		return true
 	}
 

@@ -27,9 +27,9 @@ For further information you can [read the in-app manual](ui/v2.5/src/docs/en).
 ## Getting Started
 Run the executable by double-clicking it.
 
-*Note for Mac users:* You will need to right (ctrl) click on the app and hit "Open", then confirm in the next popup. This is because we have not signed the app with Apple.
+*Note for Mac users:* Running the app will present a security prompt since the binary isn't yet signed. Bypass this by right (ctrl) clicking on the app and hitting "Open", then "Open" in the next popup.
 
-*Note for Windows users:* Running the app might present a security prompt since the binary isn't yet signed.  Bypass this by clicking "more info" and then the "run anyway" button.
+*Note for Windows users:* Running the app might present a security prompt since the binary isn't yet signed. Bypass this by clicking "more info" and then the "run anyway" button.
 
 #### FFMPEG
 Stash requires ffmpeg. If you don't have it installed, Stash will download a copy for you. It is recommended that Linux users install `ffmpeg` from their distro's package manager.
