@@ -29,6 +29,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   scene,
   sceneStreams,
   timestamp,
+  onComplete,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
   const config = configuration?.interface;
@@ -73,6 +74,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
     player.on("loadeddata", function (this: VideoJsPlayer) {
       if (timestamp > 0) this.currentTime(timestamp);
+    });
+    player.on("ended", () => {
+      onComplete?.();
     });
 
     playerRef.current = player;
