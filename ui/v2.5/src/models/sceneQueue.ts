@@ -117,7 +117,7 @@ export class SceneQueue {
     sceneID: string,
     options?: IPlaySceneOptions
   ) {
-    history.push(this.makeLink(sceneID, options));
+    history.replace(this.makeLink(sceneID, options));
   }
 
   public makeLink(sceneID: string, options?: IPlaySceneOptions) {
