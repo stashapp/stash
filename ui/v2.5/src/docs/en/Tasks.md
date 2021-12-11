@@ -8,7 +8,7 @@ The scan function walks through the stash directories you have configured for ne
 
 Stash currently identifies files by performing a quick file hash. This means that if the file is renamed for moved elsewhere within your configured stash directories, then the scan will detect this and update its database accordingly.
 
-Stash currently ignores duplicate files. If two files contain identical content, only the last one it comes across is used.
+Stash currently ignores duplicate files. If two files contain identical content, only the first one it comes across is used.
 
 The "Set name, data, details from metadata" option will parse the files metadata (where supported) and set the scene attributes accordingly. It has previously been noted that this information is frequently incorrect, so only use this option where you are certain that the metadata is correct in the files.
 
