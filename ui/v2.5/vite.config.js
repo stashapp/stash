@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import tsconfigPaths from "vite-tsconfig-paths";
-import sri from './subresource-integrity.js';
 import viteCompression from 'vite-plugin-compression';
 
 // https://vitejs.dev/config/
@@ -17,9 +16,7 @@ export default defineConfig({
   },
   publicDir: 'public',
   assetsInclude: ['**/*.md'],
-  plugins: [
-    tsconfigPaths(),
-    sri(),
+  plugins: [tsconfigPaths(),
     viteCompression({
     algorithm: 'gzip',
     disable: false,
