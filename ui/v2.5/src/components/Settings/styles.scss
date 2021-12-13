@@ -129,7 +129,12 @@
     }
 
     .setting {
+      flex-wrap: wrap;
       width: auto;
+
+      & > div:last-child {
+        margin-left: auto;
+      }
     }
   }
 }
