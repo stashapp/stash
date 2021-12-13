@@ -180,6 +180,7 @@ export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> = ({
 };
 
 interface IDialogSetting<T> extends ISetting {
+  buttonText?: string;
   buttonTextID?: string;
   value?: T;
   renderValue?: (v: T | undefined) => JSX.Element;
@@ -196,6 +197,7 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
     value,
     onChange,
     renderValue,
+    buttonText,
     buttonTextID,
     disabled,
   } = props;
@@ -222,7 +224,11 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
       </div>
       <div>
         <Button onClick={() => onChange()} disabled={disabled}>
-          <FormattedMessage id={buttonTextID ?? "actions.edit"} />
+          {buttonTextID ? (
+            <FormattedMessage id={buttonTextID ?? "actions.edit"} />
+          ) : (
+            buttonText
+          )}
         </Button>
       </div>
     </div>
@@ -295,6 +301,7 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
 
 interface IModalSetting<T> extends ISetting {
   value: T | undefined;
+  buttonText?: string;
   buttonTextID?: string;
   onChange: (v: T) => void;
   renderField: (value: T | undefined, setValue: (v?: T) => void) => JSX.Element;
@@ -313,6 +320,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
     onChange,
     renderField,
     renderValue,
+    buttonText,
     buttonTextID,
     modalProps,
     disabled,
@@ -340,6 +348,7 @@ export const ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
         id={id}
         className={className}
         disabled={disabled}
+        buttonText={buttonText}
         buttonTextID={buttonTextID}
         headingID={headingID}
         subHeadingID={subHeadingID}

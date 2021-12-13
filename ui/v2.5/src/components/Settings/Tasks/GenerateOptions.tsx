@@ -5,6 +5,7 @@ import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
 } from "../GeneratePreviewOptions";
+import { useIntl } from "react-intl";
 
 interface IGenerateOptions {
   options: GQL.GenerateMetadataInput;
@@ -15,6 +16,8 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
+  const intl = useIntl();
+
   const previewOptions: GQL.GeneratePreviewOptionsInput =
     options.previewOptions ?? {};
 
@@ -45,8 +48,9 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         id="video-preview-settings"
         className="sub-setting"
         disabled={!options.previews}
-        buttonTextID="dialogs.scene_gen.preview_generation_options"
-        headingID="dialogs.scene_gen.preview_generation_options"
+        buttonTextID={`${intl.formatMessage({
+          id: "dialogs.scene_gen.preview_generation_options",
+        })}…`}
         value={{
           previewExcludeEnd: previewOptions.previewExcludeEnd,
           previewExcludeStart: previewOptions.previewExcludeStart,
