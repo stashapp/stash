@@ -78,6 +78,12 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		files = append(files, vttPath)
 	}
 
+	heatmapPath := d.Paths.Scene.GetInteractiveHeatmapPath(sceneHash)
+	exists, _ = utils.FileExists(heatmapPath)
+	if exists {
+		files = append(files, heatmapPath)
+	}
+
 	return d.Files(files)
 }
 

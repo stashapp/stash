@@ -18,6 +18,7 @@ type ScenePathsType {
   chapters_vtt: String # Resolver
   sprite: String # Resolver
   funscript: String # Resolver
+  interactive_heatmap: String # Resolver
 }
 
 type SceneMovie {
@@ -39,6 +40,7 @@ type Scene {
   path: String!
   phash: String
   interactive: Boolean!
+  interactive_speed: Int
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time

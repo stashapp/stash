@@ -113,7 +113,8 @@ textarea.scene-description {
   }
 }
 
-.scene-specs-overlay {
+.scene-specs-overlay,
+.scene-interactive-speed-overlay {
   bottom: 1rem;
   color: $text-color;
   display: block;
@@ -122,6 +123,14 @@ textarea.scene-description {
   position: absolute;
   right: 0.7rem;
   text-shadow: 0 0 3px #000;
+}
+
+.scene-specs-overlay {
+  right: 0.7rem;
+}
+
+.scene-interactive-speed-overlay {
+  left: 0.7rem;
 }
 
 .scene-studio-overlay {
