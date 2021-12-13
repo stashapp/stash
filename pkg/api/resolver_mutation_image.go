@@ -310,7 +310,11 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, i.ID, plugin.ImageDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+		ImageDestroyInput: input,
+		Checksum:          i.Checksum,
+		Path:              i.Path,
+	}, nil)
 
 	return true, nil
 }
@@ -358,7 +362,11 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 	for _, image := range images {
 		// call post hook after performing the other actions
-		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, plugin.ImagesDestroyInput{
+			ImagesDestroyInput: input,
+			Checksum:           image.Checksum,
+			Path:               image.Path,
+		}, nil)
 	}
 
 	return true, nil

@@ -411,19 +411,35 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	// perform the post-commit actions
 	fileDeleter.Commit()
 
-	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, nil, nil)
+	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+		Checksum: s.Checksum.String,
+		OSHash:   s.OSHash.String,
+		Path:     s.Path,
+	}, nil)
 }
 
 func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
+	var g *models.Gallery
+
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
 		qb := repo.Gallery()
+
+		var err error
+		g, err = qb.Find(galleryID)
+		if err != nil {
+			return err
+		}
+
 		return qb.Destroy(galleryID)
 	}); err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
 
-	GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryDestroyPost, nil, nil)
+	GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		Checksum: g.Checksum,
+		Path:     g.Path.String,
+	}, nil)
 }
 
 func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
@@ -432,10 +448,12 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 		Paths:   GetInstance().Paths,
 	}
 
+	var i *models.Image
 	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
 		qb := repo.Image()
 
-		i, err := qb.Find(imageID)
+		var err error
+		i, err = qb.Find(imageID)
 		if err != nil {
 			return err
 		}
@@ -454,7 +472,10 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 
 	// perform the post-commit actions
 	fileDeleter.Commit()
-	GetInstance().PluginCache.ExecutePostHooks(ctx, imageID, plugin.ImageDestroyPost, nil, nil)
+	GetInstance().PluginCache.ExecutePostHooks(ctx, imageID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+		Checksum: i.Checksum,
+		Path:     i.Path,
+	}, nil)
 }
 
 func getStashFromPath(pathToCheck string) *models.StashConfig {
