@@ -6,6 +6,7 @@ package desktop
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/0xAX/notificator"
@@ -25,6 +26,10 @@ func isServerDockerized() bool {
 	}
 
 	return false
+}
+
+func hideExecShell(cmd *exec.Cmd) {
+
 }
 
 func sendNotification(notificationTitle string, notificationText string) {

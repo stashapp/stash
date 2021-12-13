@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -90,6 +91,7 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 		logger.Error("FFMPEG stdout not available: " + err.Error())
 	}
 
+	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return "", err
 	}
@@ -141,6 +143,7 @@ func (e *Encoder) run(sourcePath string, args []string, stdin io.Reader) (string
 	cmd.Stderr = &stderr
 	cmd.Stdin = stdin
 
+	desktop.HideExecShell(cmd)
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}

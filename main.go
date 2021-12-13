@@ -3,11 +3,13 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime/pprof"
 	"syscall"
 
+	"github.com/apenwarr/fixconsole"
 	"github.com/stashapp/stash/pkg/api"
 	"github.com/stashapp/stash/pkg/manager"
 
@@ -22,6 +24,12 @@ var uiBox embed.FS
 var loginUIBox embed.FS
 
 func main() {
+	// On Windows, attach to parent shell
+	err := fixconsole.FixConsoleIfNeeded()
+	if err != nil {
+		fmt.Printf("FixConsoleOutput: %v\n", err)
+	}
+
 	manager.Initialize()
 	api.Start(uiBox, loginUIBox)
 
