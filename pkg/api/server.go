@@ -54,6 +54,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	if c.GetLogAccess() {
 		r.Use(middleware.Logger)
 	}
+	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)
@@ -341,6 +342,28 @@ type contextKey struct {
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
+
+func SecurityHeadersMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		c := config.GetInstance()
+		connectableOrigins := "connect-src data: 'self'"
+		if !c.IsNewSystem() && c.GetHandyKey() != "" {
+			connectableOrigins += " https://www.handyfeeling.com"
+		}
+		connectableOrigins += "; "
+
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "script-src 'self' 'unsafe-inline'; child-src 'none'; object-src 'none'; form-action 'self'"
+
+		w.Header().Set("Referrer-Policy", "same-origin")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "1")
+		w.Header().Set("Content-Security-Policy", cspDirectives)
+
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
 
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {

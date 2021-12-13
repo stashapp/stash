@@ -494,12 +494,19 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	// call post hook after performing the other actions
 	for _, gallery := range galleries {
-		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, input, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			GalleryDestroyInput: input,
+			Checksum:            gallery.Checksum,
+			Path:                gallery.Path.String,
+		}, nil)
 	}
 
 	// call image destroy post hook as well
 	for _, img := range imgsDestroyed {
-		r.hookExecutor.ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, nil, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+			Checksum: img.Checksum,
+			Path:     img.Path,
+		}, nil)
 	}
 
 	return true, nil

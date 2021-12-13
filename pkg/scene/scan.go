@@ -130,6 +130,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 				}
 			}
 
+			s.Interactive = interactive
 			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 			_, err := qb.UpdateFull(*s)
