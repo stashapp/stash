@@ -401,7 +401,7 @@
         "heading": "Funscript Offset (ms)"
       },
       "handy_connection_key": {
-        "description": "Handy connection key to use for interactive scenes.",
+        "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
         "heading": "Handy Connection Key"
       },
       "images": {
