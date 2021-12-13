@@ -376,7 +376,7 @@
   @include media-breakpoint-down(xs) {
     top: 30px;
   }
-  @include media-breakpoint-up(xs) {
+  @include media-breakpoint-up(sm) {
     bottom: 30px;
   }
 
