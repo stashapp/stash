@@ -153,6 +153,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     markerScreenshots
     transcodes
     phashes
+    interactiveHeatmapsSpeeds
   }
 
   deleteFile

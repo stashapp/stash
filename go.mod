@@ -50,6 +50,7 @@ require (
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/kermieisinthehouse/gosx-notifier v0.1.0
 	github.com/kermieisinthehouse/systray v1.2.0
+	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
