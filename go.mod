@@ -47,6 +47,7 @@ require (
 
 require (
 	github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
+	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/kermieisinthehouse/gosx-notifier v0.1.0
 	github.com/kermieisinthehouse/systray v1.2.0
@@ -59,6 +60,7 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/antchfx/xpath v1.1.6 // indirect
+	github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
