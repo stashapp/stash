@@ -42,6 +42,10 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	oldPath = scenePaths.GetSpriteImageFilePath(oldHash)
 	newPath = scenePaths.GetSpriteImageFilePath(newHash)
 	migrateSceneFiles(oldPath, newPath)
+
+	oldPath = scenePaths.GetInteractiveHeatmapPath(oldHash)
+	newPath = scenePaths.GetInteractiveHeatmapPath(newHash)
+	migrateSceneFiles(oldPath, newPath)
 }
 
 func migrateSceneFiles(oldName, newName string) {

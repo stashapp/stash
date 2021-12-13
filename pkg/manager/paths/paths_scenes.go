@@ -1,8 +1,9 @@
 package paths
 
 import (
-	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type scenePaths struct {
@@ -50,4 +51,8 @@ func (sp *scenePaths) GetSpriteImageFilePath(checksum string) string {
 
 func (sp *scenePaths) GetSpriteVttFilePath(checksum string) string {
 	return filepath.Join(sp.generated.Vtt, checksum+"_thumbs.vtt")
+}
+
+func (sp *scenePaths) GetInteractiveHeatmapPath(checksum string) string {
+	return filepath.Join(sp.generated.InteractiveHeatmap, checksum+".png")
 }

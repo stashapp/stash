@@ -63,7 +63,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 	}
 
 	// post-process - set the image if applicable
-	if err := setPerformerImage(ctx, c.client, p, c.globalConfig); err != nil {
+	if err := setPerformerImage(ctx, c.client, &p, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
 	}
 
@@ -80,10 +80,10 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (mode
 	}
 
 	// post-process - set the image if applicable
-	if err := setMovieFrontImage(ctx, c.client, m, c.globalConfig); err != nil {
+	if err := setMovieFrontImage(ctx, c.client, &m, c.globalConfig); err != nil {
 		logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
 	}
-	if err := setMovieBackImage(ctx, c.client, m, c.globalConfig); err != nil {
+	if err := setMovieBackImage(ctx, c.client, &m, c.globalConfig); err != nil {
 		logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
 	}
 
@@ -155,7 +155,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (
 	}
 
 	// post-process - set the image if applicable
-	if err := setSceneImage(ctx, c.client, scene, c.globalConfig); err != nil {
+	if err := setSceneImage(ctx, c.client, &scene, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %v", *scene.Image, err)
 	}
 

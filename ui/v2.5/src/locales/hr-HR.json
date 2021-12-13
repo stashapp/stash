@@ -1,0 +1,31 @@
+{
+  "actions": {
+    "add": "Dodaj",
+    "add_directory": "Dodaj Direktorij",
+    "add_entity": "Dodaj {entityType}",
+    "add_to_entity": "Dodaj {entityType}",
+    "allow": "Dopusti",
+    "allow_temporarily": "Dopusti privremeno",
+    "apply": "Primjeni",
+    "auto_tag": "Automatsko označavanje",
+    "backup": "Sigurnosna kopija",
+    "browse_for_image": "Potražite sliku…",
+    "cancel": "Odustani",
+    "clean": "Očisti",
+    "clear": "Očisti",
+    "clear_image": "Očisti sliku",
+    "close": "Zatvori",
+    "confirm": "Prihvati",
+    "create": "Napravi",
+    "create_entity": "Napravi {entityType}",
+    "create_marker": "Napravi Marker",
+    "delete": "Izbrisati",
+    "delete_entity": "Izbrišite {entityType}",
+    "delete_file": "Izbrišite datoteku",
+    "delete_generated_supporting_files": "Izbrišite generirane datoteke",
+    "disallow": "Zabrani",
+    "download": "Preuzmi",
+    "download_backup": "Preuzmi Sigurnostnu Kopiju",
+    "edit": "Uredi"
+  }
+}

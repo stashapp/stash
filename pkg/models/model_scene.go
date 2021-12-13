@@ -9,32 +9,33 @@ import (
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID          int                 `db:"id" json:"id"`
-	Checksum    sql.NullString      `db:"checksum" json:"checksum"`
-	OSHash      sql.NullString      `db:"oshash" json:"oshash"`
-	Path        string              `db:"path" json:"path"`
-	Title       sql.NullString      `db:"title" json:"title"`
-	Details     sql.NullString      `db:"details" json:"details"`
-	URL         sql.NullString      `db:"url" json:"url"`
-	Date        SQLiteDate          `db:"date" json:"date"`
-	Rating      sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   bool                `db:"organized" json:"organized"`
-	OCounter    int                 `db:"o_counter" json:"o_counter"`
-	Size        sql.NullString      `db:"size" json:"size"`
-	Duration    sql.NullFloat64     `db:"duration" json:"duration"`
-	VideoCodec  sql.NullString      `db:"video_codec" json:"video_codec"`
-	Format      sql.NullString      `db:"format" json:"format_name"`
-	AudioCodec  sql.NullString      `db:"audio_codec" json:"audio_codec"`
-	Width       sql.NullInt64       `db:"width" json:"width"`
-	Height      sql.NullInt64       `db:"height" json:"height"`
-	Framerate   sql.NullFloat64     `db:"framerate" json:"framerate"`
-	Bitrate     sql.NullInt64       `db:"bitrate" json:"bitrate"`
-	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	Phash       sql.NullInt64       `db:"phash,omitempty" json:"phash"`
-	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
-	Interactive bool                `db:"interactive" json:"interactive"`
+	ID               int                 `db:"id" json:"id"`
+	Checksum         sql.NullString      `db:"checksum" json:"checksum"`
+	OSHash           sql.NullString      `db:"oshash" json:"oshash"`
+	Path             string              `db:"path" json:"path"`
+	Title            sql.NullString      `db:"title" json:"title"`
+	Details          sql.NullString      `db:"details" json:"details"`
+	URL              sql.NullString      `db:"url" json:"url"`
+	Date             SQLiteDate          `db:"date" json:"date"`
+	Rating           sql.NullInt64       `db:"rating" json:"rating"`
+	Organized        bool                `db:"organized" json:"organized"`
+	OCounter         int                 `db:"o_counter" json:"o_counter"`
+	Size             sql.NullString      `db:"size" json:"size"`
+	Duration         sql.NullFloat64     `db:"duration" json:"duration"`
+	VideoCodec       sql.NullString      `db:"video_codec" json:"video_codec"`
+	Format           sql.NullString      `db:"format" json:"format_name"`
+	AudioCodec       sql.NullString      `db:"audio_codec" json:"audio_codec"`
+	Width            sql.NullInt64       `db:"width" json:"width"`
+	Height           sql.NullInt64       `db:"height" json:"height"`
+	Framerate        sql.NullFloat64     `db:"framerate" json:"framerate"`
+	Bitrate          sql.NullInt64       `db:"bitrate" json:"bitrate"`
+	StudioID         sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
+	FileModTime      NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
+	Phash            sql.NullInt64       `db:"phash,omitempty" json:"phash"`
+	CreatedAt        SQLiteTimestamp     `db:"created_at" json:"created_at"`
+	UpdatedAt        SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	Interactive      bool                `db:"interactive" json:"interactive"`
+	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
 }
 
 func (s *Scene) File() File {
@@ -92,32 +93,33 @@ func (s *Scene) SetFile(f File) {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type ScenePartial struct {
-	ID          int                  `db:"id" json:"id"`
-	Checksum    *sql.NullString      `db:"checksum" json:"checksum"`
-	OSHash      *sql.NullString      `db:"oshash" json:"oshash"`
-	Path        *string              `db:"path" json:"path"`
-	Title       *sql.NullString      `db:"title" json:"title"`
-	Details     *sql.NullString      `db:"details" json:"details"`
-	URL         *sql.NullString      `db:"url" json:"url"`
-	Date        *SQLiteDate          `db:"date" json:"date"`
-	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   *bool                `db:"organized" json:"organized"`
-	Size        *sql.NullString      `db:"size" json:"size"`
-	Duration    *sql.NullFloat64     `db:"duration" json:"duration"`
-	VideoCodec  *sql.NullString      `db:"video_codec" json:"video_codec"`
-	Format      *sql.NullString      `db:"format" json:"format_name"`
-	AudioCodec  *sql.NullString      `db:"audio_codec" json:"audio_codec"`
-	Width       *sql.NullInt64       `db:"width" json:"width"`
-	Height      *sql.NullInt64       `db:"height" json:"height"`
-	Framerate   *sql.NullFloat64     `db:"framerate" json:"framerate"`
-	Bitrate     *sql.NullInt64       `db:"bitrate" json:"bitrate"`
-	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	MovieID     *sql.NullInt64       `db:"movie_id,omitempty" json:"movie_id"`
-	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	Phash       *sql.NullInt64       `db:"phash,omitempty" json:"phash"`
-	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
-	Interactive *bool                `db:"interactive" json:"interactive"`
+	ID               int                  `db:"id" json:"id"`
+	Checksum         *sql.NullString      `db:"checksum" json:"checksum"`
+	OSHash           *sql.NullString      `db:"oshash" json:"oshash"`
+	Path             *string              `db:"path" json:"path"`
+	Title            *sql.NullString      `db:"title" json:"title"`
+	Details          *sql.NullString      `db:"details" json:"details"`
+	URL              *sql.NullString      `db:"url" json:"url"`
+	Date             *SQLiteDate          `db:"date" json:"date"`
+	Rating           *sql.NullInt64       `db:"rating" json:"rating"`
+	Organized        *bool                `db:"organized" json:"organized"`
+	Size             *sql.NullString      `db:"size" json:"size"`
+	Duration         *sql.NullFloat64     `db:"duration" json:"duration"`
+	VideoCodec       *sql.NullString      `db:"video_codec" json:"video_codec"`
+	Format           *sql.NullString      `db:"format" json:"format_name"`
+	AudioCodec       *sql.NullString      `db:"audio_codec" json:"audio_codec"`
+	Width            *sql.NullInt64       `db:"width" json:"width"`
+	Height           *sql.NullInt64       `db:"height" json:"height"`
+	Framerate        *sql.NullFloat64     `db:"framerate" json:"framerate"`
+	Bitrate          *sql.NullInt64       `db:"bitrate" json:"bitrate"`
+	StudioID         *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
+	MovieID          *sql.NullInt64       `db:"movie_id,omitempty" json:"movie_id"`
+	FileModTime      *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
+	Phash            *sql.NullInt64       `db:"phash,omitempty" json:"phash"`
+	CreatedAt        *SQLiteTimestamp     `db:"created_at" json:"created_at"`
+	UpdatedAt        *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	Interactive      *bool                `db:"interactive" json:"interactive"`
+	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
