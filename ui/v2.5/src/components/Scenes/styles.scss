@@ -113,7 +113,8 @@ textarea.scene-description {
   }
 }
 
-.scene-specs-overlay {
+.scene-specs-overlay,
+.scene-interactive-speed-overlay {
   bottom: 1rem;
   color: $text-color;
   display: block;
@@ -122,6 +123,14 @@ textarea.scene-description {
   position: absolute;
   right: 0.7rem;
   text-shadow: 0 0 3px #000;
+}
+
+.scene-specs-overlay {
+  right: 0.7rem;
+}
+
+.scene-interactive-speed-overlay {
+  left: 0.7rem;
 }
 
 .scene-studio-overlay {
@@ -499,6 +508,17 @@ input[type="range"].blue-slider {
   .rating-stars {
     font-size: 1.3em;
     height: calc(1.5em + 0.75rem + 2px);
+  }
+
+  .edit-buttons-container {
+    background-color: #202b33;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+
+    @media (min-width: 575px) and (max-width: 1199px) {
+      top: 3rem;
+    }
   }
 }
 
