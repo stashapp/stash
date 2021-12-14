@@ -223,21 +223,18 @@ func (j *ScanJob) doesPathExist(path string) bool {
 	ret := false
 	txnErr := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		switch {
-		case utils.MatchExtension(path, gExt):
-			g, _ := r.Gallery().FindByPath(path)
-			if g != nil {
-				ret = true
+		case utils.MatchExtension(path, gExt), utils.MatchExtension(path, vidExt), utils.MatchExtension(path, imgExt):
+			ret = true
+		}
+
+		if ret {
+			// check if file is already known about
+			f, err := r.File().FindByPath(path)
+			if err != nil {
+				return err
 			}
-		case utils.MatchExtension(path, vidExt):
-			s, _ := r.Scene().FindByPath(path)
-			if s != nil {
-				ret = true
-			}
-		case utils.MatchExtension(path, imgExt):
-			i, _ := r.Image().FindByPath(path)
-			if i != nil {
-				ret = true
-			}
+
+			ret = f != nil
 		}
 
 		return nil
