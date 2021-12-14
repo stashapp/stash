@@ -410,6 +410,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Gallery()
 		iqb := repo.Image()
+		fqb := repo.File()
 
 		for _, id := range galleryIDs {
 			gallery, err := qb.Find(id)
@@ -423,6 +424,16 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 			galleries = append(galleries, gallery)
 
+			fileIDs, err := qb.GetFileIDs(id)
+			if err != nil {
+				return err
+			}
+
+			files, err := fqb.Find(fileIDs)
+			if err != nil {
+				return err
+			}
+
 			// if this is a zip-based gallery, delete the images as well first
 			if gallery.Zip {
 				imgs, err := iqb.FindByGalleryID(id)
@@ -431,7 +442,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 
 				for _, img := range imgs {
-					if err := image.Destroy(img, iqb, fileDeleter, deleteGenerated, false); err != nil {
+					if err := image.Destroy(img, repo, fileDeleter, deleteGenerated, false); err != nil {
 						return err
 					}
 
@@ -439,8 +450,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 
 				if deleteFile {
-					if err := fileDeleter.Files([]string{gallery.Path.String}); err != nil {
-						return err
+					for _, f := range files {
+						if err := fileDeleter.Files([]string{f.Path}); err != nil {
+							return err
+						}
 					}
 				}
 			} else if deleteFile {
@@ -457,7 +470,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 					}
 
 					if len(imgGalleries) == 1 {
-						if err := image.Destroy(img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
+						if err := image.Destroy(img, repo, fileDeleter, deleteGenerated, deleteFile); err != nil {
 							return err
 						}
 
@@ -467,6 +480,13 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 				// we only want to delete a folder-based gallery if it is empty.
 				// don't do this with the file deleter
+			}
+
+			// destroy any associated files
+			for _, f := range files {
+				if err := fqb.Destroy(f.ID); err != nil {
+					return err
+				}
 			}
 
 			if err := qb.Destroy(id); err != nil {

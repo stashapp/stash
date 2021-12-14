@@ -524,7 +524,7 @@ func (j *cleanJob) deleteImage(ctx context.Context, toDelete deleteSet) {
 				return fmt.Errorf("image not found: %d", toDelete.objectID)
 			}
 
-			return image.Destroy(i, qb, fileDeleter, true, false)
+			return image.Destroy(i, repo, fileDeleter, true, false)
 		}
 
 		return nil

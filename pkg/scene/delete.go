@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -119,6 +120,7 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	qb := repo.Scene()
 	mqb := repo.SceneMarker()
+	fqb := repo.File()
 
 	markers, err := mqb.FindBySceneID(scene.ID)
 	if err != nil {
@@ -131,9 +133,27 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 		}
 	}
 
-	if deleteFile {
-		if err := fileDeleter.Files([]string{scene.Path}); err != nil {
+	// destroy associated files - this assumes that a file can only be
+	// associated with a single scene
+	fileIDs, err := qb.GetFileIDs(scene.ID)
+	if err != nil {
+		return fmt.Errorf("getting related file ids for id %d: %w", scene.ID, err)
+	}
+
+	files, err := fqb.Find(fileIDs)
+	if err != nil {
+		return fmt.Errorf("getting scene files: %w", err)
+	}
+
+	for _, f := range files {
+		if err := fqb.Destroy(f.ID); err != nil {
 			return err
+		}
+
+		if deleteFile {
+			if err := fileDeleter.Files([]string{f.Path}); err != nil {
+				return err
+			}
 		}
 	}
 

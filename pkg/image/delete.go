@@ -1,6 +1,8 @@
 package image
 
 import (
+	"fmt"
+
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
@@ -8,6 +10,7 @@ import (
 )
 
 type Destroyer interface {
+	GetFileIDs(id int) ([]int, error)
 	Destroy(id int) error
 }
 
@@ -30,11 +33,32 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
-func Destroy(i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	// don't try to delete if the image is in a zip file
-	if deleteFile && !file.IsZipPath(i.Path) {
-		if err := fileDeleter.Files([]string{i.Path}); err != nil {
+func Destroy(i *models.Image, repo models.Repository, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+	iqb := repo.Image()
+	fqb := repo.File()
+
+	// destroy associated files - this assumes that a file can only be
+	// associated with a single scene
+	fileIDs, err := iqb.GetFileIDs(i.ID)
+	if err != nil {
+		return fmt.Errorf("getting related file ids for id %d: %w", i.ID, err)
+	}
+
+	files, err := fqb.Find(fileIDs)
+	if err != nil {
+		return fmt.Errorf("getting image files: %w", err)
+	}
+
+	for _, f := range files {
+		if err := fqb.Destroy(f.ID); err != nil {
 			return err
+		}
+
+		// don't try to delete if the image is in a zip file
+		if deleteFile && !f.ZipFileID.Valid {
+			if err := fileDeleter.Files([]string{f.Path}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -44,5 +68,5 @@ func Destroy(i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, del
 		}
 	}
 
-	return destroyer.Destroy(i.ID)
+	return iqb.Destroy(i.ID)
 }
