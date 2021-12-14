@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "Erzeuge Galerien aus Verzeichnissen mit Bilder darin",
       "db_path_head": "Datenbank Pfad",
       "directory_locations_to_your_content": "Verzeichnis zu Ihren Inhalten",
-      "exclude_image": "Bilder ausschließen",
       "exclude_video": "Videos ausschließen",
       "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
       "excluded_image_gallery_patterns_head": "Schema für ausgeschlossene Bilder/Galerien",

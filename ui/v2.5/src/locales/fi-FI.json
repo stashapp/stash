@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "Luo galleria kansion kuvista",
       "db_path_head": "Tietokannan polku",
       "directory_locations_to_your_content": "Kansiot, joissa sisältösi sijaitsee",
-      "exclude_image": "Elä huomioi kuvia",
       "exclude_video": "Elä huomioi videoita",
       "excluded_image_gallery_patterns_desc": "Säännöllinen lauseke kuvien ja gallerioiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
       "excluded_image_gallery_patterns_head": "Poisjätetyt kuvien ja gallerioiden merkkijonot",

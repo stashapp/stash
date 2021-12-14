@@ -221,7 +221,6 @@
       "create_galleries_from_folders_label": "Créer des Galeries à partir des dossiers contenant des fichiers images",
       "db_path_head": "Base de données",
       "directory_locations_to_your_content": "Emplacements vers vos bibliothèques de contenu",
-      "exclude_image": "Exclure les images",
       "exclude_video": "Exclure les vidéos",
       "excluded_image_gallery_patterns_desc": "Expressions régulières des fichiers ou chemins vers les images ou galeries à exclure de l'analyse et à ajouter au nettoyage.",
       "excluded_image_gallery_patterns_head": "Images/galeries à exclure",
