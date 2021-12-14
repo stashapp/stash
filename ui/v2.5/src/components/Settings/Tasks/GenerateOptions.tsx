@@ -118,6 +118,12 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
       />
 
       <BooleanSetting
+        id="interactive-heatmap-speed-task"
+        checked={options.interactiveHeatmapsSpeeds ?? false}
+        headingID="dialogs.scene_gen.interactive_heatmap_speed"
+        onChange={(v) => setOptions({ interactiveHeatmapsSpeeds: v })}
+      />  
+      <BooleanSetting
         id="overwrite"
         checked={options.overwrite ?? false}
         headingID="dialogs.scene_gen.overwrite"

@@ -494,7 +494,12 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+		SceneDestroyInput: input,
+		Checksum:          s.Checksum.String,
+		OSHash:            s.OSHash.String,
+		Path:              s.Path,
+	}, nil)
 
 	return true, nil
 }
@@ -545,7 +550,12 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 
 	for _, scene := range scenes {
 		// call post hook after performing the other actions
-		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
+			ScenesDestroyInput: input,
+			Checksum:           scene.Checksum.String,
+			OSHash:             scene.OSHash.String,
+			Path:               scene.Path,
+		}, nil)
 	}
 
 	return true, nil

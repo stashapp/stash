@@ -12,6 +12,7 @@ fragment SlimSceneData on Scene {
   path
   phash
   interactive
+  interactive_speed
 
   file {
     size
@@ -33,6 +34,7 @@ fragment SlimSceneData on Scene {
     chapters_vtt
     sprite
     funscript
+    interactive_heatmap
   }
 
   scene_markers {

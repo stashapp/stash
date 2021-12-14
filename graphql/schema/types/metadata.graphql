@@ -10,6 +10,7 @@ input GenerateMetadataInput {
   markerScreenshots: Boolean
   transcodes: Boolean
   phashes: Boolean
+  interactiveHeatmapsSpeeds: Boolean
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
@@ -43,6 +44,7 @@ type GenerateMetadataOptions {
   markerScreenshots: Boolean
   transcodes: Boolean
   phashes: Boolean
+  interactiveHeatmapsSpeeds: Boolean
 }
 
 type GeneratePreviewOptions {

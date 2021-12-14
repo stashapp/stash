@@ -164,7 +164,10 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
 
   async function onGenerate() {
     try {
-      await mutateMetadataGenerate(options);
+      await mutateMetadataGenerate({
+        ...options,
+        sceneIDs: selectedIds,
+      });
       Toast.success({
         content: intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },

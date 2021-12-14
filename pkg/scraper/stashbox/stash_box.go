@@ -606,6 +606,11 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		sp.FakeTits = enumToStringPtr(p.BreastType, true)
 	}
 
+	if len(p.Aliases) > 0 {
+		alias := strings.Join(p.Aliases, ", ")
+		sp.Aliases = &alias
+	}
+
 	return sp
 }
 
