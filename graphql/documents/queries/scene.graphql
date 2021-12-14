@@ -4,7 +4,7 @@ query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene
     filesize
     duration
     scenes {
-      ...SlimSceneData
+      ...SceneData
     }
   }
 }
@@ -30,7 +30,9 @@ query FindScene($id: ID!, $checksum: String) {
   findScene(id: $id, checksum: $checksum) {
     ...SceneData
   }
+}
 
+query FindSceneMarkerTags($id: ID!) {
   sceneMarkerTags(scene_id: $id) {
     tag {
       id
@@ -66,9 +68,11 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
 }
 
 query SceneStreams($id: ID!) {
-  sceneStreams(id: $id) {
-    url
-    mime_type
-    label
+  findScene(id: $id) {
+    sceneStreams {
+      url
+      mime_type
+      label
+    }
   }
 }

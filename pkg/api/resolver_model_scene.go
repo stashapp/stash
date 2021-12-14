@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -236,4 +237,11 @@ func (r *sceneResolver) UpdatedAt(ctx context.Context, obj *models.Scene) (*time
 
 func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
 	return &obj.FileModTime.Timestamp, nil
+}
+
+func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*models.SceneStreamEndpoint, error) {
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
+
+	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(), config.GetInstance().GetMaxStreamingTranscodeSize())
 }
