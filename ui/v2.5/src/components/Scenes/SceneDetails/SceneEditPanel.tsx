@@ -647,7 +647,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       {renderScrapeQueryModal()}
       {maybeRenderScrapeDialog()}
       <Form noValidate onSubmit={formik.handleSubmit}>
-        <div className="form-container row px-3 pt-3">
+        <div className="form-container edit-buttons-container row px-3 pt-3">
           <div className="edit-buttons mb-3 pl-0">
             <Button
               className="edit-button"

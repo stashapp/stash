@@ -61,7 +61,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   cssEnabled
   language
   slideshowDelay
-  disabledDropdownCreate {
+  disableDropdownCreate {
     performer
     tag
     studio
@@ -152,6 +152,7 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
     markerScreenshots
     transcodes
     phashes
+    interactiveHeatmapsSpeeds
   }
 
   deleteFile

@@ -86,6 +86,16 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
   }
 
+  function renderInteractiveSpeed() {
+    if (props.scene.interactive_speed) {
+      return (
+        <TextField id="media_info.interactive_speed">
+          <FormattedNumber value={props.scene.interactive_speed} />
+        </TextField>
+      );
+    }
+  }
+
   return (
     <dl className="container scene-file-info details-list">
       <TextField id="media_info.hash" value={props.scene.oshash} truncate />
@@ -113,6 +123,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         truncate
       />
       {renderFunscript()}
+      {renderInteractiveSpeed()}
       {renderFileSize()}
       <TextField
         id="duration"

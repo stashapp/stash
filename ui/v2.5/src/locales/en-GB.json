@@ -159,6 +159,7 @@
       "build_hash": "Build hash:",
       "build_time": "Build time:",
       "check_for_new_version": "Check for new version",
+      "latest_version": "Latest Version",
       "latest_version_build_hash": "Latest Version Build Hash:",
       "new_version_notice": "[NEW]",
       "stash_discord": "Join our {url} channel",
@@ -167,12 +168,19 @@
       "stash_wiki": "Stash {url} page",
       "version": "Version"
     },
+    "application_paths": {
+      "heading": "Application Paths"
+    },
     "categories": {
       "about": "About",
       "interface": "Interface",
       "logs": "Logs",
+      "metadata_providers": "Metadata Providers",
       "plugins": "Plugins",
       "scraping": "Scraping",
+      "security": "Security",
+      "services": "Services",
+      "system": "System",
       "tasks": "Tasks",
       "tools": "Tools"
     },
@@ -195,6 +203,10 @@
         "api_key_desc": "API key for external systems. Only required when username/password is configured. Username must be saved before generating API key.",
         "authentication": "Authentication",
         "clear_api_key": "Clear API key",
+        "credentials": {
+          "description": "Credentials to restrict access to stash.",
+          "heading": "Credentials"
+        },
         "generate_api_key": "Generate API key",
         "log_file": "Log file",
         "log_file_desc": "Path to the file to output logging to. Blank to disable file logging. Requires restart.",
@@ -224,8 +236,6 @@
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
-      "exclude_image": "Exclude Image",
-      "exclude_video": "Exclude Video",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
       "excluded_image_gallery_patterns_head": "Excluded Image/Gallery Patterns",
       "excluded_video_patterns_desc": "Regexps of video files/paths to exclude from Scan and add to Clean",
@@ -262,6 +272,11 @@
       "video_ext_head": "Video Extensions",
       "video_head": "Video"
     },
+    "library": {
+      "exclusions": "Exclusions",
+      "gallery_and_image_options": "Gallery and Image options",
+      "media_content_extensions": "Media content extensions"
+    },
     "logs": {
       "log_level": "Log Level"
     },
@@ -289,6 +304,9 @@
       "name": "Name",
       "title": "Stash-box Endpoints"
     },
+    "system": {
+      "transcoding": "Transcoding"
+    },
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
       "auto_tag": {
@@ -304,17 +322,21 @@
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
+      "empty_queue": "No tasks are currently running.",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
       "generate": {
         "generating_scenes": "Generating for {num} {scene}",
         "generating_from_paths": "Generating for scenes from the following paths"
       },
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
-      "generate_phashes_during_scan": "Generate perceptual hashes during scan (for deduplication and scene identification)",
-      "generate_previews_during_scan": "Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "generate_sprites_during_scan": "Generate sprites during scan (for the scene scrubber)",
-      "generate_thumbnails_during_scan": "Generate thumbnails for images during scan.",
-      "generate_video_previews_during_scan": "Generate previews during scan (video previews which play when hovering over a scene)",
+      "generate_phashes_during_scan": "Generate perceptual hashes",
+      "generate_phashes_during_scan_tooltip": "For deduplication and scene identification.",
+      "generate_previews_during_scan": "Generate animated image previews",
+      "generate_previews_during_scan_tooltip": "Generate animated WebP previews, only required if Preview Type is set to Animated Image.",
+      "generate_sprites_during_scan": "Generate scrubber sprites",
+      "generate_thumbnails_during_scan": "Generate thumbnails for images",
+      "generate_video_previews_during_scan": "Generate previews",
+      "generate_video_previews_during_scan_tooltip": "Generate video previews which play when hovering over a scene",
       "generated_content": "Generated Content",
       "identify": {
         "and_create_missing": "and create missing",
@@ -338,7 +360,7 @@
       },
       "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
       "incremental_import": "Incremental import from a supplied export zip file.",
-      "job_queue": "Job Queue",
+      "job_queue": "Task Queue",
       "maintenance": "Maintenance",
       "migrate_hash_files": "Used after changing the Generated file naming hash to rename existing generated files to the new hash format.",
       "migrations": "Migrations",
@@ -349,7 +371,7 @@
         "scanning_all_paths": "Scanning all paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
-      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata (if present)"
+      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
       "scene_duplicate_checker": "Scene Duplicate Checker",
@@ -371,6 +393,7 @@
       "scene_tools": "Scene Tools"
     },
     "ui": {
+      "basic_settings": "Basic Settings",
       "custom_css": {
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
@@ -401,10 +424,11 @@
         "heading": "Funscript Offset (ms)"
       },
       "handy_connection_key": {
-        "description": "Handy connection key to use for interactive scenes.",
+        "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
         "heading": "Handy Connection Key"
       },
       "images": {
+        "heading": "Images",
         "options": {
           "write_image_thumbnails": {
             "description": "Write image thumbnails to disk when generated on-the-fly",
@@ -412,6 +436,7 @@
           }
         }
       },
+      "interactive_options": "Interactive Options",
       "language": {
         "heading": "Language"
       },
@@ -559,16 +584,22 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
-      "image_previews": "Image Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "marker_image_previews": "Marker Previews (animated WebP previews, only required if Preview Type is set to Animated Image)",
-      "marker_screenshots": "Marker Screenshots (static JPG image, only required if Preview Type is set to Static Image)",
-      "markers": "Markers (20 second videos which begin at the given timecode)",
+      "image_previews": "Animated Image Previews",
+      "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
+      "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
+      "marker_image_previews": "Marker Animated Image Previews",
+      "marker_image_previews_tooltip": "Animated marker WebP previews, only required if Preview Type is set to Animated Image.",
+      "marker_screenshots": "Marker Screenshots",
+      "marker_screenshots_tooltip": "Marker static JPG images, only required if Preview Type is set to Static Image.",
+      "markers": "Marker Previews",
+      "markers_tooltip": "20 second videos which begin at the given timecode.",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_end_time_head": "Exclude end time",
       "preview_exclude_start_time_desc": "Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
       "preview_exclude_start_time_head": "Exclude start time",
+      "preview_generation_options": "Preview Generation Options",
       "preview_options": "Preview Options",
       "preview_preset_desc": "The preset regulates size, quality and encoding time of preview generation. Presets beyond “slow” have diminishing returns and are not recommended.",
       "preview_preset_head": "Preview encoding preset",
@@ -576,9 +607,12 @@
       "preview_seg_count_head": "Number of segments in preview",
       "preview_seg_duration_desc": "Duration of each preview segment, in seconds.",
       "preview_seg_duration_head": "Preview segment duration",
-      "sprites": "Sprites (for the scene scrubber)",
-      "transcodes": "Transcodes (MP4 conversions of unsupported video formats)",
-      "video_previews": "Previews (video previews which play when hovering over a scene)"
+      "sprites": "Scene Scrubber Sprites",
+      "sprites_tooltip": "Sprites (for the scene scrubber)",
+      "transcodes": "Transcodes",
+      "transcodes_tooltip": "MP4 conversions of unsupported video formats",
+      "video_previews": "Previews",
+      "video_previews_tooltip": "Video previews which play when hovering over a scene"
     },
     "scenes_found": "{count} scenes found",
     "scrape_entity_query": "{entity_type} Scrape Query",
@@ -663,6 +697,7 @@
   "include_sub_tags": "Include sub-tags",
   "instagram": "Instagram",
   "interactive": "Interactive",
+  "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
   "library": "Library",
   "loading": {
@@ -676,6 +711,7 @@
     "checksum": "Checksum",
     "downloaded_from": "Downloaded From",
     "hash": "Hash",
+    "interactive_speed": "Interactive speed",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in this scene"
@@ -850,6 +886,7 @@
   "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
+  "videos": "Videos",
   "weight": "Weight",
   "years_old": "years old"
 }

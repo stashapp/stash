@@ -1,9 +1,9 @@
 import React from "react";
-import { Form } from "react-bootstrap";
+import { BooleanSetting } from "../Inputs";
 
 interface IItem {
   id: string;
-  label: string;
+  headingID: string;
 }
 
 interface ICheckboxGroupProps {
@@ -25,22 +25,20 @@ export const CheckboxGroup: React.FC<ICheckboxGroupProps> = ({
 
   return (
     <>
-      {items.map(({ id, label }) => (
-        <Form.Check
+      {items.map(({ id, headingID }) => (
+        <BooleanSetting
           key={id}
-          type="checkbox"
           id={generateId(id)}
-          label={label}
+          headingID={headingID}
           checked={checkedIds.includes(id)}
-          onChange={(event) => {
-            const target = event.currentTarget;
-            if (target.checked) {
+          onChange={(v) => {
+            if (v) {
               onChange?.(
                 items
                   .map((item) => item.id)
                   .filter(
                     (itemId) =>
-                      generateId(itemId) === target.id ||
+                      generateId(itemId) === generateId(id) ||
                       checkedIds.includes(itemId)
                   )
               );
@@ -50,7 +48,7 @@ export const CheckboxGroup: React.FC<ICheckboxGroupProps> = ({
                   .map((item) => item.id)
                   .filter(
                     (itemId) =>
-                      generateId(itemId) !== target.id &&
+                      generateId(itemId) !== generateId(id) &&
                       checkedIds.includes(itemId)
                   )
               );

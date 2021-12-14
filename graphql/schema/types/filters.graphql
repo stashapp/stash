@@ -158,6 +158,8 @@ input SceneFilterType {
   url: StringCriterionInput
   """Filter by interactive"""
   interactive: Boolean
+  """Filter by InteractiveSpeed"""
+  interactive_speed: IntCriterionInput
 }
 
 input MovieFilterType {
