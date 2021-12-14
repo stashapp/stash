@@ -48,7 +48,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         id="video-preview-settings"
         className="sub-setting"
         disabled={!options.previews}
-        buttonTextID={`${intl.formatMessage({
+        buttonText={`${intl.formatMessage({
           id: "dialogs.scene_gen.preview_generation_options",
         })}…`}
         value={{
@@ -122,7 +122,7 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         checked={options.interactiveHeatmapsSpeeds ?? false}
         headingID="dialogs.scene_gen.interactive_heatmap_speed"
         onChange={(v) => setOptions({ interactiveHeatmapsSpeeds: v })}
-      />  
+      />
       <BooleanSetting
         id="overwrite"
         checked={options.overwrite ?? false}

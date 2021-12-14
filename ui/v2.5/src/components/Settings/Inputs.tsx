@@ -224,10 +224,10 @@ export const ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
       </div>
       <div>
         <Button onClick={() => onChange()} disabled={disabled}>
-          {buttonTextID ? (
-            <FormattedMessage id={buttonTextID ?? "actions.edit"} />
-          ) : (
+          {buttonText ? (
             buttonText
+          ) : (
+            <FormattedMessage id={buttonTextID ?? "actions.edit"} />
           )}
         </Button>
       </div>
