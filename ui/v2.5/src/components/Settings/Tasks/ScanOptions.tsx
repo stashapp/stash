@@ -1,7 +1,6 @@
 import React from "react";
-import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useIntl } from "react-intl";
+import { BooleanSetting } from "../Inputs";
 
 interface IScanOptions {
   options: GQL.ScanMetadataInput;
@@ -12,8 +11,6 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
-  const intl = useIntl();
-
   const {
     useFileMetadata,
     stripFileExtension,
@@ -29,80 +26,55 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   }
 
   return (
-    <Form.Group>
-      <Form.Check
+    <>
+      <BooleanSetting
         id="scan-generate-previews"
+        headingID="config.tasks.generate_video_previews_during_scan"
+        tooltipID="config.tasks.generate_video_previews_during_scan_tooltip"
         checked={scanGeneratePreviews ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.generate_video_previews_during_scan",
-        })}
-        onChange={() =>
-          setOptions({ scanGeneratePreviews: !scanGeneratePreviews })
-        }
+        onChange={(v) => setOptions({ scanGeneratePreviews: v })}
       />
-      <div className="d-flex flex-row">
-        <div>↳</div>
-        <Form.Check
-          id="scan-generate-image-previews"
-          checked={scanGenerateImagePreviews ?? false}
-          disabled={!scanGeneratePreviews}
-          label={intl.formatMessage({
-            id: "config.tasks.generate_previews_during_scan",
-          })}
-          onChange={() =>
-            setOptions({
-              scanGenerateImagePreviews: !scanGenerateImagePreviews,
-            })
-          }
-          className="ml-2 flex-grow"
-        />
-      </div>
-      <Form.Check
+      <BooleanSetting
+        id="scan-generate-image-previews"
+        className="sub-setting"
+        headingID="config.tasks.generate_previews_during_scan"
+        tooltipID="config.tasks.generate_previews_during_scan_tooltip"
+        checked={scanGenerateImagePreviews ?? false}
+        disabled={!scanGeneratePreviews}
+        onChange={(v) => setOptions({ scanGenerateImagePreviews: v })}
+      />
+
+      <BooleanSetting
         id="scan-generate-sprites"
+        headingID="config.tasks.generate_sprites_during_scan"
         checked={scanGenerateSprites ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.generate_sprites_during_scan",
-        })}
-        onChange={() =>
-          setOptions({ scanGenerateSprites: !scanGenerateSprites })
-        }
+        onChange={(v) => setOptions({ scanGenerateSprites: v })}
       />
-      <Form.Check
+      <BooleanSetting
         id="scan-generate-phashes"
         checked={scanGeneratePhashes ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.generate_phashes_during_scan",
-        })}
-        onChange={() =>
-          setOptions({ scanGeneratePhashes: !scanGeneratePhashes })
-        }
+        headingID="config.tasks.generate_phashes_during_scan"
+        tooltipID="config.tasks.generate_phashes_during_scan_tooltip"
+        onChange={(v) => setOptions({ scanGeneratePhashes: v })}
       />
-      <Form.Check
+      <BooleanSetting
         id="scan-generate-thumbnails"
         checked={scanGenerateThumbnails ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.generate_thumbnails_during_scan",
-        })}
-        onChange={() =>
-          setOptions({ scanGenerateThumbnails: !scanGenerateThumbnails })
-        }
+        headingID="config.tasks.generate_thumbnails_during_scan"
+        onChange={(v) => setOptions({ scanGenerateThumbnails: v })}
       />
-      <Form.Check
+      <BooleanSetting
         id="strip-file-extension"
         checked={stripFileExtension ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.dont_include_file_extension_as_part_of_the_title",
-        })}
-        onChange={() => setOptions({ stripFileExtension: !stripFileExtension })}
+        headingID="config.tasks.dont_include_file_extension_as_part_of_the_title"
+        onChange={(v) => setOptions({ stripFileExtension: v })}
       />
-      <Form.Check
+      <BooleanSetting
         id="use-file-metadata"
         checked={useFileMetadata ?? false}
-        label={intl.formatMessage({
-          id: "config.tasks.set_name_date_details_from_metadata_if_present",
-        })}
-        onChange={() => setOptions({ useFileMetadata: !useFileMetadata })}
+        headingID="config.tasks.set_name_date_details_from_metadata_if_present"
+        onChange={(v) => setOptions({ useFileMetadata: v })}
       />
-    </Form.Group>
+    </>
   );
 };
