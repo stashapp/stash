@@ -166,7 +166,8 @@ func (o Scanner) scanExisting(existingFile *models.File, file SourceFile) (h *Sc
 
 func (o Scanner) scanNew(reader models.FileReader, file SourceFile) (*Scanned, error) {
 	info := file.FileInfo()
-	modTime := info.ModTime()
+	// truncate to seconds, since we don't store beyond that in the database
+	modTime := info.ModTime().Truncate(time.Second)
 	zipFile := file.ZipFile()
 	f := &models.File{
 		Path:        fullPath(file),
