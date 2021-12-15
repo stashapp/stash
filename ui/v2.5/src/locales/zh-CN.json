@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "从包含图片的文件夹建立图库",
       "db_path_head": "数据库所在路径",
       "directory_locations_to_your_content": "你的影片等收藏的路径",
-      "exclude_video": "不包括视频",
       "excluded_image_gallery_patterns_desc": "要从扫描中排除并会被[清除]功能所移除的图片及图库文件/路径的正则表达式",
       "excluded_image_gallery_patterns_head": "图片/图库排除规则",
       "excluded_video_patterns_desc": "要从扫描中排除并会被[清除]功能所移除的视频文件/路径的正则表达式",

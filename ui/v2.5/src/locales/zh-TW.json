@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "從包含圖片的資料夾建立圖庫",
       "db_path_head": "資料庫路徑",
       "directory_locations_to_your_content": "多媒體的檔案位置",
-      "exclude_video": "排除影片",
       "excluded_image_gallery_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的圖片及圖庫檔案/路徑的正則表達式",
       "excluded_image_gallery_patterns_head": "圖片/圖庫排除規則",
       "excluded_video_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的影片檔案/路徑的正則表達式",

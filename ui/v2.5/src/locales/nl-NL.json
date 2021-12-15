@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "Maak galerijen van mappen waar afbeeldingen in staan",
       "db_path_head": "Pad databank",
       "directory_locations_to_your_content": "Paden met jouw inhoud",
-      "exclude_video": "Video uitsluiten",
       "excluded_image_gallery_patterns_desc": "Reguliere expressie van afbeelding- en galerij-paden uitsluiten van Scan and toevoegen bij opruimen",
       "excluded_image_gallery_patterns_head": "Uitgesloten afbeelding/galerij expressies",
       "excluded_video_patterns_desc": "Reguliere expressies van video bestanden of paden uit te sluiten van scan en toe te voegen aan opruimen",

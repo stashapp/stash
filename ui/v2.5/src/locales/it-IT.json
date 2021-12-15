@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "Crea gallerie dalle cartelle con immagini",
       "db_path_head": "Percorso del Database",
       "directory_locations_to_your_content": "Percorso della Cartella del tuo contenuto",
-      "exclude_video": "Escludi Video",
       "excluded_image_gallery_patterns_desc": "Espressioni Regolari di file/percorsi di immagini e gallerie per escluderle dalla Scansione e aggiungerle alla Pulizia",
       "excluded_image_gallery_patterns_head": "Schema Immagini/Gallerie Escluse",
       "excluded_video_patterns_desc": "Espressioni Regolari di file/percorsi di video per escluderli dalla Scansione e aggiungerli alla Pulizia",

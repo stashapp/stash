@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "Skapa gallerier från mappar som innehåller bilder",
       "db_path_head": "Databassökväg",
       "directory_locations_to_your_content": "Sökväg till ditt innehåll",
-      "exclude_video": "Exkludera video",
       "excluded_image_gallery_patterns_desc": "Regexps av bilder och gallery filer/sökväg att exkludera från Skanna och lägga till på Rensa",
       "excluded_image_gallery_patterns_head": "Mönster för Bild/Galleri exklusion",
       "excluded_video_patterns_desc": "Regexps av video filer/sökväg att exkludera från Skanna och lägga till på Rensa",

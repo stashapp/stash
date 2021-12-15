@@ -224,7 +224,6 @@
       "create_galleries_from_folders_label": "Crear galerías desde directorios con imágenes",
       "db_path_head": "Ruta de la base de datos",
       "directory_locations_to_your_content": "Ruta relativa de los directorios que almacenan el contenido",
-      "exclude_video": "Excluir vídeo",
       "excluded_image_gallery_patterns_desc": "Expresiones regulares de archivos/rutas de imágenes que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
       "excluded_image_gallery_patterns_head": "Patrones de imágenes/galerías excluidos",
       "excluded_video_patterns_desc": "Expresiones regulares de archivos/rutas de vídeos que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
