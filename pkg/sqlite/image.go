@@ -360,7 +360,7 @@ func imageIsMissingCriterionHandler(qb *imageQueryBuilder, isMissing *string) cr
 				qb.performersRepository().join(f, "performers_join", "images.id")
 				f.addWhere("performers_join.image_id IS NULL")
 			case "galleries":
-				qb.galleriesRepository().innerJoin(f, "galleries_join", "images.id")
+				qb.galleriesRepository().join(f, "galleries_join", "images.id")
 				f.addWhere("galleries_join.image_id IS NULL")
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "images.id")
@@ -412,8 +412,8 @@ func imageTagCountCriterionHandler(qb *imageQueryBuilder, tagCount *models.IntCr
 
 func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.galleriesRepository().innerJoin(f, "galleries_join", "images.id")
-		f.addInnerJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
+		qb.galleriesRepository().join(f, "galleries_join", "images.id")
+		f.addLeftJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 
