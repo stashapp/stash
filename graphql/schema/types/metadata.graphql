@@ -9,6 +9,8 @@ input GenerateMetadataInput {
   markerImagePreviews: Boolean
   markerScreenshots: Boolean
   transcodes: Boolean
+  """Generate transcodes even if not required"""
+  forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
 

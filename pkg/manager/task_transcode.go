@@ -15,6 +15,9 @@ type GenerateTranscodeTask struct {
 	Scene               models.Scene
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
+
+	// is true, generate even if video is browser-supported
+	Force bool
 }
 
 func (t *GenerateTranscodeTask) GetDescription() string {
@@ -49,7 +52,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
 	}
 
-	if ffmpeg.IsStreamable(videoCodec, audioCodec, container) {
+	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) {
 		return
 	}
 
@@ -95,6 +98,14 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 // used only when counting files to generate, doesn't affect the actual transcode generation
 // if container is missing from DB it is treated as non supported in order not to delay the user
 func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
+	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
+	if !t.Overwrite && hasTranscode {
+		return false
+	}
+
+	if t.Force {
+		return true
+	}
 
 	videoCodec := t.Scene.VideoCodec.String
 	container := ""
@@ -111,9 +122,5 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		return false
 	}
 
-	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
-	if !t.Overwrite && hasTranscode {
-		return false
-	}
 	return true
 }
