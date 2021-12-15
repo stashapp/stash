@@ -357,7 +357,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		}
 		connectableOrigins += "; "
 
-		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' 'unsafe-inline'; child-src 'none'; object-src 'none'; form-action 'self'"
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
