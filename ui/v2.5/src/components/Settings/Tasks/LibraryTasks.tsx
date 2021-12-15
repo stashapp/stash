@@ -15,7 +15,10 @@ import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 import { ScanOptions } from "./ScanOptions";
 import { useToast } from "src/hooks";
 import { GenerateOptions } from "./GenerateOptions";
-import { Task } from "./Task";
+import { SettingSection } from "../SettingSection";
+import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
+import { ManualLink } from "src/components/Help/Manual";
+import { Icon } from "src/components/Shared";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -26,13 +29,11 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
-  const intl = useIntl();
-
   const { performers, studios, tags } = options;
   const wildcard = ["*"];
 
-  function toggle(v?: GQL.Maybe<string[]>) {
-    if (!v?.length) {
+  function set(v?: boolean) {
+    if (v) {
       return wildcard;
     }
     return [];
@@ -43,26 +44,26 @@ const AutoTagOptions: React.FC<IAutoTagOptions> = ({
   }
 
   return (
-    <Form.Group>
-      <Form.Check
+    <>
+      <BooleanSetting
         id="autotag-performers"
         checked={!!performers?.length}
-        label={intl.formatMessage({ id: "performers" })}
-        onChange={() => setOptions({ performers: toggle(performers) })}
+        headingID="performers"
+        onChange={(v) => setOptions({ performers: set(v) })}
       />
-      <Form.Check
+      <BooleanSetting
         id="autotag-studios"
         checked={!!studios?.length}
-        label={intl.formatMessage({ id: "studios" })}
-        onChange={() => setOptions({ studios: toggle(studios) })}
+        headingID="studios"
+        onChange={(v) => setOptions({ studios: set(v) })}
       />
-      <Form.Check
+      <BooleanSetting
         id="autotag-tags"
         checked={!!tags?.length}
-        label={intl.formatMessage({ id: "tags" })}
-        onChange={() => setOptions({ tags: toggle(tags) })}
+        headingID="tags"
+        onChange={(v) => setOptions({ tags: set(v) })}
       />
-    </Form.Group>
+    </>
   );
 };
 
@@ -279,96 +280,123 @@ export const LibraryTasks: React.FC = () => {
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "library" })}</h5>
+      <SettingSection headingID="library">
+        <SettingGroup
+          settingProps={{
+            heading: (
+              <>
+                <FormattedMessage id="actions.scan" />
+                <ManualLink tab="Tasks">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            ),
+            subHeadingID: "config.tasks.scan_for_content_desc",
+          }}
+          topLevel={
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => runScan()}
+              >
+                <FormattedMessage id="actions.scan" />
+              </Button>
 
-        <div className="task-group">
-          <Task
-            headingID="actions.scan"
-            description={intl.formatMessage({
-              id: "config.tasks.scan_for_content_desc",
-            })}
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => setDialogOpen({ scan: true })}
+              >
+                <FormattedMessage id="actions.selective_scan" />…
+              </Button>
+            </>
+          }
+          collapsible
+        >
+          <ScanOptions options={scanOptions} setOptions={setScanOptions} />
+        </SettingGroup>
+      </SettingSection>
+
+      <SettingSection>
+        <Setting
+          heading={
+            <>
+              <FormattedMessage id="config.tasks.identify.heading" />
+              <ManualLink tab="Identify">
+                <Icon icon="question-circle" />
+              </ManualLink>
+            </>
+          }
+          subHeadingID="config.tasks.identify.description"
+        >
+          <Button
+            variant="secondary"
+            type="submit"
+            onClick={() => setDialogOpen({ identify: true })}
           >
-            <ScanOptions options={scanOptions} setOptions={setScanOptions} />
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => runScan()}
-            >
-              <FormattedMessage id="actions.scan" />
-            </Button>
+            <FormattedMessage id="actions.identify" />…
+          </Button>
+        </Setting>
+      </SettingSection>
 
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => setDialogOpen({ scan: true })}
-            >
-              <FormattedMessage id="actions.selective_scan" />…
-            </Button>
-          </Task>
+      <SettingSection>
+        <SettingGroup
+          settingProps={{
+            heading: (
+              <>
+                <FormattedMessage id="actions.auto_tag" />
+                <ManualLink tab="AutoTagging">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            ),
+            subHeadingID: "config.tasks.auto_tag_based_on_filenames",
+          }}
+          topLevel={
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => runAutoTag()}
+              >
+                <FormattedMessage id="actions.auto_tag" />
+              </Button>
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => setDialogOpen({ autoTag: true })}
+              >
+                <FormattedMessage id="actions.selective_auto_tag" />…
+              </Button>
+            </>
+          }
+          collapsible
+        >
+          <AutoTagOptions
+            options={autoTagOptions}
+            setOptions={(o) => setAutoTagOptions(o)}
+          />
+        </SettingGroup>
+      </SettingSection>
 
-          <Task
-            headingID="config.tasks.identify.heading"
-            description={intl.formatMessage({
-              id: "config.tasks.identify.description",
-            })}
-          >
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => setDialogOpen({ identify: true })}
-            >
-              <FormattedMessage id="actions.identify" />…
-            </Button>
-          </Task>
-
-          <Task
-            headingID="config.tasks.auto_tagging"
-            description={intl.formatMessage({
-              id: "config.tasks.auto_tag_based_on_filenames",
-            })}
-          >
-            <AutoTagOptions
-              options={autoTagOptions}
-              setOptions={(o) => setAutoTagOptions(o)}
-            />
-
-            <Button
-              variant="secondary"
-              type="submit"
-              className="mr-2"
-              onClick={() => runAutoTag()}
-            >
-              <FormattedMessage id="actions.auto_tag" />
-            </Button>
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => setDialogOpen({ autoTag: true })}
-            >
-              <FormattedMessage id="actions.selective_auto_tag" />…
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
-
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.tasks.generated_content" })}</h5>
-
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.generate_desc",
-            })}
-          >
-            <GenerateOptions
-              options={generateOptions}
-              setOptions={setGenerateOptions}
-            />
+      <SettingSection headingID="config.tasks.generated_content">
+        <SettingGroup
+          settingProps={{
+            heading: (
+              <>
+                <FormattedMessage id="actions.generate" />
+                <ManualLink tab="Tasks">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            ),
+            subHeadingID: "config.tasks.generate_desc",
+          }}
+          topLevel={
             <Button
               variant="secondary"
               type="submit"
@@ -376,9 +404,15 @@ export const LibraryTasks: React.FC = () => {
             >
               <FormattedMessage id="actions.generate" />
             </Button>
-          </Task>
-        </div>
-      </Form.Group>
+          }
+          collapsible
+        >
+          <GenerateOptions
+            options={generateOptions}
+            setOptions={setGenerateOptions}
+          />
+        </SettingGroup>
+      </SettingSection>
     </Form.Group>
   );
 };

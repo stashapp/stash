@@ -297,6 +297,7 @@ func (r *repository) join(j joiner, as string, parentIDCol string) {
 	j.addLeftJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
 }
 
+//nolint:golint,unused
 func (r *repository) innerJoin(j joiner, as string, parentIDCol string) {
 	t := r.tableName
 	if as != "" {

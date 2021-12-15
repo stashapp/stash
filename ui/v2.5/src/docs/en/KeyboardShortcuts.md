@@ -56,8 +56,10 @@
 | `a` | Details tab |
 | `q` | Queue tab |
 | `k` | Markers tab |
-| `f` | File info tab |
+| `i` | File info tab |
 | `e` | Edit tab |
+| `,` | Hide/Show sidebar |
+| `.` | Hide/Show scene scrubber |
 | `o` | Increment O-Counter |
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |

@@ -4,7 +4,8 @@ import { Button, Form } from "react-bootstrap";
 import { mutateRunPluginTask, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
-import { Task } from "./Task";
+import { SettingSection } from "../SettingSection";
+import { Setting, SettingGroup } from "../Inputs";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -25,19 +26,21 @@ export const PluginTasks: React.FC = () => {
     );
 
     return (
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.tasks.plugin_tasks" })}</h5>
+      <SettingSection headingID="config.tasks.plugin_tasks">
         {taskPlugins.map((o) => {
           return (
-            <Form.Group key={`${o.id}`}>
-              <h6>{o.name}</h6>
-              <div className="task-group">
-                {renderPluginTasks(o, o.tasks ?? [])}
-              </div>
-            </Form.Group>
+            <SettingGroup
+              key={`${o.id}`}
+              settingProps={{
+                heading: o.name,
+              }}
+              collapsible
+            >
+              {renderPluginTasks(o, o.tasks ?? [])}
+            </SettingGroup>
           );
         })}
-      </Form.Group>
+      </SettingSection>
     );
   }
 
@@ -48,7 +51,11 @@ export const PluginTasks: React.FC = () => {
 
     return pluginTasks.map((o) => {
       return (
-        <Task description={o.description} key={o.name}>
+        <Setting
+          heading={o.name}
+          subHeading={o.description ?? undefined}
+          key={o.name}
+        >
           <Button
             onClick={() => onPluginTaskClicked(plugin, o)}
             variant="secondary"
@@ -56,7 +63,7 @@ export const PluginTasks: React.FC = () => {
           >
             {o.name}
           </Button>
-        </Task>
+        </Setting>
       );
     });
   }

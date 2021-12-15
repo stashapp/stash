@@ -403,7 +403,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 
   const { configuration } = React.useContext(ConfigurationContext);
   const defaultCreatable =
-    !configuration?.interface.disabledDropdownCreate.performer ?? true;
+    !configuration?.interface.disableDropdownCreate.performer ?? true;
 
   const performers = data?.allPerformers ?? [];
 
@@ -443,7 +443,7 @@ export const StudioSelect: React.FC<
 
   const { configuration } = React.useContext(ConfigurationContext);
   const defaultCreatable =
-    !configuration?.interface.disabledDropdownCreate.studio ?? true;
+    !configuration?.interface.disableDropdownCreate.studio ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
   const studios = useMemo(
@@ -584,7 +584,7 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
 
   const { configuration } = React.useContext(ConfigurationContext);
   const defaultCreatable =
-    !configuration?.interface.disabledDropdownCreate.tag ?? true;
+    !configuration?.interface.disableDropdownCreate.tag ?? true;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
   const tags = useMemo(

@@ -61,7 +61,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   cssEnabled
   language
   slideshowDelay
-  disabledDropdownCreate {
+  disableDropdownCreate {
     performer
     tag
     studio
