@@ -10,9 +10,22 @@ type SceneMarkerOptions struct {
 	Seconds    int
 	Width      int
 	OutputPath string
+	Audio      bool
 }
 
 func (e *Encoder) SceneMarkerVideo(probeResult VideoFile, options SceneMarkerOptions) error {
+
+	argsAudio := []string{
+		"-c:a", "aac",
+		"-b:a", "64k",
+	}
+
+	if !options.Audio {
+		argsAudio = []string{
+			"-an",
+		}
+	}
+
 	args := []string{
 		"-v", "error",
 		"-ss", strconv.Itoa(options.Seconds),
@@ -29,11 +42,10 @@ func (e *Encoder) SceneMarkerVideo(probeResult VideoFile, options SceneMarkerOpt
 		"-threads", "4",
 		"-vf", fmt.Sprintf("scale=%v:-2", options.Width),
 		"-sws_flags", "lanczos",
-		"-c:a", "aac",
-		"-b:a", "64k",
 		"-strict", "-2",
-		options.OutputPath,
 	}
+	args = append(args, argsAudio...)
+	args = append(args, options.OutputPath)
 	_, err := e.run(probeResult.Path, args, nil)
 	return err
 }

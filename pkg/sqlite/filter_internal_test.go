@@ -152,36 +152,36 @@ func TestAddJoin(t *testing.T) {
 		onClause = "onClause1"
 	)
 
-	f.addJoin(table1Name, as1Name, onClause)
+	f.addLeftJoin(table1Name, as1Name, onClause)
 
 	// ensure join is added
 	assert.Len(f.joins, 1)
 	assert.Equal(fmt.Sprintf("LEFT JOIN %s AS %s ON %s", table1Name, as1Name, onClause), f.joins[0].toSQL())
 
 	// ensure join with same as is not added
-	f.addJoin(table2Name, as1Name, onClause)
+	f.addLeftJoin(table2Name, as1Name, onClause)
 	assert.Len(f.joins, 1)
 
 	// ensure same table with different alias can be added
-	f.addJoin(table1Name, as2Name, onClause)
+	f.addLeftJoin(table1Name, as2Name, onClause)
 	assert.Len(f.joins, 2)
 	assert.Equal(fmt.Sprintf("LEFT JOIN %s AS %s ON %s", table1Name, as2Name, onClause), f.joins[1].toSQL())
 
 	// ensure table without alias can be added if tableName != existing alias/tableName
-	f.addJoin(table1Name, "", onClause)
+	f.addLeftJoin(table1Name, "", onClause)
 	assert.Len(f.joins, 3)
 	assert.Equal(fmt.Sprintf("LEFT JOIN %s ON %s", table1Name, onClause), f.joins[2].toSQL())
 
 	// ensure table with alias == table name of a join without alias is not added
-	f.addJoin(table2Name, table1Name, onClause)
+	f.addLeftJoin(table2Name, table1Name, onClause)
 	assert.Len(f.joins, 3)
 
 	// ensure table without alias cannot be added if tableName == existing alias
-	f.addJoin(as2Name, "", onClause)
+	f.addLeftJoin(as2Name, "", onClause)
 	assert.Len(f.joins, 3)
 
 	// ensure AS is not used if same as table name
-	f.addJoin(table2Name, table2Name, onClause)
+	f.addLeftJoin(table2Name, table2Name, onClause)
 	assert.Len(f.joins, 4)
 	assert.Equal(fmt.Sprintf("LEFT JOIN %s ON %s", table2Name, onClause), f.joins[3].toSQL())
 }
@@ -407,7 +407,7 @@ func TestGetAllJoins(t *testing.T) {
 		onClause = "onClause1"
 	)
 
-	f.addJoin(table1Name, as1Name, onClause)
+	f.addLeftJoin(table1Name, as1Name, onClause)
 
 	// ensure join is returned
 	joins := f.getAllJoins()
@@ -417,14 +417,14 @@ func TestGetAllJoins(t *testing.T) {
 	// ensure joins in sub-filter are returned
 	subFilter := &filterBuilder{}
 	f.and(subFilter)
-	subFilter.addJoin(table2Name, as2Name, onClause)
+	subFilter.addLeftJoin(table2Name, as2Name, onClause)
 
 	joins = f.getAllJoins()
 	assert.Len(joins, 2)
 	assert.Equal(fmt.Sprintf("LEFT JOIN %s AS %s ON %s", table2Name, as2Name, onClause), joins[1].toSQL())
 
 	// ensure redundant joins are not returned
-	subFilter.addJoin(as1Name, "", onClause)
+	subFilter.addLeftJoin(as1Name, "", onClause)
 	joins = f.getAllJoins()
 	assert.Len(joins, 2)
 }

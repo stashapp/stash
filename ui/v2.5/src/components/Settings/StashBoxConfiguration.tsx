@@ -1,142 +1,172 @@
 import React, { useState } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
-import { useIntl } from "react-intl";
-import { Icon } from "src/components/Shared";
+import { Button, Form } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
+import { SettingSection } from "./SettingSection";
+import * as GQL from "src/core/generated-graphql";
+import { SettingModal } from "./Inputs";
 
-interface IInstanceProps {
-  instance: IStashBoxInstance;
-  onSave: (instance: IStashBoxInstance) => void;
-  onDelete: (id: number) => void;
-  isMulti: boolean;
+export interface IStashBoxModal {
+  value: GQL.StashBoxInput;
+  close: (v?: GQL.StashBoxInput) => void;
 }
 
-const Instance: React.FC<IInstanceProps> = ({
-  instance,
-  onSave,
-  onDelete,
-  isMulti,
-}) => {
+export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
   const intl = useIntl();
-  const handleInput = (key: string, value: string) => {
-    const newObj = {
-      ...instance,
-      [key]: value,
-    };
-    onSave(newObj);
-  };
 
   return (
-    <Form.Group className="row no-gutters">
-      <InputGroup className="col">
-        <Form.Control
-          placeholder={intl.formatMessage({ id: "config.stashbox.name" })}
-          className="text-input col-3 stash-box-name"
-          value={instance?.name}
-          isValid={!isMulti || (instance?.name?.length ?? 0) > 0}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleInput("name", e.currentTarget.value)
-          }
-        />
-        <Form.Control
-          placeholder={intl.formatMessage({
-            id: "config.stashbox.graphql_endpoint",
-          })}
-          className="text-input col-3 stash-box-endpoint"
-          value={instance?.endpoint}
-          isValid={(instance?.endpoint?.length ?? 0) > 0}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleInput("endpoint", e.currentTarget.value.trim())
-          }
-        />
-        <Form.Control
-          placeholder={intl.formatMessage({ id: "config.stashbox.api_key" })}
-          className="text-input col-3 stash-box-apikey"
-          value={instance?.api_key}
-          isValid={(instance?.api_key?.length ?? 0) > 0}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleInput("api_key", e.currentTarget.value.trim())
-          }
-        />
-        <InputGroup.Append>
-          <Button
-            className=""
-            variant="danger"
-            title={intl.formatMessage({ id: "actions.delete" })}
-            onClick={() => onDelete(instance.index)}
-          >
-            <Icon icon="minus" />
-          </Button>
-        </InputGroup.Append>
-      </InputGroup>
-    </Form.Group>
+    <SettingModal<GQL.StashBoxInput>
+      headingID="config.stashbox.title"
+      value={value}
+      renderField={(v, setValue) => (
+        <>
+          <Form.Group id="stashbox-name">
+            <h6>
+              {intl.formatMessage({
+                id: "config.stashbox.name",
+              })}
+            </h6>
+            <Form.Control
+              placeholder={intl.formatMessage({ id: "config.stashbox.name" })}
+              className="text-input stash-box-name"
+              value={v?.name}
+              isValid={(v?.name?.length ?? 0) > 0}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setValue({ ...v!, name: e.currentTarget.value })
+              }
+            />
+          </Form.Group>
+
+          <Form.Group id="stashbox-name">
+            <h6>
+              {intl.formatMessage({
+                id: "config.stashbox.graphql_endpoint",
+              })}
+            </h6>
+            <Form.Control
+              placeholder={intl.formatMessage({
+                id: "config.stashbox.graphql_endpoint",
+              })}
+              className="text-input stash-box-endpoint"
+              value={v?.endpoint}
+              isValid={(v?.endpoint?.length ?? 0) > 0}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setValue({ ...v!, endpoint: e.currentTarget.value.trim() })
+              }
+            />
+          </Form.Group>
+
+          <Form.Group id="stashbox-name">
+            <h6>
+              {intl.formatMessage({
+                id: "config.stashbox.api_key",
+              })}
+            </h6>
+            <Form.Control
+              placeholder={intl.formatMessage({
+                id: "config.stashbox.api_key",
+              })}
+              className="text-input stash-box-apikey"
+              value={v?.api_key}
+              isValid={(v?.api_key?.length ?? 0) > 0}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setValue({ ...v!, api_key: e.currentTarget.value.trim() })
+              }
+            />
+          </Form.Group>
+        </>
+      )}
+      close={close}
+    />
   );
 };
 
-interface IStashBoxConfigurationProps {
-  boxes: IStashBoxInstance[];
-  saveBoxes: (boxes: IStashBoxInstance[]) => void;
+interface IStashBoxSetting {
+  value: GQL.StashBoxInput[];
+  onChange: (v: GQL.StashBoxInput[]) => void;
 }
 
-export interface IStashBoxInstance {
-  name?: string;
-  endpoint?: string;
-  api_key?: string;
-  index: number;
-}
-
-export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
-  boxes,
-  saveBoxes,
+export const StashBoxSetting: React.FC<IStashBoxSetting> = ({
+  value,
+  onChange,
 }) => {
-  const intl = useIntl();
-  const [index, setIndex] = useState(1000);
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | undefined>();
 
-  const handleSave = (instance: IStashBoxInstance) =>
-    saveBoxes(
-      boxes.map((box) => (box.index === instance.index ? instance : box))
-    );
-  const handleDelete = (id: number) =>
-    saveBoxes(boxes.filter((box) => box.index !== id));
-  const handleAdd = () => {
-    saveBoxes([...boxes, { index }]);
-    setIndex(index + 1);
-  };
+  function onEdit(index: number) {
+    setEditingIndex(index);
+  }
+
+  function onDelete(index: number) {
+    onChange(value.filter((v, i) => i !== index));
+  }
+
+  function onNew() {
+    setIsCreating(true);
+  }
 
   return (
-    <Form.Group>
-      <h6>{intl.formatMessage({ id: "config.stashbox.title" })}</h6>
-      {boxes.length > 0 && (
-        <div className="row no-gutters">
-          <h6 className="col-3 ml-1">
-            {intl.formatMessage({ id: "config.stashbox.name" })}
-          </h6>
-          <h6 className="col-3 ml-1">
-            {intl.formatMessage({ id: "config.stashbox.endpoint" })}
-          </h6>
-          <h6 className="col-3 ml-1">
-            {intl.formatMessage({ id: "config.general.auth.api_key" })}
-          </h6>
-        </div>
-      )}
-      {boxes.map((instance) => (
-        <Instance
-          instance={instance}
-          onSave={handleSave}
-          onDelete={handleDelete}
-          key={instance.index}
-          isMulti={boxes.length > 1}
+    <SettingSection
+      id="stash-boxes"
+      headingID="config.stashbox.title"
+      subHeadingID="config.stashbox.description"
+    >
+      {isCreating ? (
+        <StashBoxModal
+          value={{
+            endpoint: "",
+            api_key: "",
+            name: "",
+          }}
+          close={(v) => {
+            if (v) onChange([...value, v]);
+            setIsCreating(false);
+          }}
         />
+      ) : undefined}
+
+      {editingIndex !== undefined ? (
+        <StashBoxModal
+          value={value[editingIndex]}
+          close={(v) => {
+            if (v)
+              onChange(
+                value.map((vv, index) => {
+                  if (index === editingIndex) {
+                    return v;
+                  }
+                  return vv;
+                })
+              );
+            setEditingIndex(undefined);
+          }}
+        />
+      ) : undefined}
+
+      {value.map((b, index) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={index} className="setting">
+          <div>
+            <h3>{b.name ?? `#${index}`}</h3>
+            <div className="value">{b.endpoint ?? ""}</div>
+          </div>
+          <div>
+            <Button onClick={() => onEdit(index)}>
+              <FormattedMessage id="actions.edit" />
+            </Button>
+            <Button variant="danger" onClick={() => onDelete(index)}>
+              <FormattedMessage id="actions.delete" />
+            </Button>
+          </div>
+        </div>
       ))}
-      <Button
-        className="minimal"
-        title={intl.formatMessage({ id: "config.stashbox.add_instance" })}
-        onClick={handleAdd}
-      >
-        <Icon icon="plus" />
-      </Button>
-      <Form.Text className="text-muted">
-        {intl.formatMessage({ id: "config.stashbox.description" })}
-      </Form.Text>
-    </Form.Group>
+      <div className="setting">
+        <div />
+        <div>
+          <Button onClick={() => onNew()}>
+            <FormattedMessage id="actions.add" />
+          </Button>
+        </div>
+      </div>
+    </SettingSection>
   );
 };

@@ -146,6 +146,11 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile, parallelTasks int) (total int, newFiles int) {
 	defer close(scanQueue)
 
+	var minModTime time.Time
+	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
+		minModTime = *j.input.Filter.MinModTime
+	}
+
 	wg := sizedwaitgroup.New(parallelTasks)
 
 	for _, sp := range paths {
@@ -158,6 +163,11 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 			// check stop
 			if job.IsCancelled(ctx) {
 				return context.Canceled
+			}
+
+			// exit early on cutoff
+			if info.Mode().IsRegular() && info.ModTime().Before(minModTime) {
+				return nil
 			}
 
 			wg.Add()

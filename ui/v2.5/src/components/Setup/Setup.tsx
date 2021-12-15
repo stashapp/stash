@@ -570,7 +570,7 @@ export const Setup: React.FC = () => {
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
-            <Link to="/settings?tab=configuration">
+            <Link to="/settings?tab=library">
               <Button variant="success mx-2 p-5" onClick={() => goBack(2)}>
                 <FormattedMessage id="actions.finish" />
               </Button>
