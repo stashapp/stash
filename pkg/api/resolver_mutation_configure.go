@@ -57,6 +57,20 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		return nil
 	}
 
+	validateDir := func(key string, value string, optional bool) error {
+		if err := checkConfigOverride(config.Metadata); err != nil {
+			return err
+		}
+
+		if !optional || value != "" {
+			if err := utils.EnsureDir(value); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
 	existingDBPath := c.GetDatabasePath()
 	if input.DatabasePath != nil && existingDBPath != *input.DatabasePath {
 		if err := checkConfigOverride(config.Database); err != nil {
@@ -72,41 +86,37 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	existingGeneratedPath := c.GetGeneratedPath()
 	if input.GeneratedPath != nil && existingGeneratedPath != *input.GeneratedPath {
-		if err := checkConfigOverride(config.Generated); err != nil {
+		if err := validateDir(config.Generated, *input.GeneratedPath, false); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
-		if err := utils.EnsureDir(*input.GeneratedPath); err != nil {
+		c.Set(config.Generated, input.GeneratedPath)
+	}
+
+	existingScrapersPath := c.GetScrapersPath()
+	if input.ScrapersPath != nil && existingScrapersPath != *input.ScrapersPath {
+		if err := validateDir(config.ScrapersPath, *input.ScrapersPath, false); err != nil {
 			return makeConfigGeneralResult(), err
 		}
-		c.Set(config.Generated, input.GeneratedPath)
+
+		c.Set(config.ScrapersPath, input.ScrapersPath)
 	}
 
 	existingMetadataPath := c.GetMetadataPath()
 	if input.MetadataPath != nil && existingMetadataPath != *input.MetadataPath {
-		if err := checkConfigOverride(config.Metadata); err != nil {
+		if err := validateDir(config.Metadata, *input.MetadataPath, true); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
-		if *input.MetadataPath != "" {
-			if err := utils.EnsureDir(*input.MetadataPath); err != nil {
-				return makeConfigGeneralResult(), err
-			}
-		}
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
 	existingCachePath := c.GetCachePath()
 	if input.CachePath != nil && existingCachePath != *input.CachePath {
-		if err := checkConfigOverride(config.Metadata); err != nil {
+		if err := validateDir(config.Cache, *input.CachePath, true); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
-		if *input.CachePath != "" {
-			if err := utils.EnsureDir(*input.CachePath); err != nil {
-				return makeConfigGeneralResult(), err
-			}
-		}
 		c.Set(config.Cache, input.CachePath)
 	}
 
