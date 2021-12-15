@@ -93,12 +93,14 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Generated, input.GeneratedPath)
 	}
 
+	refreshScraperCache := false
 	existingScrapersPath := c.GetScrapersPath()
 	if input.ScrapersPath != nil && existingScrapersPath != *input.ScrapersPath {
 		if err := validateDir(config.ScrapersPath, *input.ScrapersPath, false); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
+		refreshScraperCache = true
 		c.Set(config.ScrapersPath, input.ScrapersPath)
 	}
 
@@ -245,7 +247,6 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		initialiseCustomImages()
 	}
 
-	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
 		c.Set(config.ScraperUserAgent, input.ScraperUserAgent)
 		refreshScraperCache = true
