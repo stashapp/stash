@@ -347,6 +347,11 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		c := config.GetInstance()
 		connectableOrigins := "connect-src data: 'self'"
+
+		// Workaround Safari bug https://bugs.webkit.org/show_bug.cgi?id=201591
+		// Allows websocket requests to any origin
+		connectableOrigins += " ws: wss:"
+
 		if !c.IsNewSystem() && c.GetHandyKey() != "" {
 			connectableOrigins += " https://www.handyfeeling.com"
 		}
