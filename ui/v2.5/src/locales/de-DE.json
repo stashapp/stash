@@ -80,6 +80,7 @@
     "select_folders": "Ordner auswählen",
     "select_none": "Nichts auswählen",
     "selective_auto_tag": "Automatisch selektiv eti­ket­tie­ren",
+    "selective_clean": "Selektive Reinigung",
     "selective_scan": "Selektiv scannen",
     "set_as_default": "Als Voreinstellung festlegen",
     "set_back_image": "Rückseite…",
@@ -159,6 +160,7 @@
       "build_hash": "Hash des Builds:",
       "build_time": "Zeitpunkt des Builds:",
       "check_for_new_version": "Suche nach Updates",
+      "latest_version": "Aktuellste Version",
       "latest_version_build_hash": "Neuester Build Hash:",
       "new_version_notice": "[NEU]",
       "stash_discord": "Komm in unseren {url} Kanal",
@@ -167,12 +169,19 @@
       "stash_wiki": "Stash {url} Seite",
       "version": "Version"
     },
+    "application_paths": {
+      "heading": "Anwendungspfade"
+    },
     "categories": {
       "about": "Über",
       "interface": "Oberfläche",
       "logs": "Protokoll",
+      "metadata_providers": "Metadaten Anbieter",
       "plugins": "Plugins",
       "scraping": "Durchsuchen",
+      "security": "Sicherheit",
+      "services": "Dienste",
+      "system": "System",
       "tasks": "Aufgaben",
       "tools": "Werkzeuge"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "API-Schlüssel für externe Systeme. Nur nötig, falls Benutzer/Password konfiguriert. Benutzername muss vor Erzeugung des API Schlüssels gespeichert worden sein.",
         "authentication": "Authentifizierung",
         "clear_api_key": "API-Schlüssel löschen",
+        "credentials": {
+          "description": "Anmeldedaten, um den Zugriff auf den Stash einzuschränken.",
+          "heading": "Anmeldedaten"
+        },
         "generate_api_key": "API-Schlüssel erzeugen",
         "log_file": "Protokolldatei",
         "log_file_desc": "Pfad zur Protokolldatei. Feld leer lassen, um Protokollierung zu deaktivieren. Benötigt Neustart.",
@@ -260,6 +273,11 @@
       "video_ext_head": "Videodateiformate",
       "video_head": "Video"
     },
+    "library": {
+      "exclusions": "Ausnahmen",
+      "gallery_and_image_options": "Galerie- und Bildoptionen",
+      "media_content_extensions": "Erweiterungen für Medieninhalte"
+    },
     "logs": {
       "log_level": "Protokolllevel"
     },
@@ -287,6 +305,9 @@
       "name": "Name",
       "title": "Stash-Box-Endpunkte"
     },
+    "system": {
+      "transcoding": "Transcodierung"
+    },
     "tasks": {
       "added_job_to_queue": "{operation_name} zur Auftragswarteschlange hinzugefügt",
       "auto_tag": {
@@ -302,17 +323,21 @@
       "data_management": "Datenmanagement",
       "defaults_set": "Standardeinstellungen wurden eingestellt und werden genutzt, wenn {action} Button auf der Aufgabenseite geklickt wurde.",
       "dont_include_file_extension_as_part_of_the_title": "Füge keine Dateierweiterung als Teil des Titels hinzu",
+      "empty_queue": "Derzeit laufen keine Aufgaben.",
       "export_to_json": "Exportiert den Datenbankinhalt in JSON-Format im Metadatenverzeichnis.",
       "generate": {
         "generating_from_paths": "Generieren der Szenen aus den folgenden Pfaden",
         "generating_scenes": "Generieren für {num} {scene}"
       },
       "generate_desc": "Generiere unterstützende Bild-, Sprite-, Video-, VTT- und andere Dateien.",
-      "generate_phashes_during_scan": "Generiere Wahrnehmungshashwerte während des Scans (zur Deduplizierung und Szenenidentifikation)",
-      "generate_previews_during_scan": "Generiere Bildervorschauen während des Scans (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
-      "generate_sprites_during_scan": "Generiere Sprites während des Scans (für den Szenen-Scrubber)",
-      "generate_thumbnails_during_scan": "Generiert Vorschaubilder für Bilder während des Scan.",
-      "generate_video_previews_during_scan": "Generiere Vorschauen während des Scans (Videovorschauen, die abgespielt werden, wenn der Mauszeiger über eine Szene fährt)",
+      "generate_phashes_during_scan": "Generiere Wahrnehmungshashwerte",
+      "generate_phashes_during_scan_tooltip": "Zur Deduplizierung und Szenenerkennung.",
+      "generate_previews_during_scan": "Animierte Bildvorschauen erstellen",
+      "generate_previews_during_scan_tooltip": "Generiert animierte WebP-Vorschaubilder, nur erforderlich, wenn der Vorschautyp auf Animiertes Bild eingestellt ist.",
+      "generate_sprites_during_scan": "Scrubber-Sprites generieren",
+      "generate_thumbnails_during_scan": "Generiert Miniaturansichten für Bilder",
+      "generate_video_previews_during_scan": "Vorschaubilder generieren",
+      "generate_video_previews_during_scan_tooltip": "Generiert Videovorschauen, die abgespielt werden, wenn man den Mauszeiger über eine Szene bewegt",
       "generated_content": "Generierter Inhalt",
       "identify": {
         "and_create_missing": "und erstelle fehlende",
@@ -336,7 +361,7 @@
       },
       "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
       "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
-      "job_queue": "Job-Warteschlange",
+      "job_queue": "Aufgabenwarteschlange",
       "maintenance": "Instandhaltung",
       "migrate_hash_files": "Wird nach dem Ändern des Dateinamen-Hashs für generierte Dateien verwendet, um vorhandene generierte Dateien in das neue Hash-Format umzubenennen.",
       "migrations": "Migrationen",
@@ -347,7 +372,7 @@
         "scanning_paths": "Scannen der folgenden Pfade"
       },
       "scan_for_content_desc": "Suchen nach neuen Inhalten und füge sie der Datenbank hinzu.",
-      "set_name_date_details_from_metadata_if_present": "Name, Datum und Details aus eingebetteten Metadaten festlegen (falls vorhanden)"
+      "set_name_date_details_from_metadata_if_present": "Name, Datum und Details aus eingebetteten Metadaten festlegen"
     },
     "tools": {
       "scene_duplicate_checker": "Duplikatsprüfung für Szenen",
@@ -369,6 +394,7 @@
       "scene_tools": "Szenen-Tools"
     },
     "ui": {
+      "basic_settings": "Grundeinstellungen",
       "custom_css": {
         "description": "Die Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
         "heading": "Benutzerdefinierte CSS",
@@ -399,10 +425,11 @@
         "heading": "Funscript Zeitversatz (ms)"
       },
       "handy_connection_key": {
-        "description": "Handy Verbindungsschlüssel für interaktive Szenen.",
+        "description": "Handy Verbindungsschlüssel für interaktive Szenen. Wenn dieser Schlüssel gesetzt wird, kann Stash aktuellen Szeneinformationen mit handyfeeling.com teilen.",
         "heading": "Handy Verbindungsschlüssel"
       },
       "images": {
+        "heading": "Bilder",
         "options": {
           "write_image_thumbnails": {
             "description": "Speichere eilig erstellte Bild-Thumbnails ab",
@@ -410,6 +437,7 @@
           }
         }
       },
+      "interactive_options": "Interaktive Optionen",
       "language": {
         "heading": "Sprache"
       },
@@ -557,16 +585,22 @@
     },
     "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
     "scene_gen": {
-      "image_previews": "Bildvorschauen (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
-      "marker_image_previews": "Markierungsvorschauen (animierte WebP-Vorschauen, nur erforderlich, wenn Vorschautyp auf Animiertes Bild eingestellt ist)",
-      "marker_screenshots": "Markierungsbild (statisches JPG-Bild, nur benötigt falls Preview-Typ auf statisches Bild gesetzt ist)",
-      "markers": "Markierungen (20-Sekunden-Videos, die mit dem angegebenen Timecode beginnen)",
+      "image_previews": "Animierte Bildvorschauen",
+      "image_previews_tooltip": "Animierte WebP-Vorschaubilder, nur erforderlich, wenn der Vorschautyp auf Animiertes Bild eingestellt ist.",
+      "interactive_heatmap_speed": "Erzeugen von Heatmaps und Geschwindigkeiten für interaktive Szenen",
+      "marker_image_previews": "Animierte Markierungsvorschauen",
+      "marker_image_previews_tooltip": "Animierte Markierungs-WebP-Vorschauen, nur erforderlich, wenn der Vorschautyp auf Animiertes Bild eingestellt ist.",
+      "marker_screenshots": "Markierungsbild",
+      "marker_screenshots_tooltip": "Markierung statischer JPG-Bilder, nur erforderlich, wenn der Vorschautyp auf Statisches Bild eingestellt ist.",
+      "markers": "Markierungsvorschau",
+      "markers_tooltip": "20-Sekunden-Videos, die mit dem angegebenen Timecode beginnen.",
       "overwrite": "Vorhandene generierte Dateien überschreiben",
       "phash": "Perzeptuelle Hashes (zur Deduplizierung)",
       "preview_exclude_end_time_desc": "Schließen Sie die letzten x Sekunden von der Szenenvorschau aus. Dies kann ein Wert in Sekunden oder ein Prozentsatz (zB 2%) der gesamten Szenendauer sein.",
       "preview_exclude_end_time_head": "Endzeit ausschließen",
       "preview_exclude_start_time_desc": "Schließen Sie die ersten x Sekunden von der Szenenvorschau aus. Dies kann ein Wert in Sekunden oder ein Prozentsatz (zB 2%) der gesamten Szenendauer sein.",
       "preview_exclude_start_time_head": "Startzeit ausschließen",
+      "preview_generation_options": "Optionen für die Erstellung von Vorschauen",
       "preview_options": "Vorschauoptionen",
       "preview_preset_desc": "Die Voreinstellung regelt Größe, Qualität und Encoding-Zeit der Vorschaugenerierung. Einstellungen jenseits von „slow“ haben vernachlässigbare Vorteile und werden nicht empfohlen.",
       "preview_preset_head": "Vorschau-Kodierungseinstellung",
@@ -574,9 +608,12 @@
       "preview_seg_count_head": "Anzahl der Segmente in der Vorschau",
       "preview_seg_duration_desc": "Dauer jedes Vorschausegments in Sekunden.",
       "preview_seg_duration_head": "Vorschau der Segmentdauer",
-      "sprites": "Sprites (für den Szenen-Scrubber)",
-      "transcodes": "Transcodes (MP4-Konvertierungen von nicht unterstützten Videoformaten)",
-      "video_previews": "Vorschauen (Videovorschauen, die abgespielt werden, wenn Sie mit der Maus über eine Szene fahren)"
+      "sprites": "Szenen-Scrubber Sprites",
+      "sprites_tooltip": "Sprites (für den Szenen-Scrubber)",
+      "transcodes": "Transcodes",
+      "transcodes_tooltip": "MP4-Konvertierung von nicht unterstützten Videoformaten",
+      "video_previews": "Vorschau",
+      "video_previews_tooltip": "Videovorschauen, die abgespielt werden, wenn man den Mauszeiger über eine Szene bewegt"
     },
     "scenes_found": "{count} Szenen gefunden",
     "scrape_entity_query": "{entity_type} Scrape-Abfrage",
@@ -661,6 +698,7 @@
   "include_sub_tags": "Sub-Tags einbeziehen",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
+  "interactive_speed": "Interaktive Geschwindigkeit",
   "isMissing": "Wird vermisst",
   "library": "Bibliothek",
   "loading": {
@@ -674,6 +712,7 @@
     "checksum": "Prüfsumme",
     "downloaded_from": "Heruntergeladen von",
     "hash": "Hash",
+    "interactive_speed": "Interaktive Geschwindigkeit",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in dieser Szene"
@@ -848,6 +887,7 @@
   "up-dir": "Ein Verzeichnis hoch",
   "updated_at": "Aktualisiert am",
   "url": "URL",
+  "videos": "Videos",
   "weight": "Gewicht",
   "years_old": "Jahre alt"
 }
