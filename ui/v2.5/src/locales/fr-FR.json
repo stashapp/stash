@@ -358,8 +358,8 @@
         "sources": "Sources",
         "strategy": "Stratégie"
       },
-      "import_from_exported_json": "Import from exported JSON in the metadata directory. Wipes the existing database.",
-      "incremental_import": "Incremental import from a supplied export zip file.",
+      "import_from_exported_json": "Importez à partir du fichier JSON exporté dans le répertoire des métadonnées. Cela supprimera la base de données existante.",
+      "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
       "job_queue": "File d'attente des tâches",
       "maintenance": "Maintenance",
       "migrate_hash_files": "A utiliser si vous avez modifié l'algorithme de hachage pour le nommage des fichiers générés. Renomme les fichiers générés en fonction de l'algorithme de hachage sélectionné.",
@@ -384,7 +384,7 @@
         "filename_pattern": "Pattern des noms de fichier",
         "ignore_organized": "Ignorer les Vidéos déjà Organisées",
         "ignored_words": "Mots à ignorer",
-        "matches_with": "Matches with {i}",
+        "matches_with": "Correspond à {i}",
         "select_parser_recipe": "Sélectionner une recette d'analyse",
         "title": "Analyseur de nom de fichier Vidéos",
         "whitespace_chars": "Espaces",
@@ -431,8 +431,8 @@
         "heading": "Images",
         "options": {
           "write_image_thumbnails": {
-            "description": "Write image thumbnails to disk when generated on-the-fly",
-            "heading": "Write image thumbnails"
+            "description": "Écrire les miniatures des images sur le disque lorsqu'elles sont générées à la volée",
+            "heading": "Enregistrer les miniatures des images"
           }
         }
       },
@@ -486,10 +486,10 @@
         }
       },
       "scene_wall": {
-        "heading": "Scene / Marker Wall",
+        "heading": "",
         "options": {
-          "display_title": "Display title and tags",
-          "toggle_sound": "Enable sound"
+          "display_title": "Afficher le titre et les tags",
+          "toggle_sound": "Activer le son"
         }
       },
       "slideshow_delay": {
@@ -574,7 +574,7 @@
       "scroll_mode": {
         "description": "Maintenir MAJ pour utiliser temporairement l'autre mode.",
         "label": "Mode de défilement",
-        "pan_y": "Pan Y",
+        "pan_y": "Panoramique axe Y",
         "zoom": "Zoom"
       }
     },
@@ -704,13 +704,13 @@
   "measurements": "Mensurations",
   "media_info": {
     "audio_codec": "Codec Audio",
-    "checksum": "Checksum",
+    "checksum": "Somme de contrôle",
     "downloaded_from": "Téléchargé de",
     "hash": "Hachage",
     "interactive_speed": "Vitesse interactive",
     "performer_card": {
       "age": "{age} {years_old}",
-      "age_context": "{age} {years_old} in this scene"
+      "age_context": "{age} {years_old} dans cette scène"
     },
     "phash": "PHash",
     "stream": "Stream",
@@ -858,7 +858,7 @@
   "tag": "Tag",
   "tag_count": "Nombre de Tags",
   "tags": "Tags",
-  "tattoos": "Tattoos",
+  "tattoos": "Tatouages",
   "title": "Titre",
   "toast": {
     "added_entity": "{entity} ajouté(e)",
