@@ -46,7 +46,7 @@ func Download(ctx context.Context, configDirectory string) error {
 	}
 
 	// validate that the urls contained what we needed
-	executables := []string{"ffmpeg", "ffprobe"}
+	executables := []string{getFFMPEGFilename(), getFFProbeFilename()}
 	for _, executable := range executables {
 		_, err := os.Stat(filepath.Join(configDirectory, executable))
 		if err != nil {
