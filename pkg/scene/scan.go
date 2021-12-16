@@ -263,7 +263,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 		if scanner.UseFileMetadata {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
-			newScene.Date = models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")}
+			newScene.Date = models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02"), Valid: true}
 		}
 
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
