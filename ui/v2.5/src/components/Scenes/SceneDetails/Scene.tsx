@@ -664,7 +664,7 @@ const SceneLoader: React.FC = () => {
           timestamp={timestamp}
           autoplay={autoplay}
           onComplete={onComplete}
-          onNext={onQueueNext}
+          onNext={(currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) ? onQueueNext : undefined}
           onPrevious={(currentQueueIndex > 0) ? onQueuePrevious : undefined}
         />
       </div>

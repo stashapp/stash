@@ -24,6 +24,102 @@ $sceneTabWidth: 450px;
   &.portrait .video-js {
     height: 177.78vw;
   }
+
+  .vjs-button {
+    outline: none !important;
+  }
+
+  .vjs-touch-enabled {
+    width: 100vw;
+    margin: 0 -15px;
+
+    .vjs-control-bar {
+      height: 100%;
+      align-items: end;
+    }
+
+    .vjs-button {
+      pointer-events: none;
+    }
+
+    &:hover.vjs-user-active {
+      .vjs-button {
+        pointer-events: auto;
+      }
+    }
+
+    .vjs-button,
+    .vjs-volume-panel {
+      display: none;
+    }
+
+    .vjs-fullscreen-control {
+      display: inline-block;
+      height: 3em;
+    }
+
+    .vjs-play-control {
+      display: inline-block;
+    }
+
+    .vjs-play-control,
+    .vjs-skip-button {
+      font-size: 6rem;
+      height: 6rem;
+      width: 6rem;
+      position: absolute;
+      bottom: calc(50% - 3rem);
+    }
+
+    .vjs-play-control {
+      left: calc(50% - 3rem);
+    }
+    .vjs-skip-button.vjs-icon-next-item {
+      left: calc(80% - 3rem);
+    }
+    .vjs-skip-button.vjs-icon-previous-item {
+      left: calc(20% - 3rem);
+    }
+
+    .vjs-play-control .vjs-icon-placeholder:before,
+    .vjs-skip-button:before {
+      font-size: 1em;
+      line-height: 1em;
+    }
+
+    .vjs-current-time {
+      margin-left: 1em;
+    }
+
+    .vjs-time-control {
+      font-size: 1em;
+      height: unset;
+    }
+
+    &.vjs-fullscreen {
+      .vjs-progress-control {
+        height: 1em;
+        bottom: 4rem;
+      }
+    }
+
+    &:not(.vjs-fullscreen) {
+      .vjs-progress-control {
+        bottom: 0;
+        height: unset;
+        width: 100%;
+        margin: 0;
+
+        .vjs-progress-holder {
+          margin: 0;
+        }
+      }
+    }
+
+    .vjs-vtt-thumbnail-display {
+      bottom: 40px;
+    }
+  }
 }
 
 .video-js {
@@ -304,20 +400,20 @@ $sceneTabWidth: 450px;
 }
 
 .vjs-skip-button {
-		&:before {
-				font-size: 1.8em;
-				line-height: 1.67;
-		}
+  &:before {
+      font-size: 1.8em;
+      line-height: 1.67;
+  }
 }
 
 .vjs-skip-buttons {
-    .vjs-icon-next-item,
-    .vjs-icon-previous-item {
-      display: none;
-    };
+  .vjs-icon-next-item,
+  .vjs-icon-previous-item {
+    display: none;
+  };
 
-    &-prev .vjs-icon-previous-item,
-    &-next .vjs-icon-next-item {
-      display: inline-block;
-    }
+  &-prev .vjs-icon-previous-item,
+  &-next .vjs-icon-next-item {
+    display: inline-block !important;
+  }
 }

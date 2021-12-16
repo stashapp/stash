@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
+import "./landscapeFullscreen";
 import "./live";
 import "./PlaylistButtons";
 import cx from "classnames";
@@ -55,7 +56,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       autoplay: false,
       controls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
-      inactivityTimeout: 4000,
+      inactivityTimeout: 2000,
     };
 
     const player = VideoJS(videoElement, options);
@@ -72,6 +73,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.error(null);
     });
     (player as any).offset();
+    (player as any).landscapeFullscreen({
+      fullscreen: {
+        enterOnRotate: true,
+        exitOnRotate: true,
+        alwaysInLandscapeMode: true,
+        iOS: true
+      }
+    });
 
     playerRef.current = player;
   }, [playerRef]);

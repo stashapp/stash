@@ -84,7 +84,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               <img alt={scene.title ?? ""} src={scene.paths.screenshot ?? ""} />
             </div>
             <div>
-              <span className="align-middle">
+              <span className="align-middle text-break">
                 {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
               </span>
             </div>
