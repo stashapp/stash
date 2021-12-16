@@ -37,7 +37,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 
 	// FFMPEG bombs out if we try to request 89 snapshots from a 2 second video
 	if videoFile.Duration < 3 {
-		return nil, errors.New("Video too short to create sprite")
+		return nil, errors.New("video too short to create sprite")
 	}
 
 	generator, err := newGeneratorInfo(videoFile)
