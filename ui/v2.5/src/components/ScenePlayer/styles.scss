@@ -309,3 +309,15 @@ $sceneTabWidth: 450px;
 				line-height: 1.67;
 		}
 }
+
+.vjs-skip-buttons {
+    .vjs-icon-next-item,
+    .vjs-icon-previous-item {
+      display: none;
+    };
+
+    &-prev .vjs-icon-previous-item,
+    &-next .vjs-icon-next-item {
+      display: inline-block;
+    }
+}
