@@ -486,7 +486,6 @@
         }
       },
       "scene_wall": {
-        "heading": "",
         "options": {
           "display_title": "Afficher le titre et les tags",
           "toggle_sound": "Activer le son"
