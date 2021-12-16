@@ -29,6 +29,15 @@ type Input struct {
 	Gallery   *models.ScrapedGalleryInput
 }
 
+// simple type definitions that can help customize
+// actions per query
+type QueryType int
+
+const (
+	// for now only SearchQuery is needed
+	SearchQuery QueryType = iota + 1
+)
+
 // scraper is the generic interface to the scraper subsystems
 type scraper interface {
 	// spec returns the scraper specification, suitable for graphql
