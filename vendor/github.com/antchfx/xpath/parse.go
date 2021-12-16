@@ -65,6 +65,7 @@ const (
 	nodeOperator
 	nodeVariable
 	nodeConstantOperand
+	nodeGroup
 )
 
 type parser struct {
@@ -102,6 +103,10 @@ func newVariableNode(prefix, name string) node {
 // newFilterNode returns a new filter node FilterNode.
 func newFilterNode(n, m node) node {
 	return &filterNode{nodeType: nodeFilter, Input: n, Condition: m}
+}
+
+func newGroupNode(n node) node {
+	return &groupNode{nodeType: nodeGroup, Input: n}
 }
 
 // newRootNode returns a root node.
@@ -492,6 +497,9 @@ func (p *parser) parsePrimaryExpr(n node) (opnd node) {
 	case itemLParens:
 		p.next()
 		opnd = p.parseExpression(n)
+		if opnd.Type() != nodeConstantOperand {
+			opnd = newGroupNode(opnd)
+		}
 		p.skipItem(itemRParens)
 	case itemName:
 		if p.r.canBeFunc && !isNodeType(p.r) {
@@ -585,6 +593,16 @@ type operandNode struct {
 
 func (o *operandNode) String() string {
 	return fmt.Sprintf("%v", o.Val)
+}
+
+// groupNode holds a set of node expression
+type groupNode struct {
+	nodeType
+	Input node
+}
+
+func (g *groupNode) String() string {
+	return fmt.Sprintf("%s", g.Input)
 }
 
 // filterNode holds a condition filter.
