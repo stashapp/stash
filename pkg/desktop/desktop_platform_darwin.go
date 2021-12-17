@@ -4,6 +4,8 @@
 package desktop
 
 import (
+	"os/exec"
+
 	"github.com/kermieisinthehouse/gosx-notifier"
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -15,6 +17,10 @@ func isService() bool {
 
 func isServerDockerized() bool {
 	return false
+}
+
+func hideExecShell(cmd *exec.Cmd) {
+
 }
 
 func sendNotification(notificationTitle string, notificationText string) {
