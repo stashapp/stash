@@ -23,13 +23,15 @@ var uiBox embed.FS
 //go:embed ui/login
 var loginUIBox embed.FS
 
-func main() {
+func init() {
 	// On Windows, attach to parent shell
 	err := fixconsole.FixConsoleIfNeeded()
 	if err != nil {
 		fmt.Printf("FixConsoleOutput: %v\n", err)
 	}
+}
 
+func main() {
 	manager.Initialize()
 	api.Start(uiBox, loginUIBox)
 
