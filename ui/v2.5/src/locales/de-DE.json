@@ -425,7 +425,7 @@
         "heading": "Funscript Zeitversatz (ms)"
       },
       "handy_connection_key": {
-        "description": "Handy Verbindungsschlüssel für interaktive Szenen. Wenn dieser Schlüssel gesetzt wird, kann Stash aktuellen Szeneinformationen mit handyfeeling.com teilen.",
+        "description": "Handy Verbindungsschlüssel für interaktive Szenen. Wenn dieser Schlüssel gesetzt wird, kann Stash aktuellen Szeneinformationen mit handyfeeling.com teilen",
         "heading": "Handy Verbindungsschlüssel"
       },
       "images": {
@@ -610,7 +610,7 @@
       "preview_seg_duration_head": "Vorschau der Segmentdauer",
       "sprites": "Szenen-Scrubber Sprites",
       "sprites_tooltip": "Sprites (für den Szenen-Scrubber)",
-      "transcodes": "Transcodes",
+      "transcodes": "Transkodierung",
       "transcodes_tooltip": "MP4-Konvertierung von nicht unterstützten Videoformaten",
       "video_previews": "Vorschau",
       "video_previews_tooltip": "Videovorschauen, die abgespielt werden, wenn man den Mauszeiger über eine Szene bewegt"
