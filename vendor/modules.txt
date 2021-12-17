@@ -47,11 +47,11 @@ github.com/anacrolix/dms/soap
 github.com/anacrolix/dms/ssdp
 github.com/anacrolix/dms/upnp
 github.com/anacrolix/dms/upnpav
-# github.com/antchfx/htmlquery v1.2.3
+# github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
 ## explicit; go 1.14
 github.com/antchfx/htmlquery
-# github.com/antchfx/xpath v1.1.6
-## explicit
+# github.com/antchfx/xpath v1.2.0
+## explicit; go 1.14
 github.com/antchfx/xpath
 # github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 ## explicit; go 1.12
@@ -189,7 +189,7 @@ github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4/source/httpfs
 github.com/golang-migrate/migrate/v4/source/iofs
-# github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
+# github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 ## explicit
 github.com/golang/groupcache/lru
 # github.com/gorilla/securecookie v1.1.1
@@ -433,7 +433,7 @@ golang.org/x/image/webp
 ## explicit; go 1.12
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
+# golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context/ctxhttp
@@ -456,8 +456,8 @@ golang.org/x/sys/windows/svc
 # golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.3.6
-## explicit; go 1.11
+# golang.org/x/text v0.3.7
+## explicit; go 1.17
 golang.org/x/text/collate
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap

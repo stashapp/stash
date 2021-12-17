@@ -138,6 +138,7 @@ Supported Features
 `lang()`| ✗ |
 `last()`| ✓ |
 `local-name()`| ✓ |
+`matches()`| ✓ |
 `name()`| ✓ |
 `namespace-uri()`| ✓ |
 `normalize-space()`| ✓ |

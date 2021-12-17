@@ -193,8 +193,23 @@ func (b *builder) processFunctionNode(root *functionNode) (query, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		qyOutput = &functionQuery{Input: b.firstInput, Func: containsFunc(arg1, arg2)}
+	case "matches":
+		//matches(string , pattern)
+		if len(root.Args) != 2 {
+			return nil, errors.New("xpath: matches function must have two parameters")
+		}
+		var (
+			arg1, arg2 query
+			err        error
+		)
+		if arg1, err = b.processNode(root.Args[0]); err != nil {
+			return nil, err
+		}
+		if arg2, err = b.processNode(root.Args[1]); err != nil {
+			return nil, err
+		}
+		qyOutput = &functionQuery{Input: b.firstInput, Func: matchesFunc(arg1, arg2)}
 	case "substring":
 		//substring( string , start [, length] )
 		if len(root.Args) < 2 {
@@ -435,13 +450,15 @@ func (b *builder) processOperatorNode(root *operatorNode) (query, error) {
 	}
 	var qyOutput query
 	switch root.Op {
-	case "+", "-", "div", "mod": // Numeric operator
+	case "+", "-", "*", "div", "mod": // Numeric operator
 		var exprFunc func(interface{}, interface{}) interface{}
 		switch root.Op {
 		case "+":
 			exprFunc = plusFunc
 		case "-":
 			exprFunc = minusFunc
+		case "*":
+			exprFunc = mulFunc
 		case "div":
 			exprFunc = divFunc
 		case "mod":
@@ -498,6 +515,12 @@ func (b *builder) processNode(root node) (q query, err error) {
 		q, err = b.processFunctionNode(root.(*functionNode))
 	case nodeOperator:
 		q, err = b.processOperatorNode(root.(*operatorNode))
+	case nodeGroup:
+		q, err = b.processNode(root.(*groupNode).Input)
+		if err != nil {
+			return
+		}
+		q = &groupQuery{Input: q}
 	}
 	return
 }

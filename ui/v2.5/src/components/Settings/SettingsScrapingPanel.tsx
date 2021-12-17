@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import {
   mutateReloadScrapers,
   useListMovieScrapers,
   useListPerformerScrapers,
   useListSceneScrapers,
   useListGalleryScrapers,
-  useConfiguration,
-  useConfigureScraping,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 import { ScrapeType } from "src/core/generated-graphql";
-import { StringListInput } from "../Shared/StringListInput";
+import { SettingSection } from "./SettingSection";
+import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
+import { SettingStateContext } from "./context";
+import { StashBoxSetting } from "./StashBoxConfiguration";
 
 interface IURLList {
   urls: string[];
@@ -90,56 +91,17 @@ export const SettingsScrapingPanel: React.FC = () => {
     loading: loadingMovies,
   } = useListMovieScrapers();
 
-  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
-    undefined
-  );
-  const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
-    undefined
-  );
-  const [scraperCertCheck, setScraperCertCheck] = useState<boolean>(true);
-  const [excludeTagPatterns, setExcludeTagPatterns] = useState<string[]>([]);
-
-  const { data, error } = useConfiguration();
-
-  const [updateScrapingConfig] = useConfigureScraping({
-    scraperUserAgent,
-    scraperCDPPath,
-    scraperCertCheck,
-    excludeTagPatterns,
-  });
-
-  useEffect(() => {
-    if (!data?.configuration || error) return;
-
-    const conf = data.configuration;
-    if (conf.scraping) {
-      setScraperUserAgent(conf.scraping.scraperUserAgent ?? undefined);
-      setScraperCDPPath(conf.scraping.scraperCDPPath ?? undefined);
-      setScraperCertCheck(conf.scraping.scraperCertCheck);
-      setExcludeTagPatterns(conf.scraping.excludeTagPatterns);
-    }
-  }, [data, error]);
+  const {
+    general,
+    scraping,
+    loading,
+    error,
+    saveGeneral,
+    saveScraping,
+  } = React.useContext(SettingStateContext);
 
   async function onReloadScrapers() {
     await mutateReloadScrapers().catch((e) => Toast.error(e));
-  }
-
-  async function onSave() {
-    try {
-      await updateScrapingConfig();
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl
-              .formatMessage({ id: "configuration" })
-              .toLocaleLowerCase(),
-          }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
   }
 
   function renderPerformerScrapeTypes(types: ScrapeType[]) {
@@ -344,110 +306,76 @@ export const SettingsScrapingPanel: React.FC = () => {
     }
   }
 
-  if (loadingScenes || loadingGalleries || loadingPerformers || loadingMovies)
+  if (error) return <h1>{error.message}</h1>;
+  if (
+    loading ||
+    loadingScenes ||
+    loadingGalleries ||
+    loadingPerformers ||
+    loadingMovies
+  )
     return <LoadingIndicator />;
 
   return (
     <>
-      <Form.Group>
-        <h4>{intl.formatMessage({ id: "config.general.scraping" })}</h4>
-        <Form.Group id="scraperUserAgent">
-          <h6>
-            {intl.formatMessage({ id: "config.general.scraper_user_agent" })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={scraperUserAgent}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setScraperUserAgent(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.scraper_user_agent_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
+      <StashBoxSetting
+        value={general.stashBoxes ?? []}
+        onChange={(v) => saveGeneral({ stashBoxes: v })}
+      />
 
-        <Form.Group id="scraperCDPPath">
-          <h6>
-            {intl.formatMessage({ id: "config.general.chrome_cdp_path" })}
-          </h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            defaultValue={scraperCDPPath}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setScraperCDPPath(e.currentTarget.value)
-            }
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({ id: "config.general.chrome_cdp_path_desc" })}
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group>
-          <Form.Check
-            id="scaper-cert-check"
-            checked={scraperCertCheck}
-            label={intl.formatMessage({
-              id: "config.general.check_for_insecure_certificates",
-            })}
-            onChange={() => setScraperCertCheck(!scraperCertCheck)}
-          />
-          <Form.Text className="text-muted">
-            {intl.formatMessage({
-              id: "config.general.check_for_insecure_certificates_desc",
-            })}
-          </Form.Text>
-        </Form.Group>
-      </Form.Group>
-
-      <Form.Group>
-        <h6>
-          {intl.formatMessage({
-            id: "config.scraping.excluded_tag_patterns_head",
-          })}
-        </h6>
-        <StringListInput
-          className="w-50"
-          value={excludeTagPatterns}
-          setValue={setExcludeTagPatterns}
-          defaultNewValue="4K"
+      <SettingSection headingID="config.general.scraping">
+        <StringSetting
+          id="scraperUserAgent"
+          headingID="config.general.scraper_user_agent"
+          subHeadingID="config.general.scraper_user_agent_desc"
+          value={scraping.scraperUserAgent ?? undefined}
+          onChange={(v) => saveScraping({ scraperUserAgent: v })}
         />
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "config.scraping.excluded_tag_patterns_desc",
-          })}
-        </Form.Text>
-      </Form.Group>
 
-      <hr />
+        <StringSetting
+          id="scraperCDPPath"
+          headingID="config.general.chrome_cdp_path"
+          subHeadingID="config.general.chrome_cdp_path_desc"
+          value={scraping.scraperCDPPath ?? undefined}
+          onChange={(v) => saveScraping({ scraperCDPPath: v })}
+        />
 
-      <h4>{intl.formatMessage({ id: "config.scraping.scrapers" })}</h4>
+        <BooleanSetting
+          id="scraper-cert-check"
+          headingID="config.general.check_for_insecure_certificates"
+          subHeadingID="config.general.check_for_insecure_certificates_desc"
+          checked={scraping.scraperCertCheck ?? undefined}
+          onChange={(v) => saveScraping({ scraperCertCheck: v })}
+        />
 
-      <div className="mb-3">
-        <Button onClick={() => onReloadScrapers()}>
-          <span className="fa-icon">
-            <Icon icon="sync-alt" />
-          </span>
-          <span>
-            <FormattedMessage id="actions.reload_scrapers" />
-          </span>
-        </Button>
-      </div>
+        <StringListSetting
+          id="excluded-tag-patterns"
+          headingID="config.scraping.excluded_tag_patterns_head"
+          subHeadingID="config.scraping.excluded_tag_patterns_desc"
+          value={scraping.excludeTagPatterns ?? undefined}
+          onChange={(v) => saveScraping({ excludeTagPatterns: v })}
+        />
+      </SettingSection>
 
-      <div>
-        {renderSceneScrapers()}
-        {renderGalleryScrapers()}
-        {renderPerformerScrapers()}
-        {renderMovieScrapers()}
-      </div>
+      <SettingSection headingID="config.scraping.scrapers">
+        <div className="content">
+          <Button onClick={() => onReloadScrapers()}>
+            <span className="fa-icon">
+              <Icon icon="sync-alt" />
+            </span>
+            <span>
+              <FormattedMessage id="actions.reload_scrapers" />
+            </span>
+          </Button>
+        </div>
 
-      <hr />
-
-      <Button variant="primary" onClick={() => onSave()}>
-        <FormattedMessage id="actions.save" />
-      </Button>
+        <div className="content">
+          {renderSceneScrapers()}
+          {renderGalleryScrapers()}
+          {renderPerformerScrapers()}
+          {renderMovieScrapers()}
+        </div>
+      </SettingSection>
     </>
   );
 };

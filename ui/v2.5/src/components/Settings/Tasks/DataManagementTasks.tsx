@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import {
   mutateMigrateHashNaming,
   mutateMetadataExport,
@@ -12,8 +12,109 @@ import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
 import { Modal } from "../../Shared";
 import { ImportDialog } from "./ImportDialog";
-import { Task } from "./Task";
 import * as GQL from "src/core/generated-graphql";
+import { SettingSection } from "../SettingSection";
+import { BooleanSetting, Setting } from "../Inputs";
+import { ManualLink } from "src/components/Help/Manual";
+import { Icon } from "src/components/Shared";
+import { ConfigurationContext } from "src/hooks/Config";
+import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
+
+interface ICleanDialog {
+  pathSelection?: boolean;
+  dryRun: boolean;
+  onClose: (paths?: string[]) => void;
+}
+
+const CleanDialog: React.FC<ICleanDialog> = ({
+  pathSelection = false,
+  dryRun,
+  onClose,
+}) => {
+  const intl = useIntl();
+  const { configuration } = React.useContext(ConfigurationContext);
+
+  const libraryPaths = configuration?.general.stashes.map((s) => s.path);
+
+  const [paths, setPaths] = useState<string[]>([]);
+  const [currentDirectory, setCurrentDirectory] = useState<string>("");
+
+  function removePath(p: string) {
+    setPaths(paths.filter((path) => path !== p));
+  }
+
+  function addPath(p: string) {
+    if (p && !paths.includes(p)) {
+      setPaths(paths.concat(p));
+    }
+  }
+
+  let msg;
+  if (dryRun) {
+    msg = (
+      <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
+    );
+  } else {
+    msg = (
+      <p>{intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}</p>
+    );
+  }
+
+  return (
+    <Modal
+      show
+      icon="trash-alt"
+      disabled={pathSelection && paths.length === 0}
+      accept={{
+        text: intl.formatMessage({ id: "actions.clean" }),
+        variant: "danger",
+        onClick: () => onClose(paths),
+      }}
+      cancel={{ onClick: () => onClose() }}
+    >
+      <div className="dialog-container">
+        <div className="mb-3">
+          {paths.map((p) => (
+            <Row className="align-items-center mb-1" key={p}>
+              <Form.Label column xs={10}>
+                {p}
+              </Form.Label>
+              <Col xs={2} className="d-flex justify-content-end">
+                <Button
+                  className="ml-auto"
+                  size="sm"
+                  variant="danger"
+                  title={intl.formatMessage({ id: "actions.delete" })}
+                  onClick={() => removePath(p)}
+                >
+                  <Icon icon="minus" />
+                </Button>
+              </Col>
+            </Row>
+          ))}
+
+          {pathSelection ? (
+            <FolderSelect
+              currentDirectory={currentDirectory}
+              setCurrentDirectory={(v) => setCurrentDirectory(v)}
+              defaultDirectories={libraryPaths}
+              appendButton={
+                <Button
+                  variant="secondary"
+                  onClick={() => addPath(currentDirectory)}
+                >
+                  <Icon icon="plus" />
+                </Button>
+              }
+            />
+          ) : undefined}
+        </div>
+
+        {msg}
+      </div>
+    </Modal>
+  );
+};
 
 interface ICleanOptions {
   options: GQL.CleanMetadataInput;
@@ -24,21 +125,19 @@ const CleanOptions: React.FC<ICleanOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
-  const intl = useIntl();
-
   function setOptions(input: Partial<GQL.CleanMetadataInput>) {
     setOptionsState({ ...options, ...input });
   }
 
   return (
-    <Form.Group>
-      <Form.Check
+    <>
+      <BooleanSetting
         id="clean-dryrun"
         checked={options.dryRun}
-        label={intl.formatMessage({ id: "config.tasks.only_dry_run" })}
-        onChange={() => setOptions({ dryRun: !options.dryRun })}
+        headingID="config.tasks.only_dry_run"
+        onChange={(v) => setOptions({ dryRun: v })}
       />
-    </Form.Group>
+    </>
   );
 };
 
@@ -55,6 +154,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     importAlert: false,
     import: false,
     clean: false,
+    cleanAlert: false,
   });
 
   const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
@@ -109,39 +209,12 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     return <ImportDialog onClose={() => setDialogOpen({ import: false })} />;
   }
 
-  function renderCleanDialog() {
-    let msg;
-    if (cleanOptions.dryRun) {
-      msg = (
-        <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
-      );
-    } else {
-      msg = (
-        <p>
-          {intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}
-        </p>
-      );
-    }
-
-    return (
-      <Modal
-        show={dialogOpen.clean}
-        icon="trash-alt"
-        accept={{
-          text: intl.formatMessage({ id: "actions.clean" }),
-          variant: "danger",
-          onClick: onClean,
-        }}
-        cancel={{ onClick: () => setDialogOpen({ clean: false }) }}
-      >
-        {msg}
-      </Modal>
-    );
-  }
-
-  async function onClean() {
+  async function onClean(paths?: string[]) {
     try {
-      await mutateMetadataClean(cleanOptions);
+      await mutateMetadataClean({
+        ...cleanOptions,
+        paths,
+      });
 
       Toast.success({
         content: intl.formatMessage(
@@ -211,149 +284,163 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     <Form.Group>
       {renderImportAlert()}
       {renderImportDialog()}
-      {renderCleanDialog()}
+      {dialogOpen.cleanAlert || dialogOpen.clean ? (
+        <CleanDialog
+          dryRun={cleanOptions.dryRun}
+          pathSelection={dialogOpen.clean}
+          onClose={(p) => {
+            // undefined means cancelled
+            if (p !== undefined) {
+              if (dialogOpen.cleanAlert) {
+                // don't provide paths
+                onClean();
+              } else {
+                onClean(p);
+              }
+            }
 
-      <Form.Group>
-        <div className="task-group">
-          <h5>{intl.formatMessage({ id: "config.tasks.maintenance" })}</h5>
-          <Task
-            headingID="actions.clean"
-            description={intl.formatMessage({
-              id: "config.tasks.cleanup_desc",
-            })}
+            setDialogOpen({
+              clean: false,
+              cleanAlert: false,
+            });
+          }}
+        />
+      ) : (
+        dialogOpen.clean
+      )}
+
+      <SettingSection headingID="config.tasks.maintenance">
+        <div className="setting-group">
+          <Setting
+            heading={
+              <>
+                <FormattedMessage id="actions.clean" />
+                <ManualLink tab="Tasks">
+                  <Icon icon="question-circle" />
+                </ManualLink>
+              </>
+            }
+            subHeadingID="config.tasks.cleanup_desc"
           >
-            <CleanOptions
-              options={cleanOptions}
-              setOptions={(o) => setCleanOptions(o)}
-            />
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ cleanAlert: true })}
+            >
+              <FormattedMessage id="actions.clean" />…
+            </Button>
             <Button
               variant="danger"
               type="submit"
               onClick={() => setDialogOpen({ clean: true })}
             >
-              <FormattedMessage id="actions.clean" />…
+              <FormattedMessage id="actions.selective_clean" />…
             </Button>
-          </Task>
+          </Setting>
+          <CleanOptions
+            options={cleanOptions}
+            setOptions={(o) => setCleanOptions(o)}
+          />
         </div>
-      </Form.Group>
+      </SettingSection>
 
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "metadata" })}</h5>
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.export_to_json",
-            })}
+      <SettingSection headingID="metadata">
+        <Setting
+          headingID="actions.full_export"
+          subHeadingID="config.tasks.export_to_json"
+        >
+          <Button
+            id="export"
+            variant="secondary"
+            type="submit"
+            onClick={() => onExport()}
           >
-            <Button
-              id="export"
-              variant="secondary"
-              type="submit"
-              onClick={() => onExport()}
-            >
-              <FormattedMessage id="actions.full_export" />
-            </Button>
-          </Task>
+            <FormattedMessage id="actions.full_export" />
+          </Button>
+        </Setting>
 
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.import_from_exported_json",
-            })}
+        <Setting
+          headingID="actions.full_import"
+          subHeadingID="config.tasks.import_from_exported_json"
+        >
+          <Button
+            id="import"
+            variant="danger"
+            type="submit"
+            onClick={() => setDialogOpen({ importAlert: true })}
           >
-            <Button
-              id="import"
-              variant="danger"
-              type="submit"
-              onClick={() => setDialogOpen({ importAlert: true })}
-            >
-              <FormattedMessage id="actions.full_import" />
-            </Button>
-          </Task>
+            <FormattedMessage id="actions.full_import" />
+          </Button>
+        </Setting>
 
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.incremental_import",
-            })}
+        <Setting
+          headingID="actions.import_from_file"
+          subHeadingID="config.tasks.incremental_import"
+        >
+          <Button
+            id="partial-import"
+            variant="danger"
+            type="submit"
+            onClick={() => setDialogOpen({ import: true })}
           >
-            <Button
-              id="partial-import"
-              variant="danger"
-              type="submit"
-              onClick={() => setDialogOpen({ import: true })}
-            >
-              <FormattedMessage id="actions.import_from_file" />
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
+            <FormattedMessage id="actions.import_from_file" />
+          </Button>
+        </Setting>
+      </SettingSection>
 
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "actions.backup" })}</h5>
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage(
-              { id: "config.tasks.backup_database" },
-              {
-                filename_format: (
-                  <code>
-                    [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
-                  </code>
-                ),
-              }
-            )}
+      <SettingSection headingID="actions.backup">
+        <Setting
+          headingID="actions.backup"
+          subHeading={intl.formatMessage(
+            { id: "config.tasks.backup_database" },
+            {
+              filename_format: (
+                <code>
+                  [origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]
+                </code>
+              ),
+            }
+          )}
+        >
+          <Button
+            id="backup"
+            variant="secondary"
+            type="submit"
+            onClick={() => onBackup()}
           >
-            <Button
-              id="backup"
-              variant="secondary"
-              type="submit"
-              onClick={() => onBackup()}
-            >
-              <FormattedMessage id="actions.backup" />
-            </Button>
-          </Task>
+            <FormattedMessage id="actions.backup" />
+          </Button>
+        </Setting>
 
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.backup_and_download",
-            })}
+        <Setting
+          headingID="actions.download_backup"
+          subHeadingID="config.tasks.backup_and_download"
+        >
+          <Button
+            id="backupDownload"
+            variant="secondary"
+            type="submit"
+            onClick={() => onBackup(true)}
           >
-            <Button
-              id="backupDownload"
-              variant="secondary"
-              type="submit"
-              onClick={() => onBackup(true)}
-            >
-              <FormattedMessage id="actions.download_backup" />
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
+            <FormattedMessage id="actions.download_backup" />
+          </Button>
+        </Setting>
+      </SettingSection>
 
-      <hr />
-
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "config.tasks.migrations" })}</h5>
-
-        <div className="task-group">
-          <Task
-            description={intl.formatMessage({
-              id: "config.tasks.migrate_hash_files",
-            })}
+      <SettingSection headingID="config.tasks.migrations">
+        <Setting
+          headingID="actions.rename_gen_files"
+          subHeadingID="config.tasks.migrate_hash_files"
+        >
+          <Button
+            id="migrateHashNaming"
+            variant="danger"
+            onClick={() => onMigrateHashNaming()}
           >
-            <Button
-              id="migrateHashNaming"
-              variant="danger"
-              onClick={() => onMigrateHashNaming()}
-            >
-              <FormattedMessage id="actions.rename_gen_files" />
-            </Button>
-          </Task>
-        </div>
-      </Form.Group>
+            <FormattedMessage id="actions.rename_gen_files" />
+          </Button>
+        </Setting>
+      </SettingSection>
     </Form.Group>
   );
 };

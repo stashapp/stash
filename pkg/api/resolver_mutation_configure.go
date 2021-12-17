@@ -110,26 +110,34 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Cache, input.CachePath)
 	}
 
-	if !input.CalculateMd5 && input.VideoFileNamingAlgorithm == models.HashAlgorithmMd5 {
-		return makeConfigGeneralResult(), errors.New("calculateMD5 must be true if using MD5")
-	}
+	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
+		calculateMD5 := c.IsCalculateMD5()
+		if input.CalculateMd5 != nil {
+			calculateMD5 = *input.CalculateMd5
+		}
+		if !calculateMD5 && *input.VideoFileNamingAlgorithm == models.HashAlgorithmMd5 {
+			return makeConfigGeneralResult(), errors.New("calculateMD5 must be true if using MD5")
+		}
 
-	if input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
 		// validate changing VideoFileNamingAlgorithm
-		if err := manager.ValidateVideoFileNamingAlgorithm(r.txnManager, input.VideoFileNamingAlgorithm); err != nil {
+		if err := manager.ValidateVideoFileNamingAlgorithm(r.txnManager, *input.VideoFileNamingAlgorithm); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
-		c.Set(config.VideoFileNamingAlgorithm, input.VideoFileNamingAlgorithm)
+		c.Set(config.VideoFileNamingAlgorithm, *input.VideoFileNamingAlgorithm)
 	}
 
-	c.Set(config.CalculateMD5, input.CalculateMd5)
+	if input.CalculateMd5 != nil {
+		c.Set(config.CalculateMD5, *input.CalculateMd5)
+	}
 
 	if input.ParallelTasks != nil {
 		c.Set(config.ParallelTasks, *input.ParallelTasks)
 	}
 
-	c.Set(config.PreviewAudio, input.PreviewAudio)
+	if input.PreviewAudio != nil {
+		c.Set(config.PreviewAudio, *input.PreviewAudio)
+	}
 
 	if input.PreviewSegments != nil {
 		c.Set(config.PreviewSegments, *input.PreviewSegments)
@@ -185,12 +193,17 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.LogFile, input.LogFile)
 	}
 
-	c.Set(config.LogOut, input.LogOut)
-	c.Set(config.LogAccess, input.LogAccess)
+	if input.LogOut != nil {
+		c.Set(config.LogOut, *input.LogOut)
+	}
 
-	if input.LogLevel != c.GetLogLevel() {
+	if input.LogAccess != nil {
+		c.Set(config.LogAccess, *input.LogAccess)
+	}
+
+	if input.LogLevel != nil && *input.LogLevel != c.GetLogLevel() {
 		c.Set(config.LogLevel, input.LogLevel)
-		logger.SetLogLevel(input.LogLevel)
+		logger.SetLogLevel(*input.LogLevel)
 	}
 
 	if input.Excludes != nil {
@@ -213,7 +226,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.GalleryExtensions, input.GalleryExtensions)
 	}
 
-	c.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
+	if input.CreateGalleriesFromFolders != nil {
+		c.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
+	}
 
 	if input.CustomPerformerImageLocation != nil {
 		c.Set(config.CustomPerformerImageLocation, *input.CustomPerformerImageLocation)
@@ -295,13 +310,9 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.SlideshowDelay, *input.SlideshowDelay)
 	}
 
-	css := ""
-
 	if input.CSS != nil {
-		css = *input.CSS
+		c.SetCSS(*input.CSS)
 	}
-
-	c.SetCSS(css)
 
 	setBool(config.CSSEnabled, input.CSSEnabled)
 
@@ -334,7 +345,9 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 		c.Set(config.DLNAServerName, *input.ServerName)
 	}
 
-	c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+	if input.WhitelistedIPs != nil {
+		c.Set(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+	}
 
 	currentDLNAEnabled := c.GetDLNADefaultEnabled()
 	if input.Enabled != nil && *input.Enabled != currentDLNAEnabled {
@@ -351,7 +364,9 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 		}
 	}
 
-	c.Set(config.DLNAInterfaces, input.Interfaces)
+	if input.Interfaces != nil {
+		c.Set(config.DLNAInterfaces, input.Interfaces)
+	}
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
@@ -378,7 +393,10 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.C
 		c.Set(config.ScraperExcludeTagPatterns, input.ExcludeTagPatterns)
 	}
 
-	c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+	if input.ScraperCertCheck != nil {
+		c.Set(config.ScraperCertCheck, input.ScraperCertCheck)
+	}
+
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
 	}

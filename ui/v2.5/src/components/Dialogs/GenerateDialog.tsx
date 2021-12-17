@@ -13,6 +13,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { Manual } from "../Help/Manual";
 import { withoutTypename } from "src/utils";
 import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
+import { SettingSection } from "../Settings/SettingSection";
 
 interface ISceneGenerateDialog {
   selectedIds?: string[];
@@ -276,7 +277,9 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     >
       <Form>
         {selectionStatus}
-        <GenerateOptions options={options} setOptions={setOptions} />
+        <SettingSection>
+          <GenerateOptions options={options} setOptions={setOptions} />
+        </SettingSection>
       </Form>
     </Modal>
   );

@@ -1,12 +1,7 @@
 import React, { useState } from "react";
-import { Formik, useFormikContext } from "formik";
 import { Button, Form } from "react-bootstrap";
-import { Prompt } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
-import * as yup from "yup";
 import {
-  useConfiguration,
-  useConfigureDLNA,
   useDisableDLNA,
   useDLNAStatus,
   useEnableDLNA,
@@ -15,11 +10,17 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { DurationInput, Icon, LoadingIndicator, Modal } from "../Shared";
-import { StringListInput } from "../Shared/StringListInput";
+import { SettingSection } from "./SettingSection";
+import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
+import { SettingStateContext } from "./context";
 
-export const SettingsDLNAPanel: React.FC = () => {
+export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
+
+  const { dlna, loading: configLoading, error, saveDLNA } = React.useContext(
+    SettingStateContext
+  );
 
   // undefined to hide dialog, true for enable, false for disable
   const [enableDisable, setEnableDisable] = useState<boolean | undefined>(
@@ -34,64 +35,15 @@ export const SettingsDLNAPanel: React.FC = () => {
   const [ipEntry, setIPEntry] = useState<string>("");
   const [tempIP, setTempIP] = useState<string | undefined>();
 
-  const { data, refetch: configRefetch } = useConfiguration();
   const { data: statusData, loading, refetch: statusRefetch } = useDLNAStatus();
-
-  const [updateDLNAConfig] = useConfigureDLNA();
 
   const [enableDLNA] = useEnableDLNA();
   const [disableDLNA] = useDisableDLNA();
   const [addTempDLANIP] = useAddTempDLNAIP();
   const [removeTempDLNAIP] = useRemoveTempDLNAIP();
 
-  if (loading) return <LoadingIndicator />;
-
-  // settings
-  const schema = yup.object({
-    serverName: yup.string(),
-    enabled: yup.boolean().required(),
-    whitelistedIPs: yup.array(yup.string().required()).required(),
-    interfaces: yup.array(yup.string().required()).required(),
-  });
-
-  interface IConfigValues {
-    serverName: string;
-    enabled: boolean;
-    whitelistedIPs: string[];
-    interfaces: string[];
-  }
-
-  const initialValues: IConfigValues = {
-    serverName: data?.configuration.dlna.serverName ?? "",
-    enabled: data?.configuration.dlna.enabled ?? false,
-    whitelistedIPs: data?.configuration.dlna.whitelistedIPs ?? [],
-    interfaces: data?.configuration.dlna.interfaces ?? [],
-  };
-
-  async function onSave(input: IConfigValues) {
-    try {
-      await updateDLNAConfig({
-        variables: {
-          input,
-        },
-      });
-      configRefetch();
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl
-              .formatMessage({ id: "configuration" })
-              .toLocaleLowerCase(),
-          }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      statusRefetch();
-    }
-  }
+  if (error) return <h1>{error.message}</h1>;
+  if (loading || configLoading) return <LoadingIndicator />;
 
   async function onTempEnable() {
     const input = {
@@ -185,13 +137,9 @@ export const SettingsDLNAPanel: React.FC = () => {
   }
 
   function renderEnableButton() {
-    if (!data?.configuration.dlna) {
-      return;
-    }
-
     // if enabled by default, then show the disable temporarily
     // if disabled by default, then show enable temporarily
-    if (data?.configuration.dlna.enabled) {
+    if (dlna.enabled) {
       return (
         <Button onClick={() => setEnableDisable(false)} className="mr-1">
           <FormattedMessage id="actions.temp_disable" />
@@ -207,12 +155,12 @@ export const SettingsDLNAPanel: React.FC = () => {
   }
 
   function canCancel() {
-    if (!statusData || !data) {
+    if (!statusData || !dlna) {
       return false;
     }
 
     const { dlnaStatus } = statusData;
-    const { enabled } = data.configuration.dlna;
+    const { enabled } = dlna;
 
     return dlnaStatus.until || dlnaStatus.running !== enabled;
   }
@@ -348,7 +296,7 @@ export const SettingsDLNAPanel: React.FC = () => {
 
     const { allowedIPAddresses } = statusData.dlnaStatus;
     return (
-      <Form.Group>
+      <Form.Group className="content">
         <h6>
           {intl.formatMessage({ id: "config.dlna.allowed_ip_addresses" })}
         </h6>
@@ -429,93 +377,47 @@ export const SettingsDLNAPanel: React.FC = () => {
   }
 
   const DLNASettingsForm: React.FC = () => {
-    const {
-      handleSubmit,
-      values,
-      setFieldValue,
-      dirty,
-    } = useFormikContext<IConfigValues>();
-
     return (
-      <Form noValidate onSubmit={handleSubmit}>
-        <Prompt
-          when={dirty}
-          message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
-        />
+      <>
+        <SettingSection headingID="settings">
+          <StringSetting
+            headingID="config.dlna.server_display_name"
+            subHeading={intl.formatMessage(
+              { id: "config.dlna.server_display_name_desc" },
+              { server_name: <code>stash</code> }
+            )}
+            value={dlna.serverName ?? undefined}
+            onChange={(v) => saveDLNA({ serverName: v })}
+          />
 
-        <Form.Group>
-          <h5>{intl.formatMessage({ id: "settings" })}</h5>
-          <Form.Group>
-            <Form.Label>
-              {intl.formatMessage({ id: "config.dlna.server_display_name" })}
-            </Form.Label>
-            <Form.Control
-              className="text-input server-name"
-              value={values.serverName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFieldValue("serverName", e.currentTarget.value)
-              }
-            />
-            <Form.Text className="text-muted">
-              {intl.formatMessage(
-                { id: "config.dlna.server_display_name_desc" },
-                { server_name: <code>stash</code> }
-              )}
-            </Form.Text>
-          </Form.Group>
-          <Form.Group>
-            <Form.Check
-              id="dlna-enabled-by-default"
-              checked={values.enabled}
-              label={intl.formatMessage({
-                id: "config.dlna.enabled_by_default",
-              })}
-              onChange={() => setFieldValue("enabled", !values.enabled)}
-            />
-          </Form.Group>
+          <BooleanSetting
+            id="dlna-enabled-by-default"
+            headingID="config.dlna.enabled_by_default"
+            checked={dlna.enabled ?? undefined}
+            onChange={(v) => saveDLNA({ enabled: v })}
+          />
 
-          <Form.Group>
-            <h6>
-              {intl.formatMessage({ id: "config.dlna.network_interfaces" })}
-            </h6>
-            <StringListInput
-              value={values.interfaces}
-              setValue={(value) => setFieldValue("interfaces", value)}
-              defaultNewValue=""
-              className="interfaces-input"
-            />
-            <Form.Text className="text-muted">
-              {intl.formatMessage({
-                id: "config.dlna.network_interfaces_desc",
-              })}
-            </Form.Text>
-          </Form.Group>
+          <StringListSetting
+            id="dlna-network-interfaces"
+            headingID="config.dlna.network_interfaces"
+            subHeadingID="config.dlna.network_interfaces_desc"
+            value={dlna.interfaces ?? undefined}
+            onChange={(v) => saveDLNA({ interfaces: v })}
+          />
 
-          <Form.Group>
-            <h6>
-              {intl.formatMessage({ id: "config.dlna.default_ip_whitelist" })}
-            </h6>
-            <StringListInput
-              value={values.whitelistedIPs}
-              setValue={(value) => setFieldValue("whitelistedIPs", value)}
-              defaultNewValue="*"
-              className="ip-whitelist-input"
-            />
-            <Form.Text className="text-muted">
-              {intl.formatMessage(
-                { id: "config.dlna.default_ip_whitelist_desc" },
-                { wildcard: <code>*</code> }
-              )}
-            </Form.Text>
-          </Form.Group>
-        </Form.Group>
-
-        <hr />
-
-        <Button variant="primary" type="submit" disabled={!dirty}>
-          <FormattedMessage id="actions.save" />
-        </Button>
-      </Form>
+          <StringListSetting
+            id="dlna-default-ip-whitelist"
+            headingID="config.dlna.default_ip_whitelist"
+            subHeading={intl.formatMessage(
+              { id: "config.dlna.default_ip_whitelist_desc" },
+              { wildcard: <code>*</code> }
+            )}
+            defaultNewValue="*"
+            value={dlna.whitelistedIPs ?? undefined}
+            onChange={(v) => saveDLNA({ whitelistedIPs: v })}
+          />
+        </SettingSection>
+      </>
     );
   };
 
@@ -532,17 +434,15 @@ export const SettingsDLNAPanel: React.FC = () => {
         </h5>
       </Form.Group>
 
-      <Form.Group>
-        <h5>{intl.formatMessage({ id: "actions_name" })}</h5>
-
-        <Form.Group>
+      <SettingSection headingID="actions_name">
+        <Form.Group className="content">
           {renderEnableButton()}
           {renderTempCancelButton()}
         </Form.Group>
 
         {renderAllowedIPs()}
 
-        <Form.Group>
+        <Form.Group className="content">
           <h6>
             {intl.formatMessage({ id: "config.dlna.recent_ip_addresses" })}
           </h6>
@@ -553,18 +453,9 @@ export const SettingsDLNAPanel: React.FC = () => {
             </Button>
           </Form.Group>
         </Form.Group>
-      </Form.Group>
+      </SettingSection>
 
-      <hr />
-
-      <Formik
-        initialValues={initialValues}
-        validationSchema={schema}
-        onSubmit={(values) => onSave(values)}
-        enableReinitialize
-      >
-        <DLNASettingsForm />
-      </Formik>
+      <DLNASettingsForm />
     </div>
   );
 };
