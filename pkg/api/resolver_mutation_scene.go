@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -456,96 +457,105 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		return false, err
 	}
 
-	var scene *models.Scene
-	var postCommitFunc func()
+	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+
+	var s *models.Scene
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        *file.NewDeleter(),
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          manager.GetInstance().Paths,
+	}
+
+	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	deleteFile := utils.IsTrue(input.DeleteFile)
+
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
 		var err error
-		scene, err = qb.Find(sceneID)
+		s, err = qb.Find(sceneID)
 		if err != nil {
 			return err
 		}
 
-		if scene == nil {
+		if s == nil {
 			return fmt.Errorf("scene with id %d not found", sceneID)
 		}
 
-		postCommitFunc, err = manager.DestroyScene(scene, repo)
-		return err
+		// kill any running encoders
+		manager.KillRunningStreams(s, fileNamingAlgo)
+
+		return scene.Destroy(s, repo, fileDeleter, deleteGenerated, deleteFile)
 	}); err != nil {
+		fileDeleter.Rollback()
 		return false, err
 	}
 
 	// perform the post-commit actions
-	postCommitFunc()
-
-	// if delete generated is true, then delete the generated files
-	// for the scene
-	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedSceneFiles(scene, config.GetInstance().GetVideoFileNamingAlgorithm())
-	}
-
-	// if delete file is true, then delete the file as well
-	// if it fails, just log a message
-	if input.DeleteFile != nil && *input.DeleteFile {
-		manager.DeleteSceneFile(scene)
-	}
+	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+		SceneDestroyInput: input,
+		Checksum:          s.Checksum.String,
+		OSHash:            s.OSHash.String,
+		Path:              s.Path,
+	}, nil)
 
 	return true, nil
 }
 
 func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.ScenesDestroyInput) (bool, error) {
 	var scenes []*models.Scene
-	var postCommitFuncs []func()
+	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        *file.NewDeleter(),
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          manager.GetInstance().Paths,
+	}
+
+	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	deleteFile := utils.IsTrue(input.DeleteFile)
+
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
 
 		for _, id := range input.Ids {
 			sceneID, _ := strconv.Atoi(id)
 
-			scene, err := qb.Find(sceneID)
+			s, err := qb.Find(sceneID)
 			if err != nil {
 				return err
 			}
-			if scene != nil {
-				scenes = append(scenes, scene)
-			}
-			f, err := manager.DestroyScene(scene, repo)
-			if err != nil {
-				return err
+			if s != nil {
+				scenes = append(scenes, s)
 			}
 
-			postCommitFuncs = append(postCommitFuncs, f)
+			// kill any running encoders
+			manager.KillRunningStreams(s, fileNamingAlgo)
+
+			if err := scene.Destroy(s, repo, fileDeleter, deleteGenerated, deleteFile); err != nil {
+				return err
+			}
 		}
 
 		return nil
 	}); err != nil {
+		fileDeleter.Rollback()
 		return false, err
 	}
 
-	for _, f := range postCommitFuncs {
-		f()
-	}
+	// perform the post-commit actions
+	fileDeleter.Commit()
 
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 	for _, scene := range scenes {
-		// if delete generated is true, then delete the generated files
-		// for the scene
-		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
-		}
-
-		// if delete file is true, then delete the file as well
-		// if it fails, just log a message
-		if input.DeleteFile != nil && *input.DeleteFile {
-			manager.DeleteSceneFile(scene)
-		}
-
 		// call post hook after performing the other actions
-		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, input, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
+			ScenesDestroyInput: input,
+			Checksum:           scene.Checksum.String,
+			OSHash:             scene.OSHash.String,
+			Path:               scene.Path,
+		}, nil)
 	}
 
 	return true, nil
@@ -646,7 +656,14 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 		return false, err
 	}
 
-	var postCommitFunc func()
+	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        *file.NewDeleter(),
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          manager.GetInstance().Paths,
+	}
+
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.SceneMarker()
 		sqb := repo.Scene()
@@ -661,18 +678,19 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 			return fmt.Errorf("scene marker with id %d not found", markerID)
 		}
 
-		scene, err := sqb.Find(int(marker.SceneID.Int64))
+		s, err := sqb.Find(int(marker.SceneID.Int64))
 		if err != nil {
 			return err
 		}
 
-		postCommitFunc, err = manager.DestroySceneMarker(scene, marker, qb)
-		return err
+		return scene.DestroyMarker(s, marker, qb, fileDeleter)
 	}); err != nil {
+		fileDeleter.Rollback()
 		return false, err
 	}
 
-	postCommitFunc()
+	// perform the post-commit actions
+	fileDeleter.Commit()
 
 	r.hookExecutor.ExecutePostHooks(ctx, markerID, plugin.SceneMarkerDestroyPost, id, nil)
 
@@ -682,7 +700,15 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIDs []int) (*models.SceneMarker, error) {
 	var existingMarker *models.SceneMarker
 	var sceneMarker *models.SceneMarker
-	var scene *models.Scene
+	var s *models.Scene
+
+	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
+
+	fileDeleter := &scene.FileDeleter{
+		Deleter:        *file.NewDeleter(),
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          manager.GetInstance().Paths,
+	}
 
 	// Start the transaction and save the scene marker
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
@@ -704,10 +730,18 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 				return err
 			}
 
-			scene, err = sqb.Find(int(existingMarker.SceneID.Int64))
+			s, err = sqb.Find(int(existingMarker.SceneID.Int64))
 		}
 		if err != nil {
 			return err
+		}
+
+		// remove the marker preview if the timestamp was changed
+		if s != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
+			seconds := int(existingMarker.Seconds)
+			if err := fileDeleter.MarkMarkerFiles(s, seconds); err != nil {
+				return err
+			}
 		}
 
 		// Save the marker tags
@@ -715,15 +749,12 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 		tagIDs = utils.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
 		return qb.UpdateTags(sceneMarker.ID, tagIDs)
 	}); err != nil {
+		fileDeleter.Rollback()
 		return nil, err
 	}
 
-	// remove the marker preview if the timestamp was changed
-	if scene != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-		seconds := int(existingMarker.Seconds)
-		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetInstance().GetVideoFileNamingAlgorithm())
-	}
-
+	// perform the post-commit actions
+	fileDeleter.Commit()
 	return sceneMarker, nil
 }
 

@@ -76,3 +76,7 @@ func (b SceneURLBuilder) GetDeoVRURL() string {
 	addr.Scheme = "deovr"
 	return addr.String()
 }
+
+func (b SceneURLBuilder) GetInteractiveHeatmapURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/interactive_heatmap"
+}

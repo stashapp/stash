@@ -30,6 +30,7 @@ ui/v2.5/src/core/generated-*.tsx
 .idea/**/dictionaries
 .idea/**/shelf
 .vscode
+.devcontainer
 
 # Generated files
 .idea/**/contentModel.xml

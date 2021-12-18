@@ -61,6 +61,14 @@ func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, er
 	return nil, nil
 }
 
+func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene) (*int, error) {
+	if obj.InteractiveSpeed.Valid {
+		interactive_speed := int(obj.InteractiveSpeed.Int64)
+		return &interactive_speed, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
 	width := int(obj.Width.Int64)
 	height := int(obj.Height.Int64)
@@ -90,17 +98,19 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
 	deoVRPath := builder.GetDeoVRURL()
+	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &models.ScenePathsType{
-		Screenshot:  &screenshotPath,
-		Preview:     &previewPath,
-		Stream:      &streamPath,
-		Webp:        &webpPath,
-		Vtt:         &vttPath,
-		ChaptersVtt: &chaptersVttPath,
-		Sprite:      &spritePath,
-		Funscript:   &funscriptPath,
-		Deovr:       &deoVRPath,
+		Screenshot:         &screenshotPath,
+		Preview:            &previewPath,
+		Stream:             &streamPath,
+		Webp:               &webpPath,
+		Vtt:                &vttPath,
+		ChaptersVtt:        &chaptersVttPath,
+		Sprite:             &spritePath,
+		Funscript:          &funscriptPath,
+		Deovr:              &deoVRPath,
+		InteractiveHeatmap: &interactiveHeatmap,
 	}, nil
 }
 

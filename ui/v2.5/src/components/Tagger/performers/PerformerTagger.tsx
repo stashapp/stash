@@ -640,7 +640,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
             <h5 className="text-center">
               Please see{" "}
               <HashLink
-                to="/settings?tab=configuration#stashbox"
+                to="/settings?tab=metadata-providers#stash-boxes"
                 scroll={(el) =>
                   el.scrollIntoView({ behavior: "smooth", block: "center" })
                 }

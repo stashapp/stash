@@ -100,6 +100,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 	}
 
 	q := s.getXPathQuery(doc)
+	q.setType(SearchQuery)
 
 	var content []models.ScrapedContent
 	switch ty {
@@ -238,8 +239,17 @@ func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
 }
 
 type xpathQuery struct {
-	doc     *html.Node
-	scraper *xpathScraper
+	doc       *html.Node
+	scraper   *xpathScraper
+	queryType QueryType
+}
+
+func (q *xpathQuery) getType() QueryType {
+	return q.queryType
+}
+
+func (q *xpathQuery) setType(t QueryType) {
+	q.queryType = t
 }
 
 func (q *xpathQuery) runQuery(selector string) ([]string, error) {

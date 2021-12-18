@@ -19,6 +19,8 @@ import (
 
 type mappedQuery interface {
 	runQuery(selector string) ([]string, error)
+	getType() QueryType
+	setType(QueryType)
 	subScrape(ctx context.Context, value string) mappedQuery
 }
 
@@ -77,6 +79,10 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 		result = attrConfig.postProcess(ctx, result, q)
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
+			// skip cleaning when the query is used for searching
+			if q.getType() == SearchQuery {
+				return results
+			}
 			results = attrConfig.cleanResults(results)
 			return results
 		}
@@ -91,7 +97,12 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 
 			ret = append(ret, text)
 		}
+		// skip cleaning when the query is used for searching
+		if q.getType() == SearchQuery {
+			return ret
+		}
 		ret = attrConfig.cleanResults(ret)
+
 	}
 
 	return ret

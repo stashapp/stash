@@ -218,6 +218,8 @@ export class ScenePlayerImpl extends React.Component<
         this.props.scene.paths.funscript || ""
       );
     }
+
+    this.player.getContainer().focus();
   }
 
   private onSeeked() {

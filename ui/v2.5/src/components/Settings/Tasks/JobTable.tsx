@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, ProgressBar } from "react-bootstrap";
+import { Button, Card, ProgressBar } from "react-bootstrap";
 import {
   mutateStopJob,
   useJobQueue,
@@ -8,6 +8,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { useIntl } from "react-intl";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -153,6 +154,7 @@ const Task: React.FC<IJob> = ({ job }) => {
 };
 
 export const JobTable: React.FC = () => {
+  const intl = useIntl();
   const jobStatus = useJobQueue();
   const jobsSubscribe = useJobsSubscribe();
 
@@ -200,12 +202,17 @@ export const JobTable: React.FC = () => {
   }, [jobsSubscribe.data]);
 
   return (
-    <div className="job-table">
+    <Card className="job-table">
       <ul>
+        {!queue?.length ? (
+          <span className="empty-queue-message">
+            {intl.formatMessage({ id: "config.tasks.empty_queue" })}
+          </span>
+        ) : undefined}
         {(queue ?? []).map((j) => (
           <Task job={j} key={j.id} />
         ))}
       </ul>
-    </div>
+    </Card>
   );
 };

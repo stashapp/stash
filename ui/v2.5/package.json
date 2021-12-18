@@ -34,6 +34,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@types/react-select": "^4.0.8",
+    "ansi-regex": "^5.0.1",
     "apollo-upload-client": "^14.1.3",
     "axios": "0.21.2",
     "base64-blob": "^1.4.1",
@@ -50,6 +51,8 @@
     "lodash": "^4.17.20",
     "mousetrap": "^1.6.5",
     "mousetrap-pause": "^1.0.0",
+    "normalize-url": "^4.5.1",
+    "postcss": "^8.2.10",
     "query-string": "6.13.8",
     "react": "17.0.2",
     "react-bootstrap": "1.4.3",
@@ -71,6 +74,7 @@
     "vite": "^2.6.11",
     "vite-plugin-compression": "^0.3.5",
     "vite-tsconfig-paths": "^3.3.17",
+    "ws": "^7.4.6",
     "yup": "^0.32.9"
   },
   "devDependencies": {
