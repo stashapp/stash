@@ -51,7 +51,7 @@ func SendNotification(title string, text string) {
 }
 
 func IsDesktop() bool {
-	// check if running under root
+	// Check if running under root
 	if os.Getuid() == 0 {
 		return false
 	}
