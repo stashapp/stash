@@ -2,11 +2,10 @@ package fixconsole
 
 import (
 	"fmt"
-	"os"
-	"syscall"
-
 	"github.com/apenwarr/w32"
 	"golang.org/x/sys/windows"
+	"os"
+	"syscall"
 )
 
 func AttachConsole() error {

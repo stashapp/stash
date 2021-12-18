@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -23,7 +24,9 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 
+	logrusMiddleware "github.com/chi-middleware/logrus-logger"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
@@ -52,7 +55,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	c := config.GetInstance()
 	if c.GetLogAccess() {
-		r.Use(middleware.Logger)
+		if runtime.GOOS == "windows" {
+			r.Use(logrusMiddleware.Logger("HTTP", logrus.New()))
+		} else {
+			r.Use(middleware.Logger)
+		}
 	}
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
