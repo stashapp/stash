@@ -106,10 +106,6 @@ func addLogItem(l *LogItem) {
 	go broadcastLogItem(l)
 }
 
-func GetRawLogger() logrus.FieldLogger {
-	return logger
-}
-
 func GetLogCache() []LogItem {
 	mutex.Lock()
 

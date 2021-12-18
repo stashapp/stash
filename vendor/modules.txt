@@ -59,9 +59,6 @@ github.com/apenwarr/fixconsole
 # github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab
 ## explicit
 github.com/apenwarr/w32
-# github.com/chi-middleware/logrus-logger v0.2.0
-## explicit; go 1.14
-github.com/chi-middleware/logrus-logger
 # github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 ## explicit; go 1.14
 github.com/chromedp/cdproto
@@ -160,10 +157,6 @@ github.com/getlantern/ops
 ## explicit
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
-# github.com/go-chi/chi/v5 v5.0.1
-## explicit; go 1.14
-github.com/go-chi/chi/v5
-github.com/go-chi/chi/v5/middleware
 # github.com/go-stack/stack v1.8.0
 ## explicit
 github.com/go-stack/stack
