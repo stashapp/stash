@@ -51,7 +51,7 @@ require (
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
-	github.com/kermieisinthehouse/gosx-notifier v0.1.0
+	github.com/kermieisinthehouse/gosx-notifier v0.1.1
 	github.com/kermieisinthehouse/systray v1.2.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/vearutop/statigz v1.1.6

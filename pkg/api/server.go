@@ -53,7 +53,6 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	c := config.GetInstance()
 	if c.GetLogAccess() {
-		//TODO
 		httpLogger := httplog.NewLogger("Stash", httplog.Options{
 			Concise: true,
 		})

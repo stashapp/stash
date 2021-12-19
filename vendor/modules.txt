@@ -252,7 +252,7 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.11
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/kermieisinthehouse/gosx-notifier v0.1.0
+# github.com/kermieisinthehouse/gosx-notifier v0.1.1
 ## explicit
 github.com/kermieisinthehouse/gosx-notifier
 # github.com/kermieisinthehouse/systray v1.2.0
