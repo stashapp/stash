@@ -7,12 +7,15 @@ import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingStars } from "./RatingStars";
+import { useIntl } from "react-intl";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
 }
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
+  const intl = useIntl();
+
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") return;
     return (
@@ -112,6 +115,24 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               )}
             </h6>
           )}
+          {
+            <h6>
+              {" "}
+              Created At: {TextUtils.formatDate(
+                intl,
+                props.scene.created_at
+              )}{" "}
+            </h6>
+          }
+          {
+            <h6>
+              {" "}
+              Last Updated: {TextUtils.formatDate(
+                intl,
+                props.scene.updated_at
+              )}{" "}
+            </h6>
+          }
         </div>
         {props.scene.studio && (
           <div className="col-3 d-xl-none">
