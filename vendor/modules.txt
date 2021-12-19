@@ -157,6 +157,13 @@ github.com/getlantern/ops
 ## explicit
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
+# github.com/go-chi/chi/v5 v5.0.0
+## explicit; go 1.16
+github.com/go-chi/chi/v5
+github.com/go-chi/chi/v5/middleware
+# github.com/go-chi/httplog v0.2.1
+## explicit; go 1.14
+github.com/go-chi/httplog
 # github.com/go-stack/stack v1.8.0
 ## explicit
 github.com/go-stack/stack
@@ -321,7 +328,7 @@ github.com/robertkrimen/otto/token
 # github.com/rs/cors v1.6.0
 ## explicit
 github.com/rs/cors
-# github.com/rs/zerolog v1.18.0
+# github.com/rs/zerolog v1.18.1-0.20200514152719-663cbb4c8469
 ## explicit
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor

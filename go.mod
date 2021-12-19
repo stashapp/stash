@@ -39,7 +39,7 @@ require (
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
+	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
@@ -49,19 +49,19 @@ require (
 require (
 	github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
+	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/kermieisinthehouse/gosx-notifier v0.1.0
 	github.com/kermieisinthehouse/systray v1.2.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.0.1
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 )
 
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
-	github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab // indirect
 	github.com/antchfx/xpath v1.2.0 // indirect
+	github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -72,6 +72,7 @@ require (
 	github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7 // indirect
 	github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55 // indirect
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
+	github.com/go-chi/chi/v5 v5.0.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
@@ -96,7 +97,7 @@ require (
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rs/zerolog v1.18.0 // indirect
+	github.com/rs/zerolog v1.18.1-0.20200514152719-663cbb4c8469 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect

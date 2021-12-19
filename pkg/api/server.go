@@ -24,6 +24,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
 
+	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
@@ -52,7 +53,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	c := config.GetInstance()
 	if c.GetLogAccess() {
-		r.Use(middleware.Logger)
+		//TODO
+		httpLogger := httplog.NewLogger("Stash", httplog.Options{
+			Concise: true,
+		})
+		r.Use(httplog.RequestLogger(httpLogger))
 	}
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
