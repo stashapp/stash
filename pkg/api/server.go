@@ -346,12 +346,15 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		// Allows websocket requests to any origin
 		connectableOrigins += " ws: wss:"
 
+		// The graphql playground pulls its frontend from a cdn
+		connectableOrigins += " https://cdn.jsdelivr.net "
+
 		if !c.IsNewSystem() && c.GetHandyKey() != "" {
 			connectableOrigins += " https://www.handyfeeling.com"
 		}
 		connectableOrigins += "; "
 
-		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
