@@ -4,7 +4,7 @@ require (
 	github.com/99designs/gqlgen v0.12.2
 	github.com/Yamashou/gqlgenc v0.0.0-20200902035953-4dbef3551953
 	github.com/anacrolix/dms v1.2.2
-	github.com/antchfx/htmlquery v1.2.3
+	github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
 	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 	github.com/chromedp/chromedp v0.7.3
 	github.com/corona10/goimagehash v1.0.3
@@ -37,10 +37,10 @@ require (
 	github.com/vektra/mockery/v2 v2.2.1
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
-	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
+	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
-	golang.org/x/text v0.3.6
+	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
@@ -54,7 +54,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.1.0 // indirect
-	github.com/antchfx/xpath v1.1.6 // indirect
+	github.com/antchfx/xpath v1.2.0 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -62,7 +62,7 @@ require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0-rc.5 // indirect
-	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect

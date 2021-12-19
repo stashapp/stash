@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -66,28 +67,35 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 }
 
 func (j *cleanJob) getCount(r models.ReaderRepository) (int, error) {
-	sceneCount, err := r.Scene().Count()
+	sceneFilter := scene.PathsFilter(j.input.Paths)
+	sceneResult, err := r.Scene().Query(models.SceneQueryOptions{
+		QueryOptions: models.QueryOptions{
+			Count: true,
+		},
+		SceneFilter: sceneFilter,
+	})
 	if err != nil {
 		return 0, err
 	}
 
-	imageCount, err := r.Image().Count()
+	imageCount, err := r.Image().QueryCount(image.PathsFilter(j.input.Paths), nil)
 	if err != nil {
 		return 0, err
 	}
 
-	galleryCount, err := r.Gallery().Count()
+	galleryCount, err := r.Gallery().QueryCount(gallery.PathsFilter(j.input.Paths), nil)
 	if err != nil {
 		return 0, err
 	}
 
-	return sceneCount + imageCount + galleryCount, nil
+	return sceneResult.Count + imageCount + galleryCount, nil
 }
 
 func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb models.SceneReader) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	sceneFilter := scene.PathsFilter(j.input.Paths)
 	sort := "path"
 	findFilter.Sort = &sort
 
@@ -99,7 +107,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		scenes, err := scene.Query(qb, nil, findFilter)
+		scenes, err := scene.Query(qb, sceneFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for scenes: %w", err)
 		}
@@ -150,6 +158,7 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	galleryFilter := gallery.PathsFilter(j.input.Paths)
 	sort := "path"
 	findFilter.Sort = &sort
 
@@ -161,7 +170,7 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 			return nil
 		}
 
-		galleries, _, err := qb.Query(nil, findFilter)
+		galleries, _, err := qb.Query(galleryFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for galleries: %w", err)
 		}
@@ -210,6 +219,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
+	imageFilter := image.PathsFilter(j.input.Paths)
 
 	// performance consideration: order by path since default ordering by
 	// title is slow
@@ -224,7 +234,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		images, err := image.Query(qb, nil, findFilter)
+		images, err := image.Query(qb, imageFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for images: %w", err)
 		}

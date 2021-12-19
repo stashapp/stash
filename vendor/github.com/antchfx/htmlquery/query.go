@@ -55,10 +55,10 @@ func QueryAll(top *html.Node, expr string) ([]*html.Node, error) {
 	return nodes, nil
 }
 
-// Query searches the html.Node that matches by the specified XPath expr,
-// and return the first element of matched html.Node.
+// Query runs the given XPath expression against the given html.Node and
+// returns the first matching html.Node, or nil if no matches are found.
 //
-// Return an error if the expression `expr` cannot be parsed.
+// Returns an error if the expression `expr` cannot be parsed.
 func Query(top *html.Node, expr string) (*html.Node, error) {
 	exp, err := getQuery(expr)
 	if err != nil {
@@ -83,11 +83,6 @@ func QuerySelectorAll(top *html.Node, selector *xpath.Expr) []*html.Node {
 	for t.MoveNext() {
 		nav := t.Current().(*NodeNavigator)
 		n := getCurrentNode(nav)
-		// avoid adding duplicate nodes.
-		if len(elems) > 0 && (elems[0] == n || (nav.NodeType() == xpath.AttributeNode &&
-			nav.LocalName() == elems[0].Data && nav.Value() == InnerText(elems[0]))) {
-			continue
-		}
 		elems = append(elems, n)
 	}
 	return elems
@@ -177,6 +172,19 @@ func SelectAttr(n *html.Node, name string) (val string) {
 		}
 	}
 	return
+}
+
+// ExistsAttr returns whether attribute with specified name exists.
+func ExistsAttr(n *html.Node, name string) bool {
+	if n == nil {
+		return false
+	}
+	for _, attr := range n.Attr {
+		if attr.Key == name {
+			return true
+		}
+	}
+	return false
 }
 
 // OutputHTML returns the text including tags name.

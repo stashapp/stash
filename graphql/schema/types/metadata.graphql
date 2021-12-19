@@ -108,6 +108,8 @@ type ScanMetadataOptions {
 }
 
 input CleanMetadataInput {
+  paths: [String!]
+  
   """Do a dry run. Don't delete any files"""
   dryRun: Boolean!
 }
