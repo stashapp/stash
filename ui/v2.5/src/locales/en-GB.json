@@ -584,7 +584,7 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
-      "force_transcodes": "Generate Transcodes for browser-supported videos",
+      "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
       "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
