@@ -117,6 +117,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="scrapers-path"
+          headingID="config.general.scrapers_path.heading"
+          subHeadingID="config.general.scrapers_path.description"
+          value={general.scrapersPath ?? undefined}
+          onChange={(v) => saveGeneral({ scrapersPath: v })}
+        />
+
+        <StringSetting
           id="metadata-path"
           headingID="config.general.metadata_path.heading"
           subHeadingID="config.general.metadata_path.description"

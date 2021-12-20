@@ -267,6 +267,10 @@
       "preview_generation": "Preview Generation",
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
+      "scrapers_path": {
+        "description": "Directory location of scraper configuration files",
+        "heading": "Scrapers Path"
+      },
       "scraping": "Scraping",
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
