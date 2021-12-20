@@ -86,7 +86,7 @@ export const FolderSelect: React.FC<IProps> = ({
             {loading ? (
               <LoadingIndicator inline small message="" />
             ) : (
-              <Icon icon="times" color="red" className="ml-4" />
+              <Icon icon="times" color="red" className="ml-3" />
             )}
           </InputGroup.Append>
         ) : undefined}
