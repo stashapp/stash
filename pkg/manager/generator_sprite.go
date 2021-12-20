@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
@@ -33,6 +34,12 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 	if !exists {
 		return nil, err
 	}
+
+	// FFMPEG bombs out if we try to request 89 snapshots from a 2 second video
+	if videoFile.Duration < 3 {
+		return nil, errors.New("video too short to create sprite")
+	}
+
 	generator, err := newGeneratorInfo(videoFile)
 	if err != nil {
 		return nil, err

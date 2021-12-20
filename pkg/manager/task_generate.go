@@ -252,9 +252,11 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 	}
 
 	if utils.IsTrue(j.input.Transcodes) {
+		forceTranscode := utils.IsTrue(j.input.ForceTranscodes)
 		task := &GenerateTranscodeTask{
 			Scene:               *scene,
 			Overwrite:           j.overwrite,
+			Force:               forceTranscode,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 		}
 		if task.isTranscodeNeeded() {

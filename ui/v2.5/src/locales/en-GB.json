@@ -79,6 +79,7 @@
     "select_folders": "Select folders",
     "select_none": "Select None",
     "selective_auto_tag": "Selective Auto Tag",
+    "selective_clean": "Selective Clean",
     "selective_scan": "Selective Scan",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
@@ -588,6 +589,8 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
+      "force_transcodes": "Force Transcode generation",
+      "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
       "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",

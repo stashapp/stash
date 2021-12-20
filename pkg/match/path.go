@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
@@ -175,38 +176,6 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 	return ret, nil
 }
 
-func scenePathsFilter(paths []string) *models.SceneFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.SceneFilterType
-	var or *models.SceneFilterType
-	for _, p := range paths {
-		newOr := &models.SceneFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
 func PathToScenes(name string, paths []string, sceneReader models.SceneReader) ([]*models.Scene, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
@@ -218,7 +187,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 		Organized: &organized,
 	}
 
-	filter.And = scenePathsFilter(paths)
+	filter.And = scene.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	scenes, err := scene.Query(sceneReader, &filter, &models.FindFilterType{
@@ -239,38 +208,6 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	return ret, nil
 }
 
-func imagePathsFilter(paths []string) *models.ImageFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.ImageFilterType
-	var or *models.ImageFilterType
-	for _, p := range paths {
-		newOr := &models.ImageFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
 func PathToImages(name string, paths []string, imageReader models.ImageReader) ([]*models.Image, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
@@ -282,7 +219,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 		Organized: &organized,
 	}
 
-	filter.And = imagePathsFilter(paths)
+	filter.And = image.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	images, err := image.Query(imageReader, &filter, &models.FindFilterType{
@@ -303,38 +240,6 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	return ret, nil
 }
 
-func galleryPathsFilter(paths []string) *models.GalleryFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.GalleryFilterType
-	var or *models.GalleryFilterType
-	for _, p := range paths {
-		newOr := &models.GalleryFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
 func PathToGalleries(name string, paths []string, galleryReader models.GalleryReader) ([]*models.Gallery, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
@@ -346,7 +251,7 @@ func PathToGalleries(name string, paths []string, galleryReader models.GalleryRe
 		Organized: &organized,
 	}
 
-	filter.And = galleryPathsFilter(paths)
+	filter.And = gallery.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	gallerys, _, err := galleryReader.Query(&filter, &models.FindFilterType{
