@@ -6,7 +6,7 @@ import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { sortPerformers } from "src/core/performers";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
@@ -97,19 +97,14 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           {
             <h6>
               {" "}
-              Created At: {TextUtils.formatDate(
-                intl,
-                props.image.created_at
-              )}{" "}
+              <FormattedMessage id="created_at" />:{" "}
+              {TextUtils.formatDate(intl, props.image.created_at)}{" "}
             </h6>
           }
           {
             <h6>
-              {" "}
-              Last Updated: {TextUtils.formatDate(
-                intl,
-                props.image.updated_at
-              )}{" "}
+              <FormattedMessage id="updated_at" />:{" "}
+              {TextUtils.formatDate(intl, props.image.updated_at)}{" "}
             </h6>
           }
         </div>

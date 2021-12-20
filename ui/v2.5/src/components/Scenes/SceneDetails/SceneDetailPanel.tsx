@@ -1,13 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingStars } from "./RatingStars";
-import { useIntl } from "react-intl";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -115,24 +114,14 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               )}
             </h6>
           )}
-          {
-            <h6>
-              {" "}
-              Created At: {TextUtils.formatDate(
-                intl,
-                props.scene.created_at
-              )}{" "}
-            </h6>
-          }
-          {
-            <h6>
-              {" "}
-              Last Updated: {TextUtils.formatDate(
-                intl,
-                props.scene.updated_at
-              )}{" "}
-            </h6>
-          }
+          <h6>
+            <FormattedMessage id="created_at" />:{" "}
+            {TextUtils.formatDate(intl, props.scene.created_at)}{" "}
+          </h6>
+          <h6>
+            <FormattedMessage id="updated_at" />:{" "}
+            {TextUtils.formatDate(intl, props.scene.updated_at)}{" "}
+          </h6>
         </div>
         {props.scene.studio && (
           <div className="col-3 d-xl-none">
