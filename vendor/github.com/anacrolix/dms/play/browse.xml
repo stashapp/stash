@@ -1,0 +1,13 @@
+ <?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+ <s:Body>
+  <u:Browse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+   <ObjectID>0</ObjectID>
+   <BrowseFlag>BrowseDirectChildren</BrowseFlag>
+   <Filter>dc:title,dc:date,res,res@protocolInfo,res@size,res@duration,res@resolution,res@dlna:ifoFileURI,res@pv:subtitleFileType,res@pv:subtitleFileUri,upnp:albumArtURI,upnp:album,upnp:artist</Filter>
+   <StartingIndex>0</StartingIndex>
+   <RequestedCount>20</RequestedCount>
+   <SortCriteria></SortCriteria>
+  </u:Browse>
+ </s:Body>
+</s:Envelope>

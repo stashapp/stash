@@ -1,0 +1,12 @@
+# Put this file in /home/USERNAME/.config/systemd/user/
+#
+# Enable this service with
+# systemctl --user --now enable dms.service
+[Unit]
+Description=DMS UPnP Media Server
+
+[Service]
+ExecStart=/home/USERNAME/go/bin/dms -friendlyName DMS_Server -path /home/share/
+
+[Install]
+WantedBy=default.target

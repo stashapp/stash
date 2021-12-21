@@ -37,7 +37,7 @@ github.com/Yamashou/gqlgenc/introspection
 # github.com/agnivade/levenshtein v1.1.0
 ## explicit; go 1.13
 github.com/agnivade/levenshtein
-# github.com/anacrolix/dms v1.2.2
+# github.com/anacrolix/dms v1.3.0
 ## explicit; go 1.12
 github.com/anacrolix/dms/dlna
 github.com/anacrolix/dms/soap

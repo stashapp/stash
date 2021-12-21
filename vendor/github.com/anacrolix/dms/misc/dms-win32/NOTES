@@ -1,0 +1,3 @@
+This directory should contain a script to build the "dms-win32" package. It's an archive containing the DMS GUI components and all necessary libraries.
+
+The script should get the latest static executable builds of ffmpeg, dms, and GTK+ all-in-one into a single folder, with executable files in bin/, and user-facing utilities from this directory in the root, and compress the lot.

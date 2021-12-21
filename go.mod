@@ -3,7 +3,7 @@ module github.com/stashapp/stash
 require (
 	github.com/99designs/gqlgen v0.12.2
 	github.com/Yamashou/gqlgenc v0.0.0-20200902035953-4dbef3551953
-	github.com/anacrolix/dms v1.2.2
+	github.com/anacrolix/dms v1.3.0
 	github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
 	github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 	github.com/chromedp/chromedp v0.7.3

@@ -24,9 +24,7 @@ const (
 	byebyeNTS  = "ssdp:byebye"
 )
 
-var (
-	NetAddr *net.UDPAddr
-)
+var NetAddr *net.UDPAddr
 
 func init() {
 	var err error
@@ -108,7 +106,13 @@ func makeConn(ifi net.Interface) (ret *net.UDPConn, err error) {
 
 func (me *Server) serve() {
 	for {
-		b := make([]byte, me.Interface.MTU)
+		size := me.Interface.MTU
+		if size > 65536 {
+			size = 65536
+		} else if size <= 0 { // fix for windows with mtu 4gb
+			size = 65536
+		}
+		b := make([]byte, size)
 		n, addr, err := me.conn.ReadFromUDP(b)
 		select {
 		case <-me.closed:

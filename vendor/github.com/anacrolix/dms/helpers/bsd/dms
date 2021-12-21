@@ -1,0 +1,27 @@
+#!/bin/sh
+
+. /etc/rc.subr
+
+name="dms"
+rcvar="dms_enable"
+
+: ${dms_user:="root"}
+: ${dms_enable:="NO"}
+: ${dms_media_dir:="/media"}
+
+# Daemon
+pidfile="/var/run/${name}.pid"
+command=/usr/sbin/daemon
+procname="daemon"
+dms="/usr/local/bin/dms -path ${dms_media_dir}"
+command_args=" -P ${pidfile} -r -f -u ${dms_user} ${dms}"
+start_precmd="dms_precmd"
+pidfile="/var/run/${name}.pid"
+
+dms_precmd()
+{
+    install -o ${dms_user} /dev/null ${pidfile}
+}
+
+load_rc_config $name
+run_rc_command "$1"

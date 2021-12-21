@@ -1,0 +1,6 @@
+* Reintegrate ffprobe error suppression into the ffmpeg.Probe function
+* Replace panics with proper error handling throughout the codebase.
+* Move ./dlna/dms somewhere more appropriate. It's moreof a DMS than a DLNADMS now.
+* Fix seeking for transcodes. Should be broken.
+* DMS handler path /icon should be /thumbnail, and /deviceIcon->/icon, or something like that.
+* Work around lack of ffmpegthumbnailer on Windows.
