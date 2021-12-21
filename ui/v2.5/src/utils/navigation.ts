@@ -18,6 +18,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
+import { PhashCriterion } from "src/models/list-filter/criteria/phash";
 
 function addExtraCriteria(
   dest: Criterion<CriterionValue>[],
@@ -270,6 +271,15 @@ const makeSceneMarkerUrl = (
   return `/scenes/${sceneMarker.scene.id}?t=${sceneMarker.seconds}`;
 };
 
+const makeScenesPHashMatchUrl = (phash: GQL.Maybe<string> | undefined) => {
+  if (!phash) return "#";
+  const filter = new ListFilterModel(GQL.FilterMode.Scenes);
+  const criterion = new PhashCriterion();
+  criterion.value = phash;
+  filter.criteria.push(criterion);
+  return `/scenes?${filter.makeQueryParameters()}`;
+};
+
 const makeGalleryImagesUrl = (
   gallery: Partial<GQL.GalleryDataFragment | GQL.SlimGalleryDataFragment>,
   extraCriteria?: Criterion<CriterionValue>[]
@@ -302,6 +312,7 @@ export default {
   makeTagPerformersUrl,
   makeTagGalleriesUrl,
   makeTagImagesUrl,
+  makeScenesPHashMatchUrl,
   makeSceneMarkerUrl,
   makeMovieScenesUrl,
   makeChildStudiosUrl,
