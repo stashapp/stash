@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Form, Button } from "react-bootstrap";
-import {
-  mutateMetadataGenerate,
-  useConfigureDefaults,
-} from "src/core/StashService";
-import { Modal, Icon, OperationButton } from "src/components/Shared";
+import { mutateMetadataGenerate } from "src/core/StashService";
+import { Modal, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ConfigurationContext } from "src/hooks/Config";
-// import { DirectorySelectionDialog } from "../Settings/SettingsTasksPanel/DirectorySelectionDialog";
 import { Manual } from "../Help/Manual";
 import { withoutTypename } from "src/utils";
 import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
@@ -25,7 +21,6 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
   onClose,
 }) => {
   const { configuration } = React.useContext(ConfigurationContext);
-  const [configureDefaults] = useConfigureDefaults();
 
   function getDefaultOptions(): GQL.GenerateMetadataInput {
     return {
@@ -45,10 +40,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     getDefaultOptions()
   );
   const [configRead, setConfigRead] = useState(false);
-  const [paths /* , setPaths */] = useState<string[]>([]);
   const [showManual, setShowManual] = useState(false);
-  // const [settingPaths, setSettingPaths] = useState(false);
-  const [savingDefaults, setSavingDefaults] = useState(false);
   const [animation, setAnimation] = useState(true);
 
   const intl = useIntl();
@@ -111,16 +103,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         </Form.Group>
       );
     }
-    const message = paths.length ? (
-      <div>
-        <FormattedMessage id="config.tasks.generate.generating_from_paths" />:
-        <ul>
-          {paths.map((p) => (
-            <li key={p}>{p}</li>
-          ))}
-        </ul>
-      </div>
-    ) : (
+    const message = (
       <span>
         <FormattedMessage
           id="config.tasks.generate.generating_scenes"
@@ -140,27 +123,12 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
       </span>
     );
 
-    // function onClick() {
-    //   setAnimation(false);
-    //   setSettingPaths(true);
-    // }
-
     return (
       <Form.Group className="dialog-selected-folders">
-        <div>
-          {message}
-          {/* <div>
-            <Button
-              title={intl.formatMessage({ id: "actions.select_folders" })}
-              onClick={() => onClick()}
-            >
-              <Icon icon="folder-open" />
-            </Button>
-          </div> */}
-        </div>
+        <div>{message}</div>
       </Form.Group>
     );
-  }, [selectedIds, intl, paths]);
+  }, [selectedIds, intl]);
 
   async function onGenerate() {
     try {
@@ -181,57 +149,10 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     }
   }
 
-  function makeDefaultGenerateInput() {
-    const ret = options;
-    // const { paths: _paths, ...withoutSpecifics } = ret;
-    const { overwrite: _overwrite, ...withoutSpecifics } = ret;
-    return withoutSpecifics;
-  }
-
   function onShowManual() {
     setAnimation(false);
     setShowManual(true);
   }
-
-  async function setAsDefault() {
-    try {
-      setSavingDefaults(true);
-      await configureDefaults({
-        variables: {
-          input: {
-            generate: makeDefaultGenerateInput(),
-          },
-        },
-      });
-
-      Toast.success({
-        content: intl.formatMessage(
-          { id: "config.tasks.defaults_set" },
-          { action: intl.formatMessage({ id: "actions.generate" }) }
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setSavingDefaults(false);
-    }
-  }
-
-  // if (settingPaths) {
-  //   return (
-  //     <DirectorySelectionDialog
-  //       animation={false}
-  //       allowEmpty
-  //       initialPaths={paths}
-  //       onClose={(p) => {
-  //         if (p) {
-  //           setPaths(p);
-  //         }
-  //         setSettingPaths(false);
-  //       }}
-  //     />
-  //   );
-  // }
 
   if (showManual) {
     return (
@@ -259,12 +180,6 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
         text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
-      disabled={savingDefaults}
-      footerButtons={
-        <OperationButton variant="secondary" operation={setAsDefault}>
-          <FormattedMessage id="actions.set_as_default" />
-        </OperationButton>
-      }
       leftFooterButtons={
         <Button
           title="Help"
@@ -278,7 +193,11 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
       <Form>
         {selectionStatus}
         <SettingSection>
-          <GenerateOptions options={options} setOptions={setOptions} />
+          <GenerateOptions
+            options={options}
+            setOptions={setOptions}
+            selection
+          />
         </SettingSection>
       </Form>
     </Modal>

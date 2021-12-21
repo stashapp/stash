@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import { debounce } from "lodash";
-import { LoadingIndicator } from "src/components/Shared";
+import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useDirectory } from "src/core/StashService";
 
 interface IProps {
@@ -69,7 +69,6 @@ export const FolderSelect: React.FC<IProps> = ({
 
   return (
     <>
-      {error ? <h1>{error.message}</h1> : ""}
       <InputGroup>
         <Form.Control
           placeholder="File path"
@@ -83,11 +82,18 @@ export const FolderSelect: React.FC<IProps> = ({
           <InputGroup.Append>{appendButton}</InputGroup.Append>
         ) : undefined}
         {!data || !data.directory || loading ? (
-          <InputGroup.Append>
-            <LoadingIndicator inline small message="" />
+          <InputGroup.Append className="align-self-center">
+            {loading ? (
+              <LoadingIndicator inline small message="" />
+            ) : (
+              <Icon icon="times" color="red" className="ml-3" />
+            )}
           </InputGroup.Append>
         ) : undefined}
       </InputGroup>
+      {error !== undefined && (
+        <h5 className="mt-4 text-break">Error: {error.message}</h5>
+      )}
       <ul className="folder-list">
         {topDirectory}
         {selectableDirectories.map((path) => {
