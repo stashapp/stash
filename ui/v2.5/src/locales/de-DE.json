@@ -95,7 +95,7 @@
       "import_warning": "Wollen Sie wirklich die Datenbank importieren? Dies wird die aktuelle Datenbank mit der importierten Datenbank überschreiben."
     },
     "temp_disable": "Vorübergehend deaktivieren…",
-    "temp_enable": "Vörübergehend aktivieren…",
+    "temp_enable": "Vorübergehend aktivieren…",
     "use_default": "Standard verwenden",
     "view_random": "Zeige Zufällige"
   },
