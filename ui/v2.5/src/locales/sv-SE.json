@@ -267,6 +267,10 @@
       "preview_generation": "Generera förhandsvisningar",
       "scraper_user_agent": "Användaragent för skrapning",
       "scraper_user_agent_desc": "Användaragent-sträng som används under http-förfrågningar under skrapning",
+      "scrapers_path": {
+        "description": "Mappsökväg till skraparnas konfigurationsfiler",
+        "heading": "Skraparnas sökväg"
+      },
       "scraping": "Skrapning",
       "sqlite_location": "Filsökväg för SQLite databasen (kräver omstart)",
       "video_ext_desc": "Kommaavgränsad lista av filändelser som kommer identifieras som videor.",
@@ -585,6 +589,8 @@
     },
     "overwrite_filter_confirm": "Är du säker på att du vill skriva över existerande sökning {entityName}?",
     "scene_gen": {
+      "force_transcodes": "Tvinga omkodning",
+      "force_transcodes_tooltip": "Som standard blir videofiler bara omkodade om formatet inte stöds i webbläsaren. Vid aktivering kommer alla videofiler bli omkodande, även om de antas vara stöttade i webbläsaren.",
       "image_previews": "Animerad Bildförhandsvisning",
       "image_previews_tooltip": "Animerade WebP-förhandsvisningar, krävs enbart om Typ av Förhandsvisning är Animerad Bild.",
       "interactive_heatmap_speed": "Generera värmekartor och hastigheter för interaktiva scener",
