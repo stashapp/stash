@@ -80,6 +80,7 @@
     "select_folders": "Seleziona cartelle",
     "select_none": "Deseleziona Tutto",
     "selective_auto_tag": "Tag Automatico Selettivo",
+    "selective_clean": "Pulizia Selettiva",
     "selective_scan": "Scansione Selettiva",
     "set_as_default": "Imposta come Predefinito",
     "set_back_image": "Immagine Retro…",
@@ -159,6 +160,7 @@
       "build_hash": "Hash della build:",
       "build_time": "Data della build:",
       "check_for_new_version": "Cerca nuova versione",
+      "latest_version": "Ultima Versione",
       "latest_version_build_hash": "Hash dell'ultima Versione:",
       "new_version_notice": "[NUOVA]",
       "stash_discord": "Unisciti al nostro canale {url}",
@@ -167,12 +169,19 @@
       "stash_wiki": "Pagina {url} di Stash",
       "version": "Versione"
     },
+    "application_paths": {
+      "heading": "Percorsi Applicazione"
+    },
     "categories": {
       "about": "Chi siamo",
       "interface": "Interfaccia",
       "logs": "Log",
+      "metadata_providers": "Provider dei Metadata",
       "plugins": "Plugin",
       "scraping": "Scraping",
+      "security": "Sicurezza",
+      "services": "Servizi",
+      "system": "Sistema",
       "tasks": "Attività",
       "tools": "Strumenti"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "Chiave API per sistemi esterni. Richiesta solo se nome untente/password sono configurati. Il nome utente dev'essere salvato prima di poter generare la chiave API.",
         "authentication": "Autenticazione",
         "clear_api_key": "Elimina chiave API",
+        "credentials": {
+          "description": "Credenziali per restringere l'accesso a Stash.",
+          "heading": "Credenziali"
+        },
         "generate_api_key": "Genera chiave API",
         "log_file": "File di Log",
         "log_file_desc": "Percorso al file di log. Vuoto per disabilitare log su file. Richiede riavvio.",
@@ -224,8 +237,6 @@
       "create_galleries_from_folders_label": "Crea gallerie dalle cartelle con immagini",
       "db_path_head": "Percorso del Database",
       "directory_locations_to_your_content": "Percorso della Cartella del tuo contenuto",
-      "exclude_image": "Escludi Immagini",
-      "exclude_video": "Escludi Video",
       "excluded_image_gallery_patterns_desc": "Espressioni Regolari di file/percorsi di immagini e gallerie per escluderle dalla Scansione e aggiungerle alla Pulizia",
       "excluded_image_gallery_patterns_head": "Schema Immagini/Gallerie Escluse",
       "excluded_video_patterns_desc": "Espressioni Regolari di file/percorsi di video per escluderli dalla Scansione e aggiungerli alla Pulizia",
@@ -256,11 +267,20 @@
       "preview_generation": "Creazione Anteprime",
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "Stringa User-Agent usata durante le richieste http scrape",
+      "scrapers_path": {
+        "description": "Cartella dei file di configurazione degli scraper",
+        "heading": "Percorso Scraper"
+      },
       "scraping": "Scraping",
       "sqlite_location": "Locazione del file per il database SQLite (richiede riavvio)",
       "video_ext_desc": "Lista di estensioni delimitate da Virgola che saranno identificate come video.",
       "video_ext_head": "Estensioni Video",
       "video_head": "Video"
+    },
+    "library": {
+      "exclusions": "Esclusioni",
+      "gallery_and_image_options": "Opzioni Galleria e Immagine",
+      "media_content_extensions": "Estensioni contenuto media"
     },
     "logs": {
       "log_level": "Livello di Log"
@@ -289,6 +309,9 @@
       "name": "Nome",
       "title": "Endpoint della Stash-box"
     },
+    "system": {
+      "transcoding": "Transcodificando"
+    },
     "tasks": {
       "added_job_to_queue": "Aggiunto/a {operation_name} alla coda lavori",
       "auto_tag": {
@@ -301,19 +324,24 @@
       "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
       "backup_database": "Esegue il backup del database nella stessa cartella del database, con il formato nome file {filename_format}",
       "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
+      "data_management": "Gestione dati",
       "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
       "dont_include_file_extension_as_part_of_the_title": "Non includere l'estensione file come parte del titolo",
+      "empty_queue": "Nessuna attività in esecuzione.",
       "export_to_json": "Esporta il contenuto del database in formato JSON nella cartella metadati.",
       "generate": {
         "generating_from_paths": "Creando per le scene dai seguenti percorsi",
         "generating_scenes": "Creando per {num} {scene}"
       },
       "generate_desc": "Crea i file di supporto immagini, sprite, video, vtt e altri file.",
-      "generate_phashes_during_scan": "Crea i phash durante la scansione (per deduplicazione e identificazione scene)",
-      "generate_previews_during_scan": "Crea le anteprime immagini durante la scansione (anteprime animate WebP, sono richieste solo se il Tipo Anteprima è impostato su Immagine Animata)",
-      "generate_sprites_during_scan": "Crea sprite durante la scansione (per lo scrubber scene)",
-      "generate_thumbnails_during_scan": "Crea thumbnail per le immagini durante la scansione.",
-      "generate_video_previews_during_scan": "Crea anteprime durante la scansione (anteprime video che si riproducono quando si muove il mouse su una scena)",
+      "generate_phashes_during_scan": "Crea i phash",
+      "generate_phashes_during_scan_tooltip": "Per deduplicazione e identificazione scena.",
+      "generate_previews_during_scan": "Crea le anteprime immagini animate",
+      "generate_previews_during_scan_tooltip": "Crea anteprime animate WebP, richiesto solo se Immagine Animata è selezionata come Tipo Anteprima.",
+      "generate_sprites_during_scan": "Crea gli sprite per lo scrubber",
+      "generate_thumbnails_during_scan": "Crea thumbnail per le immagini",
+      "generate_video_previews_during_scan": "Crea anteprime",
+      "generate_video_previews_during_scan_tooltip": "Crea anteprime video che vengono riprodotte quando si passa il mouse su una scena",
       "generated_content": "Contenuto Creato",
       "identify": {
         "and_create_missing": "e crea mancante",
@@ -348,7 +376,7 @@
         "scanning_paths": "Scansione dei seguenti percorsi"
       },
       "scan_for_content_desc": "Scansiona per cercare nuovo contenuto e lo aggiunge al database.",
-      "set_name_date_details_from_metadata_if_present": "Imposta il nome, data e dettagli dai metadati (se presenti)"
+      "set_name_date_details_from_metadata_if_present": "Imposta il nome, data e dettagli dai metadati"
     },
     "tools": {
       "scene_duplicate_checker": "Controllo Scene Duplicate",
@@ -370,6 +398,7 @@
       "scene_tools": "Strumenti Scena"
     },
     "ui": {
+      "basic_settings": "Opzioni Base",
       "custom_css": {
         "description": "La pagina dev'essere ricaricata per applicare i cambiamenti.",
         "heading": "CSS Personalizzato",
@@ -400,10 +429,11 @@
         "heading": "Funscript Offset (ms)"
       },
       "handy_connection_key": {
-        "description": "Chiave di connessione Handy per l'uso con scene interattive.",
+        "description": "Chiave di connessione Handy per l'uso con scene interattive. Impostare questa chiave permetterà a Stash di condividere le informazioni della scena attuale con handyfeeling.com",
         "heading": "Chiave Connessione Handy"
       },
       "images": {
+        "heading": "Immagini",
         "options": {
           "write_image_thumbnails": {
             "description": "Scrive gli thumbnail sul disco quando vengono creati al volo",
@@ -411,6 +441,7 @@
           }
         }
       },
+      "interactive_options": "Opzioni Interattive",
       "language": {
         "heading": "Lingua"
       },
@@ -558,16 +589,24 @@
     },
     "overwrite_filter_confirm": "Sei sicuro di voler sovrascrivere le esistenti query salvate {entityName}?",
     "scene_gen": {
-      "image_previews": "Anteprime Immagini (anteprime animate WebP, richieste solo se il Tipo di Anteprima è impostato su Immagine Animata)",
-      "marker_image_previews": "Anteprime Marcatori (anteprime animate WebP, richieste solo se il Tipo di Anteprima è impostato su Immagine Animata)",
-      "marker_screenshots": "Schermate Marcatori (immagini statiche JPG, richieste solo se il Tipo di Anteprima è impostato su Immagine Statica)",
-      "markers": "Marcatori (video di 20 secondi che iniziano a un tempo indicato)",
+      "force_transcodes": "Forza la creazione delle Transcodifiche",
+      "force_transcodes_tooltip": "Per standard, le transcodifiche vengono generate solamente quando il file video non è supportato dal browser. Quando abilitato, le transcodifiche verranno generate anche quando il file sembra essere supportato dal browser.",
+      "image_previews": "Anteprime Immagini Animate",
+      "image_previews_tooltip": "Anteprime Animate WebP, richiesto solamente se Immagine Animata è selezionata come Tipo Anteprima.",
+      "interactive_heatmap_speed": "Crea le mappe di calore e velocità per le scene interattive",
+      "marker_image_previews": "Marcatori Anteprime Immagini Animate",
+      "marker_image_previews_tooltip": "Anteprime marcatore animato WebP, richiesto solo se Immagine Animata è selezionata come Tipo Anteprima.",
+      "marker_screenshots": "Schermate Marcatori",
+      "marker_screenshots_tooltip": "Immagini marcatore statico JPG, richiesto solo se Immagine Statica è selezionata come Tipo Anteprima.",
+      "markers": "Anteprime Marcatori",
+      "markers_tooltip": "Video di 20 secondi che iniziano ad un determinato momento.",
       "overwrite": "Sovrascrive gli esistenti file creati",
       "phash": "Perceptual hashes/Hash Percettivo (per i duplicati)",
       "preview_exclude_end_time_desc": "Esclude gli ultimi x secondi dall'anteprima scena. Può essere un valore in secondi, o una percentuale (es. 2%) della lunghezza totale della scena.",
       "preview_exclude_end_time_head": "Esclude Tempo Finale",
       "preview_exclude_start_time_desc": "Esclude i primi x secondi dall'anteprima scena. Può essere un valore in secondi, o una percentuale (es. 2%) della lunghezza totale della scena.",
       "preview_exclude_start_time_head": "Esclude Tempo Iniziale",
+      "preview_generation_options": "Opzioni Creazione Anteprime",
       "preview_options": "Opzioni Anteprima",
       "preview_preset_desc": "Regola la dimensione, qualità e tempo di codifica della creazione delle anteprime. Impostazioni oltre 'lento' hanno rendimenti marginali e non sono raccomandati.",
       "preview_preset_head": "Impostazione codifica Anteprima",
@@ -575,9 +614,12 @@
       "preview_seg_count_head": "Numero di segmenti nell'anteprima",
       "preview_seg_duration_desc": "Lunghezza di ogni segmento anteprima, in secondi.",
       "preview_seg_duration_head": "Lunghezza segmento anteprima",
-      "sprites": "Sprites (per lo scrubber scena)",
-      "transcodes": "Transcodifiche (conversione MP4 di formati video non supportati)",
-      "video_previews": "Anteprime (anteprime video che vengono riprodotte quando si sposta il mouse sopra una scena)"
+      "sprites": "Sprites Scena Scrubber",
+      "sprites_tooltip": "Sprite (per lo scrubber delle scene)",
+      "transcodes": "Transcodifiche",
+      "transcodes_tooltip": "Conversioni in MP4 di formati video non supportati",
+      "video_previews": "Anteprime",
+      "video_previews_tooltip": "Anteprime video che vengono riprodotte quando si passa il mouse sopra una scena"
     },
     "scenes_found": "{count} scene trovate",
     "scrape_entity_query": "{entity_type} Richiesta Scrape",
@@ -662,6 +704,7 @@
   "include_sub_tags": "Include sotto-tags",
   "instagram": "Instagram",
   "interactive": "Interattivo",
+  "interactive_speed": "Velocità interattiva",
   "isMissing": "Manca di",
   "library": "Libreria",
   "loading": {
@@ -675,6 +718,7 @@
     "checksum": "Checksum",
     "downloaded_from": "Scaricato Da",
     "hash": "Hash",
+    "interactive_speed": "Velocità interattiva",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in questa scena"
@@ -849,6 +893,7 @@
   "up-dir": "Sali una cartella",
   "updated_at": "Aggiornato Al",
   "url": "URL",
+  "videos": "Video",
   "weight": "Peso",
   "years_old": "anni"
 }
