@@ -25,7 +25,7 @@ type SpriteGenerator struct {
 	VTTOutputPath   string
 	Rows            int
 	Columns         int
-	SlowSeek        bool // use alternate seek function, verly slow!
+	SlowSeek        bool // use alternate seek function, very slow!
 
 	Overwrite bool
 }
