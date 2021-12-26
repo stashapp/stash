@@ -38,6 +38,13 @@
     "generate": "Сгенерировать",
     "generate_thumb_default": "Сгенерировать миниатюру по умолчанию",
     "generate_thumb_from_current": "Сгенерировать миниатюру из текущей",
-    "hide": "Скрыть"
+    "hide": "Скрыть",
+    "identify": "Идентифицировать",
+    "ignore": "Игнорировать",
+    "import": "Импорт…",
+    "import_from_file": "Импорт из файла",
+    "merge": "Слияние",
+    "merge_from": "Слияние из",
+    "merge_into": "Слияние в"
   }
 }
