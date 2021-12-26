@@ -220,5 +220,16 @@
       "db_path_head": "Veritabanı Yolu",
       "directory_locations_to_your_content": "İçeriğiniz için dizin lokasyonları"
     }
-  }
+  },
+  "media_info": {
+    "downloaded_from": "İndirildiği Yer"
+  },
+  "metadata": "Üst Veri",
+  "name": "İsim",
+  "new": "Yeni",
+  "none": "Hiçbiri",
+  "up-dir": "Bir dizin üste çık",
+  "updated_at": "Güncellenme Zamanı",
+  "url": "URL",
+  "videos": "Videolar"
 }
