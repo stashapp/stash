@@ -303,14 +303,17 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   function maybeRenderSetDefaultButton() {
     if (persistState === PersistanceLevel.ALL) {
       return (
+        <span>
         <Button
           className="set-as-default-button"
-          variant="secondary"
+          variant="primary"
           size="sm"
           onClick={() => onSetDefaultFilter()}
         >
-          {intl.formatMessage({ id: "actions.set_as_default" })}
+          {intl.formatMessage({ id: "actions.save_default_saved_filter" })}
         </Button>
+        <hr />
+        </span>
       );
     }
   }
@@ -319,6 +322,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     <div>
       {maybeRenderDeleteAlert()}
       {maybeRenderOverwriteAlert()}
+      {maybeRenderSetDefaultButton()}
       <InputGroup>
         <FormControl
           className="bg-secondary text-white border-secondary"
@@ -350,7 +354,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         </InputGroup.Append>
       </InputGroup>
       {renderSavedFilters()}
-      {maybeRenderSetDefaultButton()}
     </div>
   );
 };

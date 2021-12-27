@@ -220,7 +220,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                   }
                 >
                   <Dropdown.Toggle variant="secondary">
-                    <Icon icon="bookmark" />
+                    <Icon icon="save" />
                   </Dropdown.Toggle>
                 </OverlayTrigger>
                 <Dropdown.Menu

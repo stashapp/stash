@@ -59,7 +59,8 @@ input[type="range"].zoom-slider {
   width: 300px;
 
   .set-as-default-button {
-    float: right;
+    display: block;
+    margin: auto;
   }
 
   .LoadingIndicator {
