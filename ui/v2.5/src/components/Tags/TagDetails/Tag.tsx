@@ -303,7 +303,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "scenes" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {(tag.scene_count)?.toLocaleString()}
+                    {tag.scene_count?.toLocaleString()}
                   </Badge>
                 </React.Fragment>
               }
@@ -316,7 +316,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "images" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {(tag.image_count)?.toLocaleString()}
+                    {tag.image_count?.toLocaleString()}
                   </Badge>
                 </React.Fragment>
               }
@@ -329,7 +329,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "galleries" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {(tag.gallery_count)?.toLocaleString()}
+                    {tag.gallery_count?.toLocaleString()}
                   </Badge>
                 </React.Fragment>
               }
@@ -342,7 +342,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "markers" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {(tag.scene_marker_count)?.toLocaleString()}
+                    {tag.scene_marker_count?.toLocaleString()}
                   </Badge>
                 </React.Fragment>
               }
@@ -355,7 +355,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "performers" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {(tag.performer_count)?.toLocaleString()}
+                    {tag.performer_count?.toLocaleString()}
                   </Badge>
                 </React.Fragment>
               }
