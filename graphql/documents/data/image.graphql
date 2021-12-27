@@ -6,6 +6,8 @@ fragment ImageData on Image {
   organized
   o_counter
   path
+  created_at
+  updated_at
 
   file {
     size

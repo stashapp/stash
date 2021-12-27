@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import { NavUtils, TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface ISceneFileInfoPanelProps {
@@ -104,11 +104,14 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         value={props.scene.checksum}
         truncate
       />
-      <TextField
+      <URLField
         id="media_info.phash"
         abbr="Perceptual hash"
         value={props.scene.phash}
+        url={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)}
+        target="_self"
         truncate
+        trusted
       />
       <URLField
         id="path"
