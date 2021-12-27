@@ -9,14 +9,20 @@ export interface IVRButtonProps {
 }
 
 export const VRButton: React.FC<IVRButtonProps> = ({ scene }) => {
+  const isAndroid = /(android)/i.test(navigator.userAgent);
   const config = React.useContext(ConfigurationContext);
   const { paths } = scene;
 
-  if (!paths || !paths.deovr || !window.isSecureContext) {
+  if (!paths || !paths.deovr) {
     return <span />;
   }
 
-  if (config.configuration?.interface.showSceneDeoVRButton) {
+  // Android's DeoVR app requires https.
+  if (isAndroid && !window.isSecureContext) {
+    return <span />;
+  }
+
+  if (!config.configuration?.interface.showSceneDeoVRButton) {
     return <span />;
   }
 

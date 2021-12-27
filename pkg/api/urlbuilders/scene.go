@@ -68,12 +68,14 @@ func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }
 
-func (b SceneURLBuilder) GetDeoVRURL() string {
+func (b SceneURLBuilder) GetDeoVRURL(useDeoVRProto bool) string {
 	addr, err := url.Parse(b.BaseURL + "/scene/" + b.SceneID + "/deovr.json")
 	if err != nil {
 		return ""
 	}
-	addr.Scheme = "deovr"
+	if useDeoVRProto {
+		addr.Scheme = "deovr"
+	}
 	return addr.String()
 }
 

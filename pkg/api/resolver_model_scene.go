@@ -97,7 +97,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
-	deoVRPath := builder.GetDeoVRURL()
+	deoVRPath := builder.GetDeoVRURL(true)
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &models.ScenePathsType{

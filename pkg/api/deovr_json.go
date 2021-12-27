@@ -79,18 +79,23 @@ func getEverySceneJSON(ctx context.Context) []byte {
 			VideoLength:  uint(sceneModel.Duration.Float64),
 			ThumbnailURL: builder.GetScreenshotURL(sceneModel.UpdatedAt.Timestamp),
 			VideoPreview: builder.GetStreamPreviewURL(),
-			VideoJsonURL: builder.GetDeoVRURL(),
+			VideoJsonURL: builder.GetDeoVRURL(false),
 		})
 	}
 
 	library := SceneLibrary{
-		Name: "Scenes",
+		Name: "Library",
 		List: list,
 	}
+	libraries := []SceneLibrary{library}
 
-	jsonBytes, err := json.Marshal(library)
+	response := MultipleVideoJsonResponse{
+		Scenes: libraries,
+	}
+
+	jsonBytes, err := json.Marshal(response)
 	if err != nil {
-		logger.Errorf("Could not marshal JSON for deoVR library: %s", err.Error())
+		logger.Errorf("Could not marshal JSON for deoVR all scenes: %s", err.Error())
 	}
 	return jsonBytes
 }
