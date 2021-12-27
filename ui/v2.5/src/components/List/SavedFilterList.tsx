@@ -304,15 +304,15 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     if (persistState === PersistanceLevel.ALL) {
       return (
         <span>
-        <Button
-          className="set-as-default-button"
-          variant="primary"
-          size="sm"
-          onClick={() => onSetDefaultFilter()}
-        >
-          {intl.formatMessage({ id: "actions.save_default_saved_filter" })}
-        </Button>
-        <hr />
+          <Button
+            className="set-as-default-button"
+            variant="primary"
+            size="sm"
+            onClick={() => onSetDefaultFilter()}
+          >
+            {intl.formatMessage({ id: "actions.save_default_saved_filter" })}
+          </Button>
+          <hr />
         </span>
       );
     }
