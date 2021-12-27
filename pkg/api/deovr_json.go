@@ -55,7 +55,10 @@ func getEverySceneJSON(ctx context.Context) []byte {
 	txnManager := manager.GetInstance().TxnManager
 	var scenes []*models.Scene
 	err = txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		scenes, err = scene.Query(r.Scene(), &models.SceneFilterType{}, &models.FindFilterType{})
+		pageSize := -1
+		scenes, err = scene.Query(r.Scene(), &models.SceneFilterType{}, &models.FindFilterType{
+			PerPage: &pageSize,
+		})
 		if err != nil {
 			logger.Errorf("Could not retrieve scene list: %s", err.Error())
 			return err

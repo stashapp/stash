@@ -110,6 +110,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	wallPlayback := config.GetWallPlayback()
 	noBrowser := config.GetNoBrowser()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
+	showSceneDeoVRButton := config.GetShowSceneDeoVRButton()
 	autostartVideo := config.GetAutostartVideo()
 	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
 	continuePlaylistDefault := config.GetContinuePlaylistDefault()
@@ -131,6 +132,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		WallPlayback:                 &wallPlayback,
 		MaximumLoopDuration:          &maximumLoopDuration,
 		NoBrowser:                    &noBrowser,
+		ShowSceneDeoVRButton:         &showSceneDeoVRButton,
 		AutostartVideo:               &autostartVideo,
 		ShowStudioAsText:             &showStudioAsText,
 		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,

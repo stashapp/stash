@@ -54,6 +54,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallPlayback
   maximumLoopDuration
   noBrowser
+  showSceneDeoVRButton
   autostartVideo
   autostartVideoOnPlaySelected
   continuePlaylistDefault

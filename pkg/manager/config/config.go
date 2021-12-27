@@ -124,8 +124,10 @@ const (
 	WallShowTitle        = "wall_show_title"
 	defaultWallShowTitle = true
 
-	CustomPerformerImageLocation        = "custom_performer_image_location"
-	MaximumLoopDuration                 = "maximum_loop_duration"
+	CustomPerformerImageLocation = "custom_performer_image_location"
+	MaximumLoopDuration          = "maximum_loop_duration"
+
+	ShowSceneDeoVRButton                = "show_scene_deovr_button"
 	AutostartVideo                      = "autostart_video"
 	AutostartVideoOnPlaySelected        = "autostart_video_on_play_selected"
 	autostartVideoOnPlaySelectedDefault = true
@@ -822,6 +824,10 @@ func (i *Instance) GetWallPlayback() string {
 
 func (i *Instance) GetMaximumLoopDuration() int {
 	return i.getInt(MaximumLoopDuration)
+}
+
+func (i *Instance) GetShowSceneDeoVRButton() bool {
+	return i.getBool(ShowSceneDeoVRButton)
 }
 
 func (i *Instance) GetAutostartVideo() bool {

@@ -306,6 +306,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}
 
+	setBool(config.ShowSceneDeoVRButton, input.ShowSceneDeoVRButton)
 	setBool(config.AutostartVideo, input.AutostartVideo)
 	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
 	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
