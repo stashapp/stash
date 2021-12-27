@@ -192,7 +192,6 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 func (rs sceneRoutes) DeoVRJSON(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	_, err := w.Write(getSingleSceneJSON(r.Context(), scene))
 	if err != nil {

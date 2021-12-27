@@ -6,7 +6,9 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type MultipleVideoJsonResponse struct {
@@ -20,7 +22,7 @@ type SceneLibrary struct {
 
 type SlimDeoScene struct {
 	Title        string `json:"title"`
-	VideoLength  int    `json:"videoLength"`
+	VideoLength  uint   `json:"videoLength"`
 	ThumbnailURL string `json:"thumbnailUrl"`
 	VideoJsonURL string `json:"video_url"`
 	VideoPreview string `json:"videoPreview,omitempty"`
@@ -44,8 +46,50 @@ type DeoSceneEncoding struct {
 }
 
 type DeoSceneVideoSource struct {
-	Resolution int    `json:"resolution"`
+	Resolution uint   `json:"resolution"`
 	URL        string `json:"url"`
+}
+
+func getEverySceneJSON(ctx context.Context) []byte {
+	var err error
+	txnManager := manager.GetInstance().TxnManager
+	var scenes []*models.Scene
+	err = txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		scenes, err = scene.Query(r.Scene(), &models.SceneFilterType{}, &models.FindFilterType{})
+		if err != nil {
+			logger.Errorf("Could not retrieve scene list: %s", err.Error())
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil
+	}
+
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	var list []SlimDeoScene
+	for _, sceneModel := range scenes {
+		builder := urlbuilders.NewSceneURLBuilder(baseURL, sceneModel.ID)
+
+		list = append(list, SlimDeoScene{
+			Title:        sceneModel.GetTitle(),
+			VideoLength:  uint(sceneModel.Duration.Float64),
+			ThumbnailURL: builder.GetScreenshotURL(sceneModel.UpdatedAt.Timestamp),
+			VideoPreview: builder.GetStreamPreviewURL(),
+			VideoJsonURL: builder.GetDeoVRURL(),
+		})
+	}
+
+	library := SceneLibrary{
+		Name: "Scenes",
+		List: list,
+	}
+
+	jsonBytes, err := json.Marshal(library)
+	if err != nil {
+		logger.Errorf("Could not marshal JSON for deoVR library: %s", err.Error())
+	}
+	return jsonBytes
 }
 
 func getSingleSceneJSON(ctx context.Context, sceneModel *models.Scene) []byte {
@@ -53,7 +97,7 @@ func getSingleSceneJSON(ctx context.Context, sceneModel *models.Scene) []byte {
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, sceneModel.ID)
 
 	videoSource := DeoSceneVideoSource{
-		Resolution: int(sceneModel.Height.Int64),
+		Resolution: uint(sceneModel.Height.Int64),
 		URL:        builder.GetStreamURL(),
 	}
 

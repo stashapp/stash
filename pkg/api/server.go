@@ -132,6 +132,14 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 
+	r.HandleFunc("/deovr", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write(getEverySceneJSON(r.Context()))
+		if err != nil {
+			logger.Warnf("Error writing deovr library json: %s", err.Error())
+		}
+	})
+
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")
 		if !c.GetCSSEnabled() {
