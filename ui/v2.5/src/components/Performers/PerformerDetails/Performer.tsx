@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Tabs, Tab } from "react-bootstrap";
+import { Button, Tabs, Tab, Badge } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -147,16 +147,56 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
         <PerformerDetailsPanel performer={performer} />
       </Tab>
-      <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+      <Tab
+        eventKey="scenes"
+        title={
+          <React.Fragment>
+            {intl.formatMessage({ id: "scenes" })}
+            <Badge className="left-spacing" pill variant="secondary">
+              {performer.scene_count}
+            </Badge>
+          </React.Fragment>
+        }
+      >
         <PerformerScenesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="galleries" title={intl.formatMessage({ id: "galleries" })}>
+      <Tab
+        eventKey="galleries"
+        title={
+          <React.Fragment>
+            {intl.formatMessage({ id: "galleries" })}
+            <Badge className="left-spacing" pill variant="secondary">
+              {performer.gallery_count}
+            </Badge>
+          </React.Fragment>
+        }
+      >
         <PerformerGalleriesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+      <Tab
+        eventKey="images"
+        title={
+          <React.Fragment>
+            {intl.formatMessage({ id: "images" })}
+            <Badge className="left-spacing" pill variant="secondary">
+              {performer.image_count}
+            </Badge>
+          </React.Fragment>
+        }
+      >
         <PerformerImagesPanel performer={performer} />
       </Tab>
-      <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+      <Tab
+        eventKey="movies"
+        title={
+          <React.Fragment>
+            {intl.formatMessage({ id: "movies" })}
+            <Badge className="left-spacing" pill variant="secondary">
+              {performer.movie_count}
+            </Badge>
+          </React.Fragment>
+        }
+      >
         <PerformerMoviesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title={intl.formatMessage({ id: "actions.edit" })}>
