@@ -121,6 +121,9 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
 
+	// FIXME - misnamed output field means we have redundant fields
+	disableDropdownCreate := config.GetDisableDropdownCreate()
+
 	return &models.ConfigInterfaceResult{
 		MenuItems:                    menuItems,
 		SoundOnPreview:               &soundOnPreview,
@@ -136,9 +139,13 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSSEnabled:                   &cssEnabled,
 		Language:                     &language,
 		SlideshowDelay:               &slideshowDelay,
-		DisabledDropdownCreate:       config.GetDisableDropdownCreate(),
-		HandyKey:                     &handyKey,
-		FunscriptOffset:              &scriptOffset,
+
+		// FIXME - see above
+		DisabledDropdownCreate: disableDropdownCreate,
+		DisableDropdownCreate:  disableDropdownCreate,
+
+		HandyKey:        &handyKey,
+		FunscriptOffset: &scriptOffset,
 	}
 }
 
@@ -174,6 +181,9 @@ func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 
 	return &models.ConfigDefaultSettingsResult{
 		Identify:        config.GetDefaultIdentifySettings(),
+		Scan:            config.GetDefaultScanSettings(),
+		AutoTag:         config.GetDefaultAutoTagSettings(),
+		Generate:        config.GetDefaultGenerateSettings(),
 		DeleteFile:      &deleteFileDefault,
 		DeleteGenerated: &deleteGeneratedDefault,
 	}

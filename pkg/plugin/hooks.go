@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -40,6 +41,7 @@ const (
 
 	TagCreatePost  HookTriggerEnum = "Tag.Create.Post"
 	TagUpdatePost  HookTriggerEnum = "Tag.Update.Post"
+	TagMergePost   HookTriggerEnum = "Tag.Merge.Post"
 	TagDestroyPost HookTriggerEnum = "Tag.Destroy.Post"
 )
 
@@ -74,6 +76,7 @@ var AllHookTriggerEnum = []HookTriggerEnum{
 
 	TagCreatePost,
 	TagUpdatePost,
+	TagMergePost,
 	TagDestroyPost,
 }
 
@@ -122,4 +125,37 @@ func (e HookTriggerEnum) String() string {
 
 func addHookContext(argsMap common.ArgsMap, hookContext common.HookContext) {
 	argsMap[common.HookContextKey] = hookContext
+}
+
+// types for destroy hooks, to provide a little more information
+type SceneDestroyInput struct {
+	models.SceneDestroyInput
+	Checksum string `json:"checksum"`
+	OSHash   string `json:"oshash"`
+	Path     string `json:"path"`
+}
+
+type ScenesDestroyInput struct {
+	models.ScenesDestroyInput
+	Checksum string `json:"checksum"`
+	OSHash   string `json:"oshash"`
+	Path     string `json:"path"`
+}
+
+type GalleryDestroyInput struct {
+	models.GalleryDestroyInput
+	Checksum string `json:"checksum"`
+	Path     string `json:"path"`
+}
+
+type ImageDestroyInput struct {
+	models.ImageDestroyInput
+	Checksum string `json:"checksum"`
+	Path     string `json:"path"`
+}
+
+type ImagesDestroyInput struct {
+	models.ImagesDestroyInput
+	Checksum string `json:"checksum"`
+	Path     string `json:"path"`
 }

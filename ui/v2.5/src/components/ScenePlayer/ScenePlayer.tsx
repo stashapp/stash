@@ -7,6 +7,24 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { Interactive } from "../../utils/interactive";
 
+/*
+fast-forward svg derived from https://github.com/jwplayer/jwplayer/blob/master/src/assets/SVG/rewind-10.svg
+Flipped horizontally, then flipped '10' numerals horizontally.
+
+Creative Common License: https://github.com/jwplayer/jwplayer/blob/master/LICENSE
+*/
+const ffSVG = `
+<svg xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-rewind" viewBox="0 0 240 240" focusable="false">
+  <path d="M185,135.6c-3.7-6.3-10.4-10.3-17.7-10.6c-7.3,0.3-14,4.3-17.7,10.6c-8.6,14.2-8.6,32.1,0,46.3c3.7,6.3,10.4,10.3,17.7,10.6
+  c7.3-0.3,14-4.3,17.7-10.6C193.6,167.6,193.6,149.8,185,135.6z M167.3,182.8c-7.8,0-14.4-11-14.4-24.1s6.6-24.1,14.4-24.1
+  s14.4,11,14.4,24.1S175.2,182.8,167.3,182.8z M123.9,192.5v-51l-4.8,4.8l-6.8-6.8l13-13c1.9-1.9,4.9-1.9,6.8,0
+  c0.9,0.9,1.4,2.1,1.4,3.4v62.7L123.9,192.5z M22.7,57.4h130.1V38.1c0-5.3,3.6-7.2,8-4.3l41.8,27.9c1.2,0.6,2.1,1.5,2.7,2.7
+  c1.4,3,0.2,6.5-2.7,8l-41.8,27.9c-4.4,2.9-8,1-8-4.3V76.7H37.1v96.4h48.2v19.3H22.6c-2.6,0-4.8-2.2-4.8-4.8V62.3
+  C17.8,59.6,20,57.4,22.7,57.4z">
+  </path>
+</svg>
+`;
+
 interface IScenePlayerProps {
   className?: string;
   scene: GQL.SceneDataFragment;
@@ -98,8 +116,58 @@ export class ScenePlayerImpl extends React.Component<
     }
   }
 
+  private addForwardButton() {
+    // add forward button: https://github.com/jwplayer/jwplayer/issues/3894
+    const playerContainer = document.querySelector(
+      `#${JWUtils.playerID}`
+    ) as HTMLElement;
+
+    // display icon
+    const rewindContainer = playerContainer.querySelector(
+      ".jw-display-icon-rewind"
+    ) as HTMLElement;
+    const forwardContainer = rewindContainer.cloneNode(true) as HTMLElement;
+    const forwardDisplayButton = forwardContainer.querySelector(
+      ".jw-icon-rewind"
+    ) as HTMLElement;
+    forwardDisplayButton.innerHTML = ffSVG;
+    forwardDisplayButton.ariaLabel = "Forward 10 Seconds";
+    const nextContainer = playerContainer.querySelector(
+      ".jw-display-icon-next"
+    ) as HTMLElement;
+    (nextContainer.parentNode as HTMLElement).insertBefore(
+      forwardContainer,
+      nextContainer
+    );
+
+    // control bar icon
+    const buttonContainer = playerContainer.querySelector(
+      ".jw-button-container"
+    ) as HTMLElement;
+    const rewindControlBarButton = buttonContainer.querySelector(
+      ".jw-icon-rewind"
+    ) as HTMLElement;
+    const forwardControlBarButton = rewindControlBarButton.cloneNode(
+      true
+    ) as HTMLElement;
+    forwardControlBarButton.innerHTML = ffSVG;
+    forwardControlBarButton.ariaLabel = "Forward 10 Seconds";
+    (rewindControlBarButton.parentNode as HTMLElement).insertBefore(
+      forwardControlBarButton,
+      rewindControlBarButton.nextElementSibling
+    );
+
+    // add onclick handlers
+    [forwardDisplayButton, forwardControlBarButton].forEach((button) => {
+      button.onclick = () => {
+        this.player.seek(this.player.getPosition() + 10);
+      };
+    });
+  }
+
   private onReady() {
     this.player = JWUtils.getPlayer();
+    this.addForwardButton();
 
     this.player.on("error", (err: any) => {
       if (err && err.code === 224003) {
@@ -150,6 +218,8 @@ export class ScenePlayerImpl extends React.Component<
         this.props.scene.paths.funscript || ""
       );
     }
+
+    this.player.getContainer().focus();
   }
 
   private onSeeked() {

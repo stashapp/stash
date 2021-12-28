@@ -125,6 +125,7 @@ The following operations are supported:
 * `Create`
 * `Update`
 * `Destroy`
+* `Merge` (for `Tag` only)
 
 Currently, only `Post` hook types are supported. These are executed after the operation has completed and the transaction is committed.
 

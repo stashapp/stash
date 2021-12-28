@@ -737,16 +737,14 @@ export const useTagsMerge = () =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
-export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
+export const useConfigureGeneral = () =>
   GQL.useConfigureGeneralMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
-export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
+export const useConfigureInterface = () =>
   GQL.useConfigureInterfaceMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
@@ -781,9 +779,8 @@ export const useRemoveTempDLNAIP = () => GQL.useRemoveTempDlnaipMutation();
 
 export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
 
-export const useConfigureScraping = (input: GQL.ConfigScrapingInput) =>
+export const useConfigureScraping = () =>
   GQL.useConfigureScrapingMutation({
-    variables: { input },
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
@@ -820,15 +817,6 @@ export const mutateStopJob = (jobID: string) =>
 export const useDLNAStatus = () =>
   GQL.useDlnaStatusQuery({
     fetchPolicy: "no-cache",
-  });
-
-export const queryScrapeFreeones = (performerName: string) =>
-  client.query<GQL.ScrapeFreeonesQuery>({
-    query: GQL.ScrapeFreeonesDocument,
-    variables: {
-      performer_name: performerName,
-    },
-    fetchPolicy: "network-only",
   });
 
 export const queryScrapePerformer = (

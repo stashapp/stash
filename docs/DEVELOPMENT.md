@@ -24,22 +24,22 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 ### macOS
 
-TODO
-
+1. If you don't have it already, install the [Homebrew package manager](https://brew.sh).
+2. Install dependencies: `brew install go git yarn gcc make`
 
 ## Commands
 
-* `make generate` - Generate Go and UI GraphQL files
-* `make build` - Builds the binary (make sure to build the UI as well... see below)
-* `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
 * `make pre-ui` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
+* `make generate` - Generate Go and UI GraphQL files
 * `make fmt-ui` - Formats the UI source code
 * `make ui` - Builds the frontend
+* `make build` - Builds the binary (make sure to build the UI as well... see below)
+* `make docker-build` - Locally builds and tags a complete 'stash/build' docker image
 * `make lint` - Run the linter on the backend
 * `make fmt` - Run `go fmt`
 * `make it` - Run the unit and integration tests
 * `make validate` - Run all of the tests and checks required to submit a PR
-* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash port can be changed from the default of `9999` with environment variable `REACT_APP_PLATFORM_PORT`.
+* `make ui-start` - Runs the UI in development mode. Requires a running stash server to connect to. Stash server port can be changed from the default of `9999` using environment variable `VITE_APP_PLATFORM_PORT`. UI runs on port `3000` or the next available port.
 
 ## Building a release
 

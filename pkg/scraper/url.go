@@ -99,8 +99,6 @@ func urlFromCDP(ctx context.Context, url string, driverOptions scraperDriverOpti
 		sleepDuration = time.Duration(driverOptions.Sleep) * time.Second
 	}
 
-	act := context.TODO()
-
 	// if scraperCDPPath is a remote address, then allocate accordingly
 	cdpPath := globalConfig.GetScraperCDPPath()
 	if cdpPath != "" {
@@ -118,7 +116,7 @@ func urlFromCDP(ctx context.Context, url string, driverOptions scraperDriverOpti
 				}
 			}
 
-			act, cancelAct = chromedp.NewRemoteAllocator(act, remote)
+			ctx, cancelAct = chromedp.NewRemoteAllocator(ctx, remote)
 		} else {
 			// use a temporary user directory for chrome
 			dir, err := os.MkdirTemp("", "stash-chromedp")
@@ -131,13 +129,13 @@ func urlFromCDP(ctx context.Context, url string, driverOptions scraperDriverOpti
 				chromedp.UserDataDir(dir),
 				chromedp.ExecPath(cdpPath),
 			)
-			act, cancelAct = chromedp.NewExecAllocator(act, opts...)
+			ctx, cancelAct = chromedp.NewExecAllocator(ctx, opts...)
 		}
 
 		defer cancelAct()
 	}
 
-	ctx, cancel := chromedp.NewContext(act)
+	ctx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
 
 	// add a fixed timeout for the http request

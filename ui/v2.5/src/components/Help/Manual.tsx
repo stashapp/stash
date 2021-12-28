@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, PropsWithChildren, useEffect } from "react";
 import { Modal, Container, Row, Col, Nav, Tab } from "react-bootstrap";
 import Introduction from "src/docs/en/Introduction.md";
 import Tasks from "src/docs/en/Tasks.md";
@@ -20,6 +20,7 @@ import Help from "src/docs/en/Help.md";
 import Deduplication from "src/docs/en/Deduplication.md";
 import Interactive from "src/docs/en/Interactive.md";
 import Identify from "src/docs/en/Identify.md";
+import Browsing from "src/docs/en/Browsing.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
@@ -79,6 +80,11 @@ export const Manual: React.FC<IManualProps> = ({
       title: "JSON Specification",
       content: JSONSpec,
       className: "indent-1",
+    },
+    {
+      key: "Browsing.md",
+      title: "Browsing",
+      content: Browsing,
     },
     {
       key: "Galleries.md",
@@ -149,6 +155,12 @@ export const Manual: React.FC<IManualProps> = ({
     defaultActiveTab ?? content[0].key
   );
 
+  useEffect(() => {
+    if (defaultActiveTab) {
+      setActiveTab(defaultActiveTab);
+    }
+  }, [defaultActiveTab]);
+
   // links to other manual pages are specified as "/help/page.md"
   // intercept clicks to these pages and set the tab accordingly
   function interceptLinkClick(
@@ -218,5 +230,65 @@ export const Manual: React.FC<IManualProps> = ({
         </Container>
       </Modal.Body>
     </Modal>
+  );
+};
+
+interface IManualContextState {
+  openManual: (tab?: string) => void;
+}
+
+export const ManualStateContext = React.createContext<IManualContextState>({
+  openManual: () => {},
+});
+
+export const ManualProvider: React.FC = ({ children }) => {
+  const [showManual, setShowManual] = useState(false);
+  const [manualLink, setManualLink] = useState<string | undefined>();
+
+  function openManual(tab?: string) {
+    setManualLink(tab);
+    setShowManual(true);
+  }
+
+  useEffect(() => {
+    if (manualLink) setManualLink(undefined);
+  }, [manualLink]);
+
+  return (
+    <ManualStateContext.Provider
+      value={{
+        openManual,
+      }}
+    >
+      <Manual
+        show={showManual}
+        onClose={() => setShowManual(false)}
+        defaultActiveTab={manualLink}
+      />
+      {children}
+    </ManualStateContext.Provider>
+  );
+};
+
+interface IManualLink {
+  tab: string;
+}
+
+export const ManualLink: React.FC<PropsWithChildren<IManualLink>> = ({
+  tab,
+  children,
+}) => {
+  const { openManual } = React.useContext(ManualStateContext);
+
+  return (
+    <a
+      href={`/help/${tab}.md`}
+      onClick={(e) => {
+        openManual(`${tab}.md`);
+        e.preventDefault();
+      }}
+    >
+      {children}
+    </a>
   );
 };

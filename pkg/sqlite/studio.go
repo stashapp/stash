@@ -244,9 +244,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 		query.join(studioAliasesTable, "", "studio_aliases.studio_id = studios.id")
 		searchColumns := []string{"studios.name", "studio_aliases.alias"}
 
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(studioFilter); err != nil {
@@ -280,7 +278,7 @@ func studioIsMissingCriterionHandler(qb *studioQueryBuilder, isMissing *string) 
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
-				f.addJoin("studios_image", "", "studios_image.studio_id = studios.id")
+				f.addLeftJoin("studios_image", "", "studios_image.studio_id = studios.id")
 				f.addWhere("studios_image.studio_id IS NULL")
 			case "stash_id":
 				qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
@@ -295,7 +293,7 @@ func studioIsMissingCriterionHandler(qb *studioQueryBuilder, isMissing *string) 
 func studioSceneCountCriterionHandler(qb *studioQueryBuilder, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if sceneCount != nil {
-			f.addJoin("scenes", "", "scenes.studio_id = studios.id")
+			f.addLeftJoin("scenes", "", "scenes.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct scenes.id)", *sceneCount)
 
 			f.addHaving(clause, args...)
@@ -306,7 +304,7 @@ func studioSceneCountCriterionHandler(qb *studioQueryBuilder, sceneCount *models
 func studioImageCountCriterionHandler(qb *studioQueryBuilder, imageCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if imageCount != nil {
-			f.addJoin("images", "", "images.studio_id = studios.id")
+			f.addLeftJoin("images", "", "images.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct images.id)", *imageCount)
 
 			f.addHaving(clause, args...)
@@ -317,7 +315,7 @@ func studioImageCountCriterionHandler(qb *studioQueryBuilder, imageCount *models
 func studioGalleryCountCriterionHandler(qb *studioQueryBuilder, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if galleryCount != nil {
-			f.addJoin("galleries", "", "galleries.studio_id = studios.id")
+			f.addLeftJoin("galleries", "", "galleries.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct galleries.id)", *galleryCount)
 
 			f.addHaving(clause, args...)
@@ -327,7 +325,7 @@ func studioGalleryCountCriterionHandler(qb *studioQueryBuilder, galleryCount *mo
 
 func studioParentCriterionHandler(qb *studioQueryBuilder, parents *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		f.addJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
+		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
 	}
 	h := multiCriterionHandlerBuilder{
 		primaryTable: studioTable,

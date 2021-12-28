@@ -276,6 +276,9 @@ func (s *singleton) RefreshConfig() {
 		if err := utils.EnsureDir(s.Paths.Generated.Downloads); err != nil {
 			logger.Warnf("could not create directory for Downloads: %v", err)
 		}
+		if err := utils.EnsureDir(s.Paths.Generated.InteractiveHeatmap); err != nil {
+			logger.Warnf("could not create directory for Interactive Heatmaps: %v", err)
+		}
 	}
 }
 

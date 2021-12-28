@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import {
   mutateMetadataIdentify,
   useConfiguration,
   useConfigureDefaults,
   useListSceneScrapers,
 } from "src/core/StashService";
-import { Icon, Modal } from "src/components/Shared";
+import { Icon, Modal, OperationButton } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -15,7 +15,7 @@ import {
   SCRAPER_PREFIX,
   STASH_BOX_PREFIX,
 } from "src/components/Tagger/constants";
-import { DirectorySelectionDialog } from "src/components/Settings/SettingsTasksPanel/DirectorySelectionDialog";
+import { DirectorySelectionDialog } from "src/components/Settings/Tasks/DirectorySelectionDialog";
 import { Manual } from "src/components/Help/Manual";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
@@ -159,7 +159,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     }
 
     return (
-      <Form.Group id="selected-identify-folders">
+      <Form.Group className="dialog-selected-folders">
         <div>
           {message}
           <div>
@@ -346,6 +346,13 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
           },
         },
       });
+
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.defaults_set" },
+          { action: intl.formatMessage({ id: "actions.identify" }) }
+        ),
+      });
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -409,16 +416,13 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
       }}
       disabled={editingField || savingDefaults || sources.length === 0}
       footerButtons={
-        <Button
+        <OperationButton
           variant="secondary"
           disabled={editingField || savingDefaults}
-          onClick={() => setAsDefault()}
+          operation={setAsDefault}
         >
-          {savingDefaults && (
-            <Spinner animation="border" role="status" size="sm" />
-          )}
           <FormattedMessage id="actions.set_as_default" />
-        </Button>
+        </OperationButton>
       }
       leftFooterButtons={
         <Button

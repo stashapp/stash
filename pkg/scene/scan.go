@@ -130,6 +130,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 				}
 			}
 
+			s.Interactive = interactive
 			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 			_, err := qb.UpdateFull(*s)
@@ -262,7 +263,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 		if scanner.UseFileMetadata {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
-			newScene.Date = models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")}
+			_ = newScene.Date.Scan(videoFile.CreationTime)
 		}
 
 		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {

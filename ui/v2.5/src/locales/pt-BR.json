@@ -91,7 +91,6 @@
   "birthdate": "Data de nascimento",
   "bitrate": "Taxa de bits",
   "career_length": "Duração da carreira",
-  "subsidiary_studios": "Estúdios filhos",
   "component_tagger": {
     "config": {
       "active_instance": "Ativar stash-box:",
@@ -117,15 +116,15 @@
     },
     "noun_query": "Query",
     "results": {
+      "duration_off": "Duração por pelo menos {number}s",
+      "duration_unknown": "Duração desconhecida",
       "fp_found": "{fpCount, plural, =0 {Nenhuma nova correspondência de impressão digital encontrada} other{# novas correspondências de impressão digital encontradas}}",
       "fp_matches": "Duração é uma correspondência",
       "fp_matches_multi": "Duração corresponde {matchCount}/{durationsLength} impressão digital(s)",
       "hash_matches": "{hash_type} é uma correspondência",
       "match_failed_already_tagged": "Cena já marcada",
       "match_failed_no_result": "Nenhum resultado encontrado",
-      "match_success": "Cena marcada com sucesso",
-      "duration_off": "Duração por pelo menos {number}s",
-      "duration_unknown": "Duração desconhecida"
+      "match_success": "Cena marcada com sucesso"
     },
     "verb_match_fp": "Combine as impressões digitais",
     "verb_matched": "Combinado",
@@ -201,8 +200,6 @@
       "create_galleries_from_folders_label": "Crie galerias de pastas contendo imagens",
       "db_path_head": "Caminho do banco de dados",
       "directory_locations_to_your_content": "Locais de diretório para o seu conteúdo",
-      "exclude_image": "Excluir imagem",
-      "exclude_video": "Excluir vídeo",
       "excluded_image_gallery_patterns_desc": "Regexps de imagem e galeria de arquivos/caminhos para excluir da Varredura e adicionar para Limpar",
       "excluded_image_gallery_patterns_head": "Padrões de imagem/galeria excluidos",
       "excluded_video_patterns_desc": "Regexps de video arquivos/caminhos para excluir da Varredura e adicionar para Limpar",
@@ -228,7 +225,7 @@
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string usado durante solicitações http do scrape",
       "scraping": "Scraping",
-      "sqlite_location": "Localização do arquivo para o banco de dados SQLite  (requer reinicialização)",
+      "sqlite_location": "Localização do arquivo para o banco de dados SQLite (requer reinicialização)",
       "video_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como vídeos.",
       "video_ext_head": "Extensões de vídeo.",
       "video_head": "Vídeo"
@@ -543,22 +540,22 @@
   "parent_studios": "Estúdios pai",
   "path": "Caminho",
   "performer": "Artista",
+  "performerTags": "Tags de artitas",
   "performer_count": "Contagem de artistas",
   "performer_image": "Imagem do(a) artita",
   "performers": "Artistas",
-  "performerTags": "Tags de artitas",
   "piercings": "Piercings",
   "queue": "Fila",
   "random": "Aleatória",
   "rating": "Avaliação",
   "resolution": "Resolução",
   "scene": "Cena",
+  "sceneTagger": "Tagger de cena",
+  "sceneTags": "Tags de cena",
   "scene_count": "Contagem de cena",
   "scene_id": "Cena ID",
   "scenes": "Cenas",
   "scenes_updated_at": "Cena atualizada em",
-  "sceneTagger": "Tagger de cena",
-  "sceneTags": "Tags de cena",
   "search_filter": {
     "add_filter": "Adicionar filtro",
     "name": "Filtro",
@@ -568,10 +565,15 @@
   "seconds": "Segundos",
   "settings": "Definições",
   "stash_id": "Stash ID",
+  "stats": {
+    "image_size": "Tamanho das imagens",
+    "scenes_size": "Tamanho de cenas"
+  },
   "status": "Status: {statusText}",
   "studio": "Estúdio",
   "studio_depth": "Níveis (vazio para todos)",
   "studios": "Estúdios",
+  "subsidiary_studios": "Estúdios filhos",
   "synopsis": "Sinopse",
   "tag": "Tag",
   "tag_count": "Número de tags",
@@ -581,15 +583,15 @@
   "toast": {
     "added_entity": "{entity} adicionado(a)",
     "added_generation_job_to_queue": "Trabalho de geração adicionado para fila",
-    "create_entity": "Criar {entity}",
+    "created_entity": "Criar {entity}",
     "default_filter_set": "Filtragem padrão definada",
     "delete_entity": "Excluir {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Excluída {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Gerando captura de tela…",
     "merged_tags": "Tags mescladas",
     "rescanning_entity": "Reescaneando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
-    "started_auto_tagging": "Auto tagging iniciado",
     "saved_entity": "{entity} salvo(a)",
+    "started_auto_tagging": "Auto tagging iniciado",
     "updated_entity": "{entity} atualizado(a)"
   },
   "total": "Total",
@@ -598,9 +600,5 @@
   "updated_at": "Atualizado em",
   "url": "URL",
   "weight": "Peso",
-  "years_old": "anos",
-  "stats": {
-    "image_size": "Tamanho das imagens",
-    "scenes_size": "Tamanho de cenas"
-  }
+  "years_old": "anos"
 }

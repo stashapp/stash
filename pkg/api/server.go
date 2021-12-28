@@ -30,6 +30,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"github.com/vearutop/statigz"
 )
 
 var version string
@@ -53,6 +54,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	if c.GetLogAccess() {
 		r.Use(middleware.Logger)
 	}
+	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)
@@ -205,19 +207,22 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 
 			prefix := getProxyPrefix(r.Header)
-			baseURLIndex := strings.Replace(string(data), "%BASE_URL%", prefix+"/", 2)
-			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 2)
+			baseURLIndex := strings.ReplaceAll(string(data), "/%BASE_URL%", prefix)
+			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 1)
 			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
 			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
 			if isStatic {
 				w.Header().Add("Cache-Control", "max-age=604800000")
 			}
-			uiRoot, err := fs.Sub(uiBox, uiRootDir)
-			if err != nil {
-				panic(err)
+
+			prefix := getProxyPrefix(r.Header)
+			if prefix != "" {
+				r.URL.Path = strings.Replace(r.URL.Path, prefix, "", 1)
 			}
-			http.FileServer(http.FS(uiRoot)).ServeHTTP(w, r)
+			r.URL.Path = uiRootDir + r.URL.Path
+
+			statigz.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
 
@@ -337,6 +342,36 @@ type contextKey struct {
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
+
+func SecurityHeadersMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		c := config.GetInstance()
+		connectableOrigins := "connect-src data: 'self'"
+
+		// Workaround Safari bug https://bugs.webkit.org/show_bug.cgi?id=201591
+		// Allows websocket requests to any origin
+		connectableOrigins += " ws: wss:"
+
+		// The graphql playground pulls its frontend from a cdn
+		connectableOrigins += " https://cdn.jsdelivr.net "
+
+		if !c.IsNewSystem() && c.GetHandyKey() != "" {
+			connectableOrigins += " https://www.handyfeeling.com"
+		}
+		connectableOrigins += "; "
+
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
+
+		w.Header().Set("Referrer-Policy", "same-origin")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "1")
+		w.Header().Set("Content-Security-Policy", cspDirectives)
+
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
 
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {

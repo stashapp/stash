@@ -14,7 +14,8 @@ import Mousetrap from "mousetrap";
 import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Manual } from "./Help/Manual";
+import { ManualStateContext } from "./Help/Manual";
+import { SettingsButton } from "./SettingsButton";
 
 interface IMenuItem {
   name: string;
@@ -140,12 +141,12 @@ export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
   const { configuration, loading } = React.useContext(ConfigurationContext);
+  const { openManual } = React.useContext(ManualStateContext);
 
   // Show all menu items by default, unless config says otherwise
   const [menuItems, setMenuItems] = useState<IMenuItem[]>(allMenuItems);
 
   const [expanded, setExpanded] = useState(false);
-  const [showManual, setShowManual] = useState(false);
 
   useEffect(() => {
     const iCfg = configuration?.interface;
@@ -202,7 +203,7 @@ export const MainNavbar: React.FC = () => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("?", () => setShowManual(!showManual));
+    Mousetrap.bind("?", () => openManual());
     Mousetrap.bind("g z", () => goto("/settings"));
 
     menuItems.forEach((item) =>
@@ -262,16 +263,11 @@ export const MainNavbar: React.FC = () => {
           to="/settings"
           onClick={handleDismiss}
         >
-          <Button
-            className="minimal d-flex align-items-center h-100"
-            title="Settings"
-          >
-            <Icon icon="cog" />
-          </Button>
+          <SettingsButton />
         </NavLink>
         <Button
           className="nav-utility minimal"
-          onClick={() => setShowManual(true)}
+          onClick={() => openManual()}
           title="Help"
         >
           <Icon icon="question-circle" />
@@ -283,7 +279,6 @@ export const MainNavbar: React.FC = () => {
 
   return (
     <>
-      <Manual show={showManual} onClose={() => setShowManual(false)} />
       <Navbar
         collapseOnSelect
         fixed="top"

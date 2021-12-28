@@ -69,6 +69,32 @@ func TestImageFindByPath(t *testing.T) {
 	})
 }
 
+func TestImageFindByGalleryID(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+
+		images, err := sqb.FindByGalleryID(galleryIDs[galleryIdxWithTwoImages])
+
+		if err != nil {
+			t.Errorf("Error finding images: %s", err.Error())
+		}
+
+		assert.Len(t, images, 2)
+		assert.Equal(t, imageIDs[imageIdx1WithGallery], images[0].ID)
+		assert.Equal(t, imageIDs[imageIdx2WithGallery], images[1].ID)
+
+		images, err = sqb.FindByGalleryID(galleryIDs[galleryIdxWithScene])
+
+		if err != nil {
+			t.Errorf("Error finding images: %s", err.Error())
+		}
+
+		assert.Len(t, images, 0)
+
+		return nil
+	})
+}
+
 func TestImageQueryQ(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		const imageIdx = 2
@@ -464,6 +490,8 @@ func TestImageQueryIsMissingGalleries(t *testing.T) {
 			t.Errorf("Error querying image: %s", err.Error())
 		}
 
+		assert.Greater(t, len(images), 0)
+
 		// ensure non of the ids equal the one with gallery
 		for _, image := range images {
 			assert.NotEqual(t, imageIDs[imageIdxWithGallery], image.ID)
@@ -615,11 +643,7 @@ func TestImageQueryGallery(t *testing.T) {
 			Galleries: &galleryCriterion,
 		}
 
-		images, _, err := queryImagesWithCount(sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-
+		images := queryImages(t, sqb, &imageFilter, nil)
 		assert.Len(t, images, 1)
 
 		// ensure ids are correct
@@ -635,10 +659,7 @@ func TestImageQueryGallery(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		images, _, err = queryImagesWithCount(sqb, &imageFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
+		images = queryImages(t, sqb, &imageFilter, nil)
 
 		assert.Len(t, images, 1)
 		assert.Equal(t, imageIDs[imageIdxWithTwoGalleries], images[0].ID)
@@ -655,11 +676,12 @@ func TestImageQueryGallery(t *testing.T) {
 			Q: &q,
 		}
 
-		images, _, err = queryImagesWithCount(sqb, &imageFilter, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
 		assert.Len(t, images, 0)
+
+		q = getImageStringValue(imageIdxWithPerformer, titleField)
+		images = queryImages(t, sqb, &imageFilter, &findFilter)
+		assert.Len(t, images, 1)
 
 		return nil
 	})

@@ -9,7 +9,10 @@ input GenerateMetadataInput {
   markerImagePreviews: Boolean
   markerScreenshots: Boolean
   transcodes: Boolean
+  """Generate transcodes even if not required"""
+  forceTranscodes: Boolean
   phashes: Boolean
+  interactiveHeatmapsSpeeds: Boolean
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
@@ -33,8 +36,41 @@ input GeneratePreviewOptionsInput {
   previewPreset: PreviewPreset
 }
 
+type GenerateMetadataOptions {
+  sprites: Boolean
+  previews: Boolean
+  imagePreviews: Boolean
+  previewOptions: GeneratePreviewOptions
+  markers: Boolean
+  markerImagePreviews: Boolean
+  markerScreenshots: Boolean
+  transcodes: Boolean
+  phashes: Boolean
+  interactiveHeatmapsSpeeds: Boolean
+}
+
+type GeneratePreviewOptions {
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
+}
+
+"Filter options for meta data scannning"
+input ScanMetaDataFilterInput {
+  "If set, files with a modification time before this time point are ignored by the scan"
+  minModTime: Timestamp
+}
+
 input ScanMetadataInput {
   paths: [String!]
+
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean
   """Strip file extension from title"""
@@ -49,9 +85,31 @@ input ScanMetadataInput {
   scanGeneratePhashes: Boolean
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean
+
+  "Filter options for the scan"
+  filter: ScanMetaDataFilterInput
+}
+
+type ScanMetadataOptions {
+  """Set name, date, details from metadata (if present)"""
+  useFileMetadata: Boolean!
+  """Strip file extension from title"""
+  stripFileExtension: Boolean!
+  """Generate previews during scan"""
+  scanGeneratePreviews: Boolean!
+  """Generate image previews during scan"""
+  scanGenerateImagePreviews: Boolean!
+  """Generate sprites during scan"""
+  scanGenerateSprites: Boolean!
+  """Generate phashes during scan"""
+  scanGeneratePhashes: Boolean!
+  """Generate image thumbnails during scan"""
+  scanGenerateThumbnails: Boolean!
 }
 
 input CleanMetadataInput {
+  paths: [String!]
+  
   """Do a dry run. Don't delete any files"""
   dryRun: Boolean!
 }
@@ -67,15 +125,24 @@ input AutoTagMetadataInput {
   tags: [String!]
 }
 
+type AutoTagMetadataOptions {
+  """IDs of performers to tag files with, or "*" for all"""
+  performers: [String!]
+  """IDs of studios to tag files with, or "*" for all"""
+  studios: [String!]
+  """IDs of tags to tag files with, or "*" for all"""
+  tags: [String!]
+}
+
 enum IdentifyFieldStrategy {
   """Never sets the field value"""
   IGNORE
   """
-  For multi-value fields, merge with existing. 
+  For multi-value fields, merge with existing.
   For single-value fields, ignore if already set
   """
   MERGE
-  """Always replaces the value if a value is found. 
+  """Always replaces the value if a value is found.
   For multi-value fields, any existing values are removed and replaced with the
   scraped values.
   """

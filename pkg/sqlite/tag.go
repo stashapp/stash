@@ -329,9 +329,7 @@ func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join(tagAliasesTable, "", "tag_aliases.tag_id = tags.id")
 		searchColumns := []string{"tags.name", "tag_aliases.alias"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(tagFilter); err != nil {
@@ -388,7 +386,7 @@ func tagIsMissingCriterionHandler(qb *tagQueryBuilder, isMissing *string) criter
 func tagSceneCountCriterionHandler(qb *tagQueryBuilder, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if sceneCount != nil {
-			f.addJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
+			f.addLeftJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
 
 			f.addHaving(clause, args...)
@@ -399,7 +397,7 @@ func tagSceneCountCriterionHandler(qb *tagQueryBuilder, sceneCount *models.IntCr
 func tagImageCountCriterionHandler(qb *tagQueryBuilder, imageCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if imageCount != nil {
-			f.addJoin("images_tags", "", "images_tags.tag_id = tags.id")
+			f.addLeftJoin("images_tags", "", "images_tags.tag_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
 
 			f.addHaving(clause, args...)
@@ -410,7 +408,7 @@ func tagImageCountCriterionHandler(qb *tagQueryBuilder, imageCount *models.IntCr
 func tagGalleryCountCriterionHandler(qb *tagQueryBuilder, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if galleryCount != nil {
-			f.addJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
+			f.addLeftJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
 
 			f.addHaving(clause, args...)
@@ -421,7 +419,7 @@ func tagGalleryCountCriterionHandler(qb *tagQueryBuilder, galleryCount *models.I
 func tagPerformerCountCriterionHandler(qb *tagQueryBuilder, performerCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if performerCount != nil {
-			f.addJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
+			f.addLeftJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
 
 			f.addHaving(clause, args...)
@@ -432,8 +430,8 @@ func tagPerformerCountCriterionHandler(qb *tagQueryBuilder, performerCount *mode
 func tagMarkerCountCriterionHandler(qb *tagQueryBuilder, markerCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if markerCount != nil {
-			f.addJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
-			f.addJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = tags.id")
+			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
+			f.addLeftJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
 
 			f.addHaving(clause, args...)
@@ -450,7 +448,7 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 					notClause = "NOT"
 				}
 
-				f.addJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
+				f.addLeftJoin("tags_relations", "parent_relations", "tags.id = parent_relations.child_id")
 
 				f.addWhere(fmt.Sprintf("parent_relations.parent_id IS %s NULL", notClause))
 				return
@@ -483,7 +481,7 @@ func tagParentsCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalMu
 
 			f.addRecursiveWith(query, args...)
 
-			f.addJoin("parents", "", "parents.item_id = tags.id")
+			f.addLeftJoin("parents", "", "parents.item_id = tags.id")
 
 			addHierarchicalConditionClauses(f, tags, "parents", "root_id")
 		}
@@ -499,7 +497,7 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 					notClause = "NOT"
 				}
 
-				f.addJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
+				f.addLeftJoin("tags_relations", "child_relations", "tags.id = child_relations.parent_id")
 
 				f.addWhere(fmt.Sprintf("child_relations.child_id IS %s NULL", notClause))
 				return
@@ -532,7 +530,7 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 
 			f.addRecursiveWith(query, args...)
 
-			f.addJoin("children", "", "children.item_id = tags.id")
+			f.addLeftJoin("children", "", "children.item_id = tags.id")
 
 			addHierarchicalConditionClauses(f, tags, "children", "root_id")
 		}
@@ -542,7 +540,7 @@ func tagChildrenCriterionHandler(qb *tagQueryBuilder, tags *models.HierarchicalM
 func tagParentCountCriterionHandler(qb *tagQueryBuilder, parentCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if parentCount != nil {
-			f.addJoin("tags_relations", "parents_count", "parents_count.child_id = tags.id")
+			f.addLeftJoin("tags_relations", "parents_count", "parents_count.child_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct parents_count.parent_id)", *parentCount)
 
 			f.addHaving(clause, args...)
@@ -553,7 +551,7 @@ func tagParentCountCriterionHandler(qb *tagQueryBuilder, parentCount *models.Int
 func tagChildCountCriterionHandler(qb *tagQueryBuilder, childCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if childCount != nil {
-			f.addJoin("tags_relations", "children_count", "children_count.parent_id = tags.id")
+			f.addLeftJoin("tags_relations", "children_count", "children_count.parent_id = tags.id")
 			clause, args := getIntCriterionWhereClause("count(distinct children_count.child_id)", *childCount)
 
 			f.addHaving(clause, args...)

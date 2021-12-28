@@ -151,9 +151,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scene_markers.title", "scenes.title"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	filter := qb.makeFilter(sceneMarkerFilter)
@@ -182,7 +180,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 func sceneMarkerTagIDCriterionHandler(qb *sceneMarkerQueryBuilder, tagID *string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if tagID != nil {
-			f.addJoin("scene_markers_tags", "", "scene_markers_tags.scene_marker_id = scene_markers.id")
+			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.scene_marker_id = scene_markers.id")
 
 			f.addWhere("(scene_markers.primary_tag_id = ? OR scene_markers_tags.tag_id = ?)", *tagID, *tagID)
 		}
@@ -198,7 +196,7 @@ func sceneMarkerTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *models.H
 					notClause = "NOT"
 				}
 
-				f.addJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
+				f.addLeftJoin("scene_markers_tags", "", "scene_markers.id = scene_markers_tags.scene_marker_id")
 
 				f.addWhere(fmt.Sprintf("%s scene_markers_tags.tag_id IS NULL", notClause))
 				return
@@ -217,7 +215,7 @@ SELECT m.id, t.column1 FROM scene_markers m
 INNER JOIN (` + valuesClause + `) t ON t.column2 = m.primary_tag_id
 )`)
 
-			f.addJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
+			f.addLeftJoin("marker_tags", "", "marker_tags.scene_marker_id = scene_markers.id")
 
 			addHierarchicalConditionClauses(f, tags, "marker_tags", "root_tag_id")
 		}
@@ -233,7 +231,7 @@ func sceneMarkerSceneTagsCriterionHandler(qb *sceneMarkerQueryBuilder, tags *mod
 					notClause = "NOT"
 				}
 
-				f.addJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
+				f.addLeftJoin("scenes_tags", "", "scene_markers.scene_id = scenes_tags.scene_id")
 
 				f.addWhere(fmt.Sprintf("scenes_tags.tag_id IS %s NULL", notClause))
 				return
@@ -250,7 +248,7 @@ SELECT st.scene_id, t.column1 AS root_tag_id FROM scenes_tags st
 INNER JOIN (` + valuesClause + `) t ON t.column2 = st.tag_id
 )`)
 
-			f.addJoin("scene_tags", "", "scene_tags.scene_id = scene_markers.scene_id")
+			f.addLeftJoin("scene_tags", "", "scene_tags.scene_id = scene_markers.scene_id")
 
 			addHierarchicalConditionClauses(f, tags, "scene_tags", "root_tag_id")
 		}
@@ -266,14 +264,14 @@ func sceneMarkerPerformersCriterionHandler(qb *sceneMarkerQueryBuilder, performe
 		foreignFK:    performerIDColumn,
 
 		addJoinTable: func(f *filterBuilder) {
-			f.addJoin(performersScenesTable, "performers_join", "performers_join.scene_id = scene_markers.scene_id")
+			f.addLeftJoin(performersScenesTable, "performers_join", "performers_join.scene_id = scene_markers.scene_id")
 		},
 	}
 
 	handler := h.handler(performers)
 	return func(f *filterBuilder) {
 		// Make sure scenes is included, otherwise excludes filter fails
-		f.addJoin(sceneTable, "", "scenes.id = scene_markers.scene_id")
+		f.addLeftJoin(sceneTable, "", "scenes.id = scene_markers.scene_id")
 		handler(f)
 	}
 }

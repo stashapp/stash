@@ -3,6 +3,9 @@ package sqlite
 import (
 	"fmt"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type queryBuilder struct {
@@ -53,7 +56,9 @@ func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 
 func (qb queryBuilder) findIDs() ([]int, error) {
 	const includeSortPagination = true
-	return qb.repository.runIdsQuery(qb.toSQL(includeSortPagination), qb.args)
+	sql := qb.toSQL(includeSortPagination)
+	logger.Tracef("SQL: %s, args: %v", sql, qb.args)
+	return qb.repository.runIdsQuery(sql, qb.args)
 }
 
 func (qb queryBuilder) executeFind() ([]int, int, error) {
@@ -122,6 +127,7 @@ func (qb *queryBuilder) join(table, as, onClause string) {
 		table:    table,
 		as:       as,
 		onClause: onClause,
+		joinType: "LEFT",
 	}
 
 	qb.joins.add(newJoin)
@@ -167,4 +173,39 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) {
 	}
 
 	qb.addJoins(f.getAllJoins()...)
+}
+
+func (qb *queryBuilder) parseQueryString(columns []string, q string) {
+	specs := models.ParseSearchString(q)
+
+	for _, t := range specs.MustHave {
+		var clauses []string
+
+		for _, column := range columns {
+			clauses = append(clauses, column+" LIKE ?")
+			qb.addArg(like(t))
+		}
+
+		qb.addWhere("(" + strings.Join(clauses, " OR ") + ")")
+	}
+
+	for _, t := range specs.MustNot {
+		for _, column := range columns {
+			qb.addWhere(coalesce(column) + " NOT LIKE ?")
+			qb.addArg(like(t))
+		}
+	}
+
+	for _, set := range specs.AnySets {
+		var clauses []string
+
+		for _, column := range columns {
+			for _, v := range set {
+				clauses = append(clauses, column+" LIKE ?")
+				qb.addArg(like(v))
+			}
+		}
+
+		qb.addWhere("(" + strings.Join(clauses, " OR ") + ")")
+	}
 }

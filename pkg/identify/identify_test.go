@@ -17,7 +17,7 @@ type mockSceneScraper struct {
 	results map[int]*models.ScrapedScene
 }
 
-func (s mockSceneScraper) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
+func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
 	if utils.IntInclude(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}

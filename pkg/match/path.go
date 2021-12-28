@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
@@ -58,7 +59,9 @@ func getPathWords(path string) []string {
 	return ret
 }
 
-func nameMatchesPath(name, path string) bool {
+// nameMatchesPath returns the index in the path for the right-most match.
+// Returns -1 if not found.
+func nameMatchesPath(name, path string) int {
 	// escape specific regex characters
 	name = regexp.QuoteMeta(name)
 
@@ -72,7 +75,13 @@ func nameMatchesPath(name, path string) bool {
 	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
 
 	re := regexp.MustCompile(reStr)
-	return re.MatchString(path)
+	found := re.FindAllStringIndex(path, -1)
+
+	if found == nil {
+		return -1
+	}
+
+	return found[len(found)-1][0]
 }
 
 func PathToPerformers(path string, performerReader models.PerformerReader) ([]*models.Performer, error) {
@@ -86,7 +95,7 @@ func PathToPerformers(path string, performerReader models.PerformerReader) ([]*m
 	var ret []*models.Performer
 	for _, p := range performers {
 		// TODO - commenting out alias handling until both sides work correctly
-		if nameMatchesPath(p.Name.String, path) { // || nameMatchesPath(p.Aliases.String, path) {
+		if nameMatchesPath(p.Name.String, path) != -1 { // || nameMatchesPath(p.Aliases.String, path) {
 			ret = append(ret, p)
 		}
 	}
@@ -94,7 +103,10 @@ func PathToPerformers(path string, performerReader models.PerformerReader) ([]*m
 	return ret, nil
 }
 
-func PathToStudios(path string, reader models.StudioReader) ([]*models.Studio, error) {
+// PathToStudio returns the Studio that matches the given path.
+// Where multiple matching studios are found, the one that matches the latest
+// position in the path is returned.
+func PathToStudio(path string, reader models.StudioReader) (*models.Studio, error) {
 	words := getPathWords(path)
 	candidates, err := reader.QueryForAutoTag(words)
 
@@ -102,29 +114,26 @@ func PathToStudios(path string, reader models.StudioReader) ([]*models.Studio, e
 		return nil, err
 	}
 
-	var ret []*models.Studio
+	var ret *models.Studio
+	index := -1
 	for _, c := range candidates {
-		matches := false
-		if nameMatchesPath(c.Name.String, path) {
-			matches = true
+		matchIndex := nameMatchesPath(c.Name.String, path)
+		if matchIndex != -1 && matchIndex > index {
+			ret = c
+			index = matchIndex
 		}
 
-		if !matches {
-			aliases, err := reader.GetAliases(c.ID)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, alias := range aliases {
-				if nameMatchesPath(alias, path) {
-					matches = true
-					break
-				}
-			}
+		aliases, err := reader.GetAliases(c.ID)
+		if err != nil {
+			return nil, err
 		}
 
-		if matches {
-			ret = append(ret, c)
+		for _, alias := range aliases {
+			matchIndex = nameMatchesPath(alias, path)
+			if matchIndex != -1 && matchIndex > index {
+				ret = c
+				index = matchIndex
+			}
 		}
 	}
 
@@ -142,7 +151,7 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 	var ret []*models.Tag
 	for _, t := range tags {
 		matches := false
-		if nameMatchesPath(t.Name, path) {
+		if nameMatchesPath(t.Name, path) != -1 {
 			matches = true
 		}
 
@@ -152,7 +161,7 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 				return nil, err
 			}
 			for _, alias := range aliases {
-				if nameMatchesPath(alias, path) {
+				if nameMatchesPath(alias, path) != -1 {
 					matches = true
 					break
 				}
@@ -167,38 +176,6 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 	return ret, nil
 }
 
-func scenePathsFilter(paths []string) *models.SceneFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.SceneFilterType
-	var or *models.SceneFilterType
-	for _, p := range paths {
-		newOr := &models.SceneFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
 func PathToScenes(name string, paths []string, sceneReader models.SceneReader) ([]*models.Scene, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
@@ -210,7 +187,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 		Organized: &organized,
 	}
 
-	filter.And = scenePathsFilter(paths)
+	filter.And = scene.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	scenes, err := scene.Query(sceneReader, &filter, &models.FindFilterType{
@@ -223,44 +200,12 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 
 	var ret []*models.Scene
 	for _, p := range scenes {
-		if nameMatchesPath(name, p.Path) {
+		if nameMatchesPath(name, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}
 
 	return ret, nil
-}
-
-func imagePathsFilter(paths []string) *models.ImageFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.ImageFilterType
-	var or *models.ImageFilterType
-	for _, p := range paths {
-		newOr := &models.ImageFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
 }
 
 func PathToImages(name string, paths []string, imageReader models.ImageReader) ([]*models.Image, error) {
@@ -274,7 +219,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 		Organized: &organized,
 	}
 
-	filter.And = imagePathsFilter(paths)
+	filter.And = image.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	images, err := image.Query(imageReader, &filter, &models.FindFilterType{
@@ -287,44 +232,12 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 
 	var ret []*models.Image
 	for _, p := range images {
-		if nameMatchesPath(name, p.Path) {
+		if nameMatchesPath(name, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}
 
 	return ret, nil
-}
-
-func galleryPathsFilter(paths []string) *models.GalleryFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.GalleryFilterType
-	var or *models.GalleryFilterType
-	for _, p := range paths {
-		newOr := &models.GalleryFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
 }
 
 func PathToGalleries(name string, paths []string, galleryReader models.GalleryReader) ([]*models.Gallery, error) {
@@ -338,7 +251,7 @@ func PathToGalleries(name string, paths []string, galleryReader models.GalleryRe
 		Organized: &organized,
 	}
 
-	filter.And = galleryPathsFilter(paths)
+	filter.And = gallery.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	gallerys, _, err := galleryReader.Query(&filter, &models.FindFilterType{
@@ -351,7 +264,7 @@ func PathToGalleries(name string, paths []string, galleryReader models.GalleryRe
 
 	var ret []*models.Gallery
 	for _, p := range gallerys {
-		if nameMatchesPath(name, p.Path.String) {
+		if nameMatchesPath(name, p.Path.String) != -1 {
 			ret = append(ret, p)
 		}
 	}

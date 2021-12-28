@@ -41,16 +41,18 @@ input ConfigGeneralInput {
   generatedPath: String
   """Path to import/export files"""
   metadataPath: String
+  """Path to scrapers"""
+  scrapersPath: String
   """Path to cache"""
   cachePath: String
   """Whether to calculate MD5 checksums for scene video files"""
-  calculateMD5: Boolean!
+  calculateMD5: Boolean
   """Hash algorithm to use for generated file naming"""
-  videoFileNamingAlgorithm: HashAlgorithm!
+  videoFileNamingAlgorithm: HashAlgorithm
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int
   """Include audio stream in previews"""
-  previewAudio: Boolean!
+  previewAudio: Boolean
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
@@ -78,13 +80,13 @@ input ConfigGeneralInput {
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
-  logOut: Boolean!
+  logOut: Boolean
   """Minimum log level"""
-  logLevel: String!
+  logLevel: String
   """Whether to log http access"""
-  logAccess: Boolean!
+  logAccess: Boolean
   """True if galleries should be created from folders with images"""
-  createGalleriesFromFolders: Boolean!
+  createGalleriesFromFolders: Boolean
   """Array of video file extensions"""
   videoExtensions: [String!]
   """Array of image file extensions"""
@@ -104,7 +106,7 @@ input ConfigGeneralInput {
   """Whether the scraper should check for invalid certificates"""
   scraperCertCheck: Boolean @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Stash-box instances used for tagging"""
-  stashBoxes: [StashBoxInput!]!
+  stashBoxes: [StashBoxInput!]
 }
 
 type ConfigGeneralResult {
@@ -282,7 +284,8 @@ type ConfigInterfaceResult {
   slideshowDelay: Int
 
   """Fields are true if creating via dropdown menus are disabled"""
-  disabledDropdownCreate: ConfigDisableDropdownCreate!
+  disableDropdownCreate: ConfigDisableDropdownCreate!
+  disabledDropdownCreate: ConfigDisableDropdownCreate! @deprecated(reason: "Use disableDropdownCreate")
 
   """Handy Connection Key"""
   handyKey: String
@@ -316,7 +319,7 @@ input ConfigScrapingInput {
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
   """Whether the scraper should check for invalid certificates"""
-  scraperCertCheck: Boolean!
+  scraperCertCheck: Boolean
   """Tags blacklist during scraping"""
   excludeTagPatterns: [String!]
 }
@@ -333,7 +336,10 @@ type ConfigScrapingResult {
 }
 
 type ConfigDefaultSettingsResult {
+  scan: ScanMetadataOptions
   identify: IdentifyMetadataTaskOptions
+  autoTag: AutoTagMetadataOptions
+  generate: GenerateMetadataOptions
   
   """If true, delete file checkbox will be checked by default"""
   deleteFile: Boolean
@@ -342,7 +348,10 @@ type ConfigDefaultSettingsResult {
 }
 
 input ConfigDefaultSettingsInput {
+  scan: ScanMetadataInput
   identify: IdentifyMetadataInput
+  autoTag: AutoTagMetadataInput
+  generate: GenerateMetadataInput
 
   """If true, delete file checkbox will be checked by default"""
   deleteFile: Boolean

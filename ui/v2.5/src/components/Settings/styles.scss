@@ -1,3 +1,187 @@
+@include media-breakpoint-up(sm) {
+  #settings-menu-container {
+    position: fixed;
+  }
+}
+
+#settings-container .tab-content {
+  max-width: 780px;
+}
+
+.setting-section {
+  &:not(:first-child) {
+    margin-top: 1.5em;
+  }
+
+  .card {
+    padding: 0;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .sub-heading {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+
+  .content {
+    padding: 15px;
+    width: 100%;
+  }
+
+  .setting {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    width: 100%;
+
+    &.sub-setting {
+      padding-left: 2rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0;
+
+      &[title] {
+        cursor: help;
+        text-decoration: underline dotted;
+      }
+    }
+
+    &.disabled {
+      .custom-switch,
+      h3 {
+        opacity: 0.5;
+      }
+    }
+
+    > div:first-child {
+      flex-grow: 0;
+    }
+
+    > div:last-child {
+      min-width: 100px;
+      text-align: right;
+
+      button {
+        margin: 0.25rem;
+      }
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #000;
+    }
+
+    .value {
+      font-family: "Courier New", Courier, monospace;
+      margin-bottom: 0.5rem;
+      margin-top: 0.5rem;
+
+      pre {
+        max-height: 250px;
+        width: 100%;
+      }
+    }
+  }
+
+  .setting-group {
+    &.collapsible > .setting {
+      cursor: pointer;
+    }
+
+    padding-bottom: 15px;
+    width: 100%;
+
+    .setting-group-collapse-button {
+      color: $text-muted;
+      font-size: 1.5rem;
+      padding: 0;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #000;
+    }
+
+    > .setting:first-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    > .setting:not(:first-child),
+    .collapsible-section .setting {
+      margin-left: 2.5rem;
+      margin-right: 1.5rem;
+      padding-bottom: 10px;
+      padding-left: 0;
+      padding-top: 10px;
+
+      h3 {
+        font-size: 1rem;
+      }
+
+      &.sub-setting {
+        padding-left: 2rem;
+      }
+    }
+
+    .setting {
+      flex-wrap: wrap;
+      width: auto;
+
+      & > div:last-child {
+        margin-left: auto;
+      }
+    }
+  }
+}
+
+#stashes .card {
+  // override overflow so that menu shows correctly
+  overflow: visible;
+}
+
+#stash-table {
+  @include media-breakpoint-down(sm) {
+    padding-top: 0;
+  }
+
+  .setting {
+    justify-content: start;
+    padding: 0;
+  }
+
+  .stash-row .setting > div:last-child {
+    text-align: left;
+  }
+}
+
+#tasks-panel {
+  @media (min-width: 576px) and (min-height: 600px) {
+    .tasks-panel-queue {
+      background-color: #202b33;
+      margin-top: -1rem;
+      padding-bottom: 0.25rem;
+      padding-top: 1rem;
+      position: sticky;
+      top: 3rem;
+      z-index: 2;
+    }
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+#setting-dialog .sub-heading {
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
 .logs {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
@@ -71,9 +255,12 @@
   }
 }
 
-.job-table {
+.job-table.card {
+  background-color: $card-bg;
   height: 10em;
+  margin-bottom: 30px;
   overflow-y: auto;
+  padding: 0.5rem 15px;
 
   ul {
     list-style: none;
@@ -160,4 +347,66 @@
       }
     }
   }
+}
+
+.task-group {
+  padding-top: 0.5rem;
+
+  &:not(:last-child) {
+    padding-bottom: 0.5rem;
+  }
+
+  .task {
+    &:not(:first-child) {
+      padding-top: 0.5rem;
+    }
+
+    &:not(:last-child) {
+      padding-bottom: 1rem;
+    }
+  }
+}
+
+.loading-indicator {
+  opacity: 50%;
+  position: fixed;
+  right: 30px;
+  z-index: 1051;
+
+  @include media-breakpoint-down(xs) {
+    top: 30px;
+  }
+  @include media-breakpoint-up(sm) {
+    bottom: 30px;
+  }
+
+  .fa-icon {
+    color: $success;
+    height: 2rem;
+    margin: 0;
+    width: 2rem;
+  }
+
+  &.success .fa-icon {
+    animation: fadeOut 2s forwards;
+    animation-delay: 2s;
+  }
+
+  &.failed .fa-icon {
+    color: $danger;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.empty-queue-message {
+  color: $text-muted;
 }

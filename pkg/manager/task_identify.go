@@ -211,8 +211,8 @@ type stashboxSource struct {
 	endpoint string
 }
 
-func (s stashboxSource) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
-	results, err := s.FindStashBoxScenesByFingerprintsFlat([]string{strconv.Itoa(sceneID)})
+func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+	results, err := s.FindStashBoxScenesByFingerprintsFlat(ctx, []string{strconv.Itoa(sceneID)})
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}
@@ -233,8 +233,17 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScene(sceneID int) (*models.ScrapedScene, error) {
-	return s.cache.ScrapeScene(s.scraperID, sceneID)
+func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, models.ScrapeContentTypeScene)
+	if err != nil {
+		return nil, err
+	}
+
+	if scene, ok := content.(models.ScrapedScene); ok {
+		return &scene, nil
+	}
+
+	return nil, errors.New("could not convert content to scene")
 }
 
 func (s scraperSource) String() string {

@@ -26,12 +26,13 @@ type GenerateJob struct {
 }
 
 type totalsGenerate struct {
-	sprites       int64
-	previews      int64
-	imagePreviews int64
-	markers       int64
-	transcodes    int64
-	phashes       int64
+	sprites                  int64
+	previews                 int64
+	imagePreviews            int64
+	markers                  int64
+	transcodes               int64
+	phashes                  int64
+	interactiveHeatmapSpeeds int64
 
 	tasks int
 }
@@ -94,7 +95,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			return
 		}
 
-		logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes", totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes)
+		logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes %d phashes %d heatmaps & speeds", totals.sprites, totals.previews, totals.imagePreviews, totals.markers, totals.transcodes, totals.phashes, totals.interactiveHeatmapSpeeds)
 
 		progress.SetTotal(int(totals.tasks))
 	}()
@@ -251,9 +252,11 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 	}
 
 	if utils.IsTrue(j.input.Transcodes) {
+		forceTranscode := utils.IsTrue(j.input.ForceTranscodes)
 		task := &GenerateTranscodeTask{
 			Scene:               *scene,
 			Overwrite:           j.overwrite,
+			Force:               forceTranscode,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 		}
 		if task.isTranscodeNeeded() {
@@ -273,6 +276,21 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 
 		if task.shouldGenerate() {
 			totals.phashes++
+			totals.tasks++
+			queue <- task
+		}
+	}
+
+	if utils.IsTrue(j.input.InteractiveHeatmapsSpeeds) {
+		task := &GenerateInteractiveHeatmapSpeedTask{
+			Scene:               *scene,
+			Overwrite:           j.overwrite,
+			fileNamingAlgorithm: j.fileNamingAlgo,
+			TxnManager:          j.txnManager,
+		}
+
+		if task.shouldGenerate() {
+			totals.interactiveHeatmapSpeeds++
 			totals.tasks++
 			queue <- task
 		}

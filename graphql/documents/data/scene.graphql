@@ -12,6 +12,9 @@ fragment SceneData on Scene {
   path
   phash
   interactive
+  interactive_speed
+  created_at
+  updated_at
 
   file {
     size
@@ -33,6 +36,7 @@ fragment SceneData on Scene {
     chapters_vtt
     sprite
     funscript
+    interactive_heatmap
   }
 
   scene_markers {

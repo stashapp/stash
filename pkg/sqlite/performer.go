@@ -308,9 +308,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"performers.name", "performers.aliases"}
-		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
+		query.parseQueryString(searchColumns, *q)
 	}
 
 	if err := qb.validateFilter(performerFilter); err != nil {
@@ -343,10 +341,10 @@ func performerIsMissingCriterionHandler(qb *performerQueryBuilder, isMissing *st
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "scenes": // Deprecated: use `scene_count == 0` filter instead
-				f.addJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
+				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
 			case "image":
-				f.addJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
+				f.addLeftJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
 				f.addWhere("image_join.performer_id IS NULL")
 			case "stash_id":
 				qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
@@ -465,8 +463,8 @@ func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models
 
 				var conditions []string
 				for _, c := range formatMaps {
-					f.addJoin(c["joinTable"].(string), "", fmt.Sprintf("%s.performer_id = performers.id", c["joinTable"]))
-					f.addJoin(c["primaryTable"].(string), "", fmt.Sprintf("%s.%s = %s.id", c["joinTable"], c["primaryFK"], c["primaryTable"]))
+					f.addLeftJoin(c["joinTable"].(string), "", fmt.Sprintf("%s.performer_id = performers.id", c["joinTable"]))
+					f.addLeftJoin(c["primaryTable"].(string), "", fmt.Sprintf("%s.%s = %s.id", c["joinTable"], c["primaryFK"], c["primaryTable"]))
 
 					conditions = append(conditions, fmt.Sprintf("%s.studio_id IS NULL", c["primaryTable"]))
 				}
@@ -507,7 +505,7 @@ func performerStudiosCriterionHandler(qb *performerQueryBuilder, studios *models
 
 			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
 
-			f.addJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
+			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
 			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
 		}
 	}

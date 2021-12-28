@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -281,38 +283,38 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		return false, err
 	}
 
-	var image *models.Image
+	var i *models.Image
+	fileDeleter := &image.FileDeleter{
+		Deleter: *file.NewDeleter(),
+		Paths:   manager.GetInstance().Paths,
+	}
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Image()
 
-		image, err = qb.Find(imageID)
+		i, err = qb.Find(imageID)
 		if err != nil {
 			return err
 		}
 
-		if image == nil {
+		if i == nil {
 			return fmt.Errorf("image with id %d not found", imageID)
 		}
 
-		return qb.Destroy(imageID)
+		return image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
 	}); err != nil {
+		fileDeleter.Rollback()
 		return false, err
 	}
 
-	// if delete generated is true, then delete the generated files
-	// for the image
-	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedImageFiles(image)
-	}
-
-	// if delete file is true, then delete the file as well
-	// if it fails, just log a message
-	if input.DeleteFile != nil && *input.DeleteFile {
-		manager.DeleteImageFile(image)
-	}
+	// perform the post-commit actions
+	fileDeleter.Commit()
 
 	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
+	r.hookExecutor.ExecutePostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+		ImageDestroyInput: input,
+		Checksum:          i.Checksum,
+		Path:              i.Path,
+	}, nil)
 
 	return true, nil
 }
@@ -324,46 +326,47 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 	}
 
 	var images []*models.Image
+	fileDeleter := &image.FileDeleter{
+		Deleter: *file.NewDeleter(),
+		Paths:   manager.GetInstance().Paths,
+	}
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Image()
 
 		for _, imageID := range imageIDs {
 
-			image, err := qb.Find(imageID)
+			i, err := qb.Find(imageID)
 			if err != nil {
 				return err
 			}
 
-			if image == nil {
+			if i == nil {
 				return fmt.Errorf("image with id %d not found", imageID)
 			}
 
-			images = append(images, image)
-			if err := qb.Destroy(imageID); err != nil {
+			images = append(images, i)
+
+			if err := image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
 				return err
 			}
 		}
 
 		return nil
 	}); err != nil {
+		fileDeleter.Rollback()
 		return false, err
 	}
 
+	// perform the post-commit actions
+	fileDeleter.Commit()
+
 	for _, image := range images {
-		// if delete generated is true, then delete the generated files
-		// for the image
-		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedImageFiles(image)
-		}
-
-		// if delete file is true, then delete the file as well
-		// if it fails, just log a message
-		if input.DeleteFile != nil && *input.DeleteFile {
-			manager.DeleteImageFile(image)
-		}
-
 		// call post hook after performing the other actions
-		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, input, nil)
+		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, plugin.ImagesDestroyInput{
+			ImagesDestroyInput: input,
+			Checksum:           image.Checksum,
+			Path:               image.Path,
+		}, nil)
 	}
 
 	return true, nil

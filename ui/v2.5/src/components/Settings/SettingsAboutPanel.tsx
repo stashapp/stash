@@ -1,13 +1,14 @@
 import React from "react";
-import { Button, Table } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
 import { useLatestVersion } from "src/core/StashService";
+import { ConstantSetting, Setting, SettingGroup } from "./Inputs";
+import { SettingSection } from "./SettingSection";
 
 export const SettingsAboutPanel: React.FC = () => {
-  const gitHash = process.env.REACT_APP_GITHASH;
-  const stashVersion = process.env.REACT_APP_STASH_VERSION;
-  const buildTime = process.env.REACT_APP_DATE;
+  const gitHash = import.meta.env.VITE_APP_GITHASH;
+  const stashVersion = import.meta.env.VITE_APP_STASH_VERSION;
+  const buildTime = import.meta.env.VITE_APP_DATE;
 
   const intl = useIntl();
 
@@ -19,95 +20,73 @@ export const SettingsAboutPanel: React.FC = () => {
     networkStatus,
   } = useLatestVersion();
 
-  function maybeRenderTag() {
-    if (!stashVersion) {
-      return;
-    }
-    return (
-      <tr>
-        <td>{intl.formatMessage({ id: "config.about.version" })}:</td>
-        <td>{stashVersion}</td>
-      </tr>
-    );
-  }
+  const hasNew = dataLatest && gitHash !== dataLatest.latestversion.shorthash;
 
-  function maybeRenderLatestVersion() {
-    if (
-      !dataLatest?.latestversion.shorthash ||
-      !dataLatest?.latestversion.url
-    ) {
-      return;
-    }
-
-    if (gitHash !== dataLatest.latestversion.shorthash) {
-      return (
-        <>
-          <strong>
-            {dataLatest.latestversion.shorthash}{" "}
-            {intl.formatMessage({ id: "config.about.new_version_notice" })}{" "}
-          </strong>
-          <a href={dataLatest.latestversion.url}>
-            {intl.formatMessage({ id: "actions.download" })}
-          </a>
-        </>
-      );
-    }
-
-    return <>{dataLatest.latestversion.shorthash}</>;
-  }
-
-  function renderLatestVersion() {
-    return (
-      <Table>
-        <tbody>
-          <tr>
-            <td>
-              {intl.formatMessage({
-                id: "config.about.latest_version_build_hash",
-              })}{" "}
-            </td>
-            <td>{maybeRenderLatestVersion()} </td>
-          </tr>
-          <tr>
-            <td>
-              <Button onClick={() => refetch()}>
-                {intl.formatMessage({
-                  id: "config.about.check_for_new_version",
-                })}
-              </Button>
-            </td>
-          </tr>
-        </tbody>
-      </Table>
-    );
-  }
-
-  function renderVersion() {
-    return (
-      <>
-        <Table>
-          <tbody>
-            {maybeRenderTag()}
-            <tr>
-              <td>{intl.formatMessage({ id: "config.about.build_hash" })}</td>
-              <td>{gitHash}</td>
-            </tr>
-            <tr>
-              <td>{intl.formatMessage({ id: "config.about.build_time" })}</td>
-              <td>{buildTime}</td>
-            </tr>
-          </tbody>
-        </Table>
-      </>
-    );
-  }
   return (
     <>
-      <h4>{intl.formatMessage({ id: "config.categories.about" })}</h4>
-      <Table>
-        <tbody>
-          <tr>
-            <td>
+      <SettingSection headingID="config.about.version">
+        <SettingGroup
+          settingProps={{
+            heading: stashVersion,
+          }}
+        >
+          <ConstantSetting
+            headingID="config.about.build_hash"
+            value={gitHash}
+          />
+          <ConstantSetting
+            headingID="config.about.build_time"
+            value={buildTime}
+          />
+        </SettingGroup>
+
+        <SettingGroup
+          settingProps={{
+            headingID: "config.about.latest_version",
+          }}
+        >
+          {errorLatest ? (
+            <Setting heading={errorLatest.message} />
+          ) : !dataLatest || loadingLatest || networkStatus === 4 ? (
+            <Setting headingID="loading.generic" />
+          ) : (
+            <div className="setting">
+              <div>
+                <h3>
+                  {intl.formatMessage({
+                    id: "config.about.latest_version_build_hash",
+                  })}
+                </h3>
+                <div className="value">
+                  {dataLatest.latestversion.shorthash}{" "}
+                  {hasNew
+                    ? intl.formatMessage({
+                        id: "config.about.new_version_notice",
+                      })
+                    : undefined}
+                </div>
+              </div>
+              <div>
+                <a href={dataLatest.latestversion.url}>
+                  <Button>
+                    {intl.formatMessage({ id: "actions.download" })}
+                  </Button>
+                </a>
+                <Button onClick={() => refetch()}>
+                  {intl.formatMessage({
+                    id: "config.about.check_for_new_version",
+                  })}
+                </Button>
+              </div>
+            </div>
+          )}
+        </SettingGroup>
+      </SettingSection>
+
+      <SettingSection headingID="config.categories.about">
+        <div className="setting">
+          <div>
+            <p>
               {intl.formatMessage(
                 { id: "config.about.stash_home" },
                 {
@@ -122,10 +101,8 @@ export const SettingsAboutPanel: React.FC = () => {
                   ),
                 }
               )}
-            </td>
-          </tr>
-          <tr>
-            <td>
+            </p>
+            <p>
               {intl.formatMessage(
                 { id: "config.about.stash_wiki" },
                 {
@@ -140,10 +117,8 @@ export const SettingsAboutPanel: React.FC = () => {
                   ),
                 }
               )}
-            </td>
-          </tr>
-          <tr>
-            <td>
+            </p>
+            <p>
               {intl.formatMessage(
                 { id: "config.about.stash_discord" },
                 {
@@ -158,10 +133,8 @@ export const SettingsAboutPanel: React.FC = () => {
                   ),
                 }
               )}
-            </td>
-          </tr>
-          <tr>
-            <td>
+            </p>
+            <p>
               {intl.formatMessage(
                 { id: "config.about.stash_open_collective" },
                 {
@@ -176,17 +149,11 @@ export const SettingsAboutPanel: React.FC = () => {
                   ),
                 }
               )}
-            </td>
-          </tr>
-        </tbody>
-      </Table>
-      {errorLatest && <span>{errorLatest.message}</span>}
-      {renderVersion()}
-      {!dataLatest || loadingLatest || networkStatus === 4 ? (
-        <LoadingIndicator inline />
-      ) : (
-        renderLatestVersion()
-      )}
+            </p>
+          </div>
+          <div />
+        </div>
+      </SettingSection>
     </>
   );
 };
