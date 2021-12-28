@@ -110,7 +110,7 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 
 			// -------------------------------------------------------------------
 			// #1023
-			// when chromium is listening over RDP requests it only accepts requests
+			// when chromium is listening over RDP it only accepts requests
 			// with host headers that are either IPs or `localhost`
 			cdpURL, err := url.Parse(remote)
 			if err != nil {
