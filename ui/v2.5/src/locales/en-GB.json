@@ -479,7 +479,7 @@
       "scene_player": {
         "heading": "Scene Player",
         "options": {
-          "show_deovr_button": "Show DeoVR integration (Requires HTTPS)",
+          "show_deovr_button": "Show DeoVR Button",
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
             "description": "Auto-start scene videos when playing selected or random from Scenes page",
