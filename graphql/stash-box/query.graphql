@@ -156,3 +156,9 @@ query FindSceneByID($id: ID!) {
 mutation SubmitFingerprint($input: FingerprintSubmission!) {
   submitFingerprint(input: $input)
 }
+
+query Me {
+  me {
+    name
+  }
+}

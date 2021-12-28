@@ -136,6 +136,7 @@ type Query {
     "Desired collation locale. Determines the order of the directory result. eg. 'en-US', 'pt-BR', ..."
     locale: String = "en"
   ): Directory!
+  validateStashBoxCredentials(input: StashBoxInput!): StashBoxValidationResult!
 
   # System status
   systemStatus: SystemStatus!

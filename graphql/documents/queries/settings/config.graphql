@@ -11,3 +11,10 @@ query Directory($path: String) {
       directories
   }
 }
+
+query ValidateStashBox($input: StashBoxInput!) {
+  validateStashBoxCredentials(input: $input) {
+    valid
+    status
+  }
+}
