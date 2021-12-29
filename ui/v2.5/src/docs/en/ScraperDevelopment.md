@@ -273,7 +273,7 @@ Collectively, these configurations are known as mapped scraping configurations.
 
 A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for. 
 
-Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](#object-fields) on the performer/scene object. These fields are case-sensitive. 
+Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 

@@ -1,3 +1,5 @@
+# Interactivity
+
 Stash currently supports syncing with Handy devices, using funscript files.
 
 In order for stash to connect to your Handy device, the Handy Connection Key must be entered in Settings -> Interface.
