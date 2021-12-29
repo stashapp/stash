@@ -206,7 +206,7 @@ NSMenuItem *find_menu_item(NSMenu *ourMenu, NSNumber *menuId) {
 - (void) quit
 {
   [NSApp stop:self];
-  [NSApp abortModal]
+  [NSApp abortModal];
 }
 
 @end
