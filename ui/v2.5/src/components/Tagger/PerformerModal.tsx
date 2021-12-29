@@ -191,7 +191,9 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {renderField("aliases", performer.aliases)}
           {renderField(
             "gender",
-            performer.gender ? genderToString(performer.gender) : ""
+            performer.gender
+              ? intl.formatMessage({ id: "gender." + performer.gender })
+              : ""
           )}
           {renderField("birthdate", performer.birthdate)}
           {renderField("death_date", performer.death_date)}

@@ -880,7 +880,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
-            <FormattedMessage id="gender" />
+            <FormattedMessage id="gender.gender" />
           </Form.Label>
           <Col xs="auto">
             <Form.Control
