@@ -80,6 +80,7 @@
     "select_folders": "Selecteer bestandsmappen",
     "select_none": "Selecteer Niets",
     "selective_auto_tag": "Selectieve automatische Tag",
+    "selective_clean": "Selectief Opkuisen",
     "selective_scan": "Selectief Aftasten",
     "set_as_default": "Stel als standaard in",
     "set_back_image": "Achtergrond afbeelding…",
@@ -159,6 +160,7 @@
       "build_hash": "Bouw hash:",
       "build_time": "Bouwtijd:",
       "check_for_new_version": "Controleren op nieuwe versie",
+      "latest_version": "Laatste versie",
       "latest_version_build_hash": "Nieuwste versie Bouw Hash:",
       "new_version_notice": "[NIEUW]",
       "stash_discord": "Word lid van ons {url} kanaal",
@@ -167,12 +169,19 @@
       "stash_wiki": "Stash {url} pagina",
       "version": "Versie"
     },
+    "application_paths": {
+      "heading": "aplicatie pad"
+    },
     "categories": {
       "about": "Over",
       "interface": "Interface",
       "logs": "Logboeken",
+      "metadata_providers": "Metadata voorzieners",
       "plugins": "Plugins",
       "scraping": "Schraper",
+      "security": "Beveiliging",
+      "services": "Diensten",
+      "system": "Systeem",
       "tasks": "Taken",
       "tools": "Gereedschap"
     },
