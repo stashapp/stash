@@ -11,7 +11,7 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { genderToString, stringToGender } from "src/utils/gender";
+import { stringToGender } from "src/utils/gender";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;

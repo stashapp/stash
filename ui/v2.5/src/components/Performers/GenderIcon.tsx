@@ -7,15 +7,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import * as GQL from "src/core/generated-graphql";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { genderToString } from "src/utils/gender";
 import { useIntl } from "react-intl";
 
-interface IconProps {
+interface IIconProps {
   gender?: GQL.Maybe<GQL.GenderEnum>;
   className?: string;
 }
 
-const GenderIcon: React.FC<IconProps> = ({ gender, className }) => {
+const GenderIcon: React.FC<IIconProps> = ({ gender, className }) => {
   const intl = useIntl();
   if (gender) {
     const icon =
