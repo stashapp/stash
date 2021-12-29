@@ -319,10 +319,24 @@ The `common` field is used to configure selector fragments that can be reference
 common:
   $infoPiece: //div[@class="infoPiece"]/span
 performer:
-  Measurements: $infoPiece[text() = 'Measurements:']/../span[@class="smallInfo"]  
+  Measurements: $infoPiece[text() = 'Measurements:']/../span[@class="smallInfo"]
 ```
 
 The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="infoPiece"]/span`, resulting in: `//div[@class="infoPiece"]/span[text() = 'Measurements:']/../span[@class="smallInfo"]`.
+
+> **⚠️ Note:** Recursive common fragments are **not** supported.  
+Referencing a common fragment within another common fragment will cause an error. For example:
+```yaml
+common:
+  $info: //div[@class="info"]
+  # Referencing $info in $models will cause an error
+  $models: $info/a[@class="model"]
+scene:
+  Title: $info/h1
+  Performers:
+    Name: $models
+    URL: $models/@href
+```
 
 ### Post-processing options
 
