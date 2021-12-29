@@ -110,7 +110,259 @@
   "career_length": "Продолжительность карьеры",
   "component_tagger": {
     "config": {
-      "active_instance": "Активная инстанция Stash-устройства:"
+      "active_instance": "Активная инстанция Stash-устройства:",
+      "blacklist_label": "Черный список",
+      "query_mode_auto": "Автоматически",
+      "query_mode_auto_desc": "Использует метаданные, если они есть, или имя файла",
+      "query_mode_dir": "Директория",
+      "query_mode_filename": "Имя файла",
+      "query_mode_label": "Режим Очереди",
+      "query_mode_metadata": "Метаданные",
+      "query_mode_path": "Путь",
+      "set_tag_label": "Установить теги",
+      "source": "Источник"
+    },
+    "noun_query": "Запрос",
+    "results": {
+      "duration_unknown": "Длительность неизвестна",
+      "unnamed": "Безымянный"
+    },
+    "verb_matched": "Совпавший"
+  },
+  "config": {
+    "about": {
+      "new_version_notice": "[НОВЫЙ]",
+      "version": "Версия"
+    },
+    "categories": {
+      "about": "О программе",
+      "interface": "Интерфейс",
+      "logs": "Журнал",
+      "plugins": "Плагины",
+      "scraping": "Скрейпинг",
+      "security": "Безопасность",
+      "services": "Сервисы",
+      "system": "Система",
+      "tasks": "Задачи",
+      "tools": "Инструменты"
+    },
+    "dlna": {
+      "network_interfaces": "Интерфейсы"
+    },
+    "general": {
+      "auth": {
+        "authentication": "Аутентификация",
+        "credentials": {
+          "heading": "Реквизиты для входа"
+        },
+        "password": "Пароль",
+        "username": "Имя пользователя"
+      },
+      "hashing": "Хэширование",
+      "logging": "Ведение журнала",
+      "scraping": "Скрейпинг",
+      "video_head": "Видео"
+    },
+    "library": {
+      "exclusions": "Исключения"
+    },
+    "plugins": {
+      "hooks": "Триггеры"
+    },
+    "scraping": {
+      "scraper": "Скрейпер",
+      "scrapers": "Скрейперы",
+      "supported_urls": "Ссылки"
+    },
+    "stashbox": {
+      "endpoint": "Конечная точка",
+      "name": "Имя"
+    },
+    "system": {
+      "transcoding": "Транскодирование"
+    },
+    "tasks": {
+      "identify": {
+        "field": "Поле",
+        "heading": "Идентифицировать",
+        "source": "Источник",
+        "sources": "Источники",
+        "strategy": "Стратегия"
+      },
+      "maintenance": "Техническое обслуживание",
+      "migrations": "Миграции"
+    },
+    "tools": {
+      "scene_filename_parser": {
+        "filename": "Имя файла"
+      }
+    },
+    "ui": {
+      "editing": {
+        "heading": "Редактирование"
+      },
+      "images": {
+        "heading": "Изображения"
+      },
+      "language": {
+        "heading": "Язык"
+      },
+      "preview_type": {
+        "options": {
+          "video": "Видео"
+        }
+      }
     }
-  }
+  },
+  "configuration": "Настройки",
+  "country": "Страна",
+  "criterion": {
+    "value": "Значение"
+  },
+  "criterion_modifier": {
+    "between": "между",
+    "equals": "есть",
+    "excludes": "исключает",
+    "includes": "включает"
+  },
+  "date": "Дата",
+  "descending": "По убыванию",
+  "detail": "Дополнительная информация",
+  "details": "Подробности",
+  "dialogs": {
+    "delete_entity_desc": "{count, plural, one {Вы уверены, что хотите удалить этот {singularEntity}? Если файл также не будет удален, этот {singularEntity} будет повторно добавлен при сканировании.} other {Вы уверены, что хотите удалить эти {pluralEntity}? Если файлы также не будут удалены, эти {pluralEntity} будут повторно добавлены при выполнении сканирования.}}",
+    "export_title": "Экспорт",
+    "lightbox": {
+      "display_mode": {
+        "original": "Оригинал"
+      },
+      "options": "Параметры",
+      "scroll_mode": {
+        "zoom": "Увеличить"
+      }
+    },
+    "merge_tags": {
+      "destination": "Назначение",
+      "source": "Источник"
+    },
+    "scene_gen": {
+      "video_previews": "Превью"
+    },
+    "scrape_results_existing": "Существующий"
+  },
+  "dimensions": "Размер",
+  "director": "Режиссер",
+  "display_mode": {
+    "grid": "Сетка",
+    "list": "Список",
+    "tagger": "Теггер",
+    "unknown": "Неизвестный",
+    "wall": "Стена"
+  },
+  "donate": "Пожертвование",
+  "dupe_check": {
+    "options": {
+      "exact": "Точный",
+      "high": "Высокий",
+      "low": "Нижний",
+      "medium": "Средний"
+    }
+  },
+  "duration": "Продолжительность",
+  "effect_filters": {
+    "aspect": "Аспект",
+    "blue": "Синий",
+    "blur": "Размытие",
+    "brightness": "Яркость",
+    "contrast": "Контраст",
+    "gamma": "Гамма",
+    "green": "Зеленый",
+    "hue": "Оттенок",
+    "name": "Фильтры",
+    "red": "Красный",
+    "rotate": "Поворот",
+    "saturation": "Насыщенность",
+    "scale": "Масштаб",
+    "warmth": "Тепло"
+  },
+  "ethnicity": "Этническая принадлежность",
+  "false": "Нет",
+  "favourite": "Избранный",
+  "file": "файл",
+  "files": "файлы",
+  "filter": "Фильтр",
+  "filters": "Фильтры",
+  "galleries": "Галлереи",
+  "gallery": "Галлерея",
+  "gender": "Пол",
+  "height": "Рост",
+  "help": "Помощь",
+  "image": "Изображение",
+  "images": "Изображения",
+  "instagram": "Instagram",
+  "interactive": "Интерактивно",
+  "library": "Библиотека",
+  "loading": {
+    "generic": "Загрузка…"
+  },
+  "markers": "Маркеры",
+  "measurements": "Размеры",
+  "media_info": {
+    "checksum": "Контрольная сумма",
+    "hash": "Хэш",
+    "phash": "PHash",
+    "stream": "Стрим"
+  },
+  "metadata": "Метаданные",
+  "movie": "Фильм",
+  "movies": "Фильмы",
+  "name": "Имя",
+  "new": "Новый",
+  "none": "Никакой",
+  "o_counter": "О-Счетчик",
+  "operations": "Операции",
+  "organized": "Организован",
+  "pagination": {
+    "first": "Первый",
+    "last": "Последний",
+    "next": "Следующий",
+    "previous": "Предыдущий"
+  },
+  "path": "Путь",
+  "performer": "Исполнитель",
+  "performers": "Исполнители",
+  "piercings": "Пирсинг",
+  "queue": "Очередь",
+  "random": "Случайный",
+  "rating": "Рейтинг",
+  "resolution": "Разрешение",
+  "scene": "Сцена",
+  "scenes": "Сцены",
+  "search_filter": {
+    "name": "Фильтр"
+  },
+  "seconds": "Секунды",
+  "settings": "Настройки",
+  "setup": {
+    "paths": {
+      "where_can_stash_store_its_generated_content_description": "Чтобы предоставить эскизы, превью и спрайты, Stash генерирует изображения и видео. Сюда также входят транскоды для неподдерживаемых форматов файлов. По умолчанию Stash создает каталог <code>generated</code> в каталоге, содержащем ваш файл конфигурации. Если вы хотите изменить место хранения сгенерированного мультимедиа, введите абсолютный или относительный (по отношению к текущему рабочему каталогу) путь. Stash создаст этот каталог, если он еще не существует."
+    },
+    "welcome": {
+      "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code> (в Windows это будет <code>%USERPROFILE%\\.stash\\config.yml</code>). Вы также можете заставить Stash читать из определенного файла конфигурации, запустив его с параметрами <code>-c <путь к файлу конфигурации></code> или <code>--config <путь к файлу конфигурации></code>."
+    }
+  },
+  "studio": "Студия",
+  "studios": "Студии",
+  "sub_tags": "Под-Теги",
+  "synopsis": "Резюме",
+  "tag": "Тег",
+  "tags": "Теги",
+  "tattoos": "Татуировки",
+  "title": "Заголовок",
+  "total": "Всего",
+  "true": "Да",
+  "twitter": "Twitter",
+  "url": "Ссылка",
+  "videos": "Видео",
+  "weight": "Вес"
 }
