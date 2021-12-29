@@ -135,24 +135,6 @@ github.com/fsnotify/fsnotify
 # github.com/fvbommel/sortorder v1.0.2
 ## explicit; go 1.13
 github.com/fvbommel/sortorder
-# github.com/getlantern/context v0.0.0-20190109183933-c447772a6520
-## explicit
-github.com/getlantern/context
-# github.com/getlantern/errors v0.0.0-20190325191628-abdb3e3e36f7
-## explicit
-github.com/getlantern/errors
-# github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7
-## explicit; go 1.12
-github.com/getlantern/golog
-# github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7
-## explicit
-github.com/getlantern/hex
-# github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55
-## explicit
-github.com/getlantern/hidden
-# github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f
-## explicit
-github.com/getlantern/ops
 # github.com/go-chi/chi v4.0.2+incompatible
 ## explicit
 github.com/go-chi/chi
@@ -164,9 +146,6 @@ github.com/go-chi/chi/v5/middleware
 # github.com/go-chi/httplog v0.2.1
 ## explicit; go 1.14
 github.com/go-chi/httplog
-# github.com/go-stack/stack v1.8.0
-## explicit
-github.com/go-stack/stack
 # github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 ## explicit
 github.com/go-toast/toast
@@ -255,7 +234,7 @@ github.com/json-iterator/go
 # github.com/kermieisinthehouse/gosx-notifier v0.1.1
 ## explicit
 github.com/kermieisinthehouse/gosx-notifier
-# github.com/kermieisinthehouse/systray v1.2.0
+# github.com/kermieisinthehouse/systray v1.2.1
 ## explicit; go 1.17
 github.com/kermieisinthehouse/systray
 # github.com/lucasb-eyer/go-colorful v1.2.0
@@ -298,9 +277,6 @@ github.com/nfnt/resize
 # github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 ## explicit
 github.com/nu7hatch/gouuid
-# github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
-## explicit; go 1.12
-github.com/oxtoacart/bpool
 # github.com/pelletier/go-toml v1.9.4
 ## explicit; go 1.12
 github.com/pelletier/go-toml
@@ -451,7 +427,7 @@ golang.org/x/net/internal/iana
 golang.org/x/net/internal/socket
 golang.org/x/net/ipv4
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
+# golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
