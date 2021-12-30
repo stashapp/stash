@@ -307,10 +307,14 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	if videoStream != nil {
 		result.VideoStream = videoStream
 		result.VideoCodec = videoStream.CodecName
-		if videoStream.NbReadFrames != "" {
-			result.FrameCount, _ = strconv.ParseInt(videoStream.NbReadFrames, 10, 64)
-		} else {
-			result.FrameCount, _ = strconv.ParseInt(videoStream.NbFrames, 10, 64)
+		result.FrameCount, _ = strconv.ParseInt(videoStream.NbFrames, 10, 64)
+		if videoStream.NbReadFrames != "" { // if ffprobe counted the frames use that instead
+			fc, _ := strconv.ParseInt(videoStream.NbReadFrames, 10, 64)
+			if fc > 0 {
+				result.FrameCount, _ = strconv.ParseInt(videoStream.NbReadFrames, 10, 64)
+			} else {
+				logger.Debugf("[ffprobe] <%s> invalid Read Frames count", videoStream.NbReadFrames)
+			}
 		}
 		result.VideoBitrate, _ = strconv.ParseInt(videoStream.BitRate, 10, 64)
 		var framerate float64
