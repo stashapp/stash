@@ -267,6 +267,10 @@
       "preview_generation": "Vorschau-Generierung",
       "scraper_user_agent": "Scraper-Benutzeragent",
       "scraper_user_agent_desc": "User-Agent-String, der während Scrape-HTTP-Anfragen verwendet wird",
+      "scrapers_path": {
+        "description": "Verzeichnis für die Konfigurationsdateien des Scrapers",
+        "heading": "Scraper Pfad"
+      },
       "scraping": "Durchsuchen",
       "sqlite_location": "Dateispeicherort für die SQLite-Datenbank (erfordert Neustart)",
       "video_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Videos identifiziert werden.",
@@ -585,6 +589,8 @@
     },
     "overwrite_filter_confirm": "Möchten Sie die vorhandene gespeicherte Anfrage {entityName} wirklich überschreiben?",
     "scene_gen": {
+      "force_transcodes": "Transcode Erzeugung erzwingen",
+      "force_transcodes_tooltip": "Standardmäßig werden Transkodierungen nur erzeugt, wenn die Videodatei im Browser nicht unterstützt wird. Wenn diese Option aktiviert ist, werden Transkodierungen auch dann erstellt, wenn die Videodatei vom Browser unterstützt zu werden scheint.",
       "image_previews": "Animierte Bildvorschauen",
       "image_previews_tooltip": "Animierte WebP-Vorschaubilder, nur erforderlich, wenn der Vorschautyp auf Animiertes Bild eingestellt ist.",
       "interactive_heatmap_speed": "Erzeugen von Heatmaps und Geschwindigkeiten für interaktive Szenen",

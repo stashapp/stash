@@ -80,6 +80,7 @@
     "select_folders": "Seleccionar carpetas",
     "select_none": "Deseleccionar todo",
     "selective_auto_tag": "Etiquetado automático selectivo",
+    "selective_clean": "Limpieza Selectiva",
     "selective_scan": "Búsqueda selectiva",
     "set_as_default": "Establecer por defecto",
     "set_back_image": "Contraportada…",
@@ -159,6 +160,7 @@
       "build_hash": "Hash de la versión instalada:",
       "build_time": "Fecha de la versión instalada:",
       "check_for_new_version": "Buscar versión actualizada",
+      "latest_version": "Última Versión",
       "latest_version_build_hash": "Hash de la última versión:",
       "new_version_notice": "[NUEVA]",
       "stash_discord": "Únete a nuestro canal {url}",
@@ -167,12 +169,19 @@
       "stash_wiki": "Documentación del proyecto en nuestro {url}",
       "version": "Versión"
     },
+    "application_paths": {
+      "heading": "Rutas de la Aplicación"
+    },
     "categories": {
       "about": "Acerca de",
       "interface": "Diseño",
       "logs": "Registros",
+      "metadata_providers": "Proveedores de Metadatos",
       "plugins": "Plugins",
       "scraping": "Rastreo",
+      "security": "Seguridad",
+      "services": "Servicios",
+      "system": "Sistema",
       "tasks": "Tareas",
       "tools": "Herramientas"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "Clave API para sistemas externos. Requiere la configuración de usuario y contraseña. El nombre de usuario debe ser guardado antes de generar una clave API.",
         "authentication": "Autentificación",
         "clear_api_key": "Borrar clave API",
+        "credentials": {
+          "description": "Credenciales para restringir acceso a Stash.",
+          "heading": "Credenciales"
+        },
         "generate_api_key": "Generar clave API",
         "log_file": "Archivo de registro",
         "log_file_desc": "Ruta del archivo en el que se volcarán los registros de eventos. En blanco deshabilita el fichero de registro. Los cambios se guardarán tras reiniciar la aplicación.",
@@ -254,11 +267,20 @@
       "preview_generation": "Previsualizar generación de ficheros",
       "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
       "scraper_user_agent_desc": "Identificador del agente de usuario del navegador web (USER-AGENT) usado durante el rastreo mediante peticiones http",
+      "scrapers_path": {
+        "description": "Ruta del directorio de rastreadores",
+        "heading": "Ruta de Rastreadores"
+      },
       "scraping": "Rastreo",
       "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio)",
       "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
       "video_ext_head": "Extensiones de vídeo",
       "video_head": "Vídeo"
+    },
+    "library": {
+      "exclusions": "Exclusiones",
+      "gallery_and_image_options": "Opciones para Imágenes y Galerías",
+      "media_content_extensions": "Extensiónes de Archivo Multimedia"
     },
     "logs": {
       "log_level": "Nivel de registro"
@@ -286,6 +308,9 @@
       "graphql_endpoint": "Terminal de red GraphQL",
       "name": "Nombre",
       "title": "Terminal de red Stash-box"
+    },
+    "system": {
+      "transcoding": "Transcodificación"
     },
     "tasks": {
       "added_job_to_queue": "Añadido/a {operation_name} a la cola de trabajo",
