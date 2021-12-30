@@ -114,14 +114,6 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               )}
             </h6>
           )}
-          <h6>
-            <FormattedMessage id="created_at" />:{" "}
-            {TextUtils.formatDate(intl, props.scene.created_at)}{" "}
-          </h6>
-          <h6>
-            <FormattedMessage id="updated_at" />:{" "}
-            {TextUtils.formatDate(intl, props.scene.updated_at)}{" "}
-          </h6>
         </div>
         {props.scene.studio && (
           <div className="col-3 d-xl-none">
@@ -141,6 +133,14 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           {renderTags()}
           {renderPerformers()}
         </div>
+          <h6>
+            <FormattedMessage id="created_at" />:{" "}
+            {TextUtils.formatDate(intl, props.scene.created_at)}{" "}
+          </h6>
+          <h6>
+            <FormattedMessage id="updated_at" />:{" "}
+            {TextUtils.formatDate(intl, props.scene.updated_at)}{" "}
+          </h6>
       </div>
     </>
   );
