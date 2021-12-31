@@ -72,7 +72,7 @@ const Changelog: React.FC = () => {
     },
     {
       version: "v0.11.0",
-      date: "2021-11-15",
+      date: "2021-11-16",
       page: V0110,
     },
     {
