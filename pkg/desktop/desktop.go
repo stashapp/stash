@@ -128,9 +128,8 @@ func Shutdown() {
 	if err != nil {
 		logger.Errorf("Error closing database: %s", err)
 		os.Exit(1)
-	} else {
-		os.Exit(0)
 	}
+	os.Exit(0)
 }
 
 func getIconPath() string {

@@ -435,7 +435,6 @@ func (s *singleton) Shutdown(code int) {
 		logger.Errorf("Error closing database: %s", err)
 		if code == 0 {
 			os.Exit(1)
-			return
 		}
 	}
 	os.Exit(code)
