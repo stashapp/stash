@@ -153,9 +153,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           <React.Fragment>
             {intl.formatMessage({ id: "scenes" })}
             <Badge className="left-spacing" pill variant="secondary">
-              {performer.scene_count
-                ? intl.formatNumber(performer.scene_count)
-                : 0}
+              {intl.formatNumber(performer.scene_count ?? 0)}
             </Badge>
           </React.Fragment>
         }
@@ -168,9 +166,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           <React.Fragment>
             {intl.formatMessage({ id: "galleries" })}
             <Badge className="left-spacing" pill variant="secondary">
-              {performer.gallery_count
-                ? intl.formatNumber(performer.gallery_count)
-                : 0}
+              {intl.formatNumber(performer.gallery_count ?? 0)}
             </Badge>
           </React.Fragment>
         }
@@ -183,9 +179,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           <React.Fragment>
             {intl.formatMessage({ id: "images" })}
             <Badge className="left-spacing" pill variant="secondary">
-              {performer.image_count
-                ? intl.formatNumber(performer.image_count)
-                : 0}
+              {intl.formatNumber(performer.image_count ?? 0)}
             </Badge>
           </React.Fragment>
         }
@@ -198,9 +192,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           <React.Fragment>
             {intl.formatMessage({ id: "movies" })}
             <Badge className="left-spacing" pill variant="secondary">
-              {performer.movie_count
-                ? intl.formatNumber(performer.movie_count)
-                : 0}
+              {intl.formatNumber(performer.movie_count ?? 0)}
             </Badge>
           </React.Fragment>
         }

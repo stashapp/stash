@@ -303,7 +303,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "scenes" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {tag.scene_count ? intl.formatNumber(tag.scene_count) : 0}
+                    {intl.formatNumber(tag.scene_count ?? 0)}
                   </Badge>
                 </React.Fragment>
               }
@@ -316,7 +316,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "images" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {tag.image_count ? intl.formatNumber(tag.image_count) : 0}
+                    {intl.formatNumber(tag.image_count ?? 0)}
                   </Badge>
                 </React.Fragment>
               }
@@ -329,9 +329,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "galleries" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {tag.gallery_count
-                      ? intl.formatNumber(tag.gallery_count)
-                      : 0}
+                    {intl.formatNumber(tag.gallery_count ?? 0)}
                   </Badge>
                 </React.Fragment>
               }
@@ -344,9 +342,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "markers" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {tag.scene_marker_count
-                      ? intl.formatNumber(tag.scene_marker_count)
-                      : 0}
+                    {intl.formatNumber(tag.scene_marker_count ?? 0)}
                   </Badge>
                 </React.Fragment>
               }
@@ -359,9 +355,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "performers" })}
                   <Badge className="left-spacing" pill variant="secondary">
-                    {tag.performer_count
-                      ? intl.formatNumber(tag.performer_count)
-                      : 0}
+                    {intl.formatNumber(tag.performer_count ?? 0)}
                   </Badge>
                 </React.Fragment>
               }

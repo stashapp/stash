@@ -222,9 +222,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "scenes" })}
                 <Badge className="left-spacing" pill variant="secondary">
-                  {studio.scene_count
-                    ? intl.formatNumber(studio.scene_count)
-                    : 0}
+                  {intl.formatNumber(studio.scene_count ?? 0)}
                 </Badge>
               </React.Fragment>
             }
@@ -237,9 +235,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "galleries" })}
                 <Badge className="left-spacing" pill variant="secondary">
-                  {studio.gallery_count
-                    ? intl.formatNumber(studio.gallery_count)
-                    : 0}
+                  {intl.formatNumber(studio.gallery_count ?? 0)}
                 </Badge>
               </React.Fragment>
             }
@@ -252,9 +248,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "images" })}
                 <Badge className="left-spacing" pill variant="secondary">
-                  {studio.image_count
-                    ? intl.formatNumber(studio.image_count)
-                    : 0}
+                  {intl.formatNumber(studio.image_count ?? 0)}
                 </Badge>
               </React.Fragment>
             }
@@ -273,9 +267,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "movies" })}
                 <Badge className="left-spacing" pill variant="secondary">
-                  {studio.movie_count
-                    ? intl.formatNumber(studio.movie_count)
-                    : 0}
+                  {intl.formatNumber(studio.movie_count ?? 0)}
                 </Badge>
               </React.Fragment>
             }
