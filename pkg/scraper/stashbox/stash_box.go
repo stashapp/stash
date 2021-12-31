@@ -468,7 +468,7 @@ func findURL(urls []*graphql.URLFragment, urlType string) *string {
 
 func enumToStringPtr(e fmt.Stringer, titleCase bool) *string {
 	if e != nil {
-		ret := e.String()
+		ret := strings.ReplaceAll(e.String(), "_", " ")
 		if titleCase {
 			ret = strings.Title(strings.ToLower(ret))
 		}
