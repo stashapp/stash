@@ -478,6 +478,28 @@ func enumToStringPtr(e fmt.Stringer, titleCase bool) *string {
 	return nil
 }
 
+func translateGender(gender *graphql.GenderEnum) *string {
+	var res models.GenderEnum
+	switch *gender {
+	case graphql.GenderEnumMale:
+		res = models.GenderEnumMale
+	case graphql.GenderEnumFemale:
+		res = models.GenderEnumFemale
+	case graphql.GenderEnumIntersex:
+		res = models.GenderEnumIntersex
+	case graphql.GenderEnumTransgenderFemale:
+		res = models.GenderEnumTransgenderFemale
+	case graphql.GenderEnumTransgenderMale:
+		res = models.GenderEnumTransgenderMale
+	}
+
+	if res != "" {
+		strVal := res.String()
+		return &strVal
+	}
+	return nil
+}
+
 func formatMeasurements(m graphql.MeasurementsFragment) *string {
 	if m.BandSize != nil && m.CupSize != nil && m.Hip != nil && m.Waist != nil {
 		ret := fmt.Sprintf("%d%s-%d-%d", *m.BandSize, *m.CupSize, *m.Waist, *m.Hip)
@@ -587,7 +609,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	}
 
 	if p.Gender != nil {
-		sp.Gender = enumToStringPtr(p.Gender, false)
+		sp.Gender = translateGender(p.Gender)
 	}
 
 	if p.Ethnicity != nil {
