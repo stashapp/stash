@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/0xAX/notificator"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -33,10 +32,7 @@ func hideExecShell(cmd *exec.Cmd) {
 }
 
 func sendNotification(notificationTitle string, notificationText string) {
-	err := notificator.New(notificator.Options{
-		AppName:     "Stash",
-		DefaultIcon: getIconPath(),
-	}).Push(notificationTitle, notificationText, "", notificator.UR_NORMAL)
+	err := exec.Command("notify-send", "-i", getIconPath(), notificationTitle, notificationText, "-a", "Stash").Run()
 	if err != nil {
 		logger.Errorf("Error sending notification on Linux: %s", err.Error())
 	}

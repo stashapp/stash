@@ -1,6 +1,3 @@
-# github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
-## explicit
-github.com/0xAX/notificator
 # github.com/99designs/gqlgen v0.12.2
 ## explicit; go 1.12
 github.com/99designs/gqlgen

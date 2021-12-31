@@ -124,8 +124,13 @@ func IsAllowedAutoUpdate() bool {
 }
 
 func Shutdown() {
-	database.Close()
-	os.Exit(0)
+	err := database.Close()
+	if err != nil {
+		logger.Errorf("Error closing database: %s", err)
+		os.Exit(1)
+	} else {
+		os.Exit(0)
+	}
 }
 
 func getIconPath() string {

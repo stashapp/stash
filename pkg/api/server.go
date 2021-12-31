@@ -250,7 +250,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	}
 
 	printVersion()
-	printLatestVersion(context.TODO())
+	go printLatestVersion(context.TODO())
 	logger.Infof("stash is listening on " + address)
 	if tlsConfig != nil {
 		displayAddress = "https://" + displayAddress + "/"

@@ -47,7 +47,6 @@ require (
 )
 
 require (
-	github.com/0xAX/notificator v0.0.0-20210731104411-c42e3d4a43ee
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
