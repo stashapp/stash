@@ -56,7 +56,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="pt-BR">Português (Brasil) (Preview)</option>
           <option value="ru-RU">Русский (Россия) (Preview)</option>
           <option value="sv-SE">Svenska</option>
-          <option value="tr-TR">Türkçe (Türkiye) (Preview)</option>
+          <option value="tr-TR">Türkçe (Türkiye)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
