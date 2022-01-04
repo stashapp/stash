@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { SettingSection } from "./SettingSection";
@@ -12,6 +12,24 @@ export interface IStashBoxModal {
 
 export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
   const intl = useIntl();
+  const endpoint = useRef<HTMLInputElement | null>(null);
+  const apiKey = useRef<HTMLInputElement | null>(null);
+
+  const [validate, { data, loading }] = GQL.useValidateStashBoxLazyQuery({
+    fetchPolicy: "network-only",
+  });
+
+  const handleValidate = () => {
+    validate({
+      variables: {
+        input: {
+          endpoint: endpoint.current?.value ?? "",
+          api_key: apiKey.current?.value ?? "",
+          name: "test",
+        },
+      },
+    });
+  };
 
   return (
     <SettingModal<GQL.StashBoxInput>
@@ -52,6 +70,7 @@ export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setValue({ ...v!, endpoint: e.currentTarget.value.trim() })
               }
+              ref={endpoint}
             />
           </Form.Group>
 
@@ -71,7 +90,29 @@ export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setValue({ ...v!, api_key: e.currentTarget.value.trim() })
               }
+              ref={apiKey}
             />
+          </Form.Group>
+
+          <Form.Group>
+            <Button
+              disabled={loading}
+              onClick={handleValidate}
+              className="mr-3"
+            >
+              Test Credentials
+            </Button>
+            {data && (
+              <b
+                className={
+                  data.validateStashBoxCredentials?.valid
+                    ? "text-success"
+                    : "text-danger"
+                }
+              >
+                {data.validateStashBoxCredentials?.status}
+              </b>
+            )}
           </Form.Group>
         </>
       )}

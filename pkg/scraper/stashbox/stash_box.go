@@ -753,3 +753,7 @@ func (c Client) FindStashBoxPerformerByName(ctx context.Context, name string) (*
 
 	return ret, nil
 }
+
+func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
+	return c.client.Me(ctx)
+}
