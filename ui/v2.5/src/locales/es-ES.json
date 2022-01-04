@@ -80,6 +80,7 @@
     "select_folders": "Seleccionar carpetas",
     "select_none": "Deseleccionar todo",
     "selective_auto_tag": "Etiquetado automático selectivo",
+    "selective_clean": "Limpieza Selectiva",
     "selective_scan": "Búsqueda selectiva",
     "set_as_default": "Establecer por defecto",
     "set_back_image": "Contraportada…",
@@ -159,6 +160,7 @@
       "build_hash": "Hash de la versión instalada:",
       "build_time": "Fecha de la versión instalada:",
       "check_for_new_version": "Buscar versión actualizada",
+      "latest_version": "Última Versión",
       "latest_version_build_hash": "Hash de la última versión:",
       "new_version_notice": "[NUEVA]",
       "stash_discord": "Únete a nuestro canal {url}",
@@ -167,12 +169,19 @@
       "stash_wiki": "Documentación del proyecto en nuestro {url}",
       "version": "Versión"
     },
+    "application_paths": {
+      "heading": "Rutas de la Aplicación"
+    },
     "categories": {
       "about": "Acerca de",
       "interface": "Diseño",
       "logs": "Registros",
+      "metadata_providers": "Proveedores de Metadatos",
       "plugins": "Plugins",
       "scraping": "Rastreo",
+      "security": "Seguridad",
+      "services": "Servicios",
+      "system": "Sistema",
       "tasks": "Tareas",
       "tools": "Herramientas"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "Clave API para sistemas externos. Requiere la configuración de usuario y contraseña. El nombre de usuario debe ser guardado antes de generar una clave API.",
         "authentication": "Autentificación",
         "clear_api_key": "Borrar clave API",
+        "credentials": {
+          "description": "Credenciales para restringir acceso a Stash.",
+          "heading": "Credenciales"
+        },
         "generate_api_key": "Generar clave API",
         "log_file": "Archivo de registro",
         "log_file_desc": "Ruta del archivo en el que se volcarán los registros de eventos. En blanco deshabilita el fichero de registro. Los cambios se guardarán tras reiniciar la aplicación.",
@@ -224,8 +237,6 @@
       "create_galleries_from_folders_label": "Crear galerías desde directorios con imágenes",
       "db_path_head": "Ruta de la base de datos",
       "directory_locations_to_your_content": "Ruta relativa de los directorios que almacenan el contenido",
-      "exclude_image": "Excluir imagen",
-      "exclude_video": "Excluir vídeo",
       "excluded_image_gallery_patterns_desc": "Expresiones regulares de archivos/rutas de imágenes que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
       "excluded_image_gallery_patterns_head": "Patrones de imágenes/galerías excluidos",
       "excluded_video_patterns_desc": "Expresiones regulares de archivos/rutas de vídeos que serán excluidos del escaneo y que serán añadidos a la tarea de depuración/limpieza",
@@ -256,11 +267,20 @@
       "preview_generation": "Previsualizar generación de ficheros",
       "scraper_user_agent": "Identificador del agente de usuario del navegador para rastreo",
       "scraper_user_agent_desc": "Identificador del agente de usuario del navegador web (USER-AGENT) usado durante el rastreo mediante peticiones http",
+      "scrapers_path": {
+        "description": "Ruta del directorio de rastreadores",
+        "heading": "Ruta de Rastreadores"
+      },
       "scraping": "Rastreo",
       "sqlite_location": "Ruta relativa para la base de datos SQLite (requiere reinicio)",
       "video_ext_desc": "Lista delimitada por comas de las extensiones de archivo que serán identificadas como vídeos.",
       "video_ext_head": "Extensiones de vídeo",
       "video_head": "Vídeo"
+    },
+    "library": {
+      "exclusions": "Exclusiones",
+      "gallery_and_image_options": "Opciones para Imágenes y Galerías",
+      "media_content_extensions": "Extensiónes de Archivo Multimedia"
     },
     "logs": {
       "log_level": "Nivel de registro"
@@ -289,6 +309,9 @@
       "name": "Nombre",
       "title": "Terminal de red Stash-box"
     },
+    "system": {
+      "transcoding": "Transcodificación"
+    },
     "tasks": {
       "added_job_to_queue": "Añadido/a {operation_name} a la cola de trabajo",
       "auto_tag": {
@@ -309,7 +332,7 @@
         "generating_scenes": "Generando multimedia de soporte para {num} {scene}"
       },
       "generate_desc": "Generar imagen de soporte, conjuntos de imágenes, vídeo, vtt y resto de archivos.",
-      "generate_phashes_during_scan": "Generar hashes de percepción (Phases) de los vídeos durante el escaneo (este valor es empleado para la búsqueda de archivos de vídeo duplicados y para la identificación de escenas)",
+      "generate_phashes_during_scan": "Generar hashes de percepción (Phashes) de los vídeos durante el escaneo (este valor es empleado para la búsqueda de archivos de vídeo duplicados y para la identificación de escenas)",
       "generate_previews_during_scan": "Generar imágenes previas durante el escaneo (vistas previas WebP animadas). Solo requerido si el tipo de previsualización seleccionado es “Imágenes animadas”)",
       "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” durante el escaneo (para el depurador/limpiador de escenas)",
       "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes durante el escaneo.",
@@ -348,7 +371,7 @@
         "scanning_paths": "Escaneando las siguientes rutas"
       },
       "scan_for_content_desc": "Buscar contenido nuevo y añadirlo a la base de datos.",
-      "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos (si se encuentran)"
+      "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo (si se encuentran)"
     },
     "tools": {
       "scene_duplicate_checker": "Comprobación de escenas duplicadas",

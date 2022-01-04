@@ -92,9 +92,23 @@ export const SettingsContext: React.FC = ({ children }) => {
   >();
   const [updateDLNAConfig] = useConfigureDLNA();
 
-  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState<boolean | undefined>();
 
   const [apiKey, setApiKey] = useState("");
+
+  // cannot use Toast.error directly with the debounce functions
+  // since they are refreshed every time the Toast context is updated.
+  const [saveError, setSaveError] = useState<unknown>();
+
+  useEffect(() => {
+    if (!saveError) {
+      return;
+    }
+
+    Toast.error(saveError);
+    setSaveError(undefined);
+    setUpdateSuccess(false);
+  }, [saveError, Toast]);
 
   useEffect(() => {
     // only initialise once - assume we have control over these settings and
@@ -113,7 +127,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   const resetSuccess = useMemo(
     () =>
       debounce(() => {
-        setUpdateSuccess(false);
+        setUpdateSuccess(undefined);
       }, 4000),
     []
   );
@@ -128,6 +142,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     () =>
       debounce(async (input: GQL.ConfigGeneralInput) => {
         try {
+          setUpdateSuccess(undefined);
           await updateGeneralConfig({
             variables: {
               input,
@@ -137,10 +152,10 @@ export const SettingsContext: React.FC = ({ children }) => {
           setPendingGeneral(undefined);
           onSuccess();
         } catch (e) {
-          Toast.error(e);
+          setSaveError(e);
         }
       }, 500),
-    [Toast, updateGeneralConfig, onSuccess]
+    [updateGeneralConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -177,6 +192,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     () =>
       debounce(async (input: GQL.ConfigInterfaceInput) => {
         try {
+          setUpdateSuccess(undefined);
           await updateInterfaceConfig({
             variables: {
               input,
@@ -186,10 +202,10 @@ export const SettingsContext: React.FC = ({ children }) => {
           setPendingInterface(undefined);
           onSuccess();
         } catch (e) {
-          Toast.error(e);
+          setSaveError(e);
         }
       }, 500),
-    [Toast, updateInterfaceConfig, onSuccess]
+    [updateInterfaceConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -226,6 +242,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     () =>
       debounce(async (input: GQL.ConfigDefaultSettingsInput) => {
         try {
+          setUpdateSuccess(undefined);
           await updateDefaultsConfig({
             variables: {
               input,
@@ -235,10 +252,10 @@ export const SettingsContext: React.FC = ({ children }) => {
           setPendingDefaults(undefined);
           onSuccess();
         } catch (e) {
-          Toast.error(e);
+          setSaveError(e);
         }
       }, 500),
-    [Toast, updateDefaultsConfig, onSuccess]
+    [updateDefaultsConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -275,6 +292,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     () =>
       debounce(async (input: GQL.ConfigScrapingInput) => {
         try {
+          setUpdateSuccess(undefined);
           await updateScrapingConfig({
             variables: {
               input,
@@ -284,10 +302,10 @@ export const SettingsContext: React.FC = ({ children }) => {
           setPendingScraping(undefined);
           onSuccess();
         } catch (e) {
-          Toast.error(e);
+          setSaveError(e);
         }
       }, 500),
-    [Toast, updateScrapingConfig, onSuccess]
+    [updateScrapingConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -324,6 +342,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     () =>
       debounce(async (input: GQL.ConfigDlnaInput) => {
         try {
+          setUpdateSuccess(undefined);
           await updateDLNAConfig({
             variables: {
               input,
@@ -333,10 +352,10 @@ export const SettingsContext: React.FC = ({ children }) => {
           setPendingDLNA(undefined);
           onSuccess();
         } catch (e) {
-          Toast.error(e);
+          setSaveError(e);
         }
       }, 500),
-    [Toast, updateDLNAConfig, onSuccess]
+    [updateDLNAConfig, onSuccess]
   );
 
   useEffect(() => {
@@ -369,6 +388,14 @@ export const SettingsContext: React.FC = ({ children }) => {
   }
 
   function maybeRenderLoadingIndicator() {
+    if (updateSuccess === false) {
+      return (
+        <div className="loading-indicator failed">
+          <Icon icon="times-circle" className="fa-fw" />
+        </div>
+      );
+    }
+
     if (
       pendingGeneral ||
       pendingInterface ||
@@ -387,7 +414,7 @@ export const SettingsContext: React.FC = ({ children }) => {
 
     if (updateSuccess) {
       return (
-        <div className="loading-indicator">
+        <div className="loading-indicator success">
           <Icon icon="check-circle" className="fa-fw" />
         </div>
       );

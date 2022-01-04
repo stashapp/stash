@@ -79,6 +79,8 @@
     "select_all": "Valitse Kaikki",
     "select_folders": "Valitse kansiot",
     "select_none": "Peruuta Valinta",
+    "selective_auto_tag": "Valikoiva automaattinen tunnisteiden asetus",
+    "selective_scan": "Valikoiva skannaus",
     "set_as_default": "Aseta oletukseksi",
     "set_back_image": "Takakansi…",
     "set_front_image": "Etukansi…",
@@ -222,8 +224,6 @@
       "create_galleries_from_folders_label": "Luo galleria kansion kuvista",
       "db_path_head": "Tietokannan polku",
       "directory_locations_to_your_content": "Kansiot, joissa sisältösi sijaitsee",
-      "exclude_image": "Elä huomioi kuvia",
-      "exclude_video": "Elä huomioi videoita",
       "excluded_image_gallery_patterns_desc": "Säännöllinen lauseke kuvien ja gallerioiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
       "excluded_image_gallery_patterns_head": "Poisjätetyt kuvien ja gallerioiden merkkijonot",
       "excluded_video_patterns_desc": "Säännöllinen lauseke videoiden nimille/poluille, jotka jätetään huomioimatta skannauksessa",
@@ -295,6 +295,7 @@
       "backup_and_download": "Suorittaa tietokannan varmuuskopioinnin ja lataa luodun tiedoston.",
       "backup_database": "Suorittaa tietokannan varmuuskopioinnin ja tallentaa {filename_format} -tiedoston samaan kansioon kuin tietokanta",
       "cleanup_desc": "Tarkistaa puuttuvat tiedostot ja poistaa ne tietokannasta. Tämä on tuhoava toimi.",
+      "data_management": "Datan hallinta",
       "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
       "dont_include_file_extension_as_part_of_the_title": "Elä sisällytä tiedostopäätettä tiedoston nimeen",
       "export_to_json": "Vie tietokannan sisällön JSON -formaatissa samaan kansioon kuin missä tietokanta on.",
@@ -365,7 +366,7 @@
       },
       "delete_options": {
         "description": "Oletusasetukset kun poistetaan kuvia, gallerioita ja kohtauksia.",
-        "heading": "Poista valinnat",
+        "heading": "Poistovalinnat",
         "options": {
           "delete_file": "Poista tiedosto oletuksena",
           "delete_generated_supporting_files": "Poista generoidut tukitiedostot oletuksena"
@@ -661,6 +662,7 @@
   "name": "Nimi",
   "new": "Uusi",
   "none": "Ei mitään",
+  "o_counter": "O-Laskuri",
   "operations": "Operaatiot",
   "organized": "Järjestelty",
   "pagination": {
@@ -802,6 +804,7 @@
   "total": "Yhteensä",
   "true": "On",
   "twitter": "Twitter",
+  "up-dir": "Ylös",
   "updated_at": "Päivitetty",
   "url": "URL",
   "weight": "Paino",
