@@ -1,1 +1,26 @@
-{}
+{
+  "actions": {
+    "add": "Tilføj",
+    "add_directory": "Tilføj mappe",
+    "add_entity": "Tilføj {entityType}",
+    "add_to_entity": "Tilføj til {entityType}",
+    "allow": "Tillad",
+    "allow_temporarily": "Tillad midlertidigt",
+    "apply": "Anvend",
+    "auto_tag": "Auto Tagge",
+    "backup": "Backup",
+    "cancel": "Afbryd",
+    "clean": "Rens",
+    "clear": "Ryd",
+    "clear_image": "Ryd Billede",
+    "close": "Luk",
+    "confirm": "Bekræft",
+    "create": "Lav",
+    "create_entity": "Lav {entityType}",
+    "create_marker": "Lav Mærke",
+    "created_entity": "Lavet {entity_type}: {entity_name}",
+    "delete": "Slet",
+    "delete_entity": "Slet {entityType}",
+    "delete_file": "Slet fil"
+  }
+}
