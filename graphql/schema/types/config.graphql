@@ -391,3 +391,8 @@ type StashConfig {
 input GenerateAPIKeyInput {
   clear: Boolean
 }
+
+type StashBoxValidationResult {
+  valid: Boolean!
+  status: String!
+}
