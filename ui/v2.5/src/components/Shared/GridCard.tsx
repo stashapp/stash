@@ -9,6 +9,7 @@ interface ICardProps {
   linkClassName?: string;
   thumbnailSectionClassName?: string;
   url: string;
+  pretitleIcon?: JSX.Element;
   title: string;
   image: JSX.Element;
   details?: JSX.Element;
@@ -106,7 +107,8 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       {maybeRenderInteractiveHeatmap()}
       <div className="card-section">
         <Link to={props.url} onClick={handleImageClick}>
-          <h5 className="card-section-title">
+          <h5 className="card-section-title flex-aligned">
+            {props.pretitleIcon}
             <TruncatedText text={props.title} lineCount={2} />
           </h5>
         </Link>

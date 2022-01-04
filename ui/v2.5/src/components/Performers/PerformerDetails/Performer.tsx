@@ -27,6 +27,7 @@ import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
+import GenderIcon from "../GenderIcon";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -357,6 +358,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <div className="row">
           <div className="performer-head col">
             <h2>
+              <GenderIcon
+                gender={performer.gender}
+                className="gender-icon mr-2"
+              />
               <CountryFlag country={performer.country} className="mr-2" />
               {performer.name}
               {renderIcons()}
