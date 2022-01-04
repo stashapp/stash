@@ -98,13 +98,13 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             <h6>
               {" "}
               <FormattedMessage id="created_at" />:{" "}
-              {TextUtils.formatDate(intl, props.image.created_at)}{" "}
+              {TextUtils.formatDateTime(intl, props.image.created_at)}{" "}
             </h6>
           }
           {
             <h6>
               <FormattedMessage id="updated_at" />:{" "}
-              {TextUtils.formatDate(intl, props.image.updated_at)}{" "}
+              {TextUtils.formatDateTime(intl, props.image.updated_at)}{" "}
             </h6>
           }
         </div>
