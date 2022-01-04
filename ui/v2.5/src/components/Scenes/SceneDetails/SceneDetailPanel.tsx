@@ -116,11 +116,11 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           )}
           <h6>
             <FormattedMessage id="created_at" />:{" "}
-            {TextUtils.formatDate(intl, props.scene.created_at)}{" "}
+            {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
           </h6>
           <h6>
             <FormattedMessage id="updated_at" />:{" "}
-            {TextUtils.formatDate(intl, props.scene.updated_at)}{" "}
+            {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
           </h6>
         </div>
         {props.scene.studio && (
