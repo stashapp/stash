@@ -80,6 +80,7 @@
     "select_folders": "选择目录",
     "select_none": "清除选择",
     "selective_auto_tag": "选择性自动生成标签",
+    "selective_clean": "选择性清理",
     "selective_scan": "选择性扫描",
     "set_as_default": "设置为默认",
     "set_back_image": "设置背面图…",
@@ -159,6 +160,7 @@
       "build_hash": "版本识别码:",
       "build_time": "编译时间:",
       "check_for_new_version": "检查新版本",
+      "latest_version": "最新版本",
       "latest_version_build_hash": "最新版本识别码:",
       "new_version_notice": "[新版本]",
       "stash_discord": "加入我们的 {url} 频道",
@@ -167,12 +169,19 @@
       "stash_wiki": "Stash {url} 页面",
       "version": "版本"
     },
+    "application_paths": {
+      "heading": "程序路径"
+    },
     "categories": {
       "about": "关于",
       "interface": "界面",
       "logs": "日志",
+      "metadata_providers": "元数据提供者",
       "plugins": "插件",
       "scraping": "挖掘",
+      "security": "安保",
+      "services": "服务",
+      "system": "系统",
       "tasks": "任务",
       "tools": "工具"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "外部系统使用的 API 密钥，只有在设置了用户名和密码之后才需要。在生成之前必须先设置用户名。",
         "authentication": "认证设置",
         "clear_api_key": "清除 API 密钥",
+        "credentials": {
+          "description": "用以限制使用Stash的账户凭证.",
+          "heading": "账户凭证"
+        },
         "generate_api_key": "生成 API 密钥",
         "log_file": "日志文件",
         "log_file_desc": "日志文件的路径，如果为空则表示关闭日志记录。更改之后需要重启。",
@@ -254,11 +267,20 @@
       "preview_generation": "生成预览",
       "scraper_user_agent": "挖掘器用户代理(User Agent)",
       "scraper_user_agent_desc": "挖掘器运行时的用户代理名(User Agent)",
+      "scrapers_path": {
+        "description": "含有网路挖掘器配置文件的路径",
+        "heading": "网页挖掘器路径"
+      },
       "scraping": "挖掘器设置",
       "sqlite_location": "Sqlite 数据库的位置（需要重启）",
       "video_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为视频。",
       "video_ext_head": "视频扩展名",
       "video_head": "视频设置"
+    },
+    "library": {
+      "exclusions": "不包括",
+      "gallery_and_image_options": "图库和照片的选项",
+      "media_content_extensions": "媒体的文件扩展名"
     },
     "logs": {
       "log_level": "日志等级"
@@ -287,6 +309,9 @@
       "name": "名称",
       "title": "Stash-box 入口"
     },
+    "system": {
+      "transcoding": "转码"
+    },
     "tasks": {
       "added_job_to_queue": "已经添加 {operation_name} 到工作队列",
       "auto_tag": {
@@ -302,17 +327,21 @@
       "data_management": "数据管理",
       "defaults_set": "预设值已经设定好，将会在按下任务页面里的{action}按钮后生效.",
       "dont_include_file_extension_as_part_of_the_title": "不要把扩展名作为标题的一部分",
+      "empty_queue": "目前没有任务在运行.",
       "export_to_json": "将数据库中元数据目录的内容导出为 JSON 文件格式.",
       "generate": {
         "generating_from_paths": "正在为以下路径的短片生成资料",
         "generating_scenes": "正在为{num}个{scene}生成资料"
       },
       "generate_desc": "生成辅助的图片，预览，片段，字幕等其他文件。",
-      "generate_phashes_during_scan": "在扫描期间生成感知识别码(用于重复数据删除和短片识别)",
-      "generate_previews_during_scan": "在扫描期间生成片段预览（动画 WebP 预览，仅当预览类型设置为动图时才需要）",
-      "generate_sprites_during_scan": "在扫描期间生成时间轴预览（用于时间轴预览图）",
-      "generate_thumbnails_during_scan": "扫描时生成图片的缩略图.",
-      "generate_video_previews_during_scan": "在扫描期间生成预览（鼠标悬停在场景上时播放的视频预览）",
+      "generate_phashes_during_scan": "生成感知识别码",
+      "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别.",
+      "generate_previews_during_scan": "生成动态图片预览",
+      "generate_previews_during_scan_tooltip": "生成WebP动画预览，仅适用于预览类型设为动图的情况.",
+      "generate_sprites_during_scan": "生成时间轴预览小图",
+      "generate_thumbnails_during_scan": "生成图片的缩略图",
+      "generate_video_previews_during_scan": "生成预览",
+      "generate_video_previews_during_scan_tooltip": "产生视频预览，用以鼠标移到短片上时播放",
       "generated_content": "生成的内容",
       "identify": {
         "and_create_missing": "和生成暂无的",
@@ -336,7 +365,7 @@
       },
       "import_from_exported_json": "导入之前导出的json格式元数据。 删除现有数据库内容。",
       "incremental_import": "从导出的 zip 文件增量导入。",
-      "job_queue": "工作队列",
+      "job_queue": "任务队列",
       "maintenance": "维护",
       "migrate_hash_files": "使用更改之后的识别码算法重新命名已经存在的文件到新的识别码格式。",
       "migrations": "迁移",
@@ -347,7 +376,7 @@
         "scanning_paths": "正在扫描以下路径"
       },
       "scan_for_content_desc": "扫描新内容并添加至数据库中。",
-      "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情(如有的话)"
+      "set_name_date_details_from_metadata_if_present": "使用文件内含的元数据的标题、日期、详情"
     },
     "tools": {
       "scene_duplicate_checker": "短片重复性检查工具",
@@ -369,6 +398,7 @@
       "scene_tools": "短片工具"
     },
     "ui": {
+      "basic_settings": "基本设定",
       "custom_css": {
         "description": "必须重新加载页面才能使更改生效。",
         "heading": "自定义样式",
@@ -399,10 +429,11 @@
         "heading": "Funscript偏移量（毫秒）"
       },
       "handy_connection_key": {
-        "description": "用于互动场景的快速连接密钥.",
+        "description": "用于互动场景的快速连接密钥。设定此密匙会允许Stash分享你当前的短片资料到handyfeeling.com",
         "heading": "快速连接密钥"
       },
       "images": {
+        "heading": "图片",
         "options": {
           "write_image_thumbnails": {
             "description": "即时生成时把图片缩略写入硬盘",
@@ -410,6 +441,7 @@
           }
         }
       },
+      "interactive_options": "互动功能选项",
       "language": {
         "heading": "语言"
       },
@@ -557,16 +589,24 @@
     },
     "overwrite_filter_confirm": "确定要覆盖现有的已保存查询 {entityName} 吗？",
     "scene_gen": {
-      "image_previews": "图片预览（动态 WebP 预览, 当预览类型设置为[动图]时才需要）",
-      "marker_image_previews": "标记预览 (动态WebP预览，当预览类型设为“动图”时才需要)",
-      "marker_screenshots": "标记的屏幕截图 (静态 JPG 图片，当预览模式设为“静图”时才需要)",
-      "markers": "标记（给定时间开始的20秒影片）",
+      "force_transcodes": "强制生成转码文件",
+      "force_transcodes_tooltip": "默认情况下，转码文件只会在浏览器不支持的情况下生成。如果开启此选项，即使浏览器支持该视频，也会生成转码文件。",
+      "image_previews": "动图预览",
+      "image_previews_tooltip": "动态 WebP 预览, 当预览类型设置为[动图]时才需要.",
+      "interactive_heatmap_speed": "产生热图和速度资料给有互动的短片",
+      "marker_image_previews": "标记动图预览",
+      "marker_image_previews_tooltip": "动态标记WebP预览，仅用于当预览类型设为【动图】时。",
+      "marker_screenshots": "标记的屏幕截图",
+      "marker_screenshots_tooltip": "标记使用静态JPG图，仅用于预览类型设为【静图】时。",
+      "markers": "标记预览",
+      "markers_tooltip": "从给出的时间码开始20秒的视频.",
       "overwrite": "覆盖已经生成的文件",
       "phash": "感知识别码PHash（用于检测短片是否重复）",
       "preview_exclude_end_time_desc": "从短片预览中排除最后 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
       "preview_exclude_end_time_head": "排除结束时间",
       "preview_exclude_start_time_desc": "从短片预览中排除最开始 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
       "preview_exclude_start_time_head": "排除开始时间",
+      "preview_generation_options": "预览生成的选项",
       "preview_options": "预览选项",
       "preview_preset_desc": "预设是用来调节预览生成的大小、质量和编码时间。 “slow”以下的选项不推荐使用。",
       "preview_preset_head": "调整预设值",
@@ -574,9 +614,12 @@
       "preview_seg_count_head": "预览片段段数",
       "preview_seg_duration_desc": "每个预览片段的长度，以秒为单位。",
       "preview_seg_duration_head": "预览片段长度",
-      "sprites": "时间轴预览（用于短片中时间轴上的预览图）",
-      "transcodes": "转码（把不支持的格式转换成MP4）",
-      "video_previews": "预览短片（鼠标悬停在短片上时所播放的预览短片）"
+      "sprites": "短视频时间轴预览的小图",
+      "sprites_tooltip": "小图（用于时间轴预览）",
+      "transcodes": "转码",
+      "transcodes_tooltip": "将不支持的视频格式转换为MP4",
+      "video_previews": "预览",
+      "video_previews_tooltip": "鼠标悬停在短片上时播放的预览短片"
     },
     "scenes_found": "找到 {count} 个短片",
     "scrape_entity_query": "{entity_type} 挖掘 查询指令",
@@ -661,6 +704,7 @@
   "include_sub_tags": "包含子标签",
   "instagram": "Instagram",
   "interactive": "互动",
+  "interactive_speed": "互动速度",
   "isMissing": "缺失",
   "library": "收藏库",
   "loading": {
@@ -674,6 +718,7 @@
     "checksum": "校验值",
     "downloaded_from": "下载地址",
     "hash": "识别码",
+    "interactive_speed": "互动速度",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "短片里面 {age} {years_old}"
@@ -848,6 +893,7 @@
   "up-dir": "上级目录",
   "updated_at": "更新时间",
   "url": "链接",
+  "videos": "视频",
   "weight": "体重",
   "years_old": "岁"
 }

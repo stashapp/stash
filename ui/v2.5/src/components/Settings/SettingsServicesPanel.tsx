@@ -117,7 +117,7 @@ export const SettingsServicesPanel: React.FC = () => {
   function renderDeadline(until?: string) {
     if (until) {
       const deadline = new Date(until);
-      return `until ${deadline.toLocaleString()}`;
+      return `until ${intl.formatDate(deadline)}`;
     }
 
     return "";

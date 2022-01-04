@@ -1,4 +1,4 @@
-import { Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab, Badge } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -216,16 +216,43 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           activeKey={activeTabKey}
           onSelect={setActiveTabKey}
         >
-          <Tab eventKey="scenes" title={intl.formatMessage({ id: "scenes" })}>
+          <Tab
+            eventKey="scenes"
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "scenes" })}
+                <Badge className="left-spacing" pill variant="secondary">
+                  {intl.formatNumber(studio.scene_count ?? 0)}
+                </Badge>
+              </React.Fragment>
+            }
+          >
             <StudioScenesPanel studio={studio} />
           </Tab>
           <Tab
             eventKey="galleries"
-            title={intl.formatMessage({ id: "galleries" })}
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "galleries" })}
+                <Badge className="left-spacing" pill variant="secondary">
+                  {intl.formatNumber(studio.gallery_count ?? 0)}
+                </Badge>
+              </React.Fragment>
+            }
           >
             <StudioGalleriesPanel studio={studio} />
           </Tab>
-          <Tab eventKey="images" title={intl.formatMessage({ id: "images" })}>
+          <Tab
+            eventKey="images"
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "images" })}
+                <Badge className="left-spacing" pill variant="secondary">
+                  {intl.formatNumber(studio.image_count ?? 0)}
+                </Badge>
+              </React.Fragment>
+            }
+          >
             <StudioImagesPanel studio={studio} />
           </Tab>
           <Tab
@@ -234,12 +261,29 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           >
             <StudioPerformersPanel studio={studio} />
           </Tab>
-          <Tab eventKey="movies" title={intl.formatMessage({ id: "movies" })}>
+          <Tab
+            eventKey="movies"
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "movies" })}
+                <Badge className="left-spacing" pill variant="secondary">
+                  {intl.formatNumber(studio.movie_count ?? 0)}
+                </Badge>
+              </React.Fragment>
+            }
+          >
             <StudioMoviesPanel studio={studio} />
           </Tab>
           <Tab
             eventKey="childstudios"
-            title={intl.formatMessage({ id: "subsidiary_studios" })}
+            title={
+              <React.Fragment>
+                {intl.formatMessage({ id: "subsidiary_studios" })}
+                <Badge className="left-spacing" pill variant="secondary">
+                  {intl.formatNumber(studio.child_studios?.length)}
+                </Badge>
+              </React.Fragment>
+            }
           >
             <StudioChildrenPanel studio={studio} />
           </Tab>

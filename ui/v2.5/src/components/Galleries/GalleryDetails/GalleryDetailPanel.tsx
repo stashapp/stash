@@ -90,11 +90,11 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           )}
           <h6>
             <FormattedMessage id="created_at" />:{" "}
-            {TextUtils.formatDate(intl, gallery.created_at)}{" "}
+            {TextUtils.formatDateTime(intl, gallery.created_at)}{" "}
           </h6>
           <h6>
             <FormattedMessage id="updated_at" />:{" "}
-            {TextUtils.formatDate(intl, gallery.updated_at)}{" "}
+            {TextUtils.formatDateTime(intl, gallery.updated_at)}{" "}
           </h6>
         </div>
         {gallery.studio && (

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
 	"strconv"
 	"time"
 
@@ -117,6 +118,19 @@ func (o Scanner) generateHashes(f *models.File, file SourceFile, regenerate bool
 	if o.CalculateOSHash && (regenerate || f.OSHash == "") {
 		logger.Infof("Calculating oshash for %s ...", f.Path)
 
+		size := file.FileInfo().Size()
+
+		// #2196 for symlinks
+		// get the size of the actual file, not the symlink
+		if file.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink {
+			fi, err := os.Stat(f.Path)
+			if err != nil {
+				return false, err
+			}
+			logger.Debugf("File <%s> is symlink. Size changed from <%d> to <%d>", f.Path, size, fi.Size())
+			size = fi.Size()
+		}
+
 		src, err = file.Open()
 		if err != nil {
 			return false, err
@@ -130,7 +144,7 @@ func (o Scanner) generateHashes(f *models.File, file SourceFile, regenerate bool
 
 		// regenerate hash
 		var oshash string
-		oshash, err = o.Hasher.OSHash(seekSrc, file.FileInfo().Size())
+		oshash, err = o.Hasher.OSHash(seekSrc, size)
 		if err != nil {
 			return false, fmt.Errorf("error generating oshash for %s: %w", file.Path(), err)
 		}

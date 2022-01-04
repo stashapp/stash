@@ -468,13 +468,35 @@ func findURL(urls []*graphql.URLFragment, urlType string) *string {
 
 func enumToStringPtr(e fmt.Stringer, titleCase bool) *string {
 	if e != nil {
-		ret := e.String()
+		ret := strings.ReplaceAll(e.String(), "_", " ")
 		if titleCase {
 			ret = strings.Title(strings.ToLower(ret))
 		}
 		return &ret
 	}
 
+	return nil
+}
+
+func translateGender(gender *graphql.GenderEnum) *string {
+	var res models.GenderEnum
+	switch *gender {
+	case graphql.GenderEnumMale:
+		res = models.GenderEnumMale
+	case graphql.GenderEnumFemale:
+		res = models.GenderEnumFemale
+	case graphql.GenderEnumIntersex:
+		res = models.GenderEnumIntersex
+	case graphql.GenderEnumTransgenderFemale:
+		res = models.GenderEnumTransgenderFemale
+	case graphql.GenderEnumTransgenderMale:
+		res = models.GenderEnumTransgenderMale
+	}
+
+	if res != "" {
+		strVal := res.String()
+		return &strVal
+	}
 	return nil
 }
 
@@ -587,7 +609,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	}
 
 	if p.Gender != nil {
-		sp.Gender = enumToStringPtr(p.Gender, false)
+		sp.Gender = translateGender(p.Gender)
 	}
 
 	if p.Ethnicity != nil {
