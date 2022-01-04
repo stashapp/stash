@@ -261,7 +261,7 @@ func getDate(val *string) models.SQLiteDate {
 	if val == nil {
 		return models.SQLiteDate{Valid: false}
 	} else {
-		return models.SQLiteDate{String: *val, Valid: false}
+		return models.SQLiteDate{String: *val, Valid: true}
 	}
 }
 
