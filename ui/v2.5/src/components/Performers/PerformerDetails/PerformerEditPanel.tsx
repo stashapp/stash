@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -18,7 +18,6 @@ import {
   ImageInput,
   LoadingIndicator,
   CollapseButton,
-  Modal,
   TagSelect,
   URLField,
 } from "src/components/Shared";
@@ -59,7 +58,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   onImageEncoding,
   onCancelEditing,
 }) => {
-  const intl = useIntl();
   const Toast = useToast();
   const history = useHistory();
 
@@ -679,7 +677,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <Button
             variant="success"
             disabled={!formik.dirty}
-            onClick={() => formik.submitForm()}
+            onClick={() => formik.submitForm().then(onCancelEditing)}
           >
             <FormattedMessage id="actions.save" />
           </Button>
