@@ -16,6 +16,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import GenderIcon from "./GenderIcon";
 
 export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
@@ -183,6 +184,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
+      pretitleIcon={
+        <GenderIcon className="gender-icon" gender={performer.gender} />
+      }
       title={performer.name ?? ""}
       image={
         <>

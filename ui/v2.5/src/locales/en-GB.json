@@ -691,7 +691,15 @@
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
-  "gender": "Gender",
+  "gender": {
+    "gender": "Gender",
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "TRANSGENDER_MALE": "Transgender Male",
+    "TRANSGENDER_FEMALE": "Transgender Female",
+    "INTERSEX": "Intersex",
+    "NON_BINARY": "Non-Binary"
+  },
   "hair_color": "Hair Colour",
   "hasMarkers": "Has Markers",
   "height": "Height",

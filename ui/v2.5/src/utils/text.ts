@@ -284,13 +284,21 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   return `https://${url}`;
 };
 
-const formatDate = (intl: IntlShape, date?: string) => {
+const formatDate = (intl: IntlShape, date?: string, utc = true) => {
   if (!date) {
     return "";
   }
 
-  return intl.formatDate(date, { format: "long", timeZone: "utc" });
+  return intl.formatDate(date, {
+    format: "long",
+    timeZone: utc ? "utc" : undefined,
+  });
 };
+
+const formatDateTime = (intl: IntlShape, dateTime?: string, utc = false) =>
+  `${formatDate(intl, dateTime, utc)} ${intl.formatTime(dateTime, {
+    timeZone: utc ? "utc" : undefined,
+  })}`;
 
 const capitalize = (val: string) =>
   val
@@ -311,6 +319,7 @@ const TextUtils = {
   twitterURL,
   instagramURL,
   formatDate,
+  formatDateTime,
   capitalize,
   secondsAsTimeString,
 };
