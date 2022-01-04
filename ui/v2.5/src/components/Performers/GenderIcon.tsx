@@ -3,7 +3,6 @@ import {
   faVenus,
   faTransgenderAlt,
   faMars,
-  faVenusMars,
 } from "@fortawesome/free-solid-svg-icons";
 import * as GQL from "src/core/generated-graphql";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
