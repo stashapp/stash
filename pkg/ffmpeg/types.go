@@ -70,6 +70,7 @@ type FFProbeStream struct {
 	Level             int    `json:"level,omitempty"`
 	NalLengthSize     string `json:"nal_length_size,omitempty"`
 	NbFrames          string `json:"nb_frames"`
+	NbReadFrames      string `json:"nb_read_frames"`
 	PixFmt            string `json:"pix_fmt,omitempty"`
 	Profile           string `json:"profile"`
 	RFrameRate        string `json:"r_frame_rate"`
